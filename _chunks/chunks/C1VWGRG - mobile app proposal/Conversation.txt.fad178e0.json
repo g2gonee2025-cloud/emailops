@@ -1,0 +1,53 @@
+{
+  "doc_id": "C1VWGRG - mobile app proposal\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1VWGRG - mobile app proposal\\Conversation.txt",
+  "num_chunks": 3,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:32:50\nFolder: C1VWGRG - mobile app proposal\nMessage Count: 1\n\n--------------------------------------------------\nID: C1VWGRG_00\nFrom: Ankit Kamal <kamal.ankit@appinventiv.co.uk>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-07-01 13:45\nSubject: Mobile App Proposal\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\nHi Hagop,\n\n \n\nHope you are doing well.\n\n \n\nI'm checking in again to see if you went through my last email. With a decade-plus experience working with organizations like Chalhoub, I'm confident to share some of the best works we have delivered in the past.\n\n \n\nLet me know if we could connect on Wednesday or Thursday at 3 PM. If that works for you, I’ll go ahead and send over a calendar invite.\n\n \n\nFeel free to suggest an alternative time that’s more convenient for you.\n\nLooking forward to hearing from you.\n\nRegards,\n\nAnkit Kamal\nSr. Business Manager | Appinventiv Technologies\n\nB 25 Sector 58 Noida, India\n\nM- +91- 9999664700 \n\n________________________________\n\nFrom: Ankit Kamal <kamal.ankit@appinventiv.co.uk>\nSent: 11 March 2025 13:24\nTo: hagop.ghazarian@mailmac.net\nSubject: Empowering Success with Cutting-Edge Technology\n\n \n\nHi Hagop,\n\nI hope you're doing well.",
+      "start_pos": 0,
+      "end_pos": 1591,
+      "chunk_index": 0,
+      "chunk_size": 1591,
+      "metadata": {
+        "doc_id": "C1VWGRG - mobile app proposal\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1VWGRG - mobile app proposal\\Conversation.txt"
+      }
+    },
+    {
+      "text": "From: Ankit Kamal <kamal.ankit@appinventiv.co.uk>\nSent: 11 March 2025 13:24\nTo: hagop.ghazarian@mailmac.net\nSubject: Empowering Success with Cutting-Edge Technology\n\n \n\nHi Hagop,\n\nI hope you're doing well.\n\nAs you know, staying ahead in the Luxury Goods & Jewelry sector requires embracing cutting-edge technologies. At Appinventiv, we've spent the last ten years helping businesses like yours innovate, delivering 2,000+ digital products to over 950 global clients. With a team of 1,500+ tech and design experts, we combine startup agility with enterprise-level discipline to drive efficiency and growth.\n\nOur expertise includes:\n\n*       Artificial Intelligence – AI consulting, machine learning models, NLP, computer vision, and AI-powered chatbots to automate processes and enhance user experiences.\n\n*       Data Science & Analytics – From analytics consulting to predictive modeling and data visualization, we turn raw data into powerful insights.\n\n*       Blockchain Development – Secure, transparent solutions for NFT marketplaces, metaverse applications, and decentralized platforms.\n\nRecognized by Deloitte Technology Fast 50 India and Entrepreneur.com’s \"App Development Company of the Year,\" we take pride in crafting technology solutions that accelerate business success.\n\nDo let me know if you're interested—I’d be happy to share our methodologies, past work details, and client testimonials. We can also arrange a quick call to explore potential synergies.\n\nLooking forward to your thoughts.\n\nRegards,\n\nAnkit Kamal\nSr. Business Manager | Appinventiv Technologies",
+      "start_pos": 1386,
+      "end_pos": 2963,
+      "chunk_index": 1,
+      "chunk_size": 1577,
+      "metadata": {
+        "doc_id": "C1VWGRG - mobile app proposal\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1VWGRG - mobile app proposal\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Do let me know if you're interested—I’d be happy to share our methodologies, past work details, and client testimonials. We can also arrange a quick call to explore potential synergies.\n\nLooking forward to your thoughts.\n\nRegards,\n\nAnkit Kamal\nSr. Business Manager | Appinventiv Technologies\n\nB 25 Sector 58 Noida, India\n\nM- +91- 9999664700",
+      "start_pos": 2672,
+      "end_pos": 3012,
+      "chunk_index": 2,
+      "chunk_size": 340,
+      "metadata": {
+        "doc_id": "C1VWGRG - mobile app proposal\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1VWGRG - mobile app proposal\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:29.700737",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 3225
+  }
+}

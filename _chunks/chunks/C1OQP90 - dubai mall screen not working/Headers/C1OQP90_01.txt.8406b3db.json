@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1OQP90 - dubai mall screen not working\\Headers\\C1OQP90_01.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1OQP90 - dubai mall screen not working\\Headers\\C1OQP90_01.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by DUZPR05MB10937.eurprd05.prod.outlook.com (2603:10a6:10:4d8::13) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7982.34; Fri, 4 Oct 2024 12:48:56 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%3]) with mapi id 15.20.7982.033; Fri, 4 Oct 2024 12:48:55 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Kawttar Nassik <Kawttar.Nassik@chalhoub.com>\nCC: Olga Bakhareva <Olga.Bakhareva@chalhoub.com>, Muhammed Sweadan <Muhammed.Sweadan@chalhoub.com>, Guess Dubai Mall <Guess.Dubaimall@chalhoub.com>, Majdi Elhakam <Majdi.Elhakam@chalhoub.com>\nSubject: Re: Dubai mall Screen not working \nThread-Topic: Dubai mall Screen not working \nThread-Index: AdsUJDVCKzYylQrMQ+qi+0f+mPRuzQAcCBZQAGzBlXAAAKzHQAAEakt0\nDate: Fri, 4 Oct 2024 12:48:55 +0000\nMessage-ID: <AS8PR05MB10824893D0253D6D5128F30DB9D722@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <DB9PR05MB95098BEBAC85A08AE9A8A60B8D772@DB9PR05MB9509.eurprd05.prod.outlook.com> <AM0PR05MB6787259AE7B25F7556D63BF181702@AM0PR05MB6787.eurprd05.prod.outlook.com> <DB9PR05MB95095FEFBCBADDA5E8754CC58D722@DB9PR05MB9509.eurprd05.prod.outlook.com> <PAWPR05MB10015FACE09B02D850B1B195AEE722@PAWPR05MB10015.eurprd05.prod.outlook.com>\nIn-Reply-To: <PAWPR05MB10015FACE09B02D850B1B195AEE722@PAWPR05MB10015.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 1616,
+      "chunk_index": 0,
+      "chunk_size": 1615,
+      "metadata": {
+        "doc_id": "C1OQP90 - dubai mall screen not working\\Headers\\C1OQP90_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1OQP90 - dubai mall screen not working\\Headers\\C1OQP90_01.txt"
+      }
+    },
+    {
+      "text": ".outlook.com>\nIn-Reply-To: <PAWPR05MB10015FACE09B02D850B1B195AEE722@PAWPR05MB10015.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|DUZPR05MB10937:EE_\nx-ms-office365-filtering-correlation-id: e7b4656b-942e-437a-2248-08dce472e87c\nx-ms-exchange-atpmessageproperties: SA|SL\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|41050700001;\nx-microsoft-antispam-message-info: 2hVEu7WMRgpvOmMU9YxarDRpfuhOT/ViRWYDpV3BfWNFjm0TPFcy9Ncguplav/VXuzI8yD9Egwj51Ge+GC64Dgu+8uFrw4QUMPDoN0BoatnIOj1n+cf8oE3cFJMImU5Wnr1i9uzha0I0z9SpqmTvZu43KqCK5nL/d4PR2gDP376UmImm2wsUwJNcVIz+rv4CI+ID/oP9U4qguZmaVEGAmY9t4knMkWF2CB7FXF+KGliBNVNw8tX/czYHW27y+S/9grvcQbNt3Myz/fcQ75ZproXkYjgzqS5LnCvjeFSmyAFzC1TULwBeRSJ3ZGwovKQy3Fjjij1+oqcljXqu+W4VcDExHTi5YJQGwxftbbfmllK8je6fKmRfnTFheWTuVxr8SjrwYbNL8UL+UaqGUuqqWZLPbQrMOSfViBWFb89fDj2l+W9W/KkiP0ftwg2rnfyoQyf9XNqF9Q9D0tj0HRb4mfDY7HMjCXbyPHD9BrYROPX0XdJxqcqKYS195KW31Tl1QwOO57LQn8tCbDnBV9fKj6NFGmCyACtMyyADFMOOiu3M0CGVu0iJsDM6ZmqHKiVaGNrFEm9EblobZ9cnSI/2Po4P0YrEu84XSvm1r09N/l8PCssPumeZwFrCAEwK4HYifu4p3VJTfzN9Y36qnGstNRm6xMRnD3PkuYoZ+B19lnKJ3tdzBK9207sdD+B4zqvD/I/kDa/UvNl5JXPPOexGHMqNWSSKd5XxVBj/Pq/wqYAp44oI2USNNCVxQij7FUuIJIGvbm6Y9MadXZmhi2syQQ==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(41050700001);DIR:INT;\nContent-Type: multipart/mixed; boundary=\"_013_AS8PR05MB10824893D0253D6D5128F30DB9D722AS8PR05MB10824eu_\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: ER88ImkDpPOwPK9jcE5tkj+rawIV5KHh3wMTJVO/+SCE7JbD/bzI2UC1mjdWhrNcvW2kpE1h0XcEVUDRAAzXbPLybnEteG6V/IZ3O8JLRLormmunan6iEeiqeOclLFbn3PO+xH4dlY3p6O6EWWugHWT50L47eyehwR2mj9TlRiLb70gBfyecTd09PZ+e8DADubh8t9UlFg01F9vQFCtfh4c8/5r03zCsfYjESuyiBXswCspbZjUSd/ph4W4bB45KCJlfvYMJKlW62UIzCqITbYCehvReCS+OT8K9urQEbwYtLqf1hxVCaLxor07PFygqUPTdLHWwgghKG+Qb4obZl1aRNcwq4QgWdLeNN1locEzSjbVB0n2oulOgTKzndRFtXJylbp776OX4Yw8Ny/CkChvTjxBRDiN7UfnuHOPzI7YVeCNZ/zewK40IuIQn7BxwSYagWz66/eBhYyiJY3tVinnyAgLjNjDLNY3leBRpcoqtoM5JAh0UnkXCdCwKX52Gn0XVMVgLWUgWdKSZwSGtgXQ6c6Mi9qUe2FLSIodnIdRX6R3UOg/NKoY2+/UZuvdIeNIEtvZWKKDVtGBP2VVnLn7SZHPFu8dUSwjX/GdMo0TKuxXICora1ExXVQ1mhRJy\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: e7b4656b-942e-437a-2248-08dce472e87c\nX-MS-Exchange-CrossTenant-originalarrivaltime: 04 Oct 2024 12:48:55.7100 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: akp0eeuEbZP7yB1Y9DY9YigQLinjJdY2ef3uf64K4dxP8Hw7e8UIpcMfLbSoc/o/KPtseq/GdDUWLqUGZQ/7idwBDKucYBfZGASjRTcr2LM=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: DUZPR05MB10937\nX-OrganizationHeadersPreserved: DUZPR05MB10937.eurprd05.prod.outlook.com",
+      "start_pos": 1416,
+      "end_pos": 4689,
+      "chunk_index": 1,
+      "chunk_size": 3273,
+      "metadata": {
+        "doc_id": "C1OQP90 - dubai mall screen not working\\Headers\\C1OQP90_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1OQP90 - dubai mall screen not working\\Headers\\C1OQP90_01.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:16.384167",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4733
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1BLGX5 - jewelery boutique insurance\\Headers\\C1BLGX5_02.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1BLGX5 - jewelery boutique insurance\\Headers\\C1BLGX5_02.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from PAXPR05MB9591.eurprd05.prod.outlook.com (::1) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Wed, 9 Oct 2024 13:47:26 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from PAXPR05MB8192.eurprd05.prod.outlook.com (2603:10a6:102:12e::22) by PAXPR05MB9591.eurprd05.prod.outlook.com (2603:10a6:102:23d::6) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7982.30; Wed, 9 Oct 2024 13:47:25 +0000\nReceived: from PAXPR05MB8192.eurprd05.prod.outlook.com ([::1]) by PAXPR05MB8192.eurprd05.prod.outlook.com ([fe80::a64f:8e4d:7abf:811d%3]) with Microsoft SMTP Server id 15.20.7982.033; Wed, 9 Oct 2024 13:47:25 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Rawad Hossein <Rawad.Hossein@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: Jewelery boutique insurance\nThread-Topic: Jewelery boutique insurance\nThread-Index: AQHbEMHfhmUM40kTxEuUJl+WKmYL37J+fSAsgAAE530=\nReferences: <PAVPR05MB1042517802EA0E95642C0DC26F66B2@PAVPR05MB10425.eurprd05.prod.outlook.com> <AS8PR05MB10824C65BDBAC2A0DBCCEABF49D7F2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824C65BDBAC2A0DBCCEABF49D7F2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Rawad.Hossein@chalhoub.com\nX-MS-TNEF-Correlator: 150d7bcd-869c-4f02-9132-7a2487398a90\nMIME-Version: 1.0\nDate: Wed, 9 Oct 2024 13:47:25 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: PAXPR05MB8192.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <b4d1167cf75e4727a3a85d9d71f745d2@PAXPR05MB8192.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: 2484a1bf-a287-4151-4d2a-08dce868e84f\nX-MS-Exchange-Parent-Message-Id: <AS8PR05MB10824C65BDBAC2A0DBCCEABF49D7F2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: PAXPR05MB8192:EE_|PAXPR05MB9591:EE_|AS8PR05MB10824:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 09 Oct 2024 13:47:25.1736 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: 2484a1bf-a287-4151-4d2a-08dce868e84f\nX-MS-Exchange-AtpMessageProperties: SA|SL\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR05MB8192.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Oct 2024 13:47:25.1270 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: PAXPR05MB8192.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: 2484a1bf-a287-4151-4d2a-08dce868e84f\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR05MB9591\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:01.1484300\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.7982.032\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:0;jmr:0;auth:0;dest:I;ENG:(910001)(944506478)(944626604)(920097)(425001)(930097)(140003)(1420198);\nX-Microsoft-Antispam-Message-Info: 81+xBEpDocSQIKLysJorwko08nTd7xTWLNTRVyhIt0O6oXcEgXXMr85mtnCSuQ0ULvUSvAil97hcbF/M6b772ruvDkkL14zjqCkp9UDIl3hKRy2aN96znS6IVJXi72DQfsQBE4/oaPKquTBKAT6Fgbm+LCvJ2XeeFBJS0UdA3hd+LrtRSZNPZ9xt7GvtNQQ9ywwW6Y0qYN1D+vo9gc5gzje2RMT3AxeYMgOX1OvWqkJ2IR5K7dioPSs9oViB//PesXToIqbMVqBe9FhAU6UlbK2Me8bYt4nJmvH8IjoC0SAkB0nSFSa9+bFEaojfK8hcMT5tkfXPoOrAfpXMIcHVBqr2uo4A9BlK9O41SveoAD31O2EQAfov9zkaNhlmoPL8qnsnudpA2x1A1qmvXb8Gnk1ck5HFX1ssdPBdRbCZUqzz9zRtvXXBYMOUsDcSgeWlJqPSGzPcx2QxC44/jz8tYja5bffXGpEwXbqwKF6NciM0qOXE30xjQAqV2Rz3XLCeEPz2f5MKlMxzEBycNmB6pIoxvAEBB6eDBXtWfCqemW75mIt3MOlJo+9xvQDonwPolaeMXH7lsTtos45iAn3xPnmlkXnWeW8Bx0qnu3ldUc73f9YlYiaHaYnNirsv6TImqjq+G0s1NCc78sSEXVDm5Rn3gsucButN9Wt3Vmke4+pDCfH5T7wkzD7fFhDVzpkdPP43fxl8ZMG9+HqusdsVa98kcE9xttgwNzx4tmaOp7m79iL9rMwest+X1gCXqrtArxEbnL4RVQTq9PY6w1+I4aVQy7z0hVL65PVR5jHkRK/IMqbLknZSly/rpgZcEGBv5H9Cx3DqkDARnz6O0RZ4hZPq9/aHXlPdDJgH03YHkVO7S7CE8ZHZk5Ung3H2FaHG",
+      "start_pos": 0,
+      "end_pos": 4733,
+      "chunk_index": 0,
+      "chunk_size": 4733,
+      "metadata": {
+        "doc_id": "C1BLGX5 - jewelery boutique insurance\\Headers\\C1BLGX5_02.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1BLGX5 - jewelery boutique insurance\\Headers\\C1BLGX5_02.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:29.092964",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4789
+  }
+}

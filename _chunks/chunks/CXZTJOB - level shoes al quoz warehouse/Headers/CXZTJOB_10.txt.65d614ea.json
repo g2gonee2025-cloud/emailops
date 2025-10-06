@@ -1,0 +1,42 @@
+{
+  "doc_id": "CXZTJOB - level shoes al quoz warehouse\\Headers\\CXZTJOB_10.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CXZTJOB - level shoes al quoz warehouse\\Headers\\CXZTJOB_10.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from DB9PR05MB8059.eurprd05.prod.outlook.com (2603:10a6:10:257::12) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Tue, 29 Jul 2025 13:34:14 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from PAXPR05MB8032.eurprd05.prod.outlook.com (2603:10a6:102:dc::19) by DB9PR05MB8059.eurprd05.prod.outlook.com (2603:10a6:10:257::12) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8964.26; Tue, 29 Jul 2025 13:34:13 +0000\nReceived: from PAXPR05MB8032.eurprd05.prod.outlook.com ([::1]) by PAXPR05MB8032.eurprd05.prod.outlook.com ([fe80::3e:6e79:960f:d00c%6]) with Microsoft SMTP Server id 15.20.8989.010; Tue, 29 Jul 2025 13:34:13 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Sara Rebeiz <Sara.Rebeiz@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: Level Shoes Al Quoz Warehouse \nThread-Topic: Level Shoes Al Quoz Warehouse \nThread-Index: AdvDAa7f2wDI85RqQjyd00ZpJf3VFwFFaTyXALhVo/UABOc3wgABDcpAANBkm8QHCG2cEAWAPBcAAAYPstAAACCz6A==\nReferences: <PR1PR05MB5403EBF5B84EB2D7A83878ECEE97A@PR1PR05MB5403.eurprd05.prod.outlook.com> <PR1PR05MB54037D818B32C918DA03D96EEE9DA@PR1PR05MB5403.eurprd05.prod.outlook.com> <PR1PR05MB54034198F5CB3679D5F67242EE99A@PR1PR05MB5403.eurprd05.prod.outlook.com> <AS8PR05MB108243F51B55AA31CB120BB799D99A@AS8PR05MB10824.eurprd05.prod.outlook.com> <PR1PR05MB54033F46B8CE39EF34CC9DADEE99A@PR1PR05MB5403.eurprd05.prod.outlook.com> <PR1PR05MB5403A58A369D204EFB8FB2D0EE65A@PR1PR05MB5403.eurprd05.prod.outlook.com> <PR1PR05MB54034994CAAB8DAAEA785305EE41A@PR1PR05MB5403.eurprd05.prod.outlook.com> <PR1PR05MB540366A4B34B504F0BAB1688EE25A@PR1PR05MB5403.eurprd05.prod.outlook.com> <AS8PR05MB10824BFA5681EA26D26D274629D25A@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824BFA5681EA26D26D274629D25A@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 2033,
+      "chunk_index": 0,
+      "chunk_size": 2032,
+      "metadata": {
+        "doc_id": "CXZTJOB - level shoes al quoz warehouse\\Headers\\CXZTJOB_10.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CXZTJOB - level shoes al quoz warehouse\\Headers\\CXZTJOB_10.txt"
+      }
+    },
+    {
+      "text": "om> <AS8PR05MB10824BFA5681EA26D26D274629D25A@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824BFA5681EA26D26D274629D25A@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Sara.Rebeiz@chalhoub.com\nX-MS-TNEF-Correlator: 3cd6b30f-4767-4fcb-a4c4-66cdbf55fad7\nMIME-Version: 1.0\nDate: Tue, 29 Jul 2025 13:34:13 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: PAXPR05MB8032.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <fb0052b0d923429cbb275684bb79dd45@PAXPR05MB8032.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: beac59bb-ca1d-4f7e-c06c-08ddcea49ba7\nX-MS-Exchange-Parent-Message-Id: <AS8PR05MB10824BFA5681EA26D26D274629D25A@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: PAXPR05MB8032:EE_|DB9PR05MB8059:EE_|AS8PR05MB10824:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 29 Jul 2025 13:34:13.9068 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: beac59bb-ca1d-4f7e-c06c-08ddcea49ba7\nX-MS-Exchange-AtpMessageProperties: SA\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR05MB8032.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Jul 2025 13:34:13.7659 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: PAXPR05MB8032.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: beac59bb-ca1d-4f7e-c06c-08ddcea49ba7\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: DB9PR05MB8059\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:00.8730348\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8989.010\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910005)(944506478)(944626604)(920097)(425001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: Tr/A9HxIO5EMYX0AC0IQ7nMJQLHTfLEPEMqvKWwfN+uIxgWaC1/GGWVALM/Ww6CCPgm8r0zM70UAfPbky8oVNqRkR3fOxlxIGI8XzxWqwCrMRG+85pV6Ppi9Q2gxjZvcg3JX8C9VUpm3tf8u2khZj7o1/3EotAyFcirLCdvPGV4D0cr2ZyF0H4Ji14LbbVEfrx9x6LQ6GIUoP27dfF/x2WOn2OVUIu9jYHtwUNpQyWJVCulmgxEzgYViEzxDMM4qulOQ9e8odofb5CGI7pSdWkYm/Z6Qy4bGPUv6d6YlnRtPeV1BQ4HjF1bA3QHUKT/9grbvYaYpIOYbL4Bw2jmqppAka4T71D5/XLkMU+c1xsFdJGfnNmktyEw6LUvqUKFcSJllL1RIcLsT+N5pg1BA6Y/8xb8CDQ5OdBpXkBtrmfRr9HoVuAZjRang+Kx1yYqCWjm59RWmepa2fSnb4L3DKOEmCifhTH29dS9q6JeG8B/bsCYXXZGCtfJFookPFsclUM3RjaSBRRVgh3x9bzbjbPRmcvn07C3a5v6Y70sKKrW4resTbM53uuZB7yfIyoAXDM0oL2lalbfXQPSl6YNbt6g7vi0+SzL+onYM3FkTlQ2Yxryq2kbDLSrlDHlaAc5U+PO/BW0wPrkr9oiWwy7nPeh4OfVOnSbw2H/xvPvB1WdaOUZS8YaHWyYCcHHDUTOtxkSZQuFmJngcUFUV8HHgJHTCPOEVfoQfZJnCqMSOgtHhXGxyTaxd4JeH81KHPYQMcDtB+kuWObSzogM5Hqpjli5lZ5QDI9KbyEmsvEmyxQ3xyY/fiJRpTMUHSOBwQcHERZ8qXivfjOIi8me3j7jzg7WXc9pPnkCxQpOoLCquXB/Lf6lATrc8wKhgUSbLyBRWH3YPnAqMsT7mocsJWQnFlw==",
+      "start_pos": 1833,
+      "end_pos": 5417,
+      "chunk_index": 1,
+      "chunk_size": 3584,
+      "metadata": {
+        "doc_id": "CXZTJOB - level shoes al quoz warehouse\\Headers\\CXZTJOB_10.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CXZTJOB - level shoes al quoz warehouse\\Headers\\CXZTJOB_10.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:46.289043",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5473
+  }
+}

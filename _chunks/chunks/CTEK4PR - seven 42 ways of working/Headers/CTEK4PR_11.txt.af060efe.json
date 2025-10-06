@@ -1,0 +1,42 @@
+{
+  "doc_id": "CTEK4PR - seven 42 ways of working\\Headers\\CTEK4PR_11.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CTEK4PR - seven 42 ways of working\\Headers\\CTEK4PR_11.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from PA1PR05MB11739.eurprd05.prod.outlook.com (::1) by PAXPR05MB8317.eurprd05.prod.outlook.com with HTTPS; Wed, 13 Aug 2025 13:56:49 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from DB7PR05MB4139.eurprd05.prod.outlook.com (2603:10a6:5:1a::32) by PA1PR05MB11739.eurprd05.prod.outlook.com (2603:10a6:102:4f4::12) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9031.15; Wed, 13 Aug 2025 13:56:47 +0000\nReceived: from DB7PR05MB4139.eurprd05.prod.outlook.com ([::1]) by DB7PR05MB4139.eurprd05.prod.outlook.com ([fe80::9fd0:ef6:fa49:6241%6]) with Microsoft SMTP Server id 15.20.9031.012; Wed, 13 Aug 2025 13:56:47 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Nina Samin <Nina.Samin@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: SEVEN 42 ways of working\nThread-Topic: SEVEN 42 ways of working\nThread-Index: AQHcAsGEaoNmmBCpt0O6hQaKbfxRDLRNuGQogAACFUCAAkGAVIANBehAgAM1MMCAAHbrcIAAALkx\nReferences: <DB7PR05MB4139497A138AC079A0915DC4FD26A@DB7PR05MB4139.eurprd05.prod.outlook.com> <PR1PR05MB54030F25F580B86B959EE6D8EE26A@PR1PR05MB5403.eurprd05.prod.outlook.com> <PAXPR05MB8543FFAFADC2F848AC61A57FE326A@PAXPR05MB8543.eurprd05.prod.outlook.com> <PAXPR05MB83173D318D682A385C5799629D21A@PAXPR05MB8317.eurprd05.prod.outlook.com> <PAXPR05MB8543F27D76D85F2C4CC103F3E328A@PAXPR05MB8543.eurprd05.prod.outlook.com> <PAXPR05MB85433389A57B6F58ABCEDBA4E32AA@PAXPR05MB8543.eurprd05.prod.outlook.com> <PAXPR05MB83171BD5FF3E0032AD00FD799D2AA@PAXPR05MB8317.eurprd05.prod.outlook.com>\nIn-Reply-To: <PAXPR05MB83171BD5FF3E0032AD00FD799D2AA@PAXPR05MB8317.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 1819,
+      "chunk_index": 0,
+      "chunk_size": 1818,
+      "metadata": {
+        "doc_id": "CTEK4PR - seven 42 ways of working\\Headers\\CTEK4PR_11.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CTEK4PR - seven 42 ways of working\\Headers\\CTEK4PR_11.txt"
+      }
+    },
+    {
+      "text": "ok.com> <PAXPR05MB83171BD5FF3E0032AD00FD799D2AA@PAXPR05MB8317.eurprd05.prod.outlook.com>\nIn-Reply-To: <PAXPR05MB83171BD5FF3E0032AD00FD799D2AA@PAXPR05MB8317.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Nina.Samin@chalhoub.com\nX-MS-TNEF-Correlator: dfdb0c9d-c502-4bbb-9dff-4dec25e7dab2\nMIME-Version: 1.0\nDate: Wed, 13 Aug 2025 13:56:47 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: DB7PR05MB4139.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <bb625508660c425eba2ea22baf80792c@DB7PR05MB4139.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: 4ece6eb8-0c17-4acc-e4d7-08ddda713eee\nX-MS-Exchange-Parent-Message-Id: <PAXPR05MB83171BD5FF3E0032AD00FD799D2AA@PAXPR05MB8317.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: DB7PR05MB4139:EE_|PA1PR05MB11739:EE_|PAXPR05MB8317:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 13 Aug 2025 13:56:47.9498 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: 4ece6eb8-0c17-4acc-e4d7-08ddda713eee\nX-MS-Exchange-AtpMessageProperties: SA\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB7PR05MB4139.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Aug 2025 13:56:47.8331 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: DB7PR05MB4139.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: 4ece6eb8-0c17-4acc-e4d7-08ddda713eee\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PA1PR05MB11739\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:01.1803975\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.9031.000\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910005)(944506478)(944626604)(920097)(425001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: 8I7zIAEwiv+EAW4gYHp/ktHp/RD6+rXJRGzUT6MKs/sLpwszCPjcvPRkjXxWLZ/wYjXm5GXxY5GKiqhCiiQE7ozbkf33+q2Ht2wnSm4u39alpNZScdEDj3OpQf+/AF+bNhgLatNTwfQ/iOltvL3+T91FfgevEQXCSIIl7oVEdN+UCuDsCjCJlhw3l+KGMoYKrW96bnpRgSDDgcAtbPI6FBYYOvT/m1m4Aa0BBdL0Ks0BPy0k2OlPg4T7SN9rV/g2oRtiGSr6tjlYwTdhUR3iiEsNKaIhu4Eed6QQAtpPev9I1kqoLJVxl8oZ7i2Sfs4Slcs3TLrkbF4jZjAqdWT4ZL1hgMSOoQ3G8sODgMTetY3WoM8R+I7yDpp1Y3o0KjoLF4EcL148IWnTPzEbMwJEQ46OnhypxUHXIPkdXSHLWd5OVHDuCq3lDVftAxjJ4vBFIWUjfXEE3cMC6X65ayoj0asLWiEhypO8+vg7uskRBpBSZL8gWs826V96vVNdv4rqD7r6ZTnfeg35BrCRyJ5N2jgi13IvptXGbvRrqcEtrVCrKYuqoxfq4V/YeiARNWCbxr+p5FRvgF7peeit0bo4cnsg0vvbJS2Lfamyc6+FRLzNh3+ttSb5CzMawxQFjntA/ZHiEzqQJNIHODk6ImGeCPJ0wKZ54v7Z5V9BzwOEPLiz5JRhqTiWuej4XqfnfiM8fcuPFyFtXP4B94GSVNHMBAz8b/nes5KXKCbVEFIal+MwgZlFvx+76SuUYHtoqParZmVjc6GUc8AiSrJXARlwe6KxRPs0Cv+V6KszaUHuKFgjbhFjCg8x+43pRt13oZpeRtGZYetQvVf+SLGm2oeAeINBWzPr0irybQjO3SBog/1NMGfQQbBDdO2OBB6jKSTY14sJJkTLs9zJ/xCuOwTjmA==",
+      "start_pos": 1619,
+      "end_pos": 5201,
+      "chunk_index": 1,
+      "chunk_size": 3582,
+      "metadata": {
+        "doc_id": "CTEK4PR - seven 42 ways of working\\Headers\\CTEK4PR_11.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CTEK4PR - seven 42 ways of working\\Headers\\CTEK4PR_11.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:27:43.566140",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5257
+  }
+}

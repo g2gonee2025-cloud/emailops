@@ -1,0 +1,42 @@
+{
+  "doc_id": "CCEOTEK - vision 2033 - 33 days challenge, welcoming michelle hudson\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CCEOTEK - vision 2033 - 33 days challenge, welcoming michelle hudson\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:25:32\nFolder: CCEOTEK - vision 2033 - 33 days challenge, welcoming michelle hudson\nMessage Count: 1\n\n--------------------------------------------------\nID: CCEOTEK_00\nFrom: Internal News <internalnews@onechalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-09-09 14:25\nSubject: Vision 2033 - 33 Days Challenge, Welcoming Michelle Hudson\n--------------------------------------------------\n <https://onechalhoubmedia.connexionsnow.com/newsletter/topbanner/daily-english.png> \t\n <https://onechalhoubmedia.connexionsnow.com/newsletter/numbers/01-1-min.png> \t\n\nVision 2033 – 33 Days Challenge\n\n <https://onechalhoub.connexionsnow.com/mtracking/linkref.php?link1id=1961&user=10620> \t\n\nDay 2 of our Vision 2033 – 33-Day Challenge! Many thanks to Nasser Al Blooshi our Managing Director - UAE for sharing insights on the UAE country management team's crucial contribution to Bridging Horizons.\n\n <https://onechalhoubmedia.connexionsnow.com/newsletter/numbers/02-2-min.png> \t\n\nWelcoming Michelle Hudson\n\nWe are delighted to welcome Michelle Hudson as Senior Executive Assistant to the People & Culture President. \nWith over 15 years’ experience supporting C-Level Executives across international organizations, Michelle brings expertise in executive support, project management, and board coordination.",
+      "start_pos": 0,
+      "end_pos": 1406,
+      "chunk_index": 0,
+      "chunk_size": 1406,
+      "metadata": {
+        "doc_id": "CCEOTEK - vision 2033 - 33 days challenge, welcoming michelle hudson\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CCEOTEK - vision 2033 - 33 days challenge, welcoming michelle hudson\\Conversation.txt"
+      }
+    },
+    {
+      "text": "We are delighted to welcome Michelle Hudson as Senior Executive Assistant to the People & Culture President. \nWith over 15 years’ experience supporting C-Level Executives across international organizations, Michelle brings expertise in executive support, project management, and board coordination.\n\n <https://onechalhoub.connexionsnow.com/mtracking/linkref.php?link1id=1962&user=10620> \t\nFor inquiries and to share your news in the Internal News please contact rasha.nashashibi@chalhoub.com <https://onechalhoub.connexionsnow.com/mtracking/linkref.php?link1id=1963&user=10620>  \n\nCopyright © 2025 Chalhoub Group. All rights reserved. \n\nYou are receiving this email because your are a part of the Chalhoub Group family. \n <https://onechalhoub.connexionsnow.com/mtracking/newsletter-open.php?nli=375&user=10620>",
+      "start_pos": 1108,
+      "end_pos": 1918,
+      "chunk_index": 1,
+      "chunk_size": 810,
+      "metadata": {
+        "doc_id": "CCEOTEK - vision 2033 - 33 days challenge, welcoming michelle hudson\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CCEOTEK - vision 2033 - 33 days challenge, welcoming michelle hudson\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:49.460671",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1970
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1SCGF6 - po 3261000002 -swisslog- automation system for cas fulfilment hub-al tawreed riyadh – usd 4,440,000.00 -\\Headers\\C1SCGF6_08.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1SCGF6 - po 3261000002 -swisslog- automation system for cas fulfilment hub-al tawreed riyadh – usd 4,440,000.00 -\\Headers\\C1SCGF6_08.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS5PR05MB10901.eurprd05.prod.outlook.com (::1) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Wed, 12 Mar 2025 08:27:20 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from AM9PR05MB8615.eurprd05.prod.outlook.com (2603:10a6:20b:412::7) by AS5PR05MB10901.eurprd05.prod.outlook.com (2603:10a6:20b:677::7) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8534.21; Wed, 12 Mar 2025 08:27:19 +0000\nReceived: from AM9PR05MB8615.eurprd05.prod.outlook.com ([::1]) by AM9PR05MB8615.eurprd05.prod.outlook.com ([fe80::a394:54b7:fe05:1ae1%6]) with Microsoft SMTP Server id 15.20.8534.014; Wed, 12 Mar 2025 08:27:19 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Omar Zaouiri <Omar.Zaouiri@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: =?utf-8?B?QXV0b21hdGljIHJlcGx5OiBQTyAzMjYxMDAwMDAyIC1Td2lzc2xvZy0gQXV0?= =?utf-8?B?b21hdGlvbiBzeXN0ZW0gZm9yIENBUyBGdWxmaWxtZW50IEh1Yi1BbCBUYXdy?= =?utf-8?B?ZWVkIFJpeWFkaCDigJMgVVNEIDQsNDQwLDAwMC4wMC8tIA==?=\nThread-Topic: =?utf-8?B?UE8gMzI2MTAwMDAwMiAtU3dpc3Nsb2ctIEF1dG9tYXRpb24gc3lzdGVtIGZv?= =?utf-8?B?ciBDQVMgRnVsZmlsbWVudCBIdWItQWwgVGF3cmVlZCBSaXlhZGgg4oCTIFVT?= =?utf-8?Q?D_4,440,000.00/-_?=\nThread-Index: AQHbTe0bY8P4ldq5y02Liq8IqK+bc7Lrm4uQgABWK9CAABYtwIAABvWQgAFsEsCABjoqgIAAA6gAgAAAhjCAAX0HUIABRPsAgABsY6CACTKYwIAAM5NwgAADg3CAAsrNgIAUhlGAgAsENQCAAAFvkIAAA80AgAAClgCAABUXgIAAcCEAgAALUQCAAAPUAIAA0wSggABCiICAAAqEgIAAJ/MggAAWDKCAAEf2EIAAA1fQgADdNgCABmXSgIAOxIpggAPSXQCABMzZgIAAU2MAgAB3RzCAANoGgIAASUOwgATFYYCAHWgngIAFrzaAgACUqoCAAcKHgIAAAGz4\nReferences: <PAXPR05MB95897349520E26CF636604429DFF2@PAXPR05MB9589.eurprd05.prod.outlook.com> <AM6PR05MB610178734141CED0759FC59CE8F82@AM6PR05MB6101.eurprd05.prod.outlook.com> <DBAPR05MB73362B472882DB456B811CD0E1D52@DBAPR05MB7336.eurprd05.prod.outlook.com> <AM6PR05MB61015A7EBCDA802FC02F22CEE8D62@AM6PR05MB6101.eurprd05.prod.outlook.com> <DBAPR05MB733653565A907832BA1CBA50E1D12@DBAPR05MB7336.eurprd05.prod.outlook.com> <AS8PR05MB108241E4CCD36B333808C75DB9DD02@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB108241E4CCD36B333808C75DB9DD02@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 2325,
+      "chunk_index": 0,
+      "chunk_size": 2324,
+      "metadata": {
+        "doc_id": "C1SCGF6 - po 3261000002 -swisslog- automation system for cas fulfilment hub-al tawreed riyadh – usd 4,440,000.00 -\\Headers\\C1SCGF6_08.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1SCGF6 - po 3261000002 -swisslog- automation system for cas fulfilment hub-al tawreed riyadh – usd 4,440,000.00 -\\Headers\\C1SCGF6_08.txt"
+      }
+    },
+    {
+      "text": "om> <AS8PR05MB108241E4CCD36B333808C75DB9DD02@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB108241E4CCD36B333808C75DB9DD02@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Omar.Zaouiri@chalhoub.com\nX-MS-TNEF-Correlator: a1c56969-06f6-4779-b13f-a952020af640\nMIME-Version: 1.0\nDate: Wed, 12 Mar 2025 08:27:19 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: AM9PR05MB8615.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <24dd78054a5747e2afd8ed384a1321ee@AM9PR05MB8615.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: 3fc41f2e-04ec-4479-baf3-08dd613fb473\nX-MS-Exchange-Parent-Message-Id: <AS8PR05MB108241E4CCD36B333808C75DB9DD02@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: AM9PR05MB8615:EE_|AS5PR05MB10901:EE_|AS8PR05MB10824:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 12 Mar 2025 08:27:19.5493 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: 3fc41f2e-04ec-4479-baf3-08dd613fb473\nX-MS-Exchange-AtpMessageProperties: SA\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM9PR05MB8615.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Mar 2025 08:27:19.4552 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: AM9PR05MB8615.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: 3fc41f2e-04ec-4479-baf3-08dd613fb473\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS5PR05MB10901\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:00.9153307\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8534.017\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910005)(944506478)(944626604)(920097)(425001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: TZKJn6k4mD/m2qz5VJTEUt3aJPvL6A2DEWFDVwB7eDQRosOdtSGR0QELw26m7eHX1ANo0oZXDUbLShxC8P2Sq8cdZabDv8SBqDqefNyr0+wpkQp7JmQzUM4KQRMfnFSzQj3LcdN/5ZQZ51MIE4PLV7M029rfJaZlvtckg5uol8BBaf5hQpnCnF353yrbu7dC8cTGMst8nhjXLXQozzX90G4bx0dVz23hMvPemvYfm0WQ9ecmM/iIsNC5leXIXfLGbZk8sdWsg3Pnp1eW3h9lqD9+fpVH+1lsdowhz+Yy0MlZM//AePrOwEMMZZmvGXgtzgoOjqNpulu+h0b1z7MwTBze6DxJUvtgn5atMqjRRo9Q7jQZTvmdzsSsNR2/c0X3ZgmX2AgiVL+MeNQcIL/560BHdveIJ2EmW0AjMR+EvhSShmttW2YNSpUmxuEd5B44mAQV+QntLpSLQ0xyh4c55J0dsYqEWX2Zosu6iYk2pI5kvDEjsHRoClv4019zJBrFn994bQqjoOHoDAPdRPlzjGQP6lR4WGnu6rPLQj+nO2MbDho5Eq2MnWQSTtMHkEiIWpzT+SMc7hGdDsGR4zO7/2CnM5i3hNVjPsxeB3NoRn0B0Ezt6bCT+p2Srf7bzTkrFb1oFHND54Nozr0CsdrO/Ddm7bJYyCwfev1ehKtVZFVwatcul3FZf4E2UcIH2e8AERHoNXU/dvyW42JkXHLQTdaff1z073ebxI1tglH9leuo3KF4bRurrMjsaIUOU3XbRF5VZiijzZp5q0o9McHpncadmM9ZBe8fw8A8r5A8KzBXBOSptmUhEQPRGyixCPJ5Bt7tnE4/SVFNxkac22rMHBjKMYT8JzI88yCMiNr8PeyAkW1gMKSXONs7xrS8/r1PRJhSOrlRS713FuwXj5DucA==",
+      "start_pos": 2125,
+      "end_pos": 5712,
+      "chunk_index": 1,
+      "chunk_size": 3587,
+      "metadata": {
+        "doc_id": "C1SCGF6 - po 3261000002 -swisslog- automation system for cas fulfilment hub-al tawreed riyadh – usd 4,440,000.00 -\\Headers\\C1SCGF6_08.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1SCGF6 - po 3261000002 -swisslog- automation system for cas fulfilment hub-al tawreed riyadh – usd 4,440,000.00 -\\Headers\\C1SCGF6_08.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:24.174832",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5768
+  }
+}

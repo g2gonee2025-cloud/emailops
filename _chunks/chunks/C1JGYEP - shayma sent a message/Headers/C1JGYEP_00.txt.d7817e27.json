@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1JGYEP - shayma sent a message\\Headers\\C1JGYEP_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JGYEP - shayma sent a message\\Headers\\C1JGYEP_00.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from AS1PR05MB9441.eurprd05.prod.outlook.com (2603:10a6:20b:4d3::7) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Fri, 4 Jul 2025 05:14:46 +0000\nReceived: from AM8P191CA0018.EURP191.PROD.OUTLOOK.COM (2603:10a6:20b:21a::23) by AS1PR05MB9441.eurprd05.prod.outlook.com (2603:10a6:20b:4d3::7) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8901.21; Fri, 4 Jul 2025 05:14:44 +0000\nReceived: from AM2PEPF0001C710.eurprd05.prod.outlook.com (2603:10a6:20b:21a:cafe::ca) by AM8P191CA0018.outlook.office365.com (2603:10a6:20b:21a::23) with Microsoft SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.20.8901.22 via Frontend Transport; Fri, 4 Jul 2025 05:14:44 +0000\nX-MS-Exchange-Authentication-Results: spf=none (sender IP is 4.207.164.234) smtp.mailfrom=teams.mail.microsoft; dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=teams.mail.microsoft;\nReceived: from northeurope0.notifyp.svc.ms (4.207.164.234) by AM2PEPF0001C710.mail.protection.outlook.com (10.167.16.180) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8901.20 via Frontend Transport; Fri, 4 Jul 2025 05:14:44 +0000\nDate: Fri, 04 Jul 2025 05:14:43 +0000\nSubject: Shayma sent a message\nMessage-Id: <TeamsMissedActivityEmail-a13fd289-823e-4bdf-af1a-a08bbdef2613-b423a85d-b26b-4bbd-baf1-b6bde7ec05a0-r0-SendEmail-rh_neu-aid_29fdbbd6-3e30-40a5-975f-474d2ab8bce8_ffb0bfb8-1c47-445a-a746-edbbcd2515f9@odspnotify>\nSender: Shayma Dsouza in Teams <no-reply@teams.mail.microsoft>\nTo: Hagop.Ghazarian@chalhoub.com\nX-Crid: =?utf-8?q?a13fd289-823e-4bdf-af1a-a08bbdef2613-b423a85d-b26b-4bbd-baf1-?= =?utf-8?q?b6bde7ec05a0-r0-SendEmail?=\nX-Tnid: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nReturn-Path: no-reply@teams.mail.microsoft\nFrom: Shayma Dsouza in Teams <no-reply@teams.mail.microsoft>\nMIME-Version: 1.0\nContent-Type: multipart/related; boundary=\"=-eMwzROH+f8Ql9jilDAP97Q==\"; type=\"text/html\"\nX-MS-Exchange-Organization-ExpirationStartTime: 04 Jul 2025 05:14:44.3177 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Exchange-Organization-Network-Message-Id: ad264244-ef5e-4ae9-7559-08ddbab9b021\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthSource: TreatMessagesAsInternal-AM2PEPF0001C710.eurprd05.prod.outlook.com\nX-MS-TrafficTypeDiagnostic: AM2PEPF0001C710:EE_FirstParty-SPO-V3|AS1PR05MB9441:EE_FirstParty-SPO-V3|AS8PR05MB10824:EE_FirstParty-SPO-V3\nX-MS-PublicTrafficType: Email\nX-MS-Office365-Filtering-Correlation-Id: ad264244-ef5e-4ae9-7559-08ddbab9b021\nX-MS-Exchange-AtpMessageProperties: SA\nX-MS-Exchange-Organization-SCL: 1\nX-Microsoft-Antispam: BCL:0;ARA:13230040|69100299015|39142699007|31052699007|13003099007|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:4.207.164.234;CTRY:IE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:northeurope0.notifyp.svc.ms;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(69100299015)(39142699007)(31052699007)(13003099007)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 Jul 2025 05:14:44.2130 (UTC)\nX-MS-Exchange-CrossTenant-Network-Message-Id: ad264244-ef5e-4ae9-7559-08ddbab9b021\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=6ef8304c-f37b-42a5-a569-0a7d8249fbf3;Ip=[4.207.164.234];Helo=[northeurope0.notifyp.svc.ms]\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: TreatMessagesAsInternal-AM2PEPF0001C710.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-FromEntityHeader: Internet\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS1PR05MB9441\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:02.0772078\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8901.017\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910005)(944506478)(944626604)(920097)(425001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: PTDissrAlgyWiIkbfXdaccFkHCQhDyh7MWsqQ/P5ZofO58aQxTr1IyCrQQeke7tf69yb8Pym7p6j1nJ7WviX4rvL72p5c8/JjVQ6GSu3pxDiIToDBgqGu9zY+/LnqmVZ1POwMdhfliLQVsKZlhbDilyX4XZfa9nv+b9U1O+qTtkUXPuW7AzaMNnYS90+Gb1pSdVmNGYbt5K2Ye9PBSHRxVymFaOkEoMwE6DbY4lRlEJCGAtOiIt4i1N+IWI6L4Su+2VR2nRgD/KEoTDgQoNTDNTQvmNs2XUdC3EOtVKN+v7anhCNjU+AhPg1FBaXEO3XFp0smDYNB7GXkxoAj9pctDO8ta/0MqqovHpWSaIW7TWhtSakB2E91RNp2x24LgbLkWZZ5XsxKcBt04AYsrumOIq9dg3WTyT6NGNSosr2b08r3CJOtR3LNqnwZbYRtJRoWnJGmNtxHuK+nVRb1LRS5DtxYYjLGbFF8Ytoz2inOjssxsd6KWn+qIR0roDprNQQvDZyj6Hyr84iBeRxf8x51LLxf/pbHtgo/npZHNU6a+mhHFcBhc0T3OGRH+NUKubouWdEznB7to4irWldqNHNFPwLf4ESUOPw7xkj99aUz1YwAdbZ5ACUtDqNgufQDRy3Oer8y/s1FMNjUykmGfoCJq2PEgvQDGfVCoXyzY17BHFXHFkQnSyduSLKut9PN3JpiwDaFi+5dhV1Ww8DD5AhQ8AibE1nDMZZf5Ls0bvtGgTNKKProSsAzHdWQqNOhYB1s6JcBXTOjLMdCO625znOdU62e3BtxzmmDMH1X4qj4Z4yw7MaxPwro+o1Ts+SnrSQDjo7Xj8yLQ/iZiNn2FiDSAfsxWKGnp5ITpE2KM2tFqxeGKGXKwXA0+f94AVc68ye7HglRODjj1xwWxwCHjgC7A==",
+      "start_pos": 0,
+      "end_pos": 5146,
+      "chunk_index": 0,
+      "chunk_size": 5146,
+      "metadata": {
+        "doc_id": "C1JGYEP - shayma sent a message\\Headers\\C1JGYEP_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JGYEP - shayma sent a message\\Headers\\C1JGYEP_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:06.748618",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5193
+  }
+}

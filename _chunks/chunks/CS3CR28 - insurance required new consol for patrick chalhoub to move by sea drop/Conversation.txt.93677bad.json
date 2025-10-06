@@ -1,0 +1,42 @@
+{
+  "doc_id": "CS3CR28 - insurance required new consol for patrick chalhoub to move by sea drop\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CS3CR28 - insurance required new consol for patrick chalhoub to move by sea drop\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:29:00\nFolder: CS3CR28 - insurance required new consol for patrick chalhoub to move by sea drop\nMessage Count: 1\n\n--------------------------------------------------\nID: CS3CR28_00\nFrom: Geeta Manjal <Geeta.Manjal@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Lali Das <Lali.Das@chalhoub.com>; Yasir Panthakkal <yasir.panthakkal@etoilegroup.com>; Hiba Assaf <hiba.assaf@etoilegroup.com>\nBCC: \nDate: 2025-07-25 11:38\nSubject: Insurance Required // NEW CONSOL FOR PATRICK CHALHOUB TO MOVE BY SEA // DROP ID 177772 +DROP LOG ID 175915 + DROP LOG ID 175949 + DROP LOG 177756\n--------------------------------------------------\nHi @Hagop Ghazarian <mailto:Hagop.Ghazarian@chalhoub.com> \n\n \n\nPlease find below details & attached invoices for the insurance, few were already submitted earlier, re-attaching invoices, please do confirm receipt & arrange insurance accordingly \n\nAll the below listed items are being loaded on 1x40’ reefer container avoiding any kind of damages due to current temperature in UAE\n\n \n\n \n\nLog ID\n\nShipper\n\nInvoice no# \n\nAmount\n\nPkgs \n\nWeight \n\nShipment details \n\nDrop ID# 177756\n\nA&B Living \n\nINV# 273\n\nEUR 25,806.00\n\n6 wooden boxes\n\n320\n\nBooking  6424496070 \n1x20'\nLOADING DATE 24/07 \nVessel: M/V CMA CGM NABUCCO \nETD 31/07\nETA: 30/08 \n\nDrop ID# 175915\n\nPorro Spa\n\nINV# 1069 E\nINV# 1070 E\n\nEUR 1300.11\nEUR 1486.46\n\n1 Plt\n1 Plt\n\n60\n128\n\nDrop ID# 175949\n\nPaola Lenti\n\nINV# A2501399\n\nEUR 11115.00\n\n1 Box\n\n102\n\nDrop ID# 177772 \n\nFlou Milan\n\nINV# V02 / 25008273\n\nEUR 23,070.88\n\n24",
+      "start_pos": 0,
+      "end_pos": 1596,
+      "chunk_index": 0,
+      "chunk_size": 1596,
+      "metadata": {
+        "doc_id": "CS3CR28 - insurance required new consol for patrick chalhoub to move by sea drop\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CS3CR28 - insurance required new consol for patrick chalhoub to move by sea drop\\Conversation.txt"
+      }
+    },
+    {
+      "text": "INV# 1069 E\nINV# 1070 E\n\nEUR 1300.11\nEUR 1486.46\n\n1 Plt\n1 Plt\n\n60\n128\n\nDrop ID# 175949\n\nPaola Lenti\n\nINV# A2501399\n\nEUR 11115.00\n\n1 Box\n\n102\n\nDrop ID# 177772 \n\nFlou Milan\n\nINV# V02 / 25008273\n\nEUR 23,070.88\n\n24\n\n528.55\n\n \n\n \n\nRegards\n\nGEETA MANJAL\t\nSENIOR COORDINATOR ‑ SHIPPING\t\nREAL FZE\t\nDUBAI\t\n‑\t\nUNITED ARAB EMIRATES\t\n\t\t\n \t\n <https://chalhoubgroup.com/> \t\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\t\n‑\n\t\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\t\n <https://twitter.com/ChalhoubGroup> \t\n <https://www.facebook.com/chalhoubgroup/> \t\n <https://www.instagram.com/chalhoubgroup> \t\n <https://www.linkedin.com/company/chalhoub-group/> \t\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 1386,
+      "end_pos": 2137,
+      "chunk_index": 1,
+      "chunk_size": 751,
+      "metadata": {
+        "doc_id": "CS3CR28 - insurance required new consol for patrick chalhoub to move by sea drop\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CS3CR28 - insurance required new consol for patrick chalhoub to move by sea drop\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:35.592079",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2288
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "doc_id": "CTM9H7O - request for driver - cheque collection\\Headers\\CTM9H7O_03.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CTM9H7O - request for driver - cheque collection\\Headers\\CTM9H7O_03.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from PAXPR05MB8317.eurprd05.prod.outlook.com (2603:10a6:102:dc::15) by PA4PR05MB7888.eurprd05.prod.outlook.com (2603:10a6:102:f8::24) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9052.21; Mon, 25 Aug 2025 13:40:50 +0000\nReceived: from PAXPR05MB8317.eurprd05.prod.outlook.com ([fe80::e7ec:f3e9:70d8:87f3]) by PAXPR05MB8317.eurprd05.prod.outlook.com ([fe80::e7ec:f3e9:70d8:87f3%4]) with mapi id 15.20.9052.019; Mon, 25 Aug 2025 13:40:50 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Mary Janice Dofeliz <MaryJanice.Dofeliz@chalhoub.com>, Robert Netto <Robert.Netto@chalhoub.com>\nSubject: Re: Request for Driver - Cheque Collection\nThread-Topic: Request for Driver - Cheque Collection\nThread-Index: AQHcECAxNyUeqctVlE2Agi7nxFU207RzTnRQgAAZY50=\nDate: Mon, 25 Aug 2025 13:40:50 +0000\nMessage-ID: <PAXPR05MB8317B4F046E3B2893B13524C9D3EA@PAXPR05MB8317.eurprd05.prod.outlook.com>\nReferences: <PAXPR05MB8317A0401EBE5C406E0E49B99D31A@PAXPR05MB8317.eurprd05.prod.outlook.com> <AS4PR05MB9327B2DBFF5D45BE334E196AF73EA@AS4PR05MB9327.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS4PR05MB9327B2DBFF5D45BE334E196AF73EA@AS4PR05MB9327.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: PAXPR05MB8317:EE_|PA4PR05MB7888:EE_\nx-ms-office365-filtering-correlation-id: a0f8c96d-bfd4-41dc-6f93-08dde3dd0125\nx-ms-exchange-atpmessageproperties: SA\nx-microsoft-antispam: BCL:0;ARA:13230040|31052699007|39142699007|366016|7053199007|4013099003|13003099007|8096899003|41050700001;\nx-microsoft-antispam-message-info: VZ9PFZ/Yl0daJZKjRgj7O7G7VP8YYovEKDNjHCd2p7O+HGW4ylsi1T6AMk3DqLMTpzRKHysmQGqlCTf85MDJSPOVkpI94nMiDRwng8R9ZCEdQGFb7ZGEpqpfHRDsAptcxYuba64nTWLLcxVsRnAGTVo/yL8utdy3COlWi/BSGXsJPjcMObKK0ObiJrhU+8eNh407Pi5JDrhDEBYsRkTUMm1hqu0sNm3lWoSwOIP8m6MN8SgVg5IN8tRUPhlu3WVpBmVq8nBf2Uk6wbkmmsw4bn7Sku7Kw0KErAQgWMH2oHiYm0on/oVlNQieg0RKoGf2CDxmah/mLR5hPb7pWbe6I1wsJfRefC3jDEBCbnD/c2Z8ianQ5eflXYNQDo+EEzIpKp/DeXBK1NeSNvVwoRplay+b6F7R2CgyjXUqo3srG7zwiO81OHngbzHwjGqstdCGFGtL7gP785LAKaz1drrtN6ZMqL04l/RRdhLoDagcHGQG7gjwWmP/R3MlauubFHBFl2k/NHUrDVNs7CgN8NG0u1jUImcldEAxpLWjv23ysxpf8mQdrHvkZWIFOotrIsjbODygpd0xz77Jqsbi1FHF5xnCeF+7fw2ukzUubmNUkP3RbprGQxDHwaGfVqFpQgUMwUO67N5H1SArAzYadBu19AgTSTFS/w9YVzIczjkXnoXmmtZ5JetqrP2AtOsNiWrIzlUmGPJJUSXk+dL9M2kz7Rd9PvKfTgsXNB6Jc3vhSop7PKEjsKpgJdwTGjIjdHCA\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR05MB8317.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(31052699007)(39142699007)(366016)(7053199007)(4013099003)(13003099007)(8096899003)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_017_PAXPR05MB8317B4F046E3B2893B13524C9D3EAPAXPR05MB8317eurp_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: xjS/4K7NwIwAXiIj/3KhZZMkhspd3VM3OVYyQGvxm/g6yvr3SOlQ/gD++gSj7dr7z0IUhgxH1IsQHyoUfLNEZ9cgy5VLb3zyeJSeqJ0TCon4zvlsFDESmC2HXfHhz+kENS7SPLQ2ue7EDLmZNhClR9efnqGyE04tXfmRgXTW/nS4RRrFniSFAsmV8cdlXXzANyFLcawAj3ai3wz2VRFxUM2v4ERRSRcORYBs8nbjPciL1zwOHV0NdE74Za1ATvUPZlMnLr4DnGki/2JMplp6AH7vUvXCASrXlCX28tB4rx7xBhlBmr9eVWfoy+rAQ3rBs6N9G8QgFlGwQZ+7fO48DrjEn/rZqwlZoqL8yUyj6oB6KjSY8EIXSbeZusKgxr3LC1VXPM+oFN8vr0gBegYai2dNin1AMnEZIEKfRCdLiKAPIeXXqXAviMyqCr7W7YRdNCvBOGLrkREXVEkgO2l6gBZv+1os+Izja5qR1rAok8/Gzee1eI5tsbTtI3TjR0QKvIXxQnz3pyuxuCuyyOrPPCcEnXSM3+Tp2mUpIfrfWKou5leGTDgp1kkvH6k8GHBVGTss2zr2k8MltMcunhJUKNBME7+GIdLFiQC1UTYVQdGNkfBohO8lNPVFryQDOFN1\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: PAXPR05MB8317.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: a0f8c96d-bfd4-41dc-6f93-08dde3dd0125\nX-MS-Exchange-CrossTenant-originalarrivaltime: 25 Aug 2025 13:40:50.2940 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: NETZ70BXs1dNVnyN0OA6RHY/RdtG9u379E02Ybyls+uuuuIdhyuxURtuHcKG+8sG3LfLXdLOsSZYPVaLduihT/yZgrZw7bgAfUdANeGL3Vc=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PA4PR05MB7888\nX-OrganizationHeadersPreserved: PA4PR05MB7888.eurprd05.prod.outlook.com",
+      "start_pos": 0,
+      "end_pos": 4534,
+      "chunk_index": 0,
+      "chunk_size": 4534,
+      "metadata": {
+        "doc_id": "CTM9H7O - request for driver - cheque collection\\Headers\\CTM9H7O_03.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CTM9H7O - request for driver - cheque collection\\Headers\\CTM9H7O_03.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:13.752851",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4577
+  }
+}

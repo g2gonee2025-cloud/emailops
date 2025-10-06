@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1JZ3LO - upgrade to 800 mbps high-speed internet for only aed 279 month!\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JZ3LO - upgrade to 800 mbps high-speed internet for only aed 279 month!\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:40:41\nFolder: C1JZ3LO - upgrade to 800 mbps high-speed internet for only aed 279 month!\nMessage Count: 1\n\n--------------------------------------------------\nID: C1JZ3LO_00\nFrom: Tim Rogers <tim@du-internet.ae>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-05-09 10:28\nSubject: Upgrade to 800 Mbps High-Speed Internet for Only AED 279/Month!\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\nHELLO, DEAR Customer\n\n \n\nI hope this message finds you well.  \n\n \n\nMy name is Tim and I am an authorized sales agent for Du. It is to inform you that your Home Internet WiFi charges dropped down, I’m excited to share an exclusive home internet package with a **40% discount* tailored just for you  \n\n \n\nHere’s what the offer includes:  \n\n \n\nDiscounted Rate: AED 257/month for the first 6 months, then AED 429/month.  \n\nBlazing-Fast Internet: 800mbps with unlimited usage.\n\nComplimentary WiFi Upgrade: A new high-performance router for seamless connectivity.  \n\nAdditional Perks: A premium TV package and a phone line at no extra cost.  \n\n \n\nThis is a great opportunity to increase your home internet speed from 250 to 1000Mbps your costs, and enjoy enhanced services.",
+      "start_pos": 0,
+      "end_pos": 1564,
+      "chunk_index": 0,
+      "chunk_size": 1562,
+      "metadata": {
+        "doc_id": "C1JZ3LO - upgrade to 800 mbps high-speed internet for only aed 279 month!\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JZ3LO - upgrade to 800 mbps high-speed internet for only aed 279 month!\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Additional Perks: A premium TV package and a phone line at no extra cost.  \n\n \n\nThis is a great opportunity to increase your home internet speed from 250 to 1000Mbps your costs, and enjoy enhanced services.  \n\n \n\nThank you for choosing Du. Please feel free to reach out if you have any questions or need further assistance.  \n\n \n\nPlease contact on Whatsapp to Mr. Mujeeb for more details\n\n+971581032606\n\n \n\nBest regards,  \n\nTim Rogers",
+      "start_pos": 1356,
+      "end_pos": 1790,
+      "chunk_index": 1,
+      "chunk_size": 434,
+      "metadata": {
+        "doc_id": "C1JZ3LO - upgrade to 800 mbps high-speed internet for only aed 279 month!\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JZ3LO - upgrade to 800 mbps high-speed internet for only aed 279 month!\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:08.175018",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1976
+  }
+}

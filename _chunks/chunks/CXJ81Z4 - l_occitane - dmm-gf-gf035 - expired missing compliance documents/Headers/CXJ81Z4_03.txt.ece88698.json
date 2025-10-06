@@ -1,0 +1,42 @@
+{
+  "doc_id": "CXJ81Z4 - l'occitane - dmm-gf-gf035 - expired missing compliance documents\\Headers\\CXJ81Z4_03.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CXJ81Z4 - l'occitane - dmm-gf-gf035 - expired missing compliance documents\\Headers\\CXJ81Z4_03.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by AS8PR05MB8674.eurprd05.prod.outlook.com (2603:10a6:20b:34d::17) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8722.23; Tue, 13 May 2025 00:51:13 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%6]) with mapi id 15.20.8722.027; Tue, 13 May 2025 00:51:13 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Alof Joseph <Alof.Joseph@chalhoub.com>, Salwa Al Mamari <Salwa.Almamari@chalhoub.com>\nCC: Muhammed Sweadan <Muhammed.Sweadan@chalhoub.com>, Rami Riman <Rami.Riman@chalhoub.com>, Government Affairs <Government.Affairs@chalhoub.com>, Mary Janice Dofeliz <MaryJanice.Dofeliz@chalhoub.com>\nSubject: Re: L'OCCITANE - DMM-GF-GF035 - Expired/Missing Compliance Documents\nThread-Topic: L'OCCITANE - DMM-GF-GF035 - Expired/Missing Compliance Documents\nThread-Index: AQHbuaxiJVVsRpas10K7FyVnRy/Tq7O8faBhgAABPvCAACekYIAI2ZjwgAmkofCAAKOiyw==\nDate: Tue, 13 May 2025 00:51:12 +0000\nMessage-ID: <AS8PR05MB10824A88DFB85F641E3993C8F9D96A@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <DB7PR03MB4201E066E197D882E3469A25CC0B2@DB7PR03MB4201.eurprd03.prod.outlook.com> <DB7PR03MB4201C0E134043489C95C5AABCC832@DB7PR03MB4201.eurprd03.prod.outlook.com> <PR3PR05MB74353D7F1FE640173D83781093832@PR3PR05MB7435.eurprd05.prod.outlook.com> <AS4PR05MB93524715E35E2F1452B91B5D82832@AS4PR05MB9352.eurprd05.prod.outlook.com> <AS8PR05MB8230D2FED7538152BDCD48EAF3832@AS8PR05MB8230.eurprd05.prod.outlook.com>  <AS4PR05MB9352A846329717F094D7C98A8297A@AS4PR05MB9352.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS4PR05MB9352A846329717F094D7C98A8297A@AS4PR05MB9352.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 1918,
+      "chunk_index": 0,
+      "chunk_size": 1917,
+      "metadata": {
+        "doc_id": "CXJ81Z4 - l'occitane - dmm-gf-gf035 - expired missing compliance documents\\Headers\\CXJ81Z4_03.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CXJ81Z4 - l'occitane - dmm-gf-gf035 - expired missing compliance documents\\Headers\\CXJ81Z4_03.txt"
+      }
+    },
+    {
+      "text": "ook.com>\nIn-Reply-To: <AS4PR05MB9352A846329717F094D7C98A8297A@AS4PR05MB9352.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|AS8PR05MB8674:EE_\nx-ms-office365-filtering-correlation-id: 2b5d70e6-fa56-4082-f63a-08dd91b8425f\nx-ms-exchange-atpmessageproperties: SA\nx-microsoft-antispam: BCL:0;ARA:13230040|31052699007|39142699007|366016|7053199007|8096899003|13003099007|4013099003|41050700001;\nx-microsoft-antispam-message-info: 75RU2efZjHl7Bvb2OkJ5OCh0VcCNK6dDGOUMqzs/qsTMhSVvcKuqlaArUAj/K9gSky8oWiXoWt8t5L13yYAn7371p7tvQzomMLEZaVMLxZRP9EzxxEskemDnhWx82PUhiYdYXOHkWNzJwilsmwvu3E+UfrA9nJhtGlUIpy7DYI8nd8CWqrMpEJUFoU36DuqFjIZ3SD7cdkMGChDaTNuGUgwTROxpTupIwqh4b6m+k/Wj1+YOVyTMnz3oaza0br7ta3maa3w4YXJh4F3dMKSU9njH4R2PZyI1fwktm66zi4lVz1uLlMU4nPtMUG7tpeaYByBs3gMIguFNeBLOWRX+rJ7DkpK3Z7wG2YLxKaow5JbHRXzQyQroPwFNZf+TAxA2N7yyBH9zJgxDiTQ0+s7FERYfTlneIFgsbNKhfjLfc2Dnuyqht3vlxQUtJC8Ddea2hTCq9846ex0W+zqmjqi8IqihEiQlD7zQHpl1plVXL4PbG5ULTKmMxTkwxEqxWzo0YNXnSpJfx4xVKT7F9ll91slNKzqHL8qHMI10qVVeEcEF2jlzFjUHCtxUjL8dTcPWuvFDRBvnrIbSK5k1dA3vk+k84Fkc01EhPiO4kIPBFI8RXeN1sBCBkL9ZRFANB+XiaLHHIPK0sQTEEKoSPs1YhSFMIyb4QtiTEogtgiMPefTpb9yfcIt8et0qi2lv6AVHSC9K2DqNFkH/n41Fek+/fxPgoWEcZNMvKY18TlwunYiF4jitWkHlZr4LsJatrze4\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(31052699007)(39142699007)(366016)(7053199007)(8096899003)(13003099007)(4013099003)(41050700001);DIR:INT;\nContent-Type: multipart/mixed; boundary=\"_029_AS8PR05MB10824A88DFB85F641E3993C8F9D96AAS8PR05MB10824eu_\"\nMIME-Version: 1.0\nX-Auto-Response-Suppress: DR, OOF, AutoReply\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: 73lWOqHeDbjg43Q2YYab3LNdoONKVOhn0X+X4Z34jBrVV1edm3CkJefjgDWpUW/1wrX16RRISNuJvD92DAtyGmZ/fP7WdSLclXl6ZdnNJHoPUc6KwXssh51AQ1CQPJt0Giwyfamr7Ii/5+CsDpxhjUDwE64ejCrb+wEakpDE0BBzFrU9VqCXEaxD8HZecrDcCCFGXS34Ex/HI49Zx85HOogKWR8uC3HFqJipX6M07IuvuJa74DTKl/78bDRlNiHcyMDOq/lEAlASWUEL25MDsI+Zbcc0KEGXftPxXBU2WhsxkmGNsu9dexI8sp9Ry8sInU+xthoVhHdaJhDwytb2awYZJNLf1zPJ2tCzLG5oRWGW6P3Q3dfKnY4/m0OyMkV1YAKgb1w3+ryldDgWSKxpxVLuYMX6khQQpRKpKXKr3ggeuB8BScCJUeT/UaHqG946lZFk0tIXSX3NNO1J1r+vx8AthFsm5V6elK4qvt4VZbeiwZZOPzmp/DvePwb6QvK0H3JvCyunpikx3UK5Qu6VjlKRw0I5evqK7BXMP/uKpN5A/f+nq6PdoeMN/ul8SyaCCAYMVaxDCRLnPetn5zRZblevFInS8B4EIvrq1M+FFiLPzhSeyqPHN7rEZ3HylLtm\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 2b5d70e6-fa56-4082-f63a-08dd91b8425f\nX-MS-Exchange-CrossTenant-originalarrivaltime: 13 May 2025 00:51:12.9573 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: VEqk8hbG+NMWEyjgRW7MvpMt6prtfqVwTnFQr3AKeWID6+94udj2cBrX3rHPJnualoUF/W3QzxT65QGDVQ2os1pr9lv4vUOVDdIZw0np/JU=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR05MB8674\nX-OrganizationHeadersPreserved: AS8PR05MB8674.eurprd05.prod.outlook.com",
+      "start_pos": 1718,
+      "end_pos": 5150,
+      "chunk_index": 1,
+      "chunk_size": 3432,
+      "metadata": {
+        "doc_id": "CXJ81Z4 - l'occitane - dmm-gf-gf035 - expired missing compliance documents\\Headers\\CXJ81Z4_03.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CXJ81Z4 - l'occitane - dmm-gf-gf035 - expired missing compliance documents\\Headers\\CXJ81Z4_03.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:27:44.442899",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5195
+  }
+}

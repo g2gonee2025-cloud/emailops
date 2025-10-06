@@ -1,0 +1,53 @@
+{
+  "doc_id": "C10HI0T - rpa_insurance_billing_nov_24\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C10HI0T - rpa_insurance_billing_nov_24\\Conversation.txt",
+  "num_chunks": 3,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:55:12\nFolder: C10HI0T - rpa_insurance_billing_nov_24\nMessage Count: 2\n\n--------------------------------------------------\nID: C10HI0T_00\nFrom: Chetan Gaikwad <chetan.gaikwad@infobeans.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Sarayu Gouda <Sarayu.Gouda@chalhoub.com>\nBCC: \nDate: 2024-11-20 09:36\nSubject: RPA_INSURANCE_BILLINg_NOV_24\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\nHi Hagop,\n\n\nMay I know if the file is ready for the billing.\n\nThanks,\nChetan\n\nThe information contained in this communication is intended solely for the use of the individual or entity to whom it is addressed and others authorized to receive it. It may contain confidential or legally privileged information. If you are not the intended recipient you are hereby notified that any disclosure, copying, distribution or taking any action in reliance on the contents of this information is strictly prohibited and may be unlawful.  The views and opinions included in this email belong to their author and do not necessarily mirror the views and opinions of the company.  If you have received this communication in error, please notify us immediately by responding to this email and then delete it from your system.",
+      "start_pos": 0,
+      "end_pos": 1589,
+      "chunk_index": 0,
+      "chunk_size": 1588,
+      "metadata": {
+        "doc_id": "C10HI0T - rpa_insurance_billing_nov_24\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C10HI0T - rpa_insurance_billing_nov_24\\Conversation.txt"
+      }
+    },
+    {
+      "text": "The information contained in this communication is intended solely for the use of the individual or entity to whom it is addressed and others authorized to receive it. It may contain confidential or legally privileged information. If you are not the intended recipient you are hereby notified that any disclosure, copying, distribution or taking any action in reliance on the contents of this information is strictly prohibited and may be unlawful.  The views and opinions included in this email belong to their author and do not necessarily mirror the views and opinions of the company.  If you have received this communication in error, please notify us immediately by responding to this email and then delete it from your system. \n\n--------------------------------------------------\nID: C10HI0T_01\nFrom: Chetan Gaikwad <chetan.gaikwad@infobeans.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Sarayu Gouda <Sarayu.Gouda@chalhoub.com>\nBCC: \nDate: 2024-11-27 17:18\nSubject: Re: RPA_INSURANCE_BILLINg_NOV_24\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\nHi Hagop,\n\n\n\n\nWe have completed the Insurance billing for NOV-24. Please find the attached ICSB file.\n\n\n\n\nThere are Twelve templates failed during upload, kindly fix it.\n\n\n\n\nReference files are copied to the Shared Drive location.",
+      "start_pos": 856,
+      "end_pos": 2454,
+      "chunk_index": 1,
+      "chunk_size": 1598,
+      "metadata": {
+        "doc_id": "C10HI0T - rpa_insurance_billing_nov_24\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C10HI0T - rpa_insurance_billing_nov_24\\Conversation.txt"
+      }
+    },
+    {
+      "text": "We have completed the Insurance billing for NOV-24. Please find the attached ICSB file.\n\n\n\n\nThere are Twelve templates failed during upload, kindly fix it.\n\n\n\n\nReference files are copied to the Shared Drive location.\n\n \n\nREFERENCE FILE:\n\nZ:\\MCT-INSURANCE_BILLING\\Monthly_Reference_Files\\NOV-24\n\n\n \n\n\n\n\nThanks,\n\nChetan\n\n\nOn Wed, Nov 20, 2024 at 11:05 AM Chetan Gaikwad <chetan.gaikwad@infobeans.com <mailto:chetan.gaikwad@infobeans.com> > wrote:\n\n\n\tHi Hagop,\n\t\n\n\tMay I know if the file is ready for the billing.\n\n\tThanks,\n\tChetan\n\n\nThe information contained in this communication is intended solely for the use of the individual or entity to whom it is addressed and others authorized to receive it. It may contain confidential or legally privileged information. If you are not the intended recipient you are hereby notified that any disclosure, copying, distribution or taking any action in reliance on the contents of this information is strictly prohibited and may be unlawful.  The views and opinions included in this email belong to their author and do not necessarily mirror the views and opinions of the company.  If you have received this communication in error, please notify us immediately by responding to this email and then delete it from your system.",
+      "start_pos": 2238,
+      "end_pos": 3501,
+      "chunk_index": 2,
+      "chunk_size": 1263,
+      "metadata": {
+        "doc_id": "C10HI0T - rpa_insurance_billing_nov_24\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C10HI0T - rpa_insurance_billing_nov_24\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:05.425525",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 3804
+  }
+}

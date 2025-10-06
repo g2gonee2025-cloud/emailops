@@ -1,0 +1,53 @@
+{
+  "doc_id": "C63KPU8 - shereen omar added you to a plan\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C63KPU8 - shereen omar added you to a plan\\Conversation.txt",
+  "num_chunks": 3,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:32:48\nFolder: C63KPU8 - shereen omar added you to a plan\nMessage Count: 1",
+      "start_pos": 0,
+      "end_pos": 152,
+      "chunk_index": 0,
+      "chunk_size": 152,
+      "metadata": {
+        "doc_id": "C63KPU8 - shereen omar added you to a plan\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C63KPU8 - shereen omar added you to a plan\\Conversation.txt"
+      }
+    },
+    {
+      "text": "--------------------------------------------------\nID: C63KPU8_00\nFrom: Shereen Omar <Shereen.Omar@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-07-02 15:34\nSubject: Shereen Omar added you to a Plan\n--------------------------------------------------\nMicrosoft Project \t \t\nShereen Omar added you to the Plan: BDGC name change <https://project.microsoft.com/en-us/?org=org8f977921.crm4.dynamics.com/#/taskgrid?projectId=ecdd20cd-51d7-4731-81ca-c6866f5d76a5>  \t\nBDGC name change \t\nAdministration \t\n12 members \t\nOpen in Teams <https://teams.microsoft.com:443/l/entity/com.microsoft.teamspace.tab.planner/mytasks?tenantId=6ef8304c-f37b-42a5-a569-0a7d8249fbf3&webUrl=https%3A%2F%2Ftasks.teams.microsoft.com%2Fteamsui%2FpersonalApp%2Falltasklists&context=%7B%22subEntityId%22%3A%22%2Fv1%2Fpremiumplan%2Fecdd20cd-51d7-4731-81ca-c6866f5d76a5%2Forg%2Fbba4315e-abd4-4abf-92d9-d785b8cb5c0b%22%7D> \t\nOpen in browser <https://project.microsoft.com/en-us/?org=org8f977921.crm4.dynamics.com/#/taskgrid?projectId=ecdd20cd-51d7-4731-81ca-c6866f5d76a5> \t\n \t \t\nCollaborate every step of the way \tKeep your tasks organised \t\nKeep your team on track by assigning tasks, adding group members, and checking your Plan’s progress. \tView your tasks as an actionable list to maintain a high-level overview of your Plans. \t\nYou are receiving this email because you have subscribed to Microsoft Office 365. \t\nNotification settings: Go to Project <https://project.microsoft.com> , select the Gear icon, then select Notifications. \t\n________________________________",
+      "start_pos": 154,
+      "end_pos": 1728,
+      "chunk_index": 1,
+      "chunk_size": 1574,
+      "metadata": {
+        "doc_id": "C63KPU8 - shereen omar added you to a plan\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C63KPU8 - shereen omar added you to a plan\\Conversation.txt"
+      }
+    },
+    {
+      "text": "This email is generated through M.C.T. FZE's use of Microsoft 365 and may contain content that is controlled by M.C.T. FZE.\n\n <https://northeuroper-notifyp.svc.ms:443/api/v2/tracking/method/View?mi=f_sjoZXHoEu0L-UC30CNmQ> \nSHEREEN OMAR\t\nSENIOR MANAGER ‑ ADMINISTRATION\t\nCHALHOUB & BUHINDI CO. W.L.L.\t\nMANAMA\t\n‑\t\nBAHRAIN\t\n\t\t\n \t\n <https://chalhoubgroup.com/> \t\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\t\n‑\n\t\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\t\n <https://twitter.com/ChalhoubGroup> \t\n <https://www.facebook.com/chalhoubgroup/> \t\n <https://www.instagram.com/chalhoubgroup> \t\n <https://www.linkedin.com/company/chalhoub-group/> \t\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 1730,
+      "end_pos": 2483,
+      "chunk_index": 2,
+      "chunk_size": 750,
+      "metadata": {
+        "doc_id": "C63KPU8 - shereen omar added you to a plan\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C63KPU8 - shereen omar added you to a plan\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:55.502870",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2561
+  }
+}

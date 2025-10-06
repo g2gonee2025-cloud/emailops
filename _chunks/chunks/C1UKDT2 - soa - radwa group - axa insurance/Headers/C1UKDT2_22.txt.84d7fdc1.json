@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1UKDT2 - soa - radwa group - axa insurance\\Headers\\C1UKDT2_22.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1UKDT2 - soa - radwa group - axa insurance\\Headers\\C1UKDT2_22.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by PA6PR05MB11213.eurprd05.prod.outlook.com (2603:10a6:102:3c6::11) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8722.33; Mon, 19 May 2025 19:22:58 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%5]) with mapi id 15.20.8746.030; Mon, 19 May 2025 19:22:57 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Furqan Akhai <Furqan.Akhai@chalhoub.com>\nSubject: RE: SOA  - Radwa Group - AXA insurance\nThread-Topic: SOA  - Radwa Group - AXA insurance\nThread-Index: AduSYJYwJs7Blei0SG6Sit2yMlaPwABhXF5AAApYrOABJ+YTcAA5T5pQAPfZ0DAGpxlq0AK/DNZgAWHejDAAAHINEAAT6yBqAAKPD/A=\nDate: Mon, 19 May 2025 19:22:57 +0000\nMessage-ID: <AS8PR05MB108247C235EB3A1CEE04B74C79D9CA@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <504bf2eb04504858b7ee1cc10970aeef@nascosaudi.com> <43dcc54b394b45389049e25525ab27a4@nascosaudi.com> <VI1PR05MB714990655579419B67751CC4F9DC2@VI1PR05MB7149.eurprd05.prod.outlook.com> <ab2d96ba7d8c4c749f527853eebc8e0f@nascosaudi.com> <VI1PR05MB7149E7E2124442E1C823FB72F9D82@VI1PR05MB7149.eurprd05.prod.outlook.com> <AS8PR05MB108244604E9DF882B1FDB960B9DA72@AS8PR05MB10824.eurprd05.prod.outlook.com> <831ff8b54d184985b923f7ce46b4a53e@nascosaudi.com> <3c52dedb73f14b9681cb1f501d61ad28@nascosaudi.com> <AS8PR05MB10824D0870F97DB7A860F56919D9CA@AS8PR05MB10824.eurprd05.prod.outlook.com> <AS8PR05MB10824598834B036620C5EB0AB9D9CA@AS8PR05MB10824.eurprd05.prod.outlook.com> <DB7PR05MB5114E573832F633C7D0FC40DF89CA@DB7PR05MB5114.eurprd05.prod.outlook.com>\nIn-Reply-To: <DB7PR05MB5114E573832F633C7D0FC40DF89CA@DB7PR05MB5114.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 1901,
+      "chunk_index": 0,
+      "chunk_size": 1900,
+      "metadata": {
+        "doc_id": "C1UKDT2 - soa - radwa group - axa insurance\\Headers\\C1UKDT2_22.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1UKDT2 - soa - radwa group - axa insurance\\Headers\\C1UKDT2_22.txt"
+      }
+    },
+    {
+      "text": "ook.com>\nIn-Reply-To: <DB7PR05MB5114E573832F633C7D0FC40DF89CA@DB7PR05MB5114.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|PA6PR05MB11213:EE_\nx-ms-office365-filtering-correlation-id: 70c8aa59-bbae-4ea1-6b44-08dd970a8ffe\nx-ms-exchange-atpmessageproperties: SA\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|8096899003|13003099007|4013099003|7053199007|41050700001;\nx-microsoft-antispam-message-info: XYfPCkYcub0anDhSbIQfK+oaJU2izSiP3SO1KFr+pxMiWtNO0tentY4dLXHLTqiXuMlj/cmOVKusJ9zCVvfmBS1EdUISY+cOkciBY1wzshQzkEn9LFOUN8wLGsWkXlZohl9DDABpIqEYrZKOVYGNkuJ+IBPZrGDd/E6mHemdFSrFJl/YPoYwAyydQ7M1PUC4uqKUGp7MDIeLPRVz/V6m9v655ckcIYH4vlgmtNPRgWYkSRYH3D3WLnYZ74+7OWxszT7qSUFFvJq7bVA20w5ykhNWiKWzni6xNglXG8EOMUK+3LkMaJ9IUr5AS5gOLvQGr2SOo+GVRD3LLb/i1p9Vm1VRcKthn5KCy9gTajflhaffOVV2xUwzuLnn7zsc0yszrE6e39eWwT00ghdmxTfbGUs56jNqs5Qj1YkA1cC+//+mTEE7f3sCAKIykaPEwzgxgLrwODl2px9geuw2u/lNaw7sZUJuCSky+JXeW/PWW82rmP6zy9WI8TUR9KpiubMeh5p+8O6zVRh9whT1nKT/fY2rifqVsXLIofNkk/bTA3eE9eEvjRw9fr33oU1Hes//JZO9cZSxllQhejzetDM33vjob8fUKD1FVDdsY+FS9EN1Sc5oIXvC7s/MSOGKOJn9Tdk+loe8B8v+XhNdzL2LVoJI0JvLRte0HN8Z5IqrtDq6BpymV8umll7iZ8USPRI0m94719M9MFGoz8BweUGLiJGKGmki1eCu8Kv0HuZ84f3B0Lq7+C+ahBbqB7WCUSOZeFUxu2/9jPPpznh2Pew1dA==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(13003099007)(4013099003)(7053199007)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_032_AS8PR05MB108247C235EB3A1CEE04B74C79D9CAAS8PR05MB10824eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: lWDm/z6e1VGdFqv8VfWLbB77CLkSBwx+XPizyA3oTnxg1yF3zkNKmkOtCiCwCuWB/Ez9e7L02Gf49UxOvYLet+9UHkM+l+550Ynv/+mo/K1U6/g0xAIMhwrsiiMV895yIAxx6Dw7QNdf4D2lX4iluNaQfjNv4EMTlnu4o/I7aFbGu15Y3zRzpqRuBuFy6X6lHnya2oWpMWhXHtwWZIS++uvE9dVgN4cHc3s/pAWUWC3moxQTCDJuruO7QqHYp7zgIGXMCwgmW3BwuHGNm2qo6vEMU+ZW6SowhLX4XFXxaNmvn90dhIQ2scsQzV26qUzdVyFmLcO9NVgxXZ8UsEYj44QqKHjxEaChoTnEBvaK7i3lhBD4hiAAkCdc9QqwSFD2bmMN7nXsCkjT3K5DUVV5XiWwxPd3hml061oxJasYgcGbYTt45hkNp+e/1K0EQHyYC9tMlcc00qWO93XpsX3tTJEu4/JzgnjqXiIMSdXMw+DLhFWp5z1rMHa+Jzr/cYneAs1LnYhK7+WDjG3xU9YxbqmWz4XbnqSUghbUNp0Ml58CnPxz93b1RS1oVO9CyKQKP2t8OVc1zfhCvVB8d7w0UyyaU8x+ThPS+uUarlORKcUIKuSgJTcTiOel+rX0Lygj\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 70c8aa59-bbae-4ea1-6b44-08dd970a8ffe\nX-MS-Exchange-CrossTenant-originalarrivaltime: 19 May 2025 19:22:57.7218 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: dfZcMZJPego7g46fLDs6ik7D6I8OQGj1ZR5eu8s4a4ROE8JnjQF16CAatgCt4tmIF9xxgwPkZTqJzt76+xhfe4ZsgcIUZK15RbZos8PU2r0=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PA6PR05MB11213\nX-OrganizationHeadersPreserved: PA6PR05MB11213.eurprd05.prod.outlook.com",
+      "start_pos": 1701,
+      "end_pos": 5084,
+      "chunk_index": 1,
+      "chunk_size": 3383,
+      "metadata": {
+        "doc_id": "C1UKDT2 - soa - radwa group - axa insurance\\Headers\\C1UKDT2_22.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1UKDT2 - soa - radwa group - axa insurance\\Headers\\C1UKDT2_22.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:02.162835",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5126
+  }
+}

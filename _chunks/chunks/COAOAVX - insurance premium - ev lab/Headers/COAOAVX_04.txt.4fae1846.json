@@ -1,0 +1,42 @@
+{
+  "doc_id": "COAOAVX - insurance premium - ev lab\\Headers\\COAOAVX_04.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\COAOAVX - insurance premium - ev lab\\Headers\\COAOAVX_04.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by AS8PR05MB8502.eurprd05.prod.outlook.com (2603:10a6:20b:3cf::5) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8272.17; Sat, 21 Dec 2024 10:58:04 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%6]) with mapi id 15.20.8272.013; Sat, 21 Dec 2024 10:58:04 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: jmerchant <jmerchant@ev-lab.io>\nCC: afaissali <afaissali@ev-lab.io>, Kevin Chalhoub <Kevin.Chalhoub@chalhoub.com>, Omar Juma <omarjuma@sport360x.com>, Adam Aldous <aaldous@ev-lab.io>\nSubject: Re: Insurance Premium - EV LAB\nThread-Topic: Insurance Premium - EV LAB\nThread-Index: AdtAuUoXTfwzWms3QsSqrbfg5SMnoAHHs/GAAAJ3Gj0CTrGxgAAHGk3QAAM+FQAANT3DgA==\nDate: Sat, 21 Dec 2024 10:58:04 +0000\nMessage-ID: <AS8PR05MB10824F7D9C0A894E2D172196B9D062@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <006301db40b9$4b474150$e1d5c3f0$@ev-lab.io> <02e601db47d8$1b756cb0$52604610$@ev-lab.io> <AS8PR05MB108249441400188CC58D323D29D332@AS8PR05MB10824.eurprd05.prod.outlook.com> <CAMO0Xwym1iU9yxV1Hbtak9LO3nToLYd+bKcVD88Z=tNqjdNaeg@mail.gmail.com> <AS8PR05MB10824F6499F9042EE40FAE5FD9D052@AS8PR05MB10824.eurprd05.prod.outlook.com> <CAMO0XwyAnpjukKn-bpVbEeyNCdE3RXFvy4S_2LUjGotzw6EWqQ@mail.gmail.com>\nIn-Reply-To: <CAMO0XwyAnpjukKn-bpVbEeyNCdE3RXFvy4S_2LUjGotzw6EWqQ@mail.gmail.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 1631,
+      "chunk_index": 0,
+      "chunk_size": 1630,
+      "metadata": {
+        "doc_id": "COAOAVX - insurance premium - ev lab\\Headers\\COAOAVX_04.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\COAOAVX - insurance premium - ev lab\\Headers\\COAOAVX_04.txt"
+      }
+    },
+    {
+      "text": "EWqQ@mail.gmail.com>\nIn-Reply-To: <CAMO0XwyAnpjukKn-bpVbEeyNCdE3RXFvy4S_2LUjGotzw6EWqQ@mail.gmail.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nundefined: 6158505\ndrawingcanvaselements: []\ncomposetype: newMail\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|AS8PR05MB8502:EE_\nx-ms-office365-filtering-correlation-id: 4df8c749-a24f-4eb9-93b0-08dd21ae5849\nx-ld-processed: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3,ExtAddr\nx-ms-exchange-atpmessageproperties: SA|SL\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|69100299015|7053199007|8096899003|41050700001;\nx-microsoft-antispam-message-info: b+B2Z5AKyAN3TohiI1ck9fneg6pzG4RGFoduv6az9WunpaIKl9ZEAgXXFAd9I/btGdXXgkSwpfplUS5fbhisfHY955wi5zDwzYwsfglVDKajJ+2mH2CNdrN60Gm6+x+hFMDjK9GXeZgiWspVXAhahf0aromHML+D6HSJWjbVB29QPGU9EFKQZPv8cMxjhEUqTky/AM9ju3sC4DHuOuiWr56qMTF7cldimOBVbe2QKErwC7MAN+U0lkLfSd/j89cxvo1qkXD/I4smc3Z4gsX2VTjvaFlWcO2zVpPeRe24TWz/v8ZfDPO/XXH/x5t/TUrwZtJlEsgVNKQXuYshwz0YnEwOSBQzg8Zm46d/liks2O5qXBGQw2i2d7wn02Jb0clvdpZ4tqjqmvabLs3tCGhOA2JrE55Oa+eZgFWta8ZFTj//E7lLttGXPEVMHX0lgoHyvM6iiKldyoY7L/EeKeeILtI/PphpFOhfx6CzBAN7eRML5Ogt13zK5ag6WA64AbxfjuXqJI6lWSq6fl4nmRHKTf7ywsNi7cDioiujbfdkldFJtr1KAm/F5CJvRYxLMsNQu8sSYkGZ84ISvmi4E0xqoiMDH096ZR0fS26pWqTBMb1OviMGgTKoVTFfKQr3xSC+y7wt/mo0SrYFexzqlDp2CFVEZqeVxeZllDo9gJxKyruwjfU5MMhrpihjr3MU2ksSKc0lxvy16aaZ68/4et9UhPLEQYvLdboWu9FbopmlPHvMY/t16jXdRFCDZtNKMvpp\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(69100299015)(7053199007)(8096899003)(41050700001);DIR:INT;\nContent-Type: multipart/mixed; boundary=\"_005_AS8PR05MB10824F7D9C0A894E2D172196B9D062AS8PR05MB10824eu_\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: sf8skRKThZfE+pO3KWZK5LMGM8D6c5SbrO5kwNmSHbSQBcxvSK8VTwtfUobmHB6P/d+/24xZBFBiiweQr9PmTB+JFJ0jpaHgoGapSvwxseD/UvLr/SDRTxUX29l9gpt3YE1gaLyKitIVDc2zpjzlWDHCHw/kFJz6uGt8gqKQQcWEFFCE/xRIvpTV7labUHc3U9ex4Xdohd4mFdATt6H3YHC1YLgNyPil91HMDo/sbdAQLfAUwej1OUyZ87aM7sUFR97qLfEwj9y0h0Hc3syx8I3CtucJ6ywYuL5M440Hl95vTWzooYffEHh+wkH/vyh+ERV0BhPRUYqqTvYspWHVLQSXqWmqFzHuoACdeM9bQqFLfTnSAxR0Sp5j0qCmlcSNRBWJMI7wwnNwLcSLV8TvH0Lz5elt4c5RtvWOd4zKLClH2JKqYwBOelDgJUJZlnqGBKCgH+aVdr66srnED3RFIKxDmW16MbcXyHNXnECTmMzy4ZUZL0cY8PiUanpySY497XqFGkPt5jVj9MCb+UunuJNZPDm4rsK8QijC7Dkn3C3mjaAv6403gLHKb6bCYu/N6cTqOEZ9ONNXEMh7cCKAMXtPFJrqw1XgB3CW7/1e6trx303Vf57HbY8/ohg0Vd3Y\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 4df8c749-a24f-4eb9-93b0-08dd21ae5849\nX-MS-Exchange-CrossTenant-originalarrivaltime: 21 Dec 2024 10:58:04.5425 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: h1rUBrqWvhu7+4cp0zMpLRgoMQTcStHLpmrspVd3SuTdcYvTwEWVRPc2eqhPIzmSD28B8hkcru6j253D3hH3L050NDrYbTMs0VW1y6R/tgI=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR05MB8502\nX-OrganizationHeadersPreserved: AS8PR05MB8502.eurprd05.prod.outlook.com",
+      "start_pos": 1431,
+      "end_pos": 4875,
+      "chunk_index": 1,
+      "chunk_size": 3444,
+      "metadata": {
+        "doc_id": "COAOAVX - insurance premium - ev lab\\Headers\\COAOAVX_04.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\COAOAVX - insurance premium - ev lab\\Headers\\COAOAVX_04.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:36.503054",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4923
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1DH6BU - ae_ai180690 co70 - pre-alert chalhoub (re400) - mkbh250728 by air shipment ii bah\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1DH6BU - ae_ai180690 co70 - pre-alert chalhoub (re400) - mkbh250728 by air shipment ii bah\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:31:05\nFolder: C1DH6BU - ae_ai180690 co70 - pre-alert chalhoub (re400) - mkbh250728 by air shipment ii bah\nMessage Count: 1\n\n--------------------------------------------------\nID: C1DH6BU_00\nFrom: Shagan Abdelmegid <Shagan.Abdelmegid@chalhoub.com>\nTo: Vic Eldrin Munar <vic.munar@gig-gulf.com>\nCC: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>; row shipping <row.shipping@chalhoub.com>\nBCC: \nDate: 2025-09-19 17:25\nSubject: AE_AI180690 CO70 - Pre-Alert / Chalhoub (RE400) - MKBH250728 by Air Shipment II BAH SHIP 1\n--------------------------------------------------\nDear @Vic Eldrin Munar <mailto:vic.munar@gig-gulf.com> ,\n\n \n\nNOTICE OF DAMAGE/LOSS\n\nDate-19.09.2025\n\nFor the shipment under AWB 176-19788495\n\nGoods: General cargo\n\nWe inform you that, of the above goods deliverable to us, out of 15 cartons,6 cartons were in pressed condition with total 8 pc of outer box damaged & total value of 383.2 EUR\n\n \n\nDESCRIPTION\n\nBox damaged Qty\n\nUnit price\n\nTotal value in EUR\n\n40S2SUMP2L 170 MKS 170 7 SUMMER MID\n\n1\n\n53.8\n\n53.8\n\n40F5HAFP1B 150 MKS 150 8 HAYWORTH SLIDE\n\n2\n\n46.2\n\n92.4\n\n40F5HAFP1B 150 MKS 150 9 HAYWORTH SLIDE\n\n2\n\n46.2\n\n92.4\n\n40F5MLFS1B 200 MKS 200 11 MILAN SLIDE\n\n1\n\n46.2\n\n46.2\n\n43R4RNFSAB 857 MKS 857 9 RAINA TRAINER\n\n1\n\n38.4\n\n38.4\n\n43F5ARFS2L 150 MKS 150 11 ARLA TRAINER\n\n1\n\n60\n\n60\n\nGrand total\n\n8\n\n \n\n383.2\n\n.\n\nPlease acknowledge receipt of this notice.\n\n \n\nBest Regards,",
+      "start_pos": 0,
+      "end_pos": 1464,
+      "chunk_index": 0,
+      "chunk_size": 1464,
+      "metadata": {
+        "doc_id": "C1DH6BU - ae_ai180690 co70 - pre-alert chalhoub (re400) - mkbh250728 by air shipment ii bah\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1DH6BU - ae_ai180690 co70 - pre-alert chalhoub (re400) - mkbh250728 by air shipment ii bah\\Conversation.txt"
+      }
+    },
+    {
+      "text": "46.2\n\n43R4RNFSAB 857 MKS 857 9 RAINA TRAINER\n\n1\n\n38.4\n\n38.4\n\n43F5ARFS2L 150 MKS 150 11 ARLA TRAINER\n\n1\n\n60\n\n60\n\nGrand total\n\n8\n\n \n\n383.2\n\n.\n\nPlease acknowledge receipt of this notice.\n\n \n\nBest Regards,\n\n \n\n \n\nSHAGAN ABDELMEGID\t\n​​​​\t\nCOORDINATOR ‑ SHIPPING\t\nREAL FZE\t\nDUBAI\t\n‑\t\nUNITED ARAB EMIRATES\t\n\t\t\n \t\n <https://chalhoubgroup.com/> \t\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\t\n‑\n\t\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\t\n\t\n <https://www.facebook.com/chalhoubgroup/> \t\n <https://www.instagram.com/chalhoubgroup> \t\n <https://www.linkedin.com/company/chalhoub-group/> \t\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 1263,
+      "end_pos": 1955,
+      "chunk_index": 1,
+      "chunk_size": 692,
+      "metadata": {
+        "doc_id": "C1DH6BU - ae_ai180690 co70 - pre-alert chalhoub (re400) - mkbh250728 by air shipment ii bah\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1DH6BU - ae_ai180690 co70 - pre-alert chalhoub (re400) - mkbh250728 by air shipment ii bah\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:58.365132",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2108
+  }
+}

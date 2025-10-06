@@ -1,0 +1,31 @@
+{
+  "doc_id": "CATHB1K - aster optical - concession contract draft\\Headers\\CATHB1K_05.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CATHB1K - aster optical - concession contract draft\\Headers\\CATHB1K_05.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from GVXPR05MB10894.eurprd05.prod.outlook.com (::1) by VI1PR05MB10819.eurprd05.prod.outlook.com with HTTPS; Wed, 22 Jan 2025 13:06:44 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from DB9PR05MB8266.eurprd05.prod.outlook.com (2603:10a6:10:23e::5) by GVXPR05MB10894.eurprd05.prod.outlook.com (2603:10a6:150:114::15) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8377.17; Wed, 22 Jan 2025 13:06:43 +0000\nReceived: from DB9PR05MB8266.eurprd05.prod.outlook.com ([::1]) by DB9PR05MB8266.eurprd05.prod.outlook.com ([fe80::2b6a:ff8c:1a04:13cb%4]) with Microsoft SMTP Server id 15.20.8356.020; Wed, 22 Jan 2025 13:06:43 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Reda Keddaji <Reda.Keddaji@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: Aster Optical - Concession contract Draft\nThread-Topic: Aster Optical - Concession contract Draft\nThread-Index: AQHbNCX6w0+KSqghdU6TZAJGvyzvArKyLkk4gAANZsKAEQ3JJoAHZ3atgAAF1i2ACybrp4AAAFXQgAM/tCCABg3+RYAEwreQgAYUX+uAAGApKYAAKPYwgAAD3c+AJWsnKoAErktQgAAG6z6AAAHxQIAGo4q4gAAhQYCAAAKGHYAEj0TAgAGp8SCAAQkQsIAABEDCgAB0v60=\nReferences: <VI1PR05MB3310F5A0C12F6B4C3120CD90F1E12@VI1PR05MB3310.eurprd05.prod.outlook.com> <VI1PR05MB10819703DC3DAAC66EACEA5A69DE12@VI1PR05MB10819.eurprd05.prod.outlook.com>\nIn-Reply-To: <VI1PR05MB10819703DC3DAAC66EACEA5A69DE12@VI1PR05MB10819.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Reda.Keddaji@chalhoub.com\nX-MS-TNEF-Correlator: bf858592-970d-468b-884a-a8d0605f903f\nMIME-Version: 1.0\nDate: Wed, 22 Jan 2025 13:06:43 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: DB9PR05MB8266.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <ff1938c4d9f645f6913ca4fbdd85bb3f@DB9PR05MB8266.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: f1095a45-6a11-40ab-f293-08dd3ae59e23\nX-MS-Exchange-Parent-Message-Id: <VI1PR05MB10819703DC3DAAC66EACEA5A69DE12@VI1PR05MB10819.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: DB9PR05MB8266:EE_|GVXPR05MB10894:EE_|VI1PR05MB10819:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 22 Jan 2025 13:06:43.3134 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: f1095a45-6a11-40ab-f293-08dd3ae59e23\nX-MS-Exchange-AtpMessageProperties: SA|SL\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR05MB8266.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Jan 2025 13:06:43.1420 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: DB9PR05MB8266.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: f1095a45-6a11-40ab-f293-08dd3ae59e23\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: GVXPR05MB10894\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:01.3290797\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8356.017\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910001)(944506478)(944626604)(920097)(425001)(930097)(140003)(1420198);\nX-Microsoft-Antispam-Message-Info: aqNccmTeeZXN5YiJGAmEGq+lM8ju54PPKeZW7fRb1XnFJiZkZCMKUhGzXjJCYl1+5iJ1QDtD/Ih4wtP9Z+YnvtdaWF7YDbNOUtJjv7A9aQoVI9ijxt6pYyALUhZzmXkIi8feRGsklx6HBnjwHtJ0bQOUqOem+Lb5drsOe8p5iBIG6mTrUf41Qlfi6WBLw/R39NDMrf1caG+F1lZxjiiRymUQc8UFRRrHEJvyV1d0UkQKrntHC7KhzMSTrcKN/PDS33GADlpu1qTBOxxMT0+odvyepS2y+9tAwwGxal93BW4LYJvOKTLAmCTeNXehkXsu9PNKXSKW4fyXad1F16+HdYcPSuNkIBPqW4OekZq4fJlzxJApLYwu8VACZrxpBl/NAVyCwIp85i5+3pa+M+c6F0jkAc3XJIvpHEPg+E42AKWDlku/xNwhMtbU69SISJOpN9HuNSxCqyWiSXWT1hQC4lynxpdltGNIDeLMJXJEub8qfHzVrjDGzQcDZ3mwSQ/wgwOF53cpCmWjr1PiaD6AC9gcRJmbF8vUYOxlFmsX3WNR/lTHJaaf+KFXr29+r5mY/2pBotpbUM/X7st0sOhLmcaqIkQXVfud7lGEgaTR8iD5LLrKahGJ9XSnt4X+N7/IAefopGF01sGdawH7WEOT6TsVCM88ZOJebXZzOQHFeo5tKvSfM1Q2KK8qlYnsIL1jDxP2J2Y4wxgbIKUM1PQxTmt87XoxDod7UsnEphRX4b5i3/9TQe3sNpVAFiDvibkPPsW3uJv7Cbox7jFLVhI18BznPzqmp8r43z6xkfDCabB2cFXen3efc1iv2h/4ACoHttJhqV1jRmOaoiH/rlHNIuukmPPqwdu4k2f0AhZ3xoX3+yode2HxuyrSM1hKEPXJ/dA61DNos21eg8uSHGBHUA==",
+      "start_pos": 0,
+      "end_pos": 4986,
+      "chunk_index": 0,
+      "chunk_size": 4986,
+      "metadata": {
+        "doc_id": "CATHB1K - aster optical - concession contract draft\\Headers\\CATHB1K_05.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CATHB1K - aster optical - concession contract draft\\Headers\\CATHB1K_05.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:22.753298",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5042
+  }
+}

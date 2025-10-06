@@ -1,0 +1,31 @@
+{
+  "doc_id": "CFZWC4G - cancellation of scheduled vpn maintenance – june 13, 2025\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CFZWC4G - cancellation of scheduled vpn maintenance – june 13, 2025\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:34:50\nFolder: CFZWC4G - cancellation of scheduled vpn maintenance – june 13, 2025\nMessage Count: 1\n\n--------------------------------------------------\nID: CFZWC4G_00\nFrom: One Reach <OneReach@chalhoub.com>\nTo: \nCC: \nBCC: \nDate: 2025-06-13 21:05\nSubject: Cancellation of Scheduled VPN Maintenance – June 13, 2025\n--------------------------------------------------\n <https://onereach.status.freshservice.com/> \n\n \n\nDear Colleague,\n\nPlease be informed that the essential maintenance scheduled for the HO1 Ivanti Secure VPN on Friday, June 13, 2025, from 08:30 PM to 10:30 PM GST, has been cancelled.\n\nVPN services will remain available as usual during this time.\n\nWe apologize for any inconvenience caused by the earlier communication and appreciate your understanding.\n\nFor support during this period, please raise a ticket via OneReach. You can also check real-time status updates via the Tech&Data System Status & Health <https://onereach.status.freshservice.com/>  Dashboard.\n\n \n\n \n\n \n\nThis mail was sent to you by\n\n <https://onereach.chalhoub.com/support/home>",
+      "start_pos": 0,
+      "end_pos": 1141,
+      "chunk_index": 0,
+      "chunk_size": 1141,
+      "metadata": {
+        "doc_id": "CFZWC4G - cancellation of scheduled vpn maintenance – june 13, 2025\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CFZWC4G - cancellation of scheduled vpn maintenance – june 13, 2025\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:03.769657",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1197
+  }
+}

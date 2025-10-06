@@ -1,0 +1,42 @@
+{
+  "doc_id": "C8BAKGW - baccarat alchemist garden - product insurance\\Headers\\C8BAKGW_06.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C8BAKGW - baccarat alchemist garden - product insurance\\Headers\\C8BAKGW_06.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10707.eurprd05.prod.outlook.com (2603:10a6:20b:633::17) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Wed, 13 Nov 2024 10:17:21 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from DB9PR05MB8505.eurprd05.prod.outlook.com (2603:10a6:10:295::13) by AS8PR05MB10707.eurprd05.prod.outlook.com (2603:10a6:20b:633::17) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8137.28; Wed, 13 Nov 2024 10:17:19 +0000\nReceived: from DB9PR05MB8505.eurprd05.prod.outlook.com ([::1]) by DB9PR05MB8505.eurprd05.prod.outlook.com ([fe80::28da:423f:97cb:97ce%6]) with Microsoft SMTP Server id 15.20.8158.013; Wed, 13 Nov 2024 10:17:19 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Zainab AlHalwachi <Zainab.AlHalwachi@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: BACCARAT ALCHEMIST GARDEN - PRODUCT INSURANCE \nThread-Topic: BACCARAT ALCHEMIST GARDEN - PRODUCT INSURANCE \nThread-Index: AQHbLGZcA844YqgT9kqYBFkcEHn7E7KoNit9gAACPYuAA3JsBIAJYeRWgAAEqQCAAABEiA==\nReferences: <AM0PR0502MB3842F788BEF0DDACE121FDA2EC562@AM0PR0502MB3842.eurprd05.prod.outlook.com> <AM0PR0502MB38422934C6C7DE34CF290791EC522@AM0PR0502MB3842.eurprd05.prod.outlook.com> <AM0PR0502MB38429CC47DBF88679D20604EEC522@AM0PR0502MB3842.eurprd05.prod.outlook.com> <AM0PR0502MB384205F2DD955BC84D972EE9EC5C2@AM0PR0502MB3842.eurprd05.prod.outlook.com> <HE1PR0502MB38499332DBD3B8DC1494CF9BEC5A2@HE1PR0502MB3849.eurprd05.prod.outlook.com> <AS8PR05MB108247B548F0076C44486D16D9D5A2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB108247B548F0076C44486D16D9D5A2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 1838,
+      "chunk_index": 0,
+      "chunk_size": 1837,
+      "metadata": {
+        "doc_id": "C8BAKGW - baccarat alchemist garden - product insurance\\Headers\\C8BAKGW_06.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C8BAKGW - baccarat alchemist garden - product insurance\\Headers\\C8BAKGW_06.txt"
+      }
+    },
+    {
+      "text": "om> <AS8PR05MB108247B548F0076C44486D16D9D5A2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB108247B548F0076C44486D16D9D5A2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Zainab.AlHalwachi@chalhoub.com\nX-MS-TNEF-Correlator: 8c8a82f8-00da-42d0-ab5f-451fb28f34bf\nMIME-Version: 1.0\nDate: Wed, 13 Nov 2024 10:17:19 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: DB9PR05MB8505.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <5522bfde64ce4cbf963324ef438fef4c@DB9PR05MB8505.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: 173d7de9-9ed4-4d18-bca1-08dd03cc5b73\nX-MS-Exchange-Parent-Message-Id: <AS8PR05MB108247B548F0076C44486D16D9D5A2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: DB9PR05MB8505:EE_|AS8PR05MB10707:EE_|AS8PR05MB10824:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 13 Nov 2024 10:17:20.0093 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: 173d7de9-9ed4-4d18-bca1-08dd03cc5b73\nX-MS-Exchange-AtpMessageProperties: SA|SL\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR05MB8505.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Nov 2024 10:17:19.8809 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: DB9PR05MB8505.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: 173d7de9-9ed4-4d18-bca1-08dd03cc5b73\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR05MB10707\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:01.7687533\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8137.022\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910001)(944506478)(944626604)(920097)(425001)(930097)(140003)(1420198);\nX-Microsoft-Antispam-Message-Info: MKw91QxhNbRtDBs94QMEbgt7EpMl+JQ7RMHOTM0Nnx+O7JcR/rHdVJOdkT2zZPH7FHFHVfMSCXZycArnHoiI1wdH01uYUcJnSFYzPXTvWZBs0HcfOzdqYW4v1oG8177knX69o+FpMWwuN34NPQW1InzWzWSLI0RSXuImgd7MTKzfjbT2JnsjFO0kbsxgK9rB37WebHDfp6n+KFGdeVqVAzWe8J24CdwIc7HNWAcU5+HuFfzfbVwpQWsL6aQIXTTPAPiGN+/FTTFDBidvJYK+LVXWWR07ok2w2PtPQxrxtQzYIEVtJtkJH4Kj/+Ac+rhOuuoa1mJ9V8E/Mrk7OtUVsuvlfriGdmt+ec/P/A1OsHipfwPKal4MrfMVJ0pXzgEQ0/Y6Q8lzv4LArb4DzjBqVzXtn8K27BsxwJk+GN7LK5B0uR8NJBJbGA/nisiRKc7qk6Oa6bC+TNPgetMlyt66UB68fs1agSWzcvxPuMA3eEcqasCzRoL5Wk97lSZQ/ro6MdAnWw6qeMZk91PRufKZd9GGtF29A13kIeSJStgQ4hvMY+TUjJAknXZ3fT6ShNmXXDe12IIom8oXfGX6kPubXpC6fOTAmnuLu4SptxbvQgAfFyCMS9dNNwYffxDW/Z2wqGbdXPc91GeuWBMWXZX2d4No02k+3tC7zw03bS/Eil9kEX8dGCYkNP6Bxy/GPdylgeSxTFoGDitaJcbKqKyJl0XzOkVkwgMw+OVvLpN9n51Ol/unposiR9dDcaBVD2D4zpuaEdVzkoB0/6eIgotBsFH5w4Y+bIlUk2YZaQsda7L6EBUfY1yIW2xtMIkqCjmrzyKJTZpPjEF57rV7DTFrkkJoYiNtParzk4YU6HGwn4EE2+Aiw4uTN0nxFFKfjW5LaIeO03Yj0ay/mpVu36Op0IILdSUld5IXH9RYy3x7iKE=",
+      "start_pos": 1638,
+      "end_pos": 5262,
+      "chunk_index": 1,
+      "chunk_size": 3624,
+      "metadata": {
+        "doc_id": "C8BAKGW - baccarat alchemist garden - product insurance\\Headers\\C8BAKGW_06.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C8BAKGW - baccarat alchemist garden - product insurance\\Headers\\C8BAKGW_06.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:48.146211",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5318
+  }
+}

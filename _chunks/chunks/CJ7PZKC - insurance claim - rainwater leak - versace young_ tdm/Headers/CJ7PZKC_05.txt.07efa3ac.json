@@ -1,0 +1,42 @@
+{
+  "doc_id": "CJ7PZKC - insurance claim - rainwater leak - versace young, tdm\\Headers\\CJ7PZKC_05.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CJ7PZKC - insurance claim - rainwater leak - versace young, tdm\\Headers\\CJ7PZKC_05.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from PA4PR05MB9635.eurprd05.prod.outlook.com (2603:10a6:102:260::14) by VI1PR05MB10819.eurprd05.prod.outlook.com with HTTPS; Wed, 22 Jan 2025 10:33:04 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from DB9PR05MB8672.eurprd05.prod.outlook.com (2603:10a6:10:2c8::15) by PA4PR05MB9635.eurprd05.prod.outlook.com (2603:10a6:102:260::14) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8356.20; Wed, 22 Jan 2025 10:33:03 +0000\nReceived: from DB9PR05MB8672.eurprd05.prod.outlook.com ([::1]) by DB9PR05MB8672.eurprd05.prod.outlook.com ([fe80::cb38:7f3b:c339:ddf%5]) with Microsoft SMTP Server id 15.20.8356.010; Wed, 22 Jan 2025 10:33:03 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Sreeraj Prakasam <Sreeraj.Prakasam@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: Insurance claim - Rainwater leak - Versace Young, TDM\nThread-Topic: Insurance claim - Rainwater leak - Versace Young, TDM\nThread-Index: AdtlpoPqEfstSDquS8+rZwkYU5vC4ADMZgAJAAFlAGoAAAsKRQDDY2OAADL+PwQAAGOP8AAABM4M\nReferences: <AM9PR05MB86613C8E8C5B05B2EABCB0C5E31F2@AM9PR05MB8661.eurprd05.prod.outlook.com> <GV2PR05MB105968EE3FA019464DA0F395EE01B2@GV2PR05MB10596.eurprd05.prod.outlook.com> <AS8PR05MB10824E95D4EB53DD447CEDBF49D1B2@AS8PR05MB10824.eurprd05.prod.outlook.com> <GV2PR05MB10596413C9E34486D432DAE1BE01B2@GV2PR05MB10596.eurprd05.prod.outlook.com> <AS8PR05MB10824A38E0DF7CF4F2CB123429DE62@AS8PR05MB10824.eurprd05.prod.outlook.com> <GV2PR05MB10596CE1369F85C998D985110E0E12@GV2PR05MB10596.eurprd05.prod.outlook.com> <VI1PR05MB10819C33991687F4DFEA3DFB69DE12@VI1PR05MB10819.eurprd05.prod.outlook.com>\nIn-Reply-To: <VI1PR05MB10819C33991687F4DFEA3DFB69DE12@VI1PR05MB10819.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 1922,
+      "chunk_index": 0,
+      "chunk_size": 1921,
+      "metadata": {
+        "doc_id": "CJ7PZKC - insurance claim - rainwater leak - versace young, tdm\\Headers\\CJ7PZKC_05.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CJ7PZKC - insurance claim - rainwater leak - versace young, tdm\\Headers\\CJ7PZKC_05.txt"
+      }
+    },
+    {
+      "text": "om> <VI1PR05MB10819C33991687F4DFEA3DFB69DE12@VI1PR05MB10819.eurprd05.prod.outlook.com>\nIn-Reply-To: <VI1PR05MB10819C33991687F4DFEA3DFB69DE12@VI1PR05MB10819.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Sreeraj.Prakasam@chalhoub.com\nX-MS-TNEF-Correlator: 125ed549-1ff9-422c-87d8-df4c1ba65786\nMIME-Version: 1.0\nDate: Wed, 22 Jan 2025 10:33:03 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: DB9PR05MB8672.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <49b6124af39844b2ab05f30f479cfd2e@DB9PR05MB8672.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: 6b73522f-cc18-4259-29fd-08dd3ad0268b\nX-MS-Exchange-Parent-Message-Id: <VI1PR05MB10819C33991687F4DFEA3DFB69DE12@VI1PR05MB10819.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: DB9PR05MB8672:EE_|PA4PR05MB9635:EE_|VI1PR05MB10819:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 22 Jan 2025 10:33:03.1863 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: 6b73522f-cc18-4259-29fd-08dd3ad0268b\nX-MS-Exchange-AtpMessageProperties: SA|SL\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR05MB8672.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Jan 2025 10:33:03.0447 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: DB9PR05MB8672.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: 6b73522f-cc18-4259-29fd-08dd3ad0268b\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PA4PR05MB9635\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:01.4658097\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8356.017\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910001)(944506478)(944626604)(920097)(425001)(930097)(140003)(1420198);\nX-Microsoft-Antispam-Message-Info: SuoYPfVkNSO3owSpokvq6v9jTmA0nmLssNoxFJtoUyO7E8TGRn9k/ExzBZnK1Wslq3wFAt4j8/NwyR8nlCzRVmE8elVBUEhzfdaYg5DmlNJd7rPPdvnfN19FNgAtiK3/RywXA5ONqb0KNjBKp4541izV8C1VQc1E2wkek0JdVryRvaqgWR6oAdmEJzoJQ6clxZHSPBiNWykeLiyffSe2JC4S4IveGyLSWHIweYLuYs00ChxIehks6MB/Gib7Mj5XnjRh6pzeRZiao3FpBJBWoXhOSi36tnl2VNKA+An+9zDFdFCffJQZlmbQxQJduWR+pYHxaNz6g8/vnx7BY24vkFmFSsGY7S3HEgZw8VOZOu9whK4DJVX7/jVcSDMMWY/QgL4136653dh5SWpUJ3UnqHQwVdPGDZPImOmawFCh1wsbJd1FN3gdQIDUS4bl3lCwudWPhZkwAIZWPtPJvDVa+BiNiuCzblF1G0jSlg9akqUmneGn288TYOLCZHhAVToKLorztGNZ28CSMpqnt466XZyk/EchXUxvDzrudiZR2UNzcfr5pWlUsouEnXQFRcD+NO6AbZIushq2ODO8y6+pvy1uov8aTe7O6ikBkT7cvdmlsn/41dTOIT8To+OmfJom4Sv7QMs6sEfd6ISjP2n4mm0yJQ7fNmRjM119jhZmkzr3XCn6l2Keg/YwlEmzkcX661anu0NnDJ/OA1EFVPc3KiA6NEJ5dBoyHy3EOa59DwRjvfBGiacpwLwBNiWwkofQNOYiW0D0ygpfmeIRxmMqPnNogoGFn+J2G5VZBEhl4bcz3LQbs1aozr5PdQkBevE4mvWBeGdiKpyervoPUGvm1mpRttwW/abwVpjBe0m+ACbZ/P3xYmnSvntt5R5zac4FfmrDr/QkpMQLwkaENUQsbg==",
+      "start_pos": 1722,
+      "end_pos": 5323,
+      "chunk_index": 1,
+      "chunk_size": 3601,
+      "metadata": {
+        "doc_id": "CJ7PZKC - insurance claim - rainwater leak - versace young, tdm\\Headers\\CJ7PZKC_05.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CJ7PZKC - insurance claim - rainwater leak - versace young, tdm\\Headers\\CJ7PZKC_05.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:28.884992",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5379
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1K2JA0 - planned activity notification scheduled rics maintenance\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1K2JA0 - planned activity notification scheduled rics maintenance\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:30:46\nFolder: C1K2JA0 - planned activity notification scheduled rics maintenance\nMessage Count: 1\n\n--------------------------------------------------\nID: C1K2JA0_00\nFrom: One Reach <OneReach@chalhoub.com>\nTo: \nCC: \nBCC: \nDate: 2025-09-22 17:36\nSubject: Planned Activity Notification: Scheduled RICS Maintenance\n--------------------------------------------------\n \n\n <https://onereach.status.freshservice.com/> \n\n \n\nDear Colleague,\n\n \n\nWe would like to inform you that Oracle will be conducting PROD RICS DATABASE MAINTENANCE ACTIVITY, which will impact the integrations between RMS and SIOCS.\n\n \n\nDuring this maintenance period, all integrations between RMS & SIOCS and Inventory Delta will be paused. Integrations will then be restarted upon completion of the Maintenance.\n\n \n\nTime: 23 September 2025 01:00 GST – 23 September 2025 07:00 GST\n\n \n\nWe appreciate your patience and cooperation.\n\n \n\nFor support during this period, please raise a ticket via OneReach. You can also check real-time status updates via the Tech&Data System Status & Health Dashboard <https://onereach.status.freshservice.com/> .\n\n \n\n                                                                This mail was sent to you by\n\n                                                                                     <https://onereach.chalhoub.com/support/home>",
+      "start_pos": 0,
+      "end_pos": 1410,
+      "chunk_index": 0,
+      "chunk_size": 1410,
+      "metadata": {
+        "doc_id": "C1K2JA0 - planned activity notification scheduled rics maintenance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1K2JA0 - planned activity notification scheduled rics maintenance\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:52.586696",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1484
+  }
+}

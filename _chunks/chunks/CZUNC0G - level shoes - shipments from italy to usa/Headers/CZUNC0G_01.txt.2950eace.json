@@ -1,0 +1,31 @@
+{
+  "doc_id": "CZUNC0G - level shoes - shipments from italy to usa\\Headers\\CZUNC0G_01.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CZUNC0G - level shoes - shipments from italy to usa\\Headers\\CZUNC0G_01.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from VI1PR05MB10819.eurprd05.prod.outlook.com (2603:10a6:800:1bf::14) by VI1PR05MB7118.eurprd05.prod.outlook.com (2603:10a6:800:188::24) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8678.23; Wed, 23 Apr 2025 08:21:24 +0000\nReceived: from VI1PR05MB10819.eurprd05.prod.outlook.com ([fe80::efd7:79e3:f356:1cc3]) by VI1PR05MB10819.eurprd05.prod.outlook.com ([fe80::efd7:79e3:f356:1cc3%5]) with mapi id 15.20.8678.021; Wed, 23 Apr 2025 08:21:24 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Shayma Dsouza <Shayma.Dsouza@chalhoub.com>\nCC: Laveen Dsouza <Laveen.Dsouza@levelshoes.com>\nSubject: Re: Level shoes - shipments from Italy to USA\nThread-Topic: Level shoes - shipments from Italy to USA\nThread-Index: Adu0DGMCnxeQki2gT0ma+DVQrL3fhQAGMfF+AAAmcCAAAKrtsw==\nDate: Wed, 23 Apr 2025 08:21:24 +0000\nMessage-ID: <VI1PR05MB108196450131E03CBC20D22D59DBA2@VI1PR05MB10819.eurprd05.prod.outlook.com>\nReferences: <VI1PR05MB428549C5AEA47C4250DDD1B294BA2@VI1PR05MB4285.eurprd05.prod.outlook.com> <VI1PR05MB10819DD23500F171004C129C49DBA2@VI1PR05MB10819.eurprd05.prod.outlook.com> <VI1PR05MB42856253B4C8D79EE076640A94BA2@VI1PR05MB4285.eurprd05.prod.outlook.com>\nIn-Reply-To: <VI1PR05MB42856253B4C8D79EE076640A94BA2@VI1PR05MB4285.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: VI1PR05MB10819:EE_|VI1PR05MB7118:EE_\nx-ms-office365-filtering-correlation-id: e8d8acd7-66db-4a04-3592-08dd823fd62e\nx-ms-exchange-atpmessageproperties: SA\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|39142699007|31052699007|7053199007|4013099003|13003099007|8096899003|41050700001;\nx-microsoft-antispam-message-info: X7IoXCFO5+MMNFLk17O/pp/vLrTsQEoIdniEK4q9PwGMmMf2nCIWIn+Cd3FLWNzmJbcFs5uKI5YfYq5bxjWDXmN53FfdZglB1MV3jWPMxV0+sDPtd9+cI2my+RKjJRJl1UDMn+fxEH/LQteE6GoqDr+yR1VxASqVGYI74DQtJlO9LlYARjc6UisEoJkZML2XBNwZ9DiIra32rvrhywfCQdXNWWQWR2og7uGCkNAW2vXuAUUM48CTijNSLUXMUi+Z6EbpQoD46EQAOHd6I8vWpO5Y9UEeB4N05RF0ey1GgWymcbCJtO62DXk5XXD8LThDcTu+LW2nTB5n1RJIhSeojn6f83ema68A8vWl9zKVz6599JEyoI2MI9fX88ixtktu0N39Bq+DZqNco565fqVWBMN2MPUDZFhexaqGXIwaHPGRehNDfBBT218eqZtmeN6v5uInESS0DNgD1SsOjODVno7QK52+l6x1Dnaz7L5isJFTzGZXEDzl1G49E5ldNFVAN1T5TK5cWKpvwUzW4RS35/DNX57K7q5saxkwns/VO2q8kVahUGvrTzcCxaig2uipirgrP6EYPlv5mkZMo4jHx6dCrmI08tzdU9CBFuS/0YD3s54e8/n1zWXcbFTY4g0+NvNJFW6fwO9mCucY4v67DiKccF27a8Zu3tx4G3TdhqBHUTWfBAh2Dqw33NeQx9vlcnYPDLmHH1jjzA6vuZXmMapp7HDWVuT6gbJAb1V5aWw=\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI1PR05MB10819.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(39142699007)(31052699007)(7053199007)(4013099003)(13003099007)(8096899003)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_017_VI1PR05MB108196450131E03CBC20D22D59DBA2VI1PR05MB10819eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: S4E6a+z3tPYOR9xOxnlqA4lwO3pXwVqRkuAtdw8jYnzREGPpjUXzY/E9Z3AnJJvdbeOX2XApUE3vBe/qo6o4DUE8//A7dzS58qdvgzNbK5OFM5MKAXTqnQBngPFPkAc7DeV5lk6oo5JDM65+ABMD+oHMbRfiy5PG3axPIXL4QhychPhqA055kKzq4C0xIMyYwtTYQmUmh73/l8pAA/999Xcx3YJqGoz2+GLIBP7cj1ZNfdVkW2Xzrec3+pJdHIe6f0YGitnsltMLPkwi+bzwv6s+tULzowe5NNMg8G2/YA/dMe8KiArt6TeHwAqzdPHiFcqkqNTY7NRENDMkxm4wydZGZjw6k0XH1gwk5fvohdLOsXXv+Xbu67wiAIRfrPXRayWRMPixB4CcXdfWzIF89J2lU9p7XVH13z8ec/W6M8dfmVlGaFNkuu5KO4quXid37PxrUHeSNLa95TI6Td9P9+pMPuY5NTbKC2GPqOC2kil6HM8299X0Gn9QaxvJoHv6OLhjbAg82UWalEoFyIoPRV2au12pq7dQK1qo4uxPrpHPcZB2UIOMJm8Jql6YdOJv65CTX/ymsY/DPbn02kkIh2c/GhZawo8mehqukx41Me2QBbLwZOFH3lunSnIgZ2P6\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: VI1PR05MB10819.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: e8d8acd7-66db-4a04-3592-08dd823fd62e\nX-MS-Exchange-CrossTenant-originalarrivaltime: 23 Apr 2025 08:21:24.4182 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: UveCAUXTq/so28Xow5OMjYbps1JX+Jvz9PkBxUAHDTchm5p196YsL4cndZrLJDgDTku79MDGWgMIWgs/4qdOZ0MkkU32PmtuJMKkxlxofmE=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR05MB7118\nX-OrganizationHeadersPreserved: VI1PR05MB7118.eurprd05.prod.outlook.com",
+      "start_pos": 0,
+      "end_pos": 4617,
+      "chunk_index": 0,
+      "chunk_size": 4617,
+      "metadata": {
+        "doc_id": "CZUNC0G - level shoes - shipments from italy to usa\\Headers\\CZUNC0G_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CZUNC0G - level shoes - shipments from italy to usa\\Headers\\CZUNC0G_01.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:12.738667",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4661
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "doc_id": "CKML1Q8 - chalmex insurance cost\\Headers\\CKML1Q8_02.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CKML1Q8 - chalmex insurance cost\\Headers\\CKML1Q8_02.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from PAVPR05MB9974.eurprd05.prod.outlook.com (::1) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Thu, 19 Dec 2024 10:41:14 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalmax.me;\nReceived: from DB9PR05MB10421.eurprd05.prod.outlook.com (2603:10a6:10:45f::7) by PAVPR05MB9974.eurprd05.prod.outlook.com (2603:10a6:102:323::11) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8272.13; Thu, 19 Dec 2024 10:41:12 +0000\nReceived: from DB9PR05MB10421.eurprd05.prod.outlook.com ([::1]) by DB9PR05MB10421.eurprd05.prod.outlook.com ([fe80::4b69:b65f:12c0:5a13%6]) with Microsoft SMTP Server id 15.20.8272.005; Thu, 19 Dec 2024 10:41:12 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Ashish Tekwani <Ashish.Tekwani@chalmax.me>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: Chalmex Insurance Cost\nThread-Topic: Chalmex Insurance Cost\nThread-Index: Adq1+J8tdp0nlCvfSVyGnwOpDtU58BTpPmhAAACnO08AXU3cMAADlCFQEbIABVAABaHSWgAAECes\nReferences: <AS8PR05MB108242BA6E3A4A94F96515F8C9DFF2@AS8PR05MB10824.eurprd05.prod.outlook.com> <DB9PR05MB10421C766A7593928DED90B7CE3622@DB9PR05MB10421.eurprd05.prod.outlook.com> <AS8PR05MB1082438F95008ED15F16A0C389D622@AS8PR05MB10824.eurprd05.prod.outlook.com> <AS8PR05MB10824540D988F69CDDB708FC59D6C2@AS8PR05MB10824.eurprd05.prod.outlook.com> <DB9PR05MB10421463047C12295F7C0958BE36C2@DB9PR05MB10421.eurprd05.prod.outlook.com> <DB9PR05MB10421CE87C464A4CFF494DB09E3062@DB9PR05MB10421.eurprd05.prod.outlook.com> <AS8PR05MB10824FBE1F0070B619B26DD049D062@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824FBE1F0070B619B26DD049D062@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 1839,
+      "chunk_index": 0,
+      "chunk_size": 1838,
+      "metadata": {
+        "doc_id": "CKML1Q8 - chalmex insurance cost\\Headers\\CKML1Q8_02.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CKML1Q8 - chalmex insurance cost\\Headers\\CKML1Q8_02.txt"
+      }
+    },
+    {
+      "text": "om> <AS8PR05MB10824FBE1F0070B619B26DD049D062@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824FBE1F0070B619B26DD049D062@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Ashish.Tekwani@chalmax.me\nX-MS-TNEF-Correlator: 49d96b87-9175-4e9f-806f-f2cb32214874\nMIME-Version: 1.0\nDate: Thu, 19 Dec 2024 10:41:12 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: DB9PR05MB10421.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <df50b68829484848b684c8602b0cb7e0@DB9PR05MB10421.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: 4e0be16c-47e9-40f4-060c-08dd2019a821\nX-MS-Exchange-Parent-Message-Id: <AS8PR05MB10824FBE1F0070B619B26DD049D062@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: DB9PR05MB10421:EE_|PAVPR05MB9974:EE_|AS8PR05MB10824:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 19 Dec 2024 10:41:12.4703 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: 4e0be16c-47e9-40f4-060c-08dd2019a821\nX-MS-Exchange-AtpMessageProperties: SA|SL\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR05MB10421.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Dec 2024 10:41:12.3314 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: DB9PR05MB10421.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: 4e0be16c-47e9-40f4-060c-08dd2019a821\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PAVPR05MB9974\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:01.7151547\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8272.000\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910001)(944506478)(944626604)(920097)(425001)(930097)(140003)(1420198);\nX-Microsoft-Antispam-Message-Info: 4sUqmMzO0E3HFEXr/gF7MWAcw7Dp5CtUfrE3qAHHSC0LoEor1kUgzXUFom2KGZL0rkLCSpZyOL3Q3mX469tGM9igCRlXiGFgq3P1WgMF4CYKizaiQK4KpUcRJzv0dEF6AREfSWHa43FlUXa5TtI6GlVWIUO5nXSdSWcnfdpB9JzZ8MWvxYxUHIdBs5jgcdefv2DxRXM6FYhQsoacKgPSiTrePhfinHxS6uXlbAEtAxP21U+ZMzS/8pG0hIf0vdYxvOmSzyXY+glt9u1MeabgtrKmOO6UFyzP1dkMYqr1mpM2XyhUuSY1zuSGVfXLVx3IxWvNJxlPkHx/gcXnpXnj/9do8ujc/vBCddFqxRRCs9DZj2jE2b3pPrNA9lgvyqqoOIYMLJuFCDHkdvJEjISIRqo/Rl3ZdyKUDDGg+BAUig3m76yp6av3rgc50hPylt2lwnKkFDxEYacp0kwtPhwkPvHbo1aXvvo4ql9V4pCVcagU1otP9VfyqESeLlA/K5W1Ro5mh1ng1l7pHiAzc3DCFJVaafYGtt18Vh+w6NAfu1cnkeEbhnWzzTv2Xgftp/9sv/kR6RS4iEpjuAK+7CdQSo0ht5RRq/RQq5vP179SOSl2KGXLzk+lA/S0cucdw56RuNSvKVIT5JOHHXykV3ftiIRBJhY5wZ5VrDWY+l4fdaxlOzX2JOGVRt6B4UFDuFs9LBo+GIpk6l4q8nXPU32IaOJouX6rgRJXhxZcLSiGLjtnaQFqJgZgefgNYljPka6x6llWq8oTM65ZOVoTDmDrfqgTmHMrN/G9yJTCueWzz24hxx7W4DEjQqJScyJQsubjh6X+4ZF/f19vrMYgXJj2UkbNEly7wzsGeQXWntWRhHMdajgWJE6E5GBqAUsvOSrCh/7+odWoN/4JHPeSdh574Q==",
+      "start_pos": 1639,
+      "end_pos": 5241,
+      "chunk_index": 1,
+      "chunk_size": 3602,
+      "metadata": {
+        "doc_id": "CKML1Q8 - chalmex insurance cost\\Headers\\CKML1Q8_02.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CKML1Q8 - chalmex insurance cost\\Headers\\CKML1Q8_02.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:05.297060",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5297
+  }
+}

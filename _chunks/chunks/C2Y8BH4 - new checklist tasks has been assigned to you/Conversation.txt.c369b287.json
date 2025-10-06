@@ -1,0 +1,31 @@
+{
+  "doc_id": "C2Y8BH4 - new checklist tasks has been assigned to you\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C2Y8BH4 - new checklist tasks has been assigned to you\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 12:06:27\nFolder: C2Y8BH4 - new checklist tasks has been assigned to you\nMessage Count: 1\n\n--------------------------------------------------\nID: C2Y8BH4_00\nFrom: RSO@chalhoub.com <RSO@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2024-10-02 16:15\nSubject: New Checklist tasks has been assigned to you :\n--------------------------------------------------\nFocus Checklist Reminder\t \nDear Hagop Ghazarian, \n\nNew Checklist tasks has been assigned to you : \t\n\nFocus Checklist Request Details\t \nChecklist Title\t Store\t Type\t \nTory Burch -DM -Reopening on 02 Nov 2024\t Tory Burch - Dubai Mall - Boutique\t Projects\t \n\n\nAlternately, click here <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Frso.e-mac.com%2Fpages%2Fmanagechecklist.aspx%3FIntGUID%3D8440855e-cf98-d4bd-b172-ecbfa5b071b8&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Caea78f20797b447255ad08dce2dbddbf%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638634681145144379%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C0%7C%7C%7C&sdata=3%2B74l0cpT%2BVHVFxMluGrF0HbEpu%2B9sYkAZEWZUgBbvQ%3D&reserved=0>  to review it on RSO.\t \nThis is an auto-generated email, please do not reply.",
+      "start_pos": 0,
+      "end_pos": 1305,
+      "chunk_index": 0,
+      "chunk_size": 1305,
+      "metadata": {
+        "doc_id": "C2Y8BH4 - new checklist tasks has been assigned to you\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C2Y8BH4 - new checklist tasks has been assigned to you\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:41.545938",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1340
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1QKIW0 - mct fze and or chalhoub group limited and or subsidiaries and or associated companies - united\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1QKIW0 - mct fze and or chalhoub group limited and or subsidiaries and or associated companies - united\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:27:44\nFolder: C1QKIW0 - mct fze and or chalhoub group limited and or subsidiaries and or associated companies - united\nMessage Count: 1\n\n--------------------------------------------------\nID: C1QKIW0_00\nFrom: Credit Control Marsh <Credit.ControlMarsh@marsh.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Kapoor, Puja <Puja.Kapoor@marsh.com>\nBCC: \nDate: 2025-08-06 16:24\nSubject: MCT FZE AND /OR CHALHOUB GROUP LIMITED AND/OR SUBSIDIARIES AND/OR ASSOCIATED COMPANIES - UNITED FIDELITY - Statement of Accounts - Dated 5th August 2025\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\nDear Sir/Madam,\n\nGreetings from Marsh! \n\nRefer the attached Statement of Account showing overall premiums of AED 231,367.50 payable to UNITED FIDELITY as of 5th August 2025, refer below table for the ageing\n\nAge Bracket\n\nAmount ( AED)\n\n4. 91 - 180 days\n\n231,368\n\n\nKindly review and provide us with an expected date of settlement of the outstanding premiums at the earliest, Insurer bank details are attached for your reference.\n\nAlternately, if the amount has already been settled please provide us with the bank transfer copy in order to convey it to the insurer and update our books accordingly.",
+      "start_pos": 0,
+      "end_pos": 1569,
+      "chunk_index": 0,
+      "chunk_size": 1569,
+      "metadata": {
+        "doc_id": "C1QKIW0 - mct fze and or chalhoub group limited and or subsidiaries and or associated companies - united\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1QKIW0 - mct fze and or chalhoub group limited and or subsidiaries and or associated companies - united\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Kindly review and provide us with an expected date of settlement of the outstanding premiums at the earliest, Insurer bank details are attached for your reference.\n\nAlternately, if the amount has already been settled please provide us with the bank transfer copy in order to convey it to the insurer and update our books accordingly.\n\nWe look forward to your response. \n\nDisclaimer :\n1. Invoices paid with post-dated CHQ's are shown as outstanding on statement until payments are cleared.\n2. Invoices issued in last 10 days reflecting on SOA may have not been released from Marsh, As this would still be under review with our policy admin team.\n3. Any remittances issued to insurer or marsh should be notified to Credit.ControlMarsh@marsh.com mailbox to ensure these are reconciled quickly and help us engage with your Insurer for application of premiums. \n4. All payments received a week prior or after SOA issuance date will only be reflected on next monthly statement.\n5. Any Invoice related queries should be shared to respective policy admin contacts.\n\nRegards , \n\nCredit Control Team \n\nFor all invoicing related queries, please contact below:\n\nMarsh MENA Credit Control Team \nMarsh Emirates Insurance Brokerage LLC \n23rd Floor Burj Al Salam | Trade Centre Roundabout | Dubai | UAE | PO Box 57006 \nPhone: +971 4 704 6666 \nwww.mmc.com <https://url.uk.m.mimecastprotect.com/s/_UFWC8BRLCxo6OzCnf7sy9RVL?domain=mmc.com>",
+      "start_pos": 1236,
+      "end_pos": 2656,
+      "chunk_index": 1,
+      "chunk_size": 1420,
+      "metadata": {
+        "doc_id": "C1QKIW0 - mct fze and or chalhoub group limited and or subsidiaries and or associated companies - united\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1QKIW0 - mct fze and or chalhoub group limited and or subsidiaries and or associated companies - united\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:54.037357",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2826
+  }
+}

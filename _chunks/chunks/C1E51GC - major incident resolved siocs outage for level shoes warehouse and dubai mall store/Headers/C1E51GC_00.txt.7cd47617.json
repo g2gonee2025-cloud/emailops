@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1E51GC - major incident resolved siocs outage for level shoes warehouse and dubai mall store\\Headers\\C1E51GC_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1E51GC - major incident resolved siocs outage for level shoes warehouse and dubai mall store\\Headers\\C1E51GC_00.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from PAWPR05MB10117.eurprd05.prod.outlook.com (::1) by DU4PR05MB11790.eurprd05.prod.outlook.com with HTTPS; Wed, 10 Sep 2025 19:30:42 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from DB9PR05MB8672.eurprd05.prod.outlook.com (2603:10a6:10:2c8::15) by PAWPR05MB10117.eurprd05.prod.outlook.com (2603:10a6:102:2ea::19) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9073.33; Wed, 10 Sep 2025 19:30:28 +0000\nReceived: from DB9PR05MB8672.eurprd05.prod.outlook.com ([fe80::cb38:7f3b:c339:ddf]) by DB9PR05MB8672.eurprd05.prod.outlook.com ([fe80::cb38:7f3b:c339:ddf%7]) with mapi id 15.20.9094.021; Wed, 10 Sep 2025 19:30:26 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: One Reach <OneReach@chalhoub.com>\nSubject: Major Incident Resolved: SIOCS outage for Level Shoes Warehouse and Dubai Mall store\nThread-Topic: Major Incident Resolved: SIOCS outage for Level Shoes Warehouse and Dubai Mall store\nThread-Index: AQHcIolcO+FTdyU4QUO3/KoePBdHxg==\nX-MS-Exchange-MessageSentRepresentingType: 1\nDate: Wed, 10 Sep 2025 19:30:26 +0000\nMessage-ID: <DB9PR05MB8672E651E6159F84096A57F8DA0EA@DB9PR05MB8672.eurprd05.prod.outlook.com>\nReferences: <DB9PR05MB867204276568F351F6E518BEDA01A@DB9PR05MB8672.eurprd05.prod.outlook.com> <DB9PR05MB8672506A5B7D3FB6F89C4740DA01A@DB9PR05MB8672.eurprd05.prod.outlook.com> <DB9PR05MB867270B87BFC195856442AEFDA00A@DB9PR05MB8672.eurprd05.prod.outlook.com> <SI2PR02MB5243819EDA663F52AC0E3BFD800FA@SI2PR02MB5243.apcprd02.prod.outlook.com> <DB9PR05MB86729F931F8F0DC2CFB1F65FDA0FA@DB9PR05MB8672.eurprd05.prod.outlook.com> <SI2PR02MB5243A83A7306A693620A288C800EA@SI2PR02MB5243.apcprd02.prod.outlook.com> <DB9PR05MB104527C486E13D8A43118D4F58F0EA@DB9PR05MB10452.eurprd05.prod.outlook.com> <DB9PR05MB10452559451B34BBCE5B790208F0EA@DB9PR05MB10452.eurprd05.prod.outlook.com>\nIn-Reply-To: <DB9PR05MB10452559451B34BBCE5B790208F0EA@DB9PR05MB10452.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 2141,
+      "chunk_index": 0,
+      "chunk_size": 2140,
+      "metadata": {
+        "doc_id": "C1E51GC - major incident resolved siocs outage for level shoes warehouse and dubai mall store\\Headers\\C1E51GC_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1E51GC - major incident resolved siocs outage for level shoes warehouse and dubai mall store\\Headers\\C1E51GC_00.txt"
+      }
+    },
+    {
+      "text": "9PR05MB10452.eurprd05.prod.outlook.com>\nIn-Reply-To: <DB9PR05MB10452559451B34BBCE5B790208F0EA@DB9PR05MB10452.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach:\nX-MS-Exchange-Organization-SCL: 1\nX-MS-TNEF-Correlator: <DB9PR05MB8672E651E6159F84096A57F8DA0EA@DB9PR05MB8672.eurprd05.prod.outlook.com>\nmsip_labels: MSIP_Label_a0819fa7-4367-4500-ba88-dd630d977609_ActionId=4be709f9-9d6a-4a59-b1a3-3c3c7fc52a23;MSIP_Label_a0819fa7-4367-4500-ba88-dd630d977609_ContentBits=0;MSIP_Label_a0819fa7-4367-4500-ba88-dd630d977609_Enabled=true;MSIP_Label_a0819fa7-4367-4500-ba88-dd630d977609_Method=Standard;MSIP_Label_a0819fa7-4367-4500-ba88-dd630d977609_Name=a0819fa7-4367-4500-ba88-dd630d977609;MSIP_Label_a0819fa7-4367-4500-ba88-dd630d977609_SetDate=2025-09-09T14:15:23Z;MSIP_Label_a0819fa7-4367-4500-ba88-dd630d977609_SiteId=63ce7d59-2f3e-42cd-a8cc-be764cff5eb6;MSIP_Label_a0819fa7-4367-4500-ba88-dd630d977609_Tag=10, 3, 0, 1\nMIME-Version: 1.0\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: DB9PR05MB8672.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 04\nX-MS-Exchange-Organization-Network-Message-Id: d6adbdbc-3f61-4add-b7fa-08ddf0a07ea1\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: DB9PR05MB8672:EE_|PAWPR05MB10117:EE_|DU4PR05MB11790:EE_\nTo: Undisclosed recipients:;\nReturn-Path: OneReach@chalhoub.com\nX-MS-Exchange-Organization-ExpirationStartTime: 10 Sep 2025 19:30:31.5841 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: d6adbdbc-3f61-4add-b7fa-08ddf0a07ea1\nX-LD-Processed: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3,ExtFwd,ExtAddr\nX-MS-Exchange-AtpMessageProperties: SA\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|69100299015|13003099007|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR05MB8672.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(69100299015)(13003099007)(8096899003)(41050700001);DIR:INT;\nX-Auto-Response-Suppress: DR, OOF, AutoReply\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Sep 2025 19:30:26.6344 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: DB9PR05MB8672.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: d6adbdbc-3f61-4add-b7fa-08ddf0a07ea1\nX-MS-Exchange-CrossTenant-MailboxType: HOSTED\nX-MS-Exchange-CrossTenant-UserPrincipalName: shE+EB/phK1VF3pmQ4rpnv4u4T9JB06jX+0Ewgsev+AHpZSZ3ll9f1IDzWAJ2Fc4SCNrVHvpuH22b6X4/wNN6wNtV7qWb4eExIdrdintUAc=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PAWPR05MB10117\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:15.4084364\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.9094.017\nX-Microsoft-Antispam-Mailbox-Delivery: wl:1;pcwl:1;ucf:0;jmr:0;auth:0;dest:I;ENG:(910005)(920097)(811242)(255002)(410001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: G/VeZ50kNfBELld7qtHRbgRW6n7tkWyg/o+ryl1KWYxTi7nrImgNsjb7ieNoFaH8M83hZ8P/ShcQgLQE7qbmEGfjc5lmpLRgSxTn2gz8RyMKa27k7KXz6hmC9g3CMARCR26jgrIET89dvx3lJERDF0rJNhWjNe7hwKaGLUoXimtBq+brZxqk5G+mUf8KW/h6zdoC6n1+V1dw1XU8V5SefDWyhGnq0+mvW5lLzEMbbbdP0N0b+HKZCBPVmWQzTLkuJIlhyQCTFTtB7XQu1kdAU2UQ/Yn/hzn9iSVmyo6xYkhPnxvD0dIH0DxcJxAuWePVAhUmq/OeEhHiXlY/EudPxunONkJgs3L4VZJWhKS3Az4GAsQlfYPDieqT/pFgEoqm1tdrIADnlhsSCPo90wOZrtM0EseL5uFHFRNgt0MaK7mr9TtofWu32g5ef4yXG8R4gpQoANZVB77aUJFD+EfR2NM03+wHmad9iZhF8wWQN74/SmxxyacXNDUBG67Zrkf+U11HD1z9gXgJPyZz7AdlJ13Ys6dYBh1DTwFaJgQZzeO/CDu3Xw5uL0jkrpHTveWFk+bP6nlQYIsS45t6QI0XgjIdbcmFkiFHTH25gCUmPvnq/2ky/0B3MFQAK1zz8WFB4aog6aFs6/a73wBrMNnq0Zo+oM6tQtjqryA3crt8z9GesJTcygMgDud3CRAgo5yMo21JQWV5LdU67qG2HCm/oKUfKoiEX5yGrpzQDhDlOa+Zv2uADStQDhAjnT+ne/p8qtVfF5NgODXLfJqyAtBjDsOIGbMkOFyqI2h/tLk7au1oECNrYvu9f2UDUILZXAf7bVltUk3ya1J2h7BPKjRr2om/gtFUjNoaGUF5tcFPUMYnee+FaLusnPtubqWK6iwX",
+      "start_pos": 1941,
+      "end_pos": 6095,
+      "chunk_index": 1,
+      "chunk_size": 4154,
+      "metadata": {
+        "doc_id": "C1E51GC - major incident resolved siocs outage for level shoes warehouse and dubai mall store\\Headers\\C1E51GC_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1E51GC - major incident resolved siocs outage for level shoes warehouse and dubai mall store\\Headers\\C1E51GC_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:27:35.218768",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 6153
+  }
+}

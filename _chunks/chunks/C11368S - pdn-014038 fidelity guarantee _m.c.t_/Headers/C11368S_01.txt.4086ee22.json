@@ -1,0 +1,31 @@
+{
+  "doc_id": "C11368S - pdn-014038 fidelity guarantee (m.c.t)\\Headers\\C11368S_01.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C11368S - pdn-014038 fidelity guarantee (m.c.t)\\Headers\\C11368S_01.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by PAVPR05MB10378.eurprd05.prod.outlook.com (2603:10a6:102:2f9::7) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8398.17; Mon, 17 Feb 2025 10:54:39 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%6]) with mapi id 15.20.8445.017; Mon, 17 Feb 2025 10:54:38 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Margot Diab <Margot.Diab@chalhoub.com>, Ahmad Alnajdawi <Ahmad.Alnajdawi@chalhoub.com>\nCC: Bader Abdallah <Bader.Abdallah@chalhoub.com>, Husam Alkhateeb <Husam.Alkhateeb@chalhoub.com>\nSubject: RE: PDN-014038 / FIDELITY GUARANTEE (M.C.T)\nThread-Topic: PDN-014038 / FIDELITY GUARANTEE (M.C.T)\nThread-Index: AQHbeuwvwFdjZCBg8kubKMKLEjMH67NLV64wgAAFPpA=\nDate: Mon, 17 Feb 2025 10:54:38 +0000\nMessage-ID: <AS8PR05MB108241550407742F30DD1C7449DFB2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <AS8PR05MB10111AC96A9E9EF2B04FF093F9FF32@AS8PR05MB10111.eurprd05.prod.outlook.com> <AS2PR05MB105449FAB309758702173EA7781FB2@AS2PR05MB10544.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS2PR05MB105449FAB309758702173EA7781FB2@AS2PR05MB10544.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|PAVPR05MB10378:EE_\nx-ms-office365-filtering-correlation-id: 529c866d-dc65-4005-a814-08dd4f417932\nx-ms-exchange-atpmessageproperties: SA\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|7053199007|13003099007|4013099003|8096899003|41050700001;\nx-microsoft-antispam-message-info: oI6hYiL6+DEljD9noka4xqu/LzLELnDEeUyezRk+wRDNnzhcjXwN5YgGPMIgj/Cttdps8DDiiM5+/qlPe74KCDpZ1E5rLuGdDrOcPJVc0DtZbj7RuodWkpNWlvWqilzw2hXyYv0Z2FarwgOQIdQeyiJy3FWJzk23e0yFsJ1bTp9bgJb5z27rt31KLv2VQPTg+7TGb7ECHAiv8+x9AdeF+mv7JKE26obpQLBYyBD6agfyM+N7ZtpSoHsndlmJUUtkKOAW7+QNfdMwr0bpbMLey3CL//shiKlFIlpySEhklXAEXEyoKSX45I46D59Bx97ZTmuNnqsHiZU4nhxK6Ivaa9NkSP673P55UwfzuJtC4cmM/6RsmU3/EjIoSlIdBSXqHhpdc0CoSDTXCXG4nJY/Q8oSLzf/YJAFVTaYw2fp60dWUhxc1D8VaJaPOiGGbP7M1h9joryH2Rsnpr6Pl1hqoACdqf6HjPgj+RIlfF/iAQQX7DTj6/SPDru4ef3e1x3KxLUR++/3Z7COR0WlBkTlXA7v2sOzs8MQq5h0FoL7VBkA9fEhrncV2dFarhVNHHPPH0rMCtBSuwTX4HD3XmQmDKtlrYjG/MMyBo1XRHFdlisQ5GO3boNGeMjQLdZclSk0Z4IEd81juAEUL1ZSv8DC/RFdR+y63Fktq9XYDtOfveSQXh4m3mfuJOHdi+CWWUo0cCl5jH/yFicVCpF0pfMl0Kz7MxjcvJQG/fvk9JwLSHaEUg2KgHZ2RB82g8h9ZJdX\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(7053199007)(13003099007)(4013099003)(8096899003)(41050700001);DIR:INT;\nContent-Type: multipart/mixed; boundary=\"_014_AS8PR05MB108241550407742F30DD1C7449DFB2AS8PR05MB10824eu_\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: SxVLZIFXmc2oxmVtGChrdGJ76RUFLLPAYD9V96eyogNSwpL2Q9ytus4pL/Cn3VD/cDbjn3JamyOCYfQjfTWvinTxgUYt7T0U0S3X8kXA4Fvrn2imYpS/tzF13jkkmfEJhESXNaOy0/sKIO61KGHn+G/1XdLeUYMBd2vDC5cZhUh67bl6874iH0uvMQMif79Zre8JmFvODwyu8nUCXUrSLMKf9RfpvoHd5hbMMKp5IlpHzVkHS08WDnjH93DEHxRsUvmz09+eVrXFdpqGq+2YzeOHVAI+vbeYq66YO4Af91s7FLC9ER1aDoCYFUQqsGm5azEQriJf8GpbMhOxjKp5B1b5vo+pN5qlmvKtLUr8kv9GtW7EefhhIH5Z0wyN7CLGLCa+CS1fkl13xRSdCNkeBs1Mlv71/P/lsfRFbR7Eikbx7NQTJmGKTtlvoqPsjkmkN/OT4CcUPfOV1RZCMzi8Nen2hie5++K6Ceb5hjScFNDVV1WanKzEm8hvNijVYzmyF+IycEDosx5vlleMxvm1wMZiXAsDgLDsfIbtBNKVDVHNW2RNvb+wHKAINRoXIHefB+ijtWRTQiqktZljaMyot+kPmYjZAntBQguk5pFb8ndJmCSFPSwdUk3t6ZNiuva+\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 529c866d-dc65-4005-a814-08dd4f417932\nX-MS-Exchange-CrossTenant-originalarrivaltime: 17 Feb 2025 10:54:38.0876 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: k3Tbw23VJkJySmOxeqG5HD+P0EJM0e9rsvThEuzGfMfYOPa5MWPHSst/lOiEIUUgWG3aeBcK+sG5cRen/o74WpSGwDh+ocFBEIM6kaZ3puw=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PAVPR05MB10378\nX-OrganizationHeadersPreserved: PAVPR05MB10378.eurprd05.prod.outlook.com",
+      "start_pos": 0,
+      "end_pos": 4559,
+      "chunk_index": 0,
+      "chunk_size": 4559,
+      "metadata": {
+        "doc_id": "C11368S - pdn-014038 fidelity guarantee (m.c.t)\\Headers\\C11368S_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C11368S - pdn-014038 fidelity guarantee (m.c.t)\\Headers\\C11368S_01.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:43.148172",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4603
+  }
+}

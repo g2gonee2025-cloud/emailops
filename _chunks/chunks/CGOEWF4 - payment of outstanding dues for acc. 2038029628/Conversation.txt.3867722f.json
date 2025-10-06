@@ -1,0 +1,53 @@
+{
+  "doc_id": "CGOEWF4 - payment of outstanding dues for acc. 2038029628\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CGOEWF4 - payment of outstanding dues for acc. 2038029628\\Conversation.txt",
+  "num_chunks": 3,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:48:05\nFolder: CGOEWF4 - payment of outstanding dues for acc. 2038029628\nMessage Count: 1\n\n--------------------------------------------------\nID: CGOEWF4_00\nFrom: noreply@dewa.gov.ae <noreply@dewa.gov.ae>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-01-11 08:47\nSubject: Payment of outstanding dues for Acc. 2038029628\n--------------------------------------------------\n\n________________________________\n\n\nDisclaimer:\n\nThe information in this email and in any files transmitted with it is intended only for the addressee and may contain confidential and/or privileged material. Access to this email by anyone else is unauthorized. If you receive this in error, please contact the sender immediately and delete the material from any computer. If you are not the intended recipient, any disclosure, copying, distribution or any action taken or omitted to be taken in reliance on it, is strictly prohibited. Statement and opinions expressed in this e-mail are those of the sender, and do not necessarily reflect those of DEWA. DEWA accepts no liability for any damage caused by any virus/worms transmitted by this email.",
+      "start_pos": 0,
+      "end_pos": 1223,
+      "chunk_index": 0,
+      "chunk_size": 1223,
+      "metadata": {
+        "doc_id": "CGOEWF4 - payment of outstanding dues for acc. 2038029628\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CGOEWF4 - payment of outstanding dues for acc. 2038029628\\Conversation.txt"
+      }
+    },
+    {
+      "text": "The information in this email and in any files transmitted with it is intended only for the addressee and may contain confidential and/or privileged material. Access to this email by anyone else is unauthorized. If you receive this in error, please contact the sender immediately and delete the material from any computer. If you are not the intended recipient, any disclosure, copying, distribution or any action taken or omitted to be taken in reliance on it, is strictly prohibited. Statement and opinions expressed in this e-mail are those of the sender, and do not necessarily reflect those of DEWA. DEWA accepts no liability for any damage caused by any virus/worms transmitted by this email.\n\nDubai Electricity and Water Authority (PJSC), Dubai, UAE, http://www.dewa.gov.ae <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Furl.uk.m.mimecastprotect.com%2Fs%2FvEtFCv9E4IEljlDtXhkSQJQOa%3Fdomain%3Ddewa.gov.ae&data=05%7C02%7Chagop.ghazarian%40chalhoub.com%7Cc690ce44f607499fa90008dd31fb0c98%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638721676518283851%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=ovjNMInpLJwCjq12aSHQ5cDAnaTNQtvCBV8z7YAim20%3D&reserved=0>",
+      "start_pos": 525,
+      "end_pos": 1797,
+      "chunk_index": 1,
+      "chunk_size": 1271,
+      "metadata": {
+        "doc_id": "CGOEWF4 - payment of outstanding dues for acc. 2038029628\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CGOEWF4 - payment of outstanding dues for acc. 2038029628\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Dubai Electricity and Water Authority (PJSC), Dubai, UAE, http://www.dewa.gov.ae <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Furl.uk.m.mimecastprotect.com%2Fs%2FvEtFCv9E4IEljlDtXhkSQJQOa%3Fdomain%3Ddewa.gov.ae&data=05%7C02%7Chagop.ghazarian%40chalhoub.com%7Cc690ce44f607499fa90008dd31fb0c98%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638721676518283851%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=ovjNMInpLJwCjq12aSHQ5cDAnaTNQtvCBV8z7YAim20%3D&reserved=0> \n\nOur Vision: A globally leading sustainable innovative corporation committed to achieving Net-Zero by 2050.\nOur Mission: We are committed and aligned to Dubai’s 8 Guiding Principles and 50-Year Charter supporting the UAE’s directions through the delivery of global leading services and innovative energy and potable water solutions enriching lives and ensuring the happiness of our stakeholders, for a sustainable Net-Zero carbon 2050.",
+      "start_pos": 1225,
+      "end_pos": 2233,
+      "chunk_index": 2,
+      "chunk_size": 1008,
+      "metadata": {
+        "doc_id": "CGOEWF4 - payment of outstanding dues for acc. 2038029628\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CGOEWF4 - payment of outstanding dues for acc. 2038029628\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:31.962151",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2272
+  }
+}

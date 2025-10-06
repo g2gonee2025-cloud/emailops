@@ -1,0 +1,42 @@
+{
+  "doc_id": "CE1BFFO - insurance certificate for guess and l’occitane\\Headers\\CE1BFFO_01.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CE1BFFO - insurance certificate for guess and l’occitane\\Headers\\CE1BFFO_01.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from PAXPR05MB9121.eurprd05.prod.outlook.com (::1) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Thu, 31 Oct 2024 09:29:16 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from PAWPR05MB10015.eurprd05.prod.outlook.com (2603:10a6:102:33f::14) by PAXPR05MB9121.eurprd05.prod.outlook.com (2603:10a6:102:2b4::10) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8093.24; Thu, 31 Oct 2024 09:29:13 +0000\nReceived: from PAWPR05MB10015.eurprd05.prod.outlook.com ([::1]) by PAWPR05MB10015.eurprd05.prod.outlook.com ([fe80::13cd:a858:faa6:78c7%5]) with Microsoft SMTP Server id 15.20.8093.018; Thu, 31 Oct 2024 09:29:13 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Kawttar Nassik <Kawttar.Nassik@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: =?utf-8?B?QXV0b21hdGljIHJlcGx5OiBJbnN1cmFuY2UgY2VydGlmaWNhdGUgZm9yIEd1?= =?utf-8?B?ZXNzIGFuZCBM4oCZT2NjaXRhbmUg?=\nThread-Topic: =?utf-8?B?SW5zdXJhbmNlIGNlcnRpZmljYXRlIGZvciBHdWVzcyBhbmQgTOKAmU9jY2l0?= =?utf-8?Q?ane_?=\nThread-Index: AQHZ+22CG1O/grDBe0CaNChtw/9rY7BC5voQgAAFQS6AAzUI1IAJTQUggAADOQCACXP6CYABlQdRgAAUeZCAATArIIAAGDMQgA/p9hCCNf+d0IABNuvE\nReferences: <DBAPR05MB6981D92009A1F8DA0A796BFCFBCDA@DBAPR05MB6981.eurprd05.prod.outlook.com> <AS8PR05MB10824816694871C11E284FA019DCDA@AS8PR05MB10824.eurprd05.prod.outlook.com> <DBAPR05MB69814397AAFC686E463FD543FBCDA@DBAPR05MB6981.eurprd05.prod.outlook.com> <DBAPR05MB698186BE81DD43B88CE8BC8BFBD3A@DBAPR05MB6981.eurprd05.prod.outlook.com> <DBAPR05MB6981264FDB32775F5E1C3C4CFBD5A@DBAPR05MB6981.eurprd05.prod.outlook.com> <AS8PR05MB1082408F5A3D98E6610C8805A9DD5A@AS8PR05MB10824.eurprd05.prod.outlook.com> <DBAPR05MB698185FCDA9BF19DBED6DA3EFBDFA@DBAPR05MB6981.eurprd05.prod.outlook.com> <DBAPR05MB6981E46E1BD3E211ABDC10FFFBDEA@DBAPR05MB6981.eurprd05.prod.outlook.com> <DBBPR05MB65373330D4A638973E7BE0CBEEDEA@DBBPR05MB6537.eurprd05.prod.outlook.com> <VE1PR05MB734254AE7CEA4CDD013E2795EBDDA@VE1PR05MB7342.eurprd05.prod.outlook.com> <AS8PR05MB10824AC2E81082A3E603D6AB09DDDA@AS8PR05MB10824.eurprd05.prod.outlook.com> <DBAPR05MB69812EE8896CEBA234344280FBABA@DBAPR05MB6981.eurprd05.prod.outlook.com> <AS8PR05MB10824DFEA6561FC3777C8832F9D552@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824DFEA6561FC3777C8832F9D552@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 2506,
+      "chunk_index": 0,
+      "chunk_size": 2505,
+      "metadata": {
+        "doc_id": "CE1BFFO - insurance certificate for guess and l’occitane\\Headers\\CE1BFFO_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CE1BFFO - insurance certificate for guess and l’occitane\\Headers\\CE1BFFO_01.txt"
+      }
+    },
+    {
+      "text": "om> <AS8PR05MB10824DFEA6561FC3777C8832F9D552@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824DFEA6561FC3777C8832F9D552@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Kawttar.Nassik@chalhoub.com\nX-MS-TNEF-Correlator: 191e27f3-be1e-4ddc-a943-603f249486b1\nMIME-Version: 1.0\nDate: Thu, 31 Oct 2024 09:29:13 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: PAWPR05MB10015.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <f959f9f5b9104e16bc781d5efb25df50@PAWPR05MB10015.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: 55e90c94-dbf5-4843-8f73-08dcf98e7be2\nX-MS-Exchange-Parent-Message-Id: <AS8PR05MB10824DFEA6561FC3777C8832F9D552@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: PAWPR05MB10015:EE_|PAXPR05MB9121:EE_|AS8PR05MB10824:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 31 Oct 2024 09:29:13.9142 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: 55e90c94-dbf5-4843-8f73-08dcf98e7be2\nX-MS-Exchange-AtpMessageProperties: SA|SL\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAWPR05MB10015.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 31 Oct 2024 09:29:13.8687 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: PAWPR05MB10015.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: 55e90c94-dbf5-4843-8f73-08dcf98e7be2\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR05MB9121\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:02.9611029\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8093.023\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:0;jmr:0;auth:0;dest:I;ENG:(910001)(944506478)(944626604)(920097)(425001)(930097)(140003)(1420198);\nX-Microsoft-Antispam-Message-Info: hddpo0s0aNqY4DiM/n7y736PkgEYUFnq4xlBeHQE2UJ5R7TkE/JAPeqoc61t6/OEkxMXHNdjLgLA+T4LtooFoo3+ftCLg5MurSa2JXbdZqTOLSEESrHtfyIkBMtJqWgtf4npo/2Q3RIwPCiB1LL86uaeY7Q1+AMJWoDUK1FU9jWASJqfGYIhAWIsa216GqU3a6hAbDc9YheNZJerXSQqe5ofR01Ii1ss/sMT/aNr/bTqdr9dgnulwL+IiLl3juNeXLed9aBt5RONy5KzspldGto7lsdx7PXabdTqR5H5GtEoj0OOKbV6UbuZtPHABWfj1k5b6th4qMdYu2EUIuxxBTbgXg6YF+kutiemZnFO0IME18mAwh1eSaw7BBVhcFbFCSmjEGu7XYhdRvUBBR7vfqKWdIh21hweSAkoJmdDZVDF9Pwcs2R9MfHlD1zNa5wYcoGrzHlAkR+XMj4jjkPfZWncXOMMVeHSzE2LBYapCPjCRWWJEVUe0lxgENwgXKDNhk7csU+AkRLDFwMguWlWNThdJp2HK21I2f/c/0lGjG++mse8FEK+qeIgapa78t31D+R7yrMgwVRBRyKzrwsc6Qs9XVRZVNBgF7+k8ezM4UsPICcHTPD9XxeU2lAZIJUQAf0PpLiKadcNLZQfLsCCzqkocdazhhyN0AwUme0IYdvV+FrMCzmLEd41yfFOzuhKBC0UXsk9Sn2q2RvgE8MfuPXR367Vd/KajiFHjwIXixWUuDE+3ezjZNtob/zNiDHxioZUtRdcefh99LlC3TOFRKKtD1wMvMrqFyqjZZllgbppF5VXbawgdtuyv75bXlHIzFD7jKy6iGClW2K1ze6BU+vVyvFa3HDdgaYc0uE/4lOsVOlJGYJd0OWzNXPSArPr",
+      "start_pos": 2306,
+      "end_pos": 5870,
+      "chunk_index": 1,
+      "chunk_size": 3564,
+      "metadata": {
+        "doc_id": "CE1BFFO - insurance certificate for guess and l’occitane\\Headers\\CE1BFFO_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CE1BFFO - insurance certificate for guess and l’occitane\\Headers\\CE1BFFO_01.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:22.726529",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5926
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "doc_id": "CTO7N13 - insurance policy-freight\\Headers\\CTO7N13_08.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CTO7N13 - insurance policy-freight\\Headers\\CTO7N13_08.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS1PR05MB9553.eurprd05.prod.outlook.com (::1) by VI1PR05MB10819.eurprd05.prod.outlook.com with HTTPS; Mon, 10 Mar 2025 11:34:57 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from AM9PR05MB8615.eurprd05.prod.outlook.com (2603:10a6:20b:412::7) by AS1PR05MB9553.eurprd05.prod.outlook.com (2603:10a6:20b:481::15) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8534.21; Mon, 10 Mar 2025 11:34:55 +0000\nReceived: from AM9PR05MB8615.eurprd05.prod.outlook.com ([::1]) by AM9PR05MB8615.eurprd05.prod.outlook.com ([fe80::a394:54b7:fe05:1ae1%6]) with Microsoft SMTP Server id 15.20.8534.014; Mon, 10 Mar 2025 11:34:55 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Omar Zaouiri <Omar.Zaouiri@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: Insurance Policy-Freight \nThread-Topic: Insurance Policy-Freight \nThread-Index: AduMO/W9BV8XQq/zQwGVWMlLcPoBWgAASrXgAGLkBHAAAKgEkAAAGoTAACj2DyAACEpmwADHrhcQAAA/ZqI=\nReferences: <DB3PR0502MB4042E6728A115D753896C3BBD0C92@DB3PR0502MB4042.eurprd05.prod.outlook.com> <DB3PR0502MB40423FBFE376529DCD6C8512D0C92@DB3PR0502MB4042.eurprd05.prod.outlook.com> <DB3PR0502MB4042FD27F460072E6645E835D0CB2@DB3PR0502MB4042.eurprd05.prod.outlook.com> <AM9PR05MB8615A1F66941FEF35F332223EFCB2@AM9PR05MB8615.eurprd05.prod.outlook.com> <AS8PR05MB10824FB74EFE0E6A68E05BD459DCB2@AS8PR05MB10824.eurprd05.prod.outlook.com> <AS8PR05MB108246119C0A0BB6FBD5A2F769DCA2@AS8PR05MB10824.eurprd05.prod.outlook.com> <DB3PR0502MB4042730A0592BC97AA721038D0CA2@DB3PR0502MB4042.eurprd05.prod.outlook.com> <VI1PR05MB10819EECC03E4AF7EEF9ED7A89DD62@VI1PR05MB10819.eurprd05.prod.outlook.com>\nIn-Reply-To: <VI1PR05MB10819EECC03E4AF7EEF9ED7A89DD62@VI1PR05MB10819.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 1940,
+      "chunk_index": 0,
+      "chunk_size": 1939,
+      "metadata": {
+        "doc_id": "CTO7N13 - insurance policy-freight\\Headers\\CTO7N13_08.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CTO7N13 - insurance policy-freight\\Headers\\CTO7N13_08.txt"
+      }
+    },
+    {
+      "text": "om> <VI1PR05MB10819EECC03E4AF7EEF9ED7A89DD62@VI1PR05MB10819.eurprd05.prod.outlook.com>\nIn-Reply-To: <VI1PR05MB10819EECC03E4AF7EEF9ED7A89DD62@VI1PR05MB10819.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Omar.Zaouiri@chalhoub.com\nX-MS-TNEF-Correlator: e7cd4af9-02fd-4f4a-a821-28bdf20b1a52\nMIME-Version: 1.0\nDate: Mon, 10 Mar 2025 11:34:55 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: AM9PR05MB8615.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <8ee29f7a06f34147a3a92e00d26341fb@AM9PR05MB8615.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: 5f6ced31-9162-461b-41bb-08dd5fc79503\nX-MS-Exchange-Parent-Message-Id: <VI1PR05MB10819EECC03E4AF7EEF9ED7A89DD62@VI1PR05MB10819.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: AM9PR05MB8615:EE_|AS1PR05MB9553:EE_|VI1PR05MB10819:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 10 Mar 2025 11:34:55.9862 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: 5f6ced31-9162-461b-41bb-08dd5fc79503\nX-MS-Exchange-AtpMessageProperties: SA\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM9PR05MB8615.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Mar 2025 11:34:55.9446 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: AM9PR05MB8615.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: 5f6ced31-9162-461b-41bb-08dd5fc79503\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS1PR05MB9553\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:01.4414732\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8534.017\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910005)(944506478)(944626604)(4716014)(920097)(425001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: VXaTk4tKVdizgTjTD2vL6I+du1M8YBNcz3QvA6TecfRfX6kgOmx0xKVqeS6vN3xZQE7qSYIpu1pManzTMXzeQda8c9KGAA4VyniiJIa5DK5Pw+UKKy9X/vRPsP4f3TzdIn7FCYRpf7HbIUAOG4bzT2PrjmL2ykVrkwEiYdKn1MZOZ5lSx12U74mq7eX2L9CmYGTNkJGRsDCpwzVH7sfcuPhURe+74/gSwmxN9szu06XbTjggVgHw+wikub6L1/tDwWAOjb+4TwJ3lgtxI/qIzA9v6FMwNAuHbBxRy2g+0cf5Gc41IsSlg4pkQmMlm76GydT4FFQNLJ2+KHQTJaZ4OHye8zYr5oEeafDQpNSW07vtLNcZ+w940PygiJ9p0p7w/NhSOEbhrY+7rVO/0oxiXLFJ6UOlGuRSNvXDy2NvsMOVqjuFPY3TCjyIYqWjg4aTe3NIMdfGnSo56MEvd6MKmpjVtYzHXq2rUeZoDPAAYoz9bdnn2AudPVGWySXxKfqihORSBhLK5wLT5cnlWPPpMxvRcOCc2QWQZrw4H0O4+2KfV63HnuwWxz17G0KVqeZXY1JU7qcdK0tTY8qqjLQ0Q3xD11LmMzz2+KT/eXbSMIBfoikCNBOT5gil0SO7+iKP6TCW2ZlUBO4UNH7JdeI1LJaPLFETX7X7vhYQSz2yODmDqXM1l208HMCctIODAbXJgnhoX/r4Fddsfqxzuh+yU0Jp5XQKma5O8JTFAKlY6u4ug3M1mWVtybDWakskMpYhzTXMhGBFTALxFis8LdEBTNfGuIMdFAxDnDpehmulQIRMhPyBjj0q24mvSKgLGHGAGQ/NxQGDxYtJwd8FrQNYrpHTLmnCAVK7EKFTWf6uOQKLLX6BCHSOoWG1zqvuVZOg2CYl9x3o0tiNA9V1QJU5Fg==",
+      "start_pos": 1740,
+      "end_pos": 5334,
+      "chunk_index": 1,
+      "chunk_size": 3594,
+      "metadata": {
+        "doc_id": "CTO7N13 - insurance policy-freight\\Headers\\CTO7N13_08.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CTO7N13 - insurance policy-freight\\Headers\\CTO7N13_08.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:42.967585",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5390
+  }
+}

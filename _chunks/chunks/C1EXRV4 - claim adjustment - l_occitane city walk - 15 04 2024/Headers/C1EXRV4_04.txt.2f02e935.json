@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1EXRV4 - claim adjustment - l'occitane city walk - 15 04 2024\\Headers\\C1EXRV4_04.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1EXRV4 - claim adjustment - l'occitane city walk - 15 04 2024\\Headers\\C1EXRV4_04.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by DBAPR05MB7239.eurprd05.prod.outlook.com (2603:10a6:10:1ac::16) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8466.17; Thu, 27 Feb 2025 10:56:51 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%2]) with mapi id 15.20.8489.014; Thu, 27 Feb 2025 10:56:50 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Milan Milosavic <Milan.Milosavic@loccitane.me>\nSubject: RE: Claim adjustment - L'Occitane City Walk - 15/04/2024\nThread-Topic: Claim adjustment - L'Occitane City Walk - 15/04/2024\nThread-Index: AduHXy1m1WwBwlX9Q3eRcxL/mlV0sQACJ+qCABorOaAAG12hVwAEyog9ACYI5DsAB0BiwA==\nDate: Thu, 27 Feb 2025 10:56:50 +0000\nMessage-ID: <AS8PR05MB10824102E24D98DF53586A5DC9DCD2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <AS8PR05MB10824A8A7D28266B1F0C826DA9DC32@AS8PR05MB10824.eurprd05.prod.outlook.com> <DB7PR05MB5131EAF9BD1A48C5AE35CAF888C32@DB7PR05MB5131.eurprd05.prod.outlook.com> <AS8PR05MB1082488063AC4B0268DDA3DBA9DC22@AS8PR05MB10824.eurprd05.prod.outlook.com> <DB7PR05MB51310BBECD9CB6DF9B51CB1B88C22@DB7PR05MB5131.eurprd05.prod.outlook.com> <DB7PR05MB513124160C7FFBAAAA9C017D88C22@DB7PR05MB5131.eurprd05.prod.outlook.com> <DB7PR05MB51318A8247E40642D99816EB88CD2@DB7PR05MB5131.eurprd05.prod.outlook.com>\nIn-Reply-To: <DB7PR05MB51318A8247E40642D99816EB88CD2@DB7PR05MB5131.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 1657,
+      "chunk_index": 0,
+      "chunk_size": 1656,
+      "metadata": {
+        "doc_id": "C1EXRV4 - claim adjustment - l'occitane city walk - 15 04 2024\\Headers\\C1EXRV4_04.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1EXRV4 - claim adjustment - l'occitane city walk - 15 04 2024\\Headers\\C1EXRV4_04.txt"
+      }
+    },
+    {
+      "text": "ook.com>\nIn-Reply-To: <DB7PR05MB51318A8247E40642D99816EB88CD2@DB7PR05MB5131.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|DBAPR05MB7239:EE_\nx-ms-office365-filtering-correlation-id: 65fbdd57-b490-46e2-543d-08dd571d704d\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|8096899003|7053199007|13003099007|4013099003|41050700001;\nx-microsoft-antispam-message-info: Pgdo4JVOPw7oFMQSCozw71OBTZbX3E4zdrvpSdsiBjrlL46GUjab0JLT1lIT6Fafe2hyuSzpO8ynBwTxypYP7FVRwJlte9A++n3IHyJkpy0NJnf1xtRZ5wakq5mSxKci+Pz5dnAraTuvX+1IaAaamY7h9a4behy906Hcupt4R4sOaFNXeE83OjRQCHKFqbG9J07Ahew46IEK51yO2w8JnbLAizEtSj+LLQ/7zvR79sWxfztj7nzVWGNT70pk0m88MN4Usz4PescqE1Y+b0PFpziaV5qhUFUh/qvgR6v3dnq5PFqIrQH9FnkH9jqiUVRgDX3am+6pTI7AuCBtmB4BTyQ5BoE+HdU9tlQeZIvniO2jhUxQ4UnejIylFSS+GFw9MOd3RyXsq53JPxA9gNwYTbCR0zjKeLdL7DlbViIgQUxjuhAc60FJ03+BR7w3eKMLFG7SeErqRy/GsC9Ebs4zvOhuKPJsxO1RIW32Ju2jO5RkcvjLuEL7MaVkBHyHnfFXz+xTEL/II39YpkY66VkKaqoUOGYp7M7aGx9zHAVekkHd1113DoowVKWOGdasaGJXz3YfaF2nlG0nmKdEOSRk9QpnhYd7k84g6ypmkO0tFT5rY6M/2D9IJSOQ2DWyjzpnds/aw1GmvuQgx0bEcpQDHGhmmfOohxks/fsefCkbqntGE+EAYcvijv8wSd/Y7COQpTtRpiiYzFOIeSZYk9F304W9BPgrmeQd7wIbxuN0tx1kMDjjRNsZJhREG4gyCbhX6LOFymOyxmayV1LWPrjozA==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(7053199007)(13003099007)(4013099003)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_011_AS8PR05MB10824102E24D98DF53586A5DC9DCD2AS8PR05MB10824eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: j64XLdo2JW50s42QLhVRDsYgZExx/jlyvCmSz79JRf4AF3YgDU6WehnvCf8OuGJcNZC+p4nN/5UKYrSy6Fzwc6lv0BB0pwdV/Zm+kgdb2XfW7tSVohcWPgEK5THsEuD/9Kg8028+PNNt/6npLAurvtSw8qW4iCFc394ZH7AEFVnNSQhWZGEvEwp1WHnoqTI9zYxiFm1hgAFphZHkquZl208Czzb7OWNKTVHY5dQfgNfnkbcA5SpET14/tXM9Lo9I2ZBTh+ILGFJ4UwWiNzXpJoRLdUotaPhvtuFSEh46R5BkvLGxSRoRRm9jtVN98y4uK7jwGS4oU9YTLtfuiwKqTjaa2hHcWNjFbWWsRGy/685k8gkX/UoutNAc5raNNBQAZhGNDw/C/can+eU3UDyqy857xDLW0JmctdVIhdhCf/p6MCdVep6Nkk0selpgJAAbT3Rv9mo4wSIgJu4nhErVAh1/C+oup6bCOOZAcK0NtvQ+0c5lI5ZmMsIUwUSLbCQOH2y+o0BbU2NofKoRlsDXALVWSCXvPkhwUn1P8jlSR7tzS3q2FoNGbICVtd1jlmOjV1FhiEwnmyPsFfgvR5ZtvJtc4Zi4526ttqFmvhnEwF85I7Hkpl2jWnbE50DSx+z3\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 65fbdd57-b490-46e2-543d-08dd571d704d\nX-MS-Exchange-CrossTenant-originalarrivaltime: 27 Feb 2025 10:56:50.5858 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: lb0+fodpiCYZsVKBQimY7gdJ5vlKBRC1bPU2scwDX6KVoDLVPOZ3krETkfhQMOanvGMgbxDRYZ7075vN+4Ueh+nR9C1acrp6dtgwWrjVSlA=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: DBAPR05MB7239\nX-OrganizationHeadersPreserved: DBAPR05MB7239.eurprd05.prod.outlook.com",
+      "start_pos": 1457,
+      "end_pos": 4798,
+      "chunk_index": 1,
+      "chunk_size": 3341,
+      "metadata": {
+        "doc_id": "C1EXRV4 - claim adjustment - l'occitane city walk - 15 04 2024\\Headers\\C1EXRV4_04.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1EXRV4 - claim adjustment - l'occitane city walk - 15 04 2024\\Headers\\C1EXRV4_04.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:37.975925",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4839
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "doc_id": "C12V08F - recharge invoice - 189250001672\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C12V08F - recharge invoice - 189250001672\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:34:53\nFolder: C12V08F - recharge invoice - 189250001672\nMessage Count: 1\n\n--------------------------------------------------\nID: C12V08F_00\nFrom: recharge-invoices@chalhoub.com <recharge-invoices@chalhoub.com>\nTo: Ankit Bhagchandani <Ankit.Bhagchandani@chalhoub.com>; Ahmed Moselhi <Ahmed.Moselhi@chalhoub.com>; Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>; Khaled Abdel Aziz <Khaled.M.Abdelaziz@chalhoub.com>; Osama Abbas <Osama.Abbas@chalhoub.com>; Wael Zaky\nCC: Aboobaker Noushad; Bader Abdallah <Bader.Abdallah@chalhoub.com>; Sharda Kumar <Sharda.Kumar@chalhoub.com>; REAL UAE Accounting - Receivable <REALUAEAccounting-Receivable@chalhoub.com>; REAL UAE Accounting - Receivable <REALUAEAccounting-Receivable@chalhoub.com>; Laith Alkhateeb <Laith.Alkhateeb@chalhoub.com>; Hasnain Iqbal <Hasnain.Iqbal@ae.diormail.com>\nBCC: \nDate: 2025-06-18 21:59\nSubject: Recharge Invoice - 189250001672\n--------------------------------------------------\nHello \n\nRecharge of amount USD 4,079.1 has been raised from C.G.R. FZE to MAC FOR PROMOTING COMMERCIAL BUSINESS WLL for the supplier: RETAIL UNITY BV, invoice number: 2018276. \n\nPlease find attached the recharge invoice for your booking and payment reference. \n\nWe shall greatly appreciate your kind attention to this matter. \n\n\n*** This is a system generated email, please do not reply ***",
+      "start_pos": 0,
+      "end_pos": 1414,
+      "chunk_index": 0,
+      "chunk_size": 1414,
+      "metadata": {
+        "doc_id": "C12V08F - recharge invoice - 189250001672\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C12V08F - recharge invoice - 189250001672\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:39.308312",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1446
+  }
+}

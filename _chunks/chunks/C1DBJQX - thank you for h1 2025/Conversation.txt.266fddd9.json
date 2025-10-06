@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1DBJQX - thank you for h1 2025\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1DBJQX - thank you for h1 2025\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:29:45\nFolder: C1DBJQX - thank you for h1 2025\nMessage Count: 1\n\n--------------------------------------------------\nID: C1DBJQX_00\nFrom: Michael Chalhoub <michael.chalhoub@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-07-15 12:56\nSubject: Thank you for H1 2025\n--------------------------------------------------\n\t\n\t\n <https://mcusercontent.com/101e49fb58ec7b23a147c194a/images/8ca2a13c-c9ab-7cac-bc0e-b6afd6ce792c.png> \t\nCopyright © 2025 Chalhoub Group, All rights reserved.\nYou are receiving this email because your are part of the Chalhoub Group family!\n\nWant to change how you receive these emails?\nYou can update your preferences <https://chalhoubgroup.us18.list-manage.com/profile?u=101e49fb58ec7b23a147c194a&id=4bd1b81a74&e=0385dbee45&c=65082da139>  or unsubscribe from this list <https://chalhoubgroup.us18.list-manage.com/unsubscribe?u=101e49fb58ec7b23a147c194a&id=4bd1b81a74&t=b&e=0385dbee45&c=65082da139> . \t\n <https://chalhoubgroup.us18.list-manage.com/track/open.php?u=101e49fb58ec7b23a147c194a&id=65082da139&e=0385dbee45>",
+      "start_pos": 0,
+      "end_pos": 1153,
+      "chunk_index": 0,
+      "chunk_size": 1153,
+      "metadata": {
+        "doc_id": "C1DBJQX - thank you for h1 2025\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1DBJQX - thank you for h1 2025\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:46.006570",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1185
+  }
+}

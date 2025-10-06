@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1UO5N7 - management offices ho1 insurance claim\\Headers\\C1UO5N7_02.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1UO5N7 - management offices ho1 insurance claim\\Headers\\C1UO5N7_02.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from DB9PR05MB9440.eurprd05.prod.outlook.com (2603:10a6:10:360::12) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Tue, 24 Sep 2024 03:22:34 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=3d-consultants.com;\nReceived: from DB6PR05MB3495.eurprd05.prod.outlook.com (2603:10a6:6:1f::10) by DB9PR05MB9440.eurprd05.prod.outlook.com (2603:10a6:10:360::12) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7982.25; Tue, 24 Sep 2024 03:22:29 +0000\nReceived: from DB6PR05MB3495.eurprd05.prod.outlook.com ([::1]) by DB6PR05MB3495.eurprd05.prod.outlook.com ([fe80::db14:29ed:d9d7:c821%3]) with Microsoft SMTP Server id 15.20.7982.018; Tue, 24 Sep 2024 03:22:29 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Maylin Galvez <Maylin.Galvez@3d-consultants.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: Management Offices HO1 Insurance claim\nThread-Topic: Management Offices HO1 Insurance claim\nThread-Index: AQHbDckftw7lqoM7tk6r9hueG+TvWbJmRjwAgAAAKn8=\nReferences: <171102763705.18756.13093757686529850691@vmaz-hiveprdsd.chalhoub.org> <PA4PR05MB9186D61DC07C74C2EA58348086C62@PA4PR05MB9186.eurprd05.prod.outlook.com> <DB7PR05MB4857090AD0BF965AB4C516D8F5C62@DB7PR05MB4857.eurprd05.prod.outlook.com> <PA4PR05MB7807E06422855747D87E5C3CEDC62@PA4PR05MB7807.eurprd05.prod.outlook.com> <DB7PR05MB4857FEB3DF25D495F76D599CF5C62@DB7PR05MB4857.eurprd05.prod.outlook.com> <PA4PR05MB7807EB41D3B9D43E0E0A4FE5EDC62@PA4PR05MB7807.eurprd05.prod.outlook.com> <GV1PR05MB11357B6B7422EFED20C62D5158EC72@GV1PR05MB11357.eurprd05.prod.outlook.com> <PA4PR05MB78075A4F2368AEDB1B1CDCF7EDC72@PA4PR05MB7807.eurprd05.prod.outlook.com> <GV1PR05MB11357B1929FD958DBE07624FC8EC72@GV1PR05MB11357.eurprd05.prod.outlook.com> <DB6PR05MB34955D39BAE6EEBD10216E1F88C72@DB6PR05MB3495.eurprd05.prod.outlook.com> <DB8PR05MB668452E7F08DC089ACD46CDC94C72@DB8PR05MB6684.eurprd05.prod.outlook.com> <GV1PR05MB113575514CE5DD9B41B82AA998EC02@GV1PR05MB11357.eurprd05.prod.outlook.com> <DB6PR05MB3495A4AC730F1B150119C01188D52@DB6PR05MB3495.eurprd05.prod.outlook.com> <AS1PR05MB94418B1834884FFCDB37D9AAF8D72@AS1PR05MB9441.eurprd05.prod.outlook.com> <DB6PR05MB34952132784E7F1F9B39556B88A82@DB6PR05MB3495.eurprd05.prod.outlook.com> <AS1PR05MB944108EB0FE06407427D1C4DF8AA2@AS1PR05MB9441.eurprd05.prod.outlook.com> <DB6PR05MB349575EAE86317D4E5036C0B88AA2@DB6PR05MB3495.eurprd05.prod.outlook.com> <AS1PR05MB94412203C4F7B7B6D8BB76EFF8B32@AS1PR05MB9441.eurprd05.prod.outlook.com> <AS1PR05MB944168C3E7D65CEA92022455F8992@AS1PR05MB9441.eurprd05.prod.outlook.com> <AS1PR05MB9441BA89941393DC51ABF909F8602@AS1PR05MB9441.eurprd05.prod.outlook.com> <AS8PR05MB108244B50B27370CED616ADBF9D602@AS8PR05MB10824.eurprd05.prod.outlook.com> <PA4PR05MB91869A73C0AA0F60308612D2866F2@PA4PR05MB9186.eurprd05.prod.outlook.com> <AS8PR05MB10824D1A1B3895B80D605157C9D682@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824D1A1B3895B80D605157C9D682@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 3146,
+      "chunk_index": 0,
+      "chunk_size": 3145,
+      "metadata": {
+        "doc_id": "C1UO5N7 - management offices ho1 insurance claim\\Headers\\C1UO5N7_02.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1UO5N7 - management offices ho1 insurance claim\\Headers\\C1UO5N7_02.txt"
+      }
+    },
+    {
+      "text": "om> <AS8PR05MB10824D1A1B3895B80D605157C9D682@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824D1A1B3895B80D605157C9D682@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Maylin.Galvez@3d-consultants.com\nX-MS-TNEF-Correlator: caaa0c84-f15e-46af-be0a-993870b9a551\nMIME-Version: 1.0\nDate: Tue, 24 Sep 2024 03:22:29 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: DB6PR05MB3495.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <bf8aa198056549e294dca3a8e8fdff2c@DB6PR05MB3495.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: aa8ffdd4-6f75-4bce-21a7-08dcdc481eb5\nX-MS-Exchange-Parent-Message-Id: <AS8PR05MB10824D1A1B3895B80D605157C9D682@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: DB6PR05MB3495:EE_|DB9PR05MB9440:EE_|AS8PR05MB10824:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 24 Sep 2024 03:22:29.2780 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: aa8ffdd4-6f75-4bce-21a7-08dcdc481eb5\nX-MS-Exchange-AtpMessageProperties: SA|SL\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB6PR05MB3495.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Sep 2024 03:22:29.0556 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: DB6PR05MB3495.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: aa8ffdd4-6f75-4bce-21a7-08dcdc481eb5\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: DB9PR05MB9440\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:05.4680499\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.7982.022\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:0;jmr:0;auth:0;dest:I;ENG:(910001)(944506478)(944626604)(920097)(425001)(930097)(140003)(1420198);\nX-Microsoft-Antispam-Message-Info: zPdGrrKyMEcZnLPvv13bBJKnQ5HpJ55PdRuGnp9XoYB98Qa9vsPUrqTr3h1JtVnyjfTNFAzO9UlRNINxGEo0VMuZc/J8GF/PPqEfvnyTUcg3iWcolWyRHp9eh5gohxlBPW6QUZjd2wzilqmVYGPVRhfiE+cg/9c8PCFF/bQOnL6vGQ100XT1WFx4qGMjXjQQbdLWm2b4DUirbcUnFNmW7pWYJplmvAS9+FEPgVhD2hqsDnvBF/rd3glfol5wFfbTj8OuFUjMIADM1DsDO7FgbXcXIOAZ/rP1kLfR00JGfgdeSQzbx9RJwB4r4HHQOUouHhJnQa7Pq4crfS9Pe1etGgbjLZ/npVEx55fTedCyhpqtCf3skE8F5xIqajcpLxGp1szgvWMuyJQYRB2PysHiqKV7ScfrWpkMSYAMg/mERpR4kHuxN2S4mVRj3/AN4pXitRcrHVC7MVf7SvISGPb9A2W/nXGYRF3pRajuZWM8y+e7AVdCbh3d5E3DSwFlm7eNr3soimLimpaDf8wo8CRYh0KXwsaK+GLFCI+iDw+Jg6PyAVi2J1f7gXAgWXPVrPHbqe2BMeH4c+nstAL1kmY4RmZ41nWFa45Mznn2s7lAsR1daJPdRKarmnzS6xINDspPL8QhvL9d6ET5kpEvKxz4gOyGyEwmSy/XcmszJYgv2WWjJYILGnMU3K4u3y9O7tT2duBkJglDi0dsKPq0/SdhG0hZoUH6EwtTJ9jy2y3L+pmUfD3SGwefJYyXaYDjBTyVaHRPhDg9bWLRuiSPPg13Oi4R1pa4FA2m2rFeHviwyweL2jNl07XrGisHkZmazTMT+aipHzeAg9jp1/pdDHEyjjFsLxQ3tC4NpWSgHy97en+8y7Rst7FGCwOI2e1djoBz",
+      "start_pos": 2946,
+      "end_pos": 6487,
+      "chunk_index": 1,
+      "chunk_size": 3541,
+      "metadata": {
+        "doc_id": "C1UO5N7 - management offices ho1 insurance claim\\Headers\\C1UO5N7_02.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1UO5N7 - management offices ho1 insurance claim\\Headers\\C1UO5N7_02.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:14.958010",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 6543
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1PXZ58 - urgent oracle cloud services outage resolved\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1PXZ58 - urgent oracle cloud services outage resolved\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:35:30\nFolder: C1PXZ58 - urgent oracle cloud services outage resolved\nMessage Count: 1\n\n--------------------------------------------------\nID: C1PXZ58_00\nFrom: One Reach <OneReach@chalhoub.com>\nTo: \nCC: \nBCC: \nDate: 2025-05-19 18:40\nSubject: Urgent: Oracle Cloud Services Outage Resolved \n--------------------------------------------------\n <https://onereach.status.freshservice.com/> \n\n \n\nDear Colleague,\n\n \n\nWe are pleased to inform you that the Oracle Cloud services outage impacting the Store Inventory Operations Cloud System (SIOCS) and related services has now been resolved as of 6:11 GST.\n\n \n\nService Recovery Summary:\n\n*\tSIOCS Integration and Application are now accessible.\n*\tInbound and outbound transactions to/from SIOCS have resumed.\n*\tSales data integration from XStore is restored.\n*\tAccess to SIOCS, RICS, and XOC services has been restored.\n\n \n\nOur teams are working on reprocessing transactions backlog and ensuring accuracy of sales and stocks data in SIOCS, Stock deltas are yet to be verified.\n\n \n\nWe will continue to monitor the systems closely to ensure stability and normal performance.\n\n \n\nIf you experience any further issues, please raise a ticket via OneReach. You can also check real-time status updates via the Tech&Data System Status & Health <https://onereach.status.freshservice.com/>  Dashboard.\n\n \n\n \n\n \n\nThis mail was sent to you by\n\n <https://onereach.chalhoub.com/support/home>",
+      "start_pos": 0,
+      "end_pos": 1495,
+      "chunk_index": 0,
+      "chunk_size": 1495,
+      "metadata": {
+        "doc_id": "C1PXZ58 - urgent oracle cloud services outage resolved\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1PXZ58 - urgent oracle cloud services outage resolved\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:41.018240",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1564
+  }
+}

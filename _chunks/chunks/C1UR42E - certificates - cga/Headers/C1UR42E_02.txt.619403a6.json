@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1UR42E - certificates - cga\\Headers\\C1UR42E_02.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1UR42E - certificates - cga\\Headers\\C1UR42E_02.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by GV2PR05MB10504.eurprd05.prod.outlook.com (2603:10a6:150:d1::20) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8583.24; Tue, 25 Mar 2025 09:49:27 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%2]) with mapi id 15.20.8583.023; Tue, 25 Mar 2025 09:49:27 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Tarek Fakhereddin <Tarek.Fakhereddin@chalhoub.com>\nSubject: RE: Certificates - CGA\nThread-Topic: Certificates - CGA\nThread-Index: AdudaBgh7smplOhyRNqBI81/GeMy2gAAvnKQ\nDate: Tue, 25 Mar 2025 09:49:27 +0000\nMessage-ID: <AS8PR05MB10824357F2DC21F589B36A5749DA72@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <AS8PR05MB108240032088B2E82085D001C9DA72@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB108240032088B2E82085D001C9DA72@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|GV2PR05MB10504:EE_\nx-ms-office365-filtering-correlation-id: f719a0f0-01eb-423c-6dff-08dd6b8254ef\nx-ms-exchange-atpmessageproperties: SA\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|4013099003|8096899003|7053199007|41050700001;\nx-microsoft-antispam-message-info: 0ubv3wMRDIffwFpcdmiNMKWhAPvOxY2cfLK1UPuRsdbIjtsLvIE8nGII7csZqu1ZJFtsGE1bnuKlkzN4OsgNnXG3OOil6uYC1efh8r2ucBKSyoVDOkU4xJV1//P4IqmdVvTSK/droUGiod2xEN6jducvwu46pepDPx/v1aHlhtln8yNj9O2RTRWotxX/yQZaPV06ruQHLm0KZPSBdIyVZ6hl8Jgww8SIcqiNnnR0K1O039XHMEr40kHGCY0W3jUosnUIRgnYDW92MVZotCvS6E29M9PLAQRkCsM9OfrPxhis5RFl0rSNQ0MV/zD6iBmimeCUAG73tUrzsVVn5j6nD/FHCJ3ln7JSuKamIgXrpuQ9T0D0bm/jvIg7HgHapl2sMf+Gndr6CE4tJtR3M/reRKOU0NNeYcOgc4IBATJySU6UqG2znc9VDy5zYjtQNZB9LokmEweSXplZ2tpTPC6g6Pz48sLpXHEtQhxPEEwz6QlsQ7DHYczDlKLr0xkp3YZoPZNNCsvocAUnUWHTs0m9H5JFjZq1qwdqMjXQAG0x6XLED0c8DGRThjBairJCRE4k2+8bq17dqvVfjC3USuvXIS3shvVWc7bubCdvUL1F+4l0AXap6gmubbd9iv7BWf1K2/Zdz8SxTYB8npqGdp35OOyFK+x5A7OeAkyln0CaeI8F9hRrjmpe7uuBZ5E0RPUElWoDhMxfJOO8UKuO1TooD9jYN3LvHI6LLc/eL8mvIbcC/9wpiP/2rjaavBA6LeNE\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(4013099003)(8096899003)(7053199007)(41050700001);DIR:INT;\nContent-Type: multipart/mixed; boundary=\"_012_AS8PR05MB10824357F2DC21F589B36A5749DA72AS8PR05MB10824eu_\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: ZosFOyb98jEkQST9uwUYoiWqz6b6GqBCXhvDPIYTIBB+RjETmk6aqYpEGWtGuyl1EFgSigEAGhW4B6uExAvIk6e0Sj/7DcbR7fjPjo/S0u6CM1sy8fzEQ2SO9zuqlw+MFjrUkXwIVTeHCXY+Y85/VEtla5BzC9k0eue0nGkGI8YMb5fyPcQFY2OpyqHGjbRYa8tu44lOhl2xUOGdicQXb8DSyzmh/iXGhEWX8iZyWNMCbJZBOrk1AnoTX2R6Acp8ghLzv+LJjVvPhhvshz5bYA57oDj82yYBvQFJ8/rZ7IU1GB6DxG22Z+uaqo0v0mkE1ijCmTz3ryPUgDVfaBVYm4PcmtJfeXaBMnOhCw6x5fQgylgaeTiSQrpLJgQEY+vbizUxduMp+nCG6fFEydX/VxGFDOtwqazK8HBIU/gk2Pavbkps20J1/eFaY8rutXgorqhPdXxVH+4NIpsWYXCq7jToizScWVvlf26P1UiQygpzCKiXehxUTdkYYBQfEzTti0HFFWrHYyDutcNr6rYAaQrP9HO5D9j8UWv/my9WHGHWZIu+1sbGw4IHTycfRK8C6nLZHf9W0f7VmAVRY/jusro29Tj0hPsUYQBomwiiUno2Knee6ufZ8GZy3R/TzyeK\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: f719a0f0-01eb-423c-6dff-08dd6b8254ef\nX-MS-Exchange-CrossTenant-originalarrivaltime: 25 Mar 2025 09:49:27.0769 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: I4yJQpwUzf9Bra7DzZjOb7D3M7Q9O7Wqm+lB2RAZYaDvHXVNhYjZ7tkJ2ChTDqEXOECIdTrd1SXlbxAswn2QTCd8uakV9r2OOdwrKiWSv4A=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: GV2PR05MB10504\nX-OrganizationHeadersPreserved: GV2PR05MB10504.eurprd05.prod.outlook.com",
+      "start_pos": 0,
+      "end_pos": 4255,
+      "chunk_index": 0,
+      "chunk_size": 4255,
+      "metadata": {
+        "doc_id": "C1UR42E - certificates - cga\\Headers\\C1UR42E_02.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1UR42E - certificates - cga\\Headers\\C1UR42E_02.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:45.736803",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4297
+  }
+}

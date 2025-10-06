@@ -1,0 +1,31 @@
+{
+  "doc_id": "CJLM0U3 - weekly catch-up for l'occitane claim closure\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CJLM0U3 - weekly catch-up for l'occitane claim closure\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:44:36\nFolder: CJLM0U3 - weekly catch-up for l'occitane claim closure\nMessage Count: 1\n\n--------------------------------------------------\nID: CJLM0U3_00\nFrom: Milan Milosavic <Milan.Milosavic@loccitane.me>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-03-06 12:19\nSubject: Re: Weekly Catch-up for L'Occitane Claim Closure\n--------------------------------------------------\nHi Hagop,\n\nWe will need to submit this or next week to be able to get money on time if is possible \n\nRegards \n\nGet Outlook for iOS <https://aka.ms/o0ukef> \nMILAN MILOSAVIC​​​​\n\nEXECUTIVE CHEF\n\n\n\n \t\n________________________________\n\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSent: Wednesday, March 5, 2025 4:49:29 PM\nTo: Milan Milosavic <Milan.Milosavic@loccitane.me>\nSubject: Canceled: Weekly Catch-up for L'Occitane Claim Closure\nWhen: Wednesday, March 5, 2025 5:00 PM-5:30 PM.\nWhere: Microsoft Teams Meeting \n \nStill waiting for comment from the insurer. Will update you when there are any new developments. Hope you have a lovely day.",
+      "start_pos": 0,
+      "end_pos": 1127,
+      "chunk_index": 0,
+      "chunk_size": 1127,
+      "metadata": {
+        "doc_id": "CJLM0U3 - weekly catch-up for l'occitane claim closure\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CJLM0U3 - weekly catch-up for l'occitane claim closure\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:44.383785",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1180
+  }
+}

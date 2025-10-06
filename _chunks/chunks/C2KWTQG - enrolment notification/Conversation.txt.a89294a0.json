@@ -1,0 +1,42 @@
+{
+  "doc_id": "C2KWTQG - enrolment notification\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C2KWTQG - enrolment notification\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:35:22\nFolder: C2KWTQG - enrolment notification\nMessage Count: 1\n\n--------------------------------------------------\nID: C2KWTQG_00\nFrom: Chalhoub University <Chalhoub.University@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-06-18 15:27\nSubject: Enrolment notification\n--------------------------------------------------\n\n\n \n\n________________________________\n\nHello Hagop,\n\nWe are delighted to confirm your enrolment on: OMNISTART eLearning\n\nPlease visit the link <https://chalhoubuniversity.com/course/view.php?id=3499&section=1>  to start exploring the programme.\n\nFor further support, please contact us here chalhoub.university@chalhoub.com <mailto:chalhoub.university@chalhoub.com> .\n\nEnjoy your learning journey!\nChalhoub University Team\n\n________________________________\n\nمرحبًا Hagop,\n\nنحن مسرورون بتأكيد تسجيلك في:  OMNISTART eLearning.\n\nيرجى زيارة الرابط <https://chalhoubuniversity.com/course/view.php?id=3499&section=1>  لبدء استكشاف البرنامج.\n\nللحصول على دعم إضافي، يرجى التواصل معنا على البريد الإلكتروني التالي: chalhoub.university@chalhoub.com <mailto:chalhoub.university@chalhoub.com> .\n\nنتمنى لك رحلة تعلم ممتعة!\nفريق جامعة شلهوب\n\nCHALHOUB UNIVERSITY\t\nCOMPANY ACCOUNT\t\nGroup Human Resources",
+      "start_pos": 0,
+      "end_pos": 1326,
+      "chunk_index": 0,
+      "chunk_size": 1325,
+      "metadata": {
+        "doc_id": "C2KWTQG - enrolment notification\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C2KWTQG - enrolment notification\\Conversation.txt"
+      }
+    },
+    {
+      "text": "للحصول على دعم إضافي، يرجى التواصل معنا على البريد الإلكتروني التالي: chalhoub.university@chalhoub.com <mailto:chalhoub.university@chalhoub.com> .\n\nنتمنى لك رحلة تعلم ممتعة!\nفريق جامعة شلهوب\n\nCHALHOUB UNIVERSITY\t\nCOMPANY ACCOUNT\t\nGroup Human Resources\t\n\n\t\nDUBAI\t\n‑\t\nUNITED ARAB EMIRATES\t\n\t\t\n \t\n <https://chalhoubgroup.com/> \t\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\t\n‑\n\t\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\t\n <https://twitter.com/ChalhoubGroup> \t\n <https://www.facebook.com/chalhoubgroup/> \t\n <https://www.instagram.com/chalhoubgroup> \t\n <https://www.linkedin.com/company/chalhoub-group/> \t\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 1074,
+      "end_pos": 1791,
+      "chunk_index": 1,
+      "chunk_size": 717,
+      "metadata": {
+        "doc_id": "C2KWTQG - enrolment notification\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C2KWTQG - enrolment notification\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:49.230508",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2035
+  }
+}

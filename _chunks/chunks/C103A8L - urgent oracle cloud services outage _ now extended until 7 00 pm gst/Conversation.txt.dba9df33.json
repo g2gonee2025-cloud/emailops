@@ -1,0 +1,42 @@
+{
+  "doc_id": "C103A8L - urgent oracle cloud services outage – now extended until 7 00 pm gst\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C103A8L - urgent oracle cloud services outage – now extended until 7 00 pm gst\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:35:30\nFolder: C103A8L - urgent oracle cloud services outage – now extended until 7 00 pm gst\nMessage Count: 1\n\n--------------------------------------------------\nID: C103A8L_00\nFrom: One Reach <OneReach@chalhoub.com>\nTo: \nCC: \nBCC: \nDate: 2025-05-19 17:38\nSubject: Urgent: Oracle Cloud Services Outage – Now Extended Until 7:00 PM GST\n--------------------------------------------------\n \n\n <https://onereach.status.freshservice.com/> \n\n \n\nDear Colleague,\n\nPlease be advised that the Oracle Cloud services outage remains ongoing and has now been further extended by another hour. The updated expected resolution time is now 7:00 PM GST today.\n\n \n\n________________________________\n\nUpdated Outage Window:\n📅 Date: Monday, 19th May 2025\n⏰ Time: 11:30 AM – 7:00 PM GST\n\n________________________________\n\n \n\nService Impact:\nThe outage continues to primarily affect the Store Inventory Operations Cloud System (SIOCS), resulting in full service downtime throughout this extended window.\n\n \n\nKnown Current Impacts:\n\n*\tSIOCS Integration and Application remain unavailable.\n*\tNo inbound or outbound transactions are being processed to/from SIOCS.\n*\tSales data is not integrating into SIOCS.\n*\tWhile XStore remains operational, please note: \n\n\t*\tSIOCS will reflect inaccurate stock levels due to the absence of sales integration and posting from XStore.\n\t*\tStock deltas are not functioning.\n\t*\tAccess to and operations within SIOCS are unavailable.\n\n*\tRICS and XOC services remain down.\n\n________________________________",
+      "start_pos": 0,
+      "end_pos": 1588,
+      "chunk_index": 0,
+      "chunk_size": 1588,
+      "metadata": {
+        "doc_id": "C103A8L - urgent oracle cloud services outage – now extended until 7 00 pm gst\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C103A8L - urgent oracle cloud services outage – now extended until 7 00 pm gst\\Conversation.txt"
+      }
+    },
+    {
+      "text": "*\tSIOCS will reflect inaccurate stock levels due to the absence of sales integration and posting from XStore.\n\t*\tStock deltas are not functioning.\n\t*\tAccess to and operations within SIOCS are unavailable.\n\n*\tRICS and XOC services remain down.\n\n________________________________\n\n \n\nOracle continues to work urgently to resolve the issue. We are monitoring the situation closely and will share further updates as they become available.\n\n \n\nFor support during this period, please raise a ticket via OneReach. You can also check real-time status updates via the Tech&Data System Status & Health <https://onereach.status.freshservice.com/>  Dashboard.\n\n \n\n \n\n \n\nThis mail was sent to you by\n\n <https://onereach.chalhoub.com/support/home>",
+      "start_pos": 1311,
+      "end_pos": 2044,
+      "chunk_index": 1,
+      "chunk_size": 732,
+      "metadata": {
+        "doc_id": "C103A8L - urgent oracle cloud services outage – now extended until 7 00 pm gst\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C103A8L - urgent oracle cloud services outage – now extended until 7 00 pm gst\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:36.600959",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2153
+  }
+}

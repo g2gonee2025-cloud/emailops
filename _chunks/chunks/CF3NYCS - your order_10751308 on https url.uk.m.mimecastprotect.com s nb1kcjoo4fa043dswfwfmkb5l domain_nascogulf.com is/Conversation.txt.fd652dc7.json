@@ -1,0 +1,42 @@
+{
+  "doc_id": "CF3NYCS - your order#10751308 on https url.uk.m.mimecastprotect.com s nb1kcjoo4fa043dswfwfmkb5l domain=nascogulf.com is\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CF3NYCS - your order#10751308 on https url.uk.m.mimecastprotect.com s nb1kcjoo4fa043dswfwfmkb5l domain=nascogulf.com is\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:39:46\nFolder: CF3NYCS - your order#10751308 on https url.uk.m.mimecastprotect.com s nb1kcjoo4fa043dswfwfmkb5l domain=nascogulf.com is \nMessage Count: 1\n\n--------------------------------------------------\nID: CF3NYCS_00\nFrom: orders@ccavenue.ae <orders@ccavenue.ae>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-05-21 14:05\nSubject: Your order#10751308 on https://url.uk.m.mimecastprotect.com/s/Nb1kCjOo4FA043DSWfwfmkb5l?domain=nascogulf.com is successful.\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n <https://url.uk.m.mimecastprotect.com/s/Nb1kCjOo4FA043DSWfwfmkb5l?domain=nascogulf.com> \t \nDear HAGOP ARSHAK GHAZARIAN,\n\nThank you for your order from http://www.nascogulf.com <https://url.uk.m.mimecastprotect.com/s/Nb1kCjOo4FA043DSWfwfmkb5l?domain=nascogulf.com> \n\nFor your convenience, we have included a copy of your order below. The charge will appear on your credit card / Account Statement as 'NASCO GULF'\n\n\nReference ##\t CCAvenue Reference #\t Order Date\t \n <https://secure.ccavenue.ae/transaction/images/blank_spacer.gif> \t\nMV-04-2025-0421\t 114066553168\t 21/05/2025 13:57:58",
+      "start_pos": 0,
+      "end_pos": 1493,
+      "chunk_index": 0,
+      "chunk_size": 1491,
+      "metadata": {
+        "doc_id": "CF3NYCS - your order#10751308 on https url.uk.m.mimecastprotect.com s nb1kcjoo4fa043dswfwfmkb5l domain=nascogulf.com is\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CF3NYCS - your order#10751308 on https url.uk.m.mimecastprotect.com s nb1kcjoo4fa043dswfwfmkb5l domain=nascogulf.com is\\Conversation.txt"
+      }
+    },
+    {
+      "text": "For your convenience, we have included a copy of your order below. The charge will appear on your credit card / Account Statement as 'NASCO GULF'\n\n\nReference ##\t CCAvenue Reference #\t Order Date\t \n <https://secure.ccavenue.ae/transaction/images/blank_spacer.gif> \t\nMV-04-2025-0421\t 114066553168\t 21/05/2025 13:57:58\t \n\n\nBilling Details\t \n \t \nCustomer:\t HAGOP ARSHAK GHAZARIAN  |  hagop.ghazarian@chalhoub.com <mailto:hagop.ghazarian@chalhoub.com>   |  971504366799\t \nAddress:\t Rakayez DB1, Al Furjan, Apt 709, Dubai, UAE ,Dubai ,Dubai 00000. United Arab Emirates\t \nCustomer IP:\t 146.70.155.28 <https://url.uk.m.mimecastprotect.com/s/yXhgCkOp4F4vyrAsVhPfGGzUB?domain=146.70.155.28> \t \nPay Mode:\t Credit Card - MasterCard\t \nBank Ref #:\t T03063\t \nInstructions:\t \t\n <https://secure.ccavenue.ae/transaction/images/blank_spacer.gif> \tGross Amount: \t AED\t 2751.00\t \nOrder Amount: \t AED\t 2751.00\t \n <https://secure.ccavenue.ae/transaction/images/blank_spacer.gif> \t\nNet Payable: \t AED\t 2751.00\t \n\n\n <https://secure.ccavenue.ae/transaction/images/blank_spacer.gif> \t\nCUSTOMER CARE\nAccounts Department\nAccounting@nascodubai.com\n04-3051694\t  <https://secure.ccavenue.ae/transaction/images/logo_ccavenue_poweredby.jpg>",
+      "start_pos": 1176,
+      "end_pos": 2382,
+      "chunk_index": 1,
+      "chunk_size": 1206,
+      "metadata": {
+        "doc_id": "CF3NYCS - your order#10751308 on https url.uk.m.mimecastprotect.com s nb1kcjoo4fa043dswfwfmkb5l domain=nascogulf.com is\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CF3NYCS - your order#10751308 on https url.uk.m.mimecastprotect.com s nb1kcjoo4fa043dswfwfmkb5l domain=nascogulf.com is\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:10.536690",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2543
+  }
+}

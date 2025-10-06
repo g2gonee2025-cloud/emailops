@@ -1,0 +1,42 @@
+{
+  "doc_id": "CVHRPXS - chanel khayat\\Headers\\CVHRPXS_03.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CVHRPXS - chanel khayat\\Headers\\CVHRPXS_03.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from DB9PR05MB7673.eurprd05.prod.outlook.com (2603:10a6:10:21c::9) by VI1PR05MB10819.eurprd05.prod.outlook.com with HTTPS; Thu, 7 Nov 2024 08:26:25 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from AM0PR05MB4596.eurprd05.prod.outlook.com (2603:10a6:208:b6::29) by DB9PR05MB7673.eurprd05.prod.outlook.com (2603:10a6:10:21c::9) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8137.19; Thu, 7 Nov 2024 08:26:23 +0000\nReceived: from AM0PR05MB4596.eurprd05.prod.outlook.com ([::1]) by AM0PR05MB4596.eurprd05.prod.outlook.com ([fe80::66fa:90ec:21fa:5381%4]) with Microsoft SMTP Server id 15.20.8093.018; Thu, 7 Nov 2024 08:26:23 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Tarek Fakhereddin <Tarek.Fakhereddin@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: Chanel Khayat\nThread-Topic: Chanel Khayat\nThread-Index: AQHbKon7l2ceXNOtrEOzf2wMZT6tiLKew5pbgAm71oCAAvjQcoAADZQWgAACjWg=\nReferences: <AM0PR05MB4596331FD9A8DCA0324020B495542@AM0PR05MB4596.eurprd05.prod.outlook.com> <PR3PR09MB5379CA4F783B12BC5BB55EFBF3542@PR3PR09MB5379.eurprd09.prod.outlook.com> <PR3PR09MB537902C6FB88FC2770BF2233F3522@PR3PR09MB5379.eurprd09.prod.outlook.com> <AM0PR05MB45963B9CD5452B97BDB604D6955C2@AM0PR05MB4596.eurprd05.prod.outlook.com> <VI1PR05MB10819E0E1873DB19464C0FD509D5C2@VI1PR05MB10819.eurprd05.prod.outlook.com>\nIn-Reply-To: <VI1PR05MB10819E0E1873DB19464C0FD509D5C2@VI1PR05MB10819.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 1654,
+      "chunk_index": 0,
+      "chunk_size": 1653,
+      "metadata": {
+        "doc_id": "CVHRPXS - chanel khayat\\Headers\\CVHRPXS_03.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CVHRPXS - chanel khayat\\Headers\\CVHRPXS_03.txt"
+      }
+    },
+    {
+      "text": "om> <VI1PR05MB10819E0E1873DB19464C0FD509D5C2@VI1PR05MB10819.eurprd05.prod.outlook.com>\nIn-Reply-To: <VI1PR05MB10819E0E1873DB19464C0FD509D5C2@VI1PR05MB10819.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Tarek.Fakhereddin@chalhoub.com\nX-MS-TNEF-Correlator: 2c31c5e7-6fb4-4543-818c-83120b2de058\nMIME-Version: 1.0\nDate: Thu, 7 Nov 2024 08:26:23 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: AM0PR05MB4596.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <7d0ca9b2522b4bf0b11739f9f624ff37@AM0PR05MB4596.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: a89a55fb-97b2-420e-0731-08dcff05dd50\nX-MS-Exchange-Parent-Message-Id: <VI1PR05MB10819E0E1873DB19464C0FD509D5C2@VI1PR05MB10819.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: AM0PR05MB4596:EE_|DB9PR05MB7673:EE_|VI1PR05MB10819:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 07 Nov 2024 08:26:23.3683 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: a89a55fb-97b2-420e-0731-08dcff05dd50\nX-MS-Exchange-AtpMessageProperties: SA|SL\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR05MB4596.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Nov 2024 08:26:23.2526 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: AM0PR05MB4596.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: a89a55fb-97b2-420e-0731-08dcff05dd50\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: DB9PR05MB7673\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:02.5372761\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8137.018\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910001)(944506478)(944626604)(920097)(425001)(930097)(140003)(1420198);\nX-Microsoft-Antispam-Message-Info: RG8bPGINY9Ll7ku9JRoR0TT84IZ7r0pftaqfDj90VsEQ6ByKWGalBCjMEcEaKi9Tr7/uVOa5XoybvrP0lYEAAlhllAjjgEFjn9e51PQwz875egAyZOYfaoNMlgNLc46ZQeBgEpa4TkAPRWqVt7RI5VoPQKxEyV8rFm4lZzCENbLModYD6m4cFZfwRMoKJqws0bIMKkvX2h4HCvDMURQfIta92AxA2kAGLHVrbOWEu/sC1RP+BVrejB+rVHRe7n24CUpILwdAeNWRxHtgjZbr2B/JVxb6kzFaZug11pfRvojYh1L/IJLQLXSqSuGDuEDkkmKcYjUQEI/vR8cnaWAGV+eXb2cB8EFhr/fNgCKx6MWzkHrQTCp6UllwtUwiDEtOiBhfNo/e7qCkcHIrFMTUY64j+D+KDqhZpRaEV5tM9Q5Z2low6AM2sEWA6NMI29pvqCbK4XZ0diMGPgLGwTSnh/JH8BO1pzpYmt7p4+3yqHzemI5bY4ceXU+063cHRhG7fB9eDOQw+5Ql1no68mnK8V/0HIuVsa+vtXaZhgDj2C8Q6I+vAXzmtwpVXYjKH9rQbBG6+mCBhGr9NStJAEFOLvAMLNJysO6thfIccKrl6TvTJVF9FanmWu++bjFrdysxhCAVzzbr8JOUHF2ApM/97tbvrjVUPQJP8187k6m747PV7Z/YySTZR1uJvl+HT+Z1jIJczDYw4LZvTmoPRmZu4zntLdQPoq60WS2Gj9xKwi0VVek0/5WVJ6IbfXaxHtyCA3adhVa98gTVGcnOmICPriJTOOCabIfeDZWiGVU8ri/00TI+RNx5uOSsLfHtTQcKSWPKo6X2Uriiky5fngxjtui/RfcfCo2ClLP42N7e/SSVYMETPJqDeWu6O/F7sfdx5ffSi9PH+36xbDI67BzLW1N3Q33CaRVN5YNhsgQNp/A=",
+      "start_pos": 1454,
+      "end_pos": 5075,
+      "chunk_index": 1,
+      "chunk_size": 3621,
+      "metadata": {
+        "doc_id": "CVHRPXS - chanel khayat\\Headers\\CVHRPXS_03.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CVHRPXS - chanel khayat\\Headers\\CVHRPXS_03.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:20.554512",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5131
+  }
+}

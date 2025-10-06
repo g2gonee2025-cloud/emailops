@@ -1,0 +1,31 @@
+{
+  "doc_id": "CS0KJNK - delivery, assembly + setup - furniture - from dip to ipc villa\\Headers\\CS0KJNK_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CS0KJNK - delivery, assembly + setup - furniture - from dip to ipc villa\\Headers\\CS0KJNK_00.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by VI1PR05MB6816.eurprd05.prod.outlook.com (2603:10a6:800:134::19) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8835.30; Tue, 17 Jun 2025 10:25:52 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%5]) with mapi id 15.20.8835.027; Tue, 17 Jun 2025 10:25:52 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Hrishikesh Oturkar <hrishikesh.oturkar@nascodubai.com>\nCC: Diana Haydar <diana.haydar@nascodubai.com>, Joe Hobeika <Joe.Hobeika@chalhoub.com>\nSubject: Delivery, Assembly + Setup - Furniture - From DIP to IPC Villa\nThread-Topic: Delivery, Assembly + Setup - Furniture - From DIP to IPC Villa\nThread-Index: AQHb326ciuxhFEOY5kmeRWfXuPsYcw==\nDate: Tue, 17 Jun 2025 10:25:52 +0000\nMessage-ID: <AS8PR05MB10824615AD18B431EE9026D2D9D73A@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|VI1PR05MB6816:EE_\nx-ms-office365-filtering-correlation-id: 314b73f8-b6c2-4dd1-a607-08ddad895600\nx-ms-exchange-atpmessageproperties: SA|HVE\nx-microsoft-antispam: BCL:0;ARA:13230040|31052699007|39142699007|366016|8096899003|41050700001;\nx-microsoft-antispam-message-info: 3NKwddRWe4qZYipEegXPcnl3g3E/OphRfCTEmGIHYuYrZquMEZ9v+Bn1BiVAPmNy/kzChbJLVRd7B/ulFM7Qe7cP7+3GamPKPJRnTmkMg6YES8S6Z3dBFhZKtQ4mNBTBT0MSnabv/qVc8u3qf95bTf3Esc+sb97OPfVDHnn6Z74iO8gf8ZdHFHV+jLfdqp3OUEYHznq+BsIjkRFmnUs/N3qpg3cAFNomem9QZuBja3HbyFsuEOZgDq8UmZ/Ppnaa05fJIPE+kUwQhLbkwim7Y/k7EVMPXoKVM2ZAwOVNAtMtQlH/2EHL5XDK22iJ4Kbce0ma9V623fZk7s1ILtcbCpU9vU0O5f1UwomoBc3QRsgT/G9N5gsooqlTV1vdZgWA/TNHR0NyrUo6P0GSktvzfkPBF6AeEp1ykL+EaUbW74/lsQQABcLyAKJovlsQoUi0fCvTrKBlt5KWvYjfTlOGxKgJ7W7qhUwhZ1EIdxEHvy9Ji/wCHLh2wNB7Uhl55FxZgKAohMookRZZAEZNlY/w5tw144Pnmg7MNJoo9Gp2ER8/oZAnxnQtQg/6Xv2WHigUkEelTlDiCZ5MkXIKxECM2/3JBUvaBSmfKlODZRjh6rrgfIPx9mJ5jLcVtMQKuNYz0geBMJIBZMIOK70/SGxjgUyP2OvSDQLpmJ/ES3qlamTwJum91IivI8uyPhsfO9WE9Tuxb5sO+7691tlJQVBnKfc4rdL5wPRc1K9PrptR13g8/T4KbSbI8KZ85gXCN0fhC8Sljs+mGkqeqe5lhguQ2g==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(31052699007)(39142699007)(366016)(8096899003)(41050700001);DIR:INT;\nContent-Type: multipart/mixed; boundary=\"_018_AS8PR05MB10824615AD18B431EE9026D2D9D73AAS8PR05MB10824eu_\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: uO9o+tFmpW5sq8qVOnYJQQuNwC2Y6hbgJLXBElvaJtLP9CfwXrDnmESmEJLKTWZdHpcmJHiZKn3zmlMBnYOszqGC89H+umZ4PnKGCaqMYLgY0bfRMc9ETjt6VEpPn90oIl8gocl6wPQrjcLv+kXquULQjauyE3iIf5y+IWqZj5jHIJkfOCwN7gmoDKBX5iMG8Y2Lx5/qJJsPQlR4XwPlr4U/RJ/qsVhuO17SsSGTov2ZznRFnxoONrUrf+ckBgrPJ8LnVjCBKaQnIEjvB5RfDPoOkE6Q4Cd5Gk+0mQAV9ReWCpFJuXf9ue3nCKfwrbDhDKSpanUuX7k/PpuB63FhRWubSqmYQCQvHYX0KsXn3z6ayKBoUK1DzVOQE8R3zOHdYsLwqbxK84gwrUWuEjbQLbVpboPEQVRUT2xEJjZZtuXku1gQAagZUNjAwton0mK1dFX0kCN2reqGcPCOg1GzEWvBa+qX/fS/55xuyXlYu6fHnOSZUb/GsuNc+GyXlLOnitwbFygGffU5h3Mh2nTtYswannYteZYINy/IJPnu2IeFKcQz8pBQ9GWAuWqsw9XL3Y+YVbpNWoBd4WrUbIPVl4AyrUHPwibunyry8nQm7h7Sp+SUlnaDCiiD54ZYT/09\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 314b73f8-b6c2-4dd1-a607-08ddad895600\nX-MS-Exchange-CrossTenant-originalarrivaltime: 17 Jun 2025 10:25:52.0985 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: BzGk42ScemWwSpFx6NsvMpnbESdUb3YlZQgt7YFXLgY5YR4Nwv/6GDlu4lzyR7y2s7jhbMBbCqCaAzIcO+ElkKbTUoi/fB08MdvM9MT5ao0=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR05MB6816\nX-OrganizationHeadersPreserved: VI1PR05MB6816.eurprd05.prod.outlook.com",
+      "start_pos": 0,
+      "end_pos": 4277,
+      "chunk_index": 0,
+      "chunk_size": 4277,
+      "metadata": {
+        "doc_id": "CS0KJNK - delivery, assembly + setup - furniture - from dip to ipc villa\\Headers\\CS0KJNK_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CS0KJNK - delivery, assembly + setup - furniture - from dip to ipc villa\\Headers\\CS0KJNK_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:00.816508",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4319
+  }
+}

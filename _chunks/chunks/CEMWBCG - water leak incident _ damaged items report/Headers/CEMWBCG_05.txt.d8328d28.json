@@ -1,0 +1,42 @@
+{
+  "doc_id": "CEMWBCG - water leak incident – damaged items report\\Headers\\CEMWBCG_05.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CEMWBCG - water leak incident – damaged items report\\Headers\\CEMWBCG_05.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB8552.eurprd05.prod.outlook.com (::1) by DU4PR05MB11790.eurprd05.prod.outlook.com with HTTPS; Mon, 1 Sep 2025 10:07:14 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from VI0PR05MB11292.eurprd05.prod.outlook.com (2603:10a6:800:1b8::8) by AS8PR05MB8552.eurprd05.prod.outlook.com (2603:10a6:20b:3cc::10) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9073.25; Mon, 1 Sep 2025 10:07:13 +0000\nReceived: from VI0PR05MB11292.eurprd05.prod.outlook.com ([::1]) by VI0PR05MB11292.eurprd05.prod.outlook.com ([fe80::c4f5:3d5b:ee98:fb4d%4]) with Microsoft SMTP Server id 15.20.9073.021; Mon, 1 Sep 2025 10:07:13 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Lina El Moabbi <Lina.Elmoabbi@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: =?Windows-1252?Q?Automatic_reply:_Water_Leak_Incident_=96_Damaged_Items_R?= =?Windows-1252?Q?eport?=\nThread-Topic: =?Windows-1252?Q?Water_Leak_Incident_=96_Damaged_Items_Report?=\nThread-Index: AdwQE0yuhlJui3YJTQGvtOlKiIJ9TQAA1LQAAABcv+ABMQ0ZEAGLbrUQAAUi930AAIVxqwAB4yEf\nReferences: <AS8PR09MB5271E969351A35D18D05ADC3B431A@AS8PR09MB5271.eurprd09.prod.outlook.com> <GV1PR09MB7856458131D140F575B9BA5BEC31A@GV1PR09MB7856.eurprd09.prod.outlook.com> <GVXPR05MB1128528FDB67AE02DA5A5A96E8431A@GVXPR05MB11285.eurprd05.prod.outlook.com> <AS8PR09MB527110F7AFC36D40D1F5E884B43FA@AS8PR09MB5271.eurprd09.prod.outlook.com> <AS8PR09MB527143F85311584DD7A2349EB407A@AS8PR09MB5271.eurprd09.prod.outlook.com> <PAVPR05MB1030107669771CBC0048243F78E07A@PAVPR05MB10301.eurprd05.prod.outlook.com> <DU4PR05MB117909100C01780E4C3462B5C9D07A@DU4PR05MB11790.eurprd05.prod.outlook.com>\nIn-Reply-To: <DU4PR05MB117909100C01780E4C3462B5C9D07A@DU4PR05MB11790.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 1934,
+      "chunk_index": 0,
+      "chunk_size": 1933,
+      "metadata": {
+        "doc_id": "CEMWBCG - water leak incident – damaged items report\\Headers\\CEMWBCG_05.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CEMWBCG - water leak incident – damaged items report\\Headers\\CEMWBCG_05.txt"
+      }
+    },
+    {
+      "text": "om> <DU4PR05MB117909100C01780E4C3462B5C9D07A@DU4PR05MB11790.eurprd05.prod.outlook.com>\nIn-Reply-To: <DU4PR05MB117909100C01780E4C3462B5C9D07A@DU4PR05MB11790.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Lina.Elmoabbi@chalhoub.com\nX-MS-TNEF-Correlator: 2efec8ec-9ed8-40d8-bbd5-20c029caf94a\nMIME-Version: 1.0\nDate: Mon, 1 Sep 2025 10:07:13 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: VI0PR05MB11292.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <fed319f4b043415aa390985ed703982a@VI0PR05MB11292.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: 6fbc2398-6408-4c3a-aa59-08dde93f5258\nX-MS-Exchange-Parent-Message-Id: <DU4PR05MB117909100C01780E4C3462B5C9D07A@DU4PR05MB11790.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: VI0PR05MB11292:EE_|AS8PR05MB8552:EE_|DU4PR05MB11790:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 01 Sep 2025 10:07:13.5393 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: 6fbc2398-6408-4c3a-aa59-08dde93f5258\nX-MS-Exchange-AtpMessageProperties: SA\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI0PR05MB11292.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Sep 2025 10:07:12.9715 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: VI0PR05MB11292.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: 6fbc2398-6408-4c3a-aa59-08dde93f5258\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR05MB8552\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:01.7026796\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.9073.017\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910005)(944506478)(944626604)(920097)(425001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: IbTMtllJiiTNMYm4d22R34tsphJLjIQeQkdmWkMTwHRolg71sJ8pScqbFOFa6AxVNnSTNacLCKCJUOPu1h1rCc6kBtMvCAlN0MEfd4TUMLfzOSytDBT6hHDnCQPHUiUDQMGG+SrFOTIjU7SGKPZdiU+i/dWKQ7m+FdLOkij3f3S8LjutwLHB6kBKsNW1cKn8xWWwAJSSAW/lSzTYE1VvQO29CnNkUSa4pT+9Qh5BeFtP1iA/3H9OW9niaP8X08GBhniqG/5yrjXEkvetZroUEKWHfwGS9fNx7abCS3CagF6QiF7CerbX5P0A1ujpOzjiH2c7suxkl8K3YKpacnLLCmCqriUxGdqH7PE/NSGBoCNZNYwdTyGU0phTCLwMSrvLj8N/WVz6Ein3z1knLTNyfX8/Do9GE7E6fhOl4ioIi0X1BPJN0s1TckJjPPLb4nD5xeUsD0M4dnzEUmhvN1wRGG9msvWDVZzhjOdtVpwuz4zwMeXrgH8mwilK8ERhJOAZd5dw5ZXWYXl7DTlGsl2R2x160uGRaFbja3GHBnuhxyiZ1TjKQrvVsA9UeNAkCUSd660ryjLvfDlYX1nxY5t9UjwkCaF/ra0FNa9Y7/KihKuRuJhJe/A0fp83yCvE7i5F7AwPiFrvPrm/1mi5oqadSJDoC7R+7FZb1arMJdqR+4L8D/S3uWQMhcCHjxxttAgqXsNI7/8S0tqh2Sk7DCKBg6+pkMtyqyt3UUn+ZNhJGR1+5IctLbTSDOXKPT7uYATw9ojkKCmQjcbMpHV30tl5dUzF7RhR7GdouIj0V+6rXTGSUta0Na0tdTd/OQwqIRa55rOsANzXXmlVnB9DQNwtgqVH0k/sPiZrzo7udvCiFuaiGp1df3wefLPQ5wIs9yk0ib+BWGk4byHTqT0j8WdG8w==",
+      "start_pos": 1734,
+      "end_pos": 5324,
+      "chunk_index": 1,
+      "chunk_size": 3590,
+      "metadata": {
+        "doc_id": "CEMWBCG - water leak incident – damaged items report\\Headers\\CEMWBCG_05.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CEMWBCG - water leak incident – damaged items report\\Headers\\CEMWBCG_05.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:17.129436",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5380
+  }
+}

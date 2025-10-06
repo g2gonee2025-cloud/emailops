@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1UJIJ9 - major incident resolved oracle unavailability impacting ebs, payroll, warehouse, customer and digital integrat\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1UJIJ9 - major incident resolved oracle unavailability impacting ebs, payroll, warehouse, customer and digital integrat\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:46:21\nFolder: C1UJIJ9 - major incident resolved oracle unavailability impacting ebs, payroll, warehouse, customer and digital integrat\nMessage Count: 1\n\n--------------------------------------------------\nID: C1UJIJ9_00\nFrom: One Reach <OneReach@chalhoub.com>\nTo: \nCC: \nBCC: \nDate: 2024-09-24 17:44\nSubject: Major Incident Resolved: Oracle Unavailability impacting EBS, Payroll, Warehouse, Customer and Digital integrations\n--------------------------------------------------\n \n\n \n\n      \n\n \n\nMajor Incident Resolved: Oracle Unavailability impacting EBS, Payroll, Warehouse, Customer and Digital integrations\n\n_________________________________________________________________\n\nDate: 24 Sep 2024\n\nTime: 12:55 PM GST\n\n\nServices have been successfully restored. The tech teams are currently reprocessing the transactions that have failed during this outage which will be completed within the next hour.\n\nThank you for your patience.\n\nIf you require any assistance during this timeframe, we kindly request you to raise a support ticket by visiting the following link: https://onereach.chalhoub.com <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fonereach.chalhoub.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7C18d2685793c94338cb7c08dcdc9eb11d%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638627822709309570%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C0%7C%7C%7C&sdata=YMv7tbWIhprfcQaQxJoeo0m6rNNhCDFsNuUcnIr8ztE%3D&reserved=0> .",
+      "start_pos": 0,
+      "end_pos": 1578,
+      "chunk_index": 0,
+      "chunk_size": 1578,
+      "metadata": {
+        "doc_id": "C1UJIJ9 - major incident resolved oracle unavailability impacting ebs, payroll, warehouse, customer and digital integrat\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1UJIJ9 - major incident resolved oracle unavailability impacting ebs, payroll, warehouse, customer and digital integrat\\Conversation.txt"
+      }
+    },
+    {
+      "text": "If you require any assistance during this timeframe, we kindly request you to raise a support ticket by visiting the following link: https://onereach.chalhoub.com <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fonereach.chalhoub.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7C18d2685793c94338cb7c08dcdc9eb11d%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638627822709309570%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C0%7C%7C%7C&sdata=YMv7tbWIhprfcQaQxJoeo0m6rNNhCDFsNuUcnIr8ztE%3D&reserved=0> .\n\nAlternatively, you can also reach out to us via WhatsApp at +971 48045755 or utilize the chatbot available on the support portal. \n\nThanks,\n\nChalhoub Tech.\n\n \n\n \n\n   \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n   \n\n \n\n \n\n \n\nIf you have any questions, please reach out to the IT Service Desk via One reach Link <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fonereach.chalhoub.com%2Fa%2Fdashboard%2Fdefault&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7C18d2685793c94338cb7c08dcdc9eb11d%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638627822709343399%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C0%7C%7C%7C&sdata=vTn2CfT3MqwNfL2ltIyzz4k8B%2FmBIV7%2BrTSdw%2Fc%2FMaA%3D&reserved=0>",
+      "start_pos": 1008,
+      "end_pos": 2341,
+      "chunk_index": 1,
+      "chunk_size": 1333,
+      "metadata": {
+        "doc_id": "C1UJIJ9 - major incident resolved oracle unavailability impacting ebs, payroll, warehouse, customer and digital integrat\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1UJIJ9 - major incident resolved oracle unavailability impacting ebs, payroll, warehouse, customer and digital integrat\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:11.659893",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2447
+  }
+}

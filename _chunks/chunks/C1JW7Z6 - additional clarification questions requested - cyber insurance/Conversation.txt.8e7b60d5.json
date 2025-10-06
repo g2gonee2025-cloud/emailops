@@ -1,0 +1,1087 @@
+{
+  "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+  "num_chunks": 97,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:54:50\nFolder: C1JW7Z6 - additional clarification questions requested - cyber insurance\nMessage Count: 11\n\n--------------------------------------------------\nID: C1JW7Z6_00\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Dee Deu <dee.deu@chalhoub.com>\nCC: Kamran Abbasi <Kamran.Abbasi@chalhoub.com>; Joe Hobeika <Joe.Hobeika@chalhoub.com>\nBCC: \nDate: 2024-11-08 12:25\nSubject: Additional Clarification Questions requested - Cyber Insurance\n--------------------------------------------------\nDear Dee,\n\nHope you are well.\n\nThe insurer has requested feedback on the below.\n\n\nFrom the proposal form:\n\n*\t\n\tLarge amount of sensitive information is not configured with access restrictions and with no monitoring in place. Please provide more granular information on the protection measures currently in place.\n\n\t*\t\n\t\tWhat protection measures are in place to secure\n\n\t\t*\t\n\t\t\tFinancials\n\t\t*\t\n\t\t\tPayroll\n\t\t*\t\n\t\t\tE-mails of CEO + Directors\n\t\t*\t\n\t\t\tAny other protection measures in place to safeguard what Chalhoub considers sensitive data\n\n\t*\t\n\t\tAre there any specific types or areas of sensitive information where we are working to improve access control and monitoring? Please outline any plans, along with estimated timelines, for strengthening access controls and monitoring for these areas.\n\n*\t\n\tClient accepts credit card payments but is not PCI DSS compliant?",
+      "start_pos": 0,
+      "end_pos": 1443,
+      "chunk_index": 0,
+      "chunk_size": 1443,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "*\t\n\t\tAre there any specific types or areas of sensitive information where we are working to improve access control and monitoring? Please outline any plans, along with estimated timelines, for strengthening access controls and monitoring for these areas.\n\n*\t\n\tClient accepts credit card payments but is not PCI DSS compliant?\n\n\t*\t\n\t\tPlease confirm and advise points where we do not meet compliance requirements. Also, please advise if any remediation measures are planned and the respective timelines.\n\n*\t\n\tMFA is only being used for 25% users for remote access to the corporate network – Full MFA should be implemented and within a reasonable timeframe.\n\n\t*\t\n\t\tPlease advise the estimated timeline which would be needed roll out close to 100% MFA coverage for remote access, at least for UAE & KSA.\n\n*\t\n\tClient is utilising end of life software / systems with no plan to replace, upgrade this – we would need to understand where they are using their EOL software.\n\n\t*\t\n\t\tPlease clarify which systems are using EOL software and what upgrade plans we have in place. What are the EOL software related to critical systems and are there any remediation measures planned to upgrade or replace any EOL software related to critical systems?\n\n*\t\n\tNon-compliant with EMV standards\n\n\t*\t\n\t\tPlease confirm and advise points where we do not meet compliance requirements. Also, please advise if any remediation measures are planned and the respective timelines.",
+      "start_pos": 1117,
+      "end_pos": 2565,
+      "chunk_index": 1,
+      "chunk_size": 1447,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "*\t\n\tNon-compliant with EMV standards\n\n\t*\t\n\t\tPlease confirm and advise points where we do not meet compliance requirements. Also, please advise if any remediation measures are planned and the respective timelines.\n\n*\t\n\tWhen was the last vulnerability testing done? What were the finding? What remediation measures have been implemented or are planned with timelines?\n*\t\n\tWhen is the next penetration/vulnerability testing scheduled for?\n\n \n\nOther pending questions:\n\n*\tFor a UAE domiciled company why is all their data processed and stored UK / Europe? – circa 5m PII records\n\n\nFrom the ransomware form:",
+      "start_pos": 2353,
+      "end_pos": 2955,
+      "chunk_index": 2,
+      "chunk_size": 602,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "*\t\n\tWhen was the last vulnerability testing done? What were the finding? What remediation measures have been implemented or are planned with timelines?\n*\t\n\tWhen is the next penetration/vulnerability testing scheduled for?\n\n \n\nOther pending questions:\n\n*\tFor a UAE domiciled company why is all their data processed and stored UK / Europe? – circa 5m PII records\n\n\nFrom the ransomware form:",
+      "start_pos": 2567,
+      "end_pos": 2955,
+      "chunk_index": 3,
+      "chunk_size": 388,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "From the ransomware form:\n\n*\t\n\tWhat is the our target recovery time objective (RTO) for Vital Assets in case of a successful ransomware breach?\n*\t\n\tWhat is the current backup and restoration strategy and estimated timelines for full restoration?\n*\t\n\tAny reason for high persistent admin users? (80 persistent admin users declared)\n*\t\n\tWhat is the estimated number of \"Domain Administrator Accounts\" and \"Privileged Services Accounts\"? Also, please confirm if explicit instructions are given to privileged account holders to disallow surfing the internet and/or accessing personal emails.\n*\t\n\tDo we have any data loss prevention tools in place for critical systems? Please give details.\n*\t\n\tOnly a small number of their vital assets are being logged to their SIEM. (We have declared that only 0-30% of vital assets are logged to SIEM tools. Please provide more granular information on vital systems that are not logged and the ones that are.)\n*\t\n\tTarget time to deploy the highest priority patches has been declared at >=30 days. This is our approved internal timeline for deploying critical security patches? Or historically how much time it usually takes? Are there any plans to enforce tighter timeframes for implementing patches for critical vulnerabilities?  \n*\t\n\tWhat security awareness trainings are planned for 2025?\n*\t\n\tWhat security measure are in place for their externally exposed assets?\n\n\nAppreciate your support on the above and look forward to hearing from you.",
+      "start_pos": 2930,
+      "end_pos": 4406,
+      "chunk_index": 4,
+      "chunk_size": 1476,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "*\t\n\tWhat is the our target recovery time objective (RTO) for Vital Assets in case of a successful ransomware breach?\n*\t\n\tWhat is the current backup and restoration strategy and estimated timelines for full restoration?\n*\t\n\tAny reason for high persistent admin users? (80 persistent admin users declared)\n*\t\n\tWhat is the estimated number of \"Domain Administrator Accounts\" and \"Privileged Services Accounts\"? Also, please confirm if explicit instructions are given to privileged account holders to disallow surfing the internet and/or accessing personal emails.\n*\t\n\tDo we have any data loss prevention tools in place for critical systems? Please give details.\n*\t\n\tOnly a small number of their vital assets are being logged to their SIEM. (We have declared that only 0-30% of vital assets are logged to SIEM tools. Please provide more granular information on vital systems that are not logged and the ones that are.)\n*\t\n\tTarget time to deploy the highest priority patches has been declared at >=30 days. This is our approved internal timeline for deploying critical security patches? Or historically how much time it usually takes? Are there any plans to enforce tighter timeframes for implementing patches for critical vulnerabilities?  \n*\t\n\tWhat security awareness trainings are planned for 2025?\n*\t\n\tWhat security measure are in place for their externally exposed assets?\n\n\nAppreciate your support on the above and look forward to hearing from you.",
+      "start_pos": 2957,
+      "end_pos": 4406,
+      "chunk_index": 5,
+      "chunk_size": 1449,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Appreciate your support on the above and look forward to hearing from you.\n\nThank You & Best Regards,\nHagop\nHAGOP GHAZARIAN​​​​\t\nSPECIALIST ‑ ADMINISTRATION\t\nM.C.T. FZE\t\nDUBAI\t\n‑\t\nUNITED ARAB EMIRATES\t\n+971 4 8045000\t\n\t\n \t\n <https://chalhoubgroup.com/> \t\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\t\n‑\n\t\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\t\n <https://twitter.com/ChalhoubGroup> \t\n <https://www.facebook.com/chalhoubgroup/> \t\n <https://www.instagram.com/chalhoubgroup> \t\n <https://www.linkedin.com/company/chalhoub-group/> \t\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm> \t\n\t\n\n--------------------------------------------------\nID: C1JW7Z6_01\nFrom: Dee Deu <dee.deu@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Kamran Abbasi <Kamran.Abbasi@chalhoub.com>; Joe Hobeika <Joe.Hobeika@chalhoub.com>\nBCC: \nDate: 2024-11-13 10:22\nSubject: RE: Additional Clarification Questions requested - Cyber Insurance\n--------------------------------------------------\nDear Hagop, \n\n \n\nWe are currently co-ordinating efforts to collate the requested information from various team members. We plan to provide a response by the end of next week(22/11). \n\n \n\nKind Regards\n\n \n\nDee\n\n \n\nDEE DEU​​​​\n\nDIRECTOR ‑ INFORMATION SECURITY\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES",
+      "start_pos": 4332,
+      "end_pos": 5681,
+      "chunk_index": 6,
+      "chunk_size": 1349,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "We are currently co-ordinating efforts to collate the requested information from various team members. We plan to provide a response by the end of next week(22/11). \n\n \n\nKind Regards\n\n \n\nDee\n\n \n\nDEE DEU​​​​\n\nDIRECTOR ‑ INFORMATION SECURITY\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n\t\t\n \t\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fchalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259053055%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=epmMF1OU6hX6Rtgu2rRYDRfuQ2dBeoYcyXrBDHS%2BXlM%3D&reserved=0> \n\nCHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwww.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259076399%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=VMyx6ceOLuHcGy3qE%2BZ%2FfAzcxJNOfKuAVqelQ4LXxfc%3D&reserved=0> \n\n\n‑",
+      "start_pos": 5398,
+      "end_pos": 6579,
+      "chunk_index": 7,
+      "chunk_size": 1181,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwww.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259076399%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=VMyx6ceOLuHcGy3qE%2BZ%2FfAzcxJNOfKuAVqelQ4LXxfc%3D&reserved=0> \n\n\n‑\n\n\nCAREERS.CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcareers.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259097624%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=8kOD0IwY6ThZzPOHPu6DAYKmxfvJNhCI26TIOuMWEiY%3D&reserved=0> \n\n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Ftwitter.com%2FChalhoubGroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259114085%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=J0O5BB7itYWqjk1PFlzHUUcLx%2B9nJF7wtS5kPJ1ZeYg%3D&reserved=0>",
+      "start_pos": 6122,
+      "end_pos": 7485,
+      "chunk_index": 8,
+      "chunk_size": 1362,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Ftwitter.com%2FChalhoubGroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259114085%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=J0O5BB7itYWqjk1PFlzHUUcLx%2B9nJF7wtS5kPJ1ZeYg%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.facebook.com%2Fchalhoubgroup%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259129829%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=GUVCSzDMSYGFkxcEyJF2agguy0mH8brEsrafIIJBmj8%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.instagram.com%2Fchalhoubgroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259145799%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=yJmSnZF7ukoTkT%2BH%2BJK9ujURbeFNkrTVxxfzgxqMeSw%3D&reserved=0>",
+      "start_pos": 7047,
+      "end_pos": 8379,
+      "chunk_index": 9,
+      "chunk_size": 1330,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.instagram.com%2Fchalhoubgroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259145799%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=yJmSnZF7ukoTkT%2BH%2BJK9ujURbeFNkrTVxxfzgxqMeSw%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fchalhoub-group%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259161366%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=2qHEoQ7xxF4hq271ehdC764ohY%2BzV8z2v%2BkIUR4qOSk%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.glassdoor.com%2FOverview%2FWorking-at-Chalhoub-Group-EI_IE499602.11%2C25.htm&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259176930%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=4Jd2S9DcHE8ab4cxRGtxFdFBHXpTuyYhFpUwLE36sNo%3D&reserved=0>",
+      "start_pos": 7933,
+      "end_pos": 9331,
+      "chunk_index": 10,
+      "chunk_size": 1396,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.glassdoor.com%2FOverview%2FWorking-at-Chalhoub-Group-EI_IE499602.11%2C25.htm&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259176930%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=4Jd2S9DcHE8ab4cxRGtxFdFBHXpTuyYhFpUwLE36sNo%3D&reserved=0> \n\n\n\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com> \nSent: Friday, 8 November 2024 12:26 PM\nTo: Dee Deu <dee.deu@chalhoub.com>\nCc: Kamran Abbasi <Kamran.Abbasi@chalhoub.com>; Joe Hobeika <Joe.Hobeika@chalhoub.com>\nSubject: Additional Clarification Questions requested - Cyber Insurance\n\n \n\nDear Dee,\n\n \n\nHope you are well.\n\n \n\nThe insurer has requested feedback on the below.\n\n \n\nFrom the proposal form:\n\n*\tLarge amount of sensitive information is not configured with access restrictions and with no monitoring in place. Please provide more granular information on the protection measures currently in place.\n\n\t*\tWhat protection measures are in place to secure\n\n\t\t*\tFinancials\n\n\t\t*\tPayroll\n\n\t\t*\tE-mails of CEO + Directors\n\n\t\t*\tAny other protection measures in place to safeguard what Chalhoub considers sensitive data\n\n\t*\tAre there any specific types or areas of sensitive information where we are working to improve access control and monitoring? Please outline any plans, along with estimated timelines, for strengthening access controls and monitoring for these areas.",
+      "start_pos": 8842,
+      "end_pos": 10407,
+      "chunk_index": 11,
+      "chunk_size": 1564,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "*\tAre there any specific types or areas of sensitive information where we are working to improve access control and monitoring? Please outline any plans, along with estimated timelines, for strengthening access controls and monitoring for these areas.\n\n*\tClient accepts credit card payments but is not PCI DSS compliant?\n\n\t*\tPlease confirm and advise points where we do not meet compliance requirements. Also, please advise if any remediation measures are planned and the respective timelines.\n\n*\tMFA is only being used for 25% users for remote access to the corporate network – Full MFA should be implemented and within a reasonable timeframe.\n\n\t*\tPlease advise the estimated timeline which would be needed roll out close to 100% MFA coverage for remote access, at least for UAE & KSA.\n\n*\tClient is utilising end of life software / systems with no plan to replace, upgrade this – we would need to understand where they are using their EOL software.\n\n\t*\tPlease clarify which systems are using EOL software and what upgrade plans we have in place. What are the EOL software related to critical systems and are there any remediation measures planned to upgrade or replace any EOL software related to critical systems?\n\n*\tNon-compliant with EMV standards\n\n\t*\tPlease confirm and advise points where we do not meet compliance requirements. Also, please advise if any remediation measures are planned and the respective timelines.\n\n*\tWhen was the last vulnerability testing done? What were the finding? What remediation measures have been implemented or are planned with timelines?",
+      "start_pos": 10155,
+      "end_pos": 11731,
+      "chunk_index": 12,
+      "chunk_size": 1575,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "*\tPlease confirm and advise points where we do not meet compliance requirements. Also, please advise if any remediation measures are planned and the respective timelines.\n\n*\tWhen was the last vulnerability testing done? What were the finding? What remediation measures have been implemented or are planned with timelines?\n\n*\tWhen is the next penetration/vulnerability testing scheduled for?\n\n \n\nOther pending questions:\n\n*\tFor a UAE domiciled company why is all their data processed and stored UK / Europe? – circa 5m PII records\n\n \n\nFrom the ransomware form:\n\n*\tWhat is the our target recovery time objective (RTO) for Vital Assets in case of a successful ransomware breach?\n\n*\tWhat is the current backup and restoration strategy and estimated timelines for full restoration?\n\n*\tAny reason for high persistent admin users? (80 persistent admin users declared)\n\n*\tWhat is the estimated number of \"Domain Administrator Accounts\" and \"Privileged Services Accounts\"? Also, please confirm if explicit instructions are given to privileged account holders to disallow surfing the internet and/or accessing personal emails.\n\n*\tDo we have any data loss prevention tools in place for critical systems? Please give details.\n\n*\tOnly a small number of their vital assets are being logged to their SIEM. (We have declared that only 0-30% of vital assets are logged to SIEM tools. Please provide more granular information on vital systems that are not logged and the ones that are.)",
+      "start_pos": 11409,
+      "end_pos": 12878,
+      "chunk_index": 13,
+      "chunk_size": 1468,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "*\tOnly a small number of their vital assets are being logged to their SIEM. (We have declared that only 0-30% of vital assets are logged to SIEM tools. Please provide more granular information on vital systems that are not logged and the ones that are.)\n\n*\tTarget time to deploy the highest priority patches has been declared at >=30 days. This is our approved internal timeline for deploying critical security patches? Or historically how much time it usually takes? Are there any plans to enforce tighter timeframes for implementing patches for critical vulnerabilities?  \n\n*\tWhat security awareness trainings are planned for 2025?\n\n*\tWhat security measure are in place for their externally exposed assets?\n\n \n\nAppreciate your support on the above and look forward to hearing from you.\n\n \n\nThank You & Best Regards,\n\nHagop\n\nHAGOP GHAZARIAN​​​​\n\nSPECIALIST ‑ ADMINISTRATION\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n+971 4 8045000\n\n\t\n \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fchalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259192851%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=OHyhcWb%2FlyNtIIbckmuNHDvMp4QH9gVKKriCEf2abt4%3D&reserved=0>",
+      "start_pos": 12625,
+      "end_pos": 13997,
+      "chunk_index": 14,
+      "chunk_size": 1371,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fchalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259192851%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=OHyhcWb%2FlyNtIIbckmuNHDvMp4QH9gVKKriCEf2abt4%3D&reserved=0> \n\nCHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwww.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259208940%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=PshNi87GpSuQ6bLGdNZ6GRfjLbCElcGJF41K77BP%2BO8%3D&reserved=0> \n\n‑\n\nCAREERS.CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcareers.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259225570%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=R48koxHV%2FssbcfSwYLv2AM%2BxPzyonYHikr3bS8PANdo%3D&reserved=0>",
+      "start_pos": 13566,
+      "end_pos": 14921,
+      "chunk_index": 15,
+      "chunk_size": 1353,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "CAREERS.CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcareers.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259225570%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=R48koxHV%2FssbcfSwYLv2AM%2BxPzyonYHikr3bS8PANdo%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Ftwitter.com%2FChalhoubGroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259244561%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=0gIS4TtsZXcPQ9hsLqYwjIxiDCmigwbAZltieRuH4PY%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.facebook.com%2Fchalhoubgroup%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259265632%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=NDVFdgswGSpFfq1IEl%2FtlAFCo7bwmu59u5EsYW9PT%2BY%3D&reserved=0>",
+      "start_pos": 14455,
+      "end_pos": 15809,
+      "chunk_index": 16,
+      "chunk_size": 1353,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.facebook.com%2Fchalhoubgroup%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259265632%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=NDVFdgswGSpFfq1IEl%2FtlAFCo7bwmu59u5EsYW9PT%2BY%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.instagram.com%2Fchalhoubgroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259281554%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=nfSmbk6WeDQIIIClusXNL3tszYAsLPcHUgK6yS%2BbwDs%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fchalhoub-group%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259297025%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=okD5i%2Fe%2BVbguNo4PPR3k1Nutufd38c1edBf9toeE8Vw%3D&reserved=0>",
+      "start_pos": 15361,
+      "end_pos": 16716,
+      "chunk_index": 17,
+      "chunk_size": 1353,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fchalhoub-group%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259297025%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=okD5i%2Fe%2BVbguNo4PPR3k1Nutufd38c1edBf9toeE8Vw%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.glassdoor.com%2FOverview%2FWorking-at-Chalhoub-Group-EI_IE499602.11%2C25.htm&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259312417%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=rLCEAV7rQcNBVwQiAvR9roSk0NyJqDkCaB%2FT1svpe7s%3D&reserved=0> \n\n\n\n \n\n\n--------------------------------------------------\nID: C1JW7Z6_02\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Kechichian, Kevork <Kevork.Kechichian@marsh.com>\nCC: \nBCC: \nDate: 2024-11-13 17:19\nSubject: RE: Additional Clarification Questions requested - Cyber Insurance\n--------------------------------------------------\nDear Kevork,\n\n \n\nFYI.\n\n\nBest Regards,\n\nHagop\n\n \n\nHAGOP GHAZARIAN​​​​\n\nSPECIALIST ‑ ADMINISTRATION\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n+971 4 8045000\n\n\t\n \t\n <https://chalhoubgroup.com/> \n\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\n\n‑",
+      "start_pos": 16257,
+      "end_pos": 17800,
+      "chunk_index": 18,
+      "chunk_size": 1542,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "HAGOP GHAZARIAN​​​​\n\nSPECIALIST ‑ ADMINISTRATION\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n+971 4 8045000\n\n\t\n \t\n <https://chalhoubgroup.com/> \n\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\n\n‑\n\n\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\n\n <https://twitter.com/ChalhoubGroup> \n\n <https://www.facebook.com/chalhoubgroup/> \n\n <https://www.instagram.com/chalhoubgroup> \n\n <https://www.linkedin.com/company/chalhoub-group/> \n\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm> \n\n\n\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com> \nSent: Friday, November 8, 2024 12:26 PM\nTo: Dee Deu <dee.deu@chalhoub.com>\nCc: Kamran Abbasi <Kamran.Abbasi@chalhoub.com>; Joe Hobeika <Joe.Hobeika@chalhoub.com>\nSubject: Additional Clarification Questions requested - Cyber Insurance\n\n \n\nDear Dee,\n\n \n\nHope you are well.\n\n \n\nThe insurer has requested feedback on the below.\n\n \n\nFrom the proposal form:\n\n*\tLarge amount of sensitive information is not configured with access restrictions and with no monitoring in place. Please provide more granular information on the protection measures currently in place.\n\n\t*\tWhat protection measures are in place to secure\n\n\t\t*\tFinancials\n\n\t\t*\tPayroll\n\n\t\t*\tE-mails of CEO + Directors\n\n\t\t*\tAny other protection measures in place to safeguard what Chalhoub considers sensitive data",
+      "start_pos": 17599,
+      "end_pos": 18961,
+      "chunk_index": 19,
+      "chunk_size": 1362,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "*\tWhat protection measures are in place to secure\n\n\t\t*\tFinancials\n\n\t\t*\tPayroll\n\n\t\t*\tE-mails of CEO + Directors\n\n\t\t*\tAny other protection measures in place to safeguard what Chalhoub considers sensitive data\n\n\t*\tAre there any specific types or areas of sensitive information where we are working to improve access control and monitoring? Please outline any plans, along with estimated timelines, for strengthening access controls and monitoring for these areas.\n\n*\tClient accepts credit card payments but is not PCI DSS compliant?\n\n\t*\tPlease confirm and advise points where we do not meet compliance requirements. Also, please advise if any remediation measures are planned and the respective timelines.\n\n*\tMFA is only being used for 25% users for remote access to the corporate network – Full MFA should be implemented and within a reasonable timeframe.\n\n\t*\tPlease advise the estimated timeline which would be needed roll out close to 100% MFA coverage for remote access, at least for UAE & KSA.\n\n*\tClient is utilising end of life software / systems with no plan to replace, upgrade this – we would need to understand where they are using their EOL software.\n\n\t*\tPlease clarify which systems are using EOL software and what upgrade plans we have in place. What are the EOL software related to critical systems and are there any remediation measures planned to upgrade or replace any EOL software related to critical systems?\n\n*\tNon-compliant with EMV standards",
+      "start_pos": 18754,
+      "end_pos": 20215,
+      "chunk_index": 20,
+      "chunk_size": 1460,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "*\tPlease clarify which systems are using EOL software and what upgrade plans we have in place. What are the EOL software related to critical systems and are there any remediation measures planned to upgrade or replace any EOL software related to critical systems?\n\n*\tNon-compliant with EMV standards\n\n\t*\tPlease confirm and advise points where we do not meet compliance requirements. Also, please advise if any remediation measures are planned and the respective timelines.\n\n*\tWhen was the last vulnerability testing done? What were the finding? What remediation measures have been implemented or are planned with timelines?\n\n*\tWhen is the next penetration/vulnerability testing scheduled for?\n\n \n\nOther pending questions:\n\n*\tFor a UAE domiciled company why is all their data processed and stored UK / Europe? – circa 5m PII records\n\n \n\nFrom the ransomware form:\n\n*\tWhat is the our target recovery time objective (RTO) for Vital Assets in case of a successful ransomware breach?\n\n*\tWhat is the current backup and restoration strategy and estimated timelines for full restoration?\n\n*\tAny reason for high persistent admin users? (80 persistent admin users declared)\n\n*\tWhat is the estimated number of \"Domain Administrator Accounts\" and \"Privileged Services Accounts\"? Also, please confirm if explicit instructions are given to privileged account holders to disallow surfing the internet and/or accessing personal emails.\n\n*\tDo we have any data loss prevention tools in place for critical systems? Please give details.",
+      "start_pos": 19915,
+      "end_pos": 21431,
+      "chunk_index": 21,
+      "chunk_size": 1515,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "*\tWhat is the estimated number of \"Domain Administrator Accounts\" and \"Privileged Services Accounts\"? Also, please confirm if explicit instructions are given to privileged account holders to disallow surfing the internet and/or accessing personal emails.\n\n*\tDo we have any data loss prevention tools in place for critical systems? Please give details.\n\n*\tOnly a small number of their vital assets are being logged to their SIEM. (We have declared that only 0-30% of vital assets are logged to SIEM tools. Please provide more granular information on vital systems that are not logged and the ones that are.)\n\n*\tTarget time to deploy the highest priority patches has been declared at >=30 days. This is our approved internal timeline for deploying critical security patches? Or historically how much time it usually takes? Are there any plans to enforce tighter timeframes for implementing patches for critical vulnerabilities?  \n\n*\tWhat security awareness trainings are planned for 2025?\n\n*\tWhat security measure are in place for their externally exposed assets?\n\n \n\nAppreciate your support on the above and look forward to hearing from you.\n\n \n\nThank You & Best Regards,\n\nHagop\n\nHAGOP GHAZARIAN​​​​\n\nSPECIALIST ‑ ADMINISTRATION\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n+971 4 8045000\n\n\t\n \n\n <https://chalhoubgroup.com/> \n\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\n‑\n\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\n <https://twitter.com/ChalhoubGroup> \n\n <https://www.facebook.com/chalhoubgroup/> \n\n <https://www.instagram.com/chalhoubgroup>",
+      "start_pos": 21080,
+      "end_pos": 22653,
+      "chunk_index": 22,
+      "chunk_size": 1572,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "CHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\n‑\n\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\n <https://twitter.com/ChalhoubGroup> \n\n <https://www.facebook.com/chalhoubgroup/> \n\n <https://www.instagram.com/chalhoubgroup> \n\n <https://www.linkedin.com/company/chalhoub-group/> \n\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm> \n\n\n\n \n\n\n--------------------------------------------------\nID: C1JW7Z6_03\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Dee Deu <dee.deu@chalhoub.com>\nCC: Kamran Abbasi <Kamran.Abbasi@chalhoub.com>; Joe Hobeika <Joe.Hobeika@chalhoub.com>\nBCC: \nDate: 2024-11-22 11:39\nSubject: Re: Additional Clarification Questions requested - Cyber Insurance\n--------------------------------------------------\nDear Dee,\n\nI hope this message finds you well.\n\nI would like to follow up on the email below.\n\nLook forward to receiving your kind feedback on the additional clarification questions requested by the insurer.\n\nThank You & Best Regards,\nHagop\n\nHAGOP GHAZARIAN​​​​\n\nSPECIALIST ‑ ADMINISTRATION\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n+971 4 8045000\n\n\t\n \t\n <https://chalhoubgroup.com/> \n\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\n\n‑\n\n\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\n\n <https://twitter.com/ChalhoubGroup> \n\n <https://www.facebook.com/chalhoubgroup/> \n\n <https://www.instagram.com/chalhoubgroup> \n\n <https://www.linkedin.com/company/chalhoub-group/> \n\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 22406,
+      "end_pos": 23981,
+      "chunk_index": 23,
+      "chunk_size": 1574,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://www.facebook.com/chalhoubgroup/> \n\n <https://www.instagram.com/chalhoubgroup> \n\n <https://www.linkedin.com/company/chalhoub-group/> \n\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm> \n\n\n\n________________________________\n\nFrom: Dee Deu <dee.deu@chalhoub.com>\nSent: 13 November 2024 10:21 AM\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCc: Kamran Abbasi <Kamran.Abbasi@chalhoub.com>; Joe Hobeika <Joe.Hobeika@chalhoub.com>\nSubject: RE: Additional Clarification Questions requested - Cyber Insurance \n \n\nDear Hagop,\n\n \n\nWe are currently co-ordinating efforts to collate the requested information from various team members. We plan to provide a response by the end of next week(22/11).\n\n \n\nKind Regards\n\n \n\nDee\n\n \n\nDEE DEU​​​​\n\nDIRECTOR ‑ INFORMATION SECURITY\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n\t\t\n \n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fchalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259053055%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=epmMF1OU6hX6Rtgu2rRYDRfuQ2dBeoYcyXrBDHS%2BXlM%3D&reserved=0>",
+      "start_pos": 23751,
+      "end_pos": 25042,
+      "chunk_index": 24,
+      "chunk_size": 1289,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fchalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259053055%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=epmMF1OU6hX6Rtgu2rRYDRfuQ2dBeoYcyXrBDHS%2BXlM%3D&reserved=0> \n\nCHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwww.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259076399%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=VMyx6ceOLuHcGy3qE%2BZ%2FfAzcxJNOfKuAVqelQ4LXxfc%3D&reserved=0> \n\n‑\n\nCAREERS.CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcareers.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259097624%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=8kOD0IwY6ThZzPOHPu6DAYKmxfvJNhCI26TIOuMWEiY%3D&reserved=0>",
+      "start_pos": 24606,
+      "end_pos": 25964,
+      "chunk_index": 25,
+      "chunk_size": 1351,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "CAREERS.CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcareers.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259097624%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=8kOD0IwY6ThZzPOHPu6DAYKmxfvJNhCI26TIOuMWEiY%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Ftwitter.com%2FChalhoubGroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259114085%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=J0O5BB7itYWqjk1PFlzHUUcLx%2B9nJF7wtS5kPJ1ZeYg%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.facebook.com%2Fchalhoubgroup%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259129829%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=GUVCSzDMSYGFkxcEyJF2agguy0mH8brEsrafIIJBmj8%3D&reserved=0>",
+      "start_pos": 25502,
+      "end_pos": 26850,
+      "chunk_index": 26,
+      "chunk_size": 1347,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.facebook.com%2Fchalhoubgroup%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259129829%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=GUVCSzDMSYGFkxcEyJF2agguy0mH8brEsrafIIJBmj8%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.instagram.com%2Fchalhoubgroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259145799%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=yJmSnZF7ukoTkT%2BH%2BJK9ujURbeFNkrTVxxfzgxqMeSw%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fchalhoub-group%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259161366%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=2qHEoQ7xxF4hq271ehdC764ohY%2BzV8z2v%2BkIUR4qOSk%3D&reserved=0>",
+      "start_pos": 26406,
+      "end_pos": 27759,
+      "chunk_index": 27,
+      "chunk_size": 1351,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fchalhoub-group%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259161366%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=2qHEoQ7xxF4hq271ehdC764ohY%2BzV8z2v%2BkIUR4qOSk%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.glassdoor.com%2FOverview%2FWorking-at-Chalhoub-Group-EI_IE499602.11%2C25.htm&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259176930%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=4Jd2S9DcHE8ab4cxRGtxFdFBHXpTuyYhFpUwLE36sNo%3D&reserved=0> \n\n\n\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSent: Friday, 8 November 2024 12:26 PM\nTo: Dee Deu <dee.deu@chalhoub.com>\nCc: Kamran Abbasi <Kamran.Abbasi@chalhoub.com>; Joe Hobeika <Joe.Hobeika@chalhoub.com>\nSubject: Additional Clarification Questions requested - Cyber Insurance\n\n \n\nDear Dee,\n\n \n\nHope you are well.\n\n \n\nThe insurer has requested feedback on the below.\n\n \n\nFrom the proposal form:\n\n*\tLarge amount of sensitive information is not configured with access restrictions and with no monitoring in place. Please provide more granular information on the protection measures currently in place.",
+      "start_pos": 27300,
+      "end_pos": 28862,
+      "chunk_index": 28,
+      "chunk_size": 1561,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "*\tLarge amount of sensitive information is not configured with access restrictions and with no monitoring in place. Please provide more granular information on the protection measures currently in place.\n\n\t*\tWhat protection measures are in place to secure\n\n\t\t*\tFinancials\n\t\t*\tPayroll\n\t\t*\tE-mails of CEO + Directors\n\t\t*\tAny other protection measures in place to safeguard what Chalhoub considers sensitive data\n\n\t*\tAre there any specific types or areas of sensitive information where we are working to improve access control and monitoring? Please outline any plans, along with estimated timelines, for strengthening access controls and monitoring for these areas.\n\n*\tClient accepts credit card payments but is not PCI DSS compliant?\n\n\t*\tPlease confirm and advise points where we do not meet compliance requirements. Also, please advise if any remediation measures are planned and the respective timelines.\n\n*\tMFA is only being used for 25% users for remote access to the corporate network – Full MFA should be implemented and within a reasonable timeframe.\n\n\t*\tPlease advise the estimated timeline which would be needed roll out close to 100% MFA coverage for remote access, at least for UAE & KSA.\n\n*\tClient is utilising end of life software / systems with no plan to replace, upgrade this – we would need to understand where they are using their EOL software.",
+      "start_pos": 28659,
+      "end_pos": 30020,
+      "chunk_index": 29,
+      "chunk_size": 1361,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "*\tPlease advise the estimated timeline which would be needed roll out close to 100% MFA coverage for remote access, at least for UAE & KSA.\n\n*\tClient is utilising end of life software / systems with no plan to replace, upgrade this – we would need to understand where they are using their EOL software.\n\n\t*\tPlease clarify which systems are using EOL software and what upgrade plans we have in place. What are the EOL software related to critical systems and are there any remediation measures planned to upgrade or replace any EOL software related to critical systems?\n\n*\tNon-compliant with EMV standards\n\n\t*\tPlease confirm and advise points where we do not meet compliance requirements. Also, please advise if any remediation measures are planned and the respective timelines.\n\n*\tWhen was the last vulnerability testing done? What were the finding? What remediation measures have been implemented or are planned with timelines?\n*\tWhen is the next penetration/vulnerability testing scheduled for?\n\n \n\nOther pending questions:\n\n*\tFor a UAE domiciled company why is all their data processed and stored UK / Europe? – circa 5m PII records\n\n \n\nFrom the ransomware form:",
+      "start_pos": 29717,
+      "end_pos": 30883,
+      "chunk_index": 30,
+      "chunk_size": 1165,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "*\tWhen was the last vulnerability testing done? What were the finding? What remediation measures have been implemented or are planned with timelines?\n*\tWhen is the next penetration/vulnerability testing scheduled for?\n\n \n\nOther pending questions:\n\n*\tFor a UAE domiciled company why is all their data processed and stored UK / Europe? – circa 5m PII records\n\n \n\nFrom the ransomware form:",
+      "start_pos": 30497,
+      "end_pos": 30883,
+      "chunk_index": 31,
+      "chunk_size": 386,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "From the ransomware form:\n\n*\tWhat is the our target recovery time objective (RTO) for Vital Assets in case of a successful ransomware breach?\n*\tWhat is the current backup and restoration strategy and estimated timelines for full restoration?\n*\tAny reason for high persistent admin users? (80 persistent admin users declared)\n*\tWhat is the estimated number of \"Domain Administrator Accounts\" and \"Privileged Services Accounts\"? Also, please confirm if explicit instructions are given to privileged account holders to disallow surfing the internet and/or accessing personal emails.\n*\tDo we have any data loss prevention tools in place for critical systems? Please give details.\n*\tOnly a small number of their vital assets are being logged to their SIEM. (We have declared that only 0-30% of vital assets are logged to SIEM tools. Please provide more granular information on vital systems that are not logged and the ones that are.)\n*\tTarget time to deploy the highest priority patches has been declared at >=30 days. This is our approved internal timeline for deploying critical security patches? Or historically how much time it usually takes? Are there any plans to enforce tighter timeframes for implementing patches for critical vulnerabilities?  \n*\tWhat security awareness trainings are planned for 2025?\n*\tWhat security measure are in place for their externally exposed assets?\n\n \n\nAppreciate your support on the above and look forward to hearing from you.\n\n \n\nThank You & Best Regards,\n\nHagop\n\nHAGOP GHAZARIAN​​​​\n\nSPECIALIST ‑ ADMINISTRATION\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES",
+      "start_pos": 30858,
+      "end_pos": 32449,
+      "chunk_index": 32,
+      "chunk_size": 1591,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Appreciate your support on the above and look forward to hearing from you.\n\n \n\nThank You & Best Regards,\n\nHagop\n\nHAGOP GHAZARIAN​​​​\n\nSPECIALIST ‑ ADMINISTRATION\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n+971 4 8045000\n\n\t\n \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fchalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259192851%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=OHyhcWb%2FlyNtIIbckmuNHDvMp4QH9gVKKriCEf2abt4%3D&reserved=0> \n\nCHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwww.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259208940%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=PshNi87GpSuQ6bLGdNZ6GRfjLbCElcGJF41K77BP%2BO8%3D&reserved=0> \n\n‑\n\nCAREERS.CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcareers.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259225570%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=R48koxHV%2FssbcfSwYLv2AM%2BxPzyonYHikr3bS8PANdo%3D&reserved=0>",
+      "start_pos": 32244,
+      "end_pos": 33827,
+      "chunk_index": 33,
+      "chunk_size": 1582,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "CAREERS.CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcareers.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259225570%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=R48koxHV%2FssbcfSwYLv2AM%2BxPzyonYHikr3bS8PANdo%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Ftwitter.com%2FChalhoubGroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259244561%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=0gIS4TtsZXcPQ9hsLqYwjIxiDCmigwbAZltieRuH4PY%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.facebook.com%2Fchalhoubgroup%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259265632%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=NDVFdgswGSpFfq1IEl%2FtlAFCo7bwmu59u5EsYW9PT%2BY%3D&reserved=0>",
+      "start_pos": 33361,
+      "end_pos": 34715,
+      "chunk_index": 34,
+      "chunk_size": 1353,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.facebook.com%2Fchalhoubgroup%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259265632%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=NDVFdgswGSpFfq1IEl%2FtlAFCo7bwmu59u5EsYW9PT%2BY%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.instagram.com%2Fchalhoubgroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259281554%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=nfSmbk6WeDQIIIClusXNL3tszYAsLPcHUgK6yS%2BbwDs%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fchalhoub-group%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259297025%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=okD5i%2Fe%2BVbguNo4PPR3k1Nutufd38c1edBf9toeE8Vw%3D&reserved=0>",
+      "start_pos": 34267,
+      "end_pos": 35622,
+      "chunk_index": 35,
+      "chunk_size": 1353,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fchalhoub-group%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259297025%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=okD5i%2Fe%2BVbguNo4PPR3k1Nutufd38c1edBf9toeE8Vw%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.glassdoor.com%2FOverview%2FWorking-at-Chalhoub-Group-EI_IE499602.11%2C25.htm&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Ca1aa8d1eece5418e080808dd03ab7bc3%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638670757259312417%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=rLCEAV7rQcNBVwQiAvR9roSk0NyJqDkCaB%2FT1svpe7s%3D&reserved=0> \n\n\n\n \n\n\n--------------------------------------------------\nID: C1JW7Z6_04\nFrom: Dee Deu <dee.deu@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Kamran Abbasi <Kamran.Abbasi@chalhoub.com>; Joe Hobeika <Joe.Hobeika@chalhoub.com>\nBCC: \nDate: 2024-11-22 16:16\nSubject: RE: Additional Clarification Questions requested - Cyber Insurance\n--------------------------------------------------\nDear Hagop, \n\n \n\nPlease see the attached clarifications, there are a couple which are still outstanding as we haven’t received a response from Data Privacy & Finance.",
+      "start_pos": 35163,
+      "end_pos": 36686,
+      "chunk_index": 36,
+      "chunk_size": 1522,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "--------------------------------------------------\nID: C1JW7Z6_04\nFrom: Dee Deu <dee.deu@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Kamran Abbasi <Kamran.Abbasi@chalhoub.com>; Joe Hobeika <Joe.Hobeika@chalhoub.com>\nBCC: \nDate: 2024-11-22 16:16\nSubject: RE: Additional Clarification Questions requested - Cyber Insurance\n--------------------------------------------------\nDear Hagop, \n\n \n\nPlease see the attached clarifications, there are a couple which are still outstanding as we haven’t received a response from Data Privacy & Finance.\n\n \n\nWe will keep chasing on the outstanding ones, however, please submit the rest.\n\n \n\nKind Regards\n\n \n\nDee\n\n \n\nDEE DEU​​​​\n\nDIRECTOR ‑ INFORMATION SECURITY\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n\t\t\n \t\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fchalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011771054%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=%2Bz7AdfHX9VtWkX2ZGfl0vWUAdtvcKDQD0fSA7JrtnfI%3D&reserved=0>",
+      "start_pos": 36123,
+      "end_pos": 37326,
+      "chunk_index": 37,
+      "chunk_size": 1202,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fchalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011771054%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=%2Bz7AdfHX9VtWkX2ZGfl0vWUAdtvcKDQD0fSA7JrtnfI%3D&reserved=0> \n\nCHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwww.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011797259%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=5A2WWMFsiPCGz%2FZhh7AkJAkN4tU0feCI1%2BAN1gBoRO0%3D&reserved=0> \n\n\n‑\n\n\nCAREERS.CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcareers.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011811487%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=X5auvaiDshbmryLfNUIpoO9%2BGnYZ7oeBpSS2Ta7OzoM%3D&reserved=0>",
+      "start_pos": 36889,
+      "end_pos": 38252,
+      "chunk_index": 38,
+      "chunk_size": 1355,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "CAREERS.CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcareers.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011811487%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=X5auvaiDshbmryLfNUIpoO9%2BGnYZ7oeBpSS2Ta7OzoM%3D&reserved=0> \n\n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Ftwitter.com%2FChalhoubGroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011825248%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=KFXzUVWyDa0c%2BsSzoaI5oylKOySLXoIP%2FWIutkNeyAg%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.facebook.com%2Fchalhoubgroup%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011839033%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=HMmtSgsEOv7mWt5Xw021hnaK%2B7%2BAoZiUmC3IqHJuelQ%3D&reserved=0>",
+      "start_pos": 37788,
+      "end_pos": 39145,
+      "chunk_index": 39,
+      "chunk_size": 1356,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.facebook.com%2Fchalhoubgroup%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011839033%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=HMmtSgsEOv7mWt5Xw021hnaK%2B7%2BAoZiUmC3IqHJuelQ%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.instagram.com%2Fchalhoubgroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011856078%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=WjNhItnu4abQoHssH7ayNjwBiMz8ueq6mBOBcmwsDmY%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fchalhoub-group%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011875240%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=bH3kTKiY0G8odVQhonNMRRmDyWYV5Qrx51lIm6LZlKA%3D&reserved=0>",
+      "start_pos": 38697,
+      "end_pos": 40046,
+      "chunk_index": 40,
+      "chunk_size": 1347,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fchalhoub-group%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011875240%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=bH3kTKiY0G8odVQhonNMRRmDyWYV5Qrx51lIm6LZlKA%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.glassdoor.com%2FOverview%2FWorking-at-Chalhoub-Group-EI_IE499602.11%2C25.htm&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011892671%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=MdPHy1iZtOaxYBCCsjgplybSgMBuL7A0K3fKiA0zIZw%3D&reserved=0> \n\n\n\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com> \nSent: Friday, 22 November 2024 11:40 AM\nTo: Dee Deu <dee.deu@chalhoub.com>\nCc: Kamran Abbasi <Kamran.Abbasi@chalhoub.com>; Joe Hobeika <Joe.Hobeika@chalhoub.com>\nSubject: Re: Additional Clarification Questions requested - Cyber Insurance\n\n \n\nDear Dee,\n\n \n\nI hope this message finds you well.\n\n \n\nI would like to follow up on the email below.\n\n \n\nLook forward to receiving your kind feedback on the additional clarification questions requested by the insurer.\n\n \n\nThank You & Best Regards,\n\nHagop\n\n \n\nHAGOP GHAZARIAN​​​​\n\nSPECIALIST ‑ ADMINISTRATION\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES",
+      "start_pos": 39591,
+      "end_pos": 41187,
+      "chunk_index": 41,
+      "chunk_size": 1595,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Look forward to receiving your kind feedback on the additional clarification questions requested by the insurer.\n\n \n\nThank You & Best Regards,\n\nHagop\n\n \n\nHAGOP GHAZARIAN​​​​\n\nSPECIALIST ‑ ADMINISTRATION\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n+971 4 8045000\n\n\t\n \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fchalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011908385%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=12Z2HUHIVzR6y0kx%2Bg6XOj5haPSUZS49swzEj4UdWe0%3D&reserved=0> \n\nCHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwww.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011922511%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=dDCXHH0RP7emmTvkj3LvT3558howLl9xgjJGOc74fGU%3D&reserved=0> \n\n‑",
+      "start_pos": 40941,
+      "end_pos": 42095,
+      "chunk_index": 42,
+      "chunk_size": 1154,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwww.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011922511%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=dDCXHH0RP7emmTvkj3LvT3558howLl9xgjJGOc74fGU%3D&reserved=0> \n\n‑\n\nCAREERS.CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcareers.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011936300%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=S4%2F53wsNh9eSl4lBrbuDk1BGoTGgk1pRqCYd0923o9A%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Ftwitter.com%2FChalhoubGroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011950237%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=Dexg%2BpaYMfX7O%2BgkCBB3j7xVudQcc3%2FANh2CLOxtHnc%3D&reserved=0>",
+      "start_pos": 41643,
+      "end_pos": 43005,
+      "chunk_index": 43,
+      "chunk_size": 1361,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Ftwitter.com%2FChalhoubGroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011950237%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=Dexg%2BpaYMfX7O%2BgkCBB3j7xVudQcc3%2FANh2CLOxtHnc%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.facebook.com%2Fchalhoubgroup%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011963374%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=Enp4eS%2F1RfcsDxZzXD7U8pOH95KV7GAigsnRJdNK4rs%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.instagram.com%2Fchalhoubgroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011976132%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=40zbKAUhxneuTauIQVLYkUgTEAm34tIzVK9WG7iFIkg%3D&reserved=0>",
+      "start_pos": 42563,
+      "end_pos": 43897,
+      "chunk_index": 44,
+      "chunk_size": 1332,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.instagram.com%2Fchalhoubgroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011976132%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=40zbKAUhxneuTauIQVLYkUgTEAm34tIzVK9WG7iFIkg%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fchalhoub-group%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011988815%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=mDsuVhrbJAEpXSq07XtTas9MDHrMuCQhhAJ7MNLZzzw%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.glassdoor.com%2FOverview%2FWorking-at-Chalhoub-Group-EI_IE499602.11%2C25.htm&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012001367%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=DTnU%2F0iHA5B0kZn7t8T%2F4BiW9UZwbjwByFA3CSfpawM%3D&reserved=0> \n\n\n\n________________________________",
+      "start_pos": 43455,
+      "end_pos": 44885,
+      "chunk_index": 45,
+      "chunk_size": 1429,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.glassdoor.com%2FOverview%2FWorking-at-Chalhoub-Group-EI_IE499602.11%2C25.htm&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012001367%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=DTnU%2F0iHA5B0kZn7t8T%2F4BiW9UZwbjwByFA3CSfpawM%3D&reserved=0> \n\n\n\n________________________________\n\nFrom: Dee Deu <dee.deu@chalhoub.com <mailto:dee.deu@chalhoub.com> >\nSent: 13 November 2024 10:21 AM\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com <mailto:Hagop.Ghazarian@chalhoub.com> >\nCc: Kamran Abbasi <Kamran.Abbasi@chalhoub.com <mailto:Kamran.Abbasi@chalhoub.com> >; Joe Hobeika <Joe.Hobeika@chalhoub.com <mailto:Joe.Hobeika@chalhoub.com> >\nSubject: RE: Additional Clarification Questions requested - Cyber Insurance \n\n \n\nDear Hagop,\n\n \n\nWe are currently co-ordinating efforts to collate the requested information from various team members. We plan to provide a response by the end of next week(22/11).\n\n \n\nKind Regards\n\n \n\nDee\n\n \n\nDEE DEU​​​​\n\nDIRECTOR ‑ INFORMATION SECURITY\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES",
+      "start_pos": 44356,
+      "end_pos": 45615,
+      "chunk_index": 46,
+      "chunk_size": 1258,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "We are currently co-ordinating efforts to collate the requested information from various team members. We plan to provide a response by the end of next week(22/11).\n\n \n\nKind Regards\n\n \n\nDee\n\n \n\nDEE DEU​​​​\n\nDIRECTOR ‑ INFORMATION SECURITY\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n\t\t\n\n \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fchalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012016588%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=MV9ZXyKf6iOpxyuN2FzH1bY8DfGBZxK9TiBPp5pcFkg%3D&reserved=0> \n\nCHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwww.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012030474%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=W5RoLd8Mrw21vIhoS7dpnOWr093g9Hbk%2BNIF274nckY%3D&reserved=0> \n\n‑",
+      "start_pos": 45333,
+      "end_pos": 46509,
+      "chunk_index": 47,
+      "chunk_size": 1176,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwww.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012030474%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=W5RoLd8Mrw21vIhoS7dpnOWr093g9Hbk%2BNIF274nckY%3D&reserved=0> \n\n‑\n\nCAREERS.CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcareers.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012047427%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=8QpGY81lcNIOODws6BXung4DkRyVZcwc%2B1z6NobiRQs%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Ftwitter.com%2FChalhoubGroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012066289%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=5fN%2BtpeJyTQVzG7qKHBLFzO%2FEe%2FseWnMAQ2RLv5BOuQ%3D&reserved=0>",
+      "start_pos": 46055,
+      "end_pos": 47419,
+      "chunk_index": 48,
+      "chunk_size": 1363,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Ftwitter.com%2FChalhoubGroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012066289%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=5fN%2BtpeJyTQVzG7qKHBLFzO%2FEe%2FseWnMAQ2RLv5BOuQ%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.facebook.com%2Fchalhoubgroup%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012086098%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=lnvKXHZN%2B4FOI3uIQ8wKBApPrS%2FrRcGoP53S%2BJVmETQ%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.instagram.com%2Fchalhoubgroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012106461%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=dYGusEOvwT5Tbk61YlMdfz1H7UDIlaopkzNIQaTCU5M%3D&reserved=0>",
+      "start_pos": 46977,
+      "end_pos": 48315,
+      "chunk_index": 49,
+      "chunk_size": 1336,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.instagram.com%2Fchalhoubgroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012106461%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=dYGusEOvwT5Tbk61YlMdfz1H7UDIlaopkzNIQaTCU5M%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fchalhoub-group%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012127936%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=ZGUh0KThX7njpx0RAkiKmzoWFcwohZlXvlS7KJJqsdQ%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.glassdoor.com%2FOverview%2FWorking-at-Chalhoub-Group-EI_IE499602.11%2C25.htm&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012148454%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=4GCAgAnaBwnHrktEs5ZdJcIMB2ml%2FdUAkiANuhjHJCE%3D&reserved=0>",
+      "start_pos": 47873,
+      "end_pos": 49265,
+      "chunk_index": 50,
+      "chunk_size": 1390,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.glassdoor.com%2FOverview%2FWorking-at-Chalhoub-Group-EI_IE499602.11%2C25.htm&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012148454%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=4GCAgAnaBwnHrktEs5ZdJcIMB2ml%2FdUAkiANuhjHJCE%3D&reserved=0> \n\n\n\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com <mailto:Hagop.Ghazarian@chalhoub.com> >\nSent: Friday, 8 November 2024 12:26 PM\nTo: Dee Deu <dee.deu@chalhoub.com <mailto:dee.deu@chalhoub.com> >\nCc: Kamran Abbasi <Kamran.Abbasi@chalhoub.com <mailto:Kamran.Abbasi@chalhoub.com> >; Joe Hobeika <Joe.Hobeika@chalhoub.com <mailto:Joe.Hobeika@chalhoub.com> >\nSubject: Additional Clarification Questions requested - Cyber Insurance\n\n \n\nDear Dee,\n\n \n\nHope you are well.\n\n \n\nThe insurer has requested feedback on the below.\n\n \n\nFrom the proposal form:\n\n*\tLarge amount of sensitive information is not configured with access restrictions and with no monitoring in place. Please provide more granular information on the protection measures currently in place.\n\n\t*\tWhat protection measures are in place to secure\n\n\t\t*\tFinancials\n\t\t*\tPayroll\n\t\t*\tE-mails of CEO + Directors\n\t\t*\tAny other protection measures in place to safeguard what Chalhoub considers sensitive data",
+      "start_pos": 48774,
+      "end_pos": 50225,
+      "chunk_index": 51,
+      "chunk_size": 1450,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "*\tWhat protection measures are in place to secure\n\n\t\t*\tFinancials\n\t\t*\tPayroll\n\t\t*\tE-mails of CEO + Directors\n\t\t*\tAny other protection measures in place to safeguard what Chalhoub considers sensitive data\n\n\t*\tAre there any specific types or areas of sensitive information where we are working to improve access control and monitoring? Please outline any plans, along with estimated timelines, for strengthening access controls and monitoring for these areas.\n\n*\tClient accepts credit card payments but is not PCI DSS compliant?\n\n\t*\tPlease confirm and advise points where we do not meet compliance requirements. Also, please advise if any remediation measures are planned and the respective timelines.\n\n*\tMFA is only being used for 25% users for remote access to the corporate network – Full MFA should be implemented and within a reasonable timeframe.\n\n\t*\tPlease advise the estimated timeline which would be needed roll out close to 100% MFA coverage for remote access, at least for UAE & KSA.\n\n*\tClient is utilising end of life software / systems with no plan to replace, upgrade this – we would need to understand where they are using their EOL software.\n\n\t*\tPlease clarify which systems are using EOL software and what upgrade plans we have in place. What are the EOL software related to critical systems and are there any remediation measures planned to upgrade or replace any EOL software related to critical systems?\n\n*\tNon-compliant with EMV standards",
+      "start_pos": 50021,
+      "end_pos": 51479,
+      "chunk_index": 52,
+      "chunk_size": 1457,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "*\tPlease clarify which systems are using EOL software and what upgrade plans we have in place. What are the EOL software related to critical systems and are there any remediation measures planned to upgrade or replace any EOL software related to critical systems?\n\n*\tNon-compliant with EMV standards\n\n\t*\tPlease confirm and advise points where we do not meet compliance requirements. Also, please advise if any remediation measures are planned and the respective timelines.\n\n*\tWhen was the last vulnerability testing done? What were the finding? What remediation measures have been implemented or are planned with timelines?\n*\tWhen is the next penetration/vulnerability testing scheduled for?\n\n \n\nOther pending questions:\n\n*\tFor a UAE domiciled company why is all their data processed and stored UK / Europe? – circa 5m PII records\n\n \n\nFrom the ransomware form:",
+      "start_pos": 51179,
+      "end_pos": 52040,
+      "chunk_index": 53,
+      "chunk_size": 860,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "*\tWhen was the last vulnerability testing done? What were the finding? What remediation measures have been implemented or are planned with timelines?\n*\tWhen is the next penetration/vulnerability testing scheduled for?\n\n \n\nOther pending questions:\n\n*\tFor a UAE domiciled company why is all their data processed and stored UK / Europe? – circa 5m PII records\n\n \n\nFrom the ransomware form:",
+      "start_pos": 51654,
+      "end_pos": 52040,
+      "chunk_index": 54,
+      "chunk_size": 386,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "From the ransomware form:\n\n*\tWhat is the our target recovery time objective (RTO) for Vital Assets in case of a successful ransomware breach?\n*\tWhat is the current backup and restoration strategy and estimated timelines for full restoration?\n*\tAny reason for high persistent admin users? (80 persistent admin users declared)\n*\tWhat is the estimated number of \"Domain Administrator Accounts\" and \"Privileged Services Accounts\"? Also, please confirm if explicit instructions are given to privileged account holders to disallow surfing the internet and/or accessing personal emails.\n*\tDo we have any data loss prevention tools in place for critical systems? Please give details.\n*\tOnly a small number of their vital assets are being logged to their SIEM. (We have declared that only 0-30% of vital assets are logged to SIEM tools. Please provide more granular information on vital systems that are not logged and the ones that are.)\n*\tTarget time to deploy the highest priority patches has been declared at >=30 days. This is our approved internal timeline for deploying critical security patches? Or historically how much time it usually takes? Are there any plans to enforce tighter timeframes for implementing patches for critical vulnerabilities?  \n*\tWhat security awareness trainings are planned for 2025?\n*\tWhat security measure are in place for their externally exposed assets?\n\n \n\nAppreciate your support on the above and look forward to hearing from you.\n\n \n\nThank You & Best Regards,\n\nHagop\n\nHAGOP GHAZARIAN​​​​\n\nSPECIALIST ‑ ADMINISTRATION\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES",
+      "start_pos": 52015,
+      "end_pos": 53606,
+      "chunk_index": 55,
+      "chunk_size": 1591,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Appreciate your support on the above and look forward to hearing from you.\n\n \n\nThank You & Best Regards,\n\nHagop\n\nHAGOP GHAZARIAN​​​​\n\nSPECIALIST ‑ ADMINISTRATION\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n+971 4 8045000\n\n\t\n \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fchalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012169344%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=vPeBtvs%2BRlGie%2B4C%2FPu4%2FG%2B5%2FqZbJsGGIqaS%2B1l0QDY%3D&reserved=0> \n\nCHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwww.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012191744%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=ZDima4u1%2F3nU013nUPuCfvOkn5j8XfKbJxYpOT7yalg%3D&reserved=0> \n\n‑\n\nCAREERS.CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcareers.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012213699%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=%2FCRAhgBem4WY8F110Bx8TOL3DlHgodqxn%2FB1stJ0L5U%3D&reserved=0>",
+      "start_pos": 53401,
+      "end_pos": 54996,
+      "chunk_index": 56,
+      "chunk_size": 1594,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "CAREERS.CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcareers.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012213699%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=%2FCRAhgBem4WY8F110Bx8TOL3DlHgodqxn%2FB1stJ0L5U%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Ftwitter.com%2FChalhoubGroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012235171%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=%2FHl7FBO%2FQINXMfgUYuKp6ycuEab8pypg51zVQuX5%2Bd0%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.facebook.com%2Fchalhoubgroup%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012257047%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=Dgn3l%2BkFjpHKS6WOVl0rpoa%2BfOhsOK41FrYK%2FI4zyPM%3D&reserved=0>",
+      "start_pos": 54530,
+      "end_pos": 55892,
+      "chunk_index": 57,
+      "chunk_size": 1361,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.facebook.com%2Fchalhoubgroup%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012257047%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=Dgn3l%2BkFjpHKS6WOVl0rpoa%2BfOhsOK41FrYK%2FI4zyPM%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.instagram.com%2Fchalhoubgroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012278941%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=xayjv4kebN7w4C9Caaive8027hbsG0Q37yvM64cKQlE%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fchalhoub-group%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012299575%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=SHRfWpTpyVpsZRxQlVbNfgS2SW3v6cXxtYrNYLvkCE0%3D&reserved=0>",
+      "start_pos": 55442,
+      "end_pos": 56793,
+      "chunk_index": 58,
+      "chunk_size": 1349,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fchalhoub-group%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012299575%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=SHRfWpTpyVpsZRxQlVbNfgS2SW3v6cXxtYrNYLvkCE0%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.glassdoor.com%2FOverview%2FWorking-at-Chalhoub-Group-EI_IE499602.11%2C25.htm&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012321705%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=V%2Fym4od2EfbeF38aHooXNgcwMpT3jzQK64B2ZvFebKU%3D&reserved=0> \n\n\n\n \n\n\n--------------------------------------------------\nID: C1JW7Z6_05\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Dee Deu <dee.deu@chalhoub.com>\nCC: Kamran Abbasi <Kamran.Abbasi@chalhoub.com>; Joe Hobeika <Joe.Hobeika@chalhoub.com>\nBCC: \nDate: 2024-11-22 16:58\nSubject: Re: Additional Clarification Questions requested - Cyber Insurance\n--------------------------------------------------\nDear Dee,\n\nThank you so much for your valuable input. Much appreciated.\n\nBest Regards,\nHagop\n\nHAGOP GHAZARIAN​​​​\n\nSPECIALIST ‑ ADMINISTRATION\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n+971 4 8045000\n\n\t\n \t\n <https://chalhoubgroup.com/>",
+      "start_pos": 56338,
+      "end_pos": 57930,
+      "chunk_index": 59,
+      "chunk_size": 1590,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Thank you so much for your valuable input. Much appreciated.\n\nBest Regards,\nHagop\n\nHAGOP GHAZARIAN​​​​\n\nSPECIALIST ‑ ADMINISTRATION\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n+971 4 8045000\n\n\t\n \t\n <https://chalhoubgroup.com/> \n\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\n\n‑\n\n\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\n\n <https://twitter.com/ChalhoubGroup> \n\n <https://www.facebook.com/chalhoubgroup/> \n\n <https://www.instagram.com/chalhoubgroup> \n\n <https://www.linkedin.com/company/chalhoub-group/> \n\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm> \n\n\n\n________________________________\n\nFrom: Dee Deu <dee.deu@chalhoub.com>\nSent: 22 November 2024 4:13 PM\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCc: Kamran Abbasi <Kamran.Abbasi@chalhoub.com>; Joe Hobeika <Joe.Hobeika@chalhoub.com>\nSubject: RE: Additional Clarification Questions requested - Cyber Insurance \n \n\nDear Hagop, \n\n \n\nPlease see the attached clarifications, there are a couple which are still outstanding as we haven’t received a response from Data Privacy & Finance.\n\n \n\nWe will keep chasing on the outstanding ones, however, please submit the rest.\n\n \n\nKind Regards\n\n \n\nDee\n\n \n\nDEE DEU​​​​\n\nDIRECTOR ‑ INFORMATION SECURITY\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES",
+      "start_pos": 57702,
+      "end_pos": 59015,
+      "chunk_index": 60,
+      "chunk_size": 1313,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Please see the attached clarifications, there are a couple which are still outstanding as we haven’t received a response from Data Privacy & Finance.\n\n \n\nWe will keep chasing on the outstanding ones, however, please submit the rest.\n\n \n\nKind Regards\n\n \n\nDee\n\n \n\nDEE DEU​​​​\n\nDIRECTOR ‑ INFORMATION SECURITY\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n\t\t\n \t \n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fchalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011771054%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=%2Bz7AdfHX9VtWkX2ZGfl0vWUAdtvcKDQD0fSA7JrtnfI%3D&reserved=0> \n\nCHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwww.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011797259%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=5A2WWMFsiPCGz%2FZhh7AkJAkN4tU0feCI1%2BAN1gBoRO0%3D&reserved=0> \n\n\n‑",
+      "start_pos": 58665,
+      "end_pos": 59914,
+      "chunk_index": 61,
+      "chunk_size": 1249,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwww.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011797259%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=5A2WWMFsiPCGz%2FZhh7AkJAkN4tU0feCI1%2BAN1gBoRO0%3D&reserved=0> \n\n\n‑\n\n\nCAREERS.CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcareers.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011811487%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=X5auvaiDshbmryLfNUIpoO9%2BGnYZ7oeBpSS2Ta7OzoM%3D&reserved=0> \n\n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Ftwitter.com%2FChalhoubGroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011825248%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=KFXzUVWyDa0c%2BsSzoaI5oylKOySLXoIP%2FWIutkNeyAg%3D&reserved=0>",
+      "start_pos": 59457,
+      "end_pos": 60824,
+      "chunk_index": 62,
+      "chunk_size": 1366,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Ftwitter.com%2FChalhoubGroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011825248%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=KFXzUVWyDa0c%2BsSzoaI5oylKOySLXoIP%2FWIutkNeyAg%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.facebook.com%2Fchalhoubgroup%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011839033%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=HMmtSgsEOv7mWt5Xw021hnaK%2B7%2BAoZiUmC3IqHJuelQ%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.instagram.com%2Fchalhoubgroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011856078%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=WjNhItnu4abQoHssH7ayNjwBiMz8ueq6mBOBcmwsDmY%3D&reserved=0>",
+      "start_pos": 60384,
+      "end_pos": 61718,
+      "chunk_index": 63,
+      "chunk_size": 1332,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.instagram.com%2Fchalhoubgroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011856078%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=WjNhItnu4abQoHssH7ayNjwBiMz8ueq6mBOBcmwsDmY%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fchalhoub-group%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011875240%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=bH3kTKiY0G8odVQhonNMRRmDyWYV5Qrx51lIm6LZlKA%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.glassdoor.com%2FOverview%2FWorking-at-Chalhoub-Group-EI_IE499602.11%2C25.htm&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011892671%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=MdPHy1iZtOaxYBCCsjgplybSgMBuL7A0K3fKiA0zIZw%3D&reserved=0>",
+      "start_pos": 61276,
+      "end_pos": 62666,
+      "chunk_index": 64,
+      "chunk_size": 1388,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.glassdoor.com%2FOverview%2FWorking-at-Chalhoub-Group-EI_IE499602.11%2C25.htm&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011892671%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=MdPHy1iZtOaxYBCCsjgplybSgMBuL7A0K3fKiA0zIZw%3D&reserved=0> \n\n\n\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com> \nSent: Friday, 22 November 2024 11:40 AM\nTo: Dee Deu <dee.deu@chalhoub.com>\nCc: Kamran Abbasi <Kamran.Abbasi@chalhoub.com>; Joe Hobeika <Joe.Hobeika@chalhoub.com>\nSubject: Re: Additional Clarification Questions requested - Cyber Insurance\n\n \n\nDear Dee,\n\n \n\nI hope this message finds you well.\n\n \n\nI would like to follow up on the email below.\n\n \n\nLook forward to receiving your kind feedback on the additional clarification questions requested by the insurer.\n\n \n\nThank You & Best Regards,\n\nHagop\n\n \n\nHAGOP GHAZARIAN​​​​\n\nSPECIALIST ‑ ADMINISTRATION\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n+971 4 8045000\n\n\t\n \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fchalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011908385%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=12Z2HUHIVzR6y0kx%2Bg6XOj5haPSUZS49swzEj4UdWe0%3D&reserved=0>",
+      "start_pos": 62177,
+      "end_pos": 63770,
+      "chunk_index": 65,
+      "chunk_size": 1591,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fchalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011908385%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=12Z2HUHIVzR6y0kx%2Bg6XOj5haPSUZS49swzEj4UdWe0%3D&reserved=0> \n\nCHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwww.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011922511%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=dDCXHH0RP7emmTvkj3LvT3558howLl9xgjJGOc74fGU%3D&reserved=0> \n\n‑\n\nCAREERS.CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcareers.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011936300%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=S4%2F53wsNh9eSl4lBrbuDk1BGoTGgk1pRqCYd0923o9A%3D&reserved=0>",
+      "start_pos": 63339,
+      "end_pos": 64690,
+      "chunk_index": 66,
+      "chunk_size": 1349,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "CAREERS.CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcareers.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011936300%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=S4%2F53wsNh9eSl4lBrbuDk1BGoTGgk1pRqCYd0923o9A%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Ftwitter.com%2FChalhoubGroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011950237%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=Dexg%2BpaYMfX7O%2BgkCBB3j7xVudQcc3%2FANh2CLOxtHnc%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.facebook.com%2Fchalhoubgroup%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011963374%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=Enp4eS%2F1RfcsDxZzXD7U8pOH95KV7GAigsnRJdNK4rs%3D&reserved=0>",
+      "start_pos": 64226,
+      "end_pos": 65582,
+      "chunk_index": 67,
+      "chunk_size": 1355,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.facebook.com%2Fchalhoubgroup%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011963374%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=Enp4eS%2F1RfcsDxZzXD7U8pOH95KV7GAigsnRJdNK4rs%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.instagram.com%2Fchalhoubgroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011976132%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=40zbKAUhxneuTauIQVLYkUgTEAm34tIzVK9WG7iFIkg%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fchalhoub-group%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011988815%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=mDsuVhrbJAEpXSq07XtTas9MDHrMuCQhhAJ7MNLZzzw%3D&reserved=0>",
+      "start_pos": 65136,
+      "end_pos": 66483,
+      "chunk_index": 68,
+      "chunk_size": 1345,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fchalhoub-group%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011988815%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=mDsuVhrbJAEpXSq07XtTas9MDHrMuCQhhAJ7MNLZzzw%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.glassdoor.com%2FOverview%2FWorking-at-Chalhoub-Group-EI_IE499602.11%2C25.htm&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012001367%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=DTnU%2F0iHA5B0kZn7t8T%2F4BiW9UZwbjwByFA3CSfpawM%3D&reserved=0> \n\n\n\n________________________________\n\nFrom: Dee Deu <dee.deu@chalhoub.com <mailto:dee.deu@chalhoub.com> >\nSent: 13 November 2024 10:21 AM\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com <mailto:Hagop.Ghazarian@chalhoub.com> >\nCc: Kamran Abbasi <Kamran.Abbasi@chalhoub.com <mailto:Kamran.Abbasi@chalhoub.com> >; Joe Hobeika <Joe.Hobeika@chalhoub.com <mailto:Joe.Hobeika@chalhoub.com> >\nSubject: RE: Additional Clarification Questions requested - Cyber Insurance \n\n \n\nDear Hagop,\n\n \n\nWe are currently co-ordinating efforts to collate the requested information from various team members. We plan to provide a response by the end of next week(22/11).",
+      "start_pos": 66028,
+      "end_pos": 67626,
+      "chunk_index": 69,
+      "chunk_size": 1597,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "From: Dee Deu <dee.deu@chalhoub.com <mailto:dee.deu@chalhoub.com> >\nSent: 13 November 2024 10:21 AM\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com <mailto:Hagop.Ghazarian@chalhoub.com> >\nCc: Kamran Abbasi <Kamran.Abbasi@chalhoub.com <mailto:Kamran.Abbasi@chalhoub.com> >; Joe Hobeika <Joe.Hobeika@chalhoub.com <mailto:Joe.Hobeika@chalhoub.com> >\nSubject: RE: Additional Clarification Questions requested - Cyber Insurance \n\n \n\nDear Hagop,\n\n \n\nWe are currently co-ordinating efforts to collate the requested information from various team members. We plan to provide a response by the end of next week(22/11).\n\n \n\nKind Regards\n\n \n\nDee\n\n \n\nDEE DEU​​​​\n\nDIRECTOR ‑ INFORMATION SECURITY\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n\t\t\n\n \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fchalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012016588%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=MV9ZXyKf6iOpxyuN2FzH1bY8DfGBZxK9TiBPp5pcFkg%3D&reserved=0>",
+      "start_pos": 67016,
+      "end_pos": 68182,
+      "chunk_index": 70,
+      "chunk_size": 1165,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fchalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012016588%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=MV9ZXyKf6iOpxyuN2FzH1bY8DfGBZxK9TiBPp5pcFkg%3D&reserved=0> \n\nCHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwww.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012030474%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=W5RoLd8Mrw21vIhoS7dpnOWr093g9Hbk%2BNIF274nckY%3D&reserved=0> \n\n‑\n\nCAREERS.CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcareers.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012047427%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=8QpGY81lcNIOODws6BXung4DkRyVZcwc%2B1z6NobiRQs%3D&reserved=0>",
+      "start_pos": 67753,
+      "end_pos": 69104,
+      "chunk_index": 71,
+      "chunk_size": 1349,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "CAREERS.CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcareers.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012047427%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=8QpGY81lcNIOODws6BXung4DkRyVZcwc%2B1z6NobiRQs%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Ftwitter.com%2FChalhoubGroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012066289%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=5fN%2BtpeJyTQVzG7qKHBLFzO%2FEe%2FseWnMAQ2RLv5BOuQ%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.facebook.com%2Fchalhoubgroup%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012086098%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=lnvKXHZN%2B4FOI3uIQ8wKBApPrS%2FrRcGoP53S%2BJVmETQ%3D&reserved=0>",
+      "start_pos": 68640,
+      "end_pos": 70000,
+      "chunk_index": 72,
+      "chunk_size": 1359,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.facebook.com%2Fchalhoubgroup%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012086098%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=lnvKXHZN%2B4FOI3uIQ8wKBApPrS%2FrRcGoP53S%2BJVmETQ%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.instagram.com%2Fchalhoubgroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012106461%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=dYGusEOvwT5Tbk61YlMdfz1H7UDIlaopkzNIQaTCU5M%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fchalhoub-group%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012127936%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=ZGUh0KThX7njpx0RAkiKmzoWFcwohZlXvlS7KJJqsdQ%3D&reserved=0>",
+      "start_pos": 69550,
+      "end_pos": 70901,
+      "chunk_index": 73,
+      "chunk_size": 1349,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fchalhoub-group%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012127936%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=ZGUh0KThX7njpx0RAkiKmzoWFcwohZlXvlS7KJJqsdQ%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.glassdoor.com%2FOverview%2FWorking-at-Chalhoub-Group-EI_IE499602.11%2C25.htm&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012148454%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=4GCAgAnaBwnHrktEs5ZdJcIMB2ml%2FdUAkiANuhjHJCE%3D&reserved=0> \n\n\n\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com <mailto:Hagop.Ghazarian@chalhoub.com> >\nSent: Friday, 8 November 2024 12:26 PM\nTo: Dee Deu <dee.deu@chalhoub.com <mailto:dee.deu@chalhoub.com> >\nCc: Kamran Abbasi <Kamran.Abbasi@chalhoub.com <mailto:Kamran.Abbasi@chalhoub.com> >; Joe Hobeika <Joe.Hobeika@chalhoub.com <mailto:Joe.Hobeika@chalhoub.com> >\nSubject: Additional Clarification Questions requested - Cyber Insurance\n\n \n\nDear Dee,\n\n \n\nHope you are well.\n\n \n\nThe insurer has requested feedback on the below.\n\n \n\nFrom the proposal form:",
+      "start_pos": 70446,
+      "end_pos": 71943,
+      "chunk_index": 74,
+      "chunk_size": 1496,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "From: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com <mailto:Hagop.Ghazarian@chalhoub.com> >\nSent: Friday, 8 November 2024 12:26 PM\nTo: Dee Deu <dee.deu@chalhoub.com <mailto:dee.deu@chalhoub.com> >\nCc: Kamran Abbasi <Kamran.Abbasi@chalhoub.com <mailto:Kamran.Abbasi@chalhoub.com> >; Joe Hobeika <Joe.Hobeika@chalhoub.com <mailto:Joe.Hobeika@chalhoub.com> >\nSubject: Additional Clarification Questions requested - Cyber Insurance\n\n \n\nDear Dee,\n\n \n\nHope you are well.\n\n \n\nThe insurer has requested feedback on the below.\n\n \n\nFrom the proposal form:\n\n*\tLarge amount of sensitive information is not configured with access restrictions and with no monitoring in place. Please provide more granular information on the protection measures currently in place.\n\n\t*\tWhat protection measures are in place to secure\n\n\t\t*\tFinancials\n\t\t*\tPayroll\n\t\t*\tE-mails of CEO + Directors\n\t\t*\tAny other protection measures in place to safeguard what Chalhoub considers sensitive data\n\n\t*\tAre there any specific types or areas of sensitive information where we are working to improve access control and monitoring? Please outline any plans, along with estimated timelines, for strengthening access controls and monitoring for these areas.\n\n*\tClient accepts credit card payments but is not PCI DSS compliant?\n\n\t*\tPlease confirm and advise points where we do not meet compliance requirements. Also, please advise if any remediation measures are planned and the respective timelines.",
+      "start_pos": 71398,
+      "end_pos": 72850,
+      "chunk_index": 75,
+      "chunk_size": 1452,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "*\tClient accepts credit card payments but is not PCI DSS compliant?\n\n\t*\tPlease confirm and advise points where we do not meet compliance requirements. Also, please advise if any remediation measures are planned and the respective timelines.\n\n*\tMFA is only being used for 25% users for remote access to the corporate network – Full MFA should be implemented and within a reasonable timeframe.\n\n\t*\tPlease advise the estimated timeline which would be needed roll out close to 100% MFA coverage for remote access, at least for UAE & KSA.\n\n*\tClient is utilising end of life software / systems with no plan to replace, upgrade this – we would need to understand where they are using their EOL software.\n\n\t*\tPlease clarify which systems are using EOL software and what upgrade plans we have in place. What are the EOL software related to critical systems and are there any remediation measures planned to upgrade or replace any EOL software related to critical systems?\n\n*\tNon-compliant with EMV standards\n\n\t*\tPlease confirm and advise points where we do not meet compliance requirements. Also, please advise if any remediation measures are planned and the respective timelines.\n\n*\tWhen was the last vulnerability testing done? What were the finding? What remediation measures have been implemented or are planned with timelines?\n*\tWhen is the next penetration/vulnerability testing scheduled for?\n\n \n\nOther pending questions:\n\n*\tFor a UAE domiciled company why is all their data processed and stored UK / Europe? – circa 5m PII records\n\n \n\nFrom the ransomware form:",
+      "start_pos": 72610,
+      "end_pos": 74169,
+      "chunk_index": 76,
+      "chunk_size": 1559,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "*\tWhen was the last vulnerability testing done? What were the finding? What remediation measures have been implemented or are planned with timelines?\n*\tWhen is the next penetration/vulnerability testing scheduled for?\n\n \n\nOther pending questions:\n\n*\tFor a UAE domiciled company why is all their data processed and stored UK / Europe? – circa 5m PII records\n\n \n\nFrom the ransomware form:",
+      "start_pos": 73783,
+      "end_pos": 74169,
+      "chunk_index": 77,
+      "chunk_size": 386,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "From the ransomware form:\n\n*\tWhat is the our target recovery time objective (RTO) for Vital Assets in case of a successful ransomware breach?\n*\tWhat is the current backup and restoration strategy and estimated timelines for full restoration?\n*\tAny reason for high persistent admin users? (80 persistent admin users declared)\n*\tWhat is the estimated number of \"Domain Administrator Accounts\" and \"Privileged Services Accounts\"? Also, please confirm if explicit instructions are given to privileged account holders to disallow surfing the internet and/or accessing personal emails.\n*\tDo we have any data loss prevention tools in place for critical systems? Please give details.\n*\tOnly a small number of their vital assets are being logged to their SIEM. (We have declared that only 0-30% of vital assets are logged to SIEM tools. Please provide more granular information on vital systems that are not logged and the ones that are.)\n*\tTarget time to deploy the highest priority patches has been declared at >=30 days. This is our approved internal timeline for deploying critical security patches? Or historically how much time it usually takes? Are there any plans to enforce tighter timeframes for implementing patches for critical vulnerabilities?  \n*\tWhat security awareness trainings are planned for 2025?\n*\tWhat security measure are in place for their externally exposed assets?\n\n \n\nAppreciate your support on the above and look forward to hearing from you.\n\n \n\nThank You & Best Regards,\n\nHagop\n\nHAGOP GHAZARIAN​​​​\n\nSPECIALIST ‑ ADMINISTRATION\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES",
+      "start_pos": 74144,
+      "end_pos": 75735,
+      "chunk_index": 78,
+      "chunk_size": 1591,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Appreciate your support on the above and look forward to hearing from you.\n\n \n\nThank You & Best Regards,\n\nHagop\n\nHAGOP GHAZARIAN​​​​\n\nSPECIALIST ‑ ADMINISTRATION\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n+971 4 8045000\n\n\t\n \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fchalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012169344%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=vPeBtvs%2BRlGie%2B4C%2FPu4%2FG%2B5%2FqZbJsGGIqaS%2B1l0QDY%3D&reserved=0> \n\nCHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwww.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012191744%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=ZDima4u1%2F3nU013nUPuCfvOkn5j8XfKbJxYpOT7yalg%3D&reserved=0> \n\n‑\n\nCAREERS.CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcareers.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012213699%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=%2FCRAhgBem4WY8F110Bx8TOL3DlHgodqxn%2FB1stJ0L5U%3D&reserved=0>",
+      "start_pos": 75530,
+      "end_pos": 77125,
+      "chunk_index": 79,
+      "chunk_size": 1594,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "CAREERS.CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcareers.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012213699%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=%2FCRAhgBem4WY8F110Bx8TOL3DlHgodqxn%2FB1stJ0L5U%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Ftwitter.com%2FChalhoubGroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012235171%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=%2FHl7FBO%2FQINXMfgUYuKp6ycuEab8pypg51zVQuX5%2Bd0%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.facebook.com%2Fchalhoubgroup%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012257047%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=Dgn3l%2BkFjpHKS6WOVl0rpoa%2BfOhsOK41FrYK%2FI4zyPM%3D&reserved=0>",
+      "start_pos": 76659,
+      "end_pos": 78021,
+      "chunk_index": 80,
+      "chunk_size": 1361,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.facebook.com%2Fchalhoubgroup%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012257047%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=Dgn3l%2BkFjpHKS6WOVl0rpoa%2BfOhsOK41FrYK%2FI4zyPM%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.instagram.com%2Fchalhoubgroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012278941%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=xayjv4kebN7w4C9Caaive8027hbsG0Q37yvM64cKQlE%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fchalhoub-group%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012299575%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=SHRfWpTpyVpsZRxQlVbNfgS2SW3v6cXxtYrNYLvkCE0%3D&reserved=0>",
+      "start_pos": 77571,
+      "end_pos": 78922,
+      "chunk_index": 81,
+      "chunk_size": 1349,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fchalhoub-group%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012299575%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=SHRfWpTpyVpsZRxQlVbNfgS2SW3v6cXxtYrNYLvkCE0%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.glassdoor.com%2FOverview%2FWorking-at-Chalhoub-Group-EI_IE499602.11%2C25.htm&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012321705%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=V%2Fym4od2EfbeF38aHooXNgcwMpT3jzQK64B2ZvFebKU%3D&reserved=0> \n\n\n\n \n\n\n--------------------------------------------------\nID: C1JW7Z6_06\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Gregory Mathews <gregory.mathews@chalhoub.com>; Sarah Agus <sarah.agus@chalhoub.com>; Nik Haggerty <Nik.Haggerty@chalhoub.com>; Salma Shaheen <Salma.Shaheen@chalhoub.com>\nCC: Dee Deu <dee.deu@chalhoub.com>; Joe Hobeika <Joe.Hobeika@chalhoub.com>; Kamran Abbasi <Kamran.Abbasi@chalhoub.com>\nBCC: \nDate: 2024-11-28 14:47\nSubject: Re: Additional Clarification Questions requested - Cyber Insurance\n--------------------------------------------------\nDear All,\n\nHope all is well.",
+      "start_pos": 78467,
+      "end_pos": 80020,
+      "chunk_index": 82,
+      "chunk_size": 1552,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "--------------------------------------------------\nID: C1JW7Z6_06\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Gregory Mathews <gregory.mathews@chalhoub.com>; Sarah Agus <sarah.agus@chalhoub.com>; Nik Haggerty <Nik.Haggerty@chalhoub.com>; Salma Shaheen <Salma.Shaheen@chalhoub.com>\nCC: Dee Deu <dee.deu@chalhoub.com>; Joe Hobeika <Joe.Hobeika@chalhoub.com>; Kamran Abbasi <Kamran.Abbasi@chalhoub.com>\nBCC: \nDate: 2024-11-28 14:47\nSubject: Re: Additional Clarification Questions requested - Cyber Insurance\n--------------------------------------------------\nDear All,\n\nHope all is well.\n\nI’m writing to follow up on the clarification points that were previously raised. As of now, we have not yet received the necessary information. Given that we’ve set a deadline for the insurer to submit their proposals by the end of next week, it’s essential that we receive the required feedback by the end of today to ensure we stay on track.\n\nAdditional details are required on the below:\n\n1.\t\n\tLarge amount of sensitive information is not configured with access restrictions and with no monitoring in place. Please provide more granular information on the protection measures currently in place. What protection measures are in place to secure financials?\n\t@Gregory Mathews <mailto:gregory.mathews@chalhoub.com> \n\t@Nik Haggerty <mailto:Nik.Haggerty@chalhoub.com> \n\t@Sarah Agus <mailto:Sarah.Agus@chalhoub.com> \n\n     Your valuable feedback would be greatly appreciated by the end of the day.",
+      "start_pos": 79423,
+      "end_pos": 80917,
+      "chunk_index": 83,
+      "chunk_size": 1494,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "1.\t\n\tLarge amount of sensitive information is not configured with access restrictions and with no monitoring in place. Please provide more granular information on the protection measures currently in place. What protection measures are in place to secure financials?\n\t@Gregory Mathews <mailto:gregory.mathews@chalhoub.com> \n\t@Nik Haggerty <mailto:Nik.Haggerty@chalhoub.com> \n\t@Sarah Agus <mailto:Sarah.Agus@chalhoub.com> \n\n     Your valuable feedback would be greatly appreciated by the end of the day.\n\n2.\tFor a UAE domiciled company why is all their data processed and stored UK / Europe? – circa 5m PII records\n\n     @Salma Shaheen <mailto:Salma.Shaheen@chalhoub.com> , your valuable feedback on this would be very helpful\n\nAppreciate your prompt attention to these matters and look forward to your responses. \n\nThank You & Kind Regards,\nHagop\n\nHAGOP GHAZARIAN​​​​\n\nSPECIALIST ‑ ADMINISTRATION\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n+971 4 8045000\n\n\t\n \t\n <https://chalhoubgroup.com/> \n\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\n\n‑\n\n\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\n\n <https://twitter.com/ChalhoubGroup> \n\n <https://www.facebook.com/chalhoubgroup/> \n\n <https://www.instagram.com/chalhoubgroup> \n\n <https://www.linkedin.com/company/chalhoub-group/> \n\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm> \n\n\n\n________________________________",
+      "start_pos": 80415,
+      "end_pos": 81838,
+      "chunk_index": 84,
+      "chunk_size": 1423,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://www.instagram.com/chalhoubgroup> \n\n <https://www.linkedin.com/company/chalhoub-group/> \n\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm> \n\n\n\n________________________________\n\nFrom: Dee Deu <dee.deu@chalhoub.com>\nSent: 22 November 2024 4:13 PM\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCc: Kamran Abbasi <Kamran.Abbasi@chalhoub.com>; Joe Hobeika <Joe.Hobeika@chalhoub.com>\nSubject: RE: Additional Clarification Questions requested - Cyber Insurance \n \n\nDear Hagop,\n\n \n\nPlease see the attached clarifications, there are a couple which are still outstanding as we haven’t received a response from Data Privacy & Finance.\n\n \n\nWe will keep chasing on the outstanding ones, however, please submit the rest.\n\n \n\nKind Regards\n\n \n\nDee\n\n \n\nDEE DEU​​​​\n\nDIRECTOR ‑ INFORMATION SECURITY\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n\t\t\n \n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fchalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011771054%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=%2Bz7AdfHX9VtWkX2ZGfl0vWUAdtvcKDQD0fSA7JrtnfI%3D&reserved=0>",
+      "start_pos": 81617,
+      "end_pos": 82930,
+      "chunk_index": 85,
+      "chunk_size": 1311,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fchalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011771054%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=%2Bz7AdfHX9VtWkX2ZGfl0vWUAdtvcKDQD0fSA7JrtnfI%3D&reserved=0> \n\nCHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwww.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011797259%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=5A2WWMFsiPCGz%2FZhh7AkJAkN4tU0feCI1%2BAN1gBoRO0%3D&reserved=0> \n\n‑\n\nCAREERS.CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcareers.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011811487%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=X5auvaiDshbmryLfNUIpoO9%2BGnYZ7oeBpSS2Ta7OzoM%3D&reserved=0>",
+      "start_pos": 82494,
+      "end_pos": 83854,
+      "chunk_index": 86,
+      "chunk_size": 1353,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "CAREERS.CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcareers.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011811487%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=X5auvaiDshbmryLfNUIpoO9%2BGnYZ7oeBpSS2Ta7OzoM%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Ftwitter.com%2FChalhoubGroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011825248%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=KFXzUVWyDa0c%2BsSzoaI5oylKOySLXoIP%2FWIutkNeyAg%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.facebook.com%2Fchalhoubgroup%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011839033%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=HMmtSgsEOv7mWt5Xw021hnaK%2B7%2BAoZiUmC3IqHJuelQ%3D&reserved=0>",
+      "start_pos": 83390,
+      "end_pos": 84746,
+      "chunk_index": 87,
+      "chunk_size": 1355,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.facebook.com%2Fchalhoubgroup%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011839033%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=HMmtSgsEOv7mWt5Xw021hnaK%2B7%2BAoZiUmC3IqHJuelQ%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.instagram.com%2Fchalhoubgroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011856078%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=WjNhItnu4abQoHssH7ayNjwBiMz8ueq6mBOBcmwsDmY%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fchalhoub-group%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011875240%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=bH3kTKiY0G8odVQhonNMRRmDyWYV5Qrx51lIm6LZlKA%3D&reserved=0>",
+      "start_pos": 84298,
+      "end_pos": 85647,
+      "chunk_index": 88,
+      "chunk_size": 1347,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fchalhoub-group%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011875240%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=bH3kTKiY0G8odVQhonNMRRmDyWYV5Qrx51lIm6LZlKA%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.glassdoor.com%2FOverview%2FWorking-at-Chalhoub-Group-EI_IE499602.11%2C25.htm&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011892671%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=MdPHy1iZtOaxYBCCsjgplybSgMBuL7A0K3fKiA0zIZw%3D&reserved=0> \n\n\n\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSent: Friday, 22 November 2024 11:40 AM\nTo: Dee Deu <dee.deu@chalhoub.com>\nCc: Kamran Abbasi <Kamran.Abbasi@chalhoub.com>; Joe Hobeika <Joe.Hobeika@chalhoub.com>\nSubject: Re: Additional Clarification Questions requested - Cyber Insurance\n\n \n\nDear Dee,\n\n \n\nI hope this message finds you well.\n\n \n\nI would like to follow up on the email below.\n\n \n\nLook forward to receiving your kind feedback on the additional clarification questions requested by the insurer.\n\n \n\nThank You & Best Regards,\n\nHagop\n\n \n\nHAGOP GHAZARIAN​​​​\n\nSPECIALIST ‑ ADMINISTRATION\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES",
+      "start_pos": 85192,
+      "end_pos": 86787,
+      "chunk_index": 89,
+      "chunk_size": 1594,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Look forward to receiving your kind feedback on the additional clarification questions requested by the insurer.\n\n \n\nThank You & Best Regards,\n\nHagop\n\n \n\nHAGOP GHAZARIAN​​​​\n\nSPECIALIST ‑ ADMINISTRATION\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n+971 4 8045000\n\n\t\n \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fchalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011908385%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=12Z2HUHIVzR6y0kx%2Bg6XOj5haPSUZS49swzEj4UdWe0%3D&reserved=0> \n\nCHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwww.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011922511%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=dDCXHH0RP7emmTvkj3LvT3558howLl9xgjJGOc74fGU%3D&reserved=0> \n\n‑",
+      "start_pos": 86541,
+      "end_pos": 87695,
+      "chunk_index": 90,
+      "chunk_size": 1154,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwww.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011922511%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=dDCXHH0RP7emmTvkj3LvT3558howLl9xgjJGOc74fGU%3D&reserved=0> \n\n‑\n\nCAREERS.CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcareers.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011936300%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=S4%2F53wsNh9eSl4lBrbuDk1BGoTGgk1pRqCYd0923o9A%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Ftwitter.com%2FChalhoubGroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011950237%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=Dexg%2BpaYMfX7O%2BgkCBB3j7xVudQcc3%2FANh2CLOxtHnc%3D&reserved=0>",
+      "start_pos": 87243,
+      "end_pos": 88605,
+      "chunk_index": 91,
+      "chunk_size": 1361,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Ftwitter.com%2FChalhoubGroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011950237%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=Dexg%2BpaYMfX7O%2BgkCBB3j7xVudQcc3%2FANh2CLOxtHnc%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.facebook.com%2Fchalhoubgroup%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011963374%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=Enp4eS%2F1RfcsDxZzXD7U8pOH95KV7GAigsnRJdNK4rs%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.instagram.com%2Fchalhoubgroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011976132%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=40zbKAUhxneuTauIQVLYkUgTEAm34tIzVK9WG7iFIkg%3D&reserved=0>",
+      "start_pos": 88163,
+      "end_pos": 89497,
+      "chunk_index": 92,
+      "chunk_size": 1332,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.instagram.com%2Fchalhoubgroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011976132%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=40zbKAUhxneuTauIQVLYkUgTEAm34tIzVK9WG7iFIkg%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fchalhoub-group%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746011988815%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=mDsuVhrbJAEpXSq07XtTas9MDHrMuCQhhAJ7MNLZzzw%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.glassdoor.com%2FOverview%2FWorking-at-Chalhoub-Group-EI_IE499602.11%2C25.htm&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012001367%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=DTnU%2F0iHA5B0kZn7t8T%2F4BiW9UZwbjwByFA3CSfpawM%3D&reserved=0> \n\n\n\n________________________________",
+      "start_pos": 89055,
+      "end_pos": 90485,
+      "chunk_index": 93,
+      "chunk_size": 1429,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.glassdoor.com%2FOverview%2FWorking-at-Chalhoub-Group-EI_IE499602.11%2C25.htm&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012001367%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=DTnU%2F0iHA5B0kZn7t8T%2F4BiW9UZwbjwByFA3CSfpawM%3D&reserved=0> \n\n\n\n________________________________\n\nFrom: Dee Deu <dee.deu@chalhoub.com <mailto:dee.deu@chalhoub.com> >\nSent: 13 November 2024 10:21 AM\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com <mailto:Hagop.Ghazarian@chalhoub.com> >\nCc: Kamran Abbasi <Kamran.Abbasi@chalhoub.com <mailto:Kamran.Abbasi@chalhoub.com> >; Joe Hobeika <Joe.Hobeika@chalhoub.com <mailto:Joe.Hobeika@chalhoub.com> >\nSubject: RE: Additional Clarification Questions requested - Cyber Insurance\n\n \n\nDear Hagop,\n\n \n\nWe are currently co-ordinating efforts to collate the requested information from various team members. We plan to provide a response by the end of next week(22/11).\n\n \n\nKind Regards\n\n \n\nDee\n\n \n\nDEE DEU​​​​\n\nDIRECTOR ‑ INFORMATION SECURITY\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES",
+      "start_pos": 89956,
+      "end_pos": 91214,
+      "chunk_index": 94,
+      "chunk_size": 1257,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "We are currently co-ordinating efforts to collate the requested information from various team members. We plan to provide a response by the end of next week(22/11).\n\n \n\nKind Regards\n\n \n\nDee\n\n \n\nDEE DEU​​​​\n\nDIRECTOR ‑ INFORMATION SECURITY\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n\t\t\n \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fchalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012016588%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=MV9ZXyKf6iOpxyuN2FzH1bY8DfGBZxK9TiBPp5pcFkg%3D&reserved=0> \n\nCHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwww.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012030474%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=W5RoLd8Mrw21vIhoS7dpnOWr093g9Hbk%2BNIF274nckY%3D&reserved=0> \n\n‑",
+      "start_pos": 90932,
+      "end_pos": 92107,
+      "chunk_index": 95,
+      "chunk_size": 1175,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwww.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012030474%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=W5RoLd8Mrw21vIhoS7dpnOWr093g9Hbk%2BNIF274nckY%3D&reserved=0> \n\n‑\n\nCAREERS.CHALHOUBGROUP.COM <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcareers.chalhoubgroup.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012047427%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=8QpGY81lcNIOODws6BXung4DkRyVZcwc%2B1z6NobiRQs%3D&reserved=0> \n\n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Ftwitter.com%2FChalhoubGroup&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cc26b957ac98d4c5bac0708dd0aef7dbc%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638678746012066289%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=5fN%2BtpeJyTQVzG7qKHBLFzO%2FEe%2FseWnMAQ2RLv5BOuQ%3D&reserved=0>",
+      "start_pos": 91653,
+      "end_pos": 93017,
+      "chunk_index": 96,
+      "chunk_size": 1363,
+      "metadata": {
+        "doc_id": "C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JW7Z6 - additional clarification questions requested - cyber insurance\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:26:35.158080",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 234410
+  }
+}

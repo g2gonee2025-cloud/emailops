@@ -1,0 +1,31 @@
+{
+  "doc_id": "CHF9HTF - recall insurance required drop id 173353 bonacina order n° 864 2024 ready\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CHF9HTF - recall insurance required drop id 173353 bonacina order n° 864 2024 ready\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:37:50\nFolder: CHF9HTF - recall insurance required drop id 173353 bonacina order n° 864 2024 ready\nMessage Count: 1\n\n--------------------------------------------------\nID: CHF9HTF_00\nFrom: Geeta Manjal <Geeta.Manjal@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Hiba Assaf <hiba.assaf@etoilegroup.com>; Yasir Panthakkal <yasir.panthakkal@etoilegroup.com>; Lali Das <Lali.Das@chalhoub.com>\nBCC: \nDate: 2025-06-08 19:28\nSubject: Recall: Insurance Required // DROP ID 173353 // BONACINA | ORDER N° 864/2024 READY FOR DELIVERY\n--------------------------------------------------\nGeeta Manjal would like to recall the message, \"Insurance Required // DROP ID 173353 // BONACINA | ORDER N° 864/2024 READY FOR DELIVERY\".\nGEETA MANJAL\t\nSENIOR COORDINATOR ‑ SHIPPING\t\nREAL FZE\t\nDUBAI\t\n‑\t\nUNITED ARAB EMIRATES\t\n\t\t\n \t\n <https://chalhoubgroup.com/> \t\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\t\n‑\n\t\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\t\n <https://twitter.com/ChalhoubGroup> \t\n <https://www.facebook.com/chalhoubgroup/> \t\n <https://www.instagram.com/chalhoubgroup> \t\n <https://www.linkedin.com/company/chalhoub-group/> \t\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 0,
+      "end_pos": 1329,
+      "chunk_index": 0,
+      "chunk_size": 1329,
+      "metadata": {
+        "doc_id": "CHF9HTF - recall insurance required drop id 173353 bonacina order n° 864 2024 ready\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CHF9HTF - recall insurance required drop id 173353 bonacina order n° 864 2024 ready\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:20.972290",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1391
+  }
+}

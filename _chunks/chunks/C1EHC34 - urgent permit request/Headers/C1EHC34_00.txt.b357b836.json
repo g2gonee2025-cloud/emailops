@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1EHC34 - urgent permit request\\Headers\\C1EHC34_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1EHC34 - urgent permit request\\Headers\\C1EHC34_00.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by VI0PR05MB11211.eurprd05.prod.outlook.com (2603:10a6:800:207::14) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7982.30; Fri, 27 Sep 2024 15:31:12 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%3]) with mapi id 15.20.7982.022; Fri, 27 Sep 2024 15:31:12 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Rahaf AlRashidi <Rahaf.AlRashidi@chalhoub.com>\nCC: Sreeraj Prakasam <Sreeraj.Prakasam@chalhoub.com>, Joey Venancio <Joey.Venancio@chalhoub.com>, Guess Dubai Outlet Village <Guess.DOV@chalhoub.com>, Shibu Janardhanan <Shibu.Janardhanan@chalhoub.com>, Margot Diab <Margot.Diab@chalhoub.com>\nSubject: Re: Urgent Permit Request\nThread-Topic: Urgent Permit Request\nThread-Index: AdsP/nWA24cwkVt8S4qiAHq7JbWl8wACq9DgAAAiDzAAAMppgAAAQHwgAAAWZ1YAOPevVg==\nDate: Fri, 27 Sep 2024 15:31:12 +0000\nMessage-ID: <AS8PR05MB10824D004F3400D7171F10B919D6B2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <AS4PR05MB899037A0DA36BBD235CF012C876A2@AS4PR05MB8990.eurprd05.prod.outlook.com> <DX1P273MB1228FD98547BA9C6F1988C47886A2@DX1P273MB1228.AREP273.PROD.OUTLOOK.COM> <AS4PR05MB899062680F141C6B4487255C876A2@AS4PR05MB8990.eurprd05.prod.outlook.com> <DX1P273MB12282B0654E9F6C9F92A5E7E886A2@DX1P273MB1228.AREP273.PROD.OUTLOOK.COM> <AS4PR05MB89901FEADF683FF41FFB49F9876A2@AS4PR05MB8990.eurprd05.prod.outlook.com> <VI1PR05MB68141F081253F8864B7C3CA4836A2@VI1PR05MB6814.eurprd05.prod.outlook.com>\nIn-Reply-To: <VI1PR05MB68141F081253F8864B7C3CA4836A2@VI1PR05MB6814.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 1826,
+      "chunk_index": 0,
+      "chunk_size": 1825,
+      "metadata": {
+        "doc_id": "C1EHC34 - urgent permit request\\Headers\\C1EHC34_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1EHC34 - urgent permit request\\Headers\\C1EHC34_00.txt"
+      }
+    },
+    {
+      "text": "od.outlook.com>\nIn-Reply-To: <VI1PR05MB68141F081253F8864B7C3CA4836A2@VI1PR05MB6814.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|VI0PR05MB11211:EE_\nx-ms-office365-filtering-correlation-id: 68c2828e-c58c-4a46-8c61-08dcdf096b05\nx-ms-exchange-atpmessageproperties: SA|SL\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|41050700001;\nx-microsoft-antispam-message-info: 7Pvtebm87+jd322cwAfZ/MfAy24Jen/CIT0a7LFoGFhoW1TYteMTMQnCdDqnzCuR6XcRiA4QHpgbDzt6clZFEwAvaS6Nf6HIH9d4s90TlIX8Gjn+wBON9zfRUEDgxpBYahmBt7KyKxpFWWbY7oTBrni8v/TrZyXfL5MmdU/iuXV5rUk4KlZX5ZXzNUocsYasQDJ/nIMolhysl/b3sl240sMYvrSlvvgHzTWAzKMb1oXxMpy0AX5dOJn3XSaSgKSdPctxZWjsiUpOOfngMzMf+6trMAo4MO6bNfNlKsGL3/H7TkSQZc1wG65EqxUj14RN7b9KWP5dQxAR/OCPaJXR7WOiparGfMVsTws1SpAVn/nqwwD3DF7eK5zECVgb/OXq+n3UYaLk9kVhqc7QBNPdgqnaxYugW2R7wYDodTECGJHP/gpRz1sqosKpF1Sya+FZ8ql7dMZU4eOu1w0rjFN5fB9K6Zcb5Gs9hX8YoCoZ+P9en9nz/zUlgz4Q5889jJDwX6wGoOcdPyREjOX2GidUMxy/2dMMkdvE0omZ4VjicDT/pvbCPxM84wU/brwwD+Lqhev7s6sGPMgIwvqRGEYLJU5F+1bU0KGJf4uq6f7TNpVpslWLtIuSkjbtEo/NzJMNlj0R6kbHjKMHOiQqx1s2KOwuu7kAYFUNHZkKW5qYSmFI7PeH7y3GDPT4QTft8RRMiiVlk5Ts+IbGQx59xlW0E1nWccpH/W+8Qgnmu5c01XIykSvTvAlB/NgQ1gJVq3fsRvNCoo/FyjX0lUzwe8zmVw==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_011_AS8PR05MB10824D004F3400D7171F10B919D6B2AS8PR05MB10824eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: kCBFB5p1GL3nOMOWduV5avxsk0yKNHjT+MaNbyz/l2RkSPBqiuYXcKhA7LN2RQlLOaVb8oboCYiVlqnWqNiQ151dcsoMCC1i4nLOIjqQTKXyW0h0INT1f4e7Q3TbmLwb2XxAwHEgWp7egFXy5FjheGcE4jeDVcBSjM5S4dKhk/h/b2MGhRzRpZJ9YWejxRzmsr/urAQ2btDCgEY1d6sVXeD+fPIblnMkmxMsTc0OaNone94HNGr4I+yFqgKWUhxhpsTLMwv1NPIKIo/vQRAocmrN83i/ACemZMIuma6FnzHE1IaFD+S435au9QAdH51ll4bJsE9mHs3G/NTrb0ud9/7qPO53VEmE0NMfGDm3m1zck7dYQ4N9flXCHBBPOI7n7KIzmVRPWXnPE8ddYy0jCBfuPhz7Kapgdm8638xMZCHFzW7CUFrNi8XncI4xLgtdhNusnPYQ+GnNcpqePVA5CQHsP+kjarKgznACK8uc02VCuhRmBBmaZnD2b4qpnStrRh97/OobHwLUBLqCRsQpD5YEY/0vehkIMYmZ1BnkFGlJSOX5vcW4Cdx85R7A5cgwp5EE0TDa3xMw8I3nadlrnJtY+LiX2QBwyQ/N8NjBbBRfOwv2cykK2KdJX/lTsQWA\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 68c2828e-c58c-4a46-8c61-08dcdf096b05\nX-MS-Exchange-CrossTenant-originalarrivaltime: 27 Sep 2024 15:31:12.2398 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: G7P0ki/d/yk6BOBT89XT/AfOJ4NMF7iLX1ArSzHA9uOKD0bhZVkSF74utyFPXmbX9yaZ44xSsOLDYh/5x/To8IXHPsITxRcc8tQ10vOKFos=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: VI0PR05MB11211\nX-OrganizationHeadersPreserved: VI0PR05MB11211.eurprd05.prod.outlook.com",
+      "start_pos": 1626,
+      "end_pos": 4931,
+      "chunk_index": 1,
+      "chunk_size": 3305,
+      "metadata": {
+        "doc_id": "C1EHC34 - urgent permit request\\Headers\\C1EHC34_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1EHC34 - urgent permit request\\Headers\\C1EHC34_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:53.017743",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4975
+  }
+}

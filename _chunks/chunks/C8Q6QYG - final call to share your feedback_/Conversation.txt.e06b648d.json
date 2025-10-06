@@ -1,0 +1,31 @@
+{
+  "doc_id": "C8Q6QYG - final call to share your feedback!\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C8Q6QYG - final call to share your feedback!\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:41:34\nFolder: C8Q6QYG - final call to share your feedback!\nMessage Count: 1\n\n--------------------------------------------------\nID: C8Q6QYG_00\nFrom: Internal Communications <Internal.Communications@chalhoub.com>\nTo: \nCC: \nBCC: \nDate: 2025-03-24 15:12\nSubject: Final call to share your feedback! \n--------------------------------------------------\n <https://form.jotform.com/240314778641458>",
+      "start_pos": 0,
+      "end_pos": 469,
+      "chunk_index": 0,
+      "chunk_size": 469,
+      "metadata": {
+        "doc_id": "C8Q6QYG - final call to share your feedback!\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C8Q6QYG - final call to share your feedback!\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:10.862742",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 494
+  }
+}

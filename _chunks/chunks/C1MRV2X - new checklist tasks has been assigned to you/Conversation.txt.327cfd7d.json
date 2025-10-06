@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1MRV2X - new checklist tasks has been assigned to you\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1MRV2X - new checklist tasks has been assigned to you\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:40:42\nFolder: C1MRV2X - new checklist tasks has been assigned to you\nMessage Count: 1\n\n--------------------------------------------------\nID: C1MRV2X_00\nFrom: RSO@chalhoub.com <RSO@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-05-08 13:45\nSubject: New Checklist tasks has been assigned to you :\n--------------------------------------------------\nFocus Checklist Reminder\t \nDear Hagop Ghazarian, \n\nNew Checklist tasks has been assigned to you : \t\n\nFocus Checklist Request Details\t \nChecklist Title\t Store\t Type\t \nLacoste Marina Mall Permanent Closure\t Lacoste - Marina Mall - Boutique\t Projects\t \n\n\nAlternately, click here <https://rso.e-mac.com/pages/managechecklist.aspx?IntGUID=797dbd7e-32f6-7805-76b5-e7f07f583295>  to review it on RSO.\t \nThis is an auto-generated email, please do not reply.",
+      "start_pos": 0,
+      "end_pos": 915,
+      "chunk_index": 0,
+      "chunk_size": 915,
+      "metadata": {
+        "doc_id": "C1MRV2X - new checklist tasks has been assigned to you\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1MRV2X - new checklist tasks has been assigned to you\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:05.216406",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 950
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "doc_id": "CMCR7KO - tarek fakhereddin (tarek.fakhereddin@chalhoub.com) has changed an anonymous access link to updated insured val\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CMCR7KO - tarek fakhereddin (tarek.fakhereddin@chalhoub.com) has changed an anonymous access link to updated insured val\\Conversation.txt",
+  "num_chunks": 3,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:24:52\nFolder: CMCR7KO - tarek fakhereddin (tarek.fakhereddin@chalhoub.com) has changed an anonymous access link to updated insured val\nMessage Count: 1\n\n--------------------------------------------------\nID: CMCR7KO_00\nFrom: SharePoint Online <no-reply@sharepointonline.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-09-17 15:54\nSubject: Tarek Fakhereddin (Tarek.Fakhereddin@chalhoub.com) has changed an anonymous access link to \"Updated Insured Values - Groupwide.xlsx\"\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن",
+      "start_pos": 0,
+      "end_pos": 926,
+      "chunk_index": 0,
+      "chunk_size": 926,
+      "metadata": {
+        "doc_id": "CMCR7KO - tarek fakhereddin (tarek.fakhereddin@chalhoub.com) has changed an anonymous access link to updated insured val\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CMCR7KO - tarek fakhereddin (tarek.fakhereddin@chalhoub.com) has changed an anonymous access link to updated insured val\\Conversation.txt"
+      }
+    },
+    {
+      "text": "--------------------------------------------------\nID: CMCR7KO_00\nFrom: SharePoint Online <no-reply@sharepointonline.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-09-17 15:54\nSubject: Tarek Fakhereddin (Tarek.Fakhereddin@chalhoub.com) has changed an anonymous access link to \"Updated Insured Values - Groupwide.xlsx\"\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن",
+      "start_pos": 232,
+      "end_pos": 926,
+      "chunk_index": 1,
+      "chunk_size": 694,
+      "metadata": {
+        "doc_id": "CMCR7KO - tarek fakhereddin (tarek.fakhereddin@chalhoub.com) has changed an anonymous access link to updated insured val\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CMCR7KO - tarek fakhereddin (tarek.fakhereddin@chalhoub.com) has changed an anonymous access link to updated insured val\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Tarek Fakhereddin (Tarek.Fakhereddin@chalhoub.com) has changed an anonymous access link to \"Updated Insured Values - Groupwide.xlsx\" \t\n \t \t \t \n <https://mctfze-my.sharepoint.com/personal/hagop_ghazarian_chalhoub_com/_layouts/15/images/savexc.png> \tUpdated Insured Values - Groupwide.xlsx\t \nLast modified 09/17/25 \t\nOpen in Excel <https://url.uk.m.mimecastprotect.com/s/n97HCK5wxU34K40tMf7t5rWOa?domain=mctfze-my.sharepoint.com>  \t   \t Remove Access <https://url.uk.m.mimecastprotect.com/s/_AbTCL5xyUEQqQ5fqhytykdw4?domain=mctfze-my.sharepoint.com>  \t\nWhen and where did this happen \t\nDate: \t\nWednesday, September 17, 2025 4:54 AM \t\nBrowser: \t\nUnknown \t\nOperating System: \t\nUnknown \t\nYou are receiving this information because someone shared a file from your OneDrive. If you don't want people to be able to access this item anonymously, remove the link <https://url.uk.m.mimecastprotect.com/s/_AbTCL5xyUEQqQ5fqhytykdw4?domain=mctfze-my.sharepoint.com> . \t\n <http://odsp-ext.azurewebsites.net/projects/email/images/logos/microsoft.onedrive.png> \tPrivacy Statement <https://url.uk.m.mimecastprotect.com/s/5j30CM5yzUEzPzGfJiOt8ZI3Y?domain=privacy.microsoft.com> \nMicrosoft Corporation, One Microsoft Way, Redmond, WA 98052",
+      "start_pos": 928,
+      "end_pos": 2149,
+      "chunk_index": 2,
+      "chunk_size": 1219,
+      "metadata": {
+        "doc_id": "CMCR7KO - tarek fakhereddin (tarek.fakhereddin@chalhoub.com) has changed an anonymous access link to updated insured val\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CMCR7KO - tarek fakhereddin (tarek.fakhereddin@chalhoub.com) has changed an anonymous access link to updated insured val\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:07.589768",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2294
+  }
+}

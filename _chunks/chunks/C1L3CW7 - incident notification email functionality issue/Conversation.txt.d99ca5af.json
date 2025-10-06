@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1L3CW7 - incident notification email functionality issue\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1L3CW7 - incident notification email functionality issue\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:32:19\nFolder: C1L3CW7 - incident notification email functionality issue\nMessage Count: 1\n\n--------------------------------------------------\nID: C1L3CW7_00\nFrom: One Reach <OneReach@chalhoub.com>\nTo: \nCC: \nBCC: \nDate: 2025-09-03 14:05\nSubject: Incident Notification: Email functionality Issue\n--------------------------------------------------\n \n\n <https://onereach.status.freshservice.com/> \n\n \n\nDear Colleagues,\n\n \n\nWe are currently experiencing an issue affecting certain services which utilise email functionality.  This not affecting regular business email.  Services such as network scanning and printing may be impacted, and certain automatically delivered reports will be delayed.\n\n \n\nIssue Summary:\n\n*\tEmail supported functions such as network scanning and report delivery not working or delayed.\n\n \n\nBusiness Impact:\n\n*\tNetwork printers and scanners won’t work\n*\tMail notification using email relay will be delayed\n\n \n\nStart Date and Time: Wed, 3 Sep 12:23 PM\n\nFor support during this period, please raise a ticket via OneReach. You can also check real-time status updates via the Tech&Data System Status & Health <https://onereach.status.freshservice.com/>  Dashboard.\n\n \n\n \n\n \n\nThis mail was sent to you by\n\n <https://onereach.chalhoub.com/support/home>",
+      "start_pos": 0,
+      "end_pos": 1344,
+      "chunk_index": 0,
+      "chunk_size": 1344,
+      "metadata": {
+        "doc_id": "C1L3CW7 - incident notification email functionality issue\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1L3CW7 - incident notification email functionality issue\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:00.553324",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1430
+  }
+}

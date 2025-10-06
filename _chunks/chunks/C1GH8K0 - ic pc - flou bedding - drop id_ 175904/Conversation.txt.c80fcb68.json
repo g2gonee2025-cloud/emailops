@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1GH8K0 - ic pc - flou bedding - drop id# 175904\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1GH8K0 - ic pc - flou bedding - drop id# 175904\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:26:50\nFolder: C1GH8K0 - ic pc - flou bedding - drop id# 175904\nMessage Count: 1\n\n--------------------------------------------------\nID: C1GH8K0_00\nFrom: Linton Crockford-Moore <lintoncrockfordmoore@gmail.com>\nTo: Ingie Chalhoub <Ingie.Chalhoub@etoilegroup.com>; IC <IC@etoilegroup.com>; Patrick Chalhoub <Patrick.Chalhoub@chalhoub.com>; Hiba Assaf <hiba.assaf@etoilegroup.com>; Lali Das <Lali.Das@chalhoub.com>; Ramanathan Arumugam (ram@stonehaven.ae) <ram@stonehaven.ae>; Nada El Bitar; Geeta Manjal <Geeta.Manjal@chalhoub.com>; Joe Hobeika <Joe.Hobeika@chalhoub.com>; Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-08-17 17:22\nSubject: IC/PC - FLOU Bedding - Drop ID# 175904\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\nDear All,\n\nPlease find attached the receiving Excel file and photographs for the Flou bedding and furniture delivered to the Palm on 14 August. The file is also attached to this email for ease of reference.\n\nAll items were received in good order. A few cartons arrived slightly soiled/crushed; however, the contents were inspected and found to be undamaged.\n\nBest regards,",
+      "start_pos": 0,
+      "end_pos": 1498,
+      "chunk_index": 0,
+      "chunk_size": 1498,
+      "metadata": {
+        "doc_id": "C1GH8K0 - ic pc - flou bedding - drop id# 175904\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1GH8K0 - ic pc - flou bedding - drop id# 175904\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Please find attached the receiving Excel file and photographs for the Flou bedding and furniture delivered to the Palm on 14 August. The file is also attached to this email for ease of reference.\n\nAll items were received in good order. A few cartons arrived slightly soiled/crushed; however, the contents were inspected and found to be undamaged.\n\nBest regards,\n\n\nLinton \n FLOU Drop ID# 175904 .zip <https://url.uk.m.mimecastprotect.com/s/6AGHC1BKACw7OX7fLfRsVNWX-?domain=drive.google.com>",
+      "start_pos": 1137,
+      "end_pos": 1626,
+      "chunk_index": 1,
+      "chunk_size": 489,
+      "metadata": {
+        "doc_id": "C1GH8K0 - ic pc - flou bedding - drop id# 175904\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1GH8K0 - ic pc - flou bedding - drop id# 175904\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:59.180988",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1768
+  }
+}

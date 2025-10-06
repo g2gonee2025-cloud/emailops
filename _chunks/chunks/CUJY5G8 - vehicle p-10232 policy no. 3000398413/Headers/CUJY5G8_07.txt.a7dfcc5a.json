@@ -1,0 +1,42 @@
+{
+  "doc_id": "CUJY5G8 - vehicle p-10232 policy no. 3000398413\\Headers\\CUJY5G8_07.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CUJY5G8 - vehicle p-10232 policy no. 3000398413\\Headers\\CUJY5G8_07.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from DU4PR05MB11790.eurprd05.prod.outlook.com (2603:10a6:10:5d8::22) by PA4PR05MB7613.eurprd05.prod.outlook.com (2603:10a6:102:d7::21) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9073.27; Tue, 2 Sep 2025 08:36:52 +0000\nReceived: from DU4PR05MB11790.eurprd05.prod.outlook.com ([fe80::e061:cd4a:54bd:13a8]) by DU4PR05MB11790.eurprd05.prod.outlook.com ([fe80::e061:cd4a:54bd:13a8%5]) with mapi id 15.20.9073.026; Tue, 2 Sep 2025 08:36:52 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Hani Gebara <Hani.Gebara@nascodubai.com>\nCC: Mridul Nambiar <Mridul.Nambiar@nascodubai.com>, Yogesh Naresh Patil <Yogesh.Patil@nascodubai.com>, Bhaskar Sharma <Bhaskar.Sharma@chalhoub.com>, Mohammed El Neel <Mohammed.Elneel@chalhoub.com>, Israr Malik <Israr.Malik@chalhoub.com>, Erto Galura <Erto.Galura@chalhoub.com>, Sredha Mathai <Sredha.Mathai@chalhoub.com>, Ronald CANO <Ronald.Cano@chalhoub.com>, Shijin Joseph <Shijin.Joseph@chalhoub.com>\nSubject: Re: Vehicle P-10232 Policy No. 3000398413\nThread-Topic: Vehicle P-10232 Policy No. 3000398413\nThread-Index: AQHbp4/01L1wij951EOFckZhU2V8eLOX2SoggAFs0XKA5chHPYAACn2wgAFhU7U=\nDate: Tue, 2 Sep 2025 08:36:51 +0000\nMessage-ID: <DU4PR05MB1179025C04C6C75AA645620949D06A@DU4PR05MB11790.eurprd05.prod.outlook.com>\nReferences: <PAXPR05MB9337DA30EE668E36F26C984C99AA2@PAXPR05MB9337.eurprd05.prod.outlook.com> <DX0P273MB117284D8637B47A07D0E0AF38CAA2@DX0P273MB1172.AREP273.PROD.OUTLOOK.COM> <PAXPR05MB93374AB23C6A1F129825C2F399B52@PAXPR05MB9337.eurprd05.prod.outlook.com> <GV4PR05MB11783E0279CB626BBCCCAB4DA9D07A@GV4PR05MB11783.eurprd05.prod.outlook.com> <DX3P273MB124240D928C7975D44A80D218C07A@DX3P273MB1242.AREP273.PROD.OUTLOOK.COM>\nIn-Reply-To: <DX3P273MB124240D928C7975D44A80D218C07A@DX3P273MB1242.AREP273.PROD.OUTLOOK.COM>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 1930,
+      "chunk_index": 0,
+      "chunk_size": 1929,
+      "metadata": {
+        "doc_id": "CUJY5G8 - vehicle p-10232 policy no. 3000398413\\Headers\\CUJY5G8_07.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CUJY5G8 - vehicle p-10232 policy no. 3000398413\\Headers\\CUJY5G8_07.txt"
+      }
+    },
+    {
+      "text": "LOOK.COM>\nIn-Reply-To: <DX3P273MB124240D928C7975D44A80D218C07A@DX3P273MB1242.AREP273.PROD.OUTLOOK.COM>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: DU4PR05MB11790:EE_|PA4PR05MB7613:EE_\nx-ms-office365-filtering-correlation-id: 7babb399-07ba-4864-3231-08dde9fbdd7e\nx-ms-exchange-atpmessageproperties: SA\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|39142699007|31052699007|7053199007|13003099007|4013099003|8096899003|41050700001;\nx-microsoft-antispam-message-info: GFmXRPpEXY5NfhyF+yTAJLj0M3BnBR7jcJta/Cz8SJ21EZ5B7bLbsp3mlQsg45vRU0eKsf3cpshVKyyuAh/yjEFYor3tzfgp/aa2tj4pqHxHrhAI62MPi0R0fnLlbH13KO7HpXcWgpCO8I2oGxNTbLGaodxoiGKkznqsdOga563GQ5GM4pNTTrEHelg4chOPG1zZAMC6gypBFLhynR+EHRyt/7CZJU3XMdnaKZELNepG34R0VxZvUmiq5VJP8F3sYcbO7GyFYHHMDBODu7eRy+aL2GCX8Ok3U0qHeielWolc8FAvpZDEPqbM+TDLqZ3xT+FMG5MibHTcO6fh8etIxvZGGOc154zdQIUX+ynJo9MCUocgr5IYd7yeruhaf+WNjmOnyXG4N3lX6w0t7ui+VGCFIB2+pRO0y9VQ5NuginbWgoiR7kbw/CHkfuTwEl3GilAyeD0R4ozp7K0FD/Lj5Mv/un8ZZGXVh86KKl1uZd3SEsA+p/bL8T4r2WHS2KJiW9pW3AosHQXeL48+TmuHx0RDvp5Qad5DsflP9jkJX/kZyIvnbQCytNrkFKCPfvtVeJBcVxq3vwbD7ILYHae5DENY0eUjfdvZLz7PmXPyY8B74rYVDl6OXa8sFK5N8DBoMU4T8F1SUGob+VST43PRfI0x4qju+EA/QcEnMdLkO7lvrER+F2HgfuNY8s5LlYRcEctXZiPR3I7pLHZtCG5RvIYaqiQGaqBZijCQheG0pAhdYklTwr99Rxj8c6Hbz97F\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DU4PR05MB11790.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(39142699007)(31052699007)(7053199007)(13003099007)(4013099003)(8096899003)(41050700001);DIR:INT;\nContent-Type: multipart/mixed; boundary=\"_019_DU4PR05MB1179025C04C6C75AA645620949D06ADU4PR05MB11790eu_\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: wb5vDAmwMo3+7/U28vjv4vwPu9Q4URephzUGlEkzstxLsFQsJMHdybQn5nvcAhec/ni46wFfkFcEL9L2z0SF46Jiw5MaWvKxKCmk+oUtDeQTGjyS6dX56neUTwNnkAHDbZDV+yxE4j+1Gs09y0QYXn0wjdsqNJXBB1wj9DQVNtUt5AWK+1Ja3cXSoKH6HzNJzj7aKHLOit5R0+uTMSa2vnM7/hgHLwAW4Cci3XYJGKdsK962EVXJSFjwz+vJcNHsPit7oA3iYd+9xT4T7kA18SLLTFIXFYlwHlznBQgXyQBBJEumRFgtNE1T7XJI2eseWe9qSwma9tilYMBM6MHlBwkxNAKjTAVQDvXqApQh7LMj+Zs8rkEjjWC+E4JF/STaiM2YqSDFlnA85t6CjZqipE1kNa8qHPkiovAtBGYvdDj5wTopUxOAZA3ujuQT0+Evcdo/9sEweSqnvf5PsbQtIBydWbsG42JCwPv4G4ZoaYpANIPFFgRy0Aw5ym6pNh+TGud7jFmRM0d5UD/LnEE6GflNsIWVa2Mqy1WJXXaF6CR/KDfNZ3aclYyPFdsXXxqwXzCIwY4MK9hYVKxE0LBQEo8ZcnnAnmK/a3cqKJIAmh8YERpIATnurF0fOsftxoMc\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: DU4PR05MB11790.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 7babb399-07ba-4864-3231-08dde9fbdd7e\nX-MS-Exchange-CrossTenant-originalarrivaltime: 02 Sep 2025 08:36:51.8165 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: pd7bu5XG0BPDgCcPSw7Rzu3srRYgpyyiO6GwnJg9mnSNRTrO7mvKnuK5FWhYACPD/KlMEybz3VxXRkygnqBMict3/NCYczwTa0phYMhuaVs=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PA4PR05MB7613\nX-OrganizationHeadersPreserved: PA4PR05MB7613.eurprd05.prod.outlook.com",
+      "start_pos": 1730,
+      "end_pos": 5117,
+      "chunk_index": 1,
+      "chunk_size": 3387,
+      "metadata": {
+        "doc_id": "CUJY5G8 - vehicle p-10232 policy no. 3000398413\\Headers\\CUJY5G8_07.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CUJY5G8 - vehicle p-10232 policy no. 3000398413\\Headers\\CUJY5G8_07.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:49.739479",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5161
+  }
+}

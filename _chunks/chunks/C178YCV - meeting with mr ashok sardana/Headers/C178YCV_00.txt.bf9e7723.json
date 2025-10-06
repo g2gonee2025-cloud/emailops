@@ -1,0 +1,42 @@
+{
+  "doc_id": "C178YCV - meeting with mr ashok sardana\\Headers\\C178YCV_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C178YCV - meeting with mr ashok sardana\\Headers\\C178YCV_00.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by AS2PR05MB10271.eurprd05.prod.outlook.com (2603:10a6:20b:601::7) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8632.22; Wed, 9 Apr 2025 08:02:09 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%2]) with mapi id 15.20.8632.017; Wed, 9 Apr 2025 08:02:09 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Katya Bouabbas <Katya.Bouabbas@chalhoub.com>\nCC: Patrick Chalhoub <Patrick.Chalhoub@chalhoub.com>\nSubject: Re: Meeting with Mr Ashok Sardana.\nThread-Topic: Meeting with Mr Ashok Sardana.\nThread-Index: AduM4T9Pk+5jIOHiQFWO5XNRNnp46wA4TYjgAAQh8TAAAP5wQAAfzpsQAABV3PAABLghYAZ3X9hwADSehIAAAm/xZA==\nDate: Wed, 9 Apr 2025 08:02:08 +0000\nMessage-ID: <AS8PR05MB10824EE131974B50FB5A04EBF9DB42@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <AU2P273MB0972AC221C30BC8D2DB8EA62ADC82@AU2P273MB0972.AREP273.PROD.OUTLOOK.COM> <DB9PR05MB109890B102F678C17AF4C50A2E0CB2@DB9PR05MB10989.eurprd05.prod.outlook.com> <DXZP273MB0961AD37A8976FCCF3463D19ADCB2@DXZP273MB0961.AREP273.PROD.OUTLOOK.COM> <DXZP273MB09611E1CAA7EFE960AA1544FADCB2@DXZP273MB0961.AREP273.PROD.OUTLOOK.COM> <DB9PR05MB109899322930E907732038A42E0CA2@DB9PR05MB10989.eurprd05.prod.outlook.com> <DXZP273MB0961E1D51F1D385674659A88ADCA2@DXZP273MB0961.AREP273.PROD.OUTLOOK.COM> <DB9PR05MB10989F0358B9C08EE111D56DEE0CA2@DB9PR05MB10989.eurprd05.prod.outlook.com> <DXZP273MB0961B1EE72CAAE21A3B3E8F1ADB52@DXZP273MB0961.AREP273.PROD.OUTLOOK.COM> <AS8PR05MB87859D8DECEEE02ABED77A18E0B42@AS8PR05MB8785.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB87859D8DECEEE02ABED77A18E0B42@AS8PR05MB8785.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-Mentions: Katya.Bouabbas@chalhoub.com\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 1962,
+      "chunk_index": 0,
+      "chunk_size": 1961,
+      "metadata": {
+        "doc_id": "C178YCV - meeting with mr ashok sardana\\Headers\\C178YCV_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C178YCV - meeting with mr ashok sardana\\Headers\\C178YCV_00.txt"
+      }
+    },
+    {
+      "text": "ECEEE02ABED77A18E0B42@AS8PR05MB8785.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-Mentions: Katya.Bouabbas@chalhoub.com\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|AS2PR05MB10271:EE_\nx-ms-office365-filtering-correlation-id: be6ac335-fcf9-415f-86b9-08dd773cd398\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|7053199007|13003099007|4013099003|8096899003|41050700001;\nx-microsoft-antispam-message-info: zLNKveXg8SUfMly9T03vnDnAxwOBvvfrr6lcVW8NQkO0aA4WUKJYD1LJOYJnyAeSBxARsr6miw3GeRZ6DVxn/5Fbjhr6RFBBXllYpM/4/E8KYCbDyNA5mi4SSejo+7tkswqhEebBoCSQm1ZLWUcr7wKFfXBGNYeMwMaWXlFZEQJ6Jx3S7DRCZ2wMs84HC7WvqJGdcCfD/T7ygT2ZZqcDCHCKs5mxWpRVNszcFHgCK2eopq8uoBbppNjZw3jYs+b+wwJJYmXTmZ2fYwEfTlKXixsBXTIBqcfbWV6rqzri5lnhq/9MRTNbHHXbrMR93BxJayJyFAgLFr+2wCDF3ZuHDmlDmUryr2DEd3tVtIo4PGAL7AWXBpTTINKn31J6Pzt/4DHLWMt/qykGdtv7LwX9hKZRh+zHdK/RQumiHMAKqSUaCfuHkOvrm3D2+1iRrYmOOsocwsA3elKcwsskpCNTeCdskkiA7ElUOtVQ/+UCiD3s30X4ZXFKJ2RjXKdF7OohJWGq+Erna+AmF2ZIZTqwqtOhUr3J08yW8aX/w+XV31p4QYYBt+9HpKRc8SamPM80lcYZR6sX6tcXsLmDpIE8LCQ/nByV/q5o3Focv4QAlwLato5Wugke63EOJx9IWXCJMqG67zPi9BSzK/awX8t2KyVXWY7iD2PedN77Z1cHTTo2fQOkERcHxVBY3O06Q/2rNEtGd8SFrEy+LzquV8xCzwC7JUSjdWVA35dPVEPDXCHEEs+9WDbYS9ExTHeZf+mjafDzO9N1SOiHw1gNlwSOQg==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(7053199007)(13003099007)(4013099003)(8096899003)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_028_AS8PR05MB10824EE131974B50FB5A04EBF9DB42AS8PR05MB10824eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: oylN9dHzxF7xaFjVopzLVf0/g5xdpzFaiANLQ9OfCbkjzgMpSp5allXMMVvRsBIheRHIy0WRqkFl6yp0ADvGBuhr5Mfv2zS4AdPOx21inYHiqubyUW3rYxWjQ117RUWRne3j+1BwM3+pWwmmUSGoj1KuuEdV2VEcwbWTFgsOxyf62U/rjQ+lGKuDgKCn0lVJpaDnbsRQdrONnI3jEm+3XhQtVqwJWGkCpd2wxWWxr/4nwOzCQzXinYV4HRoWVBeCy6LzQ+12mEj8wL0hKJok74HgJywLAdANFeA/tlHjOvYJb7TkI6gtxJgm8v/w+0H/3Qxc3hQ6vEjT6Zwtd9WDyduUlHdDmcn25G82w+7SMy2PBaQDkwJTXnucarmnJ61u9YkYziWDfDosObzJVJdP5SwSlsaTPV3J7oPgpPLrSs+Ni1irbjCbadYwoSMFEB6Y1C7R29ldHSYHXGj9zDWGyjKpUnxybC4qvZnME6yZqvm9iDEw2XhP1DE8R1SdML2l3zL5kFfv7aNIxZCPrQUFdJc8XG/vnwJIzL3vDoddErNB5FfWZHCKB0UM5vxg2qgCOdB9Yt/E5j0+sUlbe5u1IQXVNLUTQSn7V3HbtKKihGWiL6R3AH0x9LmHgnroXWr7\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: be6ac335-fcf9-415f-86b9-08dd773cd398\nX-MS-Exchange-CrossTenant-originalarrivaltime: 09 Apr 2025 08:02:08.7840 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: v8ZhBPj/totDedcbi0rxXw4iJ5S1qN3Pc8teJ1ctqgq2tfEBmeyUixcodNjCASMC9Kd/STbn28vYesmCckoqoKWM6m2TvdoBG/4/l77OmlQ=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS2PR05MB10271\nX-OrganizationHeadersPreserved: AS2PR05MB10271.eurprd05.prod.outlook.com",
+      "start_pos": 1762,
+      "end_pos": 5119,
+      "chunk_index": 1,
+      "chunk_size": 3357,
+      "metadata": {
+        "doc_id": "C178YCV - meeting with mr ashok sardana\\Headers\\C178YCV_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C178YCV - meeting with mr ashok sardana\\Headers\\C178YCV_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:07.051922",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5163
+  }
+}

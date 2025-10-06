@@ -1,0 +1,42 @@
+{
+  "doc_id": "C4FFFB8 - ic pc - delivery documentation – paola lenti outdoor furniture (container mrsu 649419 1 45g1)\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C4FFFB8 - ic pc - delivery documentation – paola lenti outdoor furniture (container mrsu 649419 1 45g1)\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:36:02\nFolder: C4FFFB8 - ic pc - delivery documentation – paola lenti outdoor furniture (container mrsu 649419 1 45g1)\nMessage Count: 1\n\n--------------------------------------------------\nID: C4FFFB8_00\nFrom: Linton Crockford-Moore <lintoncrockfordmoore@gmail.com>\nTo: Ingie Chalhoub <Ingie.Chalhoub@etoilegroup.com>; Patrick Chalhoub <Patrick.Chalhoub@chalhoub.com>; Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>; Joe Hobeika <Joe.Hobeika@chalhoub.com>; Geeta Manjal <Geeta.Manjal@chalhoub.com>; yasir.panthakkal@etoilegroup.com <yasir.panthakkal@etoilegroup.com>; Ramanathan Arumugam (ram@stonehaven.ae) <ram@stonehaven.ae>\nCC: Lali Das <Lali.Das@chalhoub.com>; Hiba Assaf <hiba.assaf@etoilegroup.com>\nBCC: \nDate: 2025-06-16 20:14\nSubject: IC/PC - Delivery Documentation – Paola Lenti Outdoor Furniture (Container MRSU 649419 1 45G1)\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\nDear All,\n\nRegarding the container delivered to the IC/PC Palm Residence on Saturday, 14th June—containing two packing lists of Paola Lenti outdoor furniture—please find attached a downloadable file including the following documentation and photographs:",
+      "start_pos": 0,
+      "end_pos": 1516,
+      "chunk_index": 0,
+      "chunk_size": 1516,
+      "metadata": {
+        "doc_id": "C4FFFB8 - ic pc - delivery documentation – paola lenti outdoor furniture (container mrsu 649419 1 45g1)\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C4FFFB8 - ic pc - delivery documentation – paola lenti outdoor furniture (container mrsu 649419 1 45g1)\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Regarding the container delivered to the IC/PC Palm Residence on Saturday, 14th June—containing two packing lists of Paola Lenti outdoor furniture—please find attached a downloadable file including the following documentation and photographs:\n\n\n\n\nhttps://we.tl/t-z4LyRuMJbj <https://url.uk.m.mimecastprotect.com/s/7Ly9CXkNOSkwwrGt6f8hWBGZi?domain=we.tl> \n\n*\tPhoto of the container number (MRSU 649419 1 45G1)\n*\tPhoto of the intact container seal (Sealed H 4581027)\n*\tPhoto of the container interior upon opening\n*\tPDF and PowerPoint versions of the delivery report\n*\tPacking List 58\n*\tExcel file for Packing List 58 (with box photographs)\n*\tPacking List 57\n*\tExcel file for Packing List 57 (with box photographs)\n*\tFolder of loose box photographs\n*\tSigned POA \n\nPlease note:\n\n*       Damaged boxes were identified, marked on the signed POA, and acknowledged by the driver.\n\n*       These boxes were opened and inspected; all contents were found to be in good order. \n\n\n\n\nAs the items are designated for outdoor use and will be placed and styled after the summer, we have stored them securely in the basement storerooms. All textiles and furnishings remain boxed and have been elevated off the ground on crates to ensure protection. Photos of the secured storage setup are included in the zipped file.\n\n\n\n\nI remain at your disposal for any queries or further support.\n\nLinton",
+      "start_pos": 1274,
+      "end_pos": 2648,
+      "chunk_index": 1,
+      "chunk_size": 1374,
+      "metadata": {
+        "doc_id": "C4FFFB8 - ic pc - delivery documentation – paola lenti outdoor furniture (container mrsu 649419 1 45g1)\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C4FFFB8 - ic pc - delivery documentation – paola lenti outdoor furniture (container mrsu 649419 1 45g1)\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:53.913187",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2828
+  }
+}

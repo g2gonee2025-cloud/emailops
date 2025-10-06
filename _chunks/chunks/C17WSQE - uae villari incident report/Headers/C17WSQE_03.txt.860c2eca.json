@@ -1,0 +1,42 @@
+{
+  "doc_id": "C17WSQE - uae villari incident report\\Headers\\C17WSQE_03.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C17WSQE - uae villari incident report\\Headers\\C17WSQE_03.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by AS8PR05MB8788.eurprd05.prod.outlook.com (2603:10a6:20b:343::19) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8901.29; Thu, 10 Jul 2025 14:15:37 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%4]) with mapi id 15.20.8901.024; Thu, 10 Jul 2025 14:15:37 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Samira Batisse <Samira.Batisse@chalhoub.com>\nCC: Kushbu Sharma <Kushbu.Sharma@chalhoub.com>, Cynthia Abante <Cynthia.Abante@chalhoub.com>, Rekha Sujay <Rekha.Sujay@chalhoub.com>\nSubject: Re: UAE : Villari Incident Report\nThread-Topic: UAE : Villari Incident Report\nThread-Index: AdqjeVKXporDkU9jSjCmQTc105JXWQAAHXlQAP/pLbAABIj9gAC7JQRAAAd92IAAAD2G4AHS6CTAAB5CF6AANQIr8ApA6gEAO6+mSRAJq8kVgAAA24LS\nDate: Thu, 10 Jul 2025 14:15:37 +0000\nMessage-ID: <AS8PR05MB108241E5177CADFC76B8F166B9D48A@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <AM6PR05MB6215089185FC92BD1B98DDF99FE02@AM6PR05MB6215.eurprd05.prod.outlook.com> <AM9PR05MB76048ADD1E4BA0123BB475DAF3E02@AM9PR05MB7604.eurprd05.prod.outlook.com> <AM9PR05MB7604299BF7B45870056BF9ABF3ED2@AM9PR05MB7604.eurprd05.prod.outlook.com> <DU0PR05MB10219932BB234EE42678E9AF59BED2@DU0PR05MB10219.eurprd05.prod.outlook.com> <DU0PR05MB102194FCA9551911EC14A705D9BE92@DU0PR05MB10219.eurprd05.prod.outlook.com> <AS8PR05MB108246ED9E2F7CEDFD112B7E99DE92@AS8PR05MB10824.eurprd05.prod.outlook.com> <DU0PR05MB10219EB5B667DBC91E5E5D2BD9BE92@DU0PR05MB10219.eurprd05.prod.outlook.com> <DU0PR05MB102197768EBBC32188130F9759BF22@DU0PR05MB10219.eurprd05.prod.outlook.com> <AS4PR10MB5598B9848BFB5CA94F80BC31D0F32@AS4PR10MB5598.EURPRD10.PROD.OUTLOOK.COM> <DU0PR05MB1021954FADA0512C9380798119BFC2@DU0PR05MB10219.eurprd05.prod.outlook.com> <DU0PR05MB102198C1C618E8FC84365E1C49BA82@DU0PR05MB10219.eurprd05.prod.outlook.com> <PA4PR05MB761562B57B618E5AAD15F62FF399A@PA4PR05MB7615.eurprd05.prod.outlook.com> <CAKKKc0D+3MHHao-MU6ZwEPrR-Atx79FCytA+wC-N=OyQceWtjA@mail.gmail.com>\nIn-Reply-To: <CAKKKc0D+3MHHao-MU6ZwEPrR-Atx79FCytA+wC-N=OyQceWtjA@mail.gmail.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 2340,
+      "chunk_index": 0,
+      "chunk_size": 2339,
+      "metadata": {
+        "doc_id": "C17WSQE - uae villari incident report\\Headers\\C17WSQE_03.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C17WSQE - uae villari incident report\\Headers\\C17WSQE_03.txt"
+      }
+    },
+    {
+      "text": "WtjA@mail.gmail.com>\nIn-Reply-To: <CAKKKc0D+3MHHao-MU6ZwEPrR-Atx79FCytA+wC-N=OyQceWtjA@mail.gmail.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|AS8PR05MB8788:EE_\nx-ms-office365-filtering-correlation-id: e716dca3-5e11-441a-06e6-08ddbfbc3e33\nx-ms-exchange-atpmessageproperties: SA\nx-microsoft-antispam: BCL:0;ARA:13230040|39142699007|31052699007|366016|8096899003|4013099003|13003099007|7053199007|41050700001;\nx-microsoft-antispam-message-info: N70F8V2vfTrRz2VFtN9AjjaYob5ZZxpvyrMyyKcwi95Vm49r36iC/Fz0/vumUe3xYvKXRWbwrkMyrsoHfsxT1AXMGeE4nIP5QBtxLUTEBUr9oekoFQNeg32FPjOwbDqXObMf3eh3XpeTU1JzuRbmndJdR7uQzYNwuWTH/WAaqSgOIsQ658hRDkPXuydQ5XRykpTMhM7P2no/07PTfACarsjnoh8Un05grOMLrN0QJCCQF/NspM4XU0Fkbka1sPw1IgcVB2wdjuC5IdCmrvniAQN51Cfa595ub56ZM0uszN3st9ToPZeT8PzuohMgiF4sOQ5FJaeW/aIH2mcKPIMnwB/WkFbmK3eieES/rqbFZKKVPP1GtwFWVHnu5pZkI9kWuuI4VPbMt9sfxLmc2nCiRJ9QrurYJfE88brwGZjQv0/ycbfArP1nAevLT3bKmc+Tt/sSMUx9BKctEMjfmhp4ngykp9Zp06K9MQZH77AO8za/ToacpfwgeHGP6Q3Jya/3w0We1p4fWnXQYE3C8e0bFH5WYEIm8hDTwNvutcw4mhRCVpeonVILQho5y9wyjmH1HueNeLXOcTPh3lbX/Gz8k8hSXboSPfLuX7L16PeIaDpiY/QQP5S1lvoLu2ZaJh9eVi57V0rp1PuEFRzkOImDTsmF+7efSAw7JcA82eediFzNcRhDEtUJcQEULNFKNO9eqhymEl2e5ek/I+vPoxvVbYHoqhQyx9SB0G6FR8xUaHg=\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(39142699007)(31052699007)(366016)(8096899003)(4013099003)(13003099007)(7053199007)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_018_AS8PR05MB108241E5177CADFC76B8F166B9D48AAS8PR05MB10824eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: 44OVjnvznSlbPl7Cgdk5F15buOSJjxLlrwgbkD+iZGXLcs3piVxVLoJTh69fcfJ3req+bTbW8EwTBjGpDPgT1uKO16htGdpFvkQ6DZg9Ki6KPp056QgcXW5t//ZkwNWM6W2JhmdHlf+17RNwsyF6PyIT/2Z6hcus42ibkgE5bJL67yr0+soHVwAiHmYOS97Zbe4dPurUfoANlseBk9qF667WNvvrf+miPcCZUIL2MZgnb/Cjjg/ekpQsV5BxfewOhW+Y91GiGycE8mKEbSktTztEV5S1Y+qAwLKtz4y7y3BH5gaLjXpAbXc2QEiC7Fiv5a6dyENRC9M7598/Zpudm/HxhdgsjNnkoPpclEPqIGacfwBIpaTnxK9+FhkpOmqAnf2C14zYnC/KW5arubsQWEFWCnQHh/pgtdu7+vHmIagVW4u/co2IkmlOShij/JezBkRTpcmLiUQU8sgvkBpEmRm/2Trgk8LA91EKhFUvbthvuVB4okUoipN8GovugahcOQ3gxh1po1rIDc685SQ7geqPjFnR1ABzV7DWrnMmc4eVOWAdl/me8sgp9+SLvd+bGoi7HTkcc+Gjz1+qNFhy6GvEYxTlkIAN1x6/N+Yo0auBT3eFWm+FskG4mabdQX/B\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: e716dca3-5e11-441a-06e6-08ddbfbc3e33\nX-MS-Exchange-CrossTenant-originalarrivaltime: 10 Jul 2025 14:15:37.4655 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: PzH/d6//EkYaLzOwpjKsOiiWo5bXzNxSdKNSjluWMsHAU9zdZrW/4Hqpar5vbyPEPX6CEREXlWJ8YJnIn+QCGy+XdQn/ILppvpxhaWgM3PI=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR05MB8788\nX-OrganizationHeadersPreserved: AS8PR05MB8788.eurprd05.prod.outlook.com",
+      "start_pos": 2140,
+      "end_pos": 5539,
+      "chunk_index": 1,
+      "chunk_size": 3399,
+      "metadata": {
+        "doc_id": "C17WSQE - uae villari incident report\\Headers\\C17WSQE_03.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C17WSQE - uae villari incident report\\Headers\\C17WSQE_03.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:39.965182",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5583
+  }
+}

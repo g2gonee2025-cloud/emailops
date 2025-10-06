@@ -1,0 +1,53 @@
+{
+  "doc_id": "C1TQNY2 - a guilt-free guide to holiday festivities\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1TQNY2 - a guilt-free guide to holiday festivities\\Conversation.txt",
+  "num_chunks": 3,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:44:27\nFolder: C1TQNY2 - a guilt-free guide to holiday festivities\nMessage Count: 1\n\n--------------------------------------------------\nID: C1TQNY2_00\nFrom: Wellness at NASCO <Wellness@nascodubai.com>\nTo: \nCC: \nBCC: \nDate: 2024-12-12 16:40\nSubject: A Guilt-free Guide To Holiday Festivities\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\nDear Valued Partners,\n\nAs the holiday season approaches, it brings opportunities for social gatherings and indulgent meals. While this time of year is meant for celebration, we understand that maintaining a balance between festive pleasures and healthy habits can be challenging. \n\nWe are pleased to share this month's newsletter on Guilt-Free Guide to Holiday Festivities, designed to help you navigate the season with both enjoyment and well-being.\n\nHappy reading.\n\nWarm Regards, \n\n\n <https://nascoconnect.com/resources/images/memberPortal/Icon_Colored_Logo.png> \n\nNasco Middle East\nP.O. Box 62528, Dubai, UAE\nT +971 4 351 4292  F +971 4 351 4291",
+      "start_pos": 0,
+      "end_pos": 1368,
+      "chunk_index": 0,
+      "chunk_size": 1365,
+      "metadata": {
+        "doc_id": "C1TQNY2 - a guilt-free guide to holiday festivities\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1TQNY2 - a guilt-free guide to holiday festivities\\Conversation.txt"
+      }
+    },
+    {
+      "text": "We are pleased to share this month's newsletter on Guilt-Free Guide to Holiday Festivities, designed to help you navigate the season with both enjoyment and well-being.\n\nHappy reading.\n\nWarm Regards, \n\n\n <https://nascoconnect.com/resources/images/memberPortal/Icon_Colored_Logo.png> \n\nNasco Middle East\nP.O. Box 62528, Dubai, UAE\nT +971 4 351 4292  F +971 4 351 4291   \n\nwww.nascomiddleeast.com <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Furl.uk.m.mimecastprotect.com%2Fs%2FJm5_CqMy4TO6oMLhXhAIE3Hok%3Fdomain%3Dnascomiddleeast.com%2F&data=05%7C02%7Chagop.ghazarian%40chalhoub.com%7C3192ddc3f8a4471bf98608dd1aaa154d%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638696040132304185%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=W2BUUinkS2ytkA7ga0e9i7E5iwzfHDWWHW52CCrJ3vY%3D&reserved=0> \n\nRegistered Name: Nasco M.E. Insurance Brokers LLC \nInsurance Brokers License No. 167\nA member of the Nasco Insurance Group\n\nGet in touch with us if you have any complaints – call 8001008, email at complaints@nascodubai.com <mailto:complaints@nascodubai.com>  or visit our website",
+      "start_pos": 999,
+      "end_pos": 2177,
+      "chunk_index": 1,
+      "chunk_size": 1178,
+      "metadata": {
+        "doc_id": "C1TQNY2 - a guilt-free guide to holiday festivities\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1TQNY2 - a guilt-free guide to holiday festivities\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Registered Name: Nasco M.E. Insurance Brokers LLC \nInsurance Brokers License No. 167\nA member of the Nasco Insurance Group\n\nGet in touch with us if you have any complaints – call 8001008, email at complaints@nascodubai.com <mailto:complaints@nascodubai.com>  or visit our website\n\n\nGeneral Disclaimer:\nThis email message including any attachments are confidential to the intended recipient. If you are not the intended recipient, be advised that you have received this e-mail in error and that any use, dissemination, forwarding, printing or copying of this e-mail is strictly prohibited. It may not be disclosed to or used by anyone other than its intended recipient, nor may it be copied in any way. If received in error please email a reply to the sender, and then delete it from your system. Nasco may monitor and record e-mail traffic and data. Nasco accepts no liability for any damage caused by any virus transmitted by this email.\n\n\n\nSanctions Disclaimer:\nThis quote is subject to sanctions screening and verification by Nasco that there are no sanctions against any party that is covered under this risk and any party related thereto that has an interest regardless of any type of risk.",
+      "start_pos": 1898,
+      "end_pos": 3093,
+      "chunk_index": 2,
+      "chunk_size": 1195,
+      "metadata": {
+        "doc_id": "C1TQNY2 - a guilt-free guide to holiday festivities\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1TQNY2 - a guilt-free guide to holiday festivities\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:41.256868",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 3264
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1EO57E - attn why most leaders struggle across cultures — and what they’re missing\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1EO57E - attn why most leaders struggle across cultures — and what they’re missing\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:31:05\nFolder: C1EO57E - attn why most leaders struggle across cultures — and what they’re missing\nMessage Count: 1\n\n--------------------------------------------------\nID: C1EO57E_00\nFrom: Zainab  Alwani <Zainab@corpexposure.com>\nTo: Zainab  Alwani <Zainab@corpexposure.com>\nCC: \nBCC: \nDate: 2025-09-21 19:00\nSubject: Attn: Why Most Leaders Struggle Across Cultures — And What They’re Missing\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\nDear Fellow,\n\n70% of international ventures fail due to cultural misunderstandings — not strategy. In today’s global market, leadership isn't just about leading people — it’s about leading across values, mindsets, and communication styles.\n\n\nEvent Title:\nLeadership Across Borders & Culture\n\n\nEvent Details:\nDates: 8–10 December 2025\nVenue: Dusit Thani Hotel, Dubai, U.A.E.\nTrainer: Georgina Barquin — Global Leadership Strategist & Award-Winning Educator with 17,000+ training hours across 3 continents",
+      "start_pos": 0,
+      "end_pos": 1322,
+      "chunk_index": 0,
+      "chunk_size": 1322,
+      "metadata": {
+        "doc_id": "C1EO57E - attn why most leaders struggle across cultures — and what they’re missing\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1EO57E - attn why most leaders struggle across cultures — and what they’re missing\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Event Details:\nDates: 8–10 December 2025\nVenue: Dusit Thani Hotel, Dubai, U.A.E.\nTrainer: Georgina Barquin — Global Leadership Strategist & Award-Winning Educator with 17,000+ training hours across 3 continents\n\n\nKey Topics You’ll Explore:\n• Why culture impacts decision-making more than personality\n• Practical tools for decoding unfamiliar leadership styles\n• Frameworks to build trust across task- and relationship-based cultures\n• Strategies for turning cultural complexity into a competitive edge\n\n\nWho Should Attend:\nC-suite leaders, HR/L&D heads, project managers, sales and operations directors, and anyone leading multicultural teams or expanding internationally.\n\n\nAttachment Reference:\nFull agenda, schedule, and trainer profile are detailed in the attached brochure.\n\n\nBest regards,\nZainab Alwani\nMarketing Outreach Manager\nZainab@corpexposure.com",
+      "start_pos": 1112,
+      "end_pos": 1971,
+      "chunk_index": 1,
+      "chunk_size": 859,
+      "metadata": {
+        "doc_id": "C1EO57E - attn why most leaders struggle across cultures — and what they’re missing\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1EO57E - attn why most leaders struggle across cultures — and what they’re missing\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:56.519656",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2165
+  }
+}

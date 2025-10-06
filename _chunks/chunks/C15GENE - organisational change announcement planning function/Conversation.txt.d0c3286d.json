@@ -1,0 +1,42 @@
+{
+  "doc_id": "C15GENE - organisational change announcement planning function\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C15GENE - organisational change announcement planning function\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:42:43\nFolder: C15GENE - organisational change announcement planning function\nMessage Count: 1\n\n--------------------------------------------------\nID: C15GENE_00\nFrom: Internal News <internalnews@onechalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-04-07 12:45\nSubject: Organisational Change Announcement | Planning Function\n--------------------------------------------------\n <https://onechalhoubmedia.connexionsnow.com/newsletter/topbanner/daily-english.png> \t\n <https://onechalhoub.connexionsnow.com/mtracking/linkref.php?link1id=608&user=10620> \t\n\nShaping our Future: Introducing our Planning function\n\nWe are continuously evolving to enhance efficiency, collaboration, and support for our brands. As part of this journey, we are introducing our Planning function (formerly known as Supply Chain), reinforcing its critical role in driving business success through strategic alignment and operational excellence.\n\n <https://onechalhoub.connexionsnow.com/mtracking/linkref.php?link1id=608&user=10620> \t\n\nTo further strengthen this function, beginning April 2025, the Planning teams will transition from Managed Companies to Operations, with Planning leads reporting directly to Mandi Kaur- VP Planning. This shift marks a significant milestone in repositioning the Planning function, building a unified community, fostering aligned processes, and sharpening the focus on strategic activities",
+      "start_pos": 0,
+      "end_pos": 1508,
+      "chunk_index": 0,
+      "chunk_size": 1508,
+      "metadata": {
+        "doc_id": "C15GENE - organisational change announcement planning function\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C15GENE - organisational change announcement planning function\\Conversation.txt"
+      }
+    },
+    {
+      "text": "To further strengthen this function, beginning April 2025, the Planning teams will transition from Managed Companies to Operations, with Planning leads reporting directly to Mandi Kaur- VP Planning. This shift marks a significant milestone in repositioning the Planning function, building a unified community, fostering aligned processes, and sharpening the focus on strategic activities\n\n\nThe Planning team will be united by a shared vision of leading the region as frontrunners in planning excellence, to establish and foster a strong planning culture, driving continuous improvement and agility, ensuring long-term business success.\n\nTogether, we are building a Planning function that will drive efficiency, innovation, and sustainable growth for our Group. \n\nRead More <https://onechalhoub.connexionsnow.com/mtracking/linkref.php?link1id=608&user=10620> \n\nFor inquiries and to share your news in the Internal News please contact rasha.nashashibi@chalhoub.com <https://onechalhoub.connexionsnow.com/mtracking/linkref.php?link1id=609&user=10620>  \n\nCopyright © 2025 Chalhoub Group. All rights reserved. \n\nYou are receiving this email because your are a part of the Chalhoub Group family. \n <https://onechalhoub.connexionsnow.com/mtracking/newsletter-open.php?nli=176&user=10620>",
+      "start_pos": 1121,
+      "end_pos": 2401,
+      "chunk_index": 1,
+      "chunk_size": 1280,
+      "metadata": {
+        "doc_id": "C15GENE - organisational change announcement planning function\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C15GENE - organisational change announcement planning function\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:55.064076",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2448
+  }
+}

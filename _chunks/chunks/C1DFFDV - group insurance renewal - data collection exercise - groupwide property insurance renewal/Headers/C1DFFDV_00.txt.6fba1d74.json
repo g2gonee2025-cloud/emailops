@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1DFFDV - group insurance renewal - data collection exercise - groupwide property insurance renewal\\Headers\\C1DFFDV_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1DFFDV - group insurance renewal - data collection exercise - groupwide property insurance renewal\\Headers\\C1DFFDV_00.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from DU4PR05MB11790.eurprd05.prod.outlook.com (2603:10a6:10:5d8::22) by AM9PR05MB7745.eurprd05.prod.outlook.com (2603:10a6:20b:2d3::21) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9115.21; Mon, 15 Sep 2025 13:09:57 +0000\nReceived: from DU4PR05MB11790.eurprd05.prod.outlook.com ([fe80::e061:cd4a:54bd:13a8]) by DU4PR05MB11790.eurprd05.prod.outlook.com ([fe80::e061:cd4a:54bd:13a8%3]) with mapi id 15.20.9115.018; Mon, 15 Sep 2025 13:09:57 +0000\nContent-Type: multipart/mixed; boundary=\"_000_DU4PR05MB11790F205D41635408254E8879D39ADU4PR05MB11790eu_\"\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Renad Saad <Renad.Saad@chalhoub.com>, Wael Kaedbey <Wael.Kaedbey@chalhoub.com>, Zeeshan Arif <Zeeshan.Arif@chalhoub.com>, Yawer Khan <Yawer.Khan@loccitane.me>, Omar Hasaballa <Omar.Hasaballa@chalhoub.com>, Firas Karbala <Firas.Karbala@chalhoub.com>, Constance Bacha <Constance.Bacha@faces.com>, Mohamed Taher <Mohamed.Taher@chalhoub.com>, Alisha Dhanwani <Alisha.Dhanwani@chalhoub.com>, Farah Nassour <Farah.Nassour@chalhoub.com>, Rabia Anjum <Rabia.Anjum@chalhoub.com>, Kanwal Butt <Kanwal.Butt@aljamalsa.com>, Ambreen Mirza <Ambreen.Mirza@chalhoub.com>, Sagar Kukreja <Sagar.Kukreja@chalhoub.com>, AmerNazeer Khawla <Amer.Khawla@chalhoub.com>, Macy Dsa <Macy.Dsa@chalhoub.com>, William Pitot <William.Pitot@chalhoub.com>, Lynn Rihawi <Lynn.Rihawi@chalhoub.com>, Baheej Shouman <Baheej.Shouman@puigme.com>, Carmela Aggiao <Carmela.Aggiao@puigme.com>, Souad AlKharrat <Souad.AlKharrat@chalhoub.com>, Samer Faraj <Samer.Faraj@chalhoub.com>, Mohammed Samer Suleiman <samer.suleiman@chalhoub.com>, George Hammouch <Georges.Hamouche@chalhoub.com>, Ahmed Elsalous <Ahmed.Elsalous@chalhoub.com>, Pierre Dorlian <Pierre.Dorlian@chalhoub.com>, Mehdi Kohen <Mehdi.Kohen@chalhoub.com>, Magdalena Giersz <Magdalena.Giersz@chalhoub.com>, Thalia Papadopoulou <Efthalia.Papadopoulou@chalhoub.com>, Layan Alsabi <Layan.Alsabi@chalhoub.com>, Ashish Tekwani <Ashish.Tekwani@chalmax.me>\nCC: Joe Hobeika <Joe.Hobeika@chalhoub.com>, May Karaki <May.Karaki@chalhoub.com>, Tarek Fakhereddin <Tarek.Fakhereddin@chalhoub.com>, Hattan Halabi <Hattan.Halabi@chalhoub.com>, Shereen Omar <Shereen.Omar@chalhoub.com>, Louay Saab <Louay.Saab@chalhoub.com>, Dina Al Wazzan <Dina.Alwazzan@chalhoub.com>, Lina El Moabbi <Lina.Elmoabbi@chalhoub.com>, Zohour Elshehry <Zohour.Elshehry@chalhoub.com>, Lama Ashraf <Lama.Ashraf@chalhoub.com>\nSubject: Group Insurance Renewal - Data Collection Exercise - Groupwide Property Insurance Renewal \nThread-Topic: Group Insurance Renewal - Data Collection Exercise - Groupwide Property Insurance Renewal \nThread-Index: AQHcFuB0/78bJCf0BkCNMKYW8bZFcg==\nDate: Mon, 15 Sep 2025 13:09:57 +0000\nMessage-ID: <DU4PR05MB11790F205D41635408254E8879D39A@DU4PR05MB11790.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 2930,
+      "chunk_index": 0,
+      "chunk_size": 2929,
+      "metadata": {
+        "doc_id": "C1DFFDV - group insurance renewal - data collection exercise - groupwide property insurance renewal\\Headers\\C1DFFDV_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1DFFDV - group insurance renewal - data collection exercise - groupwide property insurance renewal\\Headers\\C1DFFDV_00.txt"
+      }
+    },
+    {
+      "text": ": Mon, 15 Sep 2025 13:09:57 +0000\nMessage-ID: <DU4PR05MB11790F205D41635408254E8879D39A@DU4PR05MB11790.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach:\nX-MS-TNEF-Correlator: <DU4PR05MB11790F205D41635408254E8879D39A@DU4PR05MB11790.eurprd05.prod.outlook.com>\nmsip_labels:\nundefined:\ndrawingcanvaselements: []\ncomposetype: newMail\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: DU4PR05MB11790:EE_|AM9PR05MB7745:EE_\nx-ms-office365-filtering-correlation-id: 8336d388-9dbd-4ce9-2798-08ddf4592b3b\nx-ms-exchange-atpmessageproperties: SA\nx-microsoft-antispam: BCL:0;ARA:13230040|69100299015|366016|40072699003|31052699007|39142699007|8096899003|921020|41050700001;\nx-microsoft-antispam-message-info: VDMv1fxjLEqAa0B2tTj+2qHLRqH/FJEpRnpxUrzV3yd54KVxlZ0dfFgOtnBQ4RMqCT3p4WWYMubnQ4GNqF/f+iku/pkmZg6Yl4Ue0KR9qQvju+Baat76W7GP0SMjM+iMcvHEoBKZBGhZXYYtkVwTttlWR4nYUbTc1vy+Dpr5IyWa4FIIhxReiznU6cUCt0ti7wvuYwJvgKweIQiczHssViD96Wzd0aPpyESXo1/zfvUalSXkdYg1h08JLnkPE5jhfIvqXE0xhTRWF2ccIwPNtIDnKxiNvEOwWo5QT3CPWo4mjhmnh0tOrmUuxBLa4zn88VaJCKUhMi2mxVl5DaNMBa92+rBwUqBparMaVzOXZdlLMCUZc/VoRmymkx7LMBLTzedMdePZANh0UqdOIAcyiOyIXmQcStOka6bRsxT/aNVjN+0Ty5Xx/PvXXEKMKT1Wg5+df+7dHyNDda6tYjAfxwX5+6c4Muhk3bz1yYqR4lZb/phrRwLAG+RhOCCj8i7n6Muy+fwIj7tnpUmPPr3ESZnwV5rZxWTrWj4QRj4/TPSYkiEclSgRXg0+rFmsq4PFtHD/DG9jFOk2qQlsGhhYcYsqQGC2bws2DfMg3e6Nt6qDseZChAISF0ctevNS9wNrDUDpSbe9E/vG0HA8Gd0Abu3X0S7L2SUCwlZ9uYNUaOOFyMLuqB+nEmJ365c9IYDn32U5sWhl0aDdjOywagTllWfdpY+Go6WFEFfaC3r++1NrHQY5WmU/cI+eXNFavlQk\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DU4PR05MB11790.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(69100299015)(366016)(40072699003)(31052699007)(39142699007)(8096899003)(921020)(41050700001);DIR:INT;\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: ue3/eqSAtcFZwa/30P2QievwOwVt2r1ii56j4Ebwv50FcbsTHZlpOjqlHKbqvsiu7WKwI59bpX0VGFt5sXQO3m+r4ZlahOTRa3FNZr6WULhtVOkLAPROFDXBFml0VOVOMU6FJlVbXP1BU/LlG+ZgBkJT6BCJiizocqxGMoHcFiW7e2TfZtIcE1ums+7+2yKGcsRPV2buPeJ34E199ahPVSzqXqBXgEhjjgR/ebnGJSQ43wiHMgWjZ+TVLsL9qgTT3uQpD94y+Jh/WCTHZWl2Ssz5CM6G5tQ9iqCW1eZOLrqjxJ/UoEqre5JjAgXNPNPNSDBS5it81JVMI6E3e4COuzkMzQWitG5khP9AT46bpuD6hysVAkD/yDft733nlA888feCM5Dz8Ur4hR8BSSnG3tcRp+QR3QqtxLA6/heRjvOm/a0tEDeUp4rc1Fw7UEXsFevdxboqszDH0n5DXBONo77lWsKtKaZUwEApIAyiXVUdh4wYGXP9yYjoXdoZz6vCZNp8NJF1joFMso3D3gbUm/E1Q2FDuyLtYS/ua3oq41t438EFKf8BUgS047YAmQfblzO9fpfYIEdXdGp5lPiFusTgSCEuXyJIhf3Xhd9lAU+PswJ8EMdNjPLdT3KNtVoB\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: DU4PR05MB11790.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 8336d388-9dbd-4ce9-2798-08ddf4592b3b\nX-MS-Exchange-CrossTenant-originalarrivaltime: 15 Sep 2025 13:09:57.0819 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: guhEVRsbKAlSaCozHCZjduubWTPMhEfSqGRmMdgktCffm/4lwEeWoYl2U/jantrcmkGYXNZFo5ZKcZ6nFaTWAKBrBql1WMAiSha17HXM/0s=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR05MB7745\nX-OrganizationHeadersPreserved: AM9PR05MB7745.eurprd05.prod.outlook.com",
+      "start_pos": 2730,
+      "end_pos": 6170,
+      "chunk_index": 1,
+      "chunk_size": 3440,
+      "metadata": {
+        "doc_id": "C1DFFDV - group insurance renewal - data collection exercise - groupwide property insurance renewal\\Headers\\C1DFFDV_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1DFFDV - group insurance renewal - data collection exercise - groupwide property insurance renewal\\Headers\\C1DFFDV_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:32.111396",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 6215
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "doc_id": "CDV7A6S - meeting patrick jules\\Headers\\CDV7A6S_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CDV7A6S - meeting patrick jules\\Headers\\CDV7A6S_00.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by AS8PR05MB9907.eurprd05.prod.outlook.com (2603:10a6:20b:5b7::15) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7982.27; Tue, 24 Sep 2024 07:33:23 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%3]) with mapi id 15.20.7982.022; Tue, 24 Sep 2024 07:33:22 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Joe Hobeika <Joe.Hobeika@chalhoub.com>\nSubject: FW: Meeting Patrick <> Jules\nThread-Topic: Meeting Patrick <> Jules\nThread-Index: AQHbDZS6xP0nlOqwoUCmx42Ns07kgrJmhmHQgAAB7eA=\nDate: Tue, 24 Sep 2024 07:33:22 +0000\nMessage-ID: <AS8PR05MB10824E78127AC00DA93CA2DDF9D682@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <CAO=0yZ0hzTYmD+YFwUup0oZst2kPH8Bo+XmhyGSWWA2uc=4xSw@mail.gmail.com> <AM6PR05MB62774D51E2D26AD72DCAD83EFB682@AM6PR05MB6277.eurprd05.prod.outlook.com>\nIn-Reply-To: <AM6PR05MB62774D51E2D26AD72DCAD83EFB682@AM6PR05MB6277.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|AS8PR05MB9907:EE_\nx-ms-office365-filtering-correlation-id: a1fd6010-35ac-4525-906e-08dcdc6b2b68\nx-ms-exchange-atpmessageproperties: SA|SL|HVE\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|41050700001;\nx-microsoft-antispam-message-info: puWNYgIZ0SleFY9R1y4I51AFWTG8NfYtvDr1Xt4UbRGhqQPaXz3Da7/p1zbjG2wPG6N2DfNcKMJTlFJ4MisWrTdUtWEln1qYBcpebVKNehjX9CkfJhn8jRlXu1jo5cVhFhv0C/YH2ix6agZGuAm2XgJ1k6OxUIbe23jVH9ztEEMhwzacq5WTfPGVl7S1jKfuA19sAqOwl5gK7wlomC7LbOu0bFvgZfWSAZ+sEIFtvl4kJeHtBaN7OcCfNzNfji2YnKBfMP23gJ6PuJ57DCfOELREvvIZhvLwFu+f+PofO3UhH77VXRHDSKBxLbvmjlcD8ZGDfUzmgWk8xbt9jLwapH35HRHT1aQfWTE62ZsYoSMK7/Op0jEpl95FxQpn/FqI7FMLAQIo7rNx7CFEhxHD7GLa1DjFldHR9DLmM7eacIiE2RvTRUntOhSwuSmd8IcYYw2HAv/+DrwQBUj/i2oMtqokcaRdPe3fYGKLN/LtwL2i6ESCsfUTVPiL8lPNzCm0jUW7kedzzTdXrimAAH6InB9CgUx4wVxNiB9IzJsYyiA2U/JYrrFEchpqaKYUmMAqQCwGzTuoE14o8a//1nCp0w0BJGnk4Lw0rk7PMolAZHbuxynDUFOwdI10uV+GoG8E68aJfZGFnXjs4cEERWymKXOT5gLQbu5rlgO/6c1c65f47hNeHpLdGo17JtazDJEHvv5cLY8wZ8OXAgoqwuqYkln2lDdqMsZHxMHCkxjd7rbjutC0MeKIov3R4wRT3hYUctSBvHqdCxeyhNDKw108FaUD62Bx2PSsZV5Pcmut80xvIfEWwnYbXgAehnzCtIla\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_011_AS8PR05MB10824E78127AC00DA93CA2DDF9D682AS8PR05MB10824eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: wbYIXGE6/Qbj2R+7mR+GbZ6xcrAQW9Ix8oaVl+kLRPR+tbzMx9znjRr02ideVpDl0iLCxN5nyHzzqqwZtBMMnXvmVAQOdVwM6f+RWhVrZ9AYfDL1oL3kSFhQ0LSOaAbw4AKhiquYTcb7bNlXMMByG9T0w1Xx18xzx7MQB+8X+VsEAAvyD6VtdTf8p2viKjYpn3LPGMAN3LfTxZI9u13cmb9HUrtcWA95C+gct5j29ZZTcn73bQ3v8jo5MR2+sVV+vm3Qo+8eAKJX8mY3YwsxKYCxAHWba6GmFxM5scuX/YFojr548LXQl1ED3qdvSQYas2wmyOLvOw66N9ImwOLP1YRKeSlucwIwTw0LRvuk5RLujwfAawGTnx5CXiE+Ne7iT4Cp6flN2P/VSUBZqOgPToeTqt3ySlNk6HTIS7bHA+LdYdU2hKQ3pHrUMfC+QmOUQqlmV2qEtIK5xhEC90XaT6gfEZt+R50y3Q6whTy2YRQuiZqdxiF0ayAwrJPEce5kQ/JR7VV27DJqWLNBCXcQ37k8ZtYAJWL0OViIcycbK5i6spXuoDygT2LmfsP1aI5iJJ0AeuelTYoFWx6BLG9RYv30VM307dHmT6sM60OLZa2r2x3U4LCfOv4/KpIMuB01\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: a1fd6010-35ac-4525-906e-08dcdc6b2b68\nX-MS-Exchange-CrossTenant-originalarrivaltime: 24 Sep 2024 07:33:22.7589 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: ommBoCrkgp08OqqzmHNAvXX1r00xBcg/mbpHKG+VMlGEpp0PAl0n/x8Lks12vo9MZCCZEqfmLAT6iSG7daDghDhUUKDU8XsDuPD2gwM4Xrc=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR05MB9907\nX-OrganizationHeadersPreserved: AS8PR05MB9907.eurprd05.prod.outlook.com",
+      "start_pos": 0,
+      "end_pos": 4352,
+      "chunk_index": 0,
+      "chunk_size": 4352,
+      "metadata": {
+        "doc_id": "CDV7A6S - meeting patrick jules\\Headers\\CDV7A6S_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CDV7A6S - meeting patrick jules\\Headers\\CDV7A6S_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:27:57.083063",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4394
+  }
+}

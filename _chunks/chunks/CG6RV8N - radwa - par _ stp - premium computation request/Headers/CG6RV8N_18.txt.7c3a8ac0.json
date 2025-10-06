@@ -1,0 +1,42 @@
+{
+  "doc_id": "CG6RV8N - radwa - par + stp - premium computation request\\Headers\\CG6RV8N_18.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CG6RV8N - radwa - par + stp - premium computation request\\Headers\\CG6RV8N_18.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by AS5PR05MB10874.eurprd05.prod.outlook.com (2603:10a6:20b:654::15) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8230.11; Tue, 10 Dec 2024 01:45:34 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%6]) with mapi id 15.20.8230.016; Tue, 10 Dec 2024 01:45:34 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Abdul Hafeez Tanwari <hafeez.tanwari@nascosaudi.com>\nCC: Furqan Akhai <Furqan.Akhai@chalhoub.com>, Abdullah Binmayouf <Abdullah.Binmayouf@nascosaudi.com>, Firas Asaad <Firas.asaad@nascosaudi.com>, Saad Almaghazwi <Saad.Almaghazwi@nascosaudi.com>, Tarek Fakhereddin <Tarek.Fakhereddin@chalhoub.com>, \"Finance (Nasco Saudi)\" <finance@nascosaudi.com>\nSubject: Re: RADWA - PAR + STP - Premium Computation Request\nThread-Topic: RADWA - PAR + STP - Premium Computation Request\nThread-Index: AQHbCodJdZJ9Y5QI70aNcw1e7IQOBbJjiCmAgAAvFBCADG7yroAB1vVwgAANajCANPtyI4AAA+oQgAr/2WCAACbwgIAAJ7HigAFRbHCAAC+zsIAAEFf1gAAAayCACwPxYIAABehogAAF9MCAB6vGYIAYfOzh\nDate: Tue, 10 Dec 2024 01:45:34 +0000\nMessage-ID: <AS8PR05MB10824E931D3D5D7F8FA1C3B769D3D2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <AS8PR05MB10824720F4A45C940A6DC1CEB9D632@AS8PR05MB10824.eurprd05.prod.outlook.com> <a1c9a62ff2d14857aea67e41322b91aa@nascosaudi.com> <AS8PR05MB10824CC7E5062BA7C152EBA5F9D6E2@AS8PR05MB10824.eurprd05.prod.outlook.com> <AS8PR05MB108240BB24A5FE0AE122BC3199D762@AS8PR05MB10824.eurprd05.prod.outlook.com> <AS8PR05MB1082479F9EA9CD87E07A214159D772@AS8PR05MB10824.eurprd05.prod.outlook.com> <e4c24590c67642d3aab43ab12a13648f@nascosaudi.com> <AS8PR05MB1082497D27662EC9881D7E6E69D512@AS8PR05MB10824.eurprd05.prod.outlook.com> <47ff109e26f14d1086da42dca53f3582@nascosaudi.com> <AM0PR05MB45964DBB3161D6D24A86B2D195582@AM0PR05MB4596.eurprd05.prod.outlook.com> <d76c6584ce9845f68c84f9b13169dc78@nascosaudi.com> <AS8PR05MB10824EC93AEB704D9BFCD1CB09D582@AS8PR05MB10824.eurprd05.prod.outlook.com> <0e9b275e95ad4c009fa00690a6b6053f@nascosaudi.com> <23d0d3d811744c6184bc67123b56cd4d@nascosaudi.com> <AS8PR05MB10824AAEEFC47F558C7805AB89D592@AS8PR05MB10824.eurprd05.prod.outlook.com> <1029e3d2b00242baa55d7bdab33516fa@nascosaudi.com> <08a06b72bdca4cac9085cb1e9a2c6d33@nascosaudi.com> <AS8PR05MB10824FC4E812FCE89412A10A49D202@AS8PR05MB10824.eurprd05.prod.outlook.com> <d1283a120e0e49f7b71ed27b8dcf6b7b@nascosaudi.com>\nIn-Reply-To: <d1283a120e0e49f7b71ed27b8dcf6b7b@nascosaudi.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 2708,
+      "chunk_index": 0,
+      "chunk_size": 2707,
+      "metadata": {
+        "doc_id": "CG6RV8N - radwa - par + stp - premium computation request\\Headers\\CG6RV8N_18.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CG6RV8N - radwa - par + stp - premium computation request\\Headers\\CG6RV8N_18.txt"
+      }
+    },
+    {
+      "text": "e0e49f7b71ed27b8dcf6b7b@nascosaudi.com>\nIn-Reply-To: <d1283a120e0e49f7b71ed27b8dcf6b7b@nascosaudi.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|AS5PR05MB10874:EE_\nx-ms-office365-filtering-correlation-id: e4bb5d5a-142a-4535-68f7-08dd18bc56c3\nx-ms-exchange-atpmessageproperties: SA|SL\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nx-microsoft-antispam-message-info: j+5cPzuMgPls4htpRdbXlVuy2RXJkkur2U0sPeGZ7n89uyENihCgdcTzHT9Qm4L8Hp4OuVV2C6/sB4+HVjK8h3coed7kN4faIpesKRHTiNL22ZVtWLyWBVU305tRXgiLjq0DkRe5ggyqnq3E+2hhmkd6lhqxaInVqkG1v9lkaxmjdfu7xuFTtbFL4DqQqVLH06HlM4KqgPXF40XH8zHW4HkE+D4bimsWwnQRgxAYpJZ1TIulJJwNX/bmik6IEj7f/X5Se5uSoJpeKydC7mMMg32qi8K3a5DwCcjeNc8PM4k8IUkDKuUhSYcQpDx5Ip2XG1TojSeyjcrDH11Uf+E7p/O2lBURW9yD5wVk8c0KrE6VmorfVNoZBxYoAeBeJK5Nx4PUmlLGMemiS20DiozpIxrjUHcwRCTihuBx/Mqg0FnWIeFTA1aQw/kqXW4Wt3a6DhKcl3ffyaCbH9kkl8wLnzqnW+3lYDALrBBBkmjATxO2q8PE6U285AMvFzlTMb8S5g4WpkXcEAMSeC28+m9U8p6PVp3e9Nf+q9J55h1HGnZoeleHbMKVA4jqFxDJcUakxQWEIy0r3U1u83RevRVbxYjrhppreODFwQDhB/XBkDmYrRh8u3QzCsuf8oI1O3gLxmkba57EihyWRL9hbYFw+dxAwUGtM+LZaHs77Nz/e/abc7daCTSl9nnNsuc0aj3ldn9LNrzjbOBwfRu57vTeDkg2vsrv1YS6SywpYWFWIkBMiRGhCUmyIPKR8Oq/6maf9Q9yAJus61LT9wwfmlbeJw==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nContent-Type: multipart/mixed; boundary=\"_070_AS8PR05MB10824E931D3D5D7F8FA1C3B769D3D2AS8PR05MB10824eu_\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: H8QudD8Dkc4T6WPzLFM+CtbxouZSnz+0UyF8pWlOaI6L6uZi/6ehJy0ml//8kjQodbkZ14JmR4dWl9mWm7BQYw6H5hgcf+dWpMDdiPQW7ypc2UxrKaapWjcQ6+WRVI4IblT6nDPN+sqJOpDO0hFuYagKh8KPxCZc/jicQqMCB02H4UrwKK2DZyJmO6pbdmYcjagmh+SpE+NS4EXFhYqejzLf14wbhpzqVIxsVBGzHUitlBFN4RHH5wHc+MjyPHkaE+Eu5mEnk4CRuOwZxQRIxCTSggZvUjNRNSkMJ1wHxIZIzrvOkS6uBLwZc5gStgeWeMCtUOAWYmypTAo9WIO2OxEEgjzj3XKwU4kB4f/m6FUqedb9iTJurkD/3Q+ypR4Xj1WvmSV6DKzKdI0uxli0oHN/8fPRbR9dPGfLMh1SRS6rWK4QoekPCO4nu6/0p9jvwMn1BjNfmcbs6Sh3Tre0PG1MK9xVeO8i7utdTvRyL8uSkUHofRgYq+FfP46qKsrh1Owafuj7jFgDiXb3KihpR3UyOrNNkef8AL3GB7Lz8UBYkCmy/U/xbims+zz9/O8gjBo4MKOnKZeV3t8R/8AftUAZDXWa6yWJ1wT09+JsV8xl6/ik65UjVH3FM+InfF5I\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: e4bb5d5a-142a-4535-68f7-08dd18bc56c3\nX-MS-Exchange-CrossTenant-originalarrivaltime: 10 Dec 2024 01:45:34.4761 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: V7bO4LEf3ltxGpWGtbk5q42C0Yn4LiJqPyugAlbW4E4i9Ddv5b8m8C27Ezmk8gtFeZjE0b9W06kwsQSSsnxlLGKoy9IqaLA2pWzFDw4qJak=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS5PR05MB10874\nX-OrganizationHeadersPreserved: AS5PR05MB10874.eurprd05.prod.outlook.com",
+      "start_pos": 2508,
+      "end_pos": 5804,
+      "chunk_index": 1,
+      "chunk_size": 3296,
+      "metadata": {
+        "doc_id": "CG6RV8N - radwa - par + stp - premium computation request\\Headers\\CG6RV8N_18.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CG6RV8N - radwa - par + stp - premium computation request\\Headers\\CG6RV8N_18.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:27:54.345613",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5848
+  }
+}

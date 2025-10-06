@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1G4ZJC - ticket updated - request for hagop ghazarian random access memory - laptop -\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1G4ZJC - ticket updated - request for hagop ghazarian random access memory - laptop -\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 12:06:47\nFolder: C1G4ZJC - ticket updated - request for hagop ghazarian random access memory - laptop -\nMessage Count: 1\n\n--------------------------------------------------\nID: C1G4ZJC_00\nFrom: OneReach <onereach@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2024-10-01 11:43\nSubject: Ticket Updated - Request for Hagop Ghazarian : Random Access Memory - Laptop - SR-978775\n--------------------------------------------------\n <https://eucattachment.freshservice.com/inline/attachment?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6NTIwMDIzMjM3MjAsImRvbWFpbiI6ImNoYWxob3ViZ3JvdXAtc2VydmljZWRlc2suZnJlc2hzZXJ2aWNlLmNvbSIsInR5cGUiOjF9.5NoE1pqHy6NqDdraZimejTAd0ObR8IwZ_Vuz9Bym3hY> \n\n\n\n\n\nDear Hagop Ghazarian,\n\nThere is a new comment on your ticket. You can view your ticket by visiting https://onereach.chalhoub.com/helpdesk/tickets/978775 <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fonereach.chalhoub.com%2Fhelpdesk%2Ftickets%2F978775&data=05%7C02%7Chagop.ghazarian%40chalhoub.com%7C0442c2d674154dcaec8108dce1ecbb07%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638633654077605052%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C0%7C%7C%7C&sdata=EcrIX5kaJB%2F5Q1p5hmGRXyztHZQTRh6UNXTf6hKcT2g%3D&reserved=0> \n\nYou can also reply to this email to add your comment.\n\nSystem added a note: – \n\n\nYour request has been approved and assigned to agent group for execution\nSincerely,\nChalhoub Tech Support Team",
+      "start_pos": 0,
+      "end_pos": 1580,
+      "chunk_index": 0,
+      "chunk_size": 1580,
+      "metadata": {
+        "doc_id": "C1G4ZJC - ticket updated - request for hagop ghazarian random access memory - laptop -\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1G4ZJC - ticket updated - request for hagop ghazarian random access memory - laptop -\\Conversation.txt"
+      }
+    },
+    {
+      "text": "There is a new comment on your ticket. You can view your ticket by visiting https://onereach.chalhoub.com/helpdesk/tickets/978775 <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fonereach.chalhoub.com%2Fhelpdesk%2Ftickets%2F978775&data=05%7C02%7Chagop.ghazarian%40chalhoub.com%7C0442c2d674154dcaec8108dce1ecbb07%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638633654077605052%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C0%7C%7C%7C&sdata=EcrIX5kaJB%2F5Q1p5hmGRXyztHZQTRh6UNXTf6hKcT2g%3D&reserved=0> \n\nYou can also reply to this email to add your comment.\n\nSystem added a note: – \n\n\nYour request has been approved and assigned to agent group for execution\nSincerely,\nChalhoub Tech Support Team\n\n\n[#SR-978775]:485094:fs",
+      "start_pos": 822,
+      "end_pos": 1605,
+      "chunk_index": 1,
+      "chunk_size": 783,
+      "metadata": {
+        "doc_id": "C1G4ZJC - ticket updated - request for hagop ghazarian random access memory - laptop -\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1G4ZJC - ticket updated - request for hagop ghazarian random access memory - laptop -\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:39.808920",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1650
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "doc_id": "C12QFZR - payment of outstanding dues for acc. 2038029628\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C12QFZR - payment of outstanding dues for acc. 2038029628\\Conversation.txt",
+  "num_chunks": 3,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:40:41\nFolder: C12QFZR - payment of outstanding dues for acc. 2038029628\nMessage Count: 1\n\n--------------------------------------------------\nID: C12QFZR_00\nFrom: noreply@dewa.gov.ae <noreply@dewa.gov.ae>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-05-11 07:13\nSubject: Payment of outstanding dues for Acc. 2038029628\n--------------------------------------------------\n\n\nDear Customer,\n\nMonthly bill payment of AED 1,384.42 for Account no. 2038029628 is due. Please settle the payment to ensure service continuity. Please pay through www.dewa.ae/pay?ac=2038029628 <https://url.uk.m.mimecastprotect.com/s/sSWiCjOo4F3BEv5uWfwfmQRyI?domain=dewa.ae> .\nFor more information or inquiries, please contact our Customer Care Centre at customercare@dewa.gov.ae, or call 04-6019999.\n\nYour happiness is our priority.\nDubai Electricity & Water Authority \n\n\n\n\n\n\n <https://www.dewa.gov.ae/emailer/greenbill/images/dewa_footer_en.bmp> \t\n\n________________________________\n\n\nDisclaimer:",
+      "start_pos": 0,
+      "end_pos": 1075,
+      "chunk_index": 0,
+      "chunk_size": 1075,
+      "metadata": {
+        "doc_id": "C12QFZR - payment of outstanding dues for acc. 2038029628\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C12QFZR - payment of outstanding dues for acc. 2038029628\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Monthly bill payment of AED 1,384.42 for Account no. 2038029628 is due. Please settle the payment to ensure service continuity. Please pay through www.dewa.ae/pay?ac=2038029628 <https://url.uk.m.mimecastprotect.com/s/sSWiCjOo4F3BEv5uWfwfmQRyI?domain=dewa.ae> .\nFor more information or inquiries, please contact our Customer Care Centre at customercare@dewa.gov.ae, or call 04-6019999.\n\nYour happiness is our priority.\nDubai Electricity & Water Authority \n\n\n\n\n\n\n <https://www.dewa.gov.ae/emailer/greenbill/images/dewa_footer_en.bmp> \t\n\n________________________________\n\n\nDisclaimer:\n\nThe information in this email and in any files transmitted with it is intended only for the addressee and may contain confidential and/or privileged material. Access to this email by anyone else is unauthorized. If you receive this in error, please contact the sender immediately and delete the material from any computer. If you are not the intended recipient, any disclosure, copying, distribution or any action taken or omitted to be taken in reliance on it, is strictly prohibited. Statement and opinions expressed in this e-mail are those of the sender, and do not necessarily reflect those of DEWA. DEWA accepts no liability for any damage caused by any virus/worms transmitted by this email.\n\nDubai Electricity and Water Authority (PJSC), Dubai, UAE, http://www.dewa.gov.ae <https://url.uk.m.mimecastprotect.com/s/E5wOCkOp4FrKlpWfVhPfG0D2G?domain=dewa.gov.ae>",
+      "start_pos": 494,
+      "end_pos": 1944,
+      "chunk_index": 1,
+      "chunk_size": 1449,
+      "metadata": {
+        "doc_id": "C12QFZR - payment of outstanding dues for acc. 2038029628\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C12QFZR - payment of outstanding dues for acc. 2038029628\\Conversation.txt"
+      }
+    },
+    {
+      "text": "The information in this email and in any files transmitted with it is intended only for the addressee and may contain confidential and/or privileged material. Access to this email by anyone else is unauthorized. If you receive this in error, please contact the sender immediately and delete the material from any computer. If you are not the intended recipient, any disclosure, copying, distribution or any action taken or omitted to be taken in reliance on it, is strictly prohibited. Statement and opinions expressed in this e-mail are those of the sender, and do not necessarily reflect those of DEWA. DEWA accepts no liability for any damage caused by any virus/worms transmitted by this email.\n\nDubai Electricity and Water Authority (PJSC), Dubai, UAE, http://www.dewa.gov.ae <https://url.uk.m.mimecastprotect.com/s/E5wOCkOp4FrKlpWfVhPfG0D2G?domain=dewa.gov.ae> \n\nOur Vision: A globally leading sustainable innovative corporation committed to achieving Net-Zero by 2050.\nOur Mission: We are committed and aligned to Dubai’s 8 Guiding Principles and 50-Year Charter supporting the UAE’s directions through the delivery of global leading services and innovative energy and potable water solutions enriching lives and ensuring the happiness of our stakeholders, for a sustainable Net-Zero carbon 2050.",
+      "start_pos": 1077,
+      "end_pos": 2380,
+      "chunk_index": 2,
+      "chunk_size": 1303,
+      "metadata": {
+        "doc_id": "C12QFZR - payment of outstanding dues for acc. 2038029628\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C12QFZR - payment of outstanding dues for acc. 2038029628\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:55.177196",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2435
+  }
+}

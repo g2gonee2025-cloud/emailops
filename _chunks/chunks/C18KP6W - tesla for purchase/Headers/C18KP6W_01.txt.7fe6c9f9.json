@@ -1,0 +1,42 @@
+{
+  "doc_id": "C18KP6W - tesla for purchase\\Headers\\C18KP6W_01.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C18KP6W - tesla for purchase\\Headers\\C18KP6W_01.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by VI2PR05MB11535.eurprd05.prod.outlook.com (2603:10a6:800:22c::22) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8137.27; Tue, 12 Nov 2024 08:28:20 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%5]) with mapi id 15.20.8137.027; Tue, 12 Nov 2024 08:28:20 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Jason Sieiro <Jason.Sieiro@nascodubai.com>\nCC: Rami Riman <Rami.Riman@chalhoub.com>, Mary Janice Dofeliz <MaryJanice.Dofeliz@chalhoub.com>, Robert Netto <Robert.Netto@chalhoub.com>\nSubject: Re: Tesla for purchase\nThread-Topic: Tesla for purchase\nThread-Index: AdsKnz2oq9oaefLTSx6IerclKrM/TAAALHhAAADRxcAAAGqHMAAAlduQAAAZKUAAHOpp8gCdUyagAABoStAACARnoAAAHufVAAC+PuAAAREV2gACKGtQAAALK9AAAALm4ATfTB54AQOpVWAAADUfPwAAeBuwAC1f5UsABwGw4AAkwwyQAAOKbeAAAPKS3QAAE98AAABRmX0AABTjsAAAINeIAABNljAAy3Z+AAAF3fg0AAA4VKAAIyJfEAAAqALAAAEYFVAACk9a4ABX/VLQAAAxTFAAnEG4gAAFPxhwAJs0sosAABqkaAAck/+gAM8uiLAAAry6Yw==\nDate: Tue, 12 Nov 2024 08:28:19 +0000\nMessage-ID: <AS8PR05MB108243CBD59C87FCDA5B364569D592@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <LV8PR16MB62625854E187D0EEC7BC99C0A65C2@LV8PR16MB6262.namprd16.prod.outlook.com> <LV8PR16MB626247E9ADC49DD4448961E3A65C2@LV8PR16MB6262.namprd16.prod.outlook.com> <AS4PR05MB9327C112CC00D14D517AD514F75D2@AS4PR05MB9327.eurprd05.prod.outlook.com> <AM6PR05MB5505B4C384DA1914348C0EA5F5592@AM6PR05MB5505.eurprd05.prod.outlook.com>\nIn-Reply-To: <AM6PR05MB5505B4C384DA1914348C0EA5F5592@AM6PR05MB5505.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 1819,
+      "chunk_index": 0,
+      "chunk_size": 1818,
+      "metadata": {
+        "doc_id": "C18KP6W - tesla for purchase\\Headers\\C18KP6W_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C18KP6W - tesla for purchase\\Headers\\C18KP6W_01.txt"
+      }
+    },
+    {
+      "text": "ook.com>\nIn-Reply-To: <AM6PR05MB5505B4C384DA1914348C0EA5F5592@AM6PR05MB5505.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|VI2PR05MB11535:EE_\nx-ms-office365-filtering-correlation-id: 850e9c10-8178-4491-5f09-08dd02f3f6f7\nx-ms-exchange-atpmessageproperties: SA|SL\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nx-microsoft-antispam-message-info: g7h0DAoE7cj+R1dBog+JdXIJ8wAJU1CWCAzJSEpnLYgTHbGAYRnQxd7VQsNPicszmS32WCmctGTN5oTYjM5Edkvr21BCs4ifX/mdNiZ/kg34Rz7iuU04UWoWUjmyEtVY3CvKHZY6yh4bolEqnzrlwwLKEsTrDrrfYjC/tGXSBJNx2ybbKSVJuzWDqApnyUOgvEIG7ej35G5rHBLX3Q1OYMkUWJPQirPhvXp7odFPCRHcqmb/IhDaz5bgNLAoRsOaGkX1yTydrHlK/a2ecB+lFvDqm6EPgQ78A1chMAlcYfAaET9y6Eqqo129Ctt+nzSBTZZZFs8SLBxFHVXVRWNiC4cJZpPHxNGQCMyWObR5my74IlotqiPPwR0YwdCMicALhMJnjUHwcZ8ygfyvgnVftyl1KDeGFQOekGHvu8IVYs690I/DZEmCvrgxCoyGMH8yCE2m3YygnxaWB98H3YQAhc9rEUudMORn5A7zgN3kGvE+tNt1lKIl95AmBz9RYl2I4okBiWVnZq657vebEPIxjWjXMXEECxPW7xa173tP2K4aNT0otXvwJ8+0V92LMpTCFtKML0U2JpjNHG8falkeJ4gHMlQtjbS9D07iQtnh3fpyKwoVPL/ZtsF04p+57ejSWVg2YeHEvxNlkT3UU1cRj3ahmQtQM2gk8Zp05ArQlKpqANbqLYNzr6rS3NA2Mg2b9Qz3ZtbscIdqAcP5qLp5rpv4vNwQRt3qKlSk45HDD2zc+xw5I9PjR2yULgl9W35jeIo8lqy+kkq4edhSs9m80A==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nContent-Type: multipart/mixed; boundary=\"_026_AS8PR05MB108243CBD59C87FCDA5B364569D592AS8PR05MB10824eu_\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: rhjGuM08s3/xZ61kXmMcBTAqP/n7vCX4akVEIl8dvx3b8nXzH6RHFNRN0t0HGckvDAOIIaXuIcnuvVlShPO6xGNNYVxf9SP+nxlTxybndZ5roUdt5ieQs+t9S7BkOndHMOPxprAYChxJMAxxFOdSvGH23edluEi+I2nqO8Wcia8h28wWiLcjgRNgc+wTQ/b6OegSWlDxBmFYTvh4/xnLEy1ErgToyhvksTdRwIzTPxJKW3ToM7zU9sRYRhFF84mY30KijVf92Qy6d1xiEzhdNsbRaOdd7USCpMfBsMpCjaeLRjfHceYp49f/kgneEv5UGx1yAjVYeAbaztRs0nFvWZv8LVmQkpj+SOgcjRf+l5ttONN58uS8aPpHPtBghKdB5hueeTdEwJs0Ul5FlRHchG/K3Z88s7MJJB6RRTVCNFTh3eFQ9lIYm/V3udAshS5OyHqh7WNNGCKtRPDdEQq9Q6vBL8Ym6hkxivmUiZ/C/NE9HMkhugeDssH5aIFpAdf3BX9xY2kFu25S4L/6YSuEY4yfyXG/EMNDZAgYi+zg0aYtt9K3NAhYP0llRqikrFnICYx8A19BrpcYWTZxEFyHCSe5OMRSBb+BhVZDIxdxNIX26jnR/xZRL27buSjebmmp\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 850e9c10-8178-4491-5f09-08dd02f3f6f7\nX-MS-Exchange-CrossTenant-originalarrivaltime: 12 Nov 2024 08:28:19.9941 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: 05z9q6b1z96TuLcuA5jQh4mDeZx/awbVLaunERg4IIcgRTTw5wtckGl2dILvLsif1J+2QVYmBpXoFUCgZ1yIqpAKxNpyX0tSep57cEOvvTE=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: VI2PR05MB11535\nX-OrganizationHeadersPreserved: VI2PR05MB11535.eurprd05.prod.outlook.com",
+      "start_pos": 1619,
+      "end_pos": 4915,
+      "chunk_index": 1,
+      "chunk_size": 3296,
+      "metadata": {
+        "doc_id": "C18KP6W - tesla for purchase\\Headers\\C18KP6W_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C18KP6W - tesla for purchase\\Headers\\C18KP6W_01.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:35.942108",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4959
+  }
+}

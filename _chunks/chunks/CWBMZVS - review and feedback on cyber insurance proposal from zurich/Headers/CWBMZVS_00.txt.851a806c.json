@@ -1,0 +1,31 @@
+{
+  "doc_id": "CWBMZVS - review and feedback on cyber insurance proposal from zurich\\Headers\\CWBMZVS_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CWBMZVS - review and feedback on cyber insurance proposal from zurich\\Headers\\CWBMZVS_00.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by VE1PR05MB7407.eurprd05.prod.outlook.com (2603:10a6:800:1b1::22) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8272.20; Mon, 23 Dec 2024 19:01:07 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%6]) with mapi id 15.20.8272.013; Mon, 23 Dec 2024 19:01:07 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Dee Deu <dee.deu@chalhoub.com>\nCC: Kamran Abbasi <Kamran.Abbasi@chalhoub.com>, Joe Hobeika <Joe.Hobeika@chalhoub.com>\nSubject: Review and Feedback on Cyber Insurance Proposal from Zurich\nThread-Topic: Review and Feedback on Cyber Insurance Proposal from Zurich\nThread-Index: AQHbVSL/glzmikQUhU6DZB+I31127g==\nDate: Mon, 23 Dec 2024 19:01:07 +0000\nMessage-ID: <AS8PR05MB10824BF6CE76E036BD6BF0D4B9D022@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach:\nX-MS-TNEF-Correlator:\nmsip_labels:\nundefined: 6183944\ndrawingcanvaselements: []\ncomposetype: newMail\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|VE1PR05MB7407:EE_\nx-ms-office365-filtering-correlation-id: 3911f37e-5ebb-49b9-b261-08dd23842875\nx-ms-exchange-atpmessageproperties: SA|SL|HVE\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|8096899003|3613699012|41050700001;\nx-microsoft-antispam-message-info: M5OkD80FkYNGG/9+md1gQHVRp2aNnJUWMUYWDtWPvQvnLx6BVRDmiEgf2kFOAax0aU1d0EhCAQucDiSpMDm3Fs9dxKjObrXIDMd4hWs+2J7szO+yX50AEvPnX418dVNiqcY4AvrV2+Ctw0pZRXERe2cLLZ8HUIfaOa6fge4TxLimjpZed8e2JdI4ae3b/LPNXYd/cFFeYX4t4LF5vw8WFWfGzBko5UdV44MLbqcIlDrnbU5ZsQnYMq726FqHl/dxfOol2V3kT1eoMLgPv1y5InrSOAmU5NnIL+qJu3Alr1oqKcGqSn36jQXFHMq0uZoBA9j593drecZLUekgyjV6g30PLMpBU8w5zbCb9jwauSHtI6Lw1u4d4OEvA0llwHOrLyliphvC+YNIqXT2lBoz7bVrbAHCJnDaxsmwPmSmHJuHEsn8egvatLy7U2VQxQQwhJJzG2taNCfRirIIDaGvSwpN7uMKU6fQXWylpg4H4OQWsVKtfvtyFesjoezgUpKE+Y9OTsIGwJW0FKiFAaYlHDi4n+BSzV0eC42GSmnqXeERH17q9fKStVnwjHo0tAQ3o1/JoDp7gK+9zhvj7WiGZtyHzyhkVth4e0X+IdT097yGiRfIfY947xvkBoX0CZOFAIg7cMdZeoJHuuZCD5Gx5645pUKBTy0uHQwqtK4w0OACcvWaiYcBon4CbFhIIcafWwdclYL+P2NIKWrITlmk9+O7oAzaTReAOYI9sKM7pPmYw6IaMkhWLCkckJ7lHpebwJpepGH0x5K1HlztPQXnenljMgkor7fIdQd+oJ/anYg=\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(3613699012)(41050700001);DIR:INT;\nContent-Type: multipart/alternative; boundary=\"_000_AS8PR05MB10824BF6CE76E036BD6BF0D4B9D022AS8PR05MB10824eu_\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: HzWgIKbN8BdYSTLqaI+8m6IJD5a2woFObhJQePYPU+f3cnkwyvc8VMu6DHH47pvAntclqfYc5BVPZmANLOb95v7RjQ5+5HO0Ny+tNt/g9KQSB9wcHK1SnmgmJWz3NaH0yxsyDLYj5MesdXTApq1H+sxK8Bmnw/XaHM1ubpZ503tDB8T09DOkzwO/vxdCYT0BnKvY3iEQYX53ZyuS3lt90Yn+RhSuZ0fxL4LecWFeQ0W8Jdw6NuDW+aOzBH5Y11/waTpz+IJSDktEzuefelQbw+K6fOtW5YrK3bdG/FksWVOhiW2vANJnmNluWZNU8FxSoHFVUuQuB4iJWAA9filB9tYZGvAJ7IbseLvPuS5N27Hlb2S4O9QOK59Xg/rgMjE/RIMLrvVYAmnsSstCqzLq2GHgo6Z0hobKpHYNRpdV56LukK17Su811wT0QJO5Egw6VOIeTY+gTsbXleNRy3y1Oq6IZLdR6cpeaEXLViimJQTgAzXpXZD6eGeKl9CnxmSRVwOXNk9rKkX9zLBV13QIY/9kzJxmqFH1F9b/8O+6Katc7rwY6FOEjINPabbm1X6mpuZOTaQrFAfIiqVEepWXuG7G2OwivOsg6cgOT2IguChm0WSLclbYy1Lw60OkEmkw\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 3911f37e-5ebb-49b9-b261-08dd23842875\nX-MS-Exchange-CrossTenant-originalarrivaltime: 23 Dec 2024 19:01:07.7839 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: 4vwbSgOAND15BFtcympdRdma8VSAsw5c69eKvR0/iG/mVowoJlanalcfcZCFA3EzFGFwtQHFXl/3gx+H/iq+E1JAbgKsebJA8l5MDCRUyrE=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: VE1PR05MB7407\nX-OrganizationHeadersPreserved: VE1PR05MB7407.eurprd05.prod.outlook.com",
+      "start_pos": 0,
+      "end_pos": 4311,
+      "chunk_index": 0,
+      "chunk_size": 4311,
+      "metadata": {
+        "doc_id": "CWBMZVS - review and feedback on cyber insurance proposal from zurich\\Headers\\CWBMZVS_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CWBMZVS - review and feedback on cyber insurance proposal from zurich\\Headers\\CWBMZVS_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:45.437909",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4356
+  }
+}

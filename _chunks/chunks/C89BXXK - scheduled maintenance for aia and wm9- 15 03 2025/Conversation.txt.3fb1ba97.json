@@ -1,0 +1,42 @@
+{
+  "doc_id": "C89BXXK - scheduled maintenance for aia and wm9- 15 03 2025\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C89BXXK - scheduled maintenance for aia and wm9- 15 03 2025\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:41:59\nFolder: C89BXXK - scheduled maintenance for aia and wm9- 15 03 2025\nMessage Count: 1\n\n--------------------------------------------------\nID: C89BXXK_00\nFrom: One Reach <OneReach@chalhoub.com>\nTo: \nCC: \nBCC: \nDate: 2025-03-11 10:48\nSubject: Scheduled Maintenance for AIA and WM9- 15/03/2025\n--------------------------------------------------\n <https://onereach.status.freshservice.com/> \n\nDear Colleague, \n\n \n\nTo ensure business continuity, we have scheduled essential maintenance to enhance the underlying infrastructure of the database systems for WMS and AIA.\n\n \n\nMaintenance Schedule:\nDate: Saturday, March 15, 2025 \n\nTime: 10:00 PM – 11:59 PM (GST)\n\n \n\nPlease be aware that during this period, access to Warehouse Application(WMS) and Oracle AIA will be temporarily unavailable.\n\n\nWe appreciate your patience and cooperation as we work to enhance your experience with our services.\n\n \n\nIf you require any assistance during this timeframe, please raise a support ticket via OneReach <https://onereach.chalhoub.com/> .\n\nClick here for more details: Chalhoub Technology  <https://onereach.status.freshservice.com/> & Data  <https://onereach.status.freshservice.com/> Service Status <https://onereach.status.freshservice.com/> \n\n \n\nChalhoub Technology & Data Status Page <https://onereach.status.freshservice.com/> \n\nSubscribe <https://onereach.status.freshservice.com/subscriber/account>",
+      "start_pos": 0,
+      "end_pos": 1474,
+      "chunk_index": 0,
+      "chunk_size": 1473,
+      "metadata": {
+        "doc_id": "C89BXXK - scheduled maintenance for aia and wm9- 15 03 2025\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C89BXXK - scheduled maintenance for aia and wm9- 15 03 2025\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Click here for more details: Chalhoub Technology  <https://onereach.status.freshservice.com/> & Data  <https://onereach.status.freshservice.com/> Service Status <https://onereach.status.freshservice.com/> \n\n \n\nChalhoub Technology & Data Status Page <https://onereach.status.freshservice.com/> \n\nSubscribe <https://onereach.status.freshservice.com/subscriber/account> \n\n <https://us15.mailchimp.com/mctx/clicks?url=http%3A%2F%2Feepurl.com%2Fi_hHPc&xid=945c66d21d&uid=229870170&iid=5809bf8488&pool=cts&v=2&c=1741065684&h=fd81f72999691a615b33cb1a7f7779a308b4172a0cf0b39f88dba311d283cb78>",
+      "start_pos": 1107,
+      "end_pos": 1691,
+      "chunk_index": 1,
+      "chunk_size": 584,
+      "metadata": {
+        "doc_id": "C89BXXK - scheduled maintenance for aia and wm9- 15 03 2025\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C89BXXK - scheduled maintenance for aia and wm9- 15 03 2025\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:35.407288",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1757
+  }
+}

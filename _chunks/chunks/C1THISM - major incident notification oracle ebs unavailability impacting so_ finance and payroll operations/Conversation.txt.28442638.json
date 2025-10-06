@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1THISM - major incident notification oracle ebs unavailability impacting so, finance and payroll operations\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1THISM - major incident notification oracle ebs unavailability impacting so, finance and payroll operations\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:46:22\nFolder: C1THISM - major incident notification oracle ebs unavailability impacting so, finance and payroll operations\nMessage Count: 1\n\n--------------------------------------------------\nID: C1THISM_00\nFrom: One Reach <OneReach@chalhoub.com>\nTo: \nCC: \nBCC: \nDate: 2024-09-24 13:41\nSubject: Major Incident Notification: Oracle EBS unavailability impacting SO, Finance and Payroll operations\n--------------------------------------------------\n      \n\n \n\nMajor Incident Notification: Oracle EBS unavailability impacting SO, Finance and Payroll operations\n\n_________________________________________________________________\n\nDate: 24 Sep 2024\n\nTime: 12:55 PM GST\n\n\nWe are experiencing issues with Oracle EBS applications, with issues connecting and accessing the application suite. Ongoing Sales Order, Finance and Payroll operations are impacted.\n\n Our teams are investigating the issue and working to resolve it as quickly as possible. This may include the need to restart broader Oracle applications across the estate, and users should expect disruption.",
+      "start_pos": 0,
+      "end_pos": 1136,
+      "chunk_index": 0,
+      "chunk_size": 1136,
+      "metadata": {
+        "doc_id": "C1THISM - major incident notification oracle ebs unavailability impacting so, finance and payroll operations\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1THISM - major incident notification oracle ebs unavailability impacting so, finance and payroll operations\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Our teams are investigating the issue and working to resolve it as quickly as possible. This may include the need to restart broader Oracle applications across the estate, and users should expect disruption.\n\n If you require any assistance during this timeframe, we kindly request you to raise a support ticket by visiting the following link: https://onereach.chalhoub.com <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fonereach.chalhoub.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cfdb2da657d6d4927586408dcdc7cd45f%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638627676717317816%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C0%7C%7C%7C&sdata=25PnFmuyWtTodAzw7mDY4IIxnFXFV5FkeHZ1z1%2FtxAM%3D&reserved=0> .\n\nAlternatively, you can also reach out to us via WhatsApp at +971 48045755 or utilize the chatbot available on the support portal. \n\nThanks,\n\nChalhoub Tech.\n\n \n\n \n\n   \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n \n\n   \n\n \n\n \n\n \n\nIf you have any questions, please reach out to the IT Service Desk via One reach Link <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fonereach.chalhoub.com%2Fa%2Fdashboard%2Fdefault&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cfdb2da657d6d4927586408dcdc7cd45f%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638627676717343685%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C0%7C%7C%7C&sdata=zSM1LEdK08xc7BmlOH61FuJ7mwBrmlKvWoNGUBCG1i4%3D&reserved=0>",
+      "start_pos": 928,
+      "end_pos": 2466,
+      "chunk_index": 1,
+      "chunk_size": 1537,
+      "metadata": {
+        "doc_id": "C1THISM - major incident notification oracle ebs unavailability impacting so, finance and payroll operations\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1THISM - major incident notification oracle ebs unavailability impacting so, finance and payroll operations\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:54.195537",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2578
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "doc_id": "CPC9Z74 - تذكير بموعد تجديد تسجيل المركبة\\Headers\\CPC9Z74_03.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CPC9Z74 - تذكير بموعد تجديد تسجيل المركبة\\Headers\\CPC9Z74_03.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by PAXPR05MB8668.eurprd05.prod.outlook.com (2603:10a6:102:202::10) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8137.28; Tue, 12 Nov 2024 12:44:14 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%5]) with mapi id 15.20.8137.027; Tue, 12 Nov 2024 12:44:14 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Rami Riman <Rami.Riman@chalhoub.com>\nCC: Robert Netto <Robert.Netto@chalhoub.com>\nSubject: =?utf-8?B?UkU6INiq2LDZg9mK2LEg2KjZhdmI2LnYryDYqtis2K/ZitivINiq2LPYrNmK?= =?utf-8?B?2YQg2KfZhNmF2LHZg9io2Kk=?=\nThread-Topic: =?utf-8?B?2KrYsNmD2YrYsSDYqNmF2YjYudivINiq2KzYr9mK2K8g2KrYs9is2YrZhCA=?= =?utf-8?B?2KfZhNmF2LHZg9io2Kk=?=\nThread-Index: AQHbLBNTJWlbcdnDnEGrw3chQeq5g7KhzuFTgAf7n56AAE0p8IAJkO3Q\nDate: Tue, 12 Nov 2024 12:44:14 +0000\nMessage-ID: <AS8PR05MB108242D0406DDD85A7F4CBB819D592@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <207027718.1010740.1730433877554.JavaMail.RTAUEVTIBAPPLB4$@RTAUEVTIBAPPLB4> <DB9PR05MB1027313BBB6AEADA35B432B30E3562@DB9PR05MB10273.eurprd05.prod.outlook.com> <PAWPR05MB102844D16D7CAAC935D8376B9E3532@PAWPR05MB10284.eurprd05.prod.outlook.com> <AS8PR05MB1082438EA29CB9C2721496AA79D532@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB1082438EA29CB9C2721496AA79D532@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 1620,
+      "chunk_index": 0,
+      "chunk_size": 1619,
+      "metadata": {
+        "doc_id": "CPC9Z74 - تذكير بموعد تجديد تسجيل المركبة\\Headers\\CPC9Z74_03.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CPC9Z74 - تذكير بموعد تجديد تسجيل المركبة\\Headers\\CPC9Z74_03.txt"
+      }
+    },
+    {
+      "text": "k.com>\nIn-Reply-To: <AS8PR05MB1082438EA29CB9C2721496AA79D532@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|PAXPR05MB8668:EE_\nx-ms-office365-filtering-correlation-id: 2da76fb5-6797-4b0a-3c55-08dd0317b6c4\nx-ms-exchange-atpmessageproperties: SA|SL\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|69100299015|8096899003|41050700001;\nx-microsoft-antispam-message-info: rDnE3AORtUSrFdaprIbaebgV7OJ7RwAGzg/9kBJls0KIV/XZq8/qDasuQjNFAYISuI6NsmP/msMtZGGXdEyqVRn68ngUJYucXH5k7kc9dcA6+Zc1SFODSTRUZAnkBh/GbrcJ1KA1xJb5ElEDEMlX+CL0dvcApyrJz+rjTD7Pr9+eyBN0fwOLn5o0sfKV+34AcQk4en9SJPK4pTobK1l+gZQcgTYYpFhmCAgdvKxqhCWKR/lBAPIEz3SS8HFEiXfzbW3VUFTxU7JYy8zFbg2LvVoGblej1HkkrgY3ZJFM/21ycce2cEBGjYzGAGFOWOvhXoRGCM4rj/NIur4zfCydExMjMt9kCChEEKY8/5Pa3V6z0T85lufIj0D4LHnkQCh+TojjazSuC74oPo7kl/Ic+/9s50eMHo9FH8OXjVAJzK15W+wfVnhBEOgNtK7R/9Jr6lvAlx01AlEOziXY/jAqpux0puggRFDFlPwYS+TzLbFSMyXDukVDdDzHP5M9iRnvmlg4M/wjXFdyZd/Gb3nH9kHcZ+HkqWw38XWQxRtEeWcCWrtfzpUihFvlXkm7yhg4BDQeuZRxMvmAw2DqK/B1Mzt5UgiBSJDExUFQo5vVsVUVX8xrzWnkxZnU1ZgWJAh5QY+rBv+WmjzNusMLA1xh9fh6AKhXO0E5ob+l5S52f9LEFTGc9qAX//ogsbAZzMJl4v247h7+ZQoC1P7/39DQzxD6kBn5IWuU8lJ78S7WRfGG2QrJ0WcAMD8VWd7vBbDcRY6jmBk9jMY/eSqu8+Cznw==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(69100299015)(8096899003)(41050700001);DIR:INT;\nContent-Type: multipart/mixed; boundary=\"_012_AS8PR05MB108242D0406DDD85A7F4CBB819D592AS8PR05MB10824eu_\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: 9CuAAYYOX/3QnzWc5tqHhIdSOE7xexl5eWemVpmMwyWelYnAwZlGtLN0FmnsWLZ81BdVkbTYfNXZA3+ILumO4DyXOeL/wzXAsOIADQuEXbHhcZJQZ6tiENiWGkf+CeU4Z1/+pQvCRWbcDTkAfEaYwK55gDPEkuZ6OhnOaT9uCCxq7xYOFtK3pDRqWuhUHmprqO45iN3b+M62MnqM9akRY8xAs0WCZGyNXlGHgKKvb/+UGZGEyLz9bdD/BPEWnjhvhcRrCF5bLhwSjiOPgVQRvgAVc1haOo5n+4BihqY4J5voBqOyiH6sxmvebd4QPUH+yVOgNMAUKLK51ebJgVdvh7ABKLJqeQ3c/iqvHB8PwIvpygT4HWW6Kj8hHOhbt+G1o+rljxCK6atQcA7Vfm35LmvmTXLFmCJY5vgHXWPgP9ZrX1BvTMLnK4muWPuUsJtgArPPKENCKZYLR6RNNY6aVMdiM1VVj4+7y3VinohOGZJ6+UEUryD3nZlGjWtf8ySOl1Vezl/Orb9VbkgbMG+Y4QzDsUCUYdVtn2GwPSYCCiYvB+bqMDXnvxYaWc/JjUdvNN83e1ftmqNXYuLI5ItUsEunxV5DyXjmAVljrtE8Qxul38VuXQ8ZfDorhsjts/xQ\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 2da76fb5-6797-4b0a-3c55-08dd0317b6c4\nX-MS-Exchange-CrossTenant-originalarrivaltime: 12 Nov 2024 12:44:14.1683 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: Muq0t0XZaj2z7NNqOnNik5UGQK5kn0L987XbwgBewCd721/0qhX5r52Jmt+iHtUTqPgz9lFwHgMQk2Ioqzlsa9xoWrgrbGJ0CleW0HtSH7s=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR05MB8668\nX-OrganizationHeadersPreserved: PAXPR05MB8668.eurprd05.prod.outlook.com",
+      "start_pos": 1420,
+      "end_pos": 4738,
+      "chunk_index": 1,
+      "chunk_size": 3318,
+      "metadata": {
+        "doc_id": "CPC9Z74 - تذكير بموعد تجديد تسجيل المركبة\\Headers\\CPC9Z74_03.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CPC9Z74 - تذكير بموعد تجديد تسجيل المركبة\\Headers\\CPC9Z74_03.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:15.579634",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4782
+  }
+}

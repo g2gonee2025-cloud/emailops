@@ -1,0 +1,31 @@
+{
+  "doc_id": "CXRA6MO - voice mail (3 minutes and 1 second)\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CXRA6MO - voice mail (3 minutes and 1 second)\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:30:33\nFolder: CXRA6MO - voice mail (3 minutes and 1 second)\nMessage Count: 1\n\n--------------------------------------------------\nID: CXRA6MO_00\nFrom: Siyavudheen Kizhissery <Siyavudheen.Kizhissery@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-07-09 11:54\nSubject: Voice Mail (3 minutes and 1 second)\n--------------------------------------------------\nYou received a voice mail from Siyavudheen Kizhissery at Siyavudheen.Kizhissery@chalhoub.com <sip:Siyavudheen.Kizhissery@chalhoub.com> .\n\nJob Title:\tAssociate - Administration\t\nCompany:\tREAL KSA\t\nWork:\t+966 2 229 6028 <tel:+966 2 229 6028> \t\nEmail:\tSiyavudheen.Kizhissery@chalhoub.com <mailto:Siyavudheen.Kizhissery@chalhoub.com> \t\n\n\nSet Up Voice Mail <https://aka.ms/vmsettings>",
+      "start_pos": 0,
+      "end_pos": 850,
+      "chunk_index": 0,
+      "chunk_size": 850,
+      "metadata": {
+        "doc_id": "CXRA6MO - voice mail (3 minutes and 1 second)\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CXRA6MO - voice mail (3 minutes and 1 second)\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:04.456212",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 881
+  }
+}

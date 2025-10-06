@@ -1,0 +1,42 @@
+{
+  "doc_id": "C12W5S4 - water leakage - tanagra moe\\Headers\\C12W5S4_01.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C12W5S4 - water leakage - tanagra moe\\Headers\\C12W5S4_01.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS1PR05MB9228.eurprd05.prod.outlook.com (::1) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Thu, 10 Oct 2024 09:20:09 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from AM9PR05MB7604.eurprd05.prod.outlook.com (2603:10a6:20b:2ce::22) by AS1PR05MB9228.eurprd05.prod.outlook.com (2603:10a6:20b:4d4::11) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7982.34; Thu, 10 Oct 2024 09:20:06 +0000\nReceived: from AM9PR05MB7604.eurprd05.prod.outlook.com ([::1]) by AM9PR05MB7604.eurprd05.prod.outlook.com ([fe80::9866:8b5b:e909:79aa%6]) with Microsoft SMTP Server id 15.20.7982.033; Thu, 10 Oct 2024 09:20:06 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Samira Batisse <Samira.Batisse@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: Water leakage - Tanagra MOE\nThread-Topic: Water leakage - Tanagra MOE\nThread-Index: AdqlTdzeSu8Oxkt1Hka+NAtCmTAAQABYirTAAP7rTg8CwnmhdgAj5vn3Bb9AfAAAAGZSigAAwJiQAAJqkBATaMHh4QAAhHrs\nReferences: <DB9PR05MB9055927B0E6B35817CF9FA5C9EE22@DB9PR05MB9055.eurprd05.prod.outlook.com> <DB9PR05MB9055183C7C1C203B197B46669EEC2@DB9PR05MB9055.eurprd05.prod.outlook.com> <DB9PR05MB9055FBEF73999149D388BD659EE92@DB9PR05MB9055.eurprd05.prod.outlook.com> <AS8PR05MB10824D83FCE49289404F632D99DFF2@AS8PR05MB10824.eurprd05.prod.outlook.com> <DB9PR05MB9055E5C708D0C15F9167FB119EF82@DB9PR05MB9055.eurprd05.prod.outlook.com> <AS8PR05MB10824982392456A16E8BE7A9A9DDD2@AS8PR05MB10824.eurprd05.prod.outlook.com> <DB9PR05MB9055C612EA0BEC86B1244F9A9EDD2@DB9PR05MB9055.eurprd05.prod.outlook.com> <AS2PR05MB99369F45A174F948B9196F22EFDD2@AS2PR05MB9936.eurprd05.prod.outlook.com> <PR3PR05MB743326A7F5672656A86EA827FADD2@PR3PR05MB7433.eurprd05.prod.outlook.com> <AS8PR05MB10824694D2476BB71F52162B79D782@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824694D2476BB71F52162B79D782@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 2107,
+      "chunk_index": 0,
+      "chunk_size": 2106,
+      "metadata": {
+        "doc_id": "C12W5S4 - water leakage - tanagra moe\\Headers\\C12W5S4_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C12W5S4 - water leakage - tanagra moe\\Headers\\C12W5S4_01.txt"
+      }
+    },
+    {
+      "text": "om> <AS8PR05MB10824694D2476BB71F52162B79D782@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824694D2476BB71F52162B79D782@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Samira.Batisse@chalhoub.com\nX-MS-TNEF-Correlator: a40c206f-3dcc-4ea0-9ea6-040e24a39ba7\nMIME-Version: 1.0\nDate: Thu, 10 Oct 2024 09:20:06 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: AM9PR05MB7604.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <61e446d347814b798f9161d944643671@AM9PR05MB7604.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: 8a9ffa96-0951-4b43-1832-08dce90cbb0e\nX-MS-Exchange-Parent-Message-Id: <AS8PR05MB10824694D2476BB71F52162B79D782@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: AM9PR05MB7604:EE_|AS1PR05MB9228:EE_|AS8PR05MB10824:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 10 Oct 2024 09:20:06.7463 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: 8a9ffa96-0951-4b43-1832-08dce90cbb0e\nX-MS-Exchange-AtpMessageProperties: SA|SL\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM9PR05MB7604.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Oct 2024 09:20:06.6689 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: AM9PR05MB7604.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: 8a9ffa96-0951-4b43-1832-08dce90cbb0e\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS1PR05MB9228\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:02.3737203\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.7982.032\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:0;jmr:0;auth:0;dest:I;ENG:(910001)(944506478)(944626604)(920097)(425001)(930097)(140003)(1420198);\nX-Microsoft-Antispam-Message-Info: g0nFS0KDM216Wop/FHkIR7p/Hfdg2FlKagcnzVR+A+KT8tXf5EdNU+gkP2OvuN4HB0l/iUfhv1P6qbkwaA+J/M+u7anXqsAk/cobU2jvWMptHn2ITTY7qfUJLyQi4FVStC3z+lXpY8sHpsVfi+cdD97Fec327z6rEbFIKRBeFAgALu+73vuaVuIvFX5/r+FIO12MmVVkxgK1WNcnUIUoRxa30DaNs6URqlLTJcCXyn7bMmBEyelXvmPagEHN88+Uwgslgq1f87ehAAAnlFhMA5tiZfkWQGpvL3Ng1b7ccCCvie1O0H9I1enlyR/7yH7KpkrCpItd5+8u9B7bppIo35x7AHvivTt0Bl7J0IRmzEDbv1I6OZqMk/aRKVX7F+tISZgn+GeMPiRtIs8FC/GD37XwbP1YQElzxY5F9mLvKlTOMj3wemdqxRgc1G3gE8DcFMJmn0jfCys4g0ByrRuop7KDR0DFYf+zLdVUiRZfoossih0olge05tzD9SzAFc0gzg7jsCT20KqkkJ6e1C4gLPTWZL4fu7/3xKRF+VXmdT6A70wsEGy/zu1yVk8NkENnQTNVvHn5Fdbf/XpSvRm5lkiYKiJPuCiG4WYKL+CZupzC1GngJWkoYiBENoqn3xmL5V1sfsfZMLohwWbOnAudi9WTrGXCVh/hV733JBUZr6KvBUBaK8xKC+VtPJxTDqFuh0zGA2MsXa0/ucTtmAUq8kLfoWWSaQS+l0gAOPF105Rz3QnIwDcZBh5VG1mFICocPrjFgHENI1KUDWtjRiN6ti/vGcoeUHXlgs86OCgMIYKrOccaye/PG+HLrXbL9dVT2JsTK5+hofP6kqXAaqV4gfRa/1u2LQX55NBVEDHfpm/L6V1glKEXWu8RV0w5Mnhr",
+      "start_pos": 1907,
+      "end_pos": 5443,
+      "chunk_index": 1,
+      "chunk_size": 3536,
+      "metadata": {
+        "doc_id": "C12W5S4 - water leakage - tanagra moe\\Headers\\C12W5S4_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C12W5S4 - water leakage - tanagra moe\\Headers\\C12W5S4_01.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:27:57.726244",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5499
+  }
+}

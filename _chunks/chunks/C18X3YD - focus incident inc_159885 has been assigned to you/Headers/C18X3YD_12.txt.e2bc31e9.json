@@ -1,0 +1,42 @@
+{
+  "doc_id": "C18X3YD - focus incident inc#159885 has been assigned to you\\Headers\\C18X3YD_12.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C18X3YD - focus incident inc#159885 has been assigned to you\\Headers\\C18X3YD_12.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from PAXPR05MB8317.eurprd05.prod.outlook.com (2603:10a6:102:dc::15) by PAWPR05MB10358.eurprd05.prod.outlook.com (2603:10a6:102:2e6::15) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8989.13; Thu, 31 Jul 2025 11:16:42 +0000\nReceived: from PAXPR05MB8317.eurprd05.prod.outlook.com ([fe80::e7ec:f3e9:70d8:87f3]) by PAXPR05MB8317.eurprd05.prod.outlook.com ([fe80::e7ec:f3e9:70d8:87f3%4]) with mapi id 15.20.8964.023; Thu, 31 Jul 2025 11:16:42 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Muhammad Saqib <Muhammad.Abbas@chalhoub.com>\nCC: Jitesh Gangwani <Jitesh.Gangwani@chalhoub.com>, Firas Karbala <Firas.Karbala@chalhoub.com>, Nasser Alblooshi <Nasser.Alblooshi@chalhoub.com>\nSubject: Re: Focus Incident INC#159885 has been assigned to you\nThread-Topic: Focus Incident INC#159885 has been assigned to you\nThread-Index: AQHb7jrULepkLv+3i0Onay+lcZk1rLQmccPggAMqmdCAAvXjgIAACWqLgAAWnDCAAANQEIAACIDQgBqmJNCAAAIkU4AEs0pQgAAgGNU=\nDate: Thu, 31 Jul 2025 11:16:42 +0000\nMessage-ID: <PAXPR05MB8317D55AF8453208D036BD809D27A@PAXPR05MB8317.eurprd05.prod.outlook.com>\nReferences: <c628ca37-df86-41ba-a119-5e654d4ab065@vmaz-uaen-exch.chalhoub.org> <PAXPR05MB8192DB874B61A6A5872D01DA894FA@PAXPR05MB8192.eurprd05.prod.outlook.com> <PAXPR05MB819287587651194721DE6B698949A@PAXPR05MB8192.eurprd05.prod.outlook.com> <PAXPR05MB8543E38828946EAC7A53B4D9E34BA@PAXPR05MB8543.eurprd05.prod.outlook.com> <AS8PR05MB10824AAE6537BF899283D926F9D4BA@AS8PR05MB10824.eurprd05.prod.outlook.com> <AS1PR05MB8961B6987A4BE218BA153302904BA@AS1PR05MB8961.eurprd05.prod.outlook.com> <DB9PR05MB78043B7989B78DF7340DEF6D9A4BA@DB9PR05MB7804.eurprd05.prod.outlook.com> <DB9PR05MB7804DE9BAC4CF9CB92D3CD7E9A4BA@DB9PR05MB7804.eurprd05.prod.outlook.com> <AS2PR05MB99332597407E6CE0BCE1DD5DEA5AA@AS2PR05MB9933.eurprd05.prod.outlook.com> <AS8PR05MB10824A6C3B8CED849DFC657D09D5AA@AS8PR05MB10824.eurprd05.prod.outlook.com> <AS2PR05MB9933AC9DDEF234D8AFD66C50EA27A@AS2PR05MB9933.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS2PR05MB9933AC9DDEF234D8AFD66C50EA27A@AS2PR05MB9933.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 2217,
+      "chunk_index": 0,
+      "chunk_size": 2216,
+      "metadata": {
+        "doc_id": "C18X3YD - focus incident inc#159885 has been assigned to you\\Headers\\C18X3YD_12.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C18X3YD - focus incident inc#159885 has been assigned to you\\Headers\\C18X3YD_12.txt"
+      }
+    },
+    {
+      "text": "ook.com>\nIn-Reply-To: <AS2PR05MB9933AC9DDEF234D8AFD66C50EA27A@AS2PR05MB9933.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: PAXPR05MB8317:EE_|PAWPR05MB10358:EE_\nx-ms-office365-filtering-correlation-id: 95f08ea2-f623-4e3d-f89a-08ddd023ba38\nx-ms-exchange-atpmessageproperties: SA\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|31052699007|39142699007|4013099003|8096899003|7053199007|13003099007|41050700001;\nx-microsoft-antispam-message-info: U7qB0VnowD3qdIkM5xGfxZCJyK90e9Zp017m9U7QrautrzAoUJFP4++MxB+1CwPkI2MyEQptgTdLUaiK1AhD68b+E+66pahx8cUZ5zTH0IhklJWHtfgrfJOd8rrgpHg6DQm0AAG5iuhIr8Z+QXK5wQh2gwPLbnw6uyh7jxOGZWsbzKb00b2gSu0OVFSgFfQCm+9csqAyxugjqc2EpvnX94kzZqRh4ZKypKfAH+lv9a5MhC68qBVj9Go6lfFNhmGrDhI4BczzPassTed251IiGUTVOQ+W24kVj8cgoQSc4qmB6CW4fuXuTlYrLOOkQi+IVDM/jsRa07oq1WvqimJ+xN2U6h2eq3Ql9QkxGpbZjmwazYYLtrrHIlq4+lz6nBRkhFF2eyaXKl2CRCNwtZqjFw/JApjfRIpZDUjoIxkMyX/sg3hb1ZGof5ZG/Tf3a9DZ1niXbpsD32+J0g1FlxW6ALo8s1n4aIzx3K+UlfN0BzGFIXRjbrlQSM7Mmpfh8kMFsEyZledvOcy6AXU0KrBCDjhC0L1YS7VAV1DCdgVNZsHztAbZV1F4qPUxu1jKt13KlqwvHMCzSIdTFXX0rHsp/NSZ/mSPWpYVFADXNUasT6tXSXxYwpyWxNnCg6JIRy9vLOQYRkdMymMED48A1qK2IuI8y+9zn06euFxlobIJQnxuZCY7WznWG1Thqpeau/h/q/si9pYuhsIVrpHQd6rC6l3ZWXmt9ldo3DNkGuNoGQs=\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR05MB8317.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(31052699007)(39142699007)(4013099003)(8096899003)(7053199007)(13003099007)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_010_PAXPR05MB8317D55AF8453208D036BD809D27APAXPR05MB8317eurp_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: S5KVPkUtUUCX6stA4u40Bvc8fjQmBS5XbUO6kMs1r90QLDR+aGF7iqpxyxpI/xoeqtNBpMfimNB0nOl1XblyJSHe25FJNll+LbRsb7CY7nIWMIY8jNIMPE63RTBf7JkhFtiPZUV0eamY8VO7re/BqyNUqynp1fgL4spLs8YhmVqdjsFgKUV0XExvlr5FNEfXEPHgcCIt57cINhsKlzZjhpIWOjzJ4lsSUowaKbys5+1bmbA/nFQUjl9bZOSPUxSwzyBmFQHCWnsuCV3pflkfhs4klqlRiozu00J+eCi+RiF/NkKSVQISxgk71C5sBlEUZcIeYclIgwerZIePOWfh/fc0uxMWylnbE7nPjIvxB8KmrS/EhUBFmckHEnwCi4FDqNJEdn7FmZaNULqCFYI5JkHHNyEQU9QwBXephZAE1bzt1DE42HsZ6E0wW1ye9/mSbnJPsite64EqXgD+YYCanYsyQHOhaKs+Uk0BFQrsq2qW7SqWQUkU6+PGCz5BBdLQBGLasMoGwrK3dBirI5a9vtpduzq9JLmwX9Mymz9Ogk4VsgPSiz1FqNuhTf6WLbWybhOUvaG2ANAfkzLzdMBSm1llHpzyT8RMAwmwfNjClN84kxs9f9/D2pPca1kTMuyN\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: PAXPR05MB8317.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 95f08ea2-f623-4e3d-f89a-08ddd023ba38\nX-MS-Exchange-CrossTenant-originalarrivaltime: 31 Jul 2025 11:16:42.2702 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: GPt15CH/U/+OqEkf9Z79KiPg1+jAFNRTZ6pz6r3U9ZPC8zix0JSp1SnpuWcmPH6/VcL6bZ/Ycq/D/O6/AuU/5+wteRmOLk5uvX3voJC7gow=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PAWPR05MB10358\nX-OrganizationHeadersPreserved: PAWPR05MB10358.eurprd05.prod.outlook.com",
+      "start_pos": 2017,
+      "end_pos": 5416,
+      "chunk_index": 1,
+      "chunk_size": 3399,
+      "metadata": {
+        "doc_id": "C18X3YD - focus incident inc#159885 has been assigned to you\\Headers\\C18X3YD_12.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C18X3YD - focus incident inc#159885 has been assigned to you\\Headers\\C18X3YD_12.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:03.226152",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5460
+  }
+}

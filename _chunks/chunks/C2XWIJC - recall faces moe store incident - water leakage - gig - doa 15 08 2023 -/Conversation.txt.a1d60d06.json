@@ -1,0 +1,42 @@
+{
+  "doc_id": "C2XWIJC - recall faces moe store incident - water leakage - gig - doa 15 08 2023 -\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C2XWIJC - recall faces moe store incident - water leakage - gig - doa 15 08 2023 -\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:43:38\nFolder: C2XWIJC - recall faces moe store incident - water leakage - gig - doa 15 08 2023 -\nMessage Count: 1\n\n--------------------------------------------------\nID: C2XWIJC_00\nFrom: Mazen Ichtay <Mazen.Ichtay@chalhoub.com>\nTo: Akhil Philip <Akhil.Philip@faces.com>; Constance Bacha <Constance.Bacha@faces.com>; Elmer Miranda <Elmer.Miranda@faces.com>; Hisham Akbik <Hisham.Akbik@chalhoub.com>\nCC: Joe Hobeika <Joe.Hobeika@chalhoub.com>; Sabah Shaissah <Sabah.Shaissah@faces.com>; Waheeb AlYounes <Waheeb.Alyounes@faces.com>; Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>; Shymol John <Shymol.John@chalhoub.com>; Yasmin Khoshsafa\nBCC: \nDate: 2025-01-09 23:54\nSubject: Recall: Faces MOE Store Incident - water leakage - GIG - DOA: 15/08/2023 - 66-FIR-2023-08-000148 || 13/FA/2012513, BSLA/GIG/PAR/2023-074\n--------------------------------------------------\nMazen Ichtay would like to recall the message, \"Faces MOE Store Incident - water leakage - GIG - DOA: 15/08/2023 - 66-FIR-2023-08-000148 || 13/FA/2012513, BSLA/GIG/PAR/2023-074\".\nMAZEN ICHTAY​​​​\n\nSTORE MANAGER\n\n\n\nALLIED ENTERPRISES LLC\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n \t\n <https://chalhoubgroup.com/> \n\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\n\n‑\n\n\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\n\n <https://twitter.com/ChalhoubGroup> \n\n <https://www.facebook.com/chalhoubgroup/> \n\n <https://www.instagram.com/chalhoubgroup> \n\n <https://www.linkedin.com/company/chalhoub-group/>",
+      "start_pos": 0,
+      "end_pos": 1549,
+      "chunk_index": 0,
+      "chunk_size": 1548,
+      "metadata": {
+        "doc_id": "C2XWIJC - recall faces moe store incident - water leakage - gig - doa 15 08 2023 -\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C2XWIJC - recall faces moe store incident - water leakage - gig - doa 15 08 2023 -\\Conversation.txt"
+      }
+    },
+    {
+      "text": "CAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\n\n <https://twitter.com/ChalhoubGroup> \n\n <https://www.facebook.com/chalhoubgroup/> \n\n <https://www.instagram.com/chalhoubgroup> \n\n <https://www.linkedin.com/company/chalhoub-group/> \n\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 1302,
+      "end_pos": 1636,
+      "chunk_index": 1,
+      "chunk_size": 334,
+      "metadata": {
+        "doc_id": "C2XWIJC - recall faces moe store incident - water leakage - gig - doa 15 08 2023 -\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C2XWIJC - recall faces moe store incident - water leakage - gig - doa 15 08 2023 -\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:59.554978",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1712
+  }
+}

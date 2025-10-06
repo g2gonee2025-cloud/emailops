@@ -1,0 +1,31 @@
+{
+  "doc_id": "C8RPJQO - dxb-mfa-2024-00037-001.pdf\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C8RPJQO - dxb-mfa-2024-00037-001.pdf\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:57:23\nFolder: C8RPJQO - dxb-mfa-2024-00037-001.pdf\nMessage Count: 1\n\n--------------------------------------------------\nID: C8RPJQO_00\nFrom: Vincent Dias <vincent.dias@unic-nasco.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Husam Alkhateeb <Husam.Alkhateeb@chalhoub.com>; Ciju Chacko <Ciju.Chacko@chalhoub.com>; Mohamed Fawzan <Mohamed.Fawzan@chalhoub.com>; Real UAE Accounting - Document Control <RealUAEAccounting-DocumentControl@chalhoub.com>\nBCC: \nDate: 2024-11-12 17:08\nSubject: DXB-MFA-2024-00037-001.pdf\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\nRestricted\n\n\n\n \n\n \n\nDear Valued Customer,\n\n \n\nGreetings from Nasco!!\n\n \n\nRegarding the above mentioned subject, please find attached the Tax Invoice for your Motor Vehicle Insurance policy for your early settlement. \n\n \n\nPlease ignore if the premium has been settled already.\n\n \n\nBest regards,\n\n \n\nMotor Underwriting Department",
+      "start_pos": 0,
+      "end_pos": 1280,
+      "chunk_index": 0,
+      "chunk_size": 1280,
+      "metadata": {
+        "doc_id": "C8RPJQO - dxb-mfa-2024-00037-001.pdf\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C8RPJQO - dxb-mfa-2024-00037-001.pdf\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:41.755635",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1464
+  }
+}

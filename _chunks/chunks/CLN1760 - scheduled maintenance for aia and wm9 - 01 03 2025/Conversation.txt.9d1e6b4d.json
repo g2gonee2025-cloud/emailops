@@ -1,0 +1,31 @@
+{
+  "doc_id": "CLN1760 - scheduled maintenance for aia and wm9 - 01 03 2025\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CLN1760 - scheduled maintenance for aia and wm9 - 01 03 2025\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:42:05\nFolder: CLN1760 - scheduled maintenance for aia and wm9 - 01 03 2025\nMessage Count: 1\n\n--------------------------------------------------\nID: CLN1760_00\nFrom: One Reach <OneReach@chalhoub.com>\nTo: \nCC: \nBCC: \nDate: 2025-02-26 11:07\nSubject: Scheduled Maintenance for AIA and WM9 - 01/03/2025\n--------------------------------------------------\n \n\n      \n\n \n\n \n\nNotification: Essential Logistics Weekly Maintenance\n\n______________________________________________________________________________\n\n______________________________________________________________________________ \n\nDear Colleagues,\n\n \n\nTo ensure business continuity, we have scheduled essential maintenance to enhance the underlying infrastructure of the database systems for WMS and AIA\n\nSaturday, March 01, 2025, | 10:00 PM – 11:59 PM GST\n\nPlease be aware that during this period, access to the Warehouse Application (WMS) and Oracle AIA will be temporarily unavailable.\n\nIf you require assistance during this time, kindly raise a support ticket via the following  link: https://onereach.chalhoub.com <https://onereach.chalhoub.com/> \n\n \n\nChalhoub Tech.\n\n\n\n\n    If you have any questions, please reach out to the IT Service Desk via One reach Link <https://onereach.chalhoub.com/a/dashboard/default>",
+      "start_pos": 0,
+      "end_pos": 1346,
+      "chunk_index": 0,
+      "chunk_size": 1346,
+      "metadata": {
+        "doc_id": "CLN1760 - scheduled maintenance for aia and wm9 - 01 03 2025\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CLN1760 - scheduled maintenance for aia and wm9 - 01 03 2025\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:53.106622",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1416
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "doc_id": "C1JBFKO - sustainability principles training programme\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JBFKO - sustainability principles training programme\\Conversation.txt",
+  "num_chunks": 3,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:42:18\nFolder: C1JBFKO - sustainability principles training programme\nMessage Count: 1\n\n--------------------------------------------------\nID: C1JBFKO_00\nFrom: DEWA <dewa@dewa.gov.ae>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-04-17 06:35\nSubject: Sustainability Principles Training Programme\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\n\n<https://url.uk.m.mimecastprotect.com/s/TZhICE6noU02VpgUNf7c7JvOb?domain=mbrsic.ae> \n\n\nIf you no longer wish to receive our awareness emails, please click here to unsubscribe <https://url.uk.m.mimecastprotect.com/s/V-PzCGQpqSORKA0s7hpcBa2_7?domain=dewa.gov.ae> \n\n <https://www.google-analytics.com/collect?v=1&tid=UA-173305141-1&cid=00000000000000311715&t=event&ec=email&ea=open&el=00000000000000311715&ci=0000000932&cn=Sustainability Principles Training Programme&cm=email&dp=%2Femail%2FSustainability Principles Training Programme&dt=Sustainability Principles Training Programme&ul=en&cs=DEWA Marketing> \n\n\n \n\n\nDisclaimer:",
+      "start_pos": 0,
+      "end_pos": 1374,
+      "chunk_index": 0,
+      "chunk_size": 1374,
+      "metadata": {
+        "doc_id": "C1JBFKO - sustainability principles training programme\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JBFKO - sustainability principles training programme\\Conversation.txt"
+      }
+    },
+    {
+      "text": "<https://www.google-analytics.com/collect?v=1&tid=UA-173305141-1&cid=00000000000000311715&t=event&ec=email&ea=open&el=00000000000000311715&ci=0000000932&cn=Sustainability Principles Training Programme&cm=email&dp=%2Femail%2FSustainability Principles Training Programme&dt=Sustainability Principles Training Programme&ul=en&cs=DEWA Marketing> \n\n\n \n\n\nDisclaimer:\n\nThe information in this email and in any files transmitted with it is intended only for the addressee and may contain confidential and/or privileged material. Access to this email by anyone else is unauthorized. If you receive this in error, please contact the sender immediately and delete the material from any computer. If you are not the intended recipient, any disclosure, copying, distribution or any action taken or omitted to be taken in reliance on it, is strictly prohibited. Statement and opinions expressed in this e-mail are those of the sender, and do not necessarily reflect those of DEWA. DEWA accepts no liability for any damage caused by any virus/worms transmitted by this email.\n\nDubai Electricity and Water Authority (PJSC), Dubai, UAE, http://www.dewa.gov.ae <https://url.uk.m.mimecastprotect.com/s/auqLCJ7vwfAv3K1FzijcyHkZ_?domain=dewa.gov.ae> \n\n\nOur Vision: A globally leading sustainable innovative corporation.\nOur Mission: We are committed and aligned to Dubai’s 8 Principles and 50-Year Charter supporting the UAE’s directions through the delivery of global leading services and innovative energy solutions enriching lives and ensuring the happiness of our stakeholders in a sustainable manner.",
+      "start_pos": 1013,
+      "end_pos": 2598,
+      "chunk_index": 1,
+      "chunk_size": 1584,
+      "metadata": {
+        "doc_id": "C1JBFKO - sustainability principles training programme\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JBFKO - sustainability principles training programme\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Our Vision: A globally leading sustainable innovative corporation.\nOur Mission: We are committed and aligned to Dubai’s 8 Principles and 50-Year Charter supporting the UAE’s directions through the delivery of global leading services and innovative energy solutions enriching lives and ensuring the happiness of our stakeholders in a sustainable manner.\n\n \n\n________________________________\n\nIf you don't wish to receive our awareness emails, click unsubscribe <https://url.uk.m.mimecastprotect.com/s/V-PzCGQpqSORKA0s7hpcBa2_7?domain=dewa.gov.ae>",
+      "start_pos": 2246,
+      "end_pos": 2791,
+      "chunk_index": 2,
+      "chunk_size": 545,
+      "metadata": {
+        "doc_id": "C1JBFKO - sustainability principles training programme\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JBFKO - sustainability principles training programme\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:42.753524",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2953
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1B4VOW - reminder - your account password is expiring in 5 days\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1B4VOW - reminder - your account password is expiring in 5 days\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:42:08\nFolder: C1B4VOW - reminder - your account password is expiring in 5 days\nMessage Count: 1\n\n--------------------------------------------------\nID: C1B4VOW_00\nFrom: One Reach <OneReach@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-04-19 12:35\nSubject: Reminder - Your account password is expiring in 5 days  \n--------------------------------------------------\n\n\n\n\n <https://eucattachment.freshservice.com/inline/attachment?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6NTIwMDIzMjM4MzEsImRvbWFpbiI6ImNoYWxob3ViZ3JvdXAtc2VydmljZWRlc2suZnJlc2hzZXJ2aWNlLmNvbSIsInR5cGUiOjF9.RBVl6JV47RVKLVieuhLRSZ7k404FEOLFKVPQU0WaLGA> \n\t \nHi Hagop Ghazarian,\n \nThis email is to notify you that your Chalhoub account password is set to expire in the next 5 days.  Please reset your password to ensure seamless access to your account.\n \n\t \n \nAccount Name : Hagop.Ghazarian@chalhoub.com\nPassword Expiry Date : 2025-04-24T17:11:15.000Z\n \n\t \nFollow below steps to reset your password\n \n\n1.\t\n\tAccess the password reset portal : Chalhoub SSPR <https://passwordreset.microsoftonline.com/> \n2.\t\n\tInput your username as Hagop.Ghazarian@chalhoub.com.\n3.\t\n\tEnter the characters in the picture or the words in the audio.\n4.\t\n\tSelect a preferred authentication system. \n5.\t\n\tEnter the 6-digit OTP sent on your registered mobile phone number or Authenticator App or Email.\n6.\t\n\tEnter the new password and click \"Finish\"",
+      "start_pos": 0,
+      "end_pos": 1513,
+      "chunk_index": 0,
+      "chunk_size": 1513,
+      "metadata": {
+        "doc_id": "C1B4VOW - reminder - your account password is expiring in 5 days\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1B4VOW - reminder - your account password is expiring in 5 days\\Conversation.txt"
+      }
+    },
+    {
+      "text": "1.\t\n\tAccess the password reset portal : Chalhoub SSPR <https://passwordreset.microsoftonline.com/> \n2.\t\n\tInput your username as Hagop.Ghazarian@chalhoub.com.\n3.\t\n\tEnter the characters in the picture or the words in the audio.\n4.\t\n\tSelect a preferred authentication system. \n5.\t\n\tEnter the 6-digit OTP sent on your registered mobile phone number or Authenticator App or Email.\n6.\t\n\tEnter the new password and click \"Finish\"\n\n \nNote: Laptop users must remain connected to the network for 5 minutes to ensure your password synchronises across all applications. Please lock the laptop and login with new password again after 5 mins.\n \nHaving trouble? Please contact us via WhatsApp +971 48045755 \n\t \n\t\t\n\t\t\n\t\t\n\t\t\n\t\t\n\t\t\n\t\t\n\t\t\n\t\t\n\t\t\n\t\t\n\t\t\n \nReference Guides:\n \n\n*\tHow to reset password <https://onereach.chalhoub.com/a/solutions/articles/52000111832?language=en> \n*\t\n\tSetup Multifactor Authentication <https://onereach.chalhoub.com/support/solutions/articles/52000101090>",
+      "start_pos": 1091,
+      "end_pos": 2055,
+      "chunk_index": 1,
+      "chunk_size": 964,
+      "metadata": {
+        "doc_id": "C1B4VOW - reminder - your account password is expiring in 5 days\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1B4VOW - reminder - your account password is expiring in 5 days\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:33.119841",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2152
+  }
+}

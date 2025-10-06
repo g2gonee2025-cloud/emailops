@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1AJAJE - scheduled maintenance for aia and wm9 - 19 04 2025\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1AJAJE - scheduled maintenance for aia and wm9 - 19 04 2025\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:36:49\nFolder: C1AJAJE - scheduled maintenance for aia and wm9 - 19 04 2025\nMessage Count: 1\n\n--------------------------------------------------\nID: C1AJAJE_00\nFrom: One Reach <OneReach@chalhoub.com>\nTo: \nCC: \nBCC: \nDate: 2025-04-15 15:44\nSubject: Scheduled Maintenance for AIA and WM9 - 19/04/2025 \n--------------------------------------------------\n <https://onereach.status.freshservice.com/> \n\n \n\nDear Colleague,\n\n \n\nTo ensure business continuity, we have scheduled essential maintenance to enhance the underlying infrastructure of the database systems for WMS and AIA.\n\n \n\nMaintenance start time: Saturday, April 19, 2025, | 10:00 PM GST\n\nMaintenance end time: Saturday, April 19, 2025, | 11:59 PM GST\n\n \n\nPlease be aware that during this period, access to Warehouse Application(WMS) and Oracle AIA will be temporarily unavailable.\n\n\nWe appreciate your patience and cooperation as we work to enhance your experience with our services.\n\n \n\nFor support during this period, please raise a ticket via OneReach.  \n\n \n\nThis mail was sent to you by\n\n <https://onereach.chalhoub.com/support/home>",
+      "start_pos": 0,
+      "end_pos": 1171,
+      "chunk_index": 0,
+      "chunk_size": 1171,
+      "metadata": {
+        "doc_id": "C1AJAJE - scheduled maintenance for aia and wm9 - 19 04 2025\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1AJAJE - scheduled maintenance for aia and wm9 - 19 04 2025\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:44.506800",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1232
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "doc_id": "C9HAAQW - ticket received - request of submitter hagop ghazarian 2. non-catalogue purchase request (pr)\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C9HAAQW - ticket received - request of submitter hagop ghazarian 2. non-catalogue purchase request (pr)\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:25:32\nFolder: C9HAAQW - ticket received - request of submitter hagop ghazarian 2. non-catalogue purchase request (pr)\nMessage Count: 1\n\n--------------------------------------------------\nID: C9HAAQW_00\nFrom: OneReach <onereach@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-09-10 04:03\nSubject: Ticket Received - Request of submitter Hagop Ghazarian : 2. Non-Catalogue Purchase Request (PR) - MCT FZE - SR-1525683\n--------------------------------------------------\n\n <https://eucattachment.freshservice.com/inline/attachment?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6NTIwNTM1NzgwNzQsImRvbWFpbiI6ImNoYWxob3ViZ3JvdXAtc2VydmljZWRlc2suZnJlc2hzZXJ2aWNlLmNvbSIsInR5cGUiOjF9.YBg4r70xeykiWEdioigXAmbqrOGddUQXep-K5gXLdFw> \n\n \n\n \n\nDear Hagop Ghazarian,\n\n\n\n\nWe would like to acknowledge that we have received your request, and a ticket has been created. A support representative will be reviewing your ticket and will send you a personal response. \n\n\n\n\nSummary: Request of submitter Hagop Ghazarian : 2. Non-Catalogue Purchase Request (PR) - MCT FZE\n\n\n\n\nTo view the status of the ticket or add comments, please visit\n\nhttps://onereach.chalhoub.com/helpdesk/tickets/1525683\n\n \n\nThank you for your patience. \n\n \n\nSincerely, \n\nProcurement Team <data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==> \n\n \n\nThis mail was sent to you by\n\n <https://onereach.chalhoub.com/support/home> \n\n \n\n\n[#SR-1525683]:485094:fs",
+      "start_pos": 0,
+      "end_pos": 1553,
+      "chunk_index": 0,
+      "chunk_size": 1553,
+      "metadata": {
+        "doc_id": "C9HAAQW - ticket received - request of submitter hagop ghazarian 2. non-catalogue purchase request (pr)\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C9HAAQW - ticket received - request of submitter hagop ghazarian 2. non-catalogue purchase request (pr)\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:20.608240",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1621
+  }
+}

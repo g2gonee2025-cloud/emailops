@@ -1,0 +1,31 @@
+{
+  "doc_id": "C14RY7O - colo coffee coming to ho1 for a limited time!\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C14RY7O - colo coffee coming to ho1 for a limited time!\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:36:08\nFolder: C14RY7O - colo coffee coming to ho1 for a limited time!\nMessage Count: 1\n\n--------------------------------------------------\nID: C14RY7O_00\nFrom: Internal Communications <Internal.Communications@chalhoub.com>\nTo: \nCC: \nBCC: \nDate: 2025-05-16 16:52\nSubject: Colo Coffee coming to HO1 for a limited time! \n--------------------------------------------------",
+      "start_pos": 0,
+      "end_pos": 447,
+      "chunk_index": 0,
+      "chunk_size": 447,
+      "metadata": {
+        "doc_id": "C14RY7O - colo coffee coming to ho1 for a limited time!\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C14RY7O - colo coffee coming to ho1 for a limited time!\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:04.847856",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 472
+  }
+}

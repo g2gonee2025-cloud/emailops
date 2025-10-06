@@ -1,0 +1,42 @@
+{
+  "doc_id": "C15W17E - ae_ai149202 co70 pre-alert chalhoub - mk24102257-3431 (re400) 4 plt by\\Headers\\C15W17E_07.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C15W17E - ae_ai149202 co70 pre-alert chalhoub - mk24102257-3431 (re400) 4 plt by\\Headers\\C15W17E_07.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by VI0PR05MB11440.eurprd05.prod.outlook.com (2603:10a6:800:246::21) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8182.19; Tue, 26 Nov 2024 12:52:23 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%6]) with mapi id 15.20.8182.019; Tue, 26 Nov 2024 12:52:23 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Rasheed Mohammed <Rasheed.Mohammed@gig-gulf.com>, Hani Gebara <Hani.Gebara@nascodubai.com>\nCC: row shipping <row.shipping@chalhoub.com>, Vic Eldrin Munar <Vic.Munar@gig-gulf.com>, Nino Bacalso <Nino.Bacalso@nascodubai.com>, Shagan Abdelmegid <Shagan.Abdelmegid@chalhoub.com>\nSubject: Re: AE_AI149202 // CO70 / Pre-alert / Chalhoub - MK24102257-3431 (RE400) / 4 PLT BY AIR II CR24 SHIP -1\nThread-Topic: AE_AI149202 // CO70 / Pre-alert / Chalhoub - MK24102257-3431 (RE400) / 4 PLT BY AIR II CR24 SHIP -1\nThread-Index: AdsvkU4pJ2TV4GipQEmZsA3PLIu4qQFbbByAACddPIAAOlHZ8AD+NWYQACzTzrAAAB3iBQACSgbQAC+9XbAAAw2ocAA27iKQAMX+uDAAAUJkFA==\nDate: Tue, 26 Nov 2024 12:52:22 +0000\nMessage-ID: <AS8PR05MB10824E59D9DBEEFF672F90E139D2F2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <AM6PR05MB589373CD0AF3D5950CB4C65E93522@AM6PR05MB5893.eurprd05.prod.outlook.com> <DX1P273MB075892E3C0D617DC43EFD4E6DE592@DX1P273MB0758.AREP273.PROD.OUTLOOK.COM> <AM6PR05MB5893297EA3A5434D95735553935A2@AM6PR05MB5893.eurprd05.prod.outlook.com> <AM6PR05MB589303658118A4369F48A472935B2@AM6PR05MB5893.eurprd05.prod.outlook.com> <DX1P273MB0758406C2995EA53F90B89D8DE202@DX1P273MB0758.AREP273.PROD.OUTLOOK.COM> <AM6PR05MB58937D2455179611DF6C988093212@AM6PR05MB5893.eurprd05.prod.outlook.com> <AS8PR05MB108246EF1A2D109B80222CAC89D212@AS8PR05MB10824.eurprd05.prod.outlook.com> <DX1P273MB07581A9BF9408BD1C2A13A16DE212@DX1P273MB0758.AREP273.PROD.OUTLOOK.COM> <AM6PR05MB5893D95F8694B6CC15FB241493222@AM6PR05MB5893.eurprd05.prod.outlook.com> <AUZP273MB1292037C5D11F34853E7D788A1222@AUZP273MB1292.AREP273.PROD.OUTLOOK.COM> <DB8PR05MB589740A5FD650A7F5C1EF24F93232@DB8PR05MB5897.eurprd05.prod.outlook.com> <AM6PR05MB58932539B8969D0521CE5047932F2@AM6PR05MB5893.eurprd05.prod.outlook.com>\nIn-Reply-To: <AM6PR05MB58932539B8969D0521CE5047932F2@AM6PR05MB5893.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 2501,
+      "chunk_index": 0,
+      "chunk_size": 2500,
+      "metadata": {
+        "doc_id": "C15W17E - ae_ai149202 co70 pre-alert chalhoub - mk24102257-3431 (re400) 4 plt by\\Headers\\C15W17E_07.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C15W17E - ae_ai149202 co70 pre-alert chalhoub - mk24102257-3431 (re400) 4 plt by\\Headers\\C15W17E_07.txt"
+      }
+    },
+    {
+      "text": "ook.com>\nIn-Reply-To: <AM6PR05MB58932539B8969D0521CE5047932F2@AM6PR05MB5893.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|VI0PR05MB11440:EE_\nx-ms-office365-filtering-correlation-id: 72d74faa-6d21-4be1-dcab-08dd0e192be7\nx-ms-exchange-atpmessageproperties: SA|SL\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|8096899003|7053199007|41050700001;\nx-microsoft-antispam-message-info: ub/EY3J/BrSLFayUjQDy/BeDfoH2lBFh85TciWfSOqRmRTcujo1vY9LflYoxZkq6y6x+2TBMBDQ/1bvrs43qw0kDISKXiEcIB+x9yqtLEVu8eCRMLlqsHLHQqyyvB4I02Zrt8bOzLErI5StzurahyReqFRwO7Hlidg3TXwscS8JBL6czvMs4JQpkg2qB/UoxcqC5XKXqg9633i/pvpvJtYniZGbreKG3bonhlmpDcSdZF4ZWXhmtT3ZLRuwphQGkfr62M0AIm0IRibrgtcxvgF3H/tpKGx1UY1yVYULozAy0PuaAR+3vXcn/7J0f1GS7IdPej/keRBbW7LW70XppUBQQSJLmRr/t/smZ89kz9+bIk+RvQjTYkEwihrQJNQb4QyB6KwZ8OR39W6kg6DjuM4xR0BKIaY0m4ZfMdLqGdCPeG2XpwdhzddfbAmztRF8HbY0S5aNzLtBTkbAIX89ddi1zLCAWs4HJC/bTNrVFpxoqbo+v88MEulsj3hZGEVtMrU/kTwL+MDkUmMBdMEgj6p0DrDjNjMej/RNEqeLwzzXuFPygK1gZfbDvHPV3Zdq4y0oWH3JNQmXW97Ma/SQ1Kl1oOK9FKa5HwJ+l6kwdm6VTerhSohQnvVw3tsDcrGgXRHSulNqaejV0LV6EdE98WErbFKDSI4PhgSR5G96wwRoidFxxvI9rJZwovWuzq3N8ZkYcXpijgtF9ueUNztPC+d1/Ml2j6vEDVM78gzCV70XD98arCKHSNowkki6OWDjHjD3i6vfC/cx5idYOxgFxog==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(7053199007)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_026_AS8PR05MB10824E59D9DBEEFF672F90E139D2F2AS8PR05MB10824eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-Auto-Response-Suppress: DR, OOF, AutoReply\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: di5zyUDOffjCLPCiIH6TLGVPFvzuixPOEPteIk+zXHdS6CckC5ykbEQi+ngXhotExaBTGYO0H8vw/SSQnW2HhDNIY+Hwsabwcbll+15CjAb3s+KBi/ZrtfEU60BmrKNEdjtR4mi+flXJb5nQrzcG+bIizFOR3Uo9RHbd+IFC6pLuQl24AAfjC/CuYrGnt6vdyRw7Gta4jer/vpGAwh2uStI+xIoddmTNho5w2bDoD4Hmm/34HBoa+TA30YHMm1h6Rh3VIF5TJkcw0M0kW1FTXTeib7iyLfT4CaAT2vPu+RjUGgOb3TXnMBYWtBCjIrycbJS97hpF3VBFUyQdlR3BNScRzk6LSIS6YQVgQMgHvVfI/clCK4G4set82d/jSDrEWpwo+xkH1B26ER21MCUyYGLUGWU/cB0Xq6X3GNDqll+ZQpopWfwqXqHv4QOiHcwjC6loIHysMOSeGjLclDUVtmNaaWaeoD4TyYTEVZpryQggw/xKm1bshLPvf4TtzrrJRHuwznVLZDSH7aKenbdmBRCe7k5EXl2PLix3Dcu0iflEEa9nAOCW0uuTyKE5oSgDWUraP9Ie8wQ/XRrJI5fBAoJ66d5TQ6Y1l7L2tfXwu5NM2reFewNuBYeu9r4qNa5N\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 72d74faa-6d21-4be1-dcab-08dd0e192be7\nX-MS-Exchange-CrossTenant-originalarrivaltime: 26 Nov 2024 12:52:22.9666 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: T6tWnsy8YbFrpVuGsbhVTbQ8j6tvskr/DDhHvjTcufvjwosDrh303uTDLALIqBdd3IPJ/f2BQwKDe1pbYKovOpTAXE+WazZnlVoiDYgnrpM=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: VI0PR05MB11440\nX-OrganizationHeadersPreserved: VI0PR05MB11440.eurprd05.prod.outlook.com",
+      "start_pos": 2301,
+      "end_pos": 5697,
+      "chunk_index": 1,
+      "chunk_size": 3396,
+      "metadata": {
+        "doc_id": "C15W17E - ae_ai149202 co70 pre-alert chalhoub - mk24102257-3431 (re400) 4 plt by\\Headers\\C15W17E_07.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C15W17E - ae_ai149202 co70 pre-alert chalhoub - mk24102257-3431 (re400) 4 plt by\\Headers\\C15W17E_07.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:26.200028",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5742
+  }
+}

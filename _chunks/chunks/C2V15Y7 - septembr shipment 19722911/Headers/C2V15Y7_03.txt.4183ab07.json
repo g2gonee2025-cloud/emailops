@@ -1,0 +1,42 @@
+{
+  "doc_id": "C2V15Y7 - septembr shipment 19722911\\Headers\\C2V15Y7_03.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C2V15Y7 - septembr shipment 19722911\\Headers\\C2V15Y7_03.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by DU0PR05MB10523.eurprd05.prod.outlook.com (2603:10a6:10:426::5) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7982.34; Tue, 1 Oct 2024 11:05:53 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%3]) with mapi id 15.20.7982.033; Tue, 1 Oct 2024 11:05:53 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Adnan Chawki <Adnan.Chawki@chalhoub.com>, Nathalie Madamba <Nathalie.Madamba@chalhoub.com>, Nizamudheen Kunhi <Nizamudheen.Kunhi@chalhoub.com>, Saad Dalle <Saad_Dalle@cotyinc.com>, Riyaz Ibrahim <Riyaz_IBRAHIM@cotyinc.com>, Erlinda Fernandez <Erlinda.Fernandez@chalhoub.com>, mea shipping <mea.shipping@chalhoub.com>, Zameeruddin Mohammed <Zameeruddin.Mohammed@chalhoub.com>, cnd shipping <cnd.shipping@chalhoub.com>\nCC: Mostafa Mohamed <Mostafa.Mohamed@chalhoub.com>, Santhosh Renganathan <Santhosh.Renganathan@chalhoub.com>, Mahesha Gurusiddaiah <Mahesha.Gurusiddaiah@chalhoub.com>, Ahmed AlSayari <Ahmed.AlSayari@chalhoub.com>, Sudakshina Das <Sudakshina.Das@chalhoub.com>, Mohammed Eisa <Mohammed.Eisa@chalhoub.com>, Fadi Thabet <Fadi.Thabet@chalhoub.com>\nSubject: Re: SEPTEMBR SHIPMENT 19722911\nThread-Topic: SEPTEMBR SHIPMENT 19722911\nThread-Index: AQHbDoO329OLpvogdk+El6NKO/TICrJrswqAgAF9x3CAAq+MAIAAPF5QgAA5sACAABDCgIAA7hRwgABRC2CAACAL2g==\nDate: Tue, 1 Oct 2024 11:05:53 +0000\nMessage-ID: <AS8PR05MB10824D04B8055B2F2F26803099D772@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <PAXPR05MB9339802CE4A8B22580B1290F9A762@PAXPR05MB9339.eurprd05.prod.outlook.com> <AM6PR05MB4245FC29FFDC205250631E12F8772@AM6PR05MB4245.eurprd05.prod.outlook.com> <VI1PR05MB110071FE66ADD05E66698A6F7F6772@VI1PR05MB11007.eurprd05.prod.outlook.com>\nIn-Reply-To: <VI1PR05MB110071FE66ADD05E66698A6F7F6772@VI1PR05MB11007.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 2085,
+      "chunk_index": 0,
+      "chunk_size": 2084,
+      "metadata": {
+        "doc_id": "C2V15Y7 - septembr shipment 19722911\\Headers\\C2V15Y7_03.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C2V15Y7 - septembr shipment 19722911\\Headers\\C2V15Y7_03.txt"
+      }
+    },
+    {
+      "text": ".outlook.com>\nIn-Reply-To: <VI1PR05MB110071FE66ADD05E66698A6F7F6772@VI1PR05MB11007.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|DU0PR05MB10523:EE_\nx-ms-office365-filtering-correlation-id: f7295a9d-27ab-4a15-3979-08dce2090485\nx-ld-processed: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3,ExtAddr\nx-ms-exchange-atpmessageproperties: SA|SL\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|41050700001;\nx-microsoft-antispam-message-info: ZkUFAX2W3ValRgGiiErLAgr7o0kjSuAc3geyZEcvRZI39a648MgWfS/UmwDFjv4cAaO094Y/jyeL+Ywe7Hi1HTS++NCNl5FbCYUEOK5+BKdEAhDXr9XzMWW8rT22Zazo45qJK4+tCLFxbpFmrXotStY+XplqNkWiwfKo4j+yXQcfMxl1fDqfNAGEvGRnfz0/b0vWMU8o19W5yP9UaCstWI0mAvUintQfS830c/8jlDSlCXqZnOuTQ7NSP19hbJCeJ/SYEyObMtkcETSr5Il5A3J0JYvUmh3WowlxZG2W+TufMHMdg9C1DGxuC8pfj3gaXyz3tRQ5/vfOBJk1qHLUW0TqjTU2yZV1ChXJFtQLsHSpQ0JELtZ63bT9A9EY1vjZo8dnSluEFC4CuYQKw6sfwfUzP2Fa0N2UtkmpvqGcKspDY7JYdgVDpKab8SYB7nSvdhAMCb2eRb7XXMoir8xNt8C+m7HFqV9PZzAAKp1iSyBrsZtXOw93lyzbGDjfNGkQ01RNEdipmCPhnLfCuNLELSWedBOr8VQFzA0+duKuPK9sWyXaaAWvnlgY0OgRSdcz33Gwh6rD3612vxOKEyXo4a5CC8WGrg26SeM76xYxO59V+P7tvqWNpyHmYO+6YXde05ON+Tcu5Ue9TzJ24IehjspCZShJCb21VliwQqU6Y7SZj4TY/O1p/vbQbc1avPuwkwresSzIDXp/ZvwN6F8j2kFoQQ7FRQ/ECQgst0299Cy0LUxCD0ta7LYVYN9DmphZKNo7r7RtGUDicqCb65dJ2w==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(41050700001);DIR:INT;\nContent-Type: multipart/mixed; boundary=\"_020_AS8PR05MB10824D04B8055B2F2F26803099D772AS8PR05MB10824eu_\"\nMIME-Version: 1.0\nX-Auto-Response-Suppress: DR, OOF, AutoReply\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: j7iEiWsGgF1lXHymmGf6QhezuiZioT+Fo3xejysZdaYNHXWeM6zr4bY3Cp2S0KpOP44VGh5IZypRK24vAGsk15vX48JRyHO/mPMz1/nU1DS+v2gm32FVbOBnfZyi0NU1BeSg4hNwNCdCKRCt9pmfPgKMulwzyk9rbCFemb0MMO9yhD1ZbbAui8qpvcO13szHSSUZBMYuIxysf49EqFGq3EeS4oe4BCbZMudIH78R8K2ouyC/JmhSOhKv1gqtVDxGFvFjLw8fS58fhh0ZyysHbE/jXZHdicwZSQBl0k/y3TnSj1OOlnIILbE79dR4SDOBRW/xcHTlGl4UUWflrCAbsNH/Mp67RP99HWPM6DgELsYC7TF1ztBJE1owBvZ5dXzWyqCoze5gWigOtSkhe12tiJF+o1kwiPCczMggNpGjDHjJSy9ooizSmWAhzf7iE+Z0NqBCBz3JSfDXQCpTbN7lMnQqZYxU/fF2J20L12hVz4453yWLVkKvTiHPPrmujpBEaCZr7KoIkha8hjBl8om4LWTlR4iVjMDllA3BEneiCSh4OzNRh2GF7YfHWnw+K7R2I72sK9OnVyifuleQWOb4ESjzORyn0VNKGSUeTbPAcmKZICGpFl+b43C0J/NPqLrM\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: f7295a9d-27ab-4a15-3979-08dce2090485\nX-MS-Exchange-CrossTenant-originalarrivaltime: 01 Oct 2024 11:05:53.7682 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: KMkAUFP73fS0Ty3l7RUFDuxbSxXHtjdIi9v+HP0J0HVLTKR6HytcDfzOaUYjcyfSAFadM9kXW4GyMO/6QbW9FbK11XRi7NuUPvDoYszsOpc=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: DU0PR05MB10523\nX-OrganizationHeadersPreserved: DU0PR05MB10523.eurprd05.prod.outlook.com",
+      "start_pos": 1885,
+      "end_pos": 5264,
+      "chunk_index": 1,
+      "chunk_size": 3379,
+      "metadata": {
+        "doc_id": "C2V15Y7 - septembr shipment 19722911\\Headers\\C2V15Y7_03.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C2V15Y7 - septembr shipment 19722911\\Headers\\C2V15Y7_03.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:05.135076",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5310
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "doc_id": "C18LR25 - allied enterprises llc - insurance policy\\Headers\\C18LR25_25.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C18LR25 - allied enterprises llc - insurance policy\\Headers\\C18LR25_25.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by DB9PR05MB7753.eurprd05.prod.outlook.com (2603:10a6:10:217::7) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8335.18; Mon, 13 Jan 2025 15:34:52 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%4]) with mapi id 15.20.8335.015; Mon, 13 Jan 2025 15:34:52 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Neeku Dsouza <Neeku.Dsouza@chalhoub.com>\nCC: Michelle Cantalejo <Michelle.Cantalejo@chalhoub.com>, Emily Dimaranan <Emily.Dimaranan@chalhoub.com>, Roshni Ramachandran <Roshni.Ramachandran@chalhoub.com>\nSubject: Re: ALLIED ENTERPRISES LLC - insurance policy\nThread-Topic: ALLIED ENTERPRISES LLC - insurance policy\nThread-Index: AdsOltdhjDizpb4QS62iDzawjZoGsQFi4cZQAS2QLrABgIFtcAAAJJqAAV20OmAC69f3sAAFhsZ/ADD11oAA+jJ3AAAEQNJQAdA52rAAAVZKoAAD5KnWAOTtuLAACkD5AAAAMLhgAYmKGEAA+6rDwABijx1AAP9fF4AAQtcJYAMRE9swAM/kVKAAOSqgsAEiL/YgABOi/q8=\nDate: Mon, 13 Jan 2025 15:34:52 +0000\nMessage-ID: <AS8PR05MB1082433A6920388C4B14DD2EB9D1F2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <DB6PR05MB33826AAA01F3D9538C96EE99EB112@DB6PR05MB3382.eurprd05.prod.outlook.com> <DB6PR05MB3382BED04E9B980CB440AB5BEB1F2@DB6PR05MB3382.eurprd05.prod.outlook.com>\nIn-Reply-To: <DB6PR05MB3382BED04E9B980CB440AB5BEB1F2@DB6PR05MB3382.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:",
+      "start_pos": 0,
+      "end_pos": 1606,
+      "chunk_index": 0,
+      "chunk_size": 1605,
+      "metadata": {
+        "doc_id": "C18LR25 - allied enterprises llc - insurance policy\\Headers\\C18LR25_25.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C18LR25 - allied enterprises llc - insurance policy\\Headers\\C18LR25_25.txt"
+      }
+    },
+    {
+      "text": "msip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|DB9PR05MB7753:EE_\nx-ms-office365-filtering-correlation-id: 7f722f97-e9b6-4073-23ce-08dd33e7d308\nx-ms-exchange-atpmessageproperties: SA|SL\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|7053199007|8096899003|41050700001;\nx-microsoft-antispam-message-info: vK3oL8BSrfnXums+EpV9N0kAaKUYHnUXQmV9eSzdkcfQltWUFz++Rc+wvEj8H1py+PdEMGVcXv7U6z+IthayfxzMhEV2ygN3QNvBPrUlSZsGI3BcsCl+MBn37alO/lzUBRPQVs+8Ppcd2PCxaTeJM8iAOpq05mTXpeTT7IXC09D6UECEoDu10FySXWIlZ9D9Bs2hDlwtwsiSnOxuJSf9U2A/oUyIdKM8baqkzswMkza/YfFvlCYSvhwMuF4OlTP+z3wsJvM5FMUubZW/r5GyvDZuI3guWn17tj8Z8fV9MqGVjsg1MPQjhmdzAnCArIP4BD3l6sVRazgsFYTJC4XE8z5K7XmvvWWCSPljQ4SRlJqQqAXEf09eqm4H/iuYctjZ1o497O0LPPGmUrLjddV0X8EibL4A0X/nrmdxDXPpZfLnQaEXzT7E5qq1GIhMtAn1ij5ekJ2tKoA27zFvH2a2XrgdE9zehbunJKYFHezmlyoTh08lOWgU8yeZzJiGymsibsY6HZ09opdvlg8x4JkQ4jZpDRu6gySjI2txvOl/X+03AUMVe36UatSXSgASBxo6oF53IFfMCIb0FK/Jw9sESKGoWOoQc9eqYzzx3Y2TXN8TbWrSNArPbJZbqB9y8QvSmnt6o1HLY91QzV26lsv0ksBObN3Ossz7a6mOaK0MHZjDpTUv4u+7pdjLkd/RK5oNW9LTgmQqC6gdH7yhTqk4i+kx0PE7dvn7V7/YfaX4wP6jZCFvKUhtElXa38cMR9eV\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(7053199007)(8096899003)(41050700001);DIR:INT;\nContent-Type: multipart/mixed; boundary=\"_022_AS8PR05MB1082433A6920388C4B14DD2EB9D1F2AS8PR05MB10824eu_\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: oqs6Xvy/+KqnF6wQTgViQ3Okp7d1nUK3xpYTXPc5IOGDc+CJ1Qv5DuBwyao4zfLLHBmNiKVZXCaWz2rJ6K8OifBpDSMYMaC/uzX2u07KrOgXVgwN8ktL40w7JQieLoZm1p6UQHL3F10eO03Cn9qEnDwHTBfc4HY+J4DIiHL2MLR/QE2rVaXzO31oNTGDRpecZeHBkKdDEo9nJIC40gN4uYUyjuKXK1RGijZlvF8ogS/oxrEKoWtuVZF6N/jqNkK5H9x7duMlYcacoKR3ycYWPLRapfDZUlm4a/Hk7G9GHnDzcJlwFM32IkPxGSyRvIeY6d8zQw8uTQ6fKwp+OtiSPtzQDlL2CTVJvbjruZBfTi0ww0LlS54+95TrewK334zjKmjf73Ids4nW7AgIlm3dUmjrKT15Oz1KPkkjrFllqwlfBTLfPWmS4mimN8tJy1vJow98r4S0ajNxMEt0PTLGOtavqDnHRkK5HdSTzZ0nrv/nkMW+qF+fwjIq2hNNmpfstUTLlPc+tEv1z8Q81N/AOJfelLi2+9GejGIlDJfpai04/3qH5m6rtiYnbmW4dLyMDiI9NOWzNFIiJuEfsrjW8HcO94ZmNx2N4y1s5iA1Ls0GQkYRsHirvwRh2b3Mi6Dm\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 7f722f97-e9b6-4073-23ce-08dd33e7d308\nX-MS-Exchange-CrossTenant-originalarrivaltime: 13 Jan 2025 15:34:52.6943 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: i5eA3nxQFqtcgMAI8lMn55+tHSNfTgGLL+eYPJDmxBv+Kp6VzTzrdJt2LcUdlO7HA7YdH73CHf7Te71Wr5QbptbmHJ2QvAjSzbTZQ0nwjrM=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: DB9PR05MB7753\nX-OrganizationHeadersPreserved: DB9PR05MB7753.eurprd05.prod.outlook.com",
+      "start_pos": 1593,
+      "end_pos": 4685,
+      "chunk_index": 1,
+      "chunk_size": 3092,
+      "metadata": {
+        "doc_id": "C18LR25 - allied enterprises llc - insurance policy\\Headers\\C18LR25_25.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C18LR25 - allied enterprises llc - insurance policy\\Headers\\C18LR25_25.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:56.844433",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4729
+  }
+}

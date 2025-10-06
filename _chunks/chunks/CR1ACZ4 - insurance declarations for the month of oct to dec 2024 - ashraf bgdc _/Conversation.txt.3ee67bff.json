@@ -1,0 +1,42 @@
+{
+  "doc_id": "CR1ACZ4 - insurance declarations for the month of oct to dec 2024 - ashraf bgdc &\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CR1ACZ4 - insurance declarations for the month of oct to dec 2024 - ashraf bgdc &\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:43:28\nFolder: CR1ACZ4 - insurance declarations for the month of oct to dec 2024 - ashraf bgdc &\nMessage Count: 1\n\n--------------------------------------------------\nID: CR1ACZ4_01\nFrom: Rahees Kulathil <Rahees.Kulathil@chalhoub.com>\nTo: ALMAN Hassan Ali <hassan.salman@axa-gulf.com>; CHRISTOPHER Vineeth <Vineeth.Christopher@axa-gulf.com>; ANTO Elia Tina <Elia.Anto@axa-gulf.com>; ALEXANDRA Silvia <silvia.alexandra@axa-gulf.com>; Rasheed Mohammed <Rasheed.Mohammed@gig-gulf.com>\nCC: n.abdulkader@axa-gulf.com <n.abdulkader@axa-gulf.com>; pradeep.kumar@axa-gulf.com <pradeep.kumar@axa-gulf.com>; Mohammad Galadari <mohammad.galadari@axa-gulf.com>; Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>; Magesh Kumar <magesh.kumar@axa-gulf.com>; Zainab Mirza Hassan Saleh <zainab.saleh@axa-gulf.com>; Mariam Husain Ali Mandeel <mariam.mandeel@axa-gulf.com>; Jovic Aviles <Jovic.Aviles@chalhoub.com>; Rowena Velasco Blanco <RBO@chalhoub.com>; Rasheed Mohammed <Rasheed.Mohammed@axa-gulf.com>; Urmi Desai <Urmi.Desai@chalhoub.com>; Subramanian Vishwanathan <Subramanian.Vishwanathan@s5ame.com>; row shipping <row.shipping@chalhoub.com>; med shipping <med.shipping@chalhoub.com>; neur shipping <neur.shipping@chalhoub.com>; cnd shipping <cnd.shipping@chalhoub.com>; mea shipping <mea.shipping@chalhoub.com>; Sudakshina Das <Sudakshina.Das@chalhoub.com>; Real UAE Accounting - Document Control <RealUAEAccounting-DocumentControl@chalhoub.com>; Abhijet.Chamaliyil@nascodubai.com <Abhijet.Chamaliyil@nascodubai.com>; Shruthi.Kunder@nascodubai.com <Shruthi.Kunder@nascodubai.com>; Vishal.Arora@nascodubai.com <Vishal.Arora@nascodubai.com>; Aswathy Vijayan <Aswathy.Vijayan@chalhoub.com>; Shayma Dsouza <Shayma.Dsouza@chalhoub.com>\nBCC:",
+      "start_pos": 0,
+      "end_pos": 1801,
+      "chunk_index": 0,
+      "chunk_size": 1799,
+      "metadata": {
+        "doc_id": "CR1ACZ4 - insurance declarations for the month of oct to dec 2024 - ashraf bgdc &\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CR1ACZ4 - insurance declarations for the month of oct to dec 2024 - ashraf bgdc &\\Conversation.txt"
+      }
+    },
+    {
+      "text": "odubai.com <Shruthi.Kunder@nascodubai.com>; Vishal.Arora@nascodubai.com <Vishal.Arora@nascodubai.com>; Aswathy Vijayan <Aswathy.Vijayan@chalhoub.com>; Shayma Dsouza <Shayma.Dsouza@chalhoub.com>\nBCC: \nDate: 2025-01-13 08:27\nSubject: INSURANCE DECLARATIONS  FOR THE MONTH OF OCT TO DEC 2024 - ASHRAF BGDC & STYLE AVENUE - BAHRAIN\n--------------------------------------------------\n \n\nDear All,\n\nPlease find attached details of Import declarations for the month of OCT to DEC 2024\n\n1.         ASHRAF BGDC\n\n2.         STYLE AVENUE BAHRAIN\n\nDear Ashraf BGDC & SAKS Accounting team,\n\nFYI. Kindly do the needful from your end.\n\n \n\nRegards,\n\nRAHEES KULATHIL​​​​\n\nSENIOR COORDINATOR ‑ SHIPPING\n\nREAL FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n+971 4 816 8000\n\n\t\n \t\n <https://chalhoubgroup.com/> \n\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\n\n‑\n\n\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\n\n <https://twitter.com/ChalhoubGroup> \n\n <https://www.facebook.com/chalhoubgroup/> \n\n <https://www.instagram.com/chalhoubgroup> \n\n <https://www.linkedin.com/company/chalhoub-group/> \n\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 1601,
+      "end_pos": 2774,
+      "chunk_index": 1,
+      "chunk_size": 1173,
+      "metadata": {
+        "doc_id": "CR1ACZ4 - insurance declarations for the month of oct to dec 2024 - ashraf bgdc &\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CR1ACZ4 - insurance declarations for the month of oct to dec 2024 - ashraf bgdc &\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:10.997342",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2870
+  }
+}

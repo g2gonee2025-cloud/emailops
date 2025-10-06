@@ -1,0 +1,31 @@
+{
+  "doc_id": "CG9FM0O - recall request for quotations fidelity insurance & political violence policy - chalhoub\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CG9FM0O - recall request for quotations fidelity insurance & political violence policy - chalhoub\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 12:06:25\nFolder: CG9FM0O - recall request for quotations fidelity insurance & political violence policy - chalhoub\nMessage Count: 1\n\n--------------------------------------------------\nID: CG9FM0O_00\nFrom: Gabo, Hannah Lucmayon <Hannah.Gabo@marsh.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Kechichian, Kevork <Kevork.Kechichian@marsh.com>; Kapoor, Puja <Puja.Kapoor@marsh.com>\nBCC: \nDate: 2024-10-03 10:31\nSubject: Recall: Request for Quotations: Fidelity Insurance & Political Violence Policy - Chalhoub\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe.\nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\nGabo, Hannah Lucmayon would like to recall the message, \"Request for Quotations: Fidelity Insurance & Political Violence Policy - Chalhoub\".\n\n________________________________\n\nرقم القید في السجل:23\nMarsh Emirates Insurance Brokerage LLC\nBroker registration number: 23\nLicence No 219888 Registered Office: Mezzanine & 16th Floor, Riggat Al Buteen, Al Gurg Tower 3\nP.O.Box 64057 & 1019, Dubai\nUnited Arab Emirates",
+      "start_pos": 0,
+      "end_pos": 1354,
+      "chunk_index": 0,
+      "chunk_size": 1354,
+      "metadata": {
+        "doc_id": "CG9FM0O - recall request for quotations fidelity insurance & political violence policy - chalhoub\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CG9FM0O - recall request for quotations fidelity insurance & political violence policy - chalhoub\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:38.806845",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1508
+  }
+}

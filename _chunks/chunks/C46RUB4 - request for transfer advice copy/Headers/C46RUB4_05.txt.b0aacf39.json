@@ -1,0 +1,42 @@
+{
+  "doc_id": "C46RUB4 - request for transfer advice copy\\Headers\\C46RUB4_05.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C46RUB4 - request for transfer advice copy\\Headers\\C46RUB4_05.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by AS8PR05MB8136.eurprd05.prod.outlook.com (2603:10a6:20b:333::6) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8230.20; Tue, 10 Dec 2024 18:08:20 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%6]) with mapi id 15.20.8230.016; Tue, 10 Dec 2024 18:08:19 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Muhannad Alhuneidi <Muhannad.Alhuneidi@chalhoub.com>\nCC: Jaya Dhanani <jaya.dhanani@nascodubai.com>, Taima Aranki <Taima.Aranki@chalhoub.com>, Real UAE Accounting - Document Control <RealUAEAccounting-DocumentControl@chalhoub.com>, Hrishikesh Oturkar <hrishikesh.oturkar@nascodubai.com>, Real Jordan Payments <realjordan.payments@chalhoub.com>\nSubject: Re: Request for transfer advice copy\nThread-Topic: Request for transfer advice copy\nThread-Index: AQHbQXSH2o/4TmC5kUScO6PgwPU8kLLVxg/JgAa6fSOAAQ+xkIAB71+KgABOOew=\nDate: Tue, 10 Dec 2024 18:08:19 +0000\nMessage-ID: <AS8PR05MB10824AD1E5695842130BEBA399D3D2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <AS8PR05MB10824952EB6640231590E0B639D292@AS8PR05MB10824.eurprd05.prod.outlook.com> <AS8PR05MB108241959239577D4C3A87E6D9D372@AS8PR05MB10824.eurprd05.prod.outlook.com> <AM7PR05MB6805A2D1EFA920993A5210BEE3332@AM7PR05MB6805.eurprd05.prod.outlook.com> <AS8PR05MB1082419926A6D6AE98FE495009D3C2@AS8PR05MB10824.eurprd05.prod.outlook.com> <AS8PR05MB1082419B6D2A9619A8CF6E5EB9D3D2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB1082419B6D2A9619A8CF6E5EB9D3D2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 1831,
+      "chunk_index": 0,
+      "chunk_size": 1830,
+      "metadata": {
+        "doc_id": "C46RUB4 - request for transfer advice copy\\Headers\\C46RUB4_05.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C46RUB4 - request for transfer advice copy\\Headers\\C46RUB4_05.txt"
+      }
+    },
+    {
+      "text": "k.com>\nIn-Reply-To: <AS8PR05MB1082419B6D2A9619A8CF6E5EB9D3D2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|AS8PR05MB8136:EE_\nx-ms-office365-filtering-correlation-id: 237cbad7-3e65-4dc0-e4ae-08dd1945a0d9\nx-ms-exchange-atpmessageproperties: SL\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nx-microsoft-antispam-message-info: 7Vmbenfd+kO8Y8cT15vR7bSKCFeMC4IZ6AEuNobPjJ4bjjMqGp4hnPHQEN/C+VOCc9E85mkbfNL2kxYLj1Du8yFIKLif/v/BN0TvIPvo1OGkID9AkpHf9NptBU7ZrIe2oEMsDchOq49rY+ZT3ucmxETcx4XoNsS1/1AKzTMXsQ0reJoO19FMCTh4r+Qg2quUJweEroixZtpQOtoV02NQWOmtfX4GPBLrbPpQsGvItpaBOyezsUqLVF1A8FXogGrv24k7oKoFAko1i72JD/ddIP7AtU97hkjAtx4Op9j6xiZjjSV2EX3auarJwGXVhtwDLK3VD8htxag6eTDOw9Lxj/hNlcM7tLW6TCdUU+qY9lSWn3gEIHZYkp/yZhR5TyBjesTIRJXamIbQdiNT8MvAAJEHZ6xFgZYGyFVso11e4j4TyACmF9vaHrxP2vZ1Knji1ccim+Q/4xuP1qqdJ51GFBVePxEe2eja2dQBZgvWQ/Yhd7AKrh3YBcylDAegEL2Yzw2OIc3SEj6YAtCZCG/N7fCxaudWyyQkpAVY3tstynUlS8qbA+XTu41JxUjoA7qKYDMTWwjIJESWltJTnjuM0BN2gJBgNosfQVwX7SIT0gUiWz5MF01Xwhz75umJo4BwFZBq4LkpiAEXGC7QWD2q73JasDgcvx11KIZv1/hoA/nqIpHaZTsTFI8iBVWDnORqQEt/b17Ks5kP1dDo4Y9YzKc3S7k8s/w+ljoB4hoImkIBMUe82lFVwKfiW7I7MHRwvNgCJC1+pJAO7djJTBTtZQ==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_024_AS8PR05MB10824AD1E5695842130BEBA399D3D2AS8PR05MB10824eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-Auto-Response-Suppress: DR, OOF, AutoReply\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: 6jaTU7dQ85El9s/gLOSKlkxET0CB5+laLTXx3LtdDfH394kRJjIU/arQ1QbGi4lgKm3a8KcBekXcoR6GhR4tQPTv4b436M5k//cqxoI79MDOJJzEvQ3RyDQcIwagLmOKs1gjfNvQHo9pXIeKZwePAlUnRNiQHWVufkx2seQbbCcMSsif5HCEk0kA5W0o1r6gzWW3g2iGSrX2B5DyVfUU9kHfWUEthQ1RZAmL1xXWCH9gOhuqy9WP61Hky7Et0dJgYGWWq9zrno49ukbBrRFbnEaK6mWVJJD7RcRLE63jYBFoaR5U5Yo0UN8/DxGK3HGH5wkT9Dx4ue7vmTegYX7KK0AO0xdfO1ABdB86nKf9l50z+0nf/Yxef4WSHgkHduz2SPe/DNc1Dlwoir6+mHreY9MUurW4IhqDET7cnZsINjER8vsfGMiIENbrTnDbtakoudV8jcFezzGoATkT/Hv6TJn+7aNvLrQlTUB3WRFxiaw5V3L00hJMfBG4xR0tntnN4862zOWW1bJ8topCvoOKkBZhNiQ8I2rIF5BgK9VCiz14tnWxaD4bsZS+RcbQ1qGdL8h9ne0Ywep65N6ngww36wQ52fY7sZ9Z13gw3ZOLJVlBGwYA/VXmmtAV4rJ79HZk\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 237cbad7-3e65-4dc0-e4ae-08dd1945a0d9\nX-MS-Exchange-CrossTenant-originalarrivaltime: 10 Dec 2024 18:08:19.8311 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: tOR7Ci7hI4rGOw427/sdzqojxyzerttU/X8eqH91RiF3wPM4FktfT2NahIi23LMCkW5ctEJ6SU6J4+qpZKgqv8UYEJT2RgAtTTsGtzM6Lvo=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR05MB8136\nX-OrganizationHeadersPreserved: AS8PR05MB8136.eurprd05.prod.outlook.com",
+      "start_pos": 1631,
+      "end_pos": 4998,
+      "chunk_index": 1,
+      "chunk_size": 3367,
+      "metadata": {
+        "doc_id": "C46RUB4 - request for transfer advice copy\\Headers\\C46RUB4_05.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C46RUB4 - request for transfer advice copy\\Headers\\C46RUB4_05.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:51.516720",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5043
+  }
+}

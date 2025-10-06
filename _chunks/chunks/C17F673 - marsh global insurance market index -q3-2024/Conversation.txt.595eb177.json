@@ -1,0 +1,42 @@
+{
+  "doc_id": "C17F673 - marsh global insurance market index -q3-2024\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C17F673 - marsh global insurance market index -q3-2024\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:45:28\nFolder: C17F673 - marsh global insurance market index -q3-2024\nMessage Count: 1\n\n--------------------------------------------------\nID: C17F673_00\nFrom: Kechichian, Kevork <Kevork.Kechichian@marsh.com>\nTo: \nCC: \nBCC: \nDate: 2024-10-28 12:06\nSubject: Marsh Global insurance Market Index -Q3-2024\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\n \n\nDear Partners ,\n\n \n\nWe hope you are well .\n\n \n\nKindly find attached Marsh’s Global insurance Market Index for Q3-2024 .\n\n \n\nBest Regards, \n\n \n\n \n\n \n\nKev Keshishian- ACII -ANZIIF\n\nCert. ISO 31000 Enterprise Risk Management\n\nChartered Insurance Practitioner \n\nVice President -Business Development Leader  \n\nAldar HQ Building, Floor 6 SW, Al Raha Beach\nP.O. Box 54733, Abu Dhabi, United Arab Emirates\n________________________________________\nPhone: +971 2 695 4100\n\nMobile:+971 55 4858325  Fax : +971 2 674 4163\n\nEmail:   Kevork.Kechichian@marsh.com <mailto:Kevork.Kechichian@marsh.com> \n\n \n\n\n\n \n\n\n\n \n\n \n\n \n\n\n________________________________",
+      "start_pos": 0,
+      "end_pos": 1369,
+      "chunk_index": 0,
+      "chunk_size": 1369,
+      "metadata": {
+        "doc_id": "C17F673 - marsh global insurance market index -q3-2024\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C17F673 - marsh global insurance market index -q3-2024\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Aldar HQ Building, Floor 6 SW, Al Raha Beach\nP.O. Box 54733, Abu Dhabi, United Arab Emirates\n________________________________________\nPhone: +971 2 695 4100\n\nMobile:+971 55 4858325  Fax : +971 2 674 4163\n\nEmail:   Kevork.Kechichian@marsh.com <mailto:Kevork.Kechichian@marsh.com> \n\n \n\n\n\n \n\n\n\n \n\n \n\n \n\n\n________________________________\n\n\nرقم القید في السجل:23\nMarsh Emirates Insurance Brokerage LLC\nBroker registration number: 23\nLicence No 219888 Registered Office: Mezzanine & 16th Floor, Riggat Al Buteen, Al Gurg Tower 3\nP.O.Box 64057 & 1019, Dubai\nUnited Arab Emirates",
+      "start_pos": 1036,
+      "end_pos": 1607,
+      "chunk_index": 1,
+      "chunk_size": 571,
+      "metadata": {
+        "doc_id": "C17F673 - marsh global insurance market index -q3-2024\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C17F673 - marsh global insurance market index -q3-2024\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:18.324652",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1819
+  }
+}

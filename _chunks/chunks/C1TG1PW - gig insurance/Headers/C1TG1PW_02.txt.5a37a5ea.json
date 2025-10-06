@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1TG1PW - gig insurance\\Headers\\C1TG1PW_02.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1TG1PW - gig insurance\\Headers\\C1TG1PW_02.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from PR3PR05MB7051.eurprd05.prod.outlook.com (2603:10a6:102:66::24) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Thu, 20 Feb 2025 10:58:25 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from VI1PR05MB6015.eurprd05.prod.outlook.com (2603:10a6:803:e9::23) by PR3PR05MB7051.eurprd05.prod.outlook.com (2603:10a6:102:66::24) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8466.16; Thu, 20 Feb 2025 10:58:24 +0000\nReceived: from VI1PR05MB6015.eurprd05.prod.outlook.com ([::1]) by VI1PR05MB6015.eurprd05.prod.outlook.com ([fe80::62f:9055:6784:cd5c%5]) with Microsoft SMTP Server id 15.20.8445.017; Thu, 20 Feb 2025 10:58:24 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Maribel Derla <Maribel.Derla@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: GIG INSURANCE\nThread-Topic: GIG INSURANCE\nThread-Index: AQHbe6mINlfPRU3bJUOs60aAkBcGULNQFVGAgAAAFWk=\nReferences: <VI1PR05MB673383CB7FDDB52D058C5094FE122@VI1PR05MB6733.eurprd05.prod.outlook.com> <DB9PR05MB104503AE1A425FE0D1FA0BAA89B122@DB9PR05MB10450.eurprd05.prod.outlook.com> <VI1PR05MB673387AF1883A9575DFCBE5DFE122@VI1PR05MB6733.eurprd05.prod.outlook.com> <AS8PR05MB10824644488DDD60C2991CF439D1C2@AS8PR05MB10824.eurprd05.prod.outlook.com> <DB8PR05MB67315F4078AF9239823E4F56FEF72@DB8PR05MB6731.eurprd05.prod.outlook.com> <VI1PR05MB6015539FCA97106FCA46F8B48FF22@VI1PR05MB6015.eurprd05.prod.outlook.com> <AS8PR05MB10824CFA50792F3B9262FA9209DC42@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824CFA50792F3B9262FA9209DC42@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 1796,
+      "chunk_index": 0,
+      "chunk_size": 1795,
+      "metadata": {
+        "doc_id": "C1TG1PW - gig insurance\\Headers\\C1TG1PW_02.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1TG1PW - gig insurance\\Headers\\C1TG1PW_02.txt"
+      }
+    },
+    {
+      "text": "om> <AS8PR05MB10824CFA50792F3B9262FA9209DC42@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824CFA50792F3B9262FA9209DC42@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Maribel.Derla@chalhoub.com\nX-MS-TNEF-Correlator: 4b14d508-8954-40b8-b6ad-e0c2bb968439\nMIME-Version: 1.0\nDate: Thu, 20 Feb 2025 10:58:24 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: VI1PR05MB6015.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <fa31b5883c8d49eab6688b5023acbb1d@VI1PR05MB6015.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: 5f5e1779-c329-4b98-b5cb-08dd519d7f14\nX-MS-Exchange-Parent-Message-Id: <AS8PR05MB10824CFA50792F3B9262FA9209DC42@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: VI1PR05MB6015:EE_|PR3PR05MB7051:EE_|AS8PR05MB10824:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 20 Feb 2025 10:58:24.1473 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: 5f5e1779-c329-4b98-b5cb-08dd519d7f14\nX-MS-Exchange-AtpMessageProperties: SA\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI1PR05MB6015.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Feb 2025 10:58:23.9888 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: VI1PR05MB6015.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: 5f5e1779-c329-4b98-b5cb-08dd519d7f14\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PR3PR05MB7051\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:01.8841464\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8466.015\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910001)(944506478)(944626604)(920097)(425001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: G8T0GjHhrSGyNM8TN+eHim1sm0uMpTlrn6u78o6qlSsyxdZzPV5biWleqarjCnaAGBRFUtHpJRJKrArl+/wyt1LOf9EHfdpr8g4RMhtWd4wpnakYfZ6x31uZ9AqhUPQLpljcfwm6bErB0SVT5mOWOANrM7EfyLFMLLNp5SOqNR4jsCoN3pmNuJV5s5RjlAc/lnkNjMUchkPj5ZNyeJfwcqH/aPhBO5xMteqS129AAjlrynphBvaYx4OUbUshkI4D6MnJHVV+Wa9m0cHDolze1pJtBFPdALposesn75MKj42VkM1XZbpb+XfRDfLLcF6EXhLHBJAVUdualR7q3xARmmNvRuIwZk3vUIJy2Qr3t7fC07W9I5ndY5vMLTVdbdrtA2FwXlQXqpK0b7rij3KhRD+xKSfmLS3PzMXo5wvIKobm2YqhMeVO79xfSV0F0fSo3Ec1Iv/+zzRzXKi/5242FUv/qq1LGEUPsV+sc2nsa88DgKRLQqI35je2E/CzFjvHkywBh54Kg58gvaq7+GIYYgML2h9l1/C2+MbLZjz7Ze4VysQK+Ci4SvghF1THToaKI3NHYq8alb4lpY+0PZlQX/it8zw262+NnnQvLaKCzJ/ZXRn72so0DOs/3FT8l2sjsbRfbGvZ69a+uGlq/iZq1+vPrM4UbGrcszIofTNome2S7CkUDiy4z9eaG5IZz6NqcAHRvYSerfDZ7RBX9pDAiMfC+OzAdHUEjFA/LHHawQhCKc36AvDTTydOiyWvs2KtQ6aGOHTkxlBxs87atThGWnf/t1v6Zk9cwZrxaEWgvSiR/rk9hJGdmu6hR7Dv7xxb/7ueyQjB75UOPehSLtb8tfSRoiskF5LL8bjkmKHOgUJ1H4BP2oiAdBAvq2OTCioY87Ujlm2+77nI6ME8xB0/dA==",
+      "start_pos": 1596,
+      "end_pos": 5182,
+      "chunk_index": 1,
+      "chunk_size": 3586,
+      "metadata": {
+        "doc_id": "C1TG1PW - gig insurance\\Headers\\C1TG1PW_02.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1TG1PW - gig insurance\\Headers\\C1TG1PW_02.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:05.924918",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5238
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1RU71G - shops insurance zim me\\Headers\\C1RU71G_02.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1RU71G - shops insurance zim me\\Headers\\C1RU71G_02.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by VI0PR05MB11856.eurprd05.prod.outlook.com (2603:10a6:800:2ca::15) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8901.26; Wed, 9 Jul 2025 13:40:28 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%4]) with mapi id 15.20.8901.024; Wed, 9 Jul 2025 13:40:27 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Marco Arletti <Marco.Arletti@me.zimmermann.com>, Mohamed BATA <Mohamed.Bata@chalhoub.com>\nCC: Angela Photios <angela.photios@zimmermann.com>, Nancy Liu <nancy.liu@zimmermann.com>\nSubject: Re: Shops Insurance: ZIM ME\nThread-Topic: Shops Insurance: ZIM ME\nThread-Index: AdvUQi8ys5bomIJjTYG/oz8rKpvGXQArMyHUAArdNRAADNyNmwKw/e9gAr3KoEABbNJ/MAAF0BtZ\nDate: Wed, 9 Jul 2025 13:40:27 +0000\nMessage-ID: <AS8PR05MB1082418012371DE4090C12A139D49A@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <AM4PR05MB32982EB82303113D15418943B46DA@AM4PR05MB3298.eurprd05.prod.outlook.com> <PAXPR05MB9193492EC0144B4FE94E8C3BFC6CA@PAXPR05MB9193.eurprd05.prod.outlook.com> <AM4PR05MB3298BFF818B589A4016ECD59B46CA@AM4PR05MB3298.eurprd05.prod.outlook.com> <AS8PR05MB1082490ED5B35BD459E09CA909D6CA@AS8PR05MB10824.eurprd05.prod.outlook.com> <AM4PR05MB329806CB6CD62A6AA6652ED6B472A@AM4PR05MB3298.eurprd05.prod.outlook.com> <AM4PR05MB3298C2708D597AF773D3BCA1B440A@AM4PR05MB3298.eurprd05.prod.outlook.com> <HE1PR05MB330515E3881A26E1F67A308FB449A@HE1PR05MB3305.eurprd05.prod.outlook.com>\nIn-Reply-To: <HE1PR05MB330515E3881A26E1F67A308FB449A@HE1PR05MB3305.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 1813,
+      "chunk_index": 0,
+      "chunk_size": 1812,
+      "metadata": {
+        "doc_id": "C1RU71G - shops insurance zim me\\Headers\\C1RU71G_02.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1RU71G - shops insurance zim me\\Headers\\C1RU71G_02.txt"
+      }
+    },
+    {
+      "text": "ook.com>\nIn-Reply-To: <HE1PR05MB330515E3881A26E1F67A308FB449A@HE1PR05MB3305.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|VI0PR05MB11856:EE_\nx-ms-office365-filtering-correlation-id: 01df92f4-d68c-4c0a-fcb2-08ddbeee2a12\nx-ms-exchange-atpmessageproperties: SA\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|31052699007|39142699007|4013099003|13003099007|8096899003|7053199007|41050700001;\nx-microsoft-antispam-message-info: +xz//gnIyXY0Zl23ZMbTXtq0FnHk+RsCuhbcdISTKivCx2l7z+k9iKcRiDje+94+r3Y09Xrdpct1pIjkXfnCm8ShrKoiwPkqHfsZpcBQOWgr++gTET/IQ/PhIZhlGiV+uxJ4Yq4mBDTh71VAs4aFBNRPLvlvgTfQQyO0Ahj0v769Okk8g9bstUL2/vdpTVew5AyJl/sS38PKljDNcTEwgN+WWfmFbZuaNbJbLM+wdi9JExwbOyG3zkP8RWO4F24cSMUSLnoV6goiTMb3Q0eArDLDo9rz4CtnwTURTFc5tFZkIBtZf0K7lodKmD9TnQ40NEqVQNnymegcHioTOKNsPSrce3xQAiGoClkJaA7C8xRqFJM4uwnnL8Pa/aDFoMI5B34zUxGQx+Pa8gyVIRCB9gioVpUr5WjGaUbvIKWTDT+LIhSwx0ANIa3s0PCPM5VuptcM/b/iM/v8sWppVNja2MFlfBJWvXsmi504Cf8RxtjFZrIma/pCOKGDlMFicWbQdJiDgV+9DTTvI8ZOHeVDCNJ7rs4xUn5BGpy9kddug4zgV9/lmir6KpcjvNqXv+Op6+EC0UZ2373NAg8KPzs+K50kMGls2V/vCdK2azIMFfxP0b+IBrGV5qAUACA8SOL91pcPZCo0iPyV1pEgZWwnjjyFbg8kuZZRMr26RhimycDsVlpLuW4hQJBoM5hcHJ5IS6gYF8SLrEtuRBSMJ/vFHNIBKWffGZeDWT134eHAHXE=\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(31052699007)(39142699007)(4013099003)(13003099007)(8096899003)(7053199007)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_010_AS8PR05MB1082418012371DE4090C12A139D49AAS8PR05MB10824eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: URdEI9Z7GbFM5f7pxjyAbd5y4s7skikECEChzkjElDqcFeJbD3PLzyJHvtwaVzA8AHxts9sAXtuFuBuM01uqQrrMpKQ5kvDo1SsmR3eImJ2S2InvjjkT2WafilOlCa29GkFM5+W5dD/v5av6gEkcI7Uc1pIemSouXFiQiav3cR87mdZekdmNBlQcO2FAnvLf9d3NF67q+aZuohd5MuQ6tETMLIwYI1e7SEfrs1sH9qHU05WaV4XXyJIRPIO2Y0nnc664bJm7qi15jHsgm3rDEm3/K+okVsoySeuwMnLg/fo8yhSnKF3fboLUtwqIztGYXjsDQEekjO08oreIPw6Af+KXkcsdZ+FjCYTwR+t+1E40u5CkEnCxAygEHYwlzBUL19TMnO82E9Y8aw32oRQawCjG1kFQ84OrlvI7Qb/kCn10+lgQ+eGge4m7ujoHqM8RmzC6FEFXzvFeZOM71uKrUcN+IMNkt3BXIzgRA/2AYuWBj3qWJg027NYk+E/DGyvCBqT1xpLtslw98F03p4sQA+Q+gEcoDT3SBsQWJec+6ceXT08Q0mXxy7OUJmPLP6badaU7+CkKHRJSiGRuX9l6JQ2s7C1aGsHMO1H+Catmh97G4px4pV20XMxGtMvXTjvw\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 01df92f4-d68c-4c0a-fcb2-08ddbeee2a12\nX-MS-Exchange-CrossTenant-originalarrivaltime: 09 Jul 2025 13:40:27.3844 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: d7OLokMnZbY9KgbvNvQHs4aF9Hy6wb7CXvXHYx+yOlrl8RtcIvIheAmBTwPALsUet5jswnbtgGg3gwbApAkewq2i+d4uYZjV0N7OzvE3oAw=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: VI0PR05MB11856\nX-OrganizationHeadersPreserved: VI0PR05MB11856.eurprd05.prod.outlook.com",
+      "start_pos": 1613,
+      "end_pos": 5015,
+      "chunk_index": 1,
+      "chunk_size": 3402,
+      "metadata": {
+        "doc_id": "C1RU71G - shops insurance zim me\\Headers\\C1RU71G_02.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1RU71G - shops insurance zim me\\Headers\\C1RU71G_02.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:09.005549",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5059
+  }
+}

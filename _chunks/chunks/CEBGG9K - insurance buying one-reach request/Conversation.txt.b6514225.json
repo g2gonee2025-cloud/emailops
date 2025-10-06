@@ -1,0 +1,53 @@
+{
+  "doc_id": "CEBGG9K - insurance buying one-reach request\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CEBGG9K - insurance buying one-reach request\\Conversation.txt",
+  "num_chunks": 3,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:24:25\nFolder: CEBGG9K - insurance buying one-reach request\nMessage Count: 1\n\n--------------------------------------------------\nID: CEBGG9K_00\nFrom: Rabia Anjum <Rabia.Anjum@chalhoub.com>\nTo: Moutaz Alkholy <Moutaz.Alkholy@chalhoub.com>; Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Joe Hobeika <Joe.Hobeika@chalhoub.com>\nBCC: \nDate: 2025-09-23 13:00\nSubject: RE: Insurance buying One-Reach Request\n--------------------------------------------------\nHi Moutaz, \n\nRegarding the below group insurance SR approval, I have spoken with @Hagop Ghazarian <mailto:Hagop.Ghazarian@chalhoub.com> , and he will be sharing the required information to proceed further with the approval process, however, he needs some time to provide the correct and relevant information, i.e., last year policy amount, Legal Entities Covered and the scope/ type of insurance coverage. \n\nAdditionally for your consideration, I have confirmed in case if there is any risk associated with the delay in approving this SR since it pertains to insurance, Hagop confirmed that the insurance renewal cycle runs from 1st December to 30th November. \n\nRegards,",
+      "start_pos": 0,
+      "end_pos": 1206,
+      "chunk_index": 0,
+      "chunk_size": 1205,
+      "metadata": {
+        "doc_id": "CEBGG9K - insurance buying one-reach request\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CEBGG9K - insurance buying one-reach request\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Additionally for your consideration, I have confirmed in case if there is any risk associated with the delay in approving this SR since it pertains to insurance, Hagop confirmed that the insurance renewal cycle runs from 1st December to 30th November. \n\nRegards, \n\n \n\nRABIA ANJUM\t\n​​​​\t\nANALYST ‑ FINANCE\t\nREAL FZE\t\nDUBAI\t\n‑\t\nUNITED ARAB EMIRATES\t\n\t\t\n \t\n <https://chalhoubgroup.com/> \t\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\t\n‑\n\t\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\t\n <https://x.com/ChalhoubGroup> \t\n <https://www.facebook.com/chalhoubgroup/> \t\n <https://www.instagram.com/chalhoubgroup> \t\n <https://www.linkedin.com/company/chalhoub-group/> \t\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm> \t\n\t\n\nFrom: Moutaz Alkholy <Moutaz.Alkholy@chalhoub.com> \nSent: Friday, 19 September 2025 9:08 AM\nTo: Rabia Anjum <Rabia.Anjum@chalhoub.com>\nSubject: Insurance buying One-Reach Request\n\n \n\nHi Rabia,\n\nI received this request for non-catalogue buying of insurance. Can you give me more details about it as it doesn’t explain much on the request itself. What is the type of insurance we are buying/renewing? And given that it is initiated by procurement, are we certain that we got multiple quotations to compare benefits/prices?\n\n \n\nRegards,\n\n \n\n\n\nMOUTAZ ALKHOLY\n\n​​​​\n\nDIRECTOR ‑ FINANCE\n\nREAL FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n\t\t\n \n\n <https://chalhoubgroup.com/> \n\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\n‑\n\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/>",
+      "start_pos": 943,
+      "end_pos": 2500,
+      "chunk_index": 1,
+      "chunk_size": 1556,
+      "metadata": {
+        "doc_id": "CEBGG9K - insurance buying one-reach request\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CEBGG9K - insurance buying one-reach request\\Conversation.txt"
+      }
+    },
+    {
+      "text": "DIRECTOR ‑ FINANCE\n\nREAL FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n\t\t\n \n\n <https://chalhoubgroup.com/> \n\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\n‑\n\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\n\n\n <https://www.facebook.com/chalhoubgroup/> \n\n <https://www.instagram.com/chalhoubgroup> \n\n <https://www.linkedin.com/company/chalhoub-group/> \n\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 2282,
+      "end_pos": 2733,
+      "chunk_index": 2,
+      "chunk_size": 451,
+      "metadata": {
+        "doc_id": "CEBGG9K - insurance buying one-reach request\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CEBGG9K - insurance buying one-reach request\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:31.496877",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2882
+  }
+}

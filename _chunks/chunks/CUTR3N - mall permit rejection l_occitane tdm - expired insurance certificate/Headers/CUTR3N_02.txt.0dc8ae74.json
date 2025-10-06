@@ -1,0 +1,42 @@
+{
+  "doc_id": "CUTR3N - mall permit rejection l'occitane tdm - expired insurance certificate\\Headers\\CUTR3N_02.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CUTR3N - mall permit rejection l'occitane tdm - expired insurance certificate\\Headers\\CUTR3N_02.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by DB9PR05MB8268.eurprd05.prod.outlook.com (2603:10a6:10:25b::5) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7982.31; Fri, 27 Sep 2024 16:11:58 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%3]) with mapi id 15.20.7982.022; Fri, 27 Sep 2024 16:11:57 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Salwa Al Mamari <Salwa.Almamari@chalhoub.com>\nCC: Mohammed El Neel <Mohammed.Elneel@chalhoub.com>, Sharon Pinto <Sharon.Pinto@chalhoub.com>, Kawttar Nassik <Kawttar.Nassik@chalhoub.com>, L'Occitane En Provence Dubai Mall <LOccitane.FlagShipDubaiMall@Loccitane.me>, Sondes Lariani <Sondes.Lariani@loccitane.me>, Randa Escondose <Randa.Escondose@loccitane.me>, Geraldin AYAP <Geraldin.Ayap@loccitane.me>, Kristina Kalcheva <Kristina.Kalcheva@Loccitane.Me>\nSubject: Re: Mall Permit Rejection L'Occitane TDM - Expired insurance certificate\nThread-Topic: Mall Permit Rejection L'Occitane TDM - Expired insurance certificate\nThread-Index: AdsQ3AwwG0/y3Wh5QUy7/fQnuSyusAAG3tvc\nDate: Fri, 27 Sep 2024 16:11:57 +0000\nMessage-ID: <AS8PR05MB1082499F714326CFF02D3DB189D6B2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <AS8PR05MB82303E4D94A54461D7226205F36B2@AS8PR05MB8230.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB82303E4D94A54461D7226205F36B2@AS8PR05MB8230.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 1643,
+      "chunk_index": 0,
+      "chunk_size": 1642,
+      "metadata": {
+        "doc_id": "CUTR3N - mall permit rejection l'occitane tdm - expired insurance certificate\\Headers\\CUTR3N_02.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CUTR3N - mall permit rejection l'occitane tdm - expired insurance certificate\\Headers\\CUTR3N_02.txt"
+      }
+    },
+    {
+      "text": "od.outlook.com>\nIn-Reply-To: <AS8PR05MB82303E4D94A54461D7226205F36B2@AS8PR05MB8230.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|DB9PR05MB8268:EE_\nx-ms-office365-filtering-correlation-id: 0214195d-d51b-4503-445d-08dcdf0f1c7d\nx-ms-exchange-atpmessageproperties: SA|SL\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|41050700001;\nx-microsoft-antispam-message-info: fzc2wYlL6M56c+6Xu+Kzcxu2P2dUgY65B1jdD628GvxfjkoUP05Q6bIVy1CGd9/HO7A1PfjCNcutcKF4Ky/cS5hGjJzCF4sjHMR0d+HNTPFdACOvYOvSW1rm3Hfx+qEEofvSEWvEZcw5/INYrprm9a3aLHhTJ4Yt8ljt29RchE0l3hd4WhDsocoFJ3JHJZ5k+GOuJMSy1e+bWyHzqvLw0yb2gUoFb0LLFM1Vj/TLAEr4rkG1GXltnyaByGvXSgLsksfZnQVjH/wA5GdofWYilFfX+QxcRFJeEqlnTkLNupJMjuQJFMampKZRpuu13676RLoEdBGKwvTNFi1PAi6PBuvaFJ5R57P8CaDfrAqLE/pMgQl8N9S1MGwFpAu3fAzVSBoJFuKHWZXoQfwKIQp26ZMUqsr7rLwQ3fNMCyN1rznsFhnbhfVs9E8xt2ohgebvNo8t9SBTq/enZGXrQCuy5trUP6U0uLQQy3/CiEzXS441bTvrBH0hRPU5I6FmLf8poJIXIXtzU/+7OF0JQUygIgkuHeL/YIIBriPgBGS421n3vOZgupGUiLHQNxu66by1R3+ps7Vn+tLX93KgQ4sQ9Ee7/9D3meSCznp0X+0JIn3DrhG/GNUxvdK5vPz2qO3aPsznCc0dAO39dto5G5UaC63r25AwuAuBhs6807+gV25KuVynKice6PiZDyk8s7l49k0iXORo9hwc+W9szhB1GBI/Vz9AAXsJ8NQ6fvlk3ngufMAb2EGPG8hCq/kQv8Ocse7Fku0LBXTTEWuqhQGgbg==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(41050700001);DIR:INT;\nContent-Type: multipart/mixed; boundary=\"_018_AS8PR05MB1082499F714326CFF02D3DB189D6B2AS8PR05MB10824eu_\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: NbVAS6hkBwMRTLdymdmFlLbztajEzxZoAd/7HHCa7UlYRNSAJHBKAIN6geiatjRv3iIL/af6Hd//hUwtkaNJu+WrNURST1IfX2JzjEeuR5aSrnhQ5Lh20OoEudrfSNvGodvsm2R1/om20L+ezd00FXnT9iRmkQYBxkiix5YMYwTAxWzjalEvYIGYobOb8YvQBXfDIEwmqnRHhUmTGWj6QUEYHF0OVQCXZQ69QXKmAYg97aMqeiEj85ZgkC55n+zjKEGt8snVeEOqNvcTdXD8FkIfLer7kPCCfykUEJPNLQWVNbPt4qyF+9tM3lfeT2ZIVS3XiZhufWxBGl7jViEv/HZqoFmoQuomv+dw6Xf4FiyIdnBnzREpx+QsCXr4HcrWKxvNWqBfhk5EC731fUXPIntKJtWEcmtv6zZ6POg2xitR/S3tE9yDcBeO4WPa5Zmdx+CLBEmvGeyZG2xJMLdJeaASSZBOcn/lmOcVyRiQfGQvnzDRcij/YWQT3tuq64VYfOobJb0ManMAri0i6muk8ihZPp16rocDXJ6AB5klltHLpLAQbwdw3jvUCcmIrgYcAfy2EqZ5Xo+Uz3zgY+QyRsRKXn9TbUk9B4P9cu6yn5OOl4zqjH4ITlaugBz++AHW\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 0214195d-d51b-4503-445d-08dcdf0f1c7d\nX-MS-Exchange-CrossTenant-originalarrivaltime: 27 Sep 2024 16:11:57.4893 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: gYX38Zs4e/X/Y7ME5b4e7LLFLGKiKuoc17FCjnumtFIlQjJ17O8hUDTOZ8XPfIjP4d3XDD5GCcS25aFs0D6JSttG+vpRbDqbS3aX7/esrlM=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: DB9PR05MB8268\nX-OrganizationHeadersPreserved: DB9PR05MB8268.eurprd05.prod.outlook.com",
+      "start_pos": 1443,
+      "end_pos": 4713,
+      "chunk_index": 1,
+      "chunk_size": 3270,
+      "metadata": {
+        "doc_id": "CUTR3N - mall permit rejection l'occitane tdm - expired insurance certificate\\Headers\\CUTR3N_02.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CUTR3N - mall permit rejection l'occitane tdm - expired insurance certificate\\Headers\\CUTR3N_02.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:27:53.276809",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4757
+  }
+}

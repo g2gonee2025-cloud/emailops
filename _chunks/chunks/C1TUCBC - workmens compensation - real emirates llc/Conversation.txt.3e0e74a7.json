@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1TUCBC - workmens compensation - real emirates llc\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1TUCBC - workmens compensation - real emirates llc\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:46:34\nFolder: C1TUCBC - workmens compensation - real emirates llc\nMessage Count: 1\n\n--------------------------------------------------\nID: C1TUCBC_00\nFrom: Marina Larisa <Marina.Larisa@tarzlifestyle.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Mohammed El Neel <Mohammed.Elneel@chalhoub.com>\nBCC: \nDate: 2025-01-28 15:02\nSubject: RE: Workmens Compensation - Real Emirates LLC \n--------------------------------------------------\nDear Hagop, \n\n \n\nAppreciate if you could please share the Workmen’s Compensation Real Emirates LLC (all locations)at the earliest.  \n\n \n\nThank you & best regards,\n\nMarina\n\n \n\nFrom: Marina Larisa \nSent: 27 January 2025 21:24\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCc: Mohammed El Neel <Mohammed.Elneel@chalhoub.com>\nSubject: Workmens Compensation - Real Emirates LLC \n\n \n\nDear Hagop, \n\n \n\nPlease share the Workmen’s Compensation Real Emirates LLC . \n\n \n\nBest regards,\n\nMarina",
+      "start_pos": 0,
+      "end_pos": 1008,
+      "chunk_index": 0,
+      "chunk_size": 1008,
+      "metadata": {
+        "doc_id": "C1TUCBC - workmens compensation - real emirates llc\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1TUCBC - workmens compensation - real emirates llc\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:10.410859",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1068
+  }
+}

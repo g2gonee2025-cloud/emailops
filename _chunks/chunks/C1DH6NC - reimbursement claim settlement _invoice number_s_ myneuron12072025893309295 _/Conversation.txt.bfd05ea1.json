@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1DH6NC - reimbursement claim settlement (invoice number(s) myneuron12072025893309295 )\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1DH6NC - reimbursement claim settlement (invoice number(s) myneuron12072025893309295 )\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:29:16\nFolder: C1DH6NC - reimbursement claim settlement (invoice number(s) myneuron12072025893309295 )\nMessage Count: 1\n\n--------------------------------------------------\nID: C1DH6NC_00\nFrom: NotificationServices@neuron.ae <NotificationServices@neuron.ae>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-07-22 08:57\nSubject: Reimbursement claim settlement (Invoice Number(s) : myNeuron12072025893309295 )\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n \t \n \t \n\nDear HAGOP GHAZARIAN ,\n\nPolicy Number : 610748-023; MCT DXB\n\nThis is to inform you that we have processed & settled the below invoice(s) received through SmartCare.\n\nInvoice(s) Details:\n\nInvoice Reference : myNeuron12072025893309295\nTransaction Date : 08-May-2025\nClaimed Currency : AED\nClaimed Amount : 1,800.00\nApproved Currency : AED\nApproved Amount : 864.00\nStatus : Partially Approved\nDeduction Notes : Claim reimbursed with 20% benefit coinsurance and 40% reimbursement co-insurance as per terms of policy. \n\n\nFor any queries , please contact our Customer care team.\n\nThank you,\nSmart Care – Claims Processing Department\n\n\nThis email is auto-generated. Please do not respond.",
+      "start_pos": 0,
+      "end_pos": 1547,
+      "chunk_index": 0,
+      "chunk_size": 1546,
+      "metadata": {
+        "doc_id": "C1DH6NC - reimbursement claim settlement (invoice number(s) myneuron12072025893309295 )\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1DH6NC - reimbursement claim settlement (invoice number(s) myneuron12072025893309295 )\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Invoice Reference : myNeuron12072025893309295\nTransaction Date : 08-May-2025\nClaimed Currency : AED\nClaimed Amount : 1,800.00\nApproved Currency : AED\nApproved Amount : 864.00\nStatus : Partially Approved\nDeduction Notes : Claim reimbursed with 20% benefit coinsurance and 40% reimbursement co-insurance as per terms of policy. \n\n\nFor any queries , please contact our Customer care team.\n\nThank you,\nSmart Care – Claims Processing Department\n\n\nThis email is auto-generated. Please do not respond. \n\n <https://url.uk.m.mimecastprotect.com/s/C53pCM5yzUG5MB6fwfqi8vTLJ?domain=smartcarebycigna.neuron.ae>  \n\n\nProperty of Nas Neuron Health Services",
+      "start_pos": 1052,
+      "end_pos": 1693,
+      "chunk_index": 1,
+      "chunk_size": 641,
+      "metadata": {
+        "doc_id": "C1DH6NC - reimbursement claim settlement (invoice number(s) myneuron12072025893309295 )\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1DH6NC - reimbursement claim settlement (invoice number(s) myneuron12072025893309295 )\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:58.893119",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1859
+  }
+}

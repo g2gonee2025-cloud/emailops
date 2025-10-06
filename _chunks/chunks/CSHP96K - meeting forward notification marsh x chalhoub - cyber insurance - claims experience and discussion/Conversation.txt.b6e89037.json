@@ -1,0 +1,42 @@
+{
+  "doc_id": "CSHP96K - meeting forward notification marsh x chalhoub - cyber insurance - claims experience and discussion\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CSHP96K - meeting forward notification marsh x chalhoub - cyber insurance - claims experience and discussion\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:44:38\nFolder: CSHP96K - meeting forward notification marsh x chalhoub - cyber insurance - claims experience and discussion\nMessage Count: 1\n\n--------------------------------------------------\nID: CSHP96K_00\nFrom: Microsoft Outlook <MicrosoftExchange329e71ec88ae4615bbc36ab6ce41109e@mmcglobal.onmicrosoft.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-03-05 15:02\nSubject: Meeting Forward Notification: Marsh x Chalhoub - Cyber Insurance - Claims experience and discussion\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\nYour meeting was forwarded \n\nOzdinc, Yekta <mailto:Yekta.Ozdinc@marsh.com>   has forwarded your meeting request to additional recipients.\n\n \t Meeting\t \n \t Marsh x Chalhoub - Cyber Insurance - Claims experience and discussion\t \n\n \t Meeting Time\t \n \t Friday, 7 March 2025 16:00-17:00.\t \n\n \t Recipients\t \n \t Yesilmen, Gulistan <mailto:Gulistan.Yesilmen@marsh.com>  \t \n\nAll times listed are in the following time zone: (UTC+04:00) Abu Dhabi, Muscat \n________________________________\n\nSent by Microsoft Exchange Online \n\n________________________________",
+      "start_pos": 0,
+      "end_pos": 1477,
+      "chunk_index": 0,
+      "chunk_size": 1477,
+      "metadata": {
+        "doc_id": "CSHP96K - meeting forward notification marsh x chalhoub - cyber insurance - claims experience and discussion\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CSHP96K - meeting forward notification marsh x chalhoub - cyber insurance - claims experience and discussion\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Recipients\t \n \t Yesilmen, Gulistan <mailto:Gulistan.Yesilmen@marsh.com>  \t \n\nAll times listed are in the following time zone: (UTC+04:00) Abu Dhabi, Muscat \n________________________________\n\nSent by Microsoft Exchange Online \n\n________________________________\n\n\nرقم القید في السجل:23\nMarsh Emirates Insurance Brokerage LLC\nBroker registration number: 23\nLicence No 219888 Registered Office: Mezzanine & 16th Floor, Riggat Al Buteen, Al Gurg Tower 3\nP.O.Box 64057 & 1019, Dubai\nUnited Arab Emirates",
+      "start_pos": 1215,
+      "end_pos": 1715,
+      "chunk_index": 1,
+      "chunk_size": 497,
+      "metadata": {
+        "doc_id": "CSHP96K - meeting forward notification marsh x chalhoub - cyber insurance - claims experience and discussion\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CSHP96K - meeting forward notification marsh x chalhoub - cyber insurance - claims experience and discussion\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:18.019624",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1888
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "doc_id": "C722L0G - vpn connectivity issue – temporary workaround instructions\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C722L0G - vpn connectivity issue – temporary workaround instructions\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:34:51\nFolder: C722L0G - vpn connectivity issue – temporary workaround instructions\nMessage Count: 1\n\n--------------------------------------------------\nID: C722L0G_00\nFrom: One Reach <OneReach@chalhoub.com>\nTo: \nCC: \nBCC: \nDate: 2025-06-13 16:18\nSubject: [Update] VPN Connectivity Issue – Temporary Workaround Instructions\n--------------------------------------------------\n \n\n <https://onereach.status.freshservice.com/> \n\n \n\nDear Colleague,\n\nThis is an update regarding the VPN connectivity issue impacting remote access to the D3 network, initially reported earlier today.\n\n \n\nAs a temporary workaround, please follow the steps below to reconfigure your VPN connection and restore access:\n\n \n\nVPN Setup Instructions – HO1 Network\n\n1.\tOpen your VPN client.\n2.\tClick the ‘+’ icon next to Connections to add a new network.\n3.\tUse the following link to configure the new connection: https://ho1ssl.e-mac.com/\n4.\tWhen prompted, enter your username (firstname.lastname) and your Chalhoub password.\n5.\tConnect to the VPN via the new HO1 network.\n\n \n\nOur Tech teams are continuing to work on resolving the root issue and will share further updates as soon as possible.\n\n\nFor support during this period, please raise a ticket via OneReach. You can also check real-time status updates via the Tech&Data System Status & Health <https://onereach.status.freshservice.com/>  Dashboard.\n\n \n\n \n\n \n\nThis mail was sent to you by\n\n <https://onereach.chalhoub.com/support/home>",
+      "start_pos": 0,
+      "end_pos": 1539,
+      "chunk_index": 0,
+      "chunk_size": 1539,
+      "metadata": {
+        "doc_id": "C722L0G - vpn connectivity issue – temporary workaround instructions\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C722L0G - vpn connectivity issue – temporary workaround instructions\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:59.211913",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1633
+  }
+}

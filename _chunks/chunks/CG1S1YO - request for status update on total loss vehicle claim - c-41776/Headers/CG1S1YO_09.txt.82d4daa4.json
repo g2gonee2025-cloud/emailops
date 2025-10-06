@@ -1,0 +1,42 @@
+{
+  "doc_id": "CG1S1YO - request for status update on total loss vehicle claim - c-41776\\Headers\\CG1S1YO_09.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CG1S1YO - request for status update on total loss vehicle claim - c-41776\\Headers\\CG1S1YO_09.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by PAXPR05MB9123.eurprd05.prod.outlook.com (2603:10a6:102:2b2::14) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8445.19; Thu, 20 Feb 2025 10:19:29 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%2]) with mapi id 15.20.8466.015; Thu, 20 Feb 2025 10:19:27 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Mary Janice Dofeliz <MaryJanice.Dofeliz@chalhoub.com>\nCC: Mohammed El Neel <Mohammed.Elneel@chalhoub.com>, May Karaki <May.Karaki@chalhoub.com>, Joe Hobeika <Joe.Hobeika@chalhoub.com>\nSubject: RE: Request for Status Update on Total Loss Vehicle Claim - C-41776\nThread-Topic: Request for Status Update on Total Loss Vehicle Claim - C-41776\nThread-Index: Adr5IvE+i7IUSVScSICHNlt6taVrvgAAFf7QAAEE6QAAANHl8AABOHZAAAGR6QAAASOy4AMesRKQA4wDjIAAK1P60AAAUIPAFcvg8RAAODi9YAAB4VqwAAA7aWAEEcU70ABAEa5gAV6faRAAAbH8QAABw6xw\nDate: Thu, 20 Feb 2025 10:19:27 +0000\nMessage-ID: <AS8PR05MB108249EF04CFCF9EAE3CAA5EF9DC42@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <PAWPR05MB10190FDBB862B37D3BED45C8594952@PAWPR05MB10190.eurprd05.prod.outlook.com> <AS8PR09MB51913CF876AC6331E4AD14388C952@AS8PR09MB5191.eurprd09.prod.outlook.com> <PAWPR05MB10190C42F9A5683675D39D01994952@PAWPR05MB10190.eurprd05.prod.outlook.com> <AM6PR09MB3026F8AA203D9CA57699412CFF952@AM6PR09MB3026.eurprd09.prod.outlook.com> <PAWPR05MB101901C82ABDE294DFCA1E0BC94952@PAWPR05MB10190.eurprd05.prod.outlook.com> <AS8PR09MB5191EC6B36B1F1B4A8684C028C952@AS8PR09MB5191.eurprd09.prod.outlook.com> <PAWPR05MB101907FE5E0E963E04E7CDFFA94952@PAWPR05MB10190.eurprd05.prod.outlook.com> <AS8PR09MB51914640B437B1F109D7533A8C652@AS8PR09MB5191.eurprd09.prod.outlook.com> <AS2PR05MB10173CF2640A1F34366EBF30294772@AS2PR05MB10173.eurprd05.prod.outlook.com> <AM6PR09MB30266770D212D63B762A683EFF702@AM6PR09MB3026.eurprd09.prod.outlook.com> <PAWPR05MB10190A9FEBED35481286CFA5B94702@PAWPR05MB10190.eurprd05.prod.outlook.com> <AUXP273MB081446BB243FE9888E4FFCFBFFE62@AUXP273MB0814.AREP273.PROD.OUTLOOK.COM> <PAWPR05MB10190CF99082A4A6FF0BF93D694E12@PAWPR05MB10190.eurprd05.prod.outlook.com> <AUXP273MB0814892E9EAFEDB1D90AF9BFFFE12@AUXP273MB0814.AREP273.PROD.OUTLOOK.COM> <PAWPR05MB101902C1565BF43EA5E50628594E12@PAWPR05MB10190.eurprd05.prod.outlook.com> <AM6PR05MB501383A7DBED4B5E9B984C38F3FC2@AM6PR05MB5013.eurprd05.prod.outlook.com> <AM6PR05MB5013AC568E2CED623C509DF9F3FF2@AM6PR05MB5013.eurprd05.prod.outlook.com> <AM7PR05MB704281B5C59A85CCD6CF9B7B8CC42@AM7PR05MB7042.eurprd05.prod.outlook.com> <AM6PR05MB501396011A9916952355120EF3C42@AM6PR05MB5013.eurprd05.prod.outlook.com>\nIn-Reply-To: <AM6PR05MB501396011A9916952355120EF3C42@AM6PR05MB5013.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 2964,
+      "chunk_index": 0,
+      "chunk_size": 2963,
+      "metadata": {
+        "doc_id": "CG1S1YO - request for status update on total loss vehicle claim - c-41776\\Headers\\CG1S1YO_09.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CG1S1YO - request for status update on total loss vehicle claim - c-41776\\Headers\\CG1S1YO_09.txt"
+      }
+    },
+    {
+      "text": "ook.com>\nIn-Reply-To: <AM6PR05MB501396011A9916952355120EF3C42@AM6PR05MB5013.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|PAXPR05MB9123:EE_\nx-ms-office365-filtering-correlation-id: 6ed19b4f-65e7-4192-7406-08dd51980e8b\nx-ms-exchange-atpmessageproperties: SA|HVE\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|13003099007|8096899003|41050700001;\nx-microsoft-antispam-message-info: /Wq1Pvbc/tAo4uMkduOfwIAYwMac9srSQR6QgIELLacM0fI7jsTGN9V0U0/X8YykRlg9c+1dDxMxFWdeh78uHPIbeLGjPOEY7TQqe1V6g3I4i7J7DlKkpDG4eyAKnWhbdiwKnbkrPw9K7XOZwq0pUnZGkkb6LYeL7pR6VveOnP43bND6dK4/tQz7ghVrV38VwsnFS6UrxX4FpryeXykogVutDrj4vB/CTspiNhkRGECJCk+RMiK0+wG3wlKzEW1LjltnzGMw4VsH7pMt1zLlxQqW5aFRseZNe2GEIGm6bmK2zFYJfbT+H4hMM/SynxfrFStKmHEB1dmkU7zjtWnaZXNxMgWbS03lHZ+MN4C1J9mjGviCQdJW409y4rx1yMWl0emHBtTzRrNyhNOnSOs7nzRQSfVutkx6++AwSPZCeER+CcBhoiG+7npJkkI97P8htNsSySRlzjgTw0bonTd/Fzlg9pYJJf7dX+ib5Pqm+F7k/LFGVXlZdVEyyXy7myLqr+O8EBtmc3dQ78Z9hJcR9ZmZMkASNOSy9X4bIBtcm5RV18dfWnTrcKHd4d7tIv9pzF+dH3etQs5UtK9BbE/C3Ay/Ug50JVqslq7/hs6shO+jRkMYfS3sBHN0YGu4Vziv/osK3OZtAKE1jVjJMnjDNRxEHy2YwGiRgMxX3gx4iCO/J5kc2LEYosRRs+lYvtABUOLfH2DYJHYm2FLsoHIEEFAgvv7aIqvMAuc/6E2TvrqliWbmX6MVpB8+yH+JXDZOHhh7A+ZwN436D1Drl2+Mxw==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(13003099007)(8096899003)(41050700001);DIR:INT;\nContent-Type: multipart/mixed; boundary=\"_017_AS8PR05MB108249EF04CFCF9EAE3CAA5EF9DC42AS8PR05MB10824eu_\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: 7ZQkiVnzxLMIY4OT0ylT/GllX+fDwifFFCLQ7Ew6OIqvEVUAeqm30HqXr9rwR9rzF/mDOe2O92sULuRk0Sr6gnSalIBkCwbqoKXivtEO8P6BdxrrXCKND5RA9rc04iGluSv34vdbzcdlkR5WHeOq2JEvq2sFZGjbZCOM4VnTjsMEsy48N6oG0M+pHlW3XIaaM/EnipB/l8SI21tRIpuys0JHJESGTKl9DEZrXGgQdbtIPl7NF58doowhhi/FroDPBpc/peSuXJRQG9fuY9mhUnImxcK7+zAfFhLrcOzYvBrOtf0VSYTpIwpaazXMT2XLRzcEEhndWWX9dqeIgkD6ZO4qSHPDEYDSNeX0fHWQvTJiCUxLkuqlBkN9aFR44l4d8d8A6/mgc9COKswQhEbQzebExaDEirRgzIqp6IRR8HLFCoM5f/9dxqjiqsHveuuuzWGj4yf2czJpou7Eqpd+H8T6xmNzfOVS3rSzP1g4d05CeurGG1gH/cEKzh1FZgT3AIMDyZ/6GHrvAgu2OTb2mCoWGXfT40tE2iWB7a9zxqsns2NCpjhFUQ+C9ZX5ZEAcx71mlGsNOsdfopUdGC9ajqQ3g5555jg4zM5hq1rmzZqTgotq47oeqqKFOSqSu7vy\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 6ed19b4f-65e7-4192-7406-08dd51980e8b\nX-MS-Exchange-CrossTenant-originalarrivaltime: 20 Feb 2025 10:19:27.6906 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: 0zpqspj1Uj1DS6Rd1qExzmwB9NeaRitA69wu9ndVE6rGm1Sniwjj6zRQLBkxJCdxbQOrlI4GJ25pUA/ATd/vLRswqvRyJGMTunjYc3JQ57Q=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR05MB9123\nX-OrganizationHeadersPreserved: PAXPR05MB9123.eurprd05.prod.outlook.com",
+      "start_pos": 2764,
+      "end_pos": 6070,
+      "chunk_index": 1,
+      "chunk_size": 3306,
+      "metadata": {
+        "doc_id": "CG1S1YO - request for status update on total loss vehicle claim - c-41776\\Headers\\CG1S1YO_09.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CG1S1YO - request for status update on total loss vehicle claim - c-41776\\Headers\\CG1S1YO_09.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:22.694527",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 6113
+  }
+}

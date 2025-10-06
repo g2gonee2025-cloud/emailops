@@ -1,0 +1,42 @@
+{
+  "doc_id": "C192TFZ - major incident notification sce11 update\\Headers\\C192TFZ_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C192TFZ - major incident notification sce11 update\\Headers\\C192TFZ_00.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS5PR05MB11774.eurprd05.prod.outlook.com (::1) by DU4PR05MB11790.eurprd05.prod.outlook.com with HTTPS; Wed, 27 Aug 2025 23:13:48 +0000\nReceived: from AS2PR05MB10598.eurprd05.prod.outlook.com (2603:10a6:20b:590::18) by AS5PR05MB11774.eurprd05.prod.outlook.com (2603:10a6:20b:6ca::11) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9052.21; Wed, 27 Aug 2025 23:13:44 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from DB9PR05MB8672.eurprd05.prod.outlook.com (2603:10a6:10:2c8::15) by AS2PR05MB10598.eurprd05.prod.outlook.com (2603:10a6:20b:590::18) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9052.20; Wed, 27 Aug 2025 23:12:59 +0000\nReceived: from DB9PR05MB8672.eurprd05.prod.outlook.com ([fe80::cb38:7f3b:c339:ddf]) by DB9PR05MB8672.eurprd05.prod.outlook.com ([fe80::cb38:7f3b:c339:ddf%7]) with mapi id 15.20.9052.019; Wed, 27 Aug 2025 23:12:59 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: One Reach <OneReach@chalhoub.com>\nSubject: Major Incident Notification: SCE11 update\nThread-Topic: Major Incident Notification: SCE11 update\nThread-Index: AdwXqA8q+uWoxvjfSEWgFMVVg1mqYQ==\nImportance: high\nX-Priority: 1\nX-MS-Exchange-MessageSentRepresentingType: 1\nDate: Wed, 27 Aug 2025 23:12:59 +0000\nMessage-ID: <DB9PR05MB867289B0A408BC9B5D6B0B00DA38A@DB9PR05MB8672.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 1614,
+      "chunk_index": 0,
+      "chunk_size": 1613,
+      "metadata": {
+        "doc_id": "C192TFZ - major incident notification sce11 update\\Headers\\C192TFZ_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C192TFZ - major incident notification sce11 update\\Headers\\C192TFZ_00.txt"
+      }
+    },
+    {
+      "text": "e: 1\nDate: Wed, 27 Aug 2025 23:12:59 +0000\nMessage-ID: <DB9PR05MB867289B0A408BC9B5D6B0B00DA38A@DB9PR05MB8672.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach:\nX-MS-Exchange-Organization-SCL: 1\nX-MS-TNEF-Correlator: <DB9PR05MB867289B0A408BC9B5D6B0B00DA38A@DB9PR05MB8672.eurprd05.prod.outlook.com>\nMIME-Version: 1.0\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: DB9PR05MB8672.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 04\nX-MS-Exchange-Organization-Network-Message-Id: aa455e53-d56a-4b75-3f82-08dde5bf43a8\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: DB9PR05MB8672:EE_|AS2PR05MB10598:EE_|AS5PR05MB11774:EE_|DU4PR05MB11790:EE_\nTo: Undisclosed recipients:;\nReturn-Path: OneReach@chalhoub.com\nX-MS-Exchange-Organization-ExpirationStartTime: 27 Aug 2025 23:13:02.3359 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: aa455e53-d56a-4b75-3f82-08dde5bf43a8\nX-LD-Processed: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3,ExtAddr,ExtFwd,ExtAddr\nX-MS-Exchange-AtpMessageProperties: SA\nX-Microsoft-Antispam: BCL:0;ARA:13230040|69100299015|366016|13003099007|8096899003|105050200037|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS2PR05MB10598.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(69100299015)(366016)(13003099007)(8096899003)(105050200037)(41050700001);DIR:INT;\nX-Auto-Response-Suppress: DR, OOF, AutoReply\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Aug 2025 23:12:59.2959 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: DB9PR05MB8672.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: aa455e53-d56a-4b75-3f82-08dde5bf43a8\nX-MS-Exchange-CrossTenant-MailboxType: HOSTED\nX-MS-Exchange-CrossTenant-UserPrincipalName: tDy6Tvh2DlSAfnF+dluL1B26ISsIygDDxBOxEfTJqmntWJw6bJQGz/pPSZT7vtw+2UrXQY8NykulhuiWUOiRxbOrdo4pJFRHAYyVdTPxmMw=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS5PR05MB11774\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:49.3888912\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.9073.000\nX-Microsoft-Antispam-Mailbox-Delivery: wl:1;pcwl:1;ucf:0;jmr:0;auth:0;dest:I;ENG:(910005)(920097)(811242)(255002)(410001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: YWlREaO/UkhkQtH13Du48iz5lYVGfJbQRCHT8SnAXgMQ8wqb7X/O6IRxQZ4ofEJ9iFC7VlH/pQ/ECIQzRrPqvCLA4vc6+Ouhtl+5/BJ6gJYhlAW2U436GxafNDKhULKuekqglv8BO5rFqx44T4Zj7RpcGBxCI6gxGlY8VLoGTtdKHPZmcVk4KOWd6buSLAYFA3VJJ0EWfTfC+SHtFnCrYT57zYBRrSYBmNQjog7J3zxGrs1Qo/BXazmGe6DdEKRRARB1x6FtXwAWhmspkOBuof/nC+vCCsMnMHBH/6n8mvT7x07VOkJbm6n9FH45JcbDze3RLDzJkw/DdLs34avnRKQ9OXisElUSflY5W7ff6x/18/fTOoAqAiunmhZCDhUXBTW6pHHgP/kJPlcIO0bTLk6IP54kcG3uNs4owvxTWeUAZZp2WJOFfQYPILNYvhJa75rhx/Jg061a89lEIUig5V6ridzuhAsKa1jGpmzlvKJQfofXAeecEAeC//fXdYhZfQsiq3W7EufZ+s1Khadtetbf+VxrQ24scipCovCduWVXSpok5IIaIZCxnBfe4FDbD7euKF+uSZSjtKmLn2EziImDbkvkfk5VRJfTDD7tCoUmWEM9gFwMlLcMrfGqFKucAIetMgs+LKzoVGNnbdLD6N8smnlstUSE8DsMmlcM7Z5Z+v/UMN4lEhgjj1BSJVCwyRPS0/0ETqm5AU2LKWrxuVkDpgfrtSKj7kV6qXzHOwj9MQJMWevF5IBIOrC9R2LV+aVvrYTMT8oOm9VTPT1i+yNYfx7iZHHQiMxHFearHSAAMnbn6oyPBQKJQb2iGobF+bClUkn5vmuX8CWkGkhcONqoysLStfS8Hz09IuDSnrVMpn+Q6NMw1go9vI91UCEO6sq7NrQdIFvbxZMVl2MEn9DE8SJFttkS7nHOiDYHciQ=",
+      "start_pos": 1414,
+      "end_pos": 5050,
+      "chunk_index": 1,
+      "chunk_size": 3636,
+      "metadata": {
+        "doc_id": "C192TFZ - major incident notification sce11 update\\Headers\\C192TFZ_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C192TFZ - major incident notification sce11 update\\Headers\\C192TFZ_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:32.286740",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5108
+  }
+}

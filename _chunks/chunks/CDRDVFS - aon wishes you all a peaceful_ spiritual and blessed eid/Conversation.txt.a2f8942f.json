@@ -1,0 +1,31 @@
+{
+  "doc_id": "CDRDVFS - aon wishes you all a peaceful, spiritual and blessed eid\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CDRDVFS - aon wishes you all a peaceful, spiritual and blessed eid\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:41:18\nFolder: CDRDVFS - aon wishes you all a peaceful, spiritual and blessed eid\nMessage Count: 1\n\n--------------------------------------------------\nID: CDRDVFS_00\nFrom: Mohammad Galadari <mohammad.galadari@aon.com>\nTo: Mohammad Galadari <mohammad.galadari@aon.com>\nCC: \nBCC: \nDate: 2025-03-31 06:52\nSubject: Aon wishes you all a peaceful, spiritual and blessed Eid\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\n\n\n \n\n \n\nKind regards,\n\nMohammad Galadari \n\n \n\nMohammad Galadari\n\nDirector – Business Development\n\nt +971 4 202 6114  m +971 50 8091629\n\nmohammad.galadari@aon.com <mailto:mohammad.galadari@aon.com> \n\nwww.aon.com <https://url.uk.m.mimecastprotect.com/s/akCACqMy4Tk7KpXcXhEUEvgmt?domain=aon.com/>  \n\n \n\nDubai Hills Business Park\n\nBuilding 1, 1st Floor\n\nPO Box 10764\n\nDubai, UAE\n\n \n\nAon Middle East has relocated its headquarters to Dubai Hills Business Park",
+      "start_pos": 0,
+      "end_pos": 1248,
+      "chunk_index": 0,
+      "chunk_size": 1248,
+      "metadata": {
+        "doc_id": "CDRDVFS - aon wishes you all a peaceful, spiritual and blessed eid\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CDRDVFS - aon wishes you all a peaceful, spiritual and blessed eid\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:01.629465",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1420
+  }
+}

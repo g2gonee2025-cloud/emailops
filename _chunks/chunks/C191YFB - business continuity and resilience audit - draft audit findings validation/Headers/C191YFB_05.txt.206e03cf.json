@@ -1,0 +1,42 @@
+{
+  "doc_id": "C191YFB - business continuity and resilience audit - draft audit findings validation\\Headers\\C191YFB_05.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C191YFB - business continuity and resilience audit - draft audit findings validation\\Headers\\C191YFB_05.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from PAXPR05MB8590.eurprd05.prod.outlook.com (::1) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Thu, 3 Apr 2025 08:12:20 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from VI2PR05MB11381.eurprd05.prod.outlook.com (2603:10a6:800:22d::7) by PAXPR05MB8590.eurprd05.prod.outlook.com (2603:10a6:102:1a7::9) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8632.10; Thu, 3 Apr 2025 08:12:18 +0000\nReceived: from VI2PR05MB11381.eurprd05.prod.outlook.com ([::1]) by VI2PR05MB11381.eurprd05.prod.outlook.com ([fe80::d097:566d:9abb:f2fd%5]) with Microsoft SMTP Server id 15.20.8606.021; Thu, 3 Apr 2025 08:12:18 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Yasmine Hussein <Yasmine.Hussein@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: Business Continuity and Resilience Audit - Draft audit findings validation\nThread-Topic: Business Continuity and Resilience Audit - Draft audit findings validation\nThread-Index: AQHbe7usb3jTGFZERmKhVipwOvlW27NE63EggAAnnoCAQytx0IAJqkSA\nReferences: <DBBPR05MB650779E4D273ABABD5FCF2E587F22@DBBPR05MB6507.eurprd05.prod.outlook.com> <DBBPR05MB65075BF756F1F0580C4B2E4187FF2@DBBPR05MB6507.eurprd05.prod.outlook.com> <AS8PR05MB10824301EC4B2C8260ECF57EB9DFE2@AS8PR05MB10824.eurprd05.prod.outlook.com> <AS8PR05MB108241C3214670F53494EF4E09DAE2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB108241C3214670F53494EF4E09DAE2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 1673,
+      "chunk_index": 0,
+      "chunk_size": 1672,
+      "metadata": {
+        "doc_id": "C191YFB - business continuity and resilience audit - draft audit findings validation\\Headers\\C191YFB_05.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C191YFB - business continuity and resilience audit - draft audit findings validation\\Headers\\C191YFB_05.txt"
+      }
+    },
+    {
+      "text": "om> <AS8PR05MB108241C3214670F53494EF4E09DAE2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB108241C3214670F53494EF4E09DAE2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Yasmine.Hussein@chalhoub.com\nX-MS-TNEF-Correlator: 2c7f462d-fc17-499d-9285-817bd3a7ebdb\nMIME-Version: 1.0\nDate: Thu, 3 Apr 2025 08:12:18 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: VI2PR05MB11381.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <c1f207a5b0e44081a051fd3343e52eb9@VI2PR05MB11381.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: 53a3cebb-5f37-47bf-49ee-08dd72874042\nX-MS-Exchange-Parent-Message-Id: <AS8PR05MB108241C3214670F53494EF4E09DAE2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: VI2PR05MB11381:EE_|PAXPR05MB8590:EE_|AS8PR05MB10824:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 03 Apr 2025 08:12:18.4754 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: 53a3cebb-5f37-47bf-49ee-08dd72874042\nX-MS-Exchange-AtpMessageProperties: SA\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI2PR05MB11381.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Apr 2025 08:12:18.0444 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: VI2PR05MB11381.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: 53a3cebb-5f37-47bf-49ee-08dd72874042\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR05MB8590\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:02.5208760\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8606.021\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910005)(944506478)(944626604)(920097)(425001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: HtBksvWV2C1WZc8ONRb8L+XpuFB+bn28+3XZoPAqfs/Q6UrMg7trsJ/+WcjuuAI5CfF8cW0wYZpFZuQqrfLQPdqILFpvGdCiHvcuHKshcQpW466EJZhKBVfIulSycX2+SbYE4AdsQdQkFzq5YrWSbOap9se7VIBAJp000h9QUL9UWPuIgitJPdRTLKW3M0+xhWGAWyhj4TbQNM/ABv1XETNm8JA6utvGk8/MvosvZsj8jTm8dy+ru7V7koWTkYzPS6aVBjecYUlOmBu9KtOfFUKYY2fL0lLJqBzCkjIQT0lSDrPLyos2AGzBOTbsv50TEvbPfxr+um1jDV8q2epFVYzBMFNoLd0T6r2wSottKJpy33SbhvUfHPGB0gOZj5thNOymda/FCNlGHxtBaMDGR0qsjlEzJqcOzGBRcJ9A0dNza/E45E3Jog/UiD2dB67FsBWIk2tRpZOjWe0CuBLZLDKrH8sYulqVbPcMC5+AHpPUGrkBQt/XoBPrIFIYLUAufqHEoDry3g9g+/Y2hxCaztNmywNNOLWXiUdfzEsvg2/AHf8g3KaaXZ7rVxdVsr3azSK6Pmme1oIBmiPgLTgjKi1Tz9sJd70ZMvD9yOlmP7XxlxFSqH6dL8dCopmskpDZ8WPSTjsgLfJxQqFjHExTyuOSmA3a6lFlk5vbZSju/SEkE173Mwff1HtW75Pli16ZAFULvZvLNH51+v2iCWrD6PzTVvPB1qA6Nl9UMqYVWj2iKywKwSz49mevyWy2sQi1swFLAWBEhGFfsgBpFv+UuPBWPUAwwWTdAXFT6/Y7H8WPpIPFlKh13elq4F1N++K84T/UTcOP0r7c2Eb1xwF8Q6ERC1OoX0tOAUaSd4D49d4AoN3T/WbRg++/OpPwC36Z",
+      "start_pos": 1473,
+      "end_pos": 5041,
+      "chunk_index": 1,
+      "chunk_size": 3568,
+      "metadata": {
+        "doc_id": "C191YFB - business continuity and resilience audit - draft audit findings validation\\Headers\\C191YFB_05.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C191YFB - business continuity and resilience audit - draft audit findings validation\\Headers\\C191YFB_05.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:50.464071",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5097
+  }
+}

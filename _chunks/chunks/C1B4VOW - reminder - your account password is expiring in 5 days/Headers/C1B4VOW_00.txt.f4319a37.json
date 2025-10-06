@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1B4VOW - reminder - your account password is expiring in 5 days\\Headers\\C1B4VOW_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1B4VOW - reminder - your account password is expiring in 5 days\\Headers\\C1B4VOW_00.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from VI2PR05MB11645.eurprd05.prod.outlook.com (::1) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Sat, 19 Apr 2025 08:35:52 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from AS8PR05MB7606.eurprd05.prod.outlook.com (2603:10a6:20b:25c::17) by VI2PR05MB11645.eurprd05.prod.outlook.com (2603:10a6:800:299::13) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8655.19; Sat, 19 Apr 2025 08:35:51 +0000\nReceived: from AS8PR05MB7606.eurprd05.prod.outlook.com ([fe80::7e22:7f3e:ebb:e4f1]) by AS8PR05MB7606.eurprd05.prod.outlook.com ([fe80::7e22:7f3e:ebb:e4f1%5]) with mapi id 15.20.8655.025; Sat, 19 Apr 2025 08:35:51 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: One Reach <OneReach@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Reminder - Your account password is expiring in 5 days  \nThread-Topic: Reminder - Your account password is expiring in 5 days  \nThread-Index: AQHbsQYAB41IcHOi1kuO/Nl5dIdRig==\nX-MS-Exchange-MessageSentRepresentingType: 1\nDate: Sat, 19 Apr 2025 08:35:27 +0000\nMessage-ID: <AS8PR05MB760659604D7569B30CD02180D5BE2@AS8PR05MB7606.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach:\nX-MS-Exchange-Organization-SCL: 1\nX-MS-TNEF-Correlator: <AS8PR05MB760659604D7569B30CD02180D5BE2@AS8PR05MB7606.eurprd05.prod.outlook.com>\nx-ms-mail-application: Microsoft Power Automate; User-Agent: azure-logic-apps/1.0 (workflow 556dc2c7b926441096812217306a9228; version 08584629795031555565) microsoft-flow/1.0\nx-ms-mail-operation-type: Send\nx-ms-mail-environment-id: default-6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nx-ms-mail-workflow: x-ms-workflow-name: 5b2909ff-670b-4880-907d-97068ddd0955; x-ms-workflow-run-id: 08584565553651516514229392641CU200; x-ms-client-request-id: 6bc560e1-3c73-4336-9819-2bda04a330ff;\nMIME-Version: 1.0\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: AS8PR05MB7606.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 04\nX-MS-Exchange-Organization-Network-Message-Id: 817c460e-c4a0-4359-3443-08dd7f1d314b\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: AS8PR05MB7606:EE_|VI2PR05MB11645:EE_|AS8PR05MB10824:EE_\nReturn-Path: OneReach@chalhoub.com\nX-MS-Exchange-Organization-ExpirationStartTime: 19 Apr 2025 08:35:51.5634 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: 817c460e-c4a0-4359-3443-08dd7f1d314b\nX-MS-Exchange-AtpMessageProperties: SA\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|69100299015|31052699007|39142699007|8096899003|7053199007|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB7606.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(69100299015)(31052699007)(39142699007)(8096899003)(7053199007)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Apr 2025 08:35:27.3033 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB7606.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: 817c460e-c4a0-4359-3443-08dd7f1d314b\nX-MS-Exchange-CrossTenant-MailboxType: HOSTED\nX-MS-Exchange-CrossTenant-UserPrincipalName: OvqwjleGV+aBd7+aGnXn+Q/VbK2j4P5qbqO5UP5XvLMYEb0y3GMZvebrZ+ntskW2GxrgnA3Rp5fCKezZk3VP7i+S6iwwuQIpqevVKkB9zUQ=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: VI2PR05MB11645\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:25.5417647\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8655.018\nX-Microsoft-Antispam-Mailbox-Delivery: wl:1;pcwl:1;ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910005)(944506478)(944626604)(920097)(811239)(255002)(410001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: H4sdBctK2G0A6eqY9wfKFdl2sZZQRU5m1Sm8YzVXvq9PKZ7Kq6pixfUJ3A6siEe8qDqQ4BrdOQtAZqUmpgDxooozOIXQms3x96eqkSteQoBo9xg33fy1jU3ef3D+AU31sNZSycTZ86z7zBLxElfZQPSTYscEd04iLPv5y/Klouct+BlNDNF4K6bjczA49LPEi3diM4s0gWFTi284PhIWZdHLD4Pe7dgiknSICaSM4vHuzBUdkr3GomsAPA99vovfkR+/6D4kMLfek9Lufbx9aq36Cq67hF6u9zEKWA2J0hG8d1AtuXsw81lHhhkRMvL53mwGQ4FeiEYtqpXXSQzkZAxmVdA4FKyi8gG+BnNII5tRwHcrOs/PEGcFtCgJR8G6sEIHZk+ByU3+hKezh6tmw+GgrKMdV7EK2c0FC4di/jMKY5ihMVOFKQZ9qqlJew9oZ0+L6BltiC0WSMv6hDo0wlrk7Tvn2OQYFAODvm0j6pbQyLFcleVLwaq3ImJb1Sl2x69hkM66piJS67evY8kvqV3MtBBjlhAIbbrOKqc8g8KAybTIK+MtDpoa4JJSixgEawiNXnKXeWOdkWpMVPqlfXWAeVExGA1Cv42r7dTCMfb9n+TJxJB23ov06laKNhwOOTjq3Wc5VUNeT6tbYI0By7tGvQMIxFURPcKtS8D1Si83/JWbSFEa+jo9KIecQ00AE5WffkEUm9sWoW2JQLD052oFpOhHwObHBnlKq3pS97W/6kON8vy7oigu38fLt0lNlskEmkiHK5bJT+T/TZrmOe3Pj/I6zrZ8DQNSZ+LelCFskHyuM3sEl466gH/cKVXyT2NUPucRbqdqRtx7tHxElBNqNeO8jxZTydQ7EnT4N9xITewLJUwQ511asMuKUNo6ETHepMs1M5SKgXY4OXxqOBjE+aGCiWp4V/fJtuNIGhs=",
+      "start_pos": 0,
+      "end_pos": 5177,
+      "chunk_index": 0,
+      "chunk_size": 5177,
+      "metadata": {
+        "doc_id": "C1B4VOW - reminder - your account password is expiring in 5 days\\Headers\\C1B4VOW_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1B4VOW - reminder - your account password is expiring in 5 days\\Headers\\C1B4VOW_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:00.947002",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5234
+  }
+}

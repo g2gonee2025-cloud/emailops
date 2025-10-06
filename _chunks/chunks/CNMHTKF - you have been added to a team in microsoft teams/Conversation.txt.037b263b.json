@@ -1,0 +1,53 @@
+{
+  "doc_id": "CNMHTKF - you have been added to a team in microsoft teams\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CNMHTKF - you have been added to a team in microsoft teams\\Conversation.txt",
+  "num_chunks": 3,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:42:13\nFolder: CNMHTKF - you have been added to a team in microsoft teams\nMessage Count: 1\n\n--------------------------------------------------\nID: CNMHTKF_00\nFrom: Microsoft Teams <noreply@emeaemail.teams.microsoft.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-04-17 14:48\nSubject: You have been added to a team in Microsoft Teams\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\nMicrosoft Teams \t\n\nDivya added you to the Follow Up team!\n\n \t  \t \t \n \t \nFollow Up\n\n \t \n \t 3 members \t \t \n \t This space is dedicated to tracking and collaborating on post-audit action items, recommen… \t \t \nOpen Microsoft Teams <https://teams.microsoft.com/l/team/19%3a9V5l2n4IGYUBNTGu242o7poesO-cUii3ODyQt7JRJ4Q1%40thread.tacv2/conversations?tenantId=6ef8304c-f37b-42a5-a569-0a7d8249fbf3>  \t\n <https://statics.teams.skype.com/icons/img_teams_channels.png> \t\n\nBring your team together\n\n\nCreate an open, collaborative workspace for your team. Use channels to organize conversations by topic, area, or anything else.\n\n <https://statics.teams.skype.com/icons/img_chat.png> \t\n\nChat 1:1 and with groups\n\n\nOutside of open team conversations, chat privately and share files and notes with anyone in your organization.",
+      "start_pos": 0,
+      "end_pos": 1596,
+      "chunk_index": 0,
+      "chunk_size": 1596,
+      "metadata": {
+        "doc_id": "CNMHTKF - you have been added to a team in microsoft teams\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CNMHTKF - you have been added to a team in microsoft teams\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Create an open, collaborative workspace for your team. Use channels to organize conversations by topic, area, or anything else.\n\n <https://statics.teams.skype.com/icons/img_chat.png> \t\n\nChat 1:1 and with groups\n\n\nOutside of open team conversations, chat privately and share files and notes with anyone in your organization.\n\n <https://statics.teams.skype.com/icons/img_videocalling.png> \t\n\nMake video calls and schedule online meetings\n\n\nHave impromptu or scheduled meetings in any channel. Or just call someone…\n\n <https://statics.teams.skype.com/icons/img_tabs.png> \t\n\nTeam files, notes, and apps in one place\n\n\nYour team's tools are organized and integrated in Microsoft Teams with the power of Office 365.\n\nOpen Microsoft Teams <https://teams.microsoft.com/l/team/19%3a9V5l2n4IGYUBNTGu242o7poesO-cUii3ODyQt7JRJ4Q1%40thread.tacv2/conversations?tenantId=6ef8304c-f37b-42a5-a569-0a7d8249fbf3>  \t\n \t  \t  \t \n\nGet it now! Take it with you wherever you go.",
+      "start_pos": 1273,
+      "end_pos": 2226,
+      "chunk_index": 1,
+      "chunk_size": 953,
+      "metadata": {
+        "doc_id": "CNMHTKF - you have been added to a team in microsoft teams\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CNMHTKF - you have been added to a team in microsoft teams\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Open Microsoft Teams <https://teams.microsoft.com/l/team/19%3a9V5l2n4IGYUBNTGu242o7poesO-cUii3ODyQt7JRJ4Q1%40thread.tacv2/conversations?tenantId=6ef8304c-f37b-42a5-a569-0a7d8249fbf3>  \t\n \t  \t  \t \n\nGet it now! Take it with you wherever you go.\n\n \t  <https://statics.teams.microsoft.com/evergreen-assets/icons/icn_windows.png> \t  Windows \t <https://statics.teams.skype.com/icons/icn_apple.png> \t  iOS \t \t \n \t  <https://statics.teams.skype.com/icons/icn_apple.png> \t  Mac \t <https://statics.teams.skype.com/icons/icn_android.png> \t  Android \t \t \nGo to downloads page <https://url.uk.m.mimecastprotect.com/s/w4n-CqMy4TkB8MmhZfMcErJmS?domain=aka.ms>  \t\n \t  \t  \t \n© 2022 Microsoft Corporation \nOne Microsoft Way, Redmond, WA 98052-7329 \nPrivacy policy <https://url.uk.m.mimecastprotect.com/s/Sa7dCrMz4TnM8BLHzhBc4cTpj?domain=go.microsoft.com>  \t\n <https://urlshortener-emea.teams.cloud.microsoft/8DD7D9CE624D3DE-2-0>",
+      "start_pos": 1984,
+      "end_pos": 2894,
+      "chunk_index": 2,
+      "chunk_size": 910,
+      "metadata": {
+        "doc_id": "CNMHTKF - you have been added to a team in microsoft teams\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CNMHTKF - you have been added to a team in microsoft teams\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:05.185059",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 3081
+  }
+}

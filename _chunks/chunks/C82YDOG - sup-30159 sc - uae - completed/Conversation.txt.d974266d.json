@@ -1,0 +1,42 @@
+{
+  "doc_id": "C82YDOG - sup-30159 sc - uae - completed\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C82YDOG - sup-30159 sc - uae - completed\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:28:26\nFolder: C82YDOG - sup-30159 sc - uae - completed\nMessage Count: 1\n\n--------------------------------------------------\nID: C82YDOG_00\nFrom: Jill Gutierrez <jira@chalhoub-group.atlassian.net>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-07-31 21:40\nSubject: SUP-30159 SC - UAE - Completed\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n—-—-—-— \nReply above this line. \n\nDear Hagop Ghazarian,\n\nMDM Ticket: SUP-30159\nCategory: SC - UAE - Completed\nDescription: UNITED FIDELITY INSUR CODUBAI BR - Reported by: Hagop.Ghazarian@chalhoub.com\n\nMessage: Dear Hagop Ghazarian,\n\nThe VAT CERTIFICATE is now provided &\nthe Supplier site is now created.\n\nOU - 2103 - MCT FZE\nVENDOR NAME - UNITED FIDELITY INSURANCE COMPANY\nEBS CODE - 57250\nRMS SITE NAME - 2103UNI FID SRV\nIBAN - AE560030000296952930001\nBENEFICIARY NAME - UNITED FIDELITY INSUR CO DUBAI BR\nTRN - 100312843400003\n\nRegards,\nJill\n\nStatus: Completed\n\nThank you.\nMDM & Process Improvement",
+      "start_pos": 0,
+      "end_pos": 1347,
+      "chunk_index": 0,
+      "chunk_size": 1347,
+      "metadata": {
+        "doc_id": "C82YDOG - sup-30159 sc - uae - completed\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C82YDOG - sup-30159 sc - uae - completed\\Conversation.txt"
+      }
+    },
+    {
+      "text": "OU - 2103 - MCT FZE\nVENDOR NAME - UNITED FIDELITY INSURANCE COMPANY\nEBS CODE - 57250\nRMS SITE NAME - 2103UNI FID SRV\nIBAN - AE560030000296952930001\nBENEFICIARY NAME - UNITED FIDELITY INSUR CO DUBAI BR\nTRN - 100312843400003\n\nRegards,\nJill\n\nStatus: Completed\n\nThank you.\nMDM & Process Improvement\n\nView request <https://url.uk.m.mimecastprotect.com/s/GVKtCV0LMU1V6Y0ukuxiEX3Z-?domain=chalhoub-group.atlassian.net>  · Turn off this request's notifications <https://url.uk.m.mimecastprotect.com/s/_5i5CWjMNUv1KVzI1Cqioj1qs?domain=chalhoub-group.atlassian.net> \n\nThis is shared with Hagop Ghazarian.\n\nPowered by Jira Service Management <https://url.uk.m.mimecastprotect.com/s/N5tdCP5BDUqBRPvs1iMixqbAJ?domain=atlassian.com> \n\nSent on July 31, 2025 9:40:08 PM GST \n <http://atlassian-trk.prd.msg.ss-inf.net/CI0/010101986191e815-7181ffd7-efdf-4924-aae1-ae489083200b-000000/7bjP7BfpIv-bHgcG6PygrnB3rWcdmv7wIwdki1aVkTw=416>",
+      "start_pos": 1053,
+      "end_pos": 1967,
+      "chunk_index": 1,
+      "chunk_size": 914,
+      "metadata": {
+        "doc_id": "C82YDOG - sup-30159 sc - uae - completed\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C82YDOG - sup-30159 sc - uae - completed\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:16.856484",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2142
+  }
+}

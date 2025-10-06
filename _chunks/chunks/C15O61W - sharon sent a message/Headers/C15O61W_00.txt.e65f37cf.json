@@ -1,0 +1,31 @@
+{
+  "doc_id": "C15O61W - sharon sent a message\\Headers\\C15O61W_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C15O61W - sharon sent a message\\Headers\\C15O61W_00.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB9812.eurprd05.prod.outlook.com (2603:10a6:20b:5be::14) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Tue, 1 Jul 2025 14:21:57 +0000\nReceived: from DUZPR01CA0047.eurprd01.prod.exchangelabs.com (2603:10a6:10:469::16) by AS8PR05MB9812.eurprd05.prod.outlook.com (2603:10a6:20b:5be::14) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8880.31; Tue, 1 Jul 2025 14:21:56 +0000\nReceived: from DB1PEPF000509E2.eurprd03.prod.outlook.com (2603:10a6:10:469:cafe::76) by DUZPR01CA0047.outlook.office365.com (2603:10a6:10:469::16) with Microsoft SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.20.8901.19 via Frontend Transport; Tue, 1 Jul 2025 14:22:09 +0000\nX-MS-Exchange-Authentication-Results: spf=none (sender IP is 172.205.12.123) smtp.mailfrom=teams.mail.microsoft; dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=teams.mail.microsoft;\nReceived: from northeurope0.notifyp.svc.ms (172.205.12.123) by DB1PEPF000509E2.mail.protection.outlook.com (10.167.242.52) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8880.14 via Frontend Transport; Tue, 1 Jul 2025 14:21:55 +0000\nDate: Tue, 01 Jul 2025 14:21:55 +0000\nSubject: Sharon sent a message\nMessage-Id: <TeamsMissedActivityEmail-ac33d8f4-df0f-445b-9a94-49079f3ad15b-fc02da8c-6215-466d-b002-13a00d5b2674-r0-SendEmail-rh_neu-aid_ee283db4-abf6-4f25-82bd-4028b600c09a_ffb0bfb8-1c47-445a-a746-edbbcd2515f9@odspnotify>\nSender: Sharon Pinto in Teams <no-reply@teams.mail.microsoft>\nTo: Hagop.Ghazarian@chalhoub.com\nX-Crid: =?utf-8?q?ac33d8f4-df0f-445b-9a94-49079f3ad15b-fc02da8c-6215-466d-b002-?= =?utf-8?q?13a00d5b2674-r0-SendEmail?=\nX-Tnid: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nReturn-Path: no-reply@teams.mail.microsoft\nFrom: Sharon Pinto in Teams <no-reply@teams.mail.microsoft>\nMIME-Version: 1.0\nContent-Type: multipart/related; boundary=\"=-mIBcsZbwxU6FjUVuGtThCA==\"; type=\"text/html\"\nX-MS-Exchange-Organization-ExpirationStartTime: 01 Jul 2025 14:21:56.0215 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Exchange-Organization-Network-Message-Id: 4d290a87-51df-4199-a59b-08ddb8aaa21c\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthSource: TreatMessagesAsInternal-DB1PEPF000509E2.eurprd03.prod.outlook.com\nX-MS-TrafficTypeDiagnostic: DB1PEPF000509E2:EE_FirstParty-SPO-V3|AS8PR05MB9812:EE_FirstParty-SPO-V3|AS8PR05MB10824:EE_FirstParty-SPO-V3\nX-MS-PublicTrafficType: Email\nX-MS-Office365-Filtering-Correlation-Id: 4d290a87-51df-4199-a59b-08ddb8aaa21c\nX-MS-Exchange-AtpMessageProperties: SA\nX-MS-Exchange-Organization-SCL: 1\nX-Microsoft-Antispam: BCL:0;ARA:13230040|31052699007|39142699007|69100299015|13003099007|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:172.205.12.123;CTRY:IE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:northeurope0.notifyp.svc.ms;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(31052699007)(39142699007)(69100299015)(13003099007)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Jul 2025 14:21:55.9462 (UTC)\nX-MS-Exchange-CrossTenant-Network-Message-Id: 4d290a87-51df-4199-a59b-08ddb8aaa21c\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=6ef8304c-f37b-42a5-a569-0a7d8249fbf3;Ip=[172.205.12.123];Helo=[northeurope0.notifyp.svc.ms]\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: TreatMessagesAsInternal-DB1PEPF000509E2.eurprd03.prod.outlook.com\nX-MS-Exchange-CrossTenant-FromEntityHeader: Internet\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR05MB9812\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:01.5201911\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8880.029\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910005)(944506478)(944626604)(920097)(425001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: B313AiOEVVMe4+o+3UlZseyBZhJl7bRAW4XXQ/O7i29lb1Sn3ThqgGOLNLM0NXDE1W691BRoXNhL/htsJyqeaTNcopRmmuvQzq2p54ZRuKI/QskGxc3YuDUfq8HkkoQRSkHzRuPkMFN+Kz5ICUqyb6U3UQvx9CSeDfaAwiSz6YvV+6nrZo2upsIGqbL1Adz+SCp3M3gx9wxe2ovFLc7Bd3Li3onIu+Ilyv44raWEst+in5YK5g8Ple9eiHfAaEpU8MobdpBnKlRa+kUop0waP47c/a7wicvbBomwUP6COLkkJCgCdnYC5cmYhFuWsmakF38YqTFifxw2MHRCqa7ZTtRI43zk3qCOhxspU5RJBXUbchByMueiPBsSawBB3mdCr2rflyXQ/0J+qynywHIT+fBNBcdbl8xaoRQ2l3QFCff8XVk/a/TVtjpuHvk1/5oV1R6h8kREZan/zEEA165DA/2z6zqbmJR1liI8T0Td6I5xYJgW4lgW4K9t16ji+nQweG3RKhSvcKruptmSfp1khId/WLQDhKvAVkqB4r69rlFGHQX2jB6wfeAKfcPnRrMoxbpfnm6XRpzY1Cp7GvVmkAmYqFPxTeoVsMMH8p9rtzjfVKjW4m8PIF20s6A5Bg4Gqcr+nHS7HuZPeC8GEzJclWgBCe9SCAtizbg4nOsrG2HyFvMKGOCAvm4iX7I3xFDOP7e2Z3delQuWQJqObV29jOHzE+/7nPgHCE2wtd/bV8hN+AfCxAIwDPcbw5nAZ1flBG2+qSInpwC2icT3/1QfaudPLV6Uskpts/dRXNOT287oVVDs93pxlJnnRfkFCdJgDC55O+fqk1iVnGJ4vgrOwPLLIdLfTHlB9No8GUmZ6p+Z0N6H3Zbbo0CemT4OKss9IDZpEhnlzdBWvBnb22yjhg==",
+      "start_pos": 0,
+      "end_pos": 5153,
+      "chunk_index": 0,
+      "chunk_size": 5153,
+      "metadata": {
+        "doc_id": "C15O61W - sharon sent a message\\Headers\\C15O61W_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C15O61W - sharon sent a message\\Headers\\C15O61W_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:32.719018",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5200
+  }
+}

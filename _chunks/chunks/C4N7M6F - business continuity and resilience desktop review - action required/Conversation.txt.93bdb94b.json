@@ -1,0 +1,42 @@
+{
+  "doc_id": "C4N7M6F - business continuity and resilience desktop review - action required\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C4N7M6F - business continuity and resilience desktop review - action required\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:43:51\nFolder: C4N7M6F - business continuity and resilience desktop review - action required\nMessage Count: 1\n\n--------------------------------------------------\nID: C4N7M6F_00\nFrom: Yasmine Hussein <Yasmine.Hussein@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>; Nicole Nitschke <Nicole.Nitschke@faces.com>; Dee Deu <dee.deu@chalhoub.com>; Philip Leonard; Emma Elkarout <Emma.Elkarout@chalhoub.com>; Damian Brown <Damian.Brown@chalhoub.com>; Joe Hobeika <Joe.Hobeika@chalhoub.com>\nCC: Fadi Jabbour <Fadi.Jabbour@chalhoub.com>; Kamran Abbasi <Kamran.Abbasi@chalhoub.com>; Wassim Eid <Wassim.Eid@chalhoub.com>; Nirma Hingorani <Nirma.Hingorani@chalhoub.com>\nBCC: \nDate: 2025-03-17 12:45\nSubject: Business Continuity and resilience desktop review - Action required\n--------------------------------------------------\nDear Team,\n\n \n\nI hope this message finds you well. \n\n \n\nOver the past few weeks, we have discussed control gaps related to processes within your scope, as part of the Business Continuity and Resilience desktop review we undertook in Q4 last year. \n\n \n\nWe are now approaching the deadline to present our audit results to the Risk and Crisis Management Committee at the end of this week. Despite our follow up and reminders, we have not received the written responses and action plans in the tracker we shared earlier. As a result, your respective control gaps will be marked as \"No Management Response Received\".",
+      "start_pos": 0,
+      "end_pos": 1521,
+      "chunk_index": 0,
+      "chunk_size": 1521,
+      "metadata": {
+        "doc_id": "C4N7M6F - business continuity and resilience desktop review - action required\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C4N7M6F - business continuity and resilience desktop review - action required\\Conversation.txt"
+      }
+    },
+    {
+      "text": "We are now approaching the deadline to present our audit results to the Risk and Crisis Management Committee at the end of this week. Despite our follow up and reminders, we have not received the written responses and action plans in the tracker we shared earlier. As a result, your respective control gaps will be marked as \"No Management Response Received\".\n\n \n\nSince this is an ongoing review and these gaps impact our top 30 Business Continuity and Resilience risks, we will continue to follow up on them. Therefore, I kindly request that you provide your responses in the file linked below at the earliest possible, but no later than March 31’st. \n\n Business Continuity and Resilience Audit - Draft Findings Summary.xlsx <https://mctfze.sharepoint.com/:x:/s/RiskandCrisisCommittee-IssueSummary/EVQ4Nfw0tclBkcR4lJ-BSqsBL9LpKhQS_XYwxNBKGUVeAw?e=tZqd9I> \n\nThe status of responses as of April 3’rd will be presented to the Audit Committee in April.\n\n \n\nThank you in advance for your cooperation.\n\nBest,\n\nYasmine\n\nYASMINE HUSSEIN​​​​\n\nDIRECTOR ‑ INTERNAL AUDIT\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n\t\t\n \t\n <https://chalhoubgroup.com/> \n\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\n\n‑\n\n\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\n\n <https://twitter.com/ChalhoubGroup> \n\n <https://www.facebook.com/chalhoubgroup/> \n\n <https://www.instagram.com/chalhoubgroup> \n\n <https://www.linkedin.com/company/chalhoub-group/> \n\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 1162,
+      "end_pos": 2697,
+      "chunk_index": 1,
+      "chunk_size": 1535,
+      "metadata": {
+        "doc_id": "C4N7M6F - business continuity and resilience desktop review - action required\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C4N7M6F - business continuity and resilience desktop review - action required\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:28.110205",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2807
+  }
+}

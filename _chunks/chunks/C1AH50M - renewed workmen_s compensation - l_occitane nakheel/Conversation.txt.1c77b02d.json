@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1AH50M - renewed workmen's compensation - l'occitane nakheel\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1AH50M - renewed workmen's compensation - l'occitane nakheel\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:46:44\nFolder: C1AH50M - renewed workmen's compensation - l'occitane nakheel\nMessage Count: 2\n\n--------------------------------------------------\nID: C1AH50M_00\nFrom: Marina Larisa <Marina.Larisa@tarzlifestyle.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Mohammed El Neel <Mohammed.Elneel@chalhoub.com>\nBCC: \nDate: 2025-01-23 16:48\nSubject: Renewed Workmen's Compensation - L'occitane Nakheel \n--------------------------------------------------\nDear Hagop,\n\nKindly share the renewed Workmens Compensation for L'occitane Nakheel , Please note our permit requests are getting rejected due to the expired Insurance.\n\nPlease treat this request as urgent . \n\nI look forward to your reply.  \n\nThank you & best regards,\nMarina\n\n--------------------------------------------------\nID: C1AH50M_01\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Marina Larisa <Marina.Larisa@tarzlifestyle.com>\nCC: Mohammed El Neel <Mohammed.Elneel@chalhoub.com>\nBCC: \nDate: 2025-01-23 17:57\nSubject: RE: Renewed Workmen's Compensation - L'occitane Nakheel \n--------------------------------------------------\nDear Marina,\n\n \n\nHere you go.\n\n\nBest Regards,\n\nHagop\n\n \n\nFrom: Marina Larisa <Marina.Larisa@tarzlifestyle.com> \nSent: 23 January 2025 4:48 PM\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCc: Mohammed El Neel <Mohammed.Elneel@chalhoub.com>\nSubject: Renewed Workmen's Compensation - L'occitane Nakheel \nImportance: High\n\n \n\nDear Hagop,",
+      "start_pos": 0,
+      "end_pos": 1522,
+      "chunk_index": 0,
+      "chunk_size": 1522,
+      "metadata": {
+        "doc_id": "C1AH50M - renewed workmen's compensation - l'occitane nakheel\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1AH50M - renewed workmen's compensation - l'occitane nakheel\\Conversation.txt"
+      }
+    },
+    {
+      "text": "From: Marina Larisa <Marina.Larisa@tarzlifestyle.com> \nSent: 23 January 2025 4:48 PM\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCc: Mohammed El Neel <Mohammed.Elneel@chalhoub.com>\nSubject: Renewed Workmen's Compensation - L'occitane Nakheel \nImportance: High\n\n \n\nDear Hagop,\n\n \n\nKindly share the renewed Workmens Compensation for L'occitane Nakheel , Please note our permit requests are getting rejected due to the expired Insurance.\n\n \n\nPlease treat this request as urgent . \n\n \n\nI look forward to your reply.  \n\n \n\nThank you & best regards,\n\nMarina",
+      "start_pos": 1240,
+      "end_pos": 1798,
+      "chunk_index": 1,
+      "chunk_size": 558,
+      "metadata": {
+        "doc_id": "C1AH50M - renewed workmen's compensation - l'occitane nakheel\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1AH50M - renewed workmen's compensation - l'occitane nakheel\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:58.800192",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1882
+  }
+}

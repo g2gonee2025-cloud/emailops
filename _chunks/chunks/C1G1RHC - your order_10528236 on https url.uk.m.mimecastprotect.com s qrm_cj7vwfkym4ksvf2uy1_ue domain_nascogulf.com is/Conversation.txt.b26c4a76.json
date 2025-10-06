@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1G1RHC - your order#10528236 on https url.uk.m.mimecastprotect.com s qrm_cj7vwfkym4ksvf2uy1_ue domain=nascogulf.com is\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1G1RHC - your order#10528236 on https url.uk.m.mimecastprotect.com s qrm_cj7vwfkym4ksvf2uy1_ue domain=nascogulf.com is\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:44:27\nFolder: C1G1RHC - your order#10528236 on https url.uk.m.mimecastprotect.com s qrm_cj7vwfkym4ksvf2uy1_ue domain=nascogulf.com is \nMessage Count: 1\n\n--------------------------------------------------\nID: C1G1RHC_00\nFrom: orders@ccavenue.ae <orders@ccavenue.ae>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-03-10 15:06\nSubject: Your order#10528236 on https://url.uk.m.mimecastprotect.com/s/qrM_CJ7vwfKyM4kSVf2Uy1_ue?domain=nascogulf.com is successful.\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n <https://url.uk.m.mimecastprotect.com/s/qrM_CJ7vwfKyM4kSVf2Uy1_ue?domain=nascogulf.com> \t \nDear ISKANDER SAWAYA BASILI,\n\nThank you for your order from http://www.nascogulf.com <https://url.uk.m.mimecastprotect.com/s/qrM_CJ7vwfKyM4kSVf2Uy1_ue?domain=nascogulf.com> \n\nFor your convenience, we have included a copy of your order below. The charge will appear on your credit card / Account Statement as 'NASCO GULF'\n\n\nReference ##\t CCAvenue Reference #\t Order Date\t \n <https://secure.ccavenue.ae/transaction/images/blank_spacer.gif> \t\nMV-02-2025-0516\t 114064496896\t 10/03/2025 15:05:15",
+      "start_pos": 0,
+      "end_pos": 1493,
+      "chunk_index": 0,
+      "chunk_size": 1491,
+      "metadata": {
+        "doc_id": "C1G1RHC - your order#10528236 on https url.uk.m.mimecastprotect.com s qrm_cj7vwfkym4ksvf2uy1_ue domain=nascogulf.com is\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1G1RHC - your order#10528236 on https url.uk.m.mimecastprotect.com s qrm_cj7vwfkym4ksvf2uy1_ue domain=nascogulf.com is\\Conversation.txt"
+      }
+    },
+    {
+      "text": "For your convenience, we have included a copy of your order below. The charge will appear on your credit card / Account Statement as 'NASCO GULF'\n\n\nReference ##\t CCAvenue Reference #\t Order Date\t \n <https://secure.ccavenue.ae/transaction/images/blank_spacer.gif> \t\nMV-02-2025-0516\t 114064496896\t 10/03/2025 15:05:15\t \n\n\nBilling Details\t \n \t \nCustomer:\t ISKANDER SAWAYA BASILI  |  Hagop.Ghazarian@chalhoub.com <mailto:Hagop.Ghazarian@chalhoub.com>   |  971506539033\t \nAddress:\t DUBAI , ,DUBAI 261075. United Arab Emirates\t \nCustomer IP:\t 94.56.252.103 <https://url.uk.m.mimecastprotect.com/s/yDUmCK5wxU49pAQUvhAU5Fb_e?domain=94.56.252.103> \t \nPay Mode:\t Credit Card - MasterCard\t \nBank Ref #:\t 435855\t \nInstructions:\t \t\n <https://secure.ccavenue.ae/transaction/images/blank_spacer.gif> \tGross Amount: \t AED\t 2430.75\t \nOrder Amount: \t AED\t 2430.75\t \n <https://secure.ccavenue.ae/transaction/images/blank_spacer.gif> \t\nNet Payable: \t AED\t 2430.75\t \n\n\n <https://secure.ccavenue.ae/transaction/images/blank_spacer.gif> \t\nCUSTOMER CARE\nAccounts Department\nAccounting@nascodubai.com\n04-3051694\t  <https://secure.ccavenue.ae/transaction/images/logo_ccavenue_poweredby.jpg>",
+      "start_pos": 1176,
+      "end_pos": 2340,
+      "chunk_index": 1,
+      "chunk_size": 1164,
+      "metadata": {
+        "doc_id": "C1G1RHC - your order#10528236 on https url.uk.m.mimecastprotect.com s qrm_cj7vwfkym4ksvf2uy1_ue domain=nascogulf.com is\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1G1RHC - your order#10528236 on https url.uk.m.mimecastprotect.com s qrm_cj7vwfkym4ksvf2uy1_ue domain=nascogulf.com is\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:55.627289",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2501
+  }
+}

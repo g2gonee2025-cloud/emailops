@@ -1,0 +1,42 @@
+{
+  "doc_id": "CBJXSGO - ic pc - living divani furniture delivery\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CBJXSGO - ic pc - living divani furniture delivery\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:33:11\nFolder: CBJXSGO - ic pc - living divani furniture delivery\nMessage Count: 1\n\n--------------------------------------------------\nID: CBJXSGO_00\nFrom: Linton Crockford-Moore <lintoncrockfordmoore@gmail.com>\nTo: Ingie Chalhoub <Ingie.Chalhoub@etoilegroup.com>; Geeta Manjal <Geeta.Manjal@chalhoub.com>; Joe Hobeika <Joe.Hobeika@chalhoub.com>; Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>; Hiba Assaf <hiba.assaf@etoilegroup.com>; Nada El Bitar; Lali Das <Lali.Das@chalhoub.com>; Ramanathan Arumugam (ram@stonehaven.ae) <ram@stonehaven.ae>; Satish Kumar <satish.kumar@khansaheb.com>\nCC: \nBCC: \nDate: 2025-06-26 12:00\nSubject: IC/PC - LIVING DIVANI Furniture Delivery\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\nDear All,\n\nPlease find attached in the below download link the photo report for the delivery of Living Divani on 19/06/23.\n\nhttps://we.tl/t-gqvJmvBsdE <https://url.uk.m.mimecastprotect.com/s/KLuwC7WQKc2GX4Oc8fkhogx6I?domain=we.tl>  \n\n\n\n\nIn the link I have attached for record: \n\n1.        Packing List.\n\n2.        Packing List with attached photos of received items.\n\n3.        Presentation of items received, opened and placed in the locations.\n\n4.        Loose file of photos.",
+      "start_pos": 0,
+      "end_pos": 1576,
+      "chunk_index": 0,
+      "chunk_size": 1576,
+      "metadata": {
+        "doc_id": "CBJXSGO - ic pc - living divani furniture delivery\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CBJXSGO - ic pc - living divani furniture delivery\\Conversation.txt"
+      }
+    },
+    {
+      "text": "In the link I have attached for record: \n\n1.        Packing List.\n\n2.        Packing List with attached photos of received items.\n\n3.        Presentation of items received, opened and placed in the locations.\n\n4.        Loose file of photos.\n\nWishing you a good day,\n\nWith Gratitude\n\nLinton",
+      "start_pos": 1335,
+      "end_pos": 1625,
+      "chunk_index": 1,
+      "chunk_size": 290,
+      "metadata": {
+        "doc_id": "CBJXSGO - ic pc - living divani furniture delivery\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CBJXSGO - ic pc - living divani furniture delivery\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:49.946170",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1779
+  }
+}

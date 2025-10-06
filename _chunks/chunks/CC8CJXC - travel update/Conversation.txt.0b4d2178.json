@@ -1,0 +1,31 @@
+{
+  "doc_id": "CC8CJXC - travel update\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CC8CJXC - travel update\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:34:50\nFolder: CC8CJXC - travel update\nMessage Count: 1\n\n--------------------------------------------------\nID: CC8CJXC_00\nFrom: Internal Communications <Internal.Communications@chalhoub.com>\nTo: \nCC: \nBCC: \nDate: 2025-06-13 17:20\nSubject: Travel Update\n--------------------------------------------------",
+      "start_pos": 0,
+      "end_pos": 382,
+      "chunk_index": 0,
+      "chunk_size": 382,
+      "metadata": {
+        "doc_id": "CC8CJXC - travel update\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CC8CJXC - travel update\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:46.705705",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 407
+  }
+}

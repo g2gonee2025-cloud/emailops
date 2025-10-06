@@ -1,0 +1,31 @@
+{
+  "doc_id": "C172GVC - major incident notification www.faces.ae is down\\Headers\\C172GVC_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C172GVC - major incident notification www.faces.ae is down\\Headers\\C172GVC_00.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from AM0PR05MB6756.eurprd05.prod.outlook.com (::1) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Sat, 8 Feb 2025 07:22:55 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from AS1PR05MB8963.eurprd05.prod.outlook.com (2603:10a6:20b:4dd::6) by AM0PR05MB6756.eurprd05.prod.outlook.com (2603:10a6:20b:15d::13) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8422.14; Sat, 8 Feb 2025 07:22:13 +0000\nReceived: from AS1PR05MB8963.eurprd05.prod.outlook.com ([fe80::8ce4:ecdc:46e7:56dd]) by AS1PR05MB8963.eurprd05.prod.outlook.com ([fe80::8ce4:ecdc:46e7:56dd%6]) with mapi id 15.20.8422.010; Sat, 8 Feb 2025 07:22:12 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: One Reach <OneReach@chalhoub.com>\nSubject: Major Incident Notification:  www.faces.ae is down\nThread-Topic: Major Incident Notification:  www.faces.ae is down\nThread-Index: AQHbefhqEjm9gkUr9kmbs/glFlyi2Q==\nX-MS-Exchange-MessageSentRepresentingType: 1\nDate: Sat, 8 Feb 2025 07:22:12 +0000\nMessage-ID: <AS1PR05MB8963AFF59D76F4E981C7FA29DAF02@AS1PR05MB8963.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-Exchange-Organization-SCL: 1\nX-MS-TNEF-Correlator: <AS1PR05MB8963AFF59D76F4E981C7FA29DAF02@AS1PR05MB8963.eurprd05.prod.outlook.com>\nmsip_labels:\nx-myanalyticsisemailtracked: false\nMIME-Version: 1.0\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: AS1PR05MB8963.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 04\nX-MS-Exchange-Organization-Network-Message-Id: 8afdc846-adb1-4e06-3391-08dd48114e9f\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: AS1PR05MB8963:EE_|AM0PR05MB6756:EE_|AS8PR05MB10824:EE_\nTo: Undisclosed recipients:;\nReturn-Path: OneReach@chalhoub.com\nX-MS-Exchange-Organization-ExpirationStartTime: 08 Feb 2025 07:22:13.1166 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: 8afdc846-adb1-4e06-3391-08dd48114e9f\nX-LD-Processed: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3,ExtAddr,ExtFwd\nX-MS-Exchange-AtpMessageProperties: SA\nX-Microsoft-Antispam: BCL:0;ARA:13230040|39142699007|366016|31052699007|8096899003|13003099007|105050200037|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS1PR05MB8963.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(39142699007)(366016)(31052699007)(8096899003)(13003099007)(105050200037)(41050700001);DIR:INT;\nX-Auto-Response-Suppress: DR, OOF, AutoReply\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Feb 2025 07:22:12.7048 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: AS1PR05MB8963.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: 8afdc846-adb1-4e06-3391-08dd48114e9f\nX-MS-Exchange-CrossTenant-MailboxType: HOSTED\nX-MS-Exchange-CrossTenant-UserPrincipalName: seJWDGXKmqV4nsDmi3Ii09itbwsOZ5Wc+SS22wT8rYrcwpf7sWQ311T4ln5EZd+mN7UNE9I6uWLrPq00RIUOppGvIKapwSrzu0c/7Rou0lU=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AM0PR05MB6756\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:43.1898981\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8398.024\nX-Microsoft-Antispam-Mailbox-Delivery: wl:1;pcwl:1;ucf:0;jmr:0;auth:0;dest:I;ENG:(910001)(920097)(811239)(255002)(410001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: umLzce4J5dJWCJYEGp2cSG+nsyfVfe+S1uPEFUPfMZXjHc3wvpUiErFDIvPWFbYqnqzdZeuAp4/ZZFeJWHXM8wRJhK7/SaAzpkHLCxK30hK5I6Fd3ms/Wq+eET0Fu7RquIPQUidR1p8w94Gwx1RWAds50bwR5JRLKHqAsshGBQuxgJ8dXXtTyFuOipD9QeWEPRmeWve/xHpaXuIZqQSV09Ie2315px3Q2WcLhoRFQFvQ3IWrgMNXIbeYxtQvA7d8zFKkzAvzveg2a8/fymx4L+U42JpQw9GjvYMOn1IPt0rFvnIFpc4LPqDP7PUhKx2cW59qhdbHlW4pvUflJ66B9C9CQtNShslCSYqZpeKZ0ArXR6TShF7eS6s3oeDdTFQjI3ltrT6Xm2dJXoTWyw09yMt9GbNoN8Ocs0dXHX1CH9OSrlbzmI4HZGc7iyzH2ABXXdRutsS2ftMXAcRxUXwIFLY8qGZAcOmbPmhCKRRZjDn6g15bdeErdWt9O+QO4ahpsTR1OfEiRD4ZtV95k+s/vf3nBm7YDYVo1AwUWQwkDakwUHiuu0fCHHP9BVE+UAtN8PN0PsmYdFZeS1KJBviSps47H3tEmsOXbGPe46FPt0nP/4zWZ00zQo2g0kupjGcoiRngj3X+X8TrBZVgyHJ9m91v67B/ZW6GEBFx3PtKmhGmeH9WOfMH0NBui3ZQhAAw42pXM23GKVLVOqqq4TLA6UJFvPKIM9dQlaKGE79O8JCE+CbLfT+iydytHs+1kPzV04XcrKOUAwh7z1s84TqkREFUkBPtVqzmD31urt4EWowwVDb9CUlPhE/8y/bMlIISx4EaBW+xuSCzaZIzv/i1xHxv1n3mZqnWTw2MBQIcsfFwLLWV538rGzijyrYoQQMUr0KunqHuX12Jce9m/h6W5mezxEIRtwraeZArPd/HSfU=",
+      "start_pos": 0,
+      "end_pos": 4792,
+      "chunk_index": 0,
+      "chunk_size": 4792,
+      "metadata": {
+        "doc_id": "C172GVC - major incident notification www.faces.ae is down\\Headers\\C172GVC_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C172GVC - major incident notification www.faces.ae is down\\Headers\\C172GVC_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:53.703731",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4849
+  }
+}

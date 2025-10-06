@@ -1,0 +1,42 @@
+{
+  "doc_id": "CPZITY0 - document expiry notification\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CPZITY0 - document expiry notification\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:28:16\nFolder: CPZITY0 - document expiry notification\nMessage Count: 1\n\n--------------------------------------------------\nID: CPZITY0_00\nFrom: Microsoft Power Apps and Power Automate <microsoft@powerapps.com>\nTo: May Karaki <May.Karaki@chalhoub.com>; Rami Riman <Rami.Riman@chalhoub.com>; Mary Janice Dofeliz <MaryJanice.Dofeliz@chalhoub.com>; Sharon Pinto <Sharon.Pinto@chalhoub.com>; Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>; Joe Hobeika <Joe.Hobeika@chalhoub.com>; Mahmoud Abd Hamid <Mahmoud.Khedr@chalhoub.com>; Mohammed AL-AREQI <Mohammed.Al-areqi@chalhoub.com>\nCC: \nBCC: \nDate: 2025-08-04 10:02\nSubject: Document Expiry Notification\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\nDear Administration Team,\n\nThe following documents  will expire within 7 days.\n\nSERVICE AGREEMENTS-Cleaning-3538 <https://url.uk.m.mimecastprotect.com/s/9aCTCo6w4UJ1K5Et1fMspiKt3?domain=mctfze.sharepoint.com>     L'OCCITANE        2025-08-11\n\nSERVICE AGREEMENTS-Cleaning-3539 <https://url.uk.m.mimecastprotect.com/s/QzAUCpXx5fPJxqmfDhYsG_eoJ?domain=mctfze.sharepoint.com>     L'ARTISAN PARFUMEUR        2025-08-11",
+      "start_pos": 0,
+      "end_pos": 1485,
+      "chunk_index": 0,
+      "chunk_size": 1485,
+      "metadata": {
+        "doc_id": "CPZITY0 - document expiry notification\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CPZITY0 - document expiry notification\\Conversation.txt"
+      }
+    },
+    {
+      "text": "SERVICE AGREEMENTS-Cleaning-3538 <https://url.uk.m.mimecastprotect.com/s/9aCTCo6w4UJ1K5Et1fMspiKt3?domain=mctfze.sharepoint.com>     L'OCCITANE        2025-08-11\n\nSERVICE AGREEMENTS-Cleaning-3539 <https://url.uk.m.mimecastprotect.com/s/QzAUCpXx5fPJxqmfDhYsG_eoJ?domain=mctfze.sharepoint.com>     L'ARTISAN PARFUMEUR        2025-08-11\n\nSERVICE AGREEMENTS-Cleaning-3540 <https://url.uk.m.mimecastprotect.com/s/px9pCqMy4TGx7nZHQiPsEMmal?domain=mctfze.sharepoint.com>     CHAUMET        2025-08-11\n\nSERVICE AGREEMENTS-Cleaning-3541 <https://url.uk.m.mimecastprotect.com/s/VHsgCrMz4TXzD7EIysDs4frLC?domain=mctfze.sharepoint.com>     LACOSTE        2025-08-11\n\nSERVICE AGREEMENTS-Cleaning-3542 <https://url.uk.m.mimecastprotect.com/s/HWWvCv9E4IoPyqxtotZsQgP3W?domain=mctfze.sharepoint.com>     MICHAEL KORS        2025-08-11\n\nSERVICE AGREEMENTS-Cleaning-3543 <https://url.uk.m.mimecastprotect.com/s/8TK9CwRG4iX4RkKI8uOsJZjV4?domain=mctfze.sharepoint.com>     LEVEL SHOES        2025-08-11\n\n\n\nPlease renew before expiry date.\n\nThank you.\n\n\nIf you want to unsubscribe from these emails, please use this form <https://url.uk.m.mimecastprotect.com/s/ldnECx7J4fKgQDkt2CksyivLZ?domain=aka.ms> .",
+      "start_pos": 1152,
+      "end_pos": 2334,
+      "chunk_index": 1,
+      "chunk_size": 1182,
+      "metadata": {
+        "doc_id": "CPZITY0 - document expiry notification\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CPZITY0 - document expiry notification\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:10.903494",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2488
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "doc_id": "C3JK3CW - allocation of remittance\\Headers\\C3JK3CW_02.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C3JK3CW - allocation of remittance\\Headers\\C3JK3CW_02.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by DU2PR05MB8824.eurprd05.prod.outlook.com (2603:10a6:10:2d7::12) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8422.19; Wed, 12 Feb 2025 11:02:47 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%6]) with mapi id 15.20.8445.013; Wed, 12 Feb 2025 11:02:47 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Payment Operations <paymentsoperations@chalhoub.com>\nCC: Real UAE Accounting - Document Control <RealUAEAccounting-DocumentControl@chalhoub.com>\nSubject: RE: Allocation of remittance\nThread-Topic: Allocation of remittance\nThread-Index: Adt9OKlBsiHINTqhRWm7hZqrFYhn/wABGE6g\nDate: Wed, 12 Feb 2025 11:02:47 +0000\nMessage-ID: <AS8PR05MB108242C5CB60EFBBE860602049DFC2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <AS8PR05MB10824043F92231B5363099E4F9DFC2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824043F92231B5363099E4F9DFC2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-US\nX-Mentions: paymentsoperations@chalhoub.com\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|DU2PR05MB8824:EE_\nx-ms-office365-filtering-correlation-id: 576eff9c-a436-48cf-942e-08dd4b54c8c5\nx-ld-processed: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3,ExtFwd\nx-ms-exchange-atpmessageproperties: SA\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nx-microsoft-antispam-message-info: BEOpgMhO4X6U4LlLrQJ9LazzdmhXon/63mirC1t+usBaKuRUOkSgqVrlWPKhydD1dgK/Tp5XNKNHtyE6JQXMYwPkfrnOdLUfg70vhWpSXaz2Eqpl5kqotMUjHbbXld3Epg9l/bl71GMxzSo2KrPiuNp6LmVkPoT+vUNFOqI2hIAP+PZBNT4FmpproURNprKh2ixYydPcVkGnqAa78AtV20gOnYmNye83pTn+6/B6EYFprKNwxccimIyNt9BnSIqDnzfq0BPsiS+3bLWxaRMudR67S9QQ0UOY83XEcOtxrlt87Ddj1AW+VLLJALPb7NO+ESPVytkhrnK/7sIxo/Re0PBiux72mmG3ep2plq5ts2njdnnvIHUW8b84KQCz3AWgrvLyIDRe4daBq+pB/vwIKWX2l5Weky8XdwyOKBDZB5yYSNLAbqWqzRPF+Q/P3ITlI12D9oLPPZg6cUV0LFnTxxgKgFLSe87cdMlLk3frO7MO/3GR4VDM9JvPVQaVXP+EFkP50xKHHQPR/AleuAW+dLbzfEePPTHwd8GhjIX+FLhV7srCpmugEFVakPmM+YsuN2puYrYm8tjoHRYp//j/JtkyFGYjjcwW2x4RJVAiVGvWriPIgvrTnv8lETDa4EKEP1oWfTFhJXDZcN1tdoDW66q5Pd7PUZk3qxlMa/EIDhhb0DZgFIbNiqhohjRpSTNJV5kncEInUChQNDaeCeqolJgtQHgzJ+Ly6wulkpnhP2vhRIps+KCkKe+V8qn/xLb9\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nContent-Type: multipart/mixed; boundary=\"_012_AS8PR05MB108242C5CB60EFBBE860602049DFC2AS8PR05MB10824eu_\"\nMIME-Version: 1.0\nX-Auto-Response-Suppress: DR\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: ZRxX80f866W1vjM15YZK43UxC9la8YMvnfYNjlO32dQPH5QDGRWXR0RcIFcPa6fAlOEpv12YpUJ4FfdpzpUpdnJ3I0wmLddDJANCxJfk/WEcjj3u8CitK0C9jdsJ0DWpcA4ftrD6WaiobWeg2uM8sbIqAnML0MRJ/wFi6JceiqLkIes+vkVPXLmLtWDMbcPUFhz2jgZrEhgYQ11fhPuWphNbQ/0Os+0rerMc0ngUEG/1f4Y4kJ1HdNQ64eK+2wXjrnBOHR/NDSlDuOYPpMrGzTgMWIoeEEdQg2HTyHzelkYslJeu8D06z1Wyg3zREeoi9J86sWK0YUNjFNRX+Yg3hQAcSgZwuIYV1bT+TAC4jmiAINmBpsnWMsyKff1au5HSTa8Nts4X0Bm1I2ZD9c+Mwp3J7fkxT+zZm0PEb+XDhd12nBDIrG3aZqtFs9qLwbGfhpu/IlfOkdbJXkuTJDXqStIhN7pvnaHjdr4YNRqBmF2gy52t6S8NesP3Fk7C61mORtyGX/FglgOIByD5yqQoup1ZoEZpe85fSHi0/O//Nl0LhvIng3KLjoOeV5GQAMudpBEfXbc1iTTLLB2IhTAaOUiOrQbbLJ6RclHGlaT5r/VdhgADPXsEJpY1ZZOQJYIs\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 576eff9c-a436-48cf-942e-08dd4b54c8c5\nX-MS-Exchange-CrossTenant-originalarrivaltime: 12 Feb 2025 11:02:47.3788 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: 3LFQmBmMgroP9/y+5k/XkPO2buCTeB18vdOMR+gIWAOiJPZN06I/7kro0OTZpSrp3FHesB0kZmLRHPR8zQ+PANs8wi1cy5k9iL+4U6m71Dc=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: DU2PR05MB8824\nX-OrganizationHeadersPreserved: DU2PR05MB8824.eurprd05.prod.outlook.com",
+      "start_pos": 0,
+      "end_pos": 4444,
+      "chunk_index": 0,
+      "chunk_size": 4444,
+      "metadata": {
+        "doc_id": "C3JK3CW - allocation of remittance\\Headers\\C3JK3CW_02.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C3JK3CW - allocation of remittance\\Headers\\C3JK3CW_02.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:32.904677",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4490
+  }
+}

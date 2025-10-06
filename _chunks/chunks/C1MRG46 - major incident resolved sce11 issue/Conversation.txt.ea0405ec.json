@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1MRG46 - major incident resolved sce11 issue\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1MRG46 - major incident resolved sce11 issue\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:32:36\nFolder: C1MRG46 - major incident resolved sce11 issue\nMessage Count: 1\n\n--------------------------------------------------\nID: C1MRG46_00\nFrom: One Reach <OneReach@chalhoub.com>\nTo: \nCC: \nBCC: \nDate: 2025-08-28 04:47\nSubject: Major Incident Resolved: SCE11 Issue\n--------------------------------------------------\n \n\n \n\n <https://onereach.status.freshservice.com/> \n\n \n\nDear All,\n\nThe earlier reported P1 incident impacting the MuleSoft ↔ SCE11 integration has now been resolved.\n\nIssue Summary: \n\nImpact: All B2B and B2C transactions in/out of SCE11 were on hold.\n\nAdditional: RF Scanners were unable to log in during the incident.\n\nResolution & Recovery:\n\n*\tTransactions have resumed normal flow.\n*\tRF Scanners are now logging in successfully.\n*\tMonitoring is in place to ensure stability.\n\nBusiness Impact:\n\nDelayed B2B and B2C transactions are being processed.\n\nNo further disruption expected. \n\n \n\nStart Date and Time: Wed, 27 Aug 11:56 PM\n\nEnd Time : Wed 28 Aug 4:20 AM\n\nStatus: Resolved\n\n \n\n \n\nWe appreciate your patience and cooperation as we work to enhance your experience with our services.\n\n\nFor support during this period, please raise a ticket via OneReach. You can also check real-time status updates via the Tech&Data System Status & Health <https://onereach.status.freshservice.com/>  Dashboard.\n\n \n\n \n\n \n\nThis mail was sent to you by\n\n <https://onereach.chalhoub.com/support/home>",
+      "start_pos": 0,
+      "end_pos": 1483,
+      "chunk_index": 0,
+      "chunk_size": 1483,
+      "metadata": {
+        "doc_id": "C1MRG46 - major incident resolved sce11 issue\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1MRG46 - major incident resolved sce11 issue\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:51.969314",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1570
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1D28R6 - etihad aviation case\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1D28R6 - etihad aviation case\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:36:48\nFolder: C1D28R6 - etihad aviation case\nMessage Count: 1\n\n--------------------------------------------------\nID: C1D28R6_00\nFrom: Mohammed El Neel <Mohammed.Elneel@chalhoub.com>\nTo: Samar El Mallou <Samar.Elmallou@chalhoub.com>; Hamid Ahmadi <Hamid.Ahmadi@chalhoub.com>; Dee Deu <dee.deu@chalhoub.com>\nCC: Leena Azhikkal <Leena.Azhikkal@chalhoub.com>; Nabil Chalhoub <Nabil.Chalhoub@chalhoub.com>; Nasser Alblooshi <Nasser.Alblooshi@chalhoub.com>\nBCC: \nDate: 2025-04-17 10:38\nSubject: RE: Etihad Aviation case \n--------------------------------------------------\nDear Samar,\n\nWill review and get back to you in mean time will prepare the necessary requirement to report the incident to the Police.\n\n \n\n@Hamid Ahmadi <mailto:Hamid.Ahmadi@chalhoub.com>  and @Dee Deu <mailto:dee.deu@chalhoub.com>  for investigation and comments.\n\n \n\n \n\nFrom: Samar El Mallou <Samar.Elmallou@chalhoub.com> \nSent: Wednesday, 16 April 2025 2:39 PM\nTo: Mohammed El Neel <Mohammed.Elneel@chalhoub.com>\nCc: Leena Azhikkal <Leena.Azhikkal@chalhoub.com>; Nabil Chalhoub <Nabil.Chalhoub@chalhoub.com>; Nasser Alblooshi <Nasser.Alblooshi@chalhoub.com>\nSubject: Etihad Aviation case \n\n \n\nDear Mohammed,\n\n \n\nFurther to Etihad situation brief to you today, please attached for your reference the correspondence and documents exchanged and received from and to the party/ ETIHAD AVIATION GROUP/ .",
+      "start_pos": 0,
+      "end_pos": 1447,
+      "chunk_index": 0,
+      "chunk_size": 1447,
+      "metadata": {
+        "doc_id": "C1D28R6 - etihad aviation case\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1D28R6 - etihad aviation case\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Dear Mohammed,\n\n \n\nFurther to Etihad situation brief to you today, please attached for your reference the correspondence and documents exchanged and received from and to the party/ ETIHAD AVIATION GROUP/ .\n\n*\tAttachments  1 to 4 received from the party / Etihad aviation /, sent from PC office to action.\n*\tAttachment 5 receiving Etihad invoice and declaration form EOI.\n*\tAttachment 6 proof of payment value 54,820 AED- this should be refunded in 21 days of payment however not refunded yet. \n*\tAttachment 7 to email received from the party regarding Bid bond/ 2 step and payment for this tender.\n*\tAttachment 8 proof of payment for Bid bond / value 275,000 AED.\n*\tAttachment 9 entry permit provided by the client / Etihad aviation. \n*\tAttachment 10 receipt of registration fees and bid bond / total of 329,820 AED.\n\n \n\nKindly note that we are still communicating with the contact person / EDWARD FABIEN/ And keeping him engaged. Moreover we didn’t chase him yet for the refund till now as we do not want to make him alert and lose the contact. \n\n \n\nNeed your expertise to action the next steps and take it up to with the relevant authorities.\n\n \n\nLet me know if you need further details.\n\nBest regards,",
+      "start_pos": 1242,
+      "end_pos": 2446,
+      "chunk_index": 1,
+      "chunk_size": 1204,
+      "metadata": {
+        "doc_id": "C1D28R6 - etihad aviation case\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1D28R6 - etihad aviation case\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:10.718855",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2519
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "doc_id": "C19M5I0 - jv middle east - insurance coverage\\Headers\\C19M5I0_18.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C19M5I0 - jv middle east - insurance coverage\\Headers\\C19M5I0_18.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from PAVPR05MB10092.eurprd05.prod.outlook.com (::1) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Fri, 29 Nov 2024 10:49:27 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from DU2PR05MB8839.eurprd05.prod.outlook.com (2603:10a6:10:2d6::11) by PAVPR05MB10092.eurprd05.prod.outlook.com (2603:10a6:102:2fb::5) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8158.22; Fri, 29 Nov 2024 10:49:25 +0000\nReceived: from DU2PR05MB8839.eurprd05.prod.outlook.com ([::1]) by DU2PR05MB8839.eurprd05.prod.outlook.com ([fe80::d9e6:c6d7:d9b:6793%7]) with Microsoft SMTP Server id 15.20.8207.014; Fri, 29 Nov 2024 10:49:22 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Caroline Bennett <Caroline.Bennett@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: JV Middle East - insurance coverage\nThread-Topic: JV Middle East - insurance coverage\nThread-Index: AQHbH667wOoJyiLYUUe4T+ZQ7bN59rKJLiCygAmK3gCAABrCAIABcUQwgAAtw4CAAqbNQIAE4DP/gBwLMVCAAB5XoYAACRCAgAS2nvCACyerpoAAABttgAAD84uAAXi4sIAEsOjxgAAfIyiAAAHdtA==\nReferences: <DU2PR05MB8839DE69AAF3B9FFE2076697FE4D2@DU2PR05MB8839.eurprd05.prod.outlook.com> <0DFA1732-CF1F-45EC-B68F-EAC6125CDC3D@otb.net> <DU2PR05MB88390178C278F3EA5D2B635FFE4F2@DU2PR05MB8839.eurprd05.prod.outlook.com> <AS8PR05MB10824F2AE6AA47B96692F62F49D542@AS8PR05MB10824.eurprd05.prod.outlook.com> <DU2PR05MB88393A130C716A4F30F966BAFE242@DU2PR05MB8839.eurprd05.prod.outlook.com> <AS8PR05MB1082403AD8A4221202298F9309D242@AS8PR05MB10824.eurprd05.prod.outlook.com> <DU2PR05MB88399496D66753EE62062A39FE242@DU2PR05MB8839.eurprd05.prod.outlook.com> <DU2PR05MB883914B1EDEC48E72D584717FE272@DU2PR05MB8839.eurprd05.prod.outlook.com> <DB6PR05MB46773496B6EDAC192BCA129A9F2E2@DB6PR05MB4677.eurprd05.prod.outlook.com> <DB6PR05MB46773F7D0BED462AC669790B9F2E2@DB6PR05MB4677.eurprd05.prod.outlook.com> <DB6PR05MB46775AD5367D788528C3E4139F2E2@DB6PR05MB4677.eurprd05.prod.outlook.com> <DU2PR05MB8839439138A5D16819C1DE7CFE2F2@DU2PR05MB8839.eurprd05.prod.outlook.com> <DU2PR05MB8839897C27C83446B1012BC4FE2A2@DU2PR05MB8839.eurprd05.prod.outlook.com> <AS8PR05MB108242B4FA74539BB4535AB179D2A2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB108242B4FA74539BB4535AB179D2A2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 2472,
+      "chunk_index": 0,
+      "chunk_size": 2471,
+      "metadata": {
+        "doc_id": "C19M5I0 - jv middle east - insurance coverage\\Headers\\C19M5I0_18.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C19M5I0 - jv middle east - insurance coverage\\Headers\\C19M5I0_18.txt"
+      }
+    },
+    {
+      "text": "om> <AS8PR05MB108242B4FA74539BB4535AB179D2A2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB108242B4FA74539BB4535AB179D2A2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Caroline.Bennett@chalhoub.com\nX-MS-TNEF-Correlator: 6605f2ae-5e7a-469b-9c80-fa5d909dac7e\nMIME-Version: 1.0\nDate: Fri, 29 Nov 2024 10:49:22 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: DU2PR05MB8839.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <e9bd8a6234564c93917f3b0cff08bbe1@DU2PR05MB8839.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: ecf1b843-3d9a-48d3-5d96-08dd10637c38\nX-MS-Exchange-Parent-Message-Id: <AS8PR05MB108242B4FA74539BB4535AB179D2A2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: DU2PR05MB8839:EE_|PAVPR05MB10092:EE_|AS8PR05MB10824:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 29 Nov 2024 10:49:26.0355 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: ecf1b843-3d9a-48d3-5d96-08dd10637c38\nX-MS-Exchange-AtpMessageProperties: SA|SL\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DU2PR05MB8839.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Nov 2024 10:49:22.8171 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: DU2PR05MB8839.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: ecf1b843-3d9a-48d3-5d96-08dd10637c38\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PAVPR05MB10092\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:04.9087543\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8207.007\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910001)(944506478)(944626604)(920097)(425001)(930097)(140003)(1420198);\nX-Microsoft-Antispam-Message-Info: sR1Uh7Ua3oZs/BsSYSNjOBcGh91L2KV7lfOUVflhBNKmKkb1ZJ4h+zj0TJxRZ45VlHtcBfQp2pEi5BC77o/IT/l5Sf+d+rGRROFMUwGX5fV0fd0XlgeZEbwzoETCBPTvy1JOIYEgYv3tP8DVnRdbHxbk4FC5hiIYOqpMmzjXm0N4c5Qv7By+i/s7MtG2oX1ZB2J3YEbcv3wRmMla30TqVMYrQsyQj8Be+z+Ava267JgEqGuKaZGKEu4bBCa7AMI6v+wsp1tFnsFD9AVzpNTWbpkrOdbbA6HiVwUVjC8JBilJeQI11WttO5J0ftFohiOeFj61LOIEvA6yR7TtxwFVHIWUF9WCyx2jlmkQQ4gpbvgF31V269+teiQYNHH8i2Y/O2qfIciNIYWQa+GunEFWOcFD9k1RT0b7zRT4gzHZIFWBv7t45tnTZDXHyF9TrcGeHBYWkOhiYFS/Iox1jBpmLWnORrgviw7CvhEUqjVzwYwPMeXUVuib4s/N7JEabvhXcL3fVQRrGbYH9w8VBz3RhDmo8anXMHUmj+ZnDab2KRe6UwVibvZmVrPZhDGPwl9l6Fa3CnbzmTFtFDgjyCVcREwMLFJTSIlfBOxlrA3bF1Zv5QWEuLJhkV+PP5OYJoJV5v5oyC5tmx1KgOMdRTHZbfkiH+BeEq/VFBca8/qWtBCf+Mf8rj4LZ6z41v6pJRFo94HWk5UQN1w7pj2pMC4xGw01vz8ht1nBKuePxl0SLrUt6qiwYjg/DE0WJLYXhT0Tld6V6KvMyGNXYn/X6kS0PczyQndqRHrOk/R25orTLIrmt35KVdnl3ElK4VJxScUP3O5NxqYVS0Nej21z2yb5+EcEsXmAkkHvbKEJ+XrG5w8YH3O0eVeuFVSeKjsl6E0cFeEI8iecmWpqWrT9DQ6uwuplkj5ONMJBuLm9r1COP2o=",
+      "start_pos": 2272,
+      "end_pos": 5895,
+      "chunk_index": 1,
+      "chunk_size": 3623,
+      "metadata": {
+        "doc_id": "C19M5I0 - jv middle east - insurance coverage\\Headers\\C19M5I0_18.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C19M5I0 - jv middle east - insurance coverage\\Headers\\C19M5I0_18.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:27:53.607343",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5951
+  }
+}

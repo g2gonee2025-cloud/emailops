@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1JNI73 - new project documents checklist tasks has been assigned to you\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JNI73 - new project documents checklist tasks has been assigned to you\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:42:40\nFolder: C1JNI73 - new project documents checklist tasks has been assigned to you\nMessage Count: 1\n\n--------------------------------------------------\nID: C1JNI73_00\nFrom: RSO@chalhoub.com <RSO@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-04-10 12:00\nSubject: New Project Documents Checklist tasks has been assigned to you :\n--------------------------------------------------\nFocus Checklist Reminder\t \nDear Hagop Ghazarian, \n\nNew Project Documents Checklist tasks has been assigned to you : \t\n\nFocus Checklist Request Details\t \nChecklist Title\t Store\t Type\t \nPenhaligon's - YAS Mall - Boutique- Checklist\t Penhaligon's - YAS Mall - Boutique\t Projects\t \n\n\nAlternately, click here <https://rso.e-mac.com//pages/managechecklist.aspx?IntGUID=cf7e4406-24c7-e37b-78d5-a12e377ba12d>  to review it on RSO.\t \nThis is an auto-generated email, please do not reply.",
+      "start_pos": 0,
+      "end_pos": 980,
+      "chunk_index": 0,
+      "chunk_size": 980,
+      "metadata": {
+        "doc_id": "C1JNI73 - new project documents checklist tasks has been assigned to you\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JNI73 - new project documents checklist tasks has been assigned to you\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:46.620939",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1015
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "doc_id": "C197LA8 - get ready for 2025 start setting your goals now!\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C197LA8 - get ready for 2025 start setting your goals now!\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:42:00\nFolder: C197LA8 - get ready for 2025 start setting your goals now!\nMessage Count: 1\n\n--------------------------------------------------\nID: C197LA8_00\nFrom: Sabitha Menon <Sabitha.Menon@chalhoub.com>\nTo: \nCC: \nBCC: \nDate: 2025-03-10 11:23\nSubject: Get Ready for 2025: Start Setting Your Goals Now!\n--------------------------------------------------\nDear team,\n\nGood day!\n\nIt is the perfect time to start thinking ahead and start setting your 2025 Goals. Setting clear and achievable goals is essential to aligning your personal and professional growth with your career and the Group’s success. \n\nI am attaching the presentation from the Performance Management roadshows as a reminder to help you set your goals effectively.\n\nFor those who are new to the Group, please log in to DRIVE, from the dropdown on the top left side of the screen and select GOALS. We also have ECHO*, our own smart tool to help you with goal creation\n\n\n\n*\t*ECHO, AI-Powered SMART Goals Tool: Launching this year to all Back Office employees, this tool is trained to help employees create aligned and effective goals.",
+      "start_pos": 0,
+      "end_pos": 1176,
+      "chunk_index": 0,
+      "chunk_size": 1176,
+      "metadata": {
+        "doc_id": "C197LA8 - get ready for 2025 start setting your goals now!\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C197LA8 - get ready for 2025 start setting your goals now!\\Conversation.txt"
+      }
+    },
+    {
+      "text": "For those who are new to the Group, please log in to DRIVE, from the dropdown on the top left side of the screen and select GOALS. We also have ECHO*, our own smart tool to help you with goal creation\n\n\n\n*\t*ECHO, AI-Powered SMART Goals Tool: Launching this year to all Back Office employees, this tool is trained to help employees create aligned and effective goals.\n\n\nI encourage each of you to take some time to reflect on your achievements last year and start mapping out your priorities for 2025. Whether it’s career growth, skill development, or new challenges, setting well-defined goals will help you make the most of the year ahead. If you are a leader, lead by example and set your goal first and cascade them to your team members to help kick-start their planning of goals.\nLet’s start strong! If you need any guidance or support in goal setting, feel free to reach out. Looking forward to a successful 2025 together!\nKind regards,\nSabitha\n\nSABITHA MENON​​​​\n\nPEOPLE PARTNER\n\nREAL FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n\t\t\n \t\n <https://chalhoubgroup.com/> \n\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\n\n‑\n\n\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\n\n <https://twitter.com/ChalhoubGroup> \n\n <https://www.facebook.com/chalhoubgroup/> \n\n <https://www.instagram.com/chalhoubgroup> \n\n <https://www.linkedin.com/company/chalhoub-group/> \n\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 810,
+      "end_pos": 2267,
+      "chunk_index": 1,
+      "chunk_size": 1457,
+      "metadata": {
+        "doc_id": "C197LA8 - get ready for 2025 start setting your goals now!\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C197LA8 - get ready for 2025 start setting your goals now!\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:15.067529",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2367
+  }
+}

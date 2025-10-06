@@ -1,0 +1,53 @@
+{
+  "doc_id": "C6N6RSV - 1 1 discussion techneplus\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C6N6RSV - 1 1 discussion techneplus\\Conversation.txt",
+  "num_chunks": 3,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:47:12\nFolder: C6N6RSV - 1 1 discussion techneplus\nMessage Count: 1\n\n--------------------------------------------------\nID: C6N6RSV_00\nFrom: Bhumi Saxena <bhumi.saxena@techneplus.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-01-20 13:26\nSubject: RE:1:1 Discussion | TechnePlus\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\nHi Hagop,\n\nI hope you are back from Holidays, and did you get a chance to look my below email and LinkedIn message.\n\nLet’s catch up and see how we can move things forward. May I know if this week is possible for you to connect and discuss our capabilities in detail?\n\nLet me know a good time for this week.\n\nThanks\n\nBhumi\n\n________________________________\n\nFrom: Bhumi Saxena \nSent: 15 January 2025 15:46\nTo: hagop.ghazarian@chalhoub.com\nSubject: 1:1 Discussion | TechnePlus\n\n \n\nHi Hagop,\n\n \n\nI hope you had a great time during the festivities on Christmas and the New Year! May you have a wonderful year ahead, filled with joy, success and great health.",
+      "start_pos": 0,
+      "end_pos": 1389,
+      "chunk_index": 0,
+      "chunk_size": 1389,
+      "metadata": {
+        "doc_id": "C6N6RSV - 1 1 discussion techneplus\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C6N6RSV - 1 1 discussion techneplus\\Conversation.txt"
+      }
+    },
+    {
+      "text": "From: Bhumi Saxena \nSent: 15 January 2025 15:46\nTo: hagop.ghazarian@chalhoub.com\nSubject: 1:1 Discussion | TechnePlus\n\n \n\nHi Hagop,\n\n \n\nI hope you had a great time during the festivities on Christmas and the New Year! May you have a wonderful year ahead, filled with joy, success and great health.\n\n \n\nWith the new year, we are sure there would be new ideas goals, and transformation roadmap. Taking this opportunity to share our core strength and emphasize on the value we deliver while fulfilling the planned delivery from offshore, giving you the much-needed space to continue envisioning the innovations and business growth ideas.\n\n \n\nThe core capabilities that we bring forward, with proven past success, and not limited to:\n\n \n\n1. Platforms: Dedicated COE to engage in consultation, implementation/customization and maintenance, we are very strong on leading platforms like: Oracle, Microsoft Dynamics, Salesforce, and SAP.\n\n \n\n2. Data and AI: with one of the key focus areas for us and ever evolving industry needs, we bring in strong practices on consultation, planning roadmap, transformation of data landscape, and maintenance. We are equally good at Data Understanding, Data Engineering, Sciences, and visualization. With the focus shifting to AI, which is predicted to continue as key focus area for leaders in 2025, we bring rich experience of solutions already delivered leveraging Gen AI and rich ML models, harnessing the best in technology.",
+      "start_pos": 1092,
+      "end_pos": 2549,
+      "chunk_index": 1,
+      "chunk_size": 1457,
+      "metadata": {
+        "doc_id": "C6N6RSV - 1 1 discussion techneplus\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C6N6RSV - 1 1 discussion techneplus\\Conversation.txt"
+      }
+    },
+    {
+      "text": "2. Data and AI: with one of the key focus areas for us and ever evolving industry needs, we bring in strong practices on consultation, planning roadmap, transformation of data landscape, and maintenance. We are equally good at Data Understanding, Data Engineering, Sciences, and visualization. With the focus shifting to AI, which is predicted to continue as key focus area for leaders in 2025, we bring rich experience of solutions already delivered leveraging Gen AI and rich ML models, harnessing the best in technology.\n\n \n\n3. Integration as a service: we understand the data and importance of having a seamless data flow through connected & intelligent business systems. We are partners with key market leading Integration platforms like Boomi and Muelsoft and come with rich experience in delivering solutions across industries with innovative custom connectors.\n\n \n\n4. Hyper-Automation: While we partner and deliver on innovation, focusing on improving the top-line for our clients, we believe the business models are better sustained with a strong foundation on robust business processes, backed with technology levers. The RPA and six-sigma based process re-engineering has delivered efficiency and streamline the bottom line.\n\n \n\nWe proudly support over 15 Fortune 500 companies by implementing our digital transformation solutions and look forward to bringing our services to you.\n\n \n\nWe would be happy to discuss and explore areas of your priority where we can contribute, in the areas shared above or beyond. Let me know the available timeslots for upcoming days.\n\n \n\nThanks\n\nBhumi",
+      "start_pos": 2026,
+      "end_pos": 3620,
+      "chunk_index": 2,
+      "chunk_size": 1594,
+      "metadata": {
+        "doc_id": "C6N6RSV - 1 1 discussion techneplus\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C6N6RSV - 1 1 discussion techneplus\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:48.364668",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 3816
+  }
+}

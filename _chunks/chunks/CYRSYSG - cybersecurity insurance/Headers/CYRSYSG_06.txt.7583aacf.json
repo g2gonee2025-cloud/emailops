@@ -1,0 +1,42 @@
+{
+  "doc_id": "CYRSYSG - cybersecurity insurance\\Headers\\CYRSYSG_06.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CYRSYSG - cybersecurity insurance\\Headers\\CYRSYSG_06.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by PAXPR05MB8753.eurprd05.prod.outlook.com (2603:10a6:102:200::14) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8114.30; Mon, 4 Nov 2024 11:04:01 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%3]) with mapi id 15.20.8114.015; Mon, 4 Nov 2024 11:04:01 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Dee Deu <dee.deu@chalhoub.com>\nCC: Prabhat Nadipalli <Prabhat.Nadipalli@chalhoub.com>, Joe Hobeika <Joe.Hobeika@chalhoub.com>\nSubject: Re: Cybersecurity insurance\nThread-Topic: Cybersecurity insurance\nThread-Index: AdsPVlbSVvOOf3bQSaiklNFwmuPwIQFbh9j9ACWHs1ACauvSYAKGQo1EADGS1ZABLJmVXQAEPVVAAAAMCHw=\nDate: Mon, 4 Nov 2024 11:04:01 +0000\nMessage-ID: <AS8PR05MB108244DCA5FFE5FB12908F1929D512@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <AM6PR05MB5816AF368DD2BABDA6A29092E5692@AM6PR05MB5816.eurprd05.prod.outlook.com> <AS8PR05MB108249B5DD1DE8FFF2E0E24AE9D702@AS8PR05MB10824.eurprd05.prod.outlook.com> <AS4PR05MB96463C63512F9BC2A22836989D712@AS4PR05MB9646.eurprd05.prod.outlook.com> <AS8PR05MB1082444514CC95DBDB7C32BFF9D452@AS8PR05MB10824.eurprd05.prod.outlook.com> <AS8PR05MB1082442CE4CB0C954415814469D4A2@AS8PR05MB10824.eurprd05.prod.outlook.com> <AS8PR05MB8358E185DB66B7AAD16059249D4B2@AS8PR05MB8358.eurprd05.prod.outlook.com> <AS8PR05MB10824BAC26D981BC0ACBDDF539D512@AS8PR05MB10824.eurprd05.prod.outlook.com> <AS8PR05MB8358062181F95210C5AAFA6A9D512@AS8PR05MB8358.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB8358062181F95210C5AAFA6A9D512@AS8PR05MB8358.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 1854,
+      "chunk_index": 0,
+      "chunk_size": 1853,
+      "metadata": {
+        "doc_id": "CYRSYSG - cybersecurity insurance\\Headers\\CYRSYSG_06.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CYRSYSG - cybersecurity insurance\\Headers\\CYRSYSG_06.txt"
+      }
+    },
+    {
+      "text": "ook.com>\nIn-Reply-To: <AS8PR05MB8358062181F95210C5AAFA6A9D512@AS8PR05MB8358.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|PAXPR05MB8753:EE_\nx-ms-office365-filtering-correlation-id: 210ae848-d4cb-41c4-1cc3-08dcfcc06384\nx-ms-exchange-atpmessageproperties: SA|SL|HVE\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nx-microsoft-antispam-message-info: TdcFsiXm/ghkUDC//9GpF4I1yoiy0x+aOFtcKmlnUn17jvj9rOKSkzX6cxEjEbaVPxOfLN4lLBAhCFWN69ddr7vDEOC6V7ySGcJdci0jDzCdc50oTPzvpG6LiZDfMi7DBcND9r5wF6T4MOQd9TA3CK8sbA8+2L7M98XLd7Ig2/x1g0su12SlRxaNXOo/4ezr9Xt73MHK94MrwTyIFngJBpA2JA3IavyvtPQiwrKYDIlKPAdTKjAWfI84T/RgrLor0cY0qcNTrrap/0f3sLgh6gksMTQRoyHyPQwEBMbqDA1/jirJIYU8kwuAv0qbSwpc8v6ACKZ4U2HhApJCTDwPdAm6fkl2H/4Mu+EU5eu5oa1oQzcZjBt160XcENwjJbzHdnBvVqTISRy4IOwCWToexwupupn2I0StZWnuFs4HkzBZ7o3Bxkeruep1Hl9o3Ys66to+vGXMlP+nivltx/s37HgA0Y2r5UQ7BwpBdQ3OL3ykMP3Yws4wL7luEcKaC8QOOjP/nT2+L7HVIEgUvlWILA+oP/qiImjXjJA035WjlKsjUW0OAnzJV2slFe09FyafmPRDSXFuKS0DsbG0GW7y79QUHRm9QBcy2CPDUPnmQhj4de6jnPm0rv3BnhcJ25J4JfclSw+fPBIjE+yLhmZXzPUNuV9qcN7ToA1SfIdVYzkHTnpAOHJJTFq3UKwv6/bnSLrD3UasT8cjLIXijcCOY7DRURL7zG5whyr8+GuRBwsdQhYCnt0qsTbsZtSg5zbjCdDclYX2aHUtmRYFYCB5ApDyGO/gtZ8YBvhe+/SwyOpqgTRQgtu2EePMs2RXbBpd\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_017_AS8PR05MB108244DCA5FFE5FB12908F1929D512AS8PR05MB10824eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: btmeH83co9vr9UjpLrC/E3E+pBVQ9bCdFxZNFAnoFzOwSyVG9Ca0X5gEeig4Bbp76BIzZeozmUfeEJL9yWwGH/2n1RseOTV2p0v95MnLF3VUR6O5AD/bKvyM00V4rs7UPK/fSS8tp+pNlnD8ZiTk1fRfj7bwJ5adZSoGQEDBcSAb3HWZtIH8JweHOiopyc2frcDfyhi6bHoTxHkEpVAkG5MRqRzj4PLQ62vx6N79FwbHJec7JbwinL8cruxTOhqWdUyhGpsmXTf6sjG23ZS3Eq+/js7mXQs/IFslTa6MmyaN6N8q9Y73sTsRp5ka/OkJJ/6JuW67nbp40WQsTOz+sCXmr1F9j3DpMULkAE0Ix6uadgNmL7l0DLX13mv8f9+aL7t8o1IoYJazEKe8BSEMhBFN9Fa4+8Q9NzCdj4cwpbyjZ9U3kJaXCM8O1VDYFk6IoQjpENZYwLQfDkZcuBDG2LVRhsgUQX9j3vSB1VnKZmFAOj+WkwlrTrAgIE36Go0M3WOXRRHgmKgQF8b50dtmx95jY7ZYSb6/V+14KQYQO/uhjQb2NQOhKK7q2B473LVxbDQqznhG4z+O1XON+I4xDTYWDwXoO1wlM0wHNeuhryx5TaCzRV18WGMT2d09NpwF\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 210ae848-d4cb-41c4-1cc3-08dcfcc06384\nX-MS-Exchange-CrossTenant-originalarrivaltime: 04 Nov 2024 11:04:01.2959 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: qpPXP+XquQ+DlKC+yc+Qkt7FNrd6oL0P4d5ey4RNw+ZYN+PcqMsKtrdUaEzBlpMJUi4i6Sp6kD4uX8OxBFtgwFB2W/mKwjbMVNMDnl6S4cs=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR05MB8753\nX-OrganizationHeadersPreserved: PAXPR05MB8753.eurprd05.prod.outlook.com",
+      "start_pos": 1654,
+      "end_pos": 5023,
+      "chunk_index": 1,
+      "chunk_size": 3369,
+      "metadata": {
+        "doc_id": "CYRSYSG - cybersecurity insurance\\Headers\\CYRSYSG_06.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CYRSYSG - cybersecurity insurance\\Headers\\CYRSYSG_06.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:47.977553",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5067
+  }
+}

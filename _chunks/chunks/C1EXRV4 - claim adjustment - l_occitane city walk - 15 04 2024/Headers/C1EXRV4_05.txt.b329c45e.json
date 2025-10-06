@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1EXRV4 - claim adjustment - l'occitane city walk - 15 04 2024\\Headers\\C1EXRV4_05.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1EXRV4 - claim adjustment - l'occitane city walk - 15 04 2024\\Headers\\C1EXRV4_05.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by AS8PR05MB9907.eurprd05.prod.outlook.com (2603:10a6:20b:5b7::15) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8534.34; Wed, 19 Mar 2025 13:41:59 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%2]) with mapi id 15.20.8534.034; Wed, 19 Mar 2025 13:41:59 +0000\nContent-Type: multipart/mixed; boundary=\"_000_AS8PR05MB1082474144B1EDECE70872A039DD92AS8PR05MB10824eu_\"\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Milan Milosavic <Milan.Milosavic@loccitane.me>\nSubject: Re: Claim adjustment - L'Occitane City Walk - 15/04/2024\nThread-Topic: Claim adjustment - L'Occitane City Walk - 15/04/2024\nThread-Index: AduHXy1m1WwBwlX9Q3eRcxL/mlV0sQACJ+qCABorOaAAG12hVwAEyog9ACYI5DsAB0BiwAPwhfLM\nDate: Wed, 19 Mar 2025 13:41:58 +0000\nMessage-ID: <AS8PR05MB1082474144B1EDECE70872A039DD92@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <AS8PR05MB10824A8A7D28266B1F0C826DA9DC32@AS8PR05MB10824.eurprd05.prod.outlook.com> <DB7PR05MB5131EAF9BD1A48C5AE35CAF888C32@DB7PR05MB5131.eurprd05.prod.outlook.com> <AS8PR05MB1082488063AC4B0268DDA3DBA9DC22@AS8PR05MB10824.eurprd05.prod.outlook.com> <DB7PR05MB51310BBECD9CB6DF9B51CB1B88C22@DB7PR05MB5131.eurprd05.prod.outlook.com> <DB7PR05MB513124160C7FFBAAAA9C017D88C22@DB7PR05MB5131.eurprd05.prod.outlook.com> <DB7PR05MB51318A8247E40642D99816EB88CD2@DB7PR05MB5131.eurprd05.prod.outlook.com> <AS8PR05MB10824102E24D98DF53586A5DC9DCD2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824102E24D98DF53586A5DC9DCD2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator: <AS8PR05MB1082474144B1EDECE70872A039DD92@AS8PR05MB10824.eurprd05.prod.outlook.com>\nmsip_labels:",
+      "start_pos": 0,
+      "end_pos": 1947,
+      "chunk_index": 0,
+      "chunk_size": 1946,
+      "metadata": {
+        "doc_id": "C1EXRV4 - claim adjustment - l'occitane city walk - 15 04 2024\\Headers\\C1EXRV4_05.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1EXRV4 - claim adjustment - l'occitane city walk - 15 04 2024\\Headers\\C1EXRV4_05.txt"
+      }
+    },
+    {
+      "text": "k.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator: <AS8PR05MB1082474144B1EDECE70872A039DD92@AS8PR05MB10824.eurprd05.prod.outlook.com>\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|AS8PR05MB9907:EE_\nx-ms-office365-filtering-correlation-id: a193f6ef-843a-4c0c-74be-08dd66ebd266\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|8096899003|4013099003|13003099007|7053199007|41050700001;\nx-microsoft-antispam-message-info: M/fidPC80mYIzp0QP2YeXnaf7fErA5Lh6CTsj2uHsrdYdT7uvMCc4Ozu6Bg+rPgAZYzIhfJefwpuQqIWeoFdV8IRoXhiVnPVm6jF8vKufJnNCppjer1HQxRkk5K3c7gPS31GICWIO2gGMcDCogVr0uaMGkkknGumDrZSRjajX9c0IVkhoBW8z9w8+F2CsWbO3NEGqaGJi0sHndhLAPG+it26ubBkF6wyqtD0Fm42O2XqEbb8Vp8OR1Cucv2n1nqVQONwTxgJi6ysBRoHj3dfdP2xwOfMoqDprf+5A0s931bMn8o5EfoLldskXTBNEXezC2WK0uHNV7UlJKgGHeAWOFthclbKdRcPPzsXigUZ8e/h6TIP/VSiQ3aGppSvwbwhK8B7fjb5sssDXK4+zNCnsfuN7VnV7KpUcV8BBxn5hXEiUfs3DRkAzHtSU2AOo5dA8zEdHdgSbPvgSQ3Agzqw6TVCnwsDxZIFRQGiNZs/4J88p0wJ3ePZzN8c+0c5R90ZUPYfhdXdGj93VBzWsjYD4g3K5VPq2P6wlJru0jAdaCPSbGi6EWXh8wnLCGD5MB9wvfrxBmaq7igoa/tKWZRCs0a7SSjBr2Of8DNbRaIYKzF4tRZwOb0f9Wwa1znOIvg37SaCXSD2zvLuWkv1dKO2QK5VilsN1fdrt+9dh9Z54P3/h1fC/aUd+QKEt0CDScXD\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(4013099003)(13003099007)(7053199007)(41050700001);DIR:INT;\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: jf6ERBiS39hzUyf8zfy2IC6MSbiD4yRzhMbueLy/2hY7jM0whLsBo4OPvq4igDdT/q5ZeF3DX1UJqmEoIbHQZmsJgeHWeiDGWWNwni6NL+sI84D/ZZ84r/m+CY6ChObn/KqGxHwOmQ0M/+YuGuCKTMyD68nx9AgC4x4GiWWqEX2r9ETg4OR22RVSTZ0yasL2nCgAAHlFkclnvpVcmij+MpLRqUsgxSKvcVyJDMaPt3n1GQFF/sq6L97qJ0ikcskbGQmE8Un6dPqmP52cWtjWa4bWXoO+nXL4rRU1gNry6N/NG+Z65AzjSP1rURRSYyb08HLiRYw9zcyV0Abh6c3ME/6UR67O7LdWx0mYApQ4kd8Q/NMX2FJ3Zkk9m+3kgBvXwMI3baveaqiXvQg9awqTT6S1NqlP0m/4WYSvmGqGrfjnQwRw/hv2zWijI9X+X3jq9drQd3izbszrzaief6U00TX16hVi2jOz/ilGGIjVMJvWQjqI7VLF0aKCVPW0eXPvlk3vsSWVempKmwa4VpAXTR0azzICPXDoacRu9BeJKr0HuqRz0blDvhpjeiSoepRpeAtX4Ms/uzd/Hr0NXfs/QNLViNeunCNX5jU9ZZRRqDHgOh67Gxx0CtPiZjoBp3/E\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: a193f6ef-843a-4c0c-74be-08dd66ebd266\nX-MS-Exchange-CrossTenant-originalarrivaltime: 19 Mar 2025 13:41:58.9140 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: E1A44SZVDiFmGbt21xs/+NlgYjAlMnyA2mcPC9656kk7TL+R1TgP+ra7qI7cowdMApKUQDS0nKcz1YYKadi1LtVI1Q9Bd8Wqe8a0FnWhSiM=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR05MB9907\nX-OrganizationHeadersPreserved: AS8PR05MB9907.eurprd05.prod.outlook.com",
+      "start_pos": 1747,
+      "end_pos": 4864,
+      "chunk_index": 1,
+      "chunk_size": 3117,
+      "metadata": {
+        "doc_id": "C1EXRV4 - claim adjustment - l'occitane city walk - 15 04 2024\\Headers\\C1EXRV4_05.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1EXRV4 - claim adjustment - l'occitane city walk - 15 04 2024\\Headers\\C1EXRV4_05.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:26.611783",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4906
+  }
+}

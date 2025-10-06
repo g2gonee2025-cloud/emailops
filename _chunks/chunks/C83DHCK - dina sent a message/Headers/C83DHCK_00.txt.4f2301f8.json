@@ -1,0 +1,31 @@
+{
+  "doc_id": "C83DHCK - dina sent a message\\Headers\\C83DHCK_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C83DHCK - dina sent a message\\Headers\\C83DHCK_00.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from AM9PR05MB7731.eurprd05.prod.outlook.com (2603:10a6:20b:2d0::14) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Thu, 17 Jul 2025 07:29:25 +0000\nReceived: from DU2PR04CA0236.eurprd04.prod.outlook.com (2603:10a6:10:2b1::31) by AM9PR05MB7731.eurprd05.prod.outlook.com (2603:10a6:20b:2d0::14) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8922.39; Thu, 17 Jul 2025 07:29:23 +0000\nReceived: from DB3PEPF0000885B.eurprd02.prod.outlook.com (2603:10a6:10:2b1::4) by DU2PR04CA0236.outlook.office365.com (2603:10a6:10:2b1::31) with Microsoft SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.20.8943.20 via Frontend Transport; Thu, 17 Jul 2025 07:29:23 +0000\nX-MS-Exchange-Authentication-Results: spf=none (sender IP is 4.207.164.234) smtp.mailfrom=teams.mail.microsoft; dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=teams.mail.microsoft;\nReceived: from northeurope0.notifyp.svc.ms (4.207.164.234) by DB3PEPF0000885B.mail.protection.outlook.com (10.167.242.6) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8943.21 via Frontend Transport; Thu, 17 Jul 2025 07:29:23 +0000\nDate: Thu, 17 Jul 2025 07:29:23 +0000\nSubject: Dina sent a message\nMessage-Id: <TeamsMissedActivityEmail-f9197be3-aa6a-4582-a537-cf80abca529c-a1855c05-0c04-40b4-821e-bf99e27f7fd4-r0-SendEmail-rh_neu-aid_a4cf74c4-5401-4903-b3b1-43d88c618288_ffb0bfb8-1c47-445a-a746-edbbcd2515f9@odspnotify>\nSender: Dina Al Wazzan in Teams <no-reply@teams.mail.microsoft>\nTo: Hagop.Ghazarian@chalhoub.com\nX-Crid: =?utf-8?q?f9197be3-aa6a-4582-a537-cf80abca529c-a1855c05-0c04-40b4-821e-?= =?utf-8?q?bf99e27f7fd4-r0-SendEmail?=\nX-Tnid: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nReturn-Path: no-reply@teams.mail.microsoft\nFrom: Dina Al Wazzan in Teams <no-reply@teams.mail.microsoft>\nMIME-Version: 1.0\nContent-Type: multipart/related; boundary=\"=-diUxn1gT7ygaP22QAYg5Ng==\"; type=\"text/html\"\nX-MS-Exchange-Organization-ExpirationStartTime: 17 Jul 2025 07:29:23.2266 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Exchange-Organization-Network-Message-Id: 5f3d2450-d493-465a-e0d0-08ddc503a6e7\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthSource: TreatMessagesAsInternal-DB3PEPF0000885B.eurprd02.prod.outlook.com\nX-MS-TrafficTypeDiagnostic: DB3PEPF0000885B:EE_FirstParty-SPO-V3|AM9PR05MB7731:EE_FirstParty-SPO-V3|AS8PR05MB10824:EE_FirstParty-SPO-V3\nX-MS-PublicTrafficType: Email\nX-MS-Office365-Filtering-Correlation-Id: 5f3d2450-d493-465a-e0d0-08ddc503a6e7\nX-MS-Exchange-AtpMessageProperties: SA\nX-MS-Exchange-Organization-SCL: 1\nX-Microsoft-Antispam: BCL:0;ARA:13230040|69100299015|39142699007|31052699007|13003099007|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:4.207.164.234;CTRY:IE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:northeurope0.notifyp.svc.ms;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(69100299015)(39142699007)(31052699007)(13003099007)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Jul 2025 07:29:23.1618 (UTC)\nX-MS-Exchange-CrossTenant-Network-Message-Id: 5f3d2450-d493-465a-e0d0-08ddc503a6e7\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=6ef8304c-f37b-42a5-a569-0a7d8249fbf3;Ip=[4.207.164.234];Helo=[northeurope0.notifyp.svc.ms]\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: TreatMessagesAsInternal-DB3PEPF0000885B.eurprd02.prod.outlook.com\nX-MS-Exchange-CrossTenant-FromEntityHeader: Internet\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR05MB7731\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:02.7748442\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8922.036\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910005)(944506478)(944626604)(920097)(425001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: gm1ohCQF1dKCLfHsNGJUF4b7QFpNQNtzOdrNkjsjF5MkVnu6C7+Vaag6Xn7AA4XcKx/0jMuuuGkpCgrxJN1oJg2kZF4MTAJ9YveBjmm2qyKpkjdE2f1/5rOk9whSFGpjl6XQSnssSgFExF/HmoEw9AQ4S+IcisY1SwQpCDzbVel39ZQU0glFzrLPDuyPsDiPncAq3Zht8dyJPn4Xq/Is5x5c7M4L8WCF8woM+GUmz2YTHSMP9jZmm7T2JOW0buoMPrFcJ6LEgKn7v48AbYlMsN95WlhWxSV/Aae9O6VmBZPkvVu6iI2nCGjThPaYe1uD37TKqRXvII26Y2+JI1CBcJAV36Gb7b7eDKww0zYPryF0TazjlPx1ons7ur63krYhjVghX/2MJ/y8+MaEuVwpurdVu2K36Ph7ad59cJsrwRQh5zF0ari8Yz/2ejyUTfDTtgaUuJPx/4DFpYUrBahwNk66S2MMwUKfjtOfOYrWOrDq8Psdu8KVHcQfdwx9z0cWI3xMhKV22hcrT+vxOxkIp8w7Q1aqlxaJMVnUre9bFKnJjD9KESjW0XAJTY+BHOuY4YlJ1hPGlwjwizvkgyOJ+VPekEAZXLUwrT0tMY7aUp+YDCnfYoS9EB69aIFj9MklbeHGS3vdyF+14nhoe+pcRBIvBMruwjYDK5NMnO9c0Ny6ijzXn01HIA6muOT1cEkxWMtsrYEQfFymp8ASXhQ9YIJMU/vB+Bi/R5okpes7MJt4eT7QnVv1PbrU6V9umB94bvuLmJq9HVXUf/nYbkoP09eU5Qufk0bubAFzCe6eTEQofxknihD+W5OkljUGSTyqTcJTxt5zYIBEvFrPV1CvwzS59GPgKduMVqp8o0LwZrSIMTEz8PkHQVaBlKhYf9axcJHtUJpgLq6AVbiUXM8WzA==",
+      "start_pos": 0,
+      "end_pos": 5143,
+      "chunk_index": 0,
+      "chunk_size": 5143,
+      "metadata": {
+        "doc_id": "C83DHCK - dina sent a message\\Headers\\C83DHCK_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C83DHCK - dina sent a message\\Headers\\C83DHCK_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:19.893061",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5190
+  }
+}

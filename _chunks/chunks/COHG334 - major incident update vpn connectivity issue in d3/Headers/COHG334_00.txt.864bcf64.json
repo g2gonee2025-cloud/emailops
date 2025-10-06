@@ -1,0 +1,31 @@
+{
+  "doc_id": "COHG334 - major incident update vpn connectivity issue in d3\\Headers\\COHG334_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\COHG334 - major incident update vpn connectivity issue in d3\\Headers\\COHG334_00.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB8818.eurprd05.prod.outlook.com (::1) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Fri, 13 Jun 2025 10:14:41 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from AS1PR05MB8963.eurprd05.prod.outlook.com (2603:10a6:20b:4dd::6) by AS8PR05MB8818.eurprd05.prod.outlook.com (2603:10a6:20b:421::15) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8835.19; Fri, 13 Jun 2025 10:14:17 +0000\nReceived: from AS1PR05MB8963.eurprd05.prod.outlook.com ([fe80::8ce4:ecdc:46e7:56dd]) by AS1PR05MB8963.eurprd05.prod.outlook.com ([fe80::8ce4:ecdc:46e7:56dd%5]) with mapi id 15.20.8813.024; Fri, 13 Jun 2025 10:14:17 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: One Reach <OneReach@chalhoub.com>\nSubject: Major Incident Update: VPN Connectivity Issue in D3\nThread-Topic: Major Incident Update: VPN Connectivity Issue in D3\nThread-Index: AdvcSWESy33m+bBMQxmG1iQsrsiYpA==\nX-MS-Exchange-MessageSentRepresentingType: 1\nDate: Fri, 13 Jun 2025 10:14:17 +0000\nMessage-ID: <AS1PR05MB89632033DBE2D292F6F47BF4DA77A@AS1PR05MB8963.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach:\nX-MS-Exchange-Organization-SCL: 1\nX-MS-TNEF-Correlator: <AS1PR05MB89632033DBE2D292F6F47BF4DA77A@AS1PR05MB8963.eurprd05.prod.outlook.com>\nMIME-Version: 1.0\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: AS1PR05MB8963.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 04\nX-MS-Exchange-Organization-Network-Message-Id: 885d59ea-4ee5-4fda-3ffe-08ddaa630e20\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: AS1PR05MB8963:EE_|AS8PR05MB8818:EE_|AS8PR05MB10824:EE_\nTo: Undisclosed recipients:;\nReturn-Path: OneReach@chalhoub.com\nX-MS-Exchange-Organization-ExpirationStartTime: 13 Jun 2025 10:14:17.5022 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: 885d59ea-4ee5-4fda-3ffe-08ddaa630e20\nX-LD-Processed: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3,ExtAddr\nX-MS-Exchange-AtpMessageProperties: SA\nX-Microsoft-Antispam: BCL:0;ARA:13230040|69100299015|366016|13003099007|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS1PR05MB8963.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(69100299015)(366016)(13003099007)(8096899003)(41050700001);DIR:INT;\nX-Auto-Response-Suppress: DR, OOF, AutoReply\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Jun 2025 10:14:17.1860 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: AS1PR05MB8963.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: 885d59ea-4ee5-4fda-3ffe-08ddaa630e20\nX-MS-Exchange-CrossTenant-MailboxType: HOSTED\nX-MS-Exchange-CrossTenant-UserPrincipalName: j0m0rWj42c548cMLmFPC5KFRUygO5mH5Qol6SuulYK8ki4sIMUjvArcNofKxBFTU1xZMbUxp7CRHzyIU7z9w7FqcFA1cs1ftLzFP6x1EZ2U=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR05MB8818\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:24.0909114\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8835.017\nX-Microsoft-Antispam-Mailbox-Delivery: wl:1;pcwl:1;ucf:0;jmr:0;auth:0;dest:I;ENG:(910005)(920097)(811242)(255002)(410001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: 1FSSihBxNT8ShtimsMaNzXo4LlAEsWnJqoqJZ/tNJoytCvIYl8Uf+812DuYTKd0r4RV5EZvuy/yQzZiKiMNzG6FencSp9V7dWIJwBGliYWFlQ03OdqvGf43k7eKKPTk8Ch6ZtyMYCYI3IooQ8u/BTItSq3/V71sOolSV9Oztt1qq+PPjKaTJGRuc6NfhaM0DN9ML2CR8PoZ0P+LDkb11ZJntqa1Bc0CbFZ45V0gehb8bMCU9JD/0+mSn9YPCJNaQjmeMxu8GKBccJqoLEMLaTpgyVFmh9hjuO7W8YHdJe8q2lkD265QdCJCAWDS7DbwSlBnlwoFMMSYVUDhSkzfKAjPhDfWIed5KRNNN+d2c3jnX9Hocb2mRxIGkn0ikWyME3gJZHsJ4o9rZPQ9pXWCuuExA8rywojqVm2znsr60W7IZnup+VuyH11f6lBqr9BFE1bSHV8YoDxVJZurY+iWfCoHzSMUlXLJAXoG1+xwPM/wwBLw1nd3U6zqH8UeYpszTzG8qMvj0MLlrVpZJXcgT/ePCehPug6dnBb6o5tii+A2GNNDUIvmCpFTkx+i6DCjuIRVfc9RPz1RJb8RVn2b9sOAslq76Ov0I6LjOYeOKdkfcj27ie76y5WXpqltR6RFtN8bEACZz7YdU9tFD/DxwtyeFQlCP/HLt77wgNQ6tYxfGZmB46iaEJx430ozUzS4HQQ9lYrYp2OqiLdJ0NpyugrfgMWHNgHsZOK56LFRz37FL0KJeKGwvYMnduOVwbml3T62kTyxDpKqC+4n3a7xQ5Hjxmvu0jW4RlKtdCzX4eAemfEJd6Sx0NmjgVaVkXtZub1hbr2lujwKg7kA0bZ/LXmdrTjzatE6qj29GrWGyn+79QpxtxgJ/mnyER/QbHi2T",
+      "start_pos": 0,
+      "end_pos": 4643,
+      "chunk_index": 0,
+      "chunk_size": 4643,
+      "metadata": {
+        "doc_id": "COHG334 - major incident update vpn connectivity issue in d3\\Headers\\COHG334_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\COHG334 - major incident update vpn connectivity issue in d3\\Headers\\COHG334_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:16.885827",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4698
+  }
+}

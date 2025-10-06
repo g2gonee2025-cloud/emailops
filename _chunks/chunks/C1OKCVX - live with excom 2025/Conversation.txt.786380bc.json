@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1OKCVX - live with excom 2025\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1OKCVX - live with excom 2025\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:34:17\nFolder: C1OKCVX - live with excom 2025\nMessage Count: 1\n\n--------------------------------------------------\nID: C1OKCVX_00\nFrom: Rasha Nashashibi <Rasha.Nashashibi@chalhoub.com>\nTo: \nCC: \nBCC: \nDate: 2025-06-30 14:58\nSubject: Re: Live with Excom 2025\n--------------------------------------------------\nHello Everyone, \n\n \n\nThank you again for joining last week’s Live with Excom- your engagement and questions truly contributed to an impactful conversation. \n\n \n\nWhat did you think of the new format? Please take a minute and let us know here <https://onechalhoub.connexionsnow.com/mtracking/linkref.php?link1id=1366&user=10155> .\n\nIn case you missed it this time, you can rewatch the videos and full session here <https://onechalhoub.connexionsnow.com/mtracking/linkref.php?link1id=1367&user=10155> .\n\n\nHave a great week ahead & stay connected,\n\nThe Internal Comms Team\n\n \n\nRASHA NASHASHIBI\t\nSENIOR MANAGER ‑ INTERNAL COMMUNICATIONS\t\n\t\nM.C.T. FZE\t\nDUBAI\t\n‑\t\nUNITED ARAB EMIRATES\t\n \t\n <https://chalhoubgroup.com/> \t\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\t\n‑\n\t\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\t\n <https://twitter.com/ChalhoubGroup> \t\n <https://www.facebook.com/chalhoubgroup/> \t\n <https://www.instagram.com/chalhoubgroup> \t\n <https://www.linkedin.com/company/chalhoub-group/> \t\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 0,
+      "end_pos": 1501,
+      "chunk_index": 0,
+      "chunk_size": 1492,
+      "metadata": {
+        "doc_id": "C1OKCVX - live with excom 2025\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1OKCVX - live with excom 2025\\Conversation.txt"
+      }
+    },
+    {
+      "text": "RASHA NASHASHIBI\t\nSENIOR MANAGER ‑ INTERNAL COMMUNICATIONS\t\n\t\nM.C.T. FZE\t\nDUBAI\t\n‑\t\nUNITED ARAB EMIRATES\t\n \t\n <https://chalhoubgroup.com/> \t\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\t\n‑\n\t\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\t\n <https://twitter.com/ChalhoubGroup> \t\n <https://www.facebook.com/chalhoubgroup/> \t\n <https://www.instagram.com/chalhoubgroup> \t\n <https://www.linkedin.com/company/chalhoub-group/> \t\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm> \t\n\t\n    \n\nFrom: Internal.Communications@chalhoub.com\nWhen: 3:00 PM - 4:30 PM 24 June 2025 \nSubject: Live with Excom 2025\nLocation: https://events.ringcentral.com/events/live-with-excom-2025; Test License 2\n\n \n\n \n\n <https://onechalhoub.connexionsnow.com/news/live-with-excom> \n\nWe’re looking forward to seeing you all online for Live with ExCom tomorrow.\n\nCatch up on any of the videos you might have missed here​ <https://onechalhoub.connexionsnow.com/news/live-with-excom> \n\nDon’t miss the main event tomorrow June 24 | 3:00 PM (GST)​\n\nRegister here <https://events.ringcentral.com/events/live-with-excom-2025> \n\n \n\nLet’s come together for an hour of transparency, clarity, and connection!\n\n <https://form.jotform.com/222701581346452>",
+      "start_pos": 960,
+      "end_pos": 2228,
+      "chunk_index": 1,
+      "chunk_size": 1268,
+      "metadata": {
+        "doc_id": "C1OKCVX - live with excom 2025\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1OKCVX - live with excom 2025\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:56.872678",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2340
+  }
+}

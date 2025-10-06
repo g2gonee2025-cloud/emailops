@@ -1,0 +1,42 @@
+{
+  "doc_id": "CUNM62O - payment release (invoice number(s) myneuron20032025863757437)\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CUNM62O - payment release (invoice number(s) myneuron20032025863757437)\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:42:42\nFolder: CUNM62O - payment release (invoice number(s) myneuron20032025863757437)\nMessage Count: 1\n\n--------------------------------------------------\nID: CUNM62O_00\nFrom: NotificationServices@neuron.ae <NotificationServices@neuron.ae>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-04-08 12:51\nSubject: Payment Release (Invoice Number(s) : myNeuron20032025863757437)\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\nDear Mr. HAGOP GHAZARIAN, \n\nKindly refer to enclosed Statement of Account (SOA) with adjudication details of claimed medical expenses as per your policy terms and conditions. \n\nIn case you have any relevant queries kindly contact our 24 / 7 Customer Service Team at 800SMARTCARE to assist you further. \n\nFor suspended claimed expenses, please send the required details to smartcare.claims@neuron.ae for re-assessment. \n\nThank you, \nNeuron-CignaTeam \n\nYou may view EOB in Neuron member portal. \n\n\nPlease follow the below steps to access this report online:",
+      "start_pos": 0,
+      "end_pos": 1380,
+      "chunk_index": 0,
+      "chunk_size": 1379,
+      "metadata": {
+        "doc_id": "CUNM62O - payment release (invoice number(s) myneuron20032025863757437)\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CUNM62O - payment release (invoice number(s) myneuron20032025863757437)\\Conversation.txt"
+      }
+    },
+    {
+      "text": "For suspended claimed expenses, please send the required details to smartcare.claims@neuron.ae for re-assessment. \n\nThank you, \nNeuron-CignaTeam \n\nYou may view EOB in Neuron member portal. \n\n\nPlease follow the below steps to access this report online: \n\n1. Login to the Neuron Member Portal at https://smartcarebycigna.neuron.ae/Login/Login.aspx <https://url.uk.m.mimecastprotect.com/s/dIVOCBRk0iRBO7Lszf1c2qtjn?domain=smartcarebycigna.neuron.ae>  \n2. If you havent registered, please register by clicking on the New Registration option. \n3. If registered, please login using your Neuron ID. \n4. Select the Reimbursement option to view the submitted claims and view EOB. \n\nThis email is auto-generated. Please do not respond. \n\n\n\nProperty of Nas Neuron Health Services",
+      "start_pos": 1128,
+      "end_pos": 1896,
+      "chunk_index": 1,
+      "chunk_size": 768,
+      "metadata": {
+        "doc_id": "CUNM62O - payment release (invoice number(s) myneuron20032025863757437)\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CUNM62O - payment release (invoice number(s) myneuron20032025863757437)\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:57.481213",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2053
+  }
+}

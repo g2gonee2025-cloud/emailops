@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1M0C2B - payment processed - batch id 482857\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1M0C2B - payment processed - batch id 482857\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:39:27\nFolder: C1M0C2B - payment processed - batch id 482857\nMessage Count: 2\n\n--------------------------------------------------\nID: C1M0C2B_00\nFrom: REALUAEAccounting-Receivable@chalhoub.com <REALUAEAccounting-Receivable@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Fathima Parakkat <Fathima.Parakkat@chalhoub.com>; Real Jordan Payments <realjordan.payments@chalhoub.com>\nBCC: \nDate: 2025-05-26 20:10\nSubject: Payment Processed - Batch ID: 482857\n--------------------------------------------------\nHello,\n\nWe are pleased to inform you that your payment has been processed and attached are the details for your reference.\n\nCOMPANY\t PAYEE\t CURRENCY\t AMOUNT\t INVOICE\t \nALLIED ENTERPRISES L.L.C.\t GULF INSURANCE GROUP GULF BSC -DUBAI BRANCH\t AED\t 603,362.81\t 3467556\t \n\n\n*** This is a system generated email, please do not reply to this mail. ***\n\n\n--------------------------------------------------\nID: C1M0C2B_01\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Diana Haydar <diana.haydar@nascodubai.com>; 'hrishikesh.oturkar@nascodubai.com)' <hrishikesh.oturkar@nascodubai.com>\nCC: Jaya Dhanani <jaya.dhanani@nascodubai.com>\nBCC: \nDate: 2025-05-27 10:34\nSubject: Fw: Payment Processed - Batch ID: 482857\n--------------------------------------------------\nDear Diana, Dear Hrishi,\n\nFYI. Payment for marine insurance premium.\n\nWill forward you the PAR payment also once received.\n\nBest Regards,\nHagop\n\n________________________________",
+      "start_pos": 0,
+      "end_pos": 1543,
+      "chunk_index": 0,
+      "chunk_size": 1543,
+      "metadata": {
+        "doc_id": "C1M0C2B - payment processed - batch id 482857\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1M0C2B - payment processed - batch id 482857\\Conversation.txt"
+      }
+    },
+    {
+      "text": "--------------------------------------------------\nID: C1M0C2B_01\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Diana Haydar <diana.haydar@nascodubai.com>; 'hrishikesh.oturkar@nascodubai.com)' <hrishikesh.oturkar@nascodubai.com>\nCC: Jaya Dhanani <jaya.dhanani@nascodubai.com>\nBCC: \nDate: 2025-05-27 10:34\nSubject: Fw: Payment Processed - Batch ID: 482857\n--------------------------------------------------\nDear Diana, Dear Hrishi,\n\nFYI. Payment for marine insurance premium.\n\nWill forward you the PAR payment also once received.\n\nBest Regards,\nHagop\n\n________________________________\n\nFrom: REALUAEAccounting-Receivable@chalhoub.com <REALUAEAccounting-Receivable@chalhoub.com>\nSent: Monday, May 26, 2025 8:09 PM\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCc: Fathima Parakkat <Fathima.Parakkat@chalhoub.com>; Real Jordan Payments <realjordan.payments@chalhoub.com>\nSubject: Payment Processed - Batch ID: 482857\n\n\nHello,\n\nWe are pleased to inform you that your payment has been processed and attached are the details for your reference.\n\nCOMPANY\nPAYEE\nCURRENCY\nAMOUNT\nINVOICE\nALLIED ENTERPRISES L.L.C.\nGULF INSURANCE GROUP GULF BSC -DUBAI BRANCH\nAED\n603,362.81\n3467556\n\n\n*** This is a system generated email, please do not reply to this mail. ***",
+      "start_pos": 949,
+      "end_pos": 2213,
+      "chunk_index": 1,
+      "chunk_size": 1264,
+      "metadata": {
+        "doc_id": "C1M0C2B - payment processed - batch id 482857\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1M0C2B - payment processed - batch id 482857\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:12.713906",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2291
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "doc_id": "CPVQTIS - chalhoub group cyber insurance terms\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CPVQTIS - chalhoub group cyber insurance terms\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:43:06\nFolder: CPVQTIS - chalhoub group cyber insurance terms\nMessage Count: 1\n\n--------------------------------------------------\nID: CPVQTIS_00\nFrom: Kechichian, Kevork <Kevork.Kechichian@marsh.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-03-25 14:23\nSubject: Chalhoub Group Cyber Insurance terms\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\nDear Hagop , \n\n \n\nPlease find the high level wording analysis we have conducted on the cyber terms for your information .\n\n \n\nWe hope that that this is helpful  and we look forward to receiving the claims information in order to check with RI market regarding revised terms .\n\n \n\nBest regards,\n\n \n\n \n\nKev Keshishian- ACII -ANZIIF\n\nCert. ISO 31000 Enterprise Risk Management\n\nChartered Insurance Practitioner \n\nVice President -Business Development Leader  \n\nAldar HQ Building, Floor 6 SW, Al Raha Beach\nP.O. Box 54733, Abu Dhabi, United Arab Emirates\n________________________________________\nPhone: +971 2 695 4100\n\nMobile:+971 55 4858325  Fax : +971 2 674 4163\n\nEmail:   Kevork.Kechichian@marsh.com <mailto:Kevork.Kechichian@marsh.com> \n\n \n\n\n\n \n\n\n\n \n\n \n\n \n\n\n________________________________",
+      "start_pos": 0,
+      "end_pos": 1548,
+      "chunk_index": 0,
+      "chunk_size": 1548,
+      "metadata": {
+        "doc_id": "CPVQTIS - chalhoub group cyber insurance terms\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CPVQTIS - chalhoub group cyber insurance terms\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Aldar HQ Building, Floor 6 SW, Al Raha Beach\nP.O. Box 54733, Abu Dhabi, United Arab Emirates\n________________________________________\nPhone: +971 2 695 4100\n\nMobile:+971 55 4858325  Fax : +971 2 674 4163\n\nEmail:   Kevork.Kechichian@marsh.com <mailto:Kevork.Kechichian@marsh.com> \n\n \n\n\n\n \n\n\n\n \n\n \n\n \n\n\n________________________________\n\n\nرقم القید في السجل:23\nMarsh Emirates Insurance Brokerage LLC\nBroker registration number: 23\nLicence No 219888 Registered Office: Mezzanine & 16th Floor, Riggat Al Buteen, Al Gurg Tower 3\nP.O.Box 64057 & 1019, Dubai\nUnited Arab Emirates",
+      "start_pos": 1215,
+      "end_pos": 1786,
+      "chunk_index": 1,
+      "chunk_size": 571,
+      "metadata": {
+        "doc_id": "CPVQTIS - chalhoub group cyber insurance terms\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CPVQTIS - chalhoub group cyber insurance terms\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:49.346785",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1992
+  }
+}

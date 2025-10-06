@@ -1,0 +1,42 @@
+{
+  "doc_id": "CL0MGMG - request for document - l'occitane\\Headers\\CL0MGMG_01.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CL0MGMG - request for document - l'occitane\\Headers\\CL0MGMG_01.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by VI0PR05MB11116.eurprd05.prod.outlook.com (2603:10a6:800:210::15) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8335.15; Sun, 12 Jan 2025 21:30:36 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%4]) with mapi id 15.20.8335.015; Sun, 12 Jan 2025 21:30:36 +0000\nContent-Type: multipart/mixed; boundary=\"_000_AS8PR05MB10824641EBF669BB806F8FD179D1E2AS8PR05MB10824eu_\"\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: L'Occitane Bawabat Al Sharq <L'Occitane.BawabatAlSharq@Loccitane.me>\nSubject: Re: Request for Document  - L'OCCITANE\nThread-Topic: Request for Document  - L'OCCITANE\nThread-Index: AdtVC2WoDG2qeAQ6RbyMat1icpx7VAAADdCQAAASzLACwxfeUAE/EE7AAAkatb4=\nDate: Sun, 12 Jan 2025 21:30:36 +0000\nMessage-ID: <AS8PR05MB10824641EBF669BB806F8FD179D1E2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <dcc92c6565d04eb4a47614b795891608@baniyas.ae> <DU5PR05MB11132F858C360A30C6AA42F85C3022@DU5PR05MB11132.eurprd05.prod.outlook.com> <PAXPR05MB8907C57D0B1EAF66E338EF5283022@PAXPR05MB8907.eurprd05.prod.outlook.com> <DU5PR05MB1113231DD2E475D8870AD76D5C3102@DU5PR05MB11132.eurprd05.prod.outlook.com> <DU5PR05MB11132B124FDEE82E5A1C35DA1C31E2@DU5PR05MB11132.eurprd05.prod.outlook.com>\nIn-Reply-To: <DU5PR05MB11132B124FDEE82E5A1C35DA1C31E2@DU5PR05MB11132.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator: <AS8PR05MB10824641EBF669BB806F8FD179D1E2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nmsip_labels:",
+      "start_pos": 0,
+      "end_pos": 1725,
+      "chunk_index": 0,
+      "chunk_size": 1724,
+      "metadata": {
+        "doc_id": "CL0MGMG - request for document - l'occitane\\Headers\\CL0MGMG_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CL0MGMG - request for document - l'occitane\\Headers\\CL0MGMG_01.txt"
+      }
+    },
+    {
+      "text": "k.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator: <AS8PR05MB10824641EBF669BB806F8FD179D1E2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|VI0PR05MB11116:EE_\nx-ms-office365-filtering-correlation-id: c77cc635-182b-4565-dfeb-08dd33505a37\nx-ms-exchange-atpmessageproperties: SA|SL\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|8096899003|7053199007|41050700001;\nx-microsoft-antispam-message-info: QV8AXKJIPDaNzlNX5XFHOdH/CNYDgw2Db5qOKKWJOy7dyrK00IEDhQvS13cMl85DljPx0TKvjsyWM8zjIk4xE09nInsHdMJlUjwR4KYhBdICxlurMOOyxvAaTUJXbte/whTbV1rqrRuZIQ4QSoavdK/2G5Y+xyXN9ABdv22/NzyHX71Iu7scb+kVFG0Ev/myrwMzgIu+DP+/KJGdWhHF/DfiRkcXGaRYCkOmqQMtUPi9ymcap+iLjlmg5+2sLMIw7/LPVN7QfyiR9js3dtZ0QkORLRdT8JB0GxQKR1x84HiXzeZ5BoE+YaYp+2+3Ql/Y/jAMXfWIWH0LK37J9qxyX5gq6kdpm0O24kQRYhirzAJr0hU3VigLuJjzT30Q/vO3WQrfufBfv91+alauR6OJI2vj2arLVTpvZHHiCDtL8U8zNReOPrBbbB44yqMMs8NW3fUqmK7PLrxytPeM7CCFNBGjk0zsmsZdwKrChg58Kbzi2yxKL91deQKQCKZY5s2dJdEUJuVN1zzAqb4SjpxKU765O7W0oCwNMGyIJeFjLLOdKUQb/XWy9jlpLHxXPff4ewarVUbelmMkqf96p3xCWAOYmE1bfBz///iXqoEFyRHYC7ANZvFUJ/LOMVm1/N15DkkxuUQvi2mA4b3bnxTs/9DEC2cg0cOJ3EniXRWbzptEFs7VJkYi4Z/PkJjdW9lpTH0L5bGXpcrfrRLABz5gp3mqb366PUB0KXn1DIoOMuoMJIDp6lidBDDxjZjuENCkPHVqzmF4WWHTgXPH/k73fA==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(7053199007)(41050700001);DIR:INT;\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: Ms65rS2ZDAc2dpcqV5uV7Er+2MZHry7hUjZomGAdQ6pZkO1WoX9Xg1f4jKlqZHkWvLGEAQYp/Py+dPr17+2y8lEKV1ZwxrCfl/HH6HRMk7YIz2t7tY0hFFYfboFfekktTQJUbO5/Ur4gXoBr6hjefMX51/PlaulxDq26iYDWnYA3KLtTzU1lgSq7aiI1RCdFZqd8H+W1r52pUGTXfpcNiGoq4k2l6B1zGMGM/NA+JbdnnMzhxeZqY25ilZmkm58E9cVkMK7ynnJMLVixeMwvkmscfmfPGRu0PrDo9wGzXT00JZqev1iZdSWSz8K2Qyf3TzIqlrxE0Au7uKysCJWFBgrJlS7YDHxSLiykr8uDJVbS3V0luirln/4BpM3cRB1liGsbSHYlFj2/gC1VUSfYU5WIqN5OIDYgn8X4ZFsH73tfckSEwEQdpFBAAjIM1HrboRmiFobkWlaTshQWHpUu/PY6Ph++ms+sLDoc2gYmWghHGOOz3X6mBAEpEUV8wAG93ZfNiBtqPCuf7ZQJLzopki+dd2h6fL2jQGnSsiqs7DCrFZSCA5/+2uOEV6TGIGmwTkXFaSlcb+Z2MTC4tp5/Ax5kON1jFS5mpLox+8F2IGsIuQYDMWJjLbcfWXQmnkBs\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: c77cc635-182b-4565-dfeb-08dd33505a37\nX-MS-Exchange-CrossTenant-originalarrivaltime: 12 Jan 2025 21:30:36.0200 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: 2ULIOlh7SMRUODKUwwtn6ac6+Q6wnH6nfJy1/PA1jvF6JBEutjd3I9huTmOeDRoaWtyI/HaXGGI0nkFKXKgh1r7yN+DvoabMmkVkeiLSrDc=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: VI0PR05MB11116\nX-OrganizationHeadersPreserved: VI0PR05MB11116.eurprd05.prod.outlook.com",
+      "start_pos": 1525,
+      "end_pos": 4727,
+      "chunk_index": 1,
+      "chunk_size": 3202,
+      "metadata": {
+        "doc_id": "CL0MGMG - request for document - l'occitane\\Headers\\CL0MGMG_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CL0MGMG - request for document - l'occitane\\Headers\\CL0MGMG_01.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:27:52.979861",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4770
+  }
+}

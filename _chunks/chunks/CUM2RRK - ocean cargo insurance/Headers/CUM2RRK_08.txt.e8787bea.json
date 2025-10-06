@@ -1,0 +1,42 @@
+{
+  "doc_id": "CUM2RRK - ocean cargo insurance\\Headers\\CUM2RRK_08.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CUM2RRK - ocean cargo insurance\\Headers\\CUM2RRK_08.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by AS2PR05MB9887.eurprd05.prod.outlook.com (2603:10a6:20b:5f3::10) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8964.21; Thu, 24 Jul 2025 12:44:46 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%4]) with mapi id 15.20.8964.019; Thu, 24 Jul 2025 12:44:45 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Eugenia DiMuzio <Eugenia.DiMuzio@levelshoes.com>\nCC: Alexandre Cachecho <Alexandre.Cachecho@chalhoub.com>\nSubject: Re: Ocean Cargo Insurance\nThread-Topic: Ocean Cargo Insurance\nThread-Index: Adu+Akz5wISszW8RSW6Kfkawkb0p6QAdci7QAKUj0XABI016twAPs/RgALwEMGAACsFs0AGUMg6AAWR3E/AAF0g/0AFsz6jAAlLAOQABqezUcAGUDNPAAts5Xxk=\nDate: Thu, 24 Jul 2025 12:44:45 +0000\nMessage-ID: <AS8PR05MB108243CB645F9736829D0ED909D5EA@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <DM6PR13MB35309BABEC185A9068FEA14B858E2@DM6PR13MB3530.namprd13.prod.outlook.com> <DU0PR05MB9606A3AF2D35EBA1C9A9E9179289A@DU0PR05MB9606.eurprd05.prod.outlook.com> <DU0PR05MB960610429341AC86DC185029928AA@DU0PR05MB9606.eurprd05.prod.outlook.com> <AS8PR05MB10824909F5655C91B7370DE4D9D90A@AS8PR05MB10824.eurprd05.prod.outlook.com> <DU0PR05MB960649F49D8363CE1EC91E349290A@DU0PR05MB9606.eurprd05.prod.outlook.com> <DU0PR05MB960676FA1961142A31975874929CA@DU0PR05MB9606.eurprd05.prod.outlook.com> <AS8PR05MB10824DF423E24A1E585B488829D9CA@AS8PR05MB10824.eurprd05.prod.outlook.com> <DU0PR05MB9606D6DF3465A7C7FFA6BA0D9264A@DU0PR05MB9606.eurprd05.prod.outlook.com> <DU0PR05MB9606B7181C8F53B440ED319E926DA@DU0PR05MB9606.eurprd05.prod.outlook.com> <AS8PR05MB10824F28818F8B4EAC325F5989D6CA@AS8PR05MB10824.eurprd05.prod.outlook.com> <DU0PR05MB960622BA0BF633D926F2AA819275A@DU0PR05MB9606.eurprd05.prod.outlook.com> <DU0PR05MB960661C977C64C631AB8CEE39279A@DU0PR05MB9606.eurprd05.prod.outlook.com> <DU0PR05MB9606307966D1BCF94A7F00879241A@DU0PR05MB9606.eurprd05.prod.outlook.com> <DU0PR05MB9606704BD47F4E6A038CEA969249A@DU0PR05MB9606.eurprd05.prod.outlook.com>\nIn-Reply-To: <DU0PR05MB9606704BD47F4E6A038CEA969249A@DU0PR05MB9606.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 2357,
+      "chunk_index": 0,
+      "chunk_size": 2356,
+      "metadata": {
+        "doc_id": "CUM2RRK - ocean cargo insurance\\Headers\\CUM2RRK_08.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CUM2RRK - ocean cargo insurance\\Headers\\CUM2RRK_08.txt"
+      }
+    },
+    {
+      "text": "ook.com>\nIn-Reply-To: <DU0PR05MB9606704BD47F4E6A038CEA969249A@DU0PR05MB9606.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|AS2PR05MB9887:EE_\nx-ms-office365-filtering-correlation-id: 64b54d65-42bb-4922-9e3c-08ddcaafde81\nx-ms-exchange-atpmessageproperties: SA\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|8096899003|4013099003|13003099007|7053199007|41050700001;\nx-microsoft-antispam-message-info: 5y+p1m1TPJecTJprdUGpLjF7eHJlti7MZ7AU0uM4EHibyXry+RxeYh15owOIT2TbOPGoFa4QdJd5BCgCwQxZ0BESb8RQOH6yZgq3nF3cGBboS6AcPVWBZHaB3Nq771d2PT1D9oaEQoxlUFmiOMErw2vMb0Z+wiVRjnr7ddd6KpYBqFqzc8z22z+zsEZ6KmgNa6etgO9o23+ftvDUyU73j+kQlQlCQpXNXKNaJNL1DfAbCFw32aAK0eeN7xyF5h6Yk8EnIUOk5/UurCTzTXDCkMdehrcMyUXZPdB80P37ygBaFlJmUAXFbg6ZXpVMJXjqyWpFvObKr63W8bRRHGfJh+QDoDGERbfSd4d/mWQajDgphWBezynYS5SfPVK6BnMKlkoTcdU052WwW5b2P7wUyOWpz/mNjTRymwfgBLRJ5yAikvaqfHHPI+W+DtBRf07XjDB/qVLZUnyXuafQmxIRWij5gbEEMn4B3dWgl7HsAUBRmKsDxwrLQg4hZinyNNd5vI4gSoOqD0oYLL6PffZwj1VHr0PN1u3P2zNXewC1b3fhuDlJ1NjjHrdJqczQO04uc7h7daRZ5XRXau98Nx+qD01kVkP09Zak/j96zCM5JOVCvKrDOV+FKwxV69MkFoqp6Jwp5d0mkPRGhls+RR9m2IBRLkBmAMUPh2kEYW5fcvgkShkwD7ZY6ZiNkozpYVGwE/ZMMVn8y9pGl1nZvL7VVbZvysBq5VyT2i5v4HzsDQ8=\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(4013099003)(13003099007)(7053199007)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_019_AS8PR05MB108243CB645F9736829D0ED909D5EAAS8PR05MB10824eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: lmEByAqxlf9UGX+OnJtgriamc90Rdv6ZZyE0Qa3yehO9hSnI4qlU82zeb8WjhnsjIyWUoYRFV7Q/ybuJuj219CO8XTdu4MIBt7FTeXl2tG1v9kOCqVd+/ZnXINsNp6Zw9+YldQpNb8NY5qp7qo+ORQdcSAVCOFzF9m8vWhpP3O6dBwgZiSO2cnFn5cIxdX35fy1kfR/i0OzYS+649Mupae0tmu/CfJkLw+NaZZI/MxSIG85ju/LPxTvbTuJ2nO75G8kNqhZs7BrLHA1eosy982dOebJksNLI5cxxivfgVrkeGlkpCQ0bpcUupYjBdpC3PjKSiXYkbhHawp5KpfRI+vjypjEcIJyj5KIi7tpm8IKZHOCBgdpZ1pMH2BTZ4Ykguh1diZZt6WbOelfovc0+m58AoJ1ceXrmKAWa7SLnS/IB9dhlxmaf5t+LF3YkehxryoFaUEACNIxEaLiaoZeNFzxwvlXUuXV/tGiIT5cvUZ+8Ubkobpuu2YfY3bO71pUcC2RL+3LRwJk6DlIb8QChndeNt3VBghvLU9WO9v41IdUpZZEekZDhPX0aZDh5nPhtNZlNo27hpife81AcP1aiCTnbH4XnZYN4FjmoNbqnDccIFvzSwo/wAx+KQtVZMqxV\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 64b54d65-42bb-4922-9e3c-08ddcaafde81\nX-MS-Exchange-CrossTenant-originalarrivaltime: 24 Jul 2025 12:44:45.7117 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: t97oxjXj7za2w4f/j3tyqGAfEETvMqSOhEsKji3rz6e1FsMxbGuz40dm4puDC1YgQHKlFuHto3b3uVzcWpIpPIGViPaUJzNGeXdl25COEXk=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS2PR05MB9887\nX-OrganizationHeadersPreserved: AS2PR05MB9887.eurprd05.prod.outlook.com",
+      "start_pos": 2157,
+      "end_pos": 5493,
+      "chunk_index": 1,
+      "chunk_size": 3336,
+      "metadata": {
+        "doc_id": "CUM2RRK - ocean cargo insurance\\Headers\\CUM2RRK_08.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CUM2RRK - ocean cargo insurance\\Headers\\CUM2RRK_08.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:28.671923",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5536
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "doc_id": "C1E0O93 - reminder payment of outstanding dues for acc. 2038029628\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1E0O93 - reminder payment of outstanding dues for acc. 2038029628\\Conversation.txt",
+  "num_chunks": 3,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:56:23\nFolder: C1E0O93 - reminder payment of outstanding dues for acc. 2038029628\nMessage Count: 1\n\n--------------------------------------------------\nID: C1E0O93_00\nFrom: noreply@dewa.gov.ae <noreply@dewa.gov.ae>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2024-11-15 07:08\nSubject: Reminder: Payment of outstanding dues for Acc. 2038029628\n--------------------------------------------------\n\n________________________________\n\n\nDisclaimer:\n\nThe information in this email and in any files transmitted with it is intended only for the addressee and may contain confidential and/or privileged material. Access to this email by anyone else is unauthorized. If you receive this in error, please contact the sender immediately and delete the material from any computer. If you are not the intended recipient, any disclosure, copying, distribution or any action taken or omitted to be taken in reliance on it, is strictly prohibited. Statement and opinions expressed in this e-mail are those of the sender, and do not necessarily reflect those of DEWA. DEWA accepts no liability for any damage caused by any virus/worms transmitted by this email.",
+      "start_pos": 0,
+      "end_pos": 1242,
+      "chunk_index": 0,
+      "chunk_size": 1242,
+      "metadata": {
+        "doc_id": "C1E0O93 - reminder payment of outstanding dues for acc. 2038029628\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1E0O93 - reminder payment of outstanding dues for acc. 2038029628\\Conversation.txt"
+      }
+    },
+    {
+      "text": "The information in this email and in any files transmitted with it is intended only for the addressee and may contain confidential and/or privileged material. Access to this email by anyone else is unauthorized. If you receive this in error, please contact the sender immediately and delete the material from any computer. If you are not the intended recipient, any disclosure, copying, distribution or any action taken or omitted to be taken in reliance on it, is strictly prohibited. Statement and opinions expressed in this e-mail are those of the sender, and do not necessarily reflect those of DEWA. DEWA accepts no liability for any damage caused by any virus/worms transmitted by this email.\n\nDubai Electricity and Water Authority (PJSC), Dubai, UAE, http://www.dewa.gov.ae <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Furl.uk.m.mimecastprotect.com%2Fs%2F-JN5C8BRLCykKXf1hyHyV93P%3Fdomain%3Ddewa.gov.ae&data=05%7C02%7Chagop.ghazarian%40chalhoub.com%7C9b1a5a75e5ca4a8e405008dd0522cb1a%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638672369184018900%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=LOuc4Ld4S3peAqb2v2Wbh%2BhY4a3lKlwMiml4868IRk4%3D&reserved=0>",
+      "start_pos": 544,
+      "end_pos": 1817,
+      "chunk_index": 1,
+      "chunk_size": 1272,
+      "metadata": {
+        "doc_id": "C1E0O93 - reminder payment of outstanding dues for acc. 2038029628\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1E0O93 - reminder payment of outstanding dues for acc. 2038029628\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Dubai Electricity and Water Authority (PJSC), Dubai, UAE, http://www.dewa.gov.ae <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Furl.uk.m.mimecastprotect.com%2Fs%2F-JN5C8BRLCykKXf1hyHyV93P%3Fdomain%3Ddewa.gov.ae&data=05%7C02%7Chagop.ghazarian%40chalhoub.com%7C9b1a5a75e5ca4a8e405008dd0522cb1a%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638672369184018900%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=LOuc4Ld4S3peAqb2v2Wbh%2BhY4a3lKlwMiml4868IRk4%3D&reserved=0> \n\nOur Vision: A globally leading sustainable innovative corporation committed to achieving Net-Zero by 2050.\nOur Mission: We are committed and aligned to Dubai’s 8 Guiding Principles and 50-Year Charter supporting the UAE’s directions through the delivery of global leading services and innovative energy and potable water solutions enriching lives and ensuring the happiness of our stakeholders, for a sustainable Net-Zero carbon 2050.",
+      "start_pos": 1244,
+      "end_pos": 2253,
+      "chunk_index": 2,
+      "chunk_size": 1009,
+      "metadata": {
+        "doc_id": "C1E0O93 - reminder payment of outstanding dues for acc. 2038029628\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1E0O93 - reminder payment of outstanding dues for acc. 2038029628\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:47.503900",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2292
+  }
+}

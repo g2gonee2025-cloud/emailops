@@ -1,0 +1,42 @@
+{
+  "doc_id": "C4QLMGG - scheduled maintenance for aia and wm9 - 28 06 2025\\Headers\\C4QLMGG_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C4QLMGG - scheduled maintenance for aia and wm9 - 28 06 2025\\Headers\\C4QLMGG_00.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10842.eurprd05.prod.outlook.com (::1) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Tue, 24 Jun 2025 08:16:10 +0000\nReceived: from PAXPR05MB8589.eurprd05.prod.outlook.com (2603:10a6:102:1ae::13) by AS8PR05MB10842.eurprd05.prod.outlook.com (2603:10a6:20b:63f::11) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8857.27; Tue, 24 Jun 2025 08:16:02 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from AS1PR05MB8963.eurprd05.prod.outlook.com (2603:10a6:20b:4dd::6) by PAXPR05MB8589.eurprd05.prod.outlook.com (2603:10a6:102:1ae::13) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8857.28; Tue, 24 Jun 2025 08:15:13 +0000\nReceived: from AS1PR05MB8963.eurprd05.prod.outlook.com ([fe80::8ce4:ecdc:46e7:56dd]) by AS1PR05MB8963.eurprd05.prod.outlook.com ([fe80::8ce4:ecdc:46e7:56dd%5]) with mapi id 15.20.8857.026; Tue, 24 Jun 2025 08:15:13 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: One Reach <OneReach@chalhoub.com>\nSubject: Scheduled Maintenance for AIA and WM9 - 28/06/2025 \nThread-Topic: Scheduled Maintenance for AIA and WM9 - 28/06/2025 \nThread-Index: Advk3/oMxcory6aVTray5MVQcc79IQ==\nX-MS-Exchange-MessageSentRepresentingType: 1\nDate: Tue, 24 Jun 2025 08:15:13 +0000\nMessage-ID: <AS1PR05MB89632EFF3C48F0F0CFC90751DA78A@AS1PR05MB8963.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 1603,
+      "chunk_index": 0,
+      "chunk_size": 1602,
+      "metadata": {
+        "doc_id": "C4QLMGG - scheduled maintenance for aia and wm9 - 28 06 2025\\Headers\\C4QLMGG_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C4QLMGG - scheduled maintenance for aia and wm9 - 28 06 2025\\Headers\\C4QLMGG_00.txt"
+      }
+    },
+    {
+      "text": "e: 1\nDate: Tue, 24 Jun 2025 08:15:13 +0000\nMessage-ID: <AS1PR05MB89632EFF3C48F0F0CFC90751DA78A@AS1PR05MB8963.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach:\nX-MS-Exchange-Organization-SCL: 1\nX-MS-TNEF-Correlator: <AS1PR05MB89632EFF3C48F0F0CFC90751DA78A@AS1PR05MB8963.eurprd05.prod.outlook.com>\nMIME-Version: 1.0\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: AS1PR05MB8963.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 04\nX-MS-Exchange-Organization-Network-Message-Id: 956ad0c3-3808-440e-ffd2-08ddb2f73e86\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: AS1PR05MB8963:EE_|PAXPR05MB8589:EE_|AS8PR05MB10842:EE_|AS8PR05MB10824:EE_\nTo: Undisclosed recipients:;\nReturn-Path: OneReach@chalhoub.com\nX-MS-Exchange-Organization-ExpirationStartTime: 24 Jun 2025 08:15:13.6787 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: 956ad0c3-3808-440e-ffd2-08ddb2f73e86\nX-LD-Processed: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3,ExtAddr,ExtFwd,ExtAddr\nX-MS-Exchange-AtpMessageProperties: SA\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|69100299015|13003099007|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR05MB8589.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(69100299015)(13003099007)(8096899003)(41050700001);DIR:INT;\nX-Auto-Response-Suppress: DR, OOF, AutoReply\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Jun 2025 08:15:13.1903 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: AS1PR05MB8963.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: 956ad0c3-3808-440e-ffd2-08ddb2f73e86\nX-MS-Exchange-CrossTenant-MailboxType: HOSTED\nX-MS-Exchange-CrossTenant-UserPrincipalName: hBpiQDPTqk9bLwMABh20c4Hw+XJaB+5tyj2XAstGFDXqRhszbJi1NwD/Xhg9kvm/kByoLlgYcNKW81VhZ0plTBmaMG5speAwQQNwZ4JjhJk=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR05MB10842\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:57.7445298\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8857.026\nX-Microsoft-Antispam-Mailbox-Delivery: wl:1;pcwl:1;ucf:0;jmr:0;auth:0;dest:I;ENG:(910005)(920097)(811242)(255002)(410001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: dnHqKudheREMnSXRFgklHS6GscmlmxaZs+ayAPSd6AvzUnNq4knipMjNfv+fjqISorLnGjS+RiRRecdbshlswkz1j0DfZnVvLg9bkXUooyg+a39ZLs/H4i7XsjQUGmPLdiZx/iIzylXBh2hw//vBQCiZ1g95yUEF6WfpO+Wz8lcY4cidEcAFtLkWiaCejYoD+9LRDqIaT393WBRqLfGmyMIM9oU2G+LWUSAJo+cToH8bT3zRXo3QP246gW9NE981So5bzJIr6D3BewCcj9qURdoj3x82VXyVgtjhVT4SpICsNbgjgX3OBzv9h3nU2XSXJHFgVYiI4LjSdN/OTXsiVgRMIIIQFCyJVvItOO8nfqWiJhlAuyXsG+DxT5IDgRoImAOU7I1iOZFrthcfbmCeizL8oXPmzZH0AfsSv+D3vB81JLa1Q4t4cPDe8xL0589G44fOk7qEhOu0edzi+aI0MQXD1I05TRiqEKz+we/xZsoHcHafc0cGO2cbKc9Koop+KWaPBLURy4wjE7c31HMnSff8W5nLRvAEDhMRUaDihh1SBvgKnIkfFuSh9406BwXhBv79F9KDdSKM8vvhlL1shNKDFhbbyhHniuafGKOhGmz9jIefx4Vm16Z0OUXy6eJUasuStMivCUiwyBjjRV9O6xVrIzbjkewSjCzpl/XgJBI/B7BF02GnBOj1hhDJmClSL6buQXxqwucCdYLwXRe2Ns1o5UiRRlBxLsdYNv3cAKdMcFyrEX33q298Uy62mqhcItLY9iDbNWtQ0B7Tyb+meXFkn9XggGwkPNGPgCGdgurAIs1toQLYNVY7AmSIFY6RRBG/LB1tSQ9sm/uMX/UJDh7QCXEtNwbzZDuMZP2bBW4Two4FhbmmwRVBWWNOgHJp",
+      "start_pos": 1403,
+      "end_pos": 4966,
+      "chunk_index": 1,
+      "chunk_size": 3563,
+      "metadata": {
+        "doc_id": "C4QLMGG - scheduled maintenance for aia and wm9 - 28 06 2025\\Headers\\C4QLMGG_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C4QLMGG - scheduled maintenance for aia and wm9 - 28 06 2025\\Headers\\C4QLMGG_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:34.358885",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5022
+  }
+}

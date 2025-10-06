@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1BUEXE - planned activity notification maintenance for ho1 ivanti secure vpn appliance - reminder\\Headers\\C1BUEXE_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1BUEXE - planned activity notification maintenance for ho1 ivanti secure vpn appliance - reminder\\Headers\\C1BUEXE_00.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from DU0PR05MB10313.eurprd05.prod.outlook.com (::1) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Wed, 25 Jun 2025 10:36:59 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from AS1PR05MB8963.eurprd05.prod.outlook.com (2603:10a6:20b:4dd::6) by DU0PR05MB10313.eurprd05.prod.outlook.com (2603:10a6:10:442::19) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8857.29; Wed, 25 Jun 2025 10:36:43 +0000\nReceived: from AS1PR05MB8963.eurprd05.prod.outlook.com ([fe80::8ce4:ecdc:46e7:56dd]) by AS1PR05MB8963.eurprd05.prod.outlook.com ([fe80::8ce4:ecdc:46e7:56dd%5]) with mapi id 15.20.8857.026; Wed, 25 Jun 2025 10:36:43 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: One Reach <OneReach@chalhoub.com>\nSubject: Planned Activity Notification: Maintenance for HO1 Ivanti Secure VPN Appliance - Reminder\nThread-Topic: Planned Activity Notification: Maintenance for HO1 Ivanti Secure VPN Appliance - Reminder\nThread-Index: AQHb5b0KkfqFqksqykWx/qW7LT7XJg==\nX-MS-Exchange-MessageSentRepresentingType: 1\nDate: Wed, 25 Jun 2025 10:36:42 +0000\nMessage-ID: <AS1PR05MB8963F508C4613B017B78C553DA7BA@AS1PR05MB8963.eurprd05.prod.outlook.com>\nReferences: <AS1PR05MB8963C3A89C2F0392312A16A8DA79A@AS1PR05MB8963.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS1PR05MB8963C3A89C2F0392312A16A8DA79A@AS1PR05MB8963.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach:\nX-MS-Exchange-Organization-SCL: 1\nX-MS-TNEF-Correlator: <AS1PR05MB8963F508C4613B017B78C553DA7BA@AS1PR05MB8963.eurprd05.prod.outlook.com>\nMIME-Version: 1.0\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: AS1PR05MB8963.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 04\nX-MS-Exchange-Organization-Network-Message-Id: da278bfe-2465-4fb2-3b12-08ddb3d42d26\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: AS1PR05MB8963:EE_|DU0PR05MB10313:EE_|AS8PR05MB10824:EE_\nTo: Undisclosed recipients:;\nReturn-Path: OneReach@chalhoub.com\nX-MS-Exchange-Organization-ExpirationStartTime: 25 Jun 2025 10:36:47.8902 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: da278bfe-2465-4fb2-3b12-08ddb3d42d26\nX-LD-Processed: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3,ExtFwd,ExtAddr\nX-MS-Exchange-AtpMessageProperties: SA\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|69100299015|13003099007|8096899003|105050200037|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS1PR05MB8963.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(69100299015)(13003099007)(8096899003)(105050200037)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Jun 2025 10:36:42.8214 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: AS1PR05MB8963.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: da278bfe-2465-4fb2-3b12-08ddb3d42d26\nX-MS-Exchange-CrossTenant-MailboxType: HOSTED\nX-MS-Exchange-CrossTenant-UserPrincipalName: fVXJ6/gO3G5pTvYFYcfIpnNtUPnRulBOTrNH7zYlFwYqEcLyoHsImRIb0MZQOZklO8TzAIKfYZwqPhPotq5q1MxP08uQ9j9tyPmvvassiZA=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: DU0PR05MB10313\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:17.0377442\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8857.026\nX-Microsoft-Antispam-Mailbox-Delivery: wl:1;pcwl:1;ucf:0;jmr:0;auth:0;dest:I;ENG:(910005)(944506478)(944626604)(920097)(811242)(255002)(410001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: cSuTFde5ZP/QmgpvQLoDFuAiKtXmf/lniWRyZ5/QRpqFVuK+cq377LdmZjWbFMv5QjHqptho5ygf9aIUF2MP0+3e2qEz5q0O0xu6qUY0uIJZjb2FMdWggTBpu24PBBp5Ne4Ko4Z9306ojziaxdg5X/wMI7x4qqtV5kILSD/7IpJ3MLseJ7lqzIRh8gdu6fGSafE4Zyvpyu+N3n+h8epLJHy60THxKd09BNGF9dIpCd5ocgselW6P8I+Z5HD2FPsBaztyuLI7Kp98tShbvUlyHKANvUGDoreRYQy91M3IlCL5SLrkmLQX+Qfrhl0HORDT00RXSl5JSH0o2sH259sZuxVwQwVlt0tKvoQuoqqlqldgjVslSPpd5GyHeGPWPMQzpPyl/k6wRRls0ZQuKIa2d+iVM/TxLMSMVGgqqGkhZJVqVAjRKyR125WR7qYFt4+BHyGj3G0rUnsaWk0YhnTRHIy7ZTyfnbiuACoBw0FYncnOo91FVsWJX+iLg+e30L3Q/Nnu+rl6yQSdSsP+qT06oxzE7yyomNFQ6wobq9fBlvnDTy2xO+cdwUaU1JUx8SaPr8HagsvbBG7Ka773wf8bDKVYaZz6D6z9fCsB1opGXPcJXaYYB3BtoWufWnZn71dtqoQ6TS56zz4IjYgBIa9tY3cLuFU0o1ewDZiskatZeGe0bwc5skIxG2lQXHXl79dQTAdCeXnKimclZReHwFKVQcl59gUqW66hWTgFldTH5uRZkN/E6ejtN0HjF0mvPHMIt98HWzZFLImvIy34fihnTxJAjqkm/1ThIyF//RDMCvho905fhwpqSY3zckgr8Ejdu/LY9tUZ6fm8nDCi+gy/5TxdB/bddUxyoBEEiFs6ZLyoVJrGDO4GWWy4GU7jANl+EY2KmPhnn/zjBZW8EDD57CRmltBDUJT9igfNK2T/hjE=",
+      "start_pos": 0,
+      "end_pos": 4964,
+      "chunk_index": 0,
+      "chunk_size": 4964,
+      "metadata": {
+        "doc_id": "C1BUEXE - planned activity notification maintenance for ho1 ivanti secure vpn appliance - reminder\\Headers\\C1BUEXE_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1BUEXE - planned activity notification maintenance for ho1 ivanti secure vpn appliance - reminder\\Headers\\C1BUEXE_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:35.778155",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5020
+  }
+}

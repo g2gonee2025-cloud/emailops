@@ -1,0 +1,42 @@
+{
+  "doc_id": "CAEDND4 - rejected pluto invoice cga to fendi saudi for trading company\\Headers\\CAEDND4_03.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CAEDND4 - rejected pluto invoice cga to fendi saudi for trading company\\Headers\\CAEDND4_03.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS2PR05MB10151.eurprd05.prod.outlook.com (::1) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Tue, 15 Oct 2024 12:33:38 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from DB7PR05MB5114.eurprd05.prod.outlook.com (2603:10a6:10:6c::33) by AS2PR05MB10151.eurprd05.prod.outlook.com (2603:10a6:20b:601::15) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7982.34; Tue, 15 Oct 2024 12:33:36 +0000\nReceived: from DB7PR05MB5114.eurprd05.prod.outlook.com ([::1]) by DB7PR05MB5114.eurprd05.prod.outlook.com ([fe80::e0eb:725a:7a3f:89f%6]) with Microsoft SMTP Server id 15.20.7982.033; Tue, 15 Oct 2024 12:33:36 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Furqan Akhai <Furqan.Akhai@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: Rejected Pluto Invoice | CGA to FENDI SAUDI FOR TRADING COMPANY \nThread-Topic: Rejected Pluto Invoice | CGA to FENDI SAUDI FOR TRADING COMPANY \nThread-Index: AdpuOQqwVKa3lZ1eSYyF6p8ggTq8nyvxkMPAAAJz0/AAN6WWMAAEiAjWAAEQl1AAABenCA==\nReferences: <PAXPR05MB8048DFAF736E00A5094F280790232@PAXPR05MB8048.eurprd05.prod.outlook.com> <DB3PR0502MB987662195B6C6A303ADCDC41F1442@DB3PR0502MB9876.eurprd05.prod.outlook.com> <DB7PR05MB5114F48CA0DA46D1AF7D8BD8F8442@DB7PR05MB5114.eurprd05.prod.outlook.com> <DB3PR0502MB987649A2579483293B306712F1452@DB3PR0502MB9876.eurprd05.prod.outlook.com> <DB7PR05MB5114A250F3682A64EF22C639F8452@DB7PR05MB5114.eurprd05.prod.outlook.com> <AS8PR05MB10824044DEBDF0963E7D36DEA9D452@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824044DEBDF0963E7D36DEA9D452@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 1832,
+      "chunk_index": 0,
+      "chunk_size": 1831,
+      "metadata": {
+        "doc_id": "CAEDND4 - rejected pluto invoice cga to fendi saudi for trading company\\Headers\\CAEDND4_03.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CAEDND4 - rejected pluto invoice cga to fendi saudi for trading company\\Headers\\CAEDND4_03.txt"
+      }
+    },
+    {
+      "text": "om> <AS8PR05MB10824044DEBDF0963E7D36DEA9D452@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824044DEBDF0963E7D36DEA9D452@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Furqan.Akhai@chalhoub.com\nX-MS-TNEF-Correlator: daea8728-d02c-445a-b70f-e24a4d3c7429\nMIME-Version: 1.0\nDate: Tue, 15 Oct 2024 12:33:36 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: DB7PR05MB5114.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <127843df597042e2bff2b220737c488b@DB7PR05MB5114.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: 83234d35-0e4a-4cb5-8dce-08dced1596f2\nX-MS-Exchange-Parent-Message-Id: <AS8PR05MB10824044DEBDF0963E7D36DEA9D452@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: DB7PR05MB5114:EE_|AS2PR05MB10151:EE_|AS8PR05MB10824:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 15 Oct 2024 12:33:36.6700 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: 83234d35-0e4a-4cb5-8dce-08dced1596f2\nX-MS-Exchange-AtpMessageProperties: SA|SL\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|3613699012|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB7PR05MB5114.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(3613699012)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Oct 2024 12:33:36.2183 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: DB7PR05MB5114.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: 83234d35-0e4a-4cb5-8dce-08dced1596f2\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS2PR05MB10151\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:01.8297379\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.7982.032\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:0;jmr:0;auth:0;dest:I;ENG:(910001)(944506478)(944626604)(920097)(425001)(930097)(140003)(1420198);\nX-Microsoft-Antispam-Message-Info: GqTtFeDC5wzPdqTt2vkDMjEeFfHyUuU2lWme+5n56+p84EURA2n+rvV5Gw1TJNIJtBuJUmMUEN9Xx8DVaOm7VOLLRHfLdzhIIedzwU4ydblewQ5namScwc0kzniGgo0mRg9Y4kS8EB5PjeCQoz0uP06RGhEYpLDFNwp26aoiyfX5HSaqGTwy3rZQJrXDJiGbPVT+u8GhwCMB+Q/haBO5A+WT84ARzfzQyrOqUhuCdYCHRiFCGbgg5nlt0YGY1ZfGzI1kbmVkEFVmQbvFWCaxjHgDhoRiG+og1xb2hrwPTi7tcBlaJSbtygdnhZc6//F+uSnRfL78ZwvcF9Zs3UD7HswXbP5HN/fswviW+8t9htpCESn/FtvbLULsbJdL18IfDBesSlinN2nNW6pI9KVxaW31DR1QMIabk9AUM6hbkICPak/8mew3iWrWH07NQ7EDQerXcG3bfU25mjxe49h6uh4sUwS/28vN/HvNCuYhGzkrnb1Y42K1nRUP14pE504KRzKJVwk69KUBYW91OzYu68l31IaTCvt1DSC7O6eZb9GUsYUaL649Zgj/bbw4qu9LHL8HxPun+D6eu9gRekLIpHtexfkpM1j130clSDIQeHfKDYwQKiIU7T4u26mHc5rEKEOltZIwBuFeUdZMaVQAhLIkEtwddUDHwldHQXV7kFj8ByzE57EBpTu4d2FAMW4h2XpNJDRs0FPAM0m8n4LNWgVlsIvJZvJ82GmiZBEXm3R4u2MG1MWuSTO+u1bTIwj59TpjuSxRB7EZutGX+2SveFuFciU9gJhgn69o6gXvfYmYVnm3iKNepX7Oqlv4MX2g9sSJCq0S9AL592Bsejz0OyBqmpZc56rzAGf8Cf41p3XfX5e3RhhJLNnhjDb6iKfs8VybKw9hxaTv3S2ayUbT1Q==",
+      "start_pos": 1632,
+      "end_pos": 5215,
+      "chunk_index": 1,
+      "chunk_size": 3583,
+      "metadata": {
+        "doc_id": "CAEDND4 - rejected pluto invoice cga to fendi saudi for trading company\\Headers\\CAEDND4_03.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CAEDND4 - rejected pluto invoice cga to fendi saudi for trading company\\Headers\\CAEDND4_03.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:48.658169",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5271
+  }
+}

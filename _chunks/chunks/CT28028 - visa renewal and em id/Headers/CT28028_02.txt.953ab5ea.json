@@ -1,0 +1,42 @@
+{
+  "doc_id": "CT28028 - visa renewal and em id\\Headers\\CT28028_02.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CT28028 - visa renewal and em id\\Headers\\CT28028_02.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by AS8PR05MB10369.eurprd05.prod.outlook.com (2603:10a6:20b:613::18) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8655.34; Thu, 24 Apr 2025 08:04:29 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%5]) with mapi id 15.20.8678.021; Thu, 24 Apr 2025 08:04:29 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Ahmad Alhamawi <Ahmad.Alhamawi@chalhoub.com>\nCC: Farah Awad <Farah.Awad@chalhoub.com>\nSubject: Re: Visa Renewal and EM ID\nThread-Topic: Visa Renewal and EM ID\nThread-Index: AQHZ4ibm3r9NYdfP30mVguyuFR0trbAgCZpggO2FAkCABkMKMIAAAHUggAAAN1CAAAA/wIDd4s3QgAAA0eCAB2OU0IAAAH2QgAAARfCAAABwMIABsshggAltBbCAAACOoIABjarwgAAAYfCAAACnAIABkRvAgAGTBXCAAAEF8IABj9cwgAAATuCABJwzwIAAAHdggAAZxLCAS9RFIIB9TCAggAACsjCAAACgQIAAALbAgAAFo9CA0ub3AIAJgksAgAFRGv4=\nDate: Thu, 24 Apr 2025 08:04:28 +0000\nMessage-ID: <AS8PR05MB1082469C62D06E27BE9EB5BA09D852@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <AS1PR05MB9530ECB1F419BF6C90C52E62FAB72@AS1PR05MB9530.eurprd05.prod.outlook.com> <AS1PR05MB95305074C4E3E563C2C24A05FAB72@AS1PR05MB9530.eurprd05.prod.outlook.com> <AS1PR05MB9530D3D9BEDE5CFF9C95AD29FAB72@AS1PR05MB9530.eurprd05.prod.outlook.com> <AS1PR05MB95309BC3F8AFB656D3AB858CFA672@AS1PR05MB9530.eurprd05.prod.outlook.com> <AS1PR05MB9530B5586AF9CDC0793FFC33FA372@AS1PR05MB9530.eurprd05.prod.outlook.com> <AS1PR05MB95305A07C35AA4A9C7059AAFFA372@AS1PR05MB9530.eurprd05.prod.outlook.com> <AS1PR05MB9530D71C014035359E3B21BDFA372@AS1PR05MB9530.eurprd05.prod.outlook.com> <AS1PR05MB9530C3B8A5C5659F0AEEDA0BFA372@AS1PR05MB9530.eurprd05.prod.outlook.com> <AS1PR05MB9530D05ED872321AF767FBBBFA372@AS1PR05MB9530.eurprd05.prod.outlook.com> <AS1PR05MB9530133121EAAFDF627DC96DFABC2@AS1PR05MB9530.eurprd05.prod.outlook.com> <AS1PR05MB9530E33087099DF810A4D6D2FABA2@AS1PR05MB9530.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS1PR05MB9530E33087099DF810A4D6D2FABA2@AS1PR05MB9530.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 2231,
+      "chunk_index": 0,
+      "chunk_size": 2230,
+      "metadata": {
+        "doc_id": "CT28028 - visa renewal and em id\\Headers\\CT28028_02.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CT28028 - visa renewal and em id\\Headers\\CT28028_02.txt"
+      }
+    },
+    {
+      "text": "ook.com>\nIn-Reply-To: <AS1PR05MB9530E33087099DF810A4D6D2FABA2@AS1PR05MB9530.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|AS8PR05MB10369:EE_\nx-ms-office365-filtering-correlation-id: 359e6405-0183-40f3-74a3-08dd8306a35b\nx-ms-exchange-atpmessageproperties: SA\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|31052699007|39142699007|7053199007|4013099003|8096899003|13003099007|41050700001;\nx-microsoft-antispam-message-info: r95atYdVIhS6xN5li8iMyZaRE+CyOqCXJxJ2NFP/yJ1QFSwf0UxneI34Bh/vYpI3/Hq2l4Vv8GNNj+DwyqfA7NRSsCoTcodib+2ZWjdQWOZuugKGKVhGaS9eO/GzhoaW6WXNBBxeSU0ZfwEZaPhLadXBSunzJxxB8G1vfG+oJ6cMhd2KpNaW/1Mq1UKFYI7jvZhwwn/ekF++MAhKXpbf+JmaPijwkr6z2x4f6ju08MFMSL0uaPCrrL+cZHuspbwmXxZKgxd439tfCcjTYQ5WhttypEfvkbun5oc9ht1ewfIPdjnHjroqlKoZyLMxWjuJ78vqX1KlARrlS/oIu5UbQeRASMX0v51idH71XxXxbeV6/Y2uo+viRTyGQs8gBBbbdBZSo5+J0RJaZ2FrQXFXNJYUOMVUKO1InDbNAi4txD5IeFV0XaCSogDZdPAWSzdP6xfm5fCl33yD6iEX+lB7Ym3y6tTtUU8igH2k15etZb1RIairOSeccwvabInc/o+XVXshIFRVc0Oc/V/h4MfJdKO39nFLzewUaq6FFl2lCgsVR9YkwT4f5yONENwUDx8taxUWrwDmUpXjZFUMWrVR9qfjP9SoptcI1exOiw2MWujuf/arL3xfUE9LV+wcoCbWDtWizmQjhTeVAcI5y82cHl+rSRo/ePwV9NhvSSwErBNx8I59W0JIOYV/o2GWfW/DH7rW0JqWy1sPcIGhXuDUPdIKXMXF3Rguo/j8wGmDm8DBSxIgZGQI5POJbt72WLx+\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(31052699007)(39142699007)(7053199007)(4013099003)(8096899003)(13003099007)(41050700001);DIR:INT;\nContent-Type: multipart/mixed; boundary=\"_017_AS8PR05MB1082469C62D06E27BE9EB5BA09D852AS8PR05MB10824eu_\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: F1zm0KVQNFLOIOOrJ1Kbh2U0/L58fvEHY9Wc5aHuPfLNgjeKe6hoTKArZzUEIcv5naDpe2x8Lr5Z55TInNCkL2pYMAmOFh16q6iUtj2BRd4dFPzSynIPDuUwt+Ldy6QBI+E5sVm5HeZrwq4WGW1HUG2DbhLs9ik3opH3j78W2zJGkTdmWOv63hlIuRhiyx2dVIs60R0PC6AxSgxYBKVFyUeeNLTh5VTsMz6WvroHhiPi/SQ6p9mTUDwJYlZmuHZoA7vrtSt676BBkWfRhMZ0vYYynHBAy+NiXVtAVnwKZ1ZKSPOsV8wGJs9M6aEGN/gQx6BKkmNCZmMA/6uHOXdPHxnNuu1P2mavnwvHA+J+t7dTkTCBqQoX2L7uAubtFWjse7DFAldVJj9fxDwovGSFi4KGZ5xGf6VT/4YZJpq+iX1PI/U7i4a8dPBbvkleLkQcQGnTtIKD5xHpiRz5FBqga/cVwSArRyb5zS9p0fOtt/wmxw+tcAxB2Cax09IT9LF/UroGR/Np55zbffORvJ9op16g7lmbzfrOV1yagskL0Uch2CkRG56zWI7spSPJyvOnbCQkQVSG6bmKWiBIVGoWbr+7P/hu6uJCjbollizxRCd/olYNQMkPqH+nMcQvlxPd\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 359e6405-0183-40f3-74a3-08dd8306a35b\nX-MS-Exchange-CrossTenant-originalarrivaltime: 24 Apr 2025 08:04:28.9885 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: PzfWrvuLEBU0a/m690HVvYT/qmbQvqTSSZvYxKvlV8RerSqoN/nOhb3HTxmGhd0OPFf07HarwYK7hQ0DAb55kb4VpeGrpTeNXoA8LyADZy0=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR05MB10369\nX-OrganizationHeadersPreserved: AS8PR05MB10369.eurprd05.prod.outlook.com",
+      "start_pos": 2031,
+      "end_pos": 5421,
+      "chunk_index": 1,
+      "chunk_size": 3390,
+      "metadata": {
+        "doc_id": "CT28028 - visa renewal and em id\\Headers\\CT28028_02.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CT28028 - visa renewal and em id\\Headers\\CT28028_02.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:41.962939",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5465
+  }
+}

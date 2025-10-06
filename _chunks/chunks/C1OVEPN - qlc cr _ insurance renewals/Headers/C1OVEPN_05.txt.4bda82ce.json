@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1OVEPN - qlc cr & insurance renewals\\Headers\\C1OVEPN_05.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1OVEPN - qlc cr & insurance renewals\\Headers\\C1OVEPN_05.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from VI1PR05MB6720.eurprd05.prod.outlook.com (2603:10a6:800:139::15) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Tue, 17 Dec 2024 05:55:57 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from GVXPR05MB11285.eurprd05.prod.outlook.com (2603:10a6:150:14e::14) by VI1PR05MB6720.eurprd05.prod.outlook.com (2603:10a6:800:139::15) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8251.22; Tue, 17 Dec 2024 05:55:54 +0000\nReceived: from GVXPR05MB11285.eurprd05.prod.outlook.com ([::1]) by GVXPR05MB11285.eurprd05.prod.outlook.com ([fe80::f07e:e31f:e433:7267%4]) with Microsoft SMTP Server id 15.20.8251.015; Tue, 17 Dec 2024 05:55:54 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Lina El Moabbi <Lina.Elmoabbi@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: QLC CR & Insurance Renewals\nThread-Topic: QLC CR & Insurance Renewals\nThread-Index: AdsgpUOZVn6H7xE8RY+eAuVBhBA2UgSovq6gA4sxNAAAANxegADR2iOgAYRtOmABXZk8+gAAF7/w\nReferences: <AS2PR05MB107101AA6633EB6009D6C3911E7472@AS2PR05MB10710.eurprd05.prod.outlook.com> <GVXPR05MB11285E6EBD83909CA23CFE8BD845F2@GVXPR05MB11285.eurprd05.prod.outlook.com> <AS2PR05MB10710792DBA549CE553CB5591E7292@AS2PR05MB10710.eurprd05.prod.outlook.com> <GVXPR05MB11285C9AFF41BABD1DB52914E84292@GVXPR05MB11285.eurprd05.prod.outlook.com> <AS2PR05MB107101FED84E883D2598F4405E7352@AS2PR05MB10710.eurprd05.prod.outlook.com> <GVXPR05MB11285A06BA95BFB19CEE26C0C843D2@GVXPR05MB11285.eurprd05.prod.outlook.com> <AS8PR05MB10824C8FCBF6F0F11B678D6CC9D042@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824C8FCBF6F0F11B678D6CC9D042@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 1872,
+      "chunk_index": 0,
+      "chunk_size": 1871,
+      "metadata": {
+        "doc_id": "C1OVEPN - qlc cr & insurance renewals\\Headers\\C1OVEPN_05.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1OVEPN - qlc cr & insurance renewals\\Headers\\C1OVEPN_05.txt"
+      }
+    },
+    {
+      "text": "om> <AS8PR05MB10824C8FCBF6F0F11B678D6CC9D042@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824C8FCBF6F0F11B678D6CC9D042@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Lina.Elmoabbi@chalhoub.com\nX-MS-TNEF-Correlator: a86273f3-da50-4897-b685-3973819ce391\nMIME-Version: 1.0\nDate: Tue, 17 Dec 2024 05:55:54 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: GVXPR05MB11285.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <313c785f993546a2aed1bcebeca5fc17@GVXPR05MB11285.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: 43628445-b166-439b-1209-08dd1e5f787b\nX-MS-Exchange-Parent-Message-Id: <AS8PR05MB10824C8FCBF6F0F11B678D6CC9D042@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: GVXPR05MB11285:EE_|VI1PR05MB6720:EE_|AS8PR05MB10824:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 17 Dec 2024 05:55:55.0663 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: 43628445-b166-439b-1209-08dd1e5f787b\nX-MS-Exchange-AtpMessageProperties: SA|SL\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GVXPR05MB11285.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Dec 2024 05:55:54.8089 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: GVXPR05MB11285.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: 43628445-b166-439b-1209-08dd1e5f787b\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR05MB6720\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:02.8307812\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8251.004\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910001)(944506478)(944626604)(920097)(425001)(930097)(140003)(1420198);\nX-Microsoft-Antispam-Message-Info: 1L8q3Plhmvz6lz4nj37YuB791jyhYR0Jcko0ObBrKb9h5hKtjSmycsjkB90EoOCluBCy3PGcbT2hJSFba9WIAOGsXFME0aa8oo5BMYzvUbtiDN5GPWOe152nd1TY9QV+XH+pF1rkF5QXGOIBvO813YPQibqMiN4L8ONcM1ZrhilIoP4jB30fyj8DZ492IRoDp3eg7QnJC4fxrlTJvptJDi89C0n46N0uaqXIX8HgqyPXkhyJw5SpPHhR0ZuRJcpDn3Nw3TeLmiJaqiKRy5m3rdKf0Ds0GFt8IUKIQpl1TuaRgctAtdWOTFb88vU3773JfH4Qfk1oBhL/sJl6jDfHNPYwM9hLw04eqCvVFxkfuFzfVq/dw9hRrS/8kaIAGa503bDpfnAm/g/4uqKTWNwdP75zLuwJjZfSQPomwzeWPllv2vaHVht2RiCgTXosz5ik6THbUBQpeglrYHm1FZjNaESGLqH+wj5rSD3tB1Sa8szPbl/73IWaGOFNzk7oiAVvNHazGFym8Q0PPTCMe4thhBCjQJzWimfb6tIIey6TWlNibANp2NjrXPzDlXs+H76BlJoaB62ACfW5m7k9uwt42Qbc736EWNBEO6xu/e0dSqaAg2i+xVnopDmz20BbzttJAOiBSSmBd1vA+JDt72dsxT3lpOdzLDEQoh/yKkQ2p8L+QoKftpywa8mRw+eoiXfS8LsijN6odGekmpdzwXXPB0idV9Cj6vrl8H3LTU3UPw6qIlthjn+gudnyFB3gZsnFAntam8grWrZB5EO0p41zF8qs/+bmlS80gLtt1HS3adiiTFe7tbvVrD1IgPSwQOdEOa7n26BqbR/XYn8v5TDjAmnLzyaWCd8NqBttMusL/etLoo+sWp7ugYPYhtQ99LQnHH7dOBGuIVH/dCIpudJjGA==",
+      "start_pos": 1672,
+      "end_pos": 5275,
+      "chunk_index": 1,
+      "chunk_size": 3603,
+      "metadata": {
+        "doc_id": "C1OVEPN - qlc cr & insurance renewals\\Headers\\C1OVEPN_05.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1OVEPN - qlc cr & insurance renewals\\Headers\\C1OVEPN_05.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:43.845855",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5331
+  }
+}

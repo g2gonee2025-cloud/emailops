@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1452I9 - new entity - guess emirates llc\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1452I9 - new entity - guess emirates llc\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:43:19\nFolder: C1452I9 - new entity - guess emirates llc\nMessage Count: 1\n\n--------------------------------------------------\nID: C1452I9_00\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Savio Salvador D'costa <Savio.Dcosta@nascodubai.com>\nCC: Diana Haydar <Diana.Haydar@nascodubai.com>\nBCC: \nDate: 2025-01-16 03:12\nSubject: New entity - Guess Emirates LLC\n--------------------------------------------------\nDear Savio,\n\n \n\nHope you are well.\n\n \n\nPlease note that we have a new entity formed called Guess Emirates LLC which will be the owner of the Guess brand operations in UAE.\n\n \n\nKindly request GIG to add the mentioned entity as an additional insured to the PAR and Liability insurance policies of Allied Enterprises LLC.\n\n \n\nThere is no change in sum insured as the existing Guess stores will be migrated under the new legal entity.\n\n \n\nAppreciate your kind support on the matter.\n\n \n\nThank You & Best Regards,\n\nHagop\n\nHAGOP GHAZARIAN​​​​\n\nSPECIALIST ‑ ADMINISTRATION\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n+971 4 8045000\n\n\t\n \t\n <https://chalhoubgroup.com/> \n\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\n\n‑\n\n\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\n\n <https://twitter.com/ChalhoubGroup> \n\n <https://www.facebook.com/chalhoubgroup/> \n\n <https://www.instagram.com/chalhoubgroup> \n\n <https://www.linkedin.com/company/chalhoub-group/> \n\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 0,
+      "end_pos": 1552,
+      "chunk_index": 0,
+      "chunk_size": 1552,
+      "metadata": {
+        "doc_id": "C1452I9 - new entity - guess emirates llc\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1452I9 - new entity - guess emirates llc\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:17.521159",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1658
+  }
+}

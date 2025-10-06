@@ -1,0 +1,42 @@
+{
+  "doc_id": "CPXFUB8 - التحقق من البريد الالكتروني\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CPXFUB8 - التحقق من البريد الالكتروني\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:33:08\nFolder: CPXFUB8 - التحقق من البريد الالكتروني\nMessage Count: 1\n\n--------------------------------------------------\nID: CPXFUB8_00\nFrom: notifications@rta.ae <notifications@rta.ae>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-06-26 22:47\nSubject: التحقق من البريد الالكتروني\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\nCannot view this email properly? Click Here <https://url.uk.m.mimecastprotect.com/s/Q2PYC3KMDuojgkzSgf5hQBxAo?domain=traffic.rta.ae>  to open it in your browser \n\nهل تواجه مشكلة في عرض هذا البريد الإلكتروني؟ اضغط هنا <https://url.uk.m.mimecastprotect.com/s/Q2PYC3KMDuojgkzSgf5hQBxAo?domain=traffic.rta.ae> لقراءته \n\n\nالتحقق من البريد الالكتروني\n\n\nEmail Verification\n\n <https://www.rta.ae/links/email-templates/img/rta-logo-copy-3.png> \t\nHello WIDAD MIREILL MARIE THERESE MAZLOUM CHALHOUB,\n\nDear Customer\nTo verify your email, please click on the link <https://url.uk.m.mimecastprotect.com/s/_-sDC4YN0FEZ2VKSxh2h49Zm3?domain=traffic.rta.ae>  \nPlease note this link will expire in 24 hours \n\nمرحبا وداد ميريل ماري تيريس مظلوم شلهوب،",
+      "start_pos": 0,
+      "end_pos": 1465,
+      "chunk_index": 0,
+      "chunk_size": 1464,
+      "metadata": {
+        "doc_id": "CPXFUB8 - التحقق من البريد الالكتروني\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CPXFUB8 - التحقق من البريد الالكتروني\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Dear Customer\nTo verify your email, please click on the link <https://url.uk.m.mimecastprotect.com/s/_-sDC4YN0FEZ2VKSxh2h49Zm3?domain=traffic.rta.ae>  \nPlease note this link will expire in 24 hours \n\nمرحبا وداد ميريل ماري تيريس مظلوم شلهوب، \n\nعزيزي المتعامل\nللتحقق من بريدك الإلكتروني ، يرجى النقر على الرابط <https://url.uk.m.mimecastprotect.com/s/soQXC51OGT3yPJLCyiQhkvXRw?domain=traffic.rta.ae> \nيرجى ملاحظة أن هذا الرابط ستنتهي صلاحيته خلال 24 ساعة \n\n<:ENTITY_DESC_EN>\t <:ENTITY_VALUE>\t <:ENTITY_DESC_AR>\t \n<:DATE_DESC_EN>\t <:DATE_DESC_VALUE>\t <:DATE_DESC_AR>\t \n<:REQUEST_NO_EN>\t <:REQUEST_NO_VALUE>\t <:REQUEST_NO_AR>\t \nStatus\t <:STATUS_DESC_EN> \n<:STATUS_DESC_AR> \tالحالة\t \n<:PAYMENT_EN>\t AED <:PAYMENT_VALUE>\t <:PAYMENT_AR>\t \nYou can use the following channels \nto complete your process\n\nيمكنكم استخدام القنوات \nالتالية لاستكمال إجراءاتكم\n\n\t\t\nFor more information, please visit www.rta.ae <https://url.uk.m.mimecastprotect.com/s/SwZ3C6zPJS7R6NYS5sph5av_M?domain=rta.ae>  \t\tلمزيد من المعلومات، يرجى زيارة \nwww.rta.ae <https://url.uk.m.mimecastprotect.com/s/SwZ3C6zPJS7R6NYS5sph5av_M?domain=rta.ae>  أو الاتصال على <tel:> \t\nHave a nice day!\t \t!نتمنى لكم يوماً سعيداً\t \nThis is a system generated message. \nPlease do not reply to this e-mail.\t \tأنشئت هذه الرسالة الإلكترونية بشكل تلقائي \nبواسطة النظام ولا داعي للرد عليها.",
+      "start_pos": 1224,
+      "end_pos": 2549,
+      "chunk_index": 1,
+      "chunk_size": 1325,
+      "metadata": {
+        "doc_id": "CPXFUB8 - التحقق من البريد الالكتروني\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CPXFUB8 - التحقق من البريد الالكتروني\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:05.827778",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 3145
+  }
+}

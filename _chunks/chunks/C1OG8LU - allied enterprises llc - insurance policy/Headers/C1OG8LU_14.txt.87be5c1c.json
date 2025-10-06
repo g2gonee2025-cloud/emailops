@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1OG8LU - allied enterprises llc - insurance policy\\Headers\\C1OG8LU_14.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1OG8LU - allied enterprises llc - insurance policy\\Headers\\C1OG8LU_14.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB9930.eurprd05.prod.outlook.com (2603:10a6:20b:5b8::7) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Tue, 26 Nov 2024 09:48:53 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from AS8PR05MB7831.eurprd05.prod.outlook.com (2603:10a6:20b:251::14) by AS8PR05MB9930.eurprd05.prod.outlook.com (2603:10a6:20b:5b8::7) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8182.20; Tue, 26 Nov 2024 09:48:52 +0000\nReceived: from AS8PR05MB7831.eurprd05.prod.outlook.com ([::1]) by AS8PR05MB7831.eurprd05.prod.outlook.com ([fe80::47e6:27df:b894:6654%4]) with Microsoft SMTP Server id 15.20.8182.019; Tue, 26 Nov 2024 09:48:52 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Michelle Cantalejo <Michelle.Cantalejo@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: ALLIED ENTERPRISES LLC - insurance policy\nThread-Topic: ALLIED ENTERPRISES LLC - insurance policy\nThread-Index: AdsOltdhjDizpb4QS62iDzawjZoGsQFi4cZQAS2QLrABgIFtcAAAJJqAAV20OmAC69f3sAAFhsZ/ADD11oAA+jJ3AAAEQNJQAdA52rAAAVZKoAAD5KnWAOTtuLAACkD5AAAALEn1\nReferences: <DX3P273MB10243C5C939EAE6D93BFF0E0EA682@DX3P273MB1024.AREP273.PROD.OUTLOOK.COM> <DX3P273MB10247C7F4493A8F77B487025EA772@DX3P273MB1024.AREP273.PROD.OUTLOOK.COM> <DX3P273MB1024869CA8898DD6042E0ECBEA7D2@DX3P273MB1024.AREP273.PROD.OUTLOOK.COM> <DX3P273MB10245AAE5F07DCB857846D9FEA452@DX3P273MB1024.AREP273.PROD.OUTLOOK.COM> <AS8PR05MB78313080D07F9B0236444B58F7452@AS8PR05MB7831.eurprd05.prod.outlook.com> <AS8PR05MB783153FCFADDAD883CA901CCF74C2@AS8PR05MB7831.eurprd05.prod.outlook.com> <AS8PR05MB7831865679D35FD5BA4A940CF7532@AS8PR05MB7831.eurprd05.prod.outlook.com> <AS8PR05MB10824CA6F2260AE868CB117629D532@AS8PR05MB10824.eurprd05.prod.outlook.com> <AS8PR05MB78310475FA9EB21514FC7FC7F75C2@AS8PR05MB7831.eurprd05.prod.outlook.com> <DB6PR05MB33822731C2D19276A9644931EB592@DB6PR05MB3382.eurprd05.prod.outlook.com> <AS8PR05MB10824F6C80C77E5EFC3A76BF39D592@AS8PR05MB10824.eurprd05.prod.outlook.com> <DB6PR05MB33825AE034E56F811961C66AEB222@DB6PR05MB3382.eurprd05.prod.outlook.com> <PAVPR05MB9853457D87E265B00839EC868E222@PAVPR05MB9853.eurprd05.prod.outlook.com> <AS8PR05MB1082454E224BDB44A0D57EE639D222@AS8PR05MB10824.eurprd05.prod.outlook.com> <DB6PR05MB33821CB0E76F425089740845EB2F2@DB6PR05MB3382.eurprd05.prod.outlook.com> <AS8PR05MB10824096F295AD6275F2AA8DE9D2F2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824096F295AD6275F2AA8DE9D2F2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 2683,
+      "chunk_index": 0,
+      "chunk_size": 2682,
+      "metadata": {
+        "doc_id": "C1OG8LU - allied enterprises llc - insurance policy\\Headers\\C1OG8LU_14.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1OG8LU - allied enterprises llc - insurance policy\\Headers\\C1OG8LU_14.txt"
+      }
+    },
+    {
+      "text": "om> <AS8PR05MB10824096F295AD6275F2AA8DE9D2F2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824096F295AD6275F2AA8DE9D2F2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Michelle.Cantalejo@chalhoub.com\nX-MS-TNEF-Correlator: 2af34e83-30bd-4a29-9662-d667a3c52aa6\nMIME-Version: 1.0\nDate: Tue, 26 Nov 2024 09:48:52 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: AS8PR05MB7831.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <e970f58711e241bca659819bffa40538@AS8PR05MB7831.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: bd9105fb-1e5f-4e80-47fb-08dd0dff893e\nX-MS-Exchange-Parent-Message-Id: <AS8PR05MB10824096F295AD6275F2AA8DE9D2F2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: AS8PR05MB7831:EE_|AS8PR05MB9930:EE_|AS8PR05MB10824:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 26 Nov 2024 09:48:52.7066 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: bd9105fb-1e5f-4e80-47fb-08dd0dff893e\nX-MS-Exchange-AtpMessageProperties: SA|SL\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB7831.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Nov 2024 09:48:52.6680 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB7831.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: bd9105fb-1e5f-4e80-47fb-08dd0dff893e\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR05MB9930\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:01.0152531\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8182.018\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910001)(944506478)(944626604)(920097)(425001)(930097)(140003)(1420198);\nX-Microsoft-Antispam-Message-Info: gNKNpUbPYlmACzDYvy+Gv1C9lisRfnr0FIkgXiF/a6enLEiNsLMUCVbiWKGLGZiP8L2weN7N1zU66WVs1Ja/R3cI575xSkmmtmiy/fEKZfzid6R3t6/vcNXVSOm927GFf0bXtthvU1T6dH3zbkYL2gj5eBqaXNBA+FuEkZ2tjplwtEO1NTj3IwAi8KheJvCmIKi2g7gLiPlni4N5iwiN5fWkTr8zmof7cBmg/UaIqANsHOMkA1+pYU7UucJ9a1bsajlUzrjdnK/y00gQ5hHIIF9GqVsGaGeVy/JqKm6YM+6X3RmDfSkO5aA7G8+xGGbShol+wtvkoGNq11evp4VytvcxF0LNlZlz2mTEL3IR8xYosz1sWIamnZFjP1O8GUP159rdXnWFCu957fuhWkSYkX7/4PnnLmi4UFKqyMoiuv5Yj1OuNuGBsrSYphfQn6SFtUElcRueEvIbiQX932NU84ugZr0wVQDxNVeB0yxjzCCpj0F9XscriEixXNUgF1yDV/INIWdlPGBPbwONyVwVeSqrfD11v3a3R068iWZodQv3NclNMI9R0uvnIPwbrnT2/kMKM94wFGiT+4KSTd1wzQpsOOkSC3k5N1wT13OolMpTm8LD509l4KJpfPY9mjeFqu17LmhHCs/fD9nFLZUU30Ybp0TcgJPM7MesEFOTeIuGGu57SAWSPxdyP4CAAQv7RJW5Iwd0HmqQ5X1r16x07Q+CK92J/FRHOtcBUDA2A2XUMQLAbeKPp31rbzmaT91ccxMf3LCxyhfHrVqepFhc2RSMQnqKWTKx35VV5g6pLu3riDOK2UW4teRYd6VoO92+T2S1WCUQV13An1Mdgw1OrZKk3mh/v6/x48UL4lCtwLRiRdWs+4jfkPqJX6ZpbLkuDIlyTNVhpX0ygxvrLjQdpBwMa8s5HiQYV+Gkhi85MZg=",
+      "start_pos": 2483,
+      "end_pos": 6106,
+      "chunk_index": 1,
+      "chunk_size": 3623,
+      "metadata": {
+        "doc_id": "C1OG8LU - allied enterprises llc - insurance policy\\Headers\\C1OG8LU_14.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1OG8LU - allied enterprises llc - insurance policy\\Headers\\C1OG8LU_14.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:27:35.080670",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 6162
+  }
+}

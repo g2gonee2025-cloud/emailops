@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1A4O3K - loccitane nakheel mall - store permits rejection\\Headers\\C1A4O3K_03.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1A4O3K - loccitane nakheel mall - store permits rejection\\Headers\\C1A4O3K_03.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from PAVPR05MB10257.eurprd05.prod.outlook.com (2603:10a6:102:2f8::12) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Fri, 27 Sep 2024 13:20:55 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from AM7PR05MB7042.eurprd05.prod.outlook.com (2603:10a6:20b:18e::14) by PAVPR05MB10257.eurprd05.prod.outlook.com (2603:10a6:102:2f8::12) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7982.28; Fri, 27 Sep 2024 13:20:54 +0000\nReceived: from AM7PR05MB7042.eurprd05.prod.outlook.com ([::1]) by AM7PR05MB7042.eurprd05.prod.outlook.com ([fe80::b944:67c0:184d:38b4%3]) with Microsoft SMTP Server id 15.20.7982.022; Fri, 27 Sep 2024 13:20:54 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Mohammed El Neel <Mohammed.Elneel@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: LOccitane Nakheel Mall - Store Permits Rejection\nThread-Topic: LOccitane Nakheel Mall - Store Permits Rejection\nThread-Index: AdsQA8rep0jKkWLQRgS0OOPK7oYSrAAyRy5gAAGabUAAAxyKPQAAFFiZ\nReferences: <AS8PR05MB82306106A3AA64C793ADD30DF36A2@AS8PR05MB8230.eurprd05.prod.outlook.com> <VI1PR05MB6702D5D81EABE236908F3DA1826B2@VI1PR05MB6702.eurprd05.prod.outlook.com> <DB3PR0502MB407412E6ACC7830DD3C0F25CE16B2@DB3PR0502MB4074.eurprd05.prod.outlook.com> <AS8PR05MB10824370B9D44B66F19325F669D6B2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824370B9D44B66F19325F669D6B2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 1646,
+      "chunk_index": 0,
+      "chunk_size": 1645,
+      "metadata": {
+        "doc_id": "C1A4O3K - loccitane nakheel mall - store permits rejection\\Headers\\C1A4O3K_03.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1A4O3K - loccitane nakheel mall - store permits rejection\\Headers\\C1A4O3K_03.txt"
+      }
+    },
+    {
+      "text": "om> <AS8PR05MB10824370B9D44B66F19325F669D6B2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824370B9D44B66F19325F669D6B2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Mohammed.Elneel@chalhoub.com\nX-MS-TNEF-Correlator: 34464913-293e-4e73-b22e-4cd059c08567\nMIME-Version: 1.0\nDate: Fri, 27 Sep 2024 13:20:54 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: AM7PR05MB7042.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <6f20da428f154e4890cef2880457b93c@AM7PR05MB7042.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: 3cfc9009-c72c-4d05-d18a-08dcdef7374f\nX-MS-Exchange-Parent-Message-Id: <AS8PR05MB10824370B9D44B66F19325F669D6B2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: AM7PR05MB7042:EE_|PAVPR05MB10257:EE_|AS8PR05MB10824:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 27 Sep 2024 13:20:54.6819 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: 3cfc9009-c72c-4d05-d18a-08dcdef7374f\nX-MS-Exchange-AtpMessageProperties: SA|SL\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM7PR05MB7042.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Sep 2024 13:20:54.5854 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: AM7PR05MB7042.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: 3cfc9009-c72c-4d05-d18a-08dcdef7374f\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PAVPR05MB10257\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:00.9456360\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.7982.022\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:0;jmr:0;auth:0;dest:I;ENG:(910001)(944506478)(944626604)(920097)(425001)(930097)(140003)(1420198);\nX-Microsoft-Antispam-Message-Info: ssnKWm+XVsg9sGdCFVUaVwSe7cAunzciC26oEChJYZw5qkmZx//mcyV0rq4n4mqia158NjC4u2RlXC79BJr71GTsSVzbozVuYqFwJ8CSdXHHgPyhfPtCIeautGTx96ov6osDmr5f+OtzCpZAwytgOEEd5jH38/A0y73zzQyzgE08jJJwHQNEQazWro3gYV77jHmt95q53rc1B9AYafAWsdXG3FXecNyoKJMZ5qgkPucnUHauish1eesbd05QPxv1idPD/3P9Ye3hhMlrfSiq8X8haWMpm8YMNFy9/mW2WJIZO9xga5s0O22BQOk7fqU3j3AVwAL9HycI9LzibpLkBt6sCF5G3kBfgVZ4d/KuvydoP89I+OBFipAbloMOPwSO7qMf3KwehzWA2TAFwacefX+5/kZK7eMgMgy0VGxWrxNdaLH7I3QujvNX6Xdw77Pb0LGg4jV9zKZciBEn2AL4kkPjfeNZwkmEPtOd8LdSTjPC89z5kznUuxgYbCATTuxtF0yTy1zBxMv7OzCLRLH/fDdx72j5lbe6+deBdfxPFlrmEg2LKkDcWYgpsBoYzb24ZDDnZMbCFY+d8BD28MApDguQEx0HG+86y4B01s2Z6aQdVwNyK2T7vu1jTkbE1YQSYvC+ZZ6KyIbdmCHi6Ss5XLDpc7sCBf5akgHRzjqBBrimmNtnKa0hVGtXITo1TyMfuIxcUm45vKsuwq28Ft+emn7yxU5d6qREu3UTui5ZNPVvSkVbJ8FGahS3gXXVpUb1F4IBQPhio2Le1rUsdcspdQ1P32Z/zOmjMU9add/TuIRb+VxJYvBG26KVbNSWHljbTJBOnOEgupXTUIlF6agGx+HqTYdNYKmR6APsN/zQqoY=",
+      "start_pos": 1446,
+      "end_pos": 4965,
+      "chunk_index": 1,
+      "chunk_size": 3519,
+      "metadata": {
+        "doc_id": "C1A4O3K - loccitane nakheel mall - store permits rejection\\Headers\\C1A4O3K_03.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1A4O3K - loccitane nakheel mall - store permits rejection\\Headers\\C1A4O3K_03.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:27:47.746960",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5021
+  }
+}

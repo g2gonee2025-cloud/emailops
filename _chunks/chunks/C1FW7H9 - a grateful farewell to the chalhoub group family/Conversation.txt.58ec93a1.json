@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1FW7H9 - a grateful farewell to the chalhoub group family\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1FW7H9 - a grateful farewell to the chalhoub group family\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:43:46\nFolder: C1FW7H9 - a grateful farewell to the chalhoub group family\nMessage Count: 1\n\n--------------------------------------------------\nID: C1FW7H9_00\nFrom: Ali Kabbani </O=EXCHANGELABS/OU=EXCHANGE ADMINISTRATIVE GROUP (FYDIBOHF23SPDLT)/CN=RECIPIENTS/CN=8668AF7A5D7D47D1B01AB8F30F94C9D7-ALI KABBANI>\nTo: \nCC: \nBCC: \nDate: 2024-12-31 17:00\nSubject: A Grateful Farewell to the Chalhoub Group Family\n--------------------------------------------------\nDear Chalhoub Family,\n\n \n\nToday marks my last day within the Group, as I close this profound chapter, I can only look back fondly at my time here.\n\n \n\nAs I prepare to embark on a new career journey, I wanted to take a moment to express my heartfelt gratitude to each and every one of you for the incredible 10 years I have spent within the group. It has been a true honour and privilege to witness firsthand the dedication, passion, and innovation that defines our organization.\n\n \n\nThroughout my time here, I have been fortunate to work alongside some of the most talented and inspiring individuals in the industry, from Bahrain to UAE and now in KSA. The support and camaraderie that I have experienced are invaluable, and from that stemmed my most cherished friendships.\n\n \n\nAs I bid farewell, I want you all to know that Chalhoub Group will always hold a special place in my heart. The memories we have shared, the challenges we have overcome, and the successes we have celebrated together will forever be remembered.",
+      "start_pos": 0,
+      "end_pos": 1555,
+      "chunk_index": 0,
+      "chunk_size": 1554,
+      "metadata": {
+        "doc_id": "C1FW7H9 - a grateful farewell to the chalhoub group family\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1FW7H9 - a grateful farewell to the chalhoub group family\\Conversation.txt"
+      }
+    },
+    {
+      "text": "As I bid farewell, I want you all to know that Chalhoub Group will always hold a special place in my heart. The memories we have shared, the challenges we have overcome, and the successes we have celebrated together will forever be remembered. \n\n \n\nPlease stay in touch and know that no matter where my journey takes me, I will always be a proud Chalhoubi.\n\n \n\nWith heartfelt gratitude and warm regards,\n\nALI KABBANI​​​​\n\nGENERAL MANAGER\n\n\n\nCHALHOUB GROUP ARABIA LIMITED COMPANY LLC\n\nJEDDAH\n\n‑\n\nSAUDI ARABIA\n\n \t\n <https://chalhoubgroup.com/> \n\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\n\n‑\n\n\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\n\n <https://twitter.com/ChalhoubGroup> \n\n <https://www.facebook.com/chalhoubgroup/> \n\n <https://www.instagram.com/chalhoubgroup> \n\n <https://www.linkedin.com/company/chalhoub-group/> \n\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 1311,
+      "end_pos": 2246,
+      "chunk_index": 1,
+      "chunk_size": 935,
+      "metadata": {
+        "doc_id": "C1FW7H9 - a grateful farewell to the chalhoub group family\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1FW7H9 - a grateful farewell to the chalhoub group family\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:15.230147",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2347
+  }
+}

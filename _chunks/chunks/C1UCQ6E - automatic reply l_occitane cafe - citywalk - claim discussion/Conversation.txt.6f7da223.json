@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1UCQ6E - automatic reply l'occitane cafe - citywalk - claim discussion\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1UCQ6E - automatic reply l'occitane cafe - citywalk - claim discussion\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:49:50\nFolder: C1UCQ6E - automatic reply l'occitane cafe - citywalk - claim discussion\nMessage Count: 1\n\n--------------------------------------------------\nID: C1UCQ6E_00\nFrom: Hinde Mokrim <Hinde.Mokrim@loccitane.me>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2024-12-23 13:36\nSubject: Automatic reply: L'Occitane Cafe - Citywalk - Claim Discussion\n--------------------------------------------------\nDear Sender,\n\n \n\nThank you for your email. I am on annual leave till the 4th of Jan.\n\nFor urgent matters, you can contact Yawer Khan.\n\n \n\nyawer.khan@loccitane.me\n\n \n\n \n\nBest regards,\n\nHinde",
+      "start_pos": 0,
+      "end_pos": 693,
+      "chunk_index": 0,
+      "chunk_size": 693,
+      "metadata": {
+        "doc_id": "C1UCQ6E - automatic reply l'occitane cafe - citywalk - claim discussion\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1UCQ6E - automatic reply l'occitane cafe - citywalk - claim discussion\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:47.725781",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 740
+  }
+}

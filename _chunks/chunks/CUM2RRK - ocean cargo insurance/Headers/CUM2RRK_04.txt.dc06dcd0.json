@@ -1,0 +1,42 @@
+{
+  "doc_id": "CUM2RRK - ocean cargo insurance\\Headers\\CUM2RRK_04.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CUM2RRK - ocean cargo insurance\\Headers\\CUM2RRK_04.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by PA4PR05MB9018.eurprd05.prod.outlook.com (2603:10a6:102:2a9::22) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8722.31; Mon, 19 May 2025 19:39:19 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%5]) with mapi id 15.20.8746.030; Mon, 19 May 2025 19:39:19 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Eugenia DiMuzio <Eugenia.DiMuzio@levelshoes.com>\nCC: Alexandre Cachecho <Alexandre.Cachecho@chalhoub.com>\nSubject: Re: Ocean Cargo Insurance\nThread-Topic: Ocean Cargo Insurance\nThread-Index: Adu+Akz5wISszW8RSW6Kfkawkb0p6QAdci7QAKUj0XABI016twAPs/RgALwEMGAACsFs0A==\nDate: Mon, 19 May 2025 19:39:18 +0000\nMessage-ID: <AS8PR05MB10824DF423E24A1E585B488829D9CA@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <DM6PR13MB35309BABEC185A9068FEA14B858E2@DM6PR13MB3530.namprd13.prod.outlook.com> <DU0PR05MB9606A3AF2D35EBA1C9A9E9179289A@DU0PR05MB9606.eurprd05.prod.outlook.com> <DU0PR05MB960610429341AC86DC185029928AA@DU0PR05MB9606.eurprd05.prod.outlook.com> <AS8PR05MB10824909F5655C91B7370DE4D9D90A@AS8PR05MB10824.eurprd05.prod.outlook.com> <DU0PR05MB960649F49D8363CE1EC91E349290A@DU0PR05MB9606.eurprd05.prod.outlook.com> <DU0PR05MB960676FA1961142A31975874929CA@DU0PR05MB9606.eurprd05.prod.outlook.com>\nIn-Reply-To: <DU0PR05MB960676FA1961142A31975874929CA@DU0PR05MB9606.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 1653,
+      "chunk_index": 0,
+      "chunk_size": 1652,
+      "metadata": {
+        "doc_id": "CUM2RRK - ocean cargo insurance\\Headers\\CUM2RRK_04.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CUM2RRK - ocean cargo insurance\\Headers\\CUM2RRK_04.txt"
+      }
+    },
+    {
+      "text": "ook.com>\nIn-Reply-To: <DU0PR05MB960676FA1961142A31975874929CA@DU0PR05MB9606.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|PA4PR05MB9018:EE_\nx-ms-office365-filtering-correlation-id: 96516481-8d6e-44f8-1483-08dd970cd8d5\nx-ms-exchange-atpmessageproperties: SA\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|39142699007|31052699007|4013099003|13003099007|7053199007|8096899003|41050700001;\nx-microsoft-antispam-message-info: /uV10K4fQUNZ9VzDuYvYqcHTMDlpszcZX9syuoIU13FbEWzTZHUf81RynunLaN56/eCUFLfZ8NlBjZzUUtWKuqOWKGT8gwlpJubrLkYLnSAH9wMAWy7tf4KQHB10fa2ETQxJBK8vJLYiHguvnaUdDE69Vx1WKfbvmcqu+XqSc4g58HesHM5SIrfCFJX7A87IhLMqklJ9N5I5FQ5ZKLhDblPRU+SzjlSMDFPMEpz7SmhuUWC8kf3yAnJpw3jJ1Cmf94Q1PNmX/+caTqER/n10/LnTKCz+av9MIpiRSzdKMEdRevPb5FsgP9BlZHRegqS/5NlirLUkbXdiCxbxLR3Ea952l29Fhi+AjGDOXKR8sJkwahr13DAwg3MxcPVhkL7LnEazM6SBuo10C3zJw0mIy07XMryvm1bhfzZNktKbRgs1p3J5qLrqdttVFNx1O82nAi2n0q+Uuv1AxZlWvmmGRyvR7NXiNPjUmBQfM5Q4ufk0UZtYVUj8ZKwFZ0v2totPChqQMpC2jvOzyU3sCh9dlC7nkXGSPsebO9gGE+aIHfx8FUVcbqVwnp5btLVcXrxZ5txDH+Nr9HgJtU0g9LzWFN9YL8BXx0YRZUQGiVacH0Lz0UVl0U+ZRdbOwYsmT0v2RuQpY2k19mqvzk4aR/cE0L1/KQORTU0BlfFqmlF5qXmwt1laanEUHy72/ks+YOWwPnzbVNzvv+ut34VS4uxIc0GNxKd4hItP9ApYAqx46zo=\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(39142699007)(31052699007)(4013099003)(13003099007)(7053199007)(8096899003)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_019_AS8PR05MB10824DF423E24A1E585B488829D9CAAS8PR05MB10824eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: Filgpt9NKTUbLlf8duuy5pWwd4SapRmuSlyTrkHaKqXeIcGeqRERbSYh5+A0DPd6numBV3yJjJsIq2JqC33n2s50MTl4uWfrfONRm5a7Dgi6lSsyl0BYE2wnchv7Gq4SnrzUko/XpUbhONEg0gI5BTODTTwCtg82v1zWFhS0VOhEAKLJK8/GfmqSf1ahkduB3W63jaRmFikherFz4XXSvnnh2Q63libp0r1gF3/btUv5f/7t2YS/4/ceWGXuPVx6XIXP8W+5ROaSF7tHwFRRbn7sg5g6TUy7mG4dji/DdmRKpCCf8ywmC5cvUE6Nmu0F7FmMgnltXv0jnb7e/bC0/OqhxaV10Zuy+IlPysKGRGM+Bc0uRR05AIaFHae2L4M88EWeStnSIvsQ3733732xQqaKP+sXGSlb6pW422OKg8ZeUnibYrDVs/CI6ZZ3B+DGBxPfadTmm09Z51KXK5Xt5cIQt/RKeTVuqSn0fx34kXjjWN13jqJntjlbVQtu36YuvDE6estPny/tLIfcNwz6e3Sr5kgvW+INABkHIlIehS8H7EXdoSxUIvjDGW0vcRm3QL7IxgeJhop4L1Mbg8k6V76fsiRzTYMwZtzhiqtv9IfvAO8VcpIARDPvhmrgF81w\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 96516481-8d6e-44f8-1483-08dd970cd8d5\nX-MS-Exchange-CrossTenant-originalarrivaltime: 19 May 2025 19:39:18.9629 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: Ed/s/+avp2EJklMDSt46BmAuSSz5IiT+IvKfY1VoU+3wjTZuw0mLNDe6UQHjN0mje1Gp7WAl8UlA/80vRW/9La2hNa5VDn/ZyxDD4rXjo9o=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PA4PR05MB9018\nX-OrganizationHeadersPreserved: PA4PR05MB9018.eurprd05.prod.outlook.com",
+      "start_pos": 1453,
+      "end_pos": 4852,
+      "chunk_index": 1,
+      "chunk_size": 3399,
+      "metadata": {
+        "doc_id": "CUM2RRK - ocean cargo insurance\\Headers\\CUM2RRK_04.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CUM2RRK - ocean cargo insurance\\Headers\\CUM2RRK_04.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:13.160289",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4896
+  }
+}

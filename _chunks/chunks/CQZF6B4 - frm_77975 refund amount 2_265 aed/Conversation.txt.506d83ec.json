@@ -1,0 +1,31 @@
+{
+  "doc_id": "CQZF6B4 - frm#77975 refund amount 2,265 aed\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CQZF6B4 - frm#77975 refund amount 2,265 aed\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:45:13\nFolder: CQZF6B4 - frm#77975 refund amount 2,265 aed\nMessage Count: 1\n\n--------------------------------------------------\nID: CQZF6B4_00\nFrom: Christofle Dubai Mall <Christofle.DubaiMall@chalhoub.com>\nTo: Anas Khoursan <anas.khoursan@chalhoub.com>\nCC: Samira Batisse <Samira.Batisse@chalhoub.com>; Firas Karbala <Firas.Karbala@chalhoub.com>; Kawttar Nassik <Kawttar.Nassik@chalhoub.com>; Real Emirates Shop Reconciliations <Realemirates.shopreconciliations@chalhoub.com>; Real Emirates - Accounting - CustomerService <RealEmirates-Accounting-CustomerService@mailmac.net>; Real Emirates - Accounts - Payments <RealEmirates-Accounts-Payments@chalhoub.com>; Real Emirates - Administration <RealEmirates-Administration@chalhoub.com>; Real Emirates - Finance <RealEmirates-Accounts@mctfze.onmicrosoft.com>; Nadia Kaouk <Nadia.Kaouk@chalhoub.com>; Anas Senjab <Anas.Senjab@chalhoub.com>; Christofle Dubai Mall <Christofle.DubaiMall@chalhoub.com>\nBCC: \nDate: 2024-11-08 22:48\nSubject: FRM#77975 / REFUND AMOUNT 2,265 AED \n--------------------------------------------------\nDear @Anas Khoursan <mailto:Anas.Khoursan@chalhoub.com> \n\n \n\nKindly see the above attachment as we have already discussed for customer refund of 2,265 AED.\n\nPlease note focus refund request done under : FRM#77975\n\n \n\nINVOICE :702013012024101627806\n\nREFUND INVOICE :702013012024101727820\n\nREFUND AMOUNT :2,265 AED  \n\nREASON FOR REFUND: CUSTOMER UNSATISFIED WITH ONE PRODUCT \n\n \n\nKind Regards,\n\nANAS SENJAB",
+      "start_pos": 0,
+      "end_pos": 1554,
+      "chunk_index": 0,
+      "chunk_size": 1554,
+      "metadata": {
+        "doc_id": "CQZF6B4 - frm#77975 refund amount 2,265 aed\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CQZF6B4 - frm#77975 refund amount 2,265 aed\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:18.607797",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1601
+  }
+}

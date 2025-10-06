@@ -1,0 +1,53 @@
+{
+  "doc_id": "CRD4Y1O - our new information security charter & acceptable use policy\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CRD4Y1O - our new information security charter & acceptable use policy\\Conversation.txt",
+  "num_chunks": 3,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 12:10:33\nFolder: CRD4Y1O - our new information security charter & acceptable use policy\nMessage Count: 1\n\n--------------------------------------------------\nID: CRD4Y1O_00\nFrom: Patrick Chalhoub <patrick.chalhoub@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2024-09-24 16:50\nSubject: Our New Information Security Charter & Acceptable Use Policy\n--------------------------------------------------\n\t\n\t\n <https://mcusercontent.com/101e49fb58ec7b23a147c194a/images/3b464d0d-50ac-b51b-5f2d-780e4872ee4d.png> \t\nDear Colleagues,\n \nAs we continue to grow and strengthen our online and offline presence, we are aware that cyber threats are more prevalent than ever, constantly evolving and becoming increasingly sophisticated in both our personal and professional environments.\n \nProtecting our assets and reputation is essential to our long-term success and business resilience. This commitment extends beyond our everyday operations; it’s not just about ticking a box, but rather reinforcing a security-first mindset.\n \nOur new Information Security Charter serves as a foundation for our ongoing commitment to a proactive and comprehensive approach to protecting Group information and business operations. This charter aims to uphold the confidentiality, integrity, and availability of our information assets while fostering a culture of security awareness, maintaining regulatory compliance, and most importantly upholding the trust of our customers, partners, team members and stakeholders.",
+      "start_pos": 0,
+      "end_pos": 1601,
+      "chunk_index": 0,
+      "chunk_size": 1598,
+      "metadata": {
+        "doc_id": "CRD4Y1O - our new information security charter & acceptable use policy\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CRD4Y1O - our new information security charter & acceptable use policy\\Conversation.txt"
+      }
+    },
+    {
+      "text": "mation assets while fostering a culture of security awareness, maintaining regulatory compliance, and most importantly upholding the trust of our customers, partners, team members and stakeholders.\n \nWe count on you to protect the Group’s information as you would your own. Please take the time to read our Information Security Charter <https://chalhoubgroup.us18.list-manage.com/track/click?u=101e49fb58ec7b23a147c194a&id=6a751198cf&e=0385dbee45>  and sign the Acceptable Use Policy. <https://chalhoubgroup.us18.list-manage.com/track/click?u=101e49fb58ec7b23a147c194a&id=0fd057ac53&e=0385dbee45> \n \nI strongly encourage you to review all our new Information Security Policies on ONE Chalhoub. <https://chalhoubgroup.us18.list-manage.com/track/click?u=101e49fb58ec7b23a147c194a&id=19d1fea808&e=0385dbee45> \n \nThank you for your dedication to ensure compliance with these new policies and maintaining our security standards.\n \nBest regards,\n\nPatrick Chalhoub\nPresident Chalhoub Group\n\n <https://mcusercontent.com/101e49fb58ec7b23a147c194a/images/8f69e353-abe7-e374-d3e5-c1efece19f53.png> \t\n <https://mcusercontent.com/101e49fb58ec7b23a147c194a/images/8d89f57c-143f-bd96-5d3b-527158a6912a.png> \t\n\t\n\t\n\t\nCopyright © 2024 Chalhoub Group, All rights reserved.\nYou are receiving this email because your are part of Chalhoub Group!\n\nWant to change how you receive these emails?\nYou can update your preferences <https://chalhoubgroup.us18.list-manage.com/profile?u=101e49fb58ec7b23a147c194a&id=4bd1b81a74&e=0385dbee45&c=d8777cd362>  or unsubscribe from this list <https://chalhoubgroup.us18.list-manage.com/unsubscribe?u=101e49fb58ec7b23a147c194a&id=4bd1b81a74&t=b&e=0385dbee45&c=d8777cd362> .",
+      "start_pos": 1401,
+      "end_pos": 3089,
+      "chunk_index": 1,
+      "chunk_size": 1684,
+      "metadata": {
+        "doc_id": "CRD4Y1O - our new information security charter & acceptable use policy\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CRD4Y1O - our new information security charter & acceptable use policy\\Conversation.txt"
+      }
+    },
+    {
+      "text": "1b81a74&e=0385dbee45&c=d8777cd362>  or unsubscribe from this list <https://chalhoubgroup.us18.list-manage.com/unsubscribe?u=101e49fb58ec7b23a147c194a&id=4bd1b81a74&t=b&e=0385dbee45&c=d8777cd362> . \t\n <https://chalhoubgroup.us18.list-manage.com/track/open.php?u=101e49fb58ec7b23a147c194a&id=d8777cd362&e=0385dbee45>",
+      "start_pos": 2889,
+      "end_pos": 3203,
+      "chunk_index": 2,
+      "chunk_size": 314,
+      "metadata": {
+        "doc_id": "CRD4Y1O - our new information security charter & acceptable use policy\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CRD4Y1O - our new information security charter & acceptable use policy\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:05.364766",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 3263
+  }
+}

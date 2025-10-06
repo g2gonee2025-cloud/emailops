@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1UKDT2 - soa - radwa group - axa insurance\\Headers\\C1UKDT2_08.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1UKDT2 - soa - radwa group - axa insurance\\Headers\\C1UKDT2_08.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by VE1PR05MB7472.eurprd05.prod.outlook.com (2603:10a6:800:1a3::23) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8583.25; Tue, 25 Mar 2025 10:52:29 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%2]) with mapi id 15.20.8583.023; Tue, 25 Mar 2025 10:52:28 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Abdul Hafeez Tanwari <hafeez.tanwari@nascosaudi.com>\nCC: \"Finance (Nasco Saudi)\" <finance@nascosaudi.com>, Firas Babuk <Firas.Babuk@chalhoub.com>, Furqan Akhai <Furqan.Akhai@chalhoub.com>, Siyavudheen Kizhissery <Siyavudheen.Kizhissery@chalhoub.com>, Rami Al Najjar <Rami.AlNajjar@nascosaudi.com>, Tarek Fakhereddin <Tarek.Fakhereddin@chalhoub.com>\nSubject: RE: SOA  - Radwa Group - AXA insurance\nThread-Topic: SOA  - Radwa Group - AXA insurance\nThread-Index: AduSYJYwJs7Blei0SG6Sit2yMlaPwABhXF5AAApYrOABJ+YTcAA5T5pQAPfZ0DA=\nDate: Tue, 25 Mar 2025 10:52:28 +0000\nMessage-ID: <AS8PR05MB108244604E9DF882B1FDB960B9DA72@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <504bf2eb04504858b7ee1cc10970aeef@nascosaudi.com> <43dcc54b394b45389049e25525ab27a4@nascosaudi.com> <VI1PR05MB714990655579419B67751CC4F9DC2@VI1PR05MB7149.eurprd05.prod.outlook.com> <ab2d96ba7d8c4c749f527853eebc8e0f@nascosaudi.com> <VI1PR05MB7149E7E2124442E1C823FB72F9D82@VI1PR05MB7149.eurprd05.prod.outlook.com>\nIn-Reply-To: <VI1PR05MB7149E7E2124442E1C823FB72F9D82@VI1PR05MB7149.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 1738,
+      "chunk_index": 0,
+      "chunk_size": 1737,
+      "metadata": {
+        "doc_id": "C1UKDT2 - soa - radwa group - axa insurance\\Headers\\C1UKDT2_08.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1UKDT2 - soa - radwa group - axa insurance\\Headers\\C1UKDT2_08.txt"
+      }
+    },
+    {
+      "text": "ook.com>\nIn-Reply-To: <VI1PR05MB7149E7E2124442E1C823FB72F9D82@VI1PR05MB7149.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|VE1PR05MB7472:EE_\nx-ms-office365-filtering-correlation-id: 4f07eeec-5fae-40c6-f606-08dd6b8b22b9\nx-ms-exchange-atpmessageproperties: SA\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|8096899003|13003099007|7053199007|41050700001;\nx-microsoft-antispam-message-info: 5sFofau+IBYPUMMuN74auLk6+SpEc3TFKh6cASed3BQvG6lnTD+BjoKgvTAQWul98bzN7GFYNl4QOT2t2BU6totsopNlJ6WPwTlqwDri+cfRzDbK3rg4yZiA+nzC7FIW7f2bI+NBTn6H8y52PvHDo9RkVsbBA9+yNEFIVzxhGg03MJmiPE5Wh3m9cbke43TakXr2zXZXJofmxp9xJv80L5i86zkWxAyelbk6SsEyLh0F8O8GV1DTwIHMRo94Ja5jimfB4ybyZ9XyDiUp1F5RCxzZrHUu9VK+/abI1jWFJiVTQnKbZUO8S7YEB/yPLD+SUptsdA2tKodjY1YKhTm+q6TfbzqoC1EFkkKWrKji3oxdlxVpJ+PuUFYbWHOghhTSym49sUkw4NofIl3vsW8Z2RREeBxtO77nqpko9nOWlIr+hvytRb2FwV5Ps+ZcgpfTIjHT8ZPOkTwVKiSMO22+wVMnD7CoGpr90RreQqrFa+YWpeplwHRVnqB/wbYHkkFDqGO1vhZ/uwskTRBOyrJ7z5zyl8hB/HpKGLyeVAw6oz/43DVp/iEyNPf7DTLwYiifPREhUJY3/2SLNqTTWelcV9cNFfI2rlcdWiHaVe6sx7wyJVncAY0XBJ/hix/fIHJnb2QKnfTMhNulFgOFi83rHyorQSf1HLqD/u0W8Fxx+Zwx9jvXpsJEypkg0b7EJZBl4+770V34bQLc5/RGap0E/65GOwOFP/nwoT+msioHaOI=\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(13003099007)(7053199007)(41050700001);DIR:INT;\nContent-Type: multipart/mixed; boundary=\"_029_AS8PR05MB108244604E9DF882B1FDB960B9DA72AS8PR05MB10824eu_\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: 0KoE+338qns2WBBTC9zMF2hQQYzt8+11rRpip9owF3Bms0BWAzBVjePmDd2T5Wk8/JK7uPf3DCgj26/f0/6W7JW+oDxTEEqdUv/9Edp7PMdVrDFY1zUqIhXQghRlmP3sldfCThP5+L7z0O7fxSyluVnCWjJKgGmtYfm3/iWEXz7wOaixeuSInZyK7QAulilborbS3N5TKKlb10Utxh9cK9jQQfxV0KhQAp+IjFyMMw1SKJn8aRhwb8tBAOsFL3rcGl1BmjQsO+jRHQYbGPkJUnXdUsERFNgTeZxp0MILRaKFzdf+vK1iDWHl1EALMUQQtT55EUvnk1XwXo5Tq1i6P4B+Y/oh5bhL9v+sC6/c73ll28OGjKFLeVaCTVse4XTZCJrJMTB6N/HWXv2jTMpMKDXe8o1JCRkH33JwEq/27GMHq9o2rtu3PPJRGPTIaYulKnZZ8Ppx01VVw+Skij/LFLsAjPTAI80a8EHKmKc5ATDAU8IVYgnrHygl5mH8aq58bj0q/iRPo4iTtBDiM0gK1Urm3i3WRKFwwoVAaTOLjfVHXaIf+1y5TNi6nPUUUQNN4t2F7+3+atNaiKWIttX/8KnPWTYK2F+1Ao+DA+2Y7/ETDHIVqm6qDjclcphEUlOi\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 4f07eeec-5fae-40c6-f606-08dd6b8b22b9\nX-MS-Exchange-CrossTenant-originalarrivaltime: 25 Mar 2025 10:52:28.3370 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: 0hqVl9ksJV0lDIZmK7rthKA8vdyK4k00zg/pm5jfbpd+C1mPXzQ93GYWv6L2kvIEcFR2BKbOsAL4mSQ9A+6af/xrT+haMbQp/6pLlJ2A80I=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: VE1PR05MB7472\nX-OrganizationHeadersPreserved: VE1PR05MB7472.eurprd05.prod.outlook.com",
+      "start_pos": 1538,
+      "end_pos": 4819,
+      "chunk_index": 1,
+      "chunk_size": 3281,
+      "metadata": {
+        "doc_id": "C1UKDT2 - soa - radwa group - axa insurance\\Headers\\C1UKDT2_08.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1UKDT2 - soa - radwa group - axa insurance\\Headers\\C1UKDT2_08.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:27:51.192113",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4862
+  }
+}

@@ -1,0 +1,24 @@
+google-cloud-aiplatform>=1.66.0
+google-genai>=1.40.0  # For Gemini models via Gen AI SDK
+faiss-cpu>=1.7.4
+sentence-transformers>=2.5.1
+numpy>=1.26.4
+pandas>=2.0.0
+pypdf>=4.0.0
+python-docx>=1.0.0
+requests>=2.31.0
+openpyxl>=3.1.0
+pytest>=7.4.0
+
+python-dotenv>=1.0.1
+
+# Optional: LLM Embedding Providers (install as needed)
+openai>=1.0.0  # For OpenAI and Azure OpenAI embeddings
+cohere>=5.0.0  # For Cohere embeddings
+huggingface-hub>=0.20.0  # For HuggingFace API embeddings
+
+# Optional: Document Parsers (install as needed)
+docx2txt>=0.8  # For legacy .doc file support
+xlrd>=2.0.1    # For legacy .xls file support
+hjson>=3.1.0   # For handling malformed JSON
+pywin32>=311   # For legacy .doc file support on Windows

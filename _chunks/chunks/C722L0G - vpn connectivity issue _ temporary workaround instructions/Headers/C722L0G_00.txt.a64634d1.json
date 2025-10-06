@@ -1,0 +1,31 @@
+{
+  "doc_id": "C722L0G - vpn connectivity issue – temporary workaround instructions\\Headers\\C722L0G_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C722L0G - vpn connectivity issue – temporary workaround instructions\\Headers\\C722L0G_00.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from VI2PR05MB11382.eurprd05.prod.outlook.com (::1) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Fri, 13 Jun 2025 12:18:01 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from AS1PR05MB8963.eurprd05.prod.outlook.com (2603:10a6:20b:4dd::6) by VI2PR05MB11382.eurprd05.prod.outlook.com (2603:10a6:800:22f::5) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8835.19; Fri, 13 Jun 2025 12:17:36 +0000\nReceived: from AS1PR05MB8963.eurprd05.prod.outlook.com ([fe80::8ce4:ecdc:46e7:56dd]) by AS1PR05MB8963.eurprd05.prod.outlook.com ([fe80::8ce4:ecdc:46e7:56dd%5]) with mapi id 15.20.8813.024; Fri, 13 Jun 2025 12:17:36 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: One Reach <OneReach@chalhoub.com>\nSubject: =?utf-8?B?W1VwZGF0ZV0gVlBOIENvbm5lY3Rpdml0eSBJc3N1ZSDigJMgVGVtcG9yYXJ5?= =?utf-8?Q?_Workaround_Instructions?=\nThread-Topic: =?utf-8?B?W1VwZGF0ZV0gVlBOIENvbm5lY3Rpdml0eSBJc3N1ZSDigJMgVGVtcG9yYXJ5?= =?utf-8?Q?_Workaround_Instructions?=\nThread-Index: AdvcWy03FK46XZr7Txqihar0rkNuUQ==\nX-MS-Exchange-MessageSentRepresentingType: 1\nDate: Fri, 13 Jun 2025 12:17:36 +0000\nMessage-ID: <AS1PR05MB8963CD1C99FC3B06C401DBB3DA77A@AS1PR05MB8963.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach:\nX-MS-Exchange-Organization-SCL: 1\nX-MS-TNEF-Correlator: <AS1PR05MB8963CD1C99FC3B06C401DBB3DA77A@AS1PR05MB8963.eurprd05.prod.outlook.com>\nMIME-Version: 1.0\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: AS1PR05MB8963.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 04\nX-MS-Exchange-Organization-Network-Message-Id: 4b6c3905-572f-44b9-8e34-08ddaa744854\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: AS1PR05MB8963:EE_|VI2PR05MB11382:EE_|AS8PR05MB10824:EE_\nTo: Undisclosed recipients:;\nReturn-Path: OneReach@chalhoub.com\nX-MS-Exchange-Organization-ExpirationStartTime: 13 Jun 2025 12:17:36.5474 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: 4b6c3905-572f-44b9-8e34-08ddaa744854\nX-LD-Processed: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3,ExtAddr\nX-MS-Exchange-AtpMessageProperties: SA\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|69100299015|8096899003|13003099007|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS1PR05MB8963.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(69100299015)(8096899003)(13003099007)(41050700001);DIR:INT;\nX-Auto-Response-Suppress: DR, OOF, AutoReply\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Jun 2025 12:17:36.2377 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: AS1PR05MB8963.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: 4b6c3905-572f-44b9-8e34-08ddaa744854\nX-MS-Exchange-CrossTenant-MailboxType: HOSTED\nX-MS-Exchange-CrossTenant-UserPrincipalName: FpY1EYm8m1HXLFPEo1T1yg+MUTb1UDTYFX0vfIR7urPIYJrnoF46QXWVfW3zdQAHnaeHuGf4rfP1g3ndZ+sevvf8+2LhZLfxpqk9k7JoVbs=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: VI2PR05MB11382\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:25.0527537\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8835.017\nX-Microsoft-Antispam-Mailbox-Delivery: wl:1;pcwl:1;ucf:0;jmr:0;auth:0;dest:I;ENG:(910005)(920097)(811242)(255002)(410001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: HwaMNlSQ6DssMvz7peU5cCnyNT7ds3mqdB04WMACUIwmYiT0qipk+RKRAW8p/+bmQlYaLIu49GsqFbHpbh99Q+zw3j4U8F9tWsBPIfhsf5qwhZjo3rGZGa1ek5IIOVLVod9H5NuA638TwmMBdg5vghTPKuGl1ZY9ovjlO89voqgNE8Au3awJ6J0hELGLGyYnu32CcNauIrNmguH2L+jiH7otZ44CeTsCGuBOFwbFvdYGE2vfFL/hio9R4jPLZJCZkgtpdsY4PUbeESnT9It7jt6XpOjuPAU+icAbUQ5CG5NQDwIqm+SikAQRvVU7hcX2Lz84dvuA4A2xyGLmQLgJ/e08mRBEBO3mnOLR7i3+a+UJ96ORoWPJ5ftBJDAWoMWwq6RrH267e4vLoQeNM5iYJu82n2nt2/RSn2YcZ2sbjMkexEH9ECDgFEsqSV8AaaC47VE47H7qcHiAx25HeyEMWnwlvel89I+6KYNWzNxV4KQ/D9E7P4Vbqp+z/hBtsRDBg5uLri+bgHpHW/s5sg+TA8f5JRbNChXV7Ye2LM0h+lBIMex36ZllPfcuIrhN0DgGnUtzRAluEWry2R5083JHJ1zZHe6eKB+yfEYECe/MfNGBLjG+ttcC/2iWbIpZIjLdaNGS1H0joNvZMZlz39qQ8YPu4aGmhpVpzUZ3LDwKFJcEL5SN6C/L6a7MIg6MyMAWWVxE49x+rJES6hIOsWLTr39I5iQM+xgGYQ4JjlEivAxvaoMKgHVp0wCRV9eHfZgH9xThagw/WCZZ8EEqV8vXrADwh6ZDp7wAyWnH+2vE+4d6NN5uSdVHaAYVMQbH/Sf/jv3m6xuCFKf7gYefKHefcSAKTBgPpB0eExy2wUrUq/G4yh+MF8m7i6gx9vkNpVWE",
+      "start_pos": 0,
+      "end_pos": 4762,
+      "chunk_index": 0,
+      "chunk_size": 4762,
+      "metadata": {
+        "doc_id": "C722L0G - vpn connectivity issue – temporary workaround instructions\\Headers\\C722L0G_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C722L0G - vpn connectivity issue – temporary workaround instructions\\Headers\\C722L0G_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:38.409925",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4817
+  }
+}

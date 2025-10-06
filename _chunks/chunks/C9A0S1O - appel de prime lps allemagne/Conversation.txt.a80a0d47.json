@@ -1,0 +1,31 @@
+{
+  "doc_id": "C9A0S1O - appel de prime lps allemagne\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C9A0S1O - appel de prime lps allemagne\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:42:21\nFolder: C9A0S1O - appel de prime lps allemagne\nMessage Count: 1\n\n--------------------------------------------------\nID: C9A0S1O_00\nFrom: Joe Nasr <joe.nasr@nascofrance.com>\nTo: p.battini@christofle.com <p.battini@christofle.com>; Chloé Benyahia <c.benyahia@christofle.com>; Robin Saunier <r.saunier@christofle.com>\nCC: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>; Cyril Karaoglan <cyril.karaoglan@nascofrance.com>\nBCC: \nDate: 2025-02-18 12:24\nSubject: APPEL DE PRIME  LPS  ALLEMAGNE\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\nBonjour Madame Battini, Bonjour à Tous, \n\n \n\nNous vous adressons ci-joint l’appel de prime concernant Orfèvrerie Christofle LPS Allemagne :\n\n \n\n*\tPériode du 01/01/2025 au 31/12/2025 \n*\tPrime 1 785,00 \n\n \n\nDans l’attente de vous lire,\n\nAvec nos sentiments les meilleurs \n\n \n\n \n\nJoe Nasr\n\n \n\n\n\nWe do everything we can to make your life easier and find solutions  \n\n \n\nNasco France\n\n171 rue de Buzenval, 92380 Garches\n\nT +33 1 47 95 97 12   F +33 1 47 95 24 56\n\nE joe.nasr@nascofrance.com <mailto:joe.nasr@nascofrance.com> \n\nA member of the Nasco Insurance Group\n\nVos  emails adressés en dehors de la journée de travail n’appellent pas à être lus dans l’immédiat",
+      "start_pos": 0,
+      "end_pos": 1578,
+      "chunk_index": 0,
+      "chunk_size": 1578,
+      "metadata": {
+        "doc_id": "C9A0S1O - appel de prime lps allemagne\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C9A0S1O - appel de prime lps allemagne\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:38.491649",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1772
+  }
+}

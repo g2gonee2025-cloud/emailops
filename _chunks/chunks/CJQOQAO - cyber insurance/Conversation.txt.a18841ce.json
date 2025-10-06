@@ -1,0 +1,31 @@
+{
+  "doc_id": "CJQOQAO - cyber insurance\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CJQOQAO - cyber insurance\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:44:38\nFolder: CJQOQAO - cyber insurance\nMessage Count: 1\n\n--------------------------------------------------\nID: CJQOQAO_00\nFrom: Nadeem Semaan <Nadeem.Semaan@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Dee Deu <dee.deu@chalhoub.com>\nBCC: \nDate: 2025-03-04 22:01\nSubject: Cyber Insurance\n--------------------------------------------------\nHello Hagop,\n\n \n\nPlease note that I can’t make tomorrow’s session due to prescheduled meetings.  Please also confirm if we can change the schedule for Friday’s session to make it earlier.\n\n \n\nRegards,\n\nNADEEM SEMAAN​​​​\n\nSENIOR MANAGER ‑ TECH INFRASTRUCTURE\n\nM.C.T. FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n+971 4 804 5000\n\n\t\n \t\n <https://chalhoubgroup.com/> \n\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\n\n‑\n\n\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\n\n <https://twitter.com/ChalhoubGroup> \n\n <https://www.facebook.com/chalhoubgroup/> \n\n <https://www.instagram.com/chalhoubgroup> \n\n <https://www.linkedin.com/company/chalhoub-group/> \n\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 0,
+      "end_pos": 1191,
+      "chunk_index": 0,
+      "chunk_size": 1191,
+      "metadata": {
+        "doc_id": "CJQOQAO - cyber insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CJQOQAO - cyber insurance\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:02.024989",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1285
+  }
+}

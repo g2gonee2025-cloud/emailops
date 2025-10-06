@@ -1,0 +1,53 @@
+{
+  "doc_id": "C17NDOC - happy father's day عيد اب سعيد\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C17NDOC - happy father's day عيد اب سعيد\\Conversation.txt",
+  "num_chunks": 3,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:34:22\nFolder: C17NDOC - happy father's day عيد اب سعيد\nMessage Count: 1",
+      "start_pos": 0,
+      "end_pos": 150,
+      "chunk_index": 0,
+      "chunk_size": 150,
+      "metadata": {
+        "doc_id": "C17NDOC - happy father's day عيد اب سعيد\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C17NDOC - happy father's day عيد اب سعيد\\Conversation.txt"
+      }
+    },
+    {
+      "text": "--------------------------------------------------\nID: C17NDOC_00\nFrom: Internal News <internalnews@onechalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-06-20 10:58\nSubject: Happy Father's Day | عيد اب سعيد\n--------------------------------------------------\n <https://onechalhoubmedia.connexionsnow.com/e2fa7274f0148efb91fab24b7ed1d7cc26159169.png> \t\n <https://onechalhoubmedia.connexionsnow.com/5e0b5e2cb2eda45d61160aed1ed023001275568812.png> \t\n <https://onechalhoubmedia.connexionsnow.com/71209e621a4ee0f93159207895954fac470675910.png> \t\n <https://onechalhoubmedia.connexionsnow.com/39f8dde617a49966af35e11dd6f1e84f1284817783.png> \t\n <https://onechalhoubmedia.connexionsnow.com/675fcf1d345b229467c420abe677111e901028988.png> \t\n <https://onechalhoubmedia.connexionsnow.com/768d55c83301b0c8cae5e7d66ab8871e2107280645.png> \t\n <https://onechalhoubmedia.connexionsnow.com/6ed4532980e6cb6a71a688af4525529a1082131716.png> \t\n <https://onechalhoubmedia.connexionsnow.com/6c4322c231c840e47cd22050b5f64c0c859792058.png> \t\n <https://onechalhoubmedia.connexionsnow.com/b7ad6bc831e614edf26e24db5af023831680666120.png> \t\n <https://onechalhoubmedia.connexionsnow.com/aee5e8b8c52a531b98af50d76339a7df937429808.png> \t\n <https://onechalhoubmedia.connexionsnow.com/5d8d614e873dd6ab89ac281d5941347a1794631747.png> \t\nFor inquiries and to share your news in the Internal News please contact rasha.nashashibi@chalhoub.com <https://onechalhoub.connexionsnow.com/mtracking/linkref.php?link1id=1330&user=10620>  \n\nCopyright © 2025 Chalhoub Group. All rights reserved.",
+      "start_pos": 152,
+      "end_pos": 1732,
+      "chunk_index": 1,
+      "chunk_size": 1579,
+      "metadata": {
+        "doc_id": "C17NDOC - happy father's day عيد اب سعيد\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C17NDOC - happy father's day عيد اب سعيد\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Copyright © 2025 Chalhoub Group. All rights reserved. \n\nYou are receiving this email because your are a part of the Chalhoub Group family. \n <https://onechalhoub.connexionsnow.com/mtracking/newsletter-open.php?nli=289&user=10620>",
+      "start_pos": 1678,
+      "end_pos": 1907,
+      "chunk_index": 2,
+      "chunk_size": 229,
+      "metadata": {
+        "doc_id": "C17NDOC - happy father's day عيد اب سعيد\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C17NDOC - happy father's day عيد اب سعيد\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:15.266505",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1965
+  }
+}

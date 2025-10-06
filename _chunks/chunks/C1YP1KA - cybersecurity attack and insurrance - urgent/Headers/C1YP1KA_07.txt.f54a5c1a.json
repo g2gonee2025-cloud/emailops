@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1YP1KA - cybersecurity attack and insurrance - urgent\\Headers\\C1YP1KA_07.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1YP1KA - cybersecurity attack and insurrance - urgent\\Headers\\C1YP1KA_07.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by DU0PR05MB9024.eurprd05.prod.outlook.com (2603:10a6:10:35b::6) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8857.20; Fri, 20 Jun 2025 10:19:39 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%5]) with mapi id 15.20.8857.016; Fri, 20 Jun 2025 10:19:39 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Joe Hobeika <Joe.Hobeika@chalhoub.com>\nSubject: Re: Cybersecurity attack and insurrance - URGENT\nThread-Topic: Cybersecurity attack and insurrance - URGENT\nThread-Index: AdvhnDgB9jewSORWQD+mGyHnKsKvPAACpeAgAAE3seAAAwDp1wAADyRTAACvIUAAA4gjvAAA/So+\nDate: Fri, 20 Jun 2025 10:19:39 +0000\nMessage-ID: <AS8PR05MB10824664C3AF9F6B21CC929379D7CA@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <VI0PR05MB11569F45F94BB2FC487FD62E4E57CA@VI0PR05MB11569.eurprd05.prod.outlook.com> <AS8PR05MB83584698F1D982AC3E238ABF9D7CA@AS8PR05MB8358.eurprd05.prod.outlook.com> <VI0PR05MB11569C3B2EB1CEF6F448209DDE57CA@VI0PR05MB11569.eurprd05.prod.outlook.com> <AS8PR05MB10824574CD7D9220637733F349D7CA@AS8PR05MB10824.eurprd05.prod.outlook.com> <PAVPR05MB10301C85F4FE33066CFBBC6EE8E7CA@PAVPR05MB10301.eurprd05.prod.outlook.com> <AS8PR05MB10824C017FE9794462DD54FB89D7CA@AS8PR05MB10824.eurprd05.prod.outlook.com> <PAVPR05MB1030163B04A78B418E40629348E7CA@PAVPR05MB10301.eurprd05.prod.outlook.com>\nIn-Reply-To: <PAVPR05MB1030163B04A78B418E40629348E7CA@PAVPR05MB10301.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 1727,
+      "chunk_index": 0,
+      "chunk_size": 1726,
+      "metadata": {
+        "doc_id": "C1YP1KA - cybersecurity attack and insurrance - urgent\\Headers\\C1YP1KA_07.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1YP1KA - cybersecurity attack and insurrance - urgent\\Headers\\C1YP1KA_07.txt"
+      }
+    },
+    {
+      "text": "k.com>\nIn-Reply-To: <PAVPR05MB1030163B04A78B418E40629348E7CA@PAVPR05MB10301.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|DU0PR05MB9024:EE_\nx-ms-office365-filtering-correlation-id: 40c168cc-ffa9-45a8-3646-08ddafe3f6dd\nx-ms-exchange-atpmessageproperties: SA|HVE\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|13003099007|7053199007|4013099003|8096899003|41050700001;\nx-microsoft-antispam-message-info: 4PKDA7rkPb+NZaFmyR1f8Fv1Ox2ioILczvzQVAwPoJl50iN8FGL8DUV+1ij90c7FRohpeqyGFHoDg7nfo4Mwz+QsqBuEDoitBIhpHdUi6z0YYxVKV3oCq/Ii7ZEj5RwxakNpUpEnZNCCL53IFYoZ5AeVU5tPmYGnP0D6VflhOszvLLhLFJzQKg2/MeP+6Azi9m602p88uf1+EyT9+LP+PkzSBEX2OwoZjj/3/hFYhGPuLafkqKataX16gDD2WpNh5cqgeUiITY34Ldbn1rJNoCnGj6lZRDuTiz0m7NN+SOJWPROSbkHVIFBcIVQ88Y+kK1Hg4m92lQolpGD4XEtaqqEBzu/Z4wWOpTKPe77B99lQYrNkk1aIQqnYWAsJYbbBstgxlOlCiRlJ8amjDWn2q8MD7VKfMfIWccw9XLtWx9xAWid2CkMLkUqnxJTaWlAKcS5Z3luH2aC2dddO4x5MCrIXkaOrdMfbu9NVKVJDi3SVSdHvM/Oq+RInmQ1ey0agec+572qiLiH8s6Y113QgZu8UMk9zdTmB0rr3kvgN9dqwrYFGG8kAsAK0s3muNbpzRMlBkpQgIenJPnWYZCAucUYfHwSyntyH1bDerTaXJjgD/zXpypY+FvqszdeHfeqUFNFd5lZkW9VTQz+LlkOI1aV8ESKEozFtiIREs+xWtby3i69GgNjrmmdYI3dfXh+vtO+mZfA6g72B576gR/G2v1xcd6OeTq8tSWZeSqtfu8Vge/7ZP05tS6fs2bIFbFaKh8+SUUawU8lgUSddbIho7rZBNsPqsQvsghGFeN+UmqNmW/aH6Ex1uV2qtuHavklq\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(13003099007)(7053199007)(4013099003)(8096899003)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_017_AS8PR05MB10824664C3AF9F6B21CC929379D7CAAS8PR05MB10824eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: DuiMvSf1MYh5BzPJSg7gNtho9BNkHMvkGrN6ndVZzFXYCQbbF3tR0NnCx2YEwlDbyoKoeuEU49Nib6RUXB4qMsFPvQCi0DEiJQ/Lv7u4T0c+5nycEiwe6MK8sW6EY/mLHoweg6dRn8GDpGylGNjjtIJ0OuvFixkI20MBA0JR0L17iL+o+kxh7JQE7l41b4NMNTh3DCnQ6gbfSvNcCTOK+Y3i7PDFiQiw1iZQT6xeP95qpmREZmxCqq1MaAeJM7egpJROnh0Ssd8ps1yBd0YzykcyGC9vQf/yevMzFNJoAkjXAwFJkCLnovKiaNnb4lFTB5BU9MiBxa+bKYaD7tGTEYGB5g0ZGGnpzcnI9GYGvpi1/aELT8Zy9M/WY0FdMZpD5Tsstm2V/+aSW/3P1t80tht+UKEbMzzGoTU8X2ghGY1HNlwkmedfZdzVe//ZP2eOC9hK8ExQkjs223SIVIk1NTFNho0L+U/9IQSdSkbWchNcQZTQuVZxYXBPgJ0+uusWjKefrReU7QpISUaKf50oWztX3sSyO/Luyofr53UF94Y0wLUo4Lj4Uao3AHutpTaYpNOyFJYXKkSd+b1xW/J3+kT8ajnm0SBQbl+StUarB8Mh4J2WCJb0yF/5xo0FFn+p\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 40c168cc-ffa9-45a8-3646-08ddafe3f6dd\nX-MS-Exchange-CrossTenant-originalarrivaltime: 20 Jun 2025 10:19:39.0450 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: H/337mYxjas17LdYmu+/6VDl87gFswOOSFq+1ojiQNCBDxsKqueKRZ3m546Z2pw7k2PbahCRF+QN2ZU3Gz9AInew/pcICQhdjpri/YQAvPk=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: DU0PR05MB9024\nX-OrganizationHeadersPreserved: DU0PR05MB9024.eurprd05.prod.outlook.com",
+      "start_pos": 1527,
+      "end_pos": 4951,
+      "chunk_index": 1,
+      "chunk_size": 3424,
+      "metadata": {
+        "doc_id": "C1YP1KA - cybersecurity attack and insurrance - urgent\\Headers\\C1YP1KA_07.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1YP1KA - cybersecurity attack and insurrance - urgent\\Headers\\C1YP1KA_07.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:05.692700",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4993
+  }
+}

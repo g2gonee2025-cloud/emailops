@@ -1,0 +1,42 @@
+{
+  "doc_id": "CBLI3JO - reaction daily digest - wednesday, 16 april 2025\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CBLI3JO - reaction daily digest - wednesday, 16 april 2025\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:42:20\nFolder: CBLI3JO - reaction daily digest - wednesday, 16 april 2025\nMessage Count: 1\n\n--------------------------------------------------\nID: CBLI3JO_00\nFrom: Microsoft Outlook Reactions <no-reply@microsoft.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-04-16 03:03\nSubject: Reaction Daily Digest - Wednesday, 16 April 2025\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن",
+      "start_pos": 0,
+      "end_pos": 783,
+      "chunk_index": 0,
+      "chunk_size": 783,
+      "metadata": {
+        "doc_id": "CBLI3JO - reaction daily digest - wednesday, 16 april 2025\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CBLI3JO - reaction daily digest - wednesday, 16 april 2025\\Conversation.txt"
+      }
+    },
+    {
+      "text": "--------------------------------------------------\nID: CBLI3JO_00\nFrom: Microsoft Outlook Reactions <no-reply@microsoft.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-04-16 03:03\nSubject: Reaction Daily Digest - Wednesday, 16 April 2025\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\nMicrosoft Outlook\n <https://outlook-1.cdn.office.net/assets/reaction/outlook.png> \t\n \t\n <https://outlook-1.cdn.office.net/assets/reaction/like.png>   \tMohamed Elbahr reacted to your message Tue 04/15/2025 12:27 \t\nRe: Damaged Demo - Phantom I 103db Light chrome \nDear Bhavya, Well received. @Mohamed Elbahr, will update you once I receive the feedback of the insurer. Best Regards, Hagop ________________________________ From: Bhavya Bhatia Sent: Tuesday, April 15, 2025 11:35 AM To: Mohamed Elbahr; Sr\nGo to message <https://outlook.office365.com/owa/?ItemID=AAkALgAAAAAAHYQDEapmEc2byACqAC%2FEWg0AHMFVbh16gUWLoLLyob%2BkCAALBEqRigAA&exvsurl=1&viewmodel=ReadMessageItem&nativeOutlookCommand=openMessage> \nUnsubscribe <https://outlook.office365.com/owa/ReactionDigestMailUnsubscribe.aspx>  • Privacy statement <https://go.microsoft.com/fwlink/?LinkId=512132> \nMicrosoft Corporation, One Microsoft Way, Redmond, WA 98052",
+      "start_pos": 170,
+      "end_pos": 1701,
+      "chunk_index": 1,
+      "chunk_size": 1531,
+      "metadata": {
+        "doc_id": "CBLI3JO - reaction daily digest - wednesday, 16 april 2025\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CBLI3JO - reaction daily digest - wednesday, 16 april 2025\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:08.247203",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1842
+  }
+}

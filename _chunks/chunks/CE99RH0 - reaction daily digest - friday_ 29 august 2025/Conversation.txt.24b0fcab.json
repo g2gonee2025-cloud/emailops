@@ -1,0 +1,42 @@
+{
+  "doc_id": "CE99RH0 - reaction daily digest - friday, 29 august 2025\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CE99RH0 - reaction daily digest - friday, 29 august 2025\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:26:11\nFolder: CE99RH0 - reaction daily digest - friday, 29 august 2025\nMessage Count: 1\n\n--------------------------------------------------\nID: CE99RH0_00\nFrom: Microsoft Outlook Reactions <no-reply@microsoft.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-08-29 01:41\nSubject: Reaction Daily Digest - Friday, 29 August 2025\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن",
+      "start_pos": 0,
+      "end_pos": 779,
+      "chunk_index": 0,
+      "chunk_size": 779,
+      "metadata": {
+        "doc_id": "CE99RH0 - reaction daily digest - friday, 29 august 2025\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CE99RH0 - reaction daily digest - friday, 29 august 2025\\Conversation.txt"
+      }
+    },
+    {
+      "text": "--------------------------------------------------\nID: CE99RH0_00\nFrom: Microsoft Outlook Reactions <no-reply@microsoft.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-08-29 01:41\nSubject: Reaction Daily Digest - Friday, 29 August 2025\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\nMicrosoft Outlook\n <https://outlook-1.cdn.office.net/assets/reaction/outlook.png> \t\n \t\n <https://outlook-1.cdn.office.net/assets/reaction/like.png>   \tJoe Hobeika reacted to your message Thu 08/28/2025 17:17 \t\nRE: Joe Hobeika shared \"JV SUpport\" with you\nHi Joe, Confirmed from my side. Best Regards, Hagop HAGOP GHAZARIAN ​​​​ SPECIALIST ‑ ADMINISTRATION M.C.T. FZE DUBAI ‑ UNITED ARAB EMIRATES +971 4 8045000 CHALHOUBGROUP.COM ‑ CAREERS.CHALHOUBGROUP.COM From: Joe Hobeika <Joe.Hobeika\nGo to message <https://outlook.office365.com/owa/?ItemID=AAkALgAAAAAAHYQDEapmEc2byACqAC%2FEWg0AHMFVbh16gUWLoLLyob%2BkCAALWvF3SwAA&exvsurl=1&viewmodel=ReadMessageItem&nativeOutlookCommand=openMessage> \nUnsubscribe <https://outlook.office365.com/mail/deeplink/unsubscribe?feature=ReactionDigestEmailDisabled>  • Privacy statement <https://go.microsoft.com/fwlink/?LinkId=512132> \nMicrosoft Corporation, One Microsoft Way, Redmond, WA 98052",
+      "start_pos": 168,
+      "end_pos": 1706,
+      "chunk_index": 1,
+      "chunk_size": 1538,
+      "metadata": {
+        "doc_id": "CE99RH0 - reaction daily digest - friday, 29 august 2025\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CE99RH0 - reaction daily digest - friday, 29 august 2025\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:34.906013",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1861
+  }
+}

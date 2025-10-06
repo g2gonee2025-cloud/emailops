@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1P4NZC - invoice successful submission - details (r293000)\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1P4NZC - invoice successful submission - details (r293000)\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 12:06:19\nFolder: C1P4NZC - invoice successful submission - details (r293000)\nMessage Count: 1\n\n--------------------------------------------------\nID: C1P4NZC_00\nFrom: HiveXpress.Admin@chalhoub.com <HiveXpress.Admin@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Real UAE Accounting - Document Control <RealUAEAccounting-DocumentControl@chalhoub.com>; Sujan Acharya <Sujan.Acharya@chalhoub.com>\nBCC: \nDate: 2024-10-03 13:01\nSubject: Invoice Successful Submission - Details (R293000)\n--------------------------------------------------\nHi Hagop Ghazarian,\n\nYour request has been submitted successfully. Please find the details below:\n\nInvoice ID:\t R293000\t Invoice Type:\t Manual\t \nCompany:\t REAL FZE\t Supplier:\t NASCO ME INSURANCE BROKERS LLC\t DOA Number:\t \t\nInvoice Amount:\t AED 51,924.90\t Is it for netting?\t No\t Recharge to other companies?\t No\t \nPP Allocation:\t No\t PP Numbers:\t \tPay Amount:\t -\t \nComments/Remarks\t Thank you to process the payment.\t \n\n\nGL Coding Information\t \nS.No.\t GL Coding\t Amount\t VAT\t VAT Amount (5%)\t \n1\t 152-20700-470107-000-000000-000-0000000-000000-0-0\t 49,452.29\t Yes\t 2,472.61\t \n\n\n\n*** This is a system generated email, please do not reply to this mail. Should you have any query or require any detail please contact Document Control <mailto:RealUAEAccounting-DocumentControl@chalhoub.com>  ***",
+      "start_pos": 0,
+      "end_pos": 1422,
+      "chunk_index": 0,
+      "chunk_size": 1422,
+      "metadata": {
+        "doc_id": "C1P4NZC - invoice successful submission - details (r293000)\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1P4NZC - invoice successful submission - details (r293000)\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:00.351276",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1463
+  }
+}

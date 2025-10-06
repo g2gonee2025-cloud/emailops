@@ -1,0 +1,31 @@
+{
+  "doc_id": "CN8A7YW - major incident resolved network connectivity issue in guess stores, muscat\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CN8A7YW - major incident resolved network connectivity issue in guess stores, muscat\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:41:34\nFolder: CN8A7YW - major incident resolved network connectivity issue in guess stores, muscat\nMessage Count: 1\n\n--------------------------------------------------\nID: CN8A7YW_00\nFrom: One Reach <OneReach@chalhoub.com>\nTo: \nCC: \nBCC: \nDate: 2025-03-24 14:48\nSubject: Major Incident Resolved:  Network Connectivity Issue in Guess Stores, Muscat\n--------------------------------------------------\n <https://onereach.status.freshservice.com/> \n\nDear Colleague, \n\n \n\nThe payment has been processed, and internet services have been restored at Guess & L'Occitane in Muscat City Centre and Guess in Mall of Oman.\n\n \n\nAll services are now fully operational.\n\n \n\nIssue Reported: Network Connectivity Issue in Guess Stores, Muscat\n\nStart Date and Time: 24 Mar 2025 , 12.17 PM GST\n\nEnd Date and Time: 24 Mar 2025 , 2.40 PM GST\n\n \n\nStatus: Resolved\n\n \n\nIf you require any assistance during this timeframe, we kindly request you to raise a support ticket by visiting OneReach.\n\n \n\nClick here for more updates: Chalhoub Technology & Data Service Status <https://onereach.status.freshservice.com/> \n\nChalhoub Technology & Data Status Page <https://onereach.status.freshservice.com/> \n\nSubscribe <https://onereach.status.freshservice.com/subscriber/account> \n\n <https://us15.mailchimp.com/mctx/clicks?url=http%3A%2F%2Feepurl.com%2Fi_hHPc&xid=945c66d21d&uid=229870170&iid=5809bf8488&pool=cts&v=2&c=1741065684&h=fd81f72999691a615b33cb1a7f7779a308b4172a0cf0b39f88dba311d283cb78>",
+      "start_pos": 0,
+      "end_pos": 1543,
+      "chunk_index": 0,
+      "chunk_size": 1543,
+      "metadata": {
+        "doc_id": "CN8A7YW - major incident resolved network connectivity issue in guess stores, muscat\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CN8A7YW - major incident resolved network connectivity issue in guess stores, muscat\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:20.449676",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1624
+  }
+}

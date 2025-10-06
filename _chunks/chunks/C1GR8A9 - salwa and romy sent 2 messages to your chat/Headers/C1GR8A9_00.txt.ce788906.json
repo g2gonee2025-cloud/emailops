@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1GR8A9 - salwa and romy sent 2 messages to your chat\\Headers\\C1GR8A9_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1GR8A9 - salwa and romy sent 2 messages to your chat\\Headers\\C1GR8A9_00.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from DB9PR05MB7993.eurprd05.prod.outlook.com (2603:10a6:10:25b::19) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Thu, 10 Jul 2025 06:58:08 +0000\nReceived: from AM9P193CA0014.EURP193.PROD.OUTLOOK.COM (2603:10a6:20b:21e::19) by DB9PR05MB7993.eurprd05.prod.outlook.com (2603:10a6:10:25b::19) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8901.26; Thu, 10 Jul 2025 06:58:06 +0000\nReceived: from AM4PEPF00027A61.eurprd04.prod.outlook.com (2603:10a6:20b:21e:cafe::52) by AM9P193CA0014.outlook.office365.com (2603:10a6:20b:21e::19) with Microsoft SMTP Server (version=TLS1_3, cipher=TLS_AES_256_GCM_SHA384) id 15.20.8922.22 via Frontend Transport; Thu, 10 Jul 2025 06:58:06 +0000\nX-MS-Exchange-Authentication-Results: spf=none (sender IP is 172.205.12.116) smtp.mailfrom=teams.mail.microsoft; dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=teams.mail.microsoft;\nReceived: from northeurope0.notifyp.svc.ms (172.205.12.116) by AM4PEPF00027A61.mail.protection.outlook.com (10.167.16.70) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8922.22 via Frontend Transport; Thu, 10 Jul 2025 06:58:06 +0000\nDate: Thu, 10 Jul 2025 06:58:05 +0000\nSubject: Salwa and Romy sent 2 messages to your chat\nMessage-Id: <TeamsMissedActivityEmail-c04f53da-7aea-469b-9e3f-dcab34740a78-7efa683a-0766-497d-a1d4-cf2f9f6f34fc-r0-SendEmail-rh_neu-aid_10345417-6c68-4fad-8d35-a634db5b997c_ffb0bfb8-1c47-445a-a746-edbbcd2515f9@odspnotify>\nSender: You have new messages in Teams <no-reply@teams.mail.microsoft>\nTo: Hagop.Ghazarian@chalhoub.com\nX-Crid: =?utf-8?q?c04f53da-7aea-469b-9e3f-dcab34740a78-7efa683a-0766-497d-a1d4-?= =?utf-8?q?cf2f9f6f34fc-r0-SendEmail?=\nX-Tnid: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nReturn-Path: no-reply@teams.mail.microsoft\nFrom: You have new messages in Teams <no-reply@teams.mail.microsoft>\nMIME-Version: 1.0\nContent-Type: multipart/related; boundary=\"=-XCvSt4DV3TqTu5bZqbF6Yg==\"; type=\"text/html\"\nX-MS-Exchange-Organization-ExpirationStartTime: 10 Jul 2025 06:58:06.1301 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Exchange-Organization-Network-Message-Id: 4f6473c3-ba61-4575-7097-08ddbf7f1f2d\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthSource: TreatMessagesAsInternal-AM4PEPF00027A61.eurprd04.prod.outlook.com\nX-MS-TrafficTypeDiagnostic: AM4PEPF00027A61:EE_FirstParty-SPO-V3|DB9PR05MB7993:EE_FirstParty-SPO-V3|AS8PR05MB10824:EE_FirstParty-SPO-V3\nX-MS-PublicTrafficType: Email\nX-MS-Office365-Filtering-Correlation-Id: 4f6473c3-ba61-4575-7097-08ddbf7f1f2d\nX-MS-Exchange-AtpMessageProperties: SA\nX-MS-Exchange-Organization-SCL: 1\nX-Microsoft-Antispam: BCL:0;ARA:13230040|69100299015|39142699007|31052699007|13003099007|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:172.205.12.116;CTRY:IE;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:northeurope0.notifyp.svc.ms;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(69100299015)(39142699007)(31052699007)(13003099007)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Jul 2025 06:58:06.0355 (UTC)\nX-MS-Exchange-CrossTenant-Network-Message-Id: 4f6473c3-ba61-4575-7097-08ddbf7f1f2d\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=6ef8304c-f37b-42a5-a569-0a7d8249fbf3;Ip=[172.205.12.116];Helo=[northeurope0.notifyp.svc.ms]\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: TreatMessagesAsInternal-AM4PEPF00027A61.eurprd04.prod.outlook.com\nX-MS-Exchange-CrossTenant-FromEntityHeader: Internet\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: DB9PR05MB7993\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:02.7126783\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8901.023\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910005)(944506478)(944626604)(920097)(425001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: ITg/vxHPgcTkUfhgeZiOOhI4+3w8WMvHMrByPewSgrcsZ3iy5tEMr1tQ4ru2DncHXexKoXYQzX7IQg8k4QrGOwtapUk+vKqSG/ENzHT7mA5mKSWteVeZ7UtKTWMS2Zw4k4/M9k0IdCpBDueeoicoNPPdmqMnU5O+G8w9kk9uPEll93cqbxSBY5GzKgyFxpGfbx07y0+YRcfXGJQvcGB+hxY5TbphTitsX+LcBQximRzvLnXxqQf/Pq/Wdll4J0n6PiuibqgRKXDT0KMS6cTLQlXaXJyJy6njR8lW1LQuopulxJUwlKKK9ffVo41Jj1SEJ/WoBOQOPMn/VkE8gSzxSsT8OBko6zBy7hTCA7k9TdAhmvfW8wjkYyIdu0Dg8g8lcJAfX3POSHLJHgf9b8sW27LOI6cR3m8RWn38lieO2L98GQU5XbwWVzuhBL3Lic8DWn+9hR5GlvXkTetXZqKHevsjiOJgz8Rp59jHVII6crwx+yrNzse4f4bOkAA2bh+sLtr1eKtlHue8xoD3ts7Rl71QJc208H/VBspHT6DOS0pxXi9215VsACJKt4MUOfrpnNCyvsIRtlG7E24ZWozjeSMgthq7TMk/ICaRvZg9e0GxUMhfQQoRJdU6dcMS3F2Ni2FmNczssazTqopOKkKBjG5vlISVeZPlHukcqk7eL1wNBPHkGZfzwXC1q2o7sWy6wYvrOZX9aXvYdd3NQ9BMn+MhEahykAbnfglT5AUm3ngNcSxAu+pMv3SROzu5q/Cdzea9o7gvb3QyDfRLMnvRT1PdPc/rr/fREzi3Pctf/ttJzznvuWvBoa8UGm3kDCwG5FhDMPNQTJnhRPw++Hncyxhfxngf5pgW3E6OpCIcJWEZvMC94Wf455E0CzoWBFchgIwGywruiin15jW85AU0Uw==",
+      "start_pos": 0,
+      "end_pos": 5191,
+      "chunk_index": 0,
+      "chunk_size": 5191,
+      "metadata": {
+        "doc_id": "C1GR8A9 - salwa and romy sent 2 messages to your chat\\Headers\\C1GR8A9_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1GR8A9 - salwa and romy sent 2 messages to your chat\\Headers\\C1GR8A9_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:06.075519",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5238
+  }
+}

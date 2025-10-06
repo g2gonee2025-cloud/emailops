@@ -1,0 +1,42 @@
+{
+  "doc_id": "C186162 - ticket updated - can't connect to the laptop (mac address 52-df-e7-e5-70-7c) -\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C186162 - ticket updated - can't connect to the laptop (mac address 52-df-e7-e5-70-7c) -\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:46:44\nFolder: C186162 - ticket updated - can't connect to the laptop (mac address 52-df-e7-e5-70-7c) -\nMessage Count: 1\n\n--------------------------------------------------\nID: C186162_00\nFrom: OneReach <onereach@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-01-23 17:59\nSubject: Ticket Updated - Can't connect to the laptop (MAC Address: 52-DF-E7-E5-70-7C) - [#INC-1105970]\n--------------------------------------------------\n <https://eucattachment.freshservice.com/inline/attachment?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6NTIwMDIzMjM3MjAsImRvbWFpbiI6ImNoYWxob3ViZ3JvdXAtc2VydmljZWRlc2suZnJlc2hzZXJ2aWNlLmNvbSIsInR5cGUiOjF9.5NoE1pqHy6NqDdraZimejTAd0ObR8IwZ_Vuz9Bym3hY> \n\n\n\n\n\nDear Hagop Ghazarian,\n\nThere is a new comment on your ticket. You can view your ticket by visiting https://onereach.chalhoub.com/helpdesk/tickets/1105970 <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fonereach.chalhoub.com%2Fhelpdesk%2Ftickets%2F1105970&data=05%7C02%7Chagop.ghazarian%40chalhoub.com%7Cd95fd0cabb644abbb04f08dd3bb6164d%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638732375424311281%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=UjxuTBXH6ueiHoGEkAq%2F40B9rFA2zt43f%2FlmnbI06Vw%3D&reserved=0> \n\nYou can also reply to this email to add your comment.\n\nDineshsing Pardeshi added a note: – \n\nHello @hagop,",
+      "start_pos": 0,
+      "end_pos": 1533,
+      "chunk_index": 0,
+      "chunk_size": 1533,
+      "metadata": {
+        "doc_id": "C186162 - ticket updated - can't connect to the laptop (mac address 52-df-e7-e5-70-7c) -\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C186162 - ticket updated - can't connect to the laptop (mac address 52-df-e7-e5-70-7c) -\\Conversation.txt"
+      }
+    },
+    {
+      "text": "There is a new comment on your ticket. You can view your ticket by visiting https://onereach.chalhoub.com/helpdesk/tickets/1105970 <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fonereach.chalhoub.com%2Fhelpdesk%2Ftickets%2F1105970&data=05%7C02%7Chagop.ghazarian%40chalhoub.com%7Cd95fd0cabb644abbb04f08dd3bb6164d%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638732375424311281%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=UjxuTBXH6ueiHoGEkAq%2F40B9rFA2zt43f%2FlmnbI06Vw%3D&reserved=0> \n\nYou can also reply to this email to add your comment.\n\nDineshsing Pardeshi added a note: – \n\nHello @hagop,\n\nPlease share corrected MAC address for the Laptop also please confirm its IOS or Windows Machine?\n\nSincerely,\nChalhoub Tech Support Team\n\n\n[#INC-1105970]:485094:fs",
+      "start_pos": 830,
+      "end_pos": 1698,
+      "chunk_index": 1,
+      "chunk_size": 868,
+      "metadata": {
+        "doc_id": "C186162 - ticket updated - can't connect to the laptop (mac address 52-df-e7-e5-70-7c) -\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C186162 - ticket updated - can't connect to the laptop (mac address 52-df-e7-e5-70-7c) -\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:16.468696",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1745
+  }
+}

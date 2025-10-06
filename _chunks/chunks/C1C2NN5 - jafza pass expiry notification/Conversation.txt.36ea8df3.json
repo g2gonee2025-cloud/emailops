@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1C2NN5 - jafza pass expiry notification\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1C2NN5 - jafza pass expiry notification\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:41:02\nFolder: C1C2NN5 - jafza pass expiry notification\nMessage Count: 1\n\n--------------------------------------------------\nID: C1C2NN5_00\nFrom: DRIVE <system@successfactors.eu>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-05-01 10:00\nSubject: JAFZA Pass Expiry Notification\n--------------------------------------------------\n <https://performancemanager5.successfactors.eu/companyLogoServlet/?companyId=Chalhoub> \t\nHello GHAZARIAN Hagop, \n\nYour JAFZA Pass will expire in 30 days. Please contact your HR team to discuss the renewal process. \n\nSupporting you all the way through \n\nYour HR Team",
+      "start_pos": 0,
+      "end_pos": 699,
+      "chunk_index": 0,
+      "chunk_size": 699,
+      "metadata": {
+        "doc_id": "C1C2NN5 - jafza pass expiry notification\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1C2NN5 - jafza pass expiry notification\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:27.118436",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 736
+  }
+}

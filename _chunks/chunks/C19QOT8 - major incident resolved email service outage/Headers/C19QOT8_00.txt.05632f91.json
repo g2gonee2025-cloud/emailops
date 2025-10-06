@@ -1,0 +1,31 @@
+{
+  "doc_id": "C19QOT8 - major incident resolved email service outage\\Headers\\C19QOT8_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C19QOT8 - major incident resolved email service outage\\Headers\\C19QOT8_00.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from VI0PR05MB11508.eurprd05.prod.outlook.com (::1) by GV4PR05MB11783.eurprd05.prod.outlook.com with HTTPS; Fri, 29 Aug 2025 17:00:48 +0000\nReceived: from VE1PR05MB7534.eurprd05.prod.outlook.com (2603:10a6:800:1aa::24) by VI0PR05MB11508.eurprd05.prod.outlook.com (2603:10a6:800:243::22) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9052.20; Fri, 29 Aug 2025 17:00:18 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from DB9PR05MB8672.eurprd05.prod.outlook.com (2603:10a6:10:2c8::15) by VE1PR05MB7534.eurprd05.prod.outlook.com (2603:10a6:800:1aa::24) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9073.21; Fri, 29 Aug 2025 16:59:27 +0000\nReceived: from DB9PR05MB8672.eurprd05.prod.outlook.com ([fe80::cb38:7f3b:c339:ddf]) by DB9PR05MB8672.eurprd05.prod.outlook.com ([fe80::cb38:7f3b:c339:ddf%7]) with mapi id 15.20.9073.021; Fri, 29 Aug 2025 16:59:27 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: One Reach <OneReach@chalhoub.com>\nSubject: Major Incident Resolved: Email Service Outage\nThread-Topic: Major Incident Resolved: Email Service Outage\nThread-Index: AdwZBLikfoBRdLvpSGuz1ViDyNBoDQ==\nX-MS-Exchange-MessageSentRepresentingType: 1\nDate: Fri, 29 Aug 2025 16:59:27 +0000\nMessage-ID: <DB9PR05MB8672BD2E2A193CA8B46848F5DA3AA@DB9PR05MB8672.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach:\nX-MS-Exchange-Organization-SCL: 1\nX-MS-TNEF-Correlator: <DB9PR05MB8672BD2E2A193CA8B46848F5DA3AA@DB9PR05MB8672.eurprd05.prod.outlook.com>\nMIME-Version: 1.0\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: DB9PR05MB8672.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 04\nX-MS-Exchange-Organization-Network-Message-Id: c30e88c1-b9bb-4c1b-28ed-08dde71d6a06\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: DB9PR05MB8672:EE_|VE1PR05MB7534:EE_|VI0PR05MB11508:EE_|GV4PR05MB11783:EE_\nTo: Undisclosed recipients:;\nReturn-Path: OneReach@chalhoub.com\nX-MS-Exchange-Organization-ExpirationStartTime: 29 Aug 2025 16:59:27.8414 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: c30e88c1-b9bb-4c1b-28ed-08dde71d6a06\nX-LD-Processed: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3,ExtFwd,ExtAddr,ExtAddr,ExtFwd\nX-MS-Exchange-AtpMessageProperties: SA\nX-Microsoft-Antispam: BCL:0;ARA:13230040|69100299015|366016|13003099007|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VE1PR05MB7534.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(69100299015)(366016)(13003099007)(8096899003)(41050700001);DIR:INT;\nX-Auto-Response-Suppress: DR, OOF, AutoReply\nX-MS-Exchange-Organization-Recipient-P2-Type: Bcc\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Aug 2025 16:59:27.4930 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: DB9PR05MB8672.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: c30e88c1-b9bb-4c1b-28ed-08dde71d6a06\nX-MS-Exchange-CrossTenant-MailboxType: HOSTED\nX-MS-Exchange-CrossTenant-UserPrincipalName: MhJvDQlMWqLv0uWqsBC4CjZvUeArqs5LATBysfBsAPM/+5ehXS4Q/dGwd85aGWhr++UeICXHsu/ltZM1z98yEZ/fcOKfrXzhSbeXhvEXLNg=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: VI0PR05MB11508\nX-MS-Exchange-Transport-EndToEndLatency: 00:01:20.9730543\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.9052.024\nX-Microsoft-Antispam-Mailbox-Delivery: wl:1;pcwl:1;ucf:0;jmr:0;auth:0;dest:I;ENG:(910005)(920097)(811242)(255002)(410001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: Ojm3/rLhlUVfAkm9U2v581HeBrA0s6y2VAcvF10Eo9hIyKZGtpDP+JeKQDro4FSAyebDP73PI44BVWpYVMtZeFeHMhuuGFyTNq1QXnGYcx+qjsoMxesRquUnxSFfvMnD92DZbvTfnExbZPPoVH/cHQKwW8vi69W8ccOJvsKh1oJbe7JtWFwykdohhSy97QvflXrtKzUjXucZF+YuRdP7V7osf9l5z+aSiQaPGc7nMICFO23NU1KfSFTWtY/zWIbra5NLNWhn8aVKy7rEm8jpryQX2Ws0D0W8zeqgcsZh794/c9z+LpsPr6kgzWSyXFIlRDieaQNvByySNN291cuaIoY4ssgal9ESPWhEeTy5Bxox1XdJ5BEyp+/MQcyu3YrdqH6ZsZsaQW4iag+S3kcnxqJFokwQI7Rr9Vf+7iJ3dMimpLxjHemchIUMZ7MNVH8n9T35jBSiL3hX2hQ6J5UTtIqCak/x3AnvjT7srSdWSFrd/ffkwPVF1EQzkUT4ZVTRMLPE2a2rRjM4Wn1hOdf4CEz9z85ml6zwR61ntOtQnLMqj9Cx2W44Cd9IijYv8FdpVpeAIeUtm5HFyaFL1CyfDi6L+zclGhkexwx/SBc0lOQRwHe/7BDgb4GlwFUTHbPrNBFZxVlQh5C8u2vmm/e9pPeEcAKxhw9fQ6909l13ZNwYIDdVsmevXb4g0khqWeeRMDaot3cH6KVCtMP/5iAMpzGr0u/WDDmg6kHQ/TYpJLwYPhjAUD62V9g0TKSoebi6FBHe+fidawEqxFWVEsQd+rtrMc9Z+rwaFYicaCBRgP7GZwc3CM/XjRYwqj3Vm2/b1oND2Dy4ST6nlrV5fT7nm0ioYUTW3sc4htNvjlrLjQcxJnynN4ROIMrSjxlo3ooO",
+      "start_pos": 0,
+      "end_pos": 5009,
+      "chunk_index": 0,
+      "chunk_size": 5009,
+      "metadata": {
+        "doc_id": "C19QOT8 - major incident resolved email service outage\\Headers\\C19QOT8_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C19QOT8 - major incident resolved email service outage\\Headers\\C19QOT8_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:50.931166",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5066
+  }
+}

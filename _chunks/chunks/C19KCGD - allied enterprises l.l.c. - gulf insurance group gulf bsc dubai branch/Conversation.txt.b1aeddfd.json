@@ -1,0 +1,31 @@
+{
+  "doc_id": "C19KCGD - allied enterprises l.l.c. - gulf insurance group gulf bsc dubai branch\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C19KCGD - allied enterprises l.l.c. - gulf insurance group gulf bsc dubai branch\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:26:06\nFolder: C19KCGD - allied enterprises l.l.c. - gulf insurance group gulf bsc dubai branch\nMessage Count: 1\n\n--------------------------------------------------\nID: C19KCGD_00\nFrom: Husam Alkhateeb <Husam.Alkhateeb@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Jameel Haddad <Jameel.Haddad@chalhoub.com>\nBCC: \nDate: 2025-09-01 09:52\nSubject: ALLIED ENTERPRISES L.L.C. - GULF INSURANCE GROUP GULF BSC DUBAI BRANCH\n--------------------------------------------------\nHi Hagop,\n\n \n\nWe have received the below funds from the supplier in Allied, would you please review and let us know what was this for?\n\n \n\n\n\n \n\nThanks,\n\n \n\nHUSAM ALKHATEEB\t\n​​​​\t\nASSOCIATE SENIOR ACCOUNTANT\t\nREAL FZE JORDAN\t\nAMMAN\t\n‑\t\nJORDAN\t\n\t\t\n \t\n <https://chalhoubgroup.com/> \t\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\t\n‑\n\t\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\t\n\t\n <https://www.facebook.com/chalhoubgroup/> \t\n <https://www.instagram.com/chalhoubgroup> \t\n <https://www.linkedin.com/company/chalhoub-group/> \t\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 0,
+      "end_pos": 1204,
+      "chunk_index": 0,
+      "chunk_size": 1204,
+      "metadata": {
+        "doc_id": "C19KCGD - allied enterprises l.l.c. - gulf insurance group gulf bsc dubai branch\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C19KCGD - allied enterprises l.l.c. - gulf insurance group gulf bsc dubai branch\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:42.207936",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1279
+  }
+}

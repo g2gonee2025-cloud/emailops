@@ -1,0 +1,42 @@
+{
+  "doc_id": "CUTR3N - mall permit rejection l'occitane tdm - expired insurance certificate\\Headers\\CUTR3N_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CUTR3N - mall permit rejection l'occitane tdm - expired insurance certificate\\Headers\\CUTR3N_00.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by PAWPR05MB9871.eurprd05.prod.outlook.com (2603:10a6:102:334::20) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7982.27; Fri, 27 Sep 2024 13:02:21 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%3]) with mapi id 15.20.7982.022; Fri, 27 Sep 2024 13:02:21 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Salwa Al Mamari <Salwa.Almamari@chalhoub.com>\nCC: Mohammed El Neel <Mohammed.Elneel@chalhoub.com>, Sharon Pinto <Sharon.Pinto@chalhoub.com>, Kawttar Nassik <Kawttar.Nassik@chalhoub.com>, L'Occitane En Provence Dubai Mall <LOccitane.FlagShipDubaiMall@Loccitane.me>, Sondes Lariani <Sondes.Lariani@loccitane.me>, Randa Escondose <Randa.Escondose@loccitane.me>, Geraldin AYAP <Geraldin.Ayap@loccitane.me>, Kristina Kalcheva <Kristina.Kalcheva@Loccitane.Me>\nSubject: Re: Mall Permit Rejection L'Occitane TDM - Expired insurance certificate\nThread-Topic: Mall Permit Rejection L'Occitane TDM - Expired insurance certificate\nThread-Index: AdsQ3AwwG0/y3Wh5QUy7/fQnuSyusAAAVeIg\nDate: Fri, 27 Sep 2024 13:02:21 +0000\nMessage-ID: <AS8PR05MB10824DBA1E72103159251E5699D6B2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <AS8PR05MB82303E4D94A54461D7226205F36B2@AS8PR05MB8230.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB82303E4D94A54461D7226205F36B2@AS8PR05MB8230.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 1645,
+      "chunk_index": 0,
+      "chunk_size": 1644,
+      "metadata": {
+        "doc_id": "CUTR3N - mall permit rejection l'occitane tdm - expired insurance certificate\\Headers\\CUTR3N_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CUTR3N - mall permit rejection l'occitane tdm - expired insurance certificate\\Headers\\CUTR3N_00.txt"
+      }
+    },
+    {
+      "text": "od.outlook.com>\nIn-Reply-To: <AS8PR05MB82303E4D94A54461D7226205F36B2@AS8PR05MB8230.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|PAWPR05MB9871:EE_\nx-ms-office365-filtering-correlation-id: c3b05e02-533a-4971-90a5-08dcdef49fa4\nx-ms-exchange-atpmessageproperties: SA|SL\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|41050700001;\nx-microsoft-antispam-message-info: hPoZqW4eyFnvIzZjqp+7e7byWZojlf88U4zitXRVB2u9S9WwCAqJfb5i0DgFpiJBccxwHXp/xcU08pxRp+yx8wbht4yEq+hpY2HGX427ryt1oRuPAIrYRS/GG9lm1q9cfcvh5SgGhDPObbooCHGLOxGcyBYlbvhECp2inAnZTb4ifD1Ryvn9OUIW/D0Or16c8Q9YkAk236fXX8kuzYEJL/q9SWmrf/hGKqz20dCu39cZoU1GG6AyGx/IOBp2aSIv/exUfMygwpvIFH6CZFktjbJu80zOmIg89neKwgQLxqtcWj7LpxUWIr5uHtOK+N7dV6MozP628Q/tuTwjwNxxHpTMYdBeV/3BnJgpUvkcXoN8ipw8kcnpmIH7lbB8qC8Xk1hSILGlpDc6+tr0JWaZrLwUIOq2tQTjKOHZnAU9eeXJ1ToHZxuREFyEk/F1zijPx7fjQEsqX+JHZ/uUlv1J0ritJOzcqPRzmAVpqZaU4wLgiUdXnq6zgUxOjXHRDKee/tznE1q2QfwvgSN4VxBpLytv4VLF2q1TqOVSmz6w1PeYg5LpgHy7h2HSyWtQn8FVg4GO6Mi4ARmCufamDnv/6YB/vJuTnicxXGVh8YxzHJisLhwrLCr5rKoVG71ZNKZwqWHRFlQUk5y4WvpnqLMAaA8aQYyeph/KYFrvzZ8owk8iqElGDXx3KLSnUMCgUYCz+L1LwtZVQBWNrwmeRyOjJxUINl6PC1tSzfGTBDz33CM8wJgKyK3CY2pWtal04inqAmKqbb0ySTBqMwNHeYBxRQ==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_011_AS8PR05MB10824DBA1E72103159251E5699D6B2AS8PR05MB10824eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: hu1K6m8hAnZcwz/WmuVbGysLDMlfUQoqAOxzdCdA/dvdps5YUJERpPLkBsjwl6j4cUg5HLmS/Hmnw3bK13i/ohv7v33c9HmNxFCbCvfCuJHW1mNtTn2wiTxKk5UOVAzOHE7iOBiAOGzhsLCxzaMxaAuxwHph4p3i6SSYgoZ791swnfChcMl/8s7GDFShLcqitV4U4L55+naJFrQ3j4wBl03eoMoGSkxuOh3RytdZnsdBPbyN8U9LTLGMWVvYE8u0Ci3NocFtdBSnpspZwI/h7s8DJ/Dm1JZ6YGi2rIRkfXrENfe5NEyXFM0fscx42xBJE2DD8mOmjiclhg2Qw6lhudijP57EGChEe4VGYkSVXOSfmDs1/LlX7vWFCy/Cxg5EEd1Bis918urwJD0Ls4rioC3h5jQ6U/vZDai296CdBiJJs1DIWggPA4bM48516FyFkZMnxJPNw7RZwidHf8I8x1W0NkcZS/nm5fiANdVlkBRBtD/kil3I2dqCWo3v1mU7+D8jkMfaPKQdgMigqYH1WCYu5wjVKIBgHO97zawLxLhCzQ15D0qBWn9nHMA8BFbbZgvsMqiD2eUGoCNSmYROpz4dZoIs5uXRjx6/BB4v4pFCObpRGYmineeeCqQLcqQM\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: c3b05e02-533a-4971-90a5-08dcdef49fa4\nX-MS-Exchange-CrossTenant-originalarrivaltime: 27 Sep 2024 13:02:21.1329 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: 7xzebbjxcZUrp52gmtarqFHS0Dn6C5lW12sciPo45wXQGeWfbOTP+iTCnlqFPBK5QknuaLVFh9g+IbC1DuEO4hNJ5EF5J8RBOMxCkiXDFLY=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PAWPR05MB9871\nX-OrganizationHeadersPreserved: PAWPR05MB9871.eurprd05.prod.outlook.com",
+      "start_pos": 1445,
+      "end_pos": 4747,
+      "chunk_index": 1,
+      "chunk_size": 3302,
+      "metadata": {
+        "doc_id": "CUTR3N - mall permit rejection l'occitane tdm - expired insurance certificate\\Headers\\CUTR3N_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CUTR3N - mall permit rejection l'occitane tdm - expired insurance certificate\\Headers\\CUTR3N_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:55.846544",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4791
+  }
+}

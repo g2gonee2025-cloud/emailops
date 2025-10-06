@@ -1,0 +1,31 @@
+{
+  "doc_id": "CYIUPDK - ksa insurance - renewal outcome\\Headers\\CYIUPDK_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CYIUPDK - ksa insurance - renewal outcome\\Headers\\CYIUPDK_00.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by AS2PR05MB10731.eurprd05.prod.outlook.com (2603:10a6:20b:647::16) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7982.27; Tue, 24 Sep 2024 12:45:04 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%3]) with mapi id 15.20.7982.022; Tue, 24 Sep 2024 12:45:04 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Joe Hobeika <Joe.Hobeika@chalhoub.com>\nSubject: KSA Insurance - Renewal Outcome\nThread-Topic: KSA Insurance - Renewal Outcome\nThread-Index: AdsOekNMEPTYgZwKTeeL5XgdPX1B/A==\nDate: Tue, 24 Sep 2024 12:45:03 +0000\nMessage-ID: <AS8PR05MB108241678C8FDA647CBDFD0C19D682@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|AS2PR05MB10731:EE_\nx-ms-office365-filtering-correlation-id: 137228b9-ffef-491f-8133-08dcdc96b62a\nx-ms-exchange-atpmessageproperties: SA|SL|HVE\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|41050700001;\nx-microsoft-antispam-message-info: +xHBLlTNVwPcjpwaTKbJ432z0U6Teqk/WZ6kJGCdxzn/YA1SqeOG6MHAhMMTNsd2jXuEuwCm3w35AFWePnyY2QsWTr7eCHggFMuMly/rO4hNLb2Sl2B5tX5fd3YTghrU5fDMpsAt38eN2JwQ6zWZGTg5yp01f3FdEKjaOlEmIC3xfCrb59v2olMc7gkVVgpMQ5IGhqLqBzL9svLa4O0476sv1GZ3I1iOmFf2mHv+Dz8AA7Hu+O+dlhGU7+06XoW+mApV/ntGSRKLW75sFlUaPkIEIMGdbdO+BYvI2RLVZE6C8BFu49yU9IlBmrZ0mOO0IZGSx3g264Ic96i0kLxRsz0pOpf+/DNkOC2P4OGPe8iezGfwHDqA4kK676CTLHSUL85K06l0lRTfRxcdH7hdZSzrOL59K6u32io72r2FiNBkNu98njdnbRb3PvF3JlTPWrjFaqHVEUmLiONMF4bejMUMoKM8cFS8scddZS1Ueke1rnLzGO1zIQ6uzfDAH+BJycuukuAp7qLCtWLWtOrT6AnqRvTWTcQGX/+kY0GF8r9z+yoHKEMe3dw5TDbwzyXM2pL/ZdDpMh9vU3WYk8JNhIbR23pG3Tb1pRaastVj3CnVOANxNcY82X0CPredpHacMUYfIswgDom++3c3R+X664t2bDzFH41V1afWAe1tQiGIgDMvu/4xakrTVVoVjQqsTpMWQhm8efGgeUadxMu1k88uUFBUAg2DVFTGVqNNljgLIJD/P70Hcc0KCfv+xXnxH7I01cXtlZXBSrtyjHR7pF5+nqI0yNhhyweckBD2Q6BDOKzK9UNjKHv0N4Ci2I57\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(41050700001);DIR:INT;\nContent-Type: multipart/mixed; boundary=\"_004_AS8PR05MB108241678C8FDA647CBDFD0C19D682AS8PR05MB10824eu_\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: lQs/LhCy1d3vYS5n6DiI8ChFpDqAqL8zwPvMR45J4MufuAPuZ+Ct+6mmTF+jYWGNDPjwNn6DmHFNxFXvAg/ZCJkFTDHS5UdRpqJdI7TsJGwBsWlAA6NGLmyfy1wRrM1XRNPzL+Q1KB8EF7bycM+TaMdsb+pXsHG7Qc18qQvep5XyMFv6/2ibGZcnemAMfLuVe8lh35rjqKk/brFUphnsLrEf61J1TdwIYLMnN+HrogIAzINx+fsi1HMcPvSsJK+RbO7+yw7NG2SngMAUW9+rzxGcphKVsIjbSTpRskFNgDEPQgBeCpf0pL1RFNCHg8G0dNbk+ASgx6ju7uun6ctKJ7QsRJlUqHF55djFXl4X0lDlFFwz1U8l0UBC22oF2NqzfiTW4fu6Xgvp5QDd5Qu/AvPjddi2vLQu2UBQg5CdzYtvH7bVMxLHNmorC635Z07vUc7xi9uI/2zXjKM7Wdr3aCf6znitBTgAPldbuZmA9aN+mP1hbHbFVUPAJF5mvRDz34Saf91DKqQ+N62k+4j3lrO384zs9ya8HcXLhWN9m+vFASYWjOt9cSeIw3++TEoEnSP9fwviOzGAlQppsTqqbqZKKDOjkYJOV/yzlJM5Iinemq/nOwixIfgNz1PJP4Lv\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 137228b9-ffef-491f-8133-08dcdc96b62a\nX-MS-Exchange-CrossTenant-originalarrivaltime: 24 Sep 2024 12:45:03.8953 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: DdEFR0S09TlucAUqegGYdVaT0aHD4pEd/5+lChFuLQfgFNH3vauFQ+9EI84phsqJ++hi3sCQxiloabMemdELZdozI5sMQjmf/dA337LRac4=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS2PR05MB10731\nX-OrganizationHeadersPreserved: AS2PR05MB10731.eurprd05.prod.outlook.com",
+      "start_pos": 0,
+      "end_pos": 4066,
+      "chunk_index": 0,
+      "chunk_size": 4066,
+      "metadata": {
+        "doc_id": "CYIUPDK - ksa insurance - renewal outcome\\Headers\\CYIUPDK_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CYIUPDK - ksa insurance - renewal outcome\\Headers\\CYIUPDK_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:22.337582",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4106
+  }
+}

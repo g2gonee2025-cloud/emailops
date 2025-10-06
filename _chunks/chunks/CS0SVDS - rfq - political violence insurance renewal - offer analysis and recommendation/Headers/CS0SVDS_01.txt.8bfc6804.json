@@ -1,0 +1,31 @@
+{
+  "doc_id": "CS0SVDS - rfq - political violence insurance renewal - offer analysis and recommendation\\Headers\\CS0SVDS_01.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CS0SVDS - rfq - political violence insurance renewal - offer analysis and recommendation\\Headers\\CS0SVDS_01.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by PAWPR05MB10208.eurprd05.prod.outlook.com (2603:10a6:102:2e5::15) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7982.27; Thu, 26 Sep 2024 10:40:01 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%3]) with mapi id 15.20.7982.022; Thu, 26 Sep 2024 10:40:00 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Joe Hobeika <Joe.Hobeika@chalhoub.com>\nSubject: RE: RFQ - Political Violence Insurance Renewal - Offer Analysis and Recommendation\nThread-Topic: RFQ - Political Violence Insurance Renewal - Offer Analysis and Recommendation\nThread-Index: AdsP+71Neef6sDq/Qi27xxztpkb3XgAA37pw\nDate: Thu, 26 Sep 2024 10:40:00 +0000\nMessage-ID: <AS8PR05MB108245199621FBC6D02D2E31C9D6A2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <AS8PR05MB10824EF8C3C4D24C300DD446D9D6A2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824EF8C3C4D24C300DD446D9D6A2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|PAWPR05MB10208:EE_\nx-ms-office365-filtering-correlation-id: 6cf1fe76-b085-4728-e891-08dcde1792b3\nx-ms-exchange-atpmessageproperties: SA|SL|HVE\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|41050700001;\nx-microsoft-antispam-message-info: uWUDLgFCTAfmwuvfDUtYiXsdrEiGNwRw5opT+XzTjFtGO2qVCOuL+ulxk8LrINtxNF8kRv1BIcmStq2aXN553R5Q1bDSl1TVQAFK1FwetBbh5mL+X/SxetiR+nX3P2aHNrHXzgby9JuGGj1HxdkJYOA00EvQGWttJeVrOEBtSqaBHx5yCrkh1qrT0OSDYIMCI9CWRvhVqQMS2kAI6QhiK6b7okyMVai/n7HSpCzD5nFqLKm7C1MhI+O+BVfxr8l4Ro2wg56sZZYL1S7EguBaaGSXkmwDXBSgNKa4dHnhSN2BsZYQGS1C/2xf2qfblJXJ9AHa8T11eBRUC7I8znCAR5yaB5EVEJxfAdSkP+rqDhuhhdMYvXTP7QxbPCZ/BH7VSmrXIG9yb0s58ln6zSy3yeLYIuExUup1d6VvZliwVb4/GjcXkLIFiLMR0FBY62UzaGKVJCSvBe0xQsJilPlwiGbwXjiEzq3DOwfYlf7IC6aj9hjxCdoamGoSFD/Y69aBiMYvdaK2drQm54Z+DcoWY0JgY5dtcjgCVLp8yHClhOP9Ng64w6YwRUtEt7atqETSVCrTagWliDFv6PXcxNAm43KWB+P/I1RqNzqjhUh5/5IsA+QXzgJLS6Pf98Ty+7F7V/TytHPxYm3wSF8XQ4tygue+akb4io6NmyfrJb0RClpsrWoMJ+/t0lgcqF+//lhjf8FB0Bh//734RwU9pn0J1W+gLMynIla4rbMXmnyyF9jtXgevnSh22d3LoWcRU/ua+7N+kR+PBx9sihRL44IvdH4bofHgp9Hp3ngZfxV9bXcbJK2yBGctrNdQP2a9Mxyy\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_010_AS8PR05MB108245199621FBC6D02D2E31C9D6A2AS8PR05MB10824eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: MI2//U3TPKhFt/YS/RvLDC49uXicgmNwgXJRyI11DsKXdzFtxMhhrbb+jFWB16xdFG7PVn049hpWt1y+hJWp8iQ7hvLnWIT3sa80ee6wIWkUcVo9r8bCvrI/+Qvx9HbO0lTvp1wVOT3QfpqIhnahCb6iT41MyKO/A9Qpy0jpqk6b+YNWs6UftYYQk+qtb1Yq/9dY2GsDyvhqDZYEMQvBuh7Me7lcxjLOD+4FK360/28vzwbR5Wkn4mg1upuAj8sm9aZb0PdX7fUwkEOo0NB6XLYtq8zqj6gg5OHa1+DYwPbvNBSOHBGk6BkW+Px70f0wDuJIOZB3lhg3rE7gLvq4amXKUFeaMgPFvLfonSRzmpl1Vobc5WejRhMcJ61q0tBOt40HXBR0ocoh4Mm+g4YKb8CZlvpWxGukn2jHX/g7MjLzi5pTZmXYSVsOQ0wrvHMY3dagof5WMQGfw7J98ArB5offSy9Fvw3XM5ZSZvSRWHModArv/+uFUq0yQiZqYip1BfjH4fQfHoWsuOTcj0N1w4PSn/WwNztWBB0MLErhn/YMrYwPCNokMO8+vzknUUraEoAOVZyMXnWr+XUp3PxdX+jxQ9e3IGp258wwunJ8NhR3Zic9paNwMCLcCmaQdZjJ\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 6cf1fe76-b085-4728-e891-08dcde1792b3\nX-MS-Exchange-CrossTenant-originalarrivaltime: 26 Sep 2024 10:40:00.6276 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: vu46YL5SHfUsa7z54waNGwwO+92blDbrTA8sgBtJ+nIpSSFCP6hNNsGSwjpEhdRrCnjVFFYvT6YKGfwcYuBS0Bx8ILeWstBYveIXcbMJwgM=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PAWPR05MB10208\nX-OrganizationHeadersPreserved: PAWPR05MB10208.eurprd05.prod.outlook.com",
+      "start_pos": 0,
+      "end_pos": 4391,
+      "chunk_index": 0,
+      "chunk_size": 4391,
+      "metadata": {
+        "doc_id": "CS0SVDS - rfq - political violence insurance renewal - offer analysis and recommendation\\Headers\\CS0SVDS_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CS0SVDS - rfq - political violence insurance renewal - offer analysis and recommendation\\Headers\\CS0SVDS_01.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:00.015006",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4433
+  }
+}

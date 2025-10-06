@@ -1,0 +1,42 @@
+{
+  "doc_id": "CSVZOI8 - employee goals & goal audit review\\Headers\\CSVZOI8_01.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CSVZOI8 - employee goals & goal audit review\\Headers\\CSVZOI8_01.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from PAXPR05MB8317.eurprd05.prod.outlook.com (2603:10a6:102:dc::15) by GVXPR05MB11851.eurprd05.prod.outlook.com (2603:10a6:150:287::11) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9031.15; Thu, 14 Aug 2025 11:26:31 +0000\nReceived: from PAXPR05MB8317.eurprd05.prod.outlook.com ([fe80::e7ec:f3e9:70d8:87f3]) by PAXPR05MB8317.eurprd05.prod.outlook.com ([fe80::e7ec:f3e9:70d8:87f3%4]) with mapi id 15.20.9031.014; Thu, 14 Aug 2025 11:26:31 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Sabitha Menon <Sabitha.Menon@chalhoub.com>\nSubject: Re: Employee Goals & Goal Audit Review\nThread-Topic: Employee Goals & Goal Audit Review\nThread-Index: AQHb5EN+YhccAIQUzE2+/qnB6prH0rQoDx35gAADfBqAAAD15YAAATPogAAI02CAFF+0tYAlv/98gAAWlcc=\nDate: Thu, 14 Aug 2025 11:26:31 +0000\nMessage-ID: <PAXPR05MB8317C392F16C11BE951AD9E19D35A@PAXPR05MB8317.eurprd05.prod.outlook.com>\nReferences: <AS2PR05MB977636222849EBC4F284D236FC7DA@AS2PR05MB9776.eurprd05.prod.outlook.com> <AS2PR05MB97762204E3FDB5232D6B1866FC79A@AS2PR05MB9776.eurprd05.prod.outlook.com> <VI2PR05MB11573D8C9CD587211C091F2279679A@VI2PR05MB11573.eurprd05.prod.outlook.com> <AS2PR05MB977691C06DB4224C404E9F5EFC79A@AS2PR05MB9776.eurprd05.prod.outlook.com> <AS4PR05MB951751903E42A78D92F0C2D58E4EA@AS4PR05MB9517.eurprd05.prod.outlook.com> <AS4PR05MB9517F11048225127E1ED3B6D8E4EA@AS4PR05MB9517.eurprd05.prod.outlook.com> <AS4PR05MB951746D9DE46DA22CCF40B0D8E4EA@AS4PR05MB9517.eurprd05.prod.outlook.com> <AS4PR05MB95172E3A308D4596E0C0EEA88E4EA@AS4PR05MB9517.eurprd05.prod.outlook.com> <AS4PR05MB9517E07ADF6A416A14C4BA2E8E4EA@AS4PR05MB9517.eurprd05.prod.outlook.com> <AS4PR05MB951726D9524C12BF370C2FE58E5DA@AS4PR05MB9517.eurprd05.prod.outlook.com> <AS4PR05MB9517E7861276E2EB4D527DAF8E35A@AS4PR05MB9517.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS4PR05MB9517E7861276E2EB4D527DAF8E35A@AS4PR05MB9517.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 2030,
+      "chunk_index": 0,
+      "chunk_size": 2029,
+      "metadata": {
+        "doc_id": "CSVZOI8 - employee goals & goal audit review\\Headers\\CSVZOI8_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CSVZOI8 - employee goals & goal audit review\\Headers\\CSVZOI8_01.txt"
+      }
+    },
+    {
+      "text": "ook.com>\nIn-Reply-To: <AS4PR05MB9517E7861276E2EB4D527DAF8E35A@AS4PR05MB9517.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: PAXPR05MB8317:EE_|GVXPR05MB11851:EE_\nx-ms-office365-filtering-correlation-id: 1cc28a4a-0740-433f-bb42-08dddb256b3c\nx-ms-exchange-atpmessageproperties: SA\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|39142699007|31052699007|8096899003|4013099003|13003099007|7053199007|41050700001;\nx-microsoft-antispam-message-info: ONr6fH2TO5Fdu/fmUZ22ODAzPqERjORcIvxBDVeSenKjma9M5O/SuyIh/TcCfbssOAE7vv7k45lgIaRwT+AFQ7Oni2+/2k1EjiD+1W5Y8jht/Xee7XoRM2JLQi6JZSMW+BKdQnGt6Oboj7Ln33hXBxuvZyLb3KnS8WopfpjILevtTm2dZTbzrAoAIBlyfxIGcY0DM7shupM1z2ATQrSdRLkdA5EZjeGp54Dgkjpt+r+M7daI7ukPL+J6PcCkBX5/tl9qzZp5mSLfpk/UEdZb57sZ53Gmnmvg15yDfONqI5XvyvHfAeaDwfRIAqOZ60Oo+N0sXDR/kGHeHtnNtbFpUc+Q/zVzUINYV5BwD2UOKk7oZ/T/gemGFfdUt1yqZ/LQSLXWzjJPasasujin1cjdsTDD3PAhyTvHqUeRHz71Px6mYR7n8tW9sXPlPumSReDbJZRWG3kvGgxnjxoxl9T+XCJ+e9OnuhT6qc65B+rp02z7TDHJdXe3XjYUwbqRZWQWcPGPiu5EyyKTS8pqsh3GQjMN29Q5z+QdX1tiMJvkS9MxtTsXKgWBwmPLW+kmdFK60wubMST1dex9ZT5l6kJ12E/+4x3Mb2071pYYGvsrk6/YF1g2zbq8QdQYpE62JW21DCn+PUdmwPVX8VxehC/aEk3n7auhn4L6HpB9UefRZX6HRkzQzEEDGE8Zd0dLWSGUN4YdbuG+OwsHU27l4Vwyfk0RnNsvWmfYE/NzJ1zE3uPfrl/U0yTXe9PDXD5eSdKRnfRsQ30GVk/LrVX/IU4DWA==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR05MB8317.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(39142699007)(31052699007)(8096899003)(4013099003)(13003099007)(7053199007)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_018_PAXPR05MB8317C392F16C11BE951AD9E19D35APAXPR05MB8317eurp_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: vIjaTF9ytng+SXkfZ6+ahBx2Bi9kEF1BqtNo4pevLxBFaR02eiFSGS5EBmQgv/Os+wgVw+uN4Ndi8Fr7C3TscNhoA7I6V5O+eeH4qxj5m97a8TBHxF7b8W8WguHpgvDNzM3yjYvqGpNePyx1lvmF7QCx+DFZPsSbyDC/zDsW7Q+6xtPVLoje+6uiV/UqvIYo2aaJIOR/Z/hclCX+It9RbkoqeSuA+4R7fVG7AArYyZg1M0bWvdOEEzfsm+wxeKKbGN6mpJDimarn+91LGFqxRaZDXnDV/lvCfZF+W5zK6UAGZ6bFpOE/ZbXsHHDOoaB2OE/Jut6UiNKztBzRqZ/HNMxXKR4KHz4H+sfxePbucMGPbLWUptiOYfTXgf/IOqtLS6nikFMMhM6urSmO629MDTgoHuTgy7PP4nKS/r07CdYpwppvY6edr1Y02CJjOuQLPJuhjtlJLIiL/AT2iZwbYQNS8p6xc1BbZKcGPSv31VJv1SjdOBgLqlF4iOoVbUF8VpAZhrrR+uB+egzO29n5ZqGn7CSSlq/UIMhZBjrLV32KigO29pfXo/TxminxXOgYnvTlzzMhzruKEBTfp5gltnmaS9XinHqtEZY00X9DVTU3+IQv55uVsn669kYVCNEx\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: PAXPR05MB8317.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 1cc28a4a-0740-433f-bb42-08dddb256b3c\nX-MS-Exchange-CrossTenant-originalarrivaltime: 14 Aug 2025 11:26:31.5425 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: Zn27dS3C1FPlciRjmjH1HNIjYOI0RKJZIqEZMDsbdGYgc9sz8hL0SmOI828LbgbviI/stfqkTIrc8JHVpBemQorqCLue4ig/bQwA1OXHL9s=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: GVXPR05MB11851\nX-OrganizationHeadersPreserved: GVXPR05MB11851.eurprd05.prod.outlook.com",
+      "start_pos": 1830,
+      "end_pos": 5273,
+      "chunk_index": 1,
+      "chunk_size": 3443,
+      "metadata": {
+        "doc_id": "CSVZOI8 - employee goals & goal audit review\\Headers\\CSVZOI8_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CSVZOI8 - employee goals & goal audit review\\Headers\\CSVZOI8_01.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:29.756041",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5316
+  }
+}

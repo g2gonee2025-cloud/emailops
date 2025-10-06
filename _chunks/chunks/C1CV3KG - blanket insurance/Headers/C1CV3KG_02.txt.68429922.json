@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1CV3KG - blanket insurance\\Headers\\C1CV3KG_02.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1CV3KG - blanket insurance\\Headers\\C1CV3KG_02.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from DU4PR05MB11790.eurprd05.prod.outlook.com (2603:10a6:10:5d8::22) by AS4PR05MB9522.eurprd05.prod.outlook.com (2603:10a6:20b:4f8::11) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9137.14; Thu, 18 Sep 2025 16:34:42 +0000\nReceived: from DU4PR05MB11790.eurprd05.prod.outlook.com ([fe80::e061:cd4a:54bd:13a8]) by DU4PR05MB11790.eurprd05.prod.outlook.com ([fe80::e061:cd4a:54bd:13a8%3]) with mapi id 15.20.9137.012; Thu, 18 Sep 2025 16:34:42 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Muller Karas <Muller.Karas@chalhoub.com>\nCC: Vincent D'Cunha <Vincent.DCunha@chalhoub.com>, HC-Logistics Warehouse <HC-LogisticsWarehouse@chalhoub.com>, HC - LastMileKwt Support <HC-LastMileKwtSupport@chalhoub.com>, Sara Kamil Nazir Karous <Sara.Karous@chalhoub.com>, Nour Sibai <Nour.Sibai@chalhoub.com>, Kavita Bhandari <Kavita.Bhandari@chalhoub.com>, Aswathy Vijayan <Aswathy.Vijayan@chalhoub.com>, Savio Fernandes <Savio.Fernandes@chalhoub.com>, Arun Nelson Rosario <Arun.Rosario@chalhoub.com>, Abdul Karim <Abdul.Karim@chalhoub.com>\nSubject: Re: Blanket Insurance\nThread-Topic: Blanket Insurance\nThread-Index: AdwjH/bs2MY9IsUlRdCRvYm/lSxZbQDu6mzwAAb5OsAAAIiwIAABiBmgAF27ssAAEKd/sA==\nDate: Thu, 18 Sep 2025 16:34:42 +0000\nMessage-ID: <DU4PR05MB11790F17506E37F5C7BC0D6179D16A@DU4PR05MB11790.eurprd05.prod.outlook.com>\nReferences: <SA0PR05MB7356F3ACA3CB8B8C5A4695DB9909A@SA0PR05MB7356.namprd05.prod.outlook.com> <AM7PR05MB682353A80992F05A880B0BF99D14A@AM7PR05MB6823.eurprd05.prod.outlook.com> <AS8PR05MB99300FA72C4D189182E35608FB14A@AS8PR05MB9930.eurprd05.prod.outlook.com> <GV2PR05MB105264844B67F7CEA52283D15E814A@GV2PR05MB10526.eurprd05.prod.outlook.com> <AM7PR05MB6913F222B8D3FB72F3A191FC8E14A@AM7PR05MB6913.eurprd05.prod.outlook.com> <GV2PR05MB10526DAB5572AD0E09742D98AE816A@GV2PR05MB10526.eurprd05.prod.outlook.com>\nIn-Reply-To: <GV2PR05MB10526DAB5572AD0E09742D98AE816A@GV2PR05MB10526.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 2082,
+      "chunk_index": 0,
+      "chunk_size": 2081,
+      "metadata": {
+        "doc_id": "C1CV3KG - blanket insurance\\Headers\\C1CV3KG_02.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1CV3KG - blanket insurance\\Headers\\C1CV3KG_02.txt"
+      }
+    },
+    {
+      "text": "k.com>\nIn-Reply-To: <GV2PR05MB10526DAB5572AD0E09742D98AE816A@GV2PR05MB10526.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: DU4PR05MB11790:EE_|AS4PR05MB9522:EE_\nx-ms-office365-filtering-correlation-id: 78fd98df-770b-42e9-f91b-08ddf6d14530\nx-ms-exchange-atpmessageproperties: SA\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|39142699007|31052699007|7053199007|4013099003|13003099007|8096899003|41050700001;\nx-microsoft-antispam-message-info: WQ4daDT+bCBkvOTvLm+KbcZ2GAbaS1W/Yq6j3nlSNgIltmUAP0lg21PKg1VHKI52gWMZrvm3K6e2YUJPLeVtCsGq2CuadSgwlOYNFk8ZJhWG2SLExNwSgm3wgXw15zwB2q2YFUfAq9vBh8ZJ8zrJ0fpbC3ABkbZN30nbqpA7OJWwXhqfJlMHXhuRtBSf2D6M9d2FPNXZXUqJzySZzckhqMJP8BbgXQWcBUwWTGBzay445c3gFa9UOIBYWGSSSGniea5cA6mz/MrvwPRR/hU8L1mOUXZdJ8+6LZ/tXDSB8feFuCaVPTnWzKffcBfx+ZW1Eve/roxz8+jC115MJo3jg6AGUWoekQ97sxlr0EYDVd8nHxBmAL6cs0GIWvFQBgC7jKiLEsfXbV2mHNOWfJg79sAP9/7Q+i09/pFa8ugUCwfFd/U6ZOSEYxpJ1tM6398oYmP3bp7lG0beIcXwaFLryR9G84YufoUSXVBIVurq1OiyYEEL+Wv4/0ZFE8baQsOAs5xf0krMTdCQuiZ098XIt+YZtD5jlkfpAha90RpNvD5/Q/9dr3fmvfIKQQKR8sdcxu9FsvU3jNpEu0p7j8dFrZLCyN6hbf6AZMeuKMOLHA2u/tWj+McATudxqf/v23rdkLkk9uaflsIySPIP0mGHEsFbnRGo26V7/ncvh0lDGPvzkzNCY6OoQkxjfnkJFwej04o/DrnNeP74lzvim4TV3eFw0BHQ17GaB4hyv3V0+HIyeaWuk7u18MLYnBbCGmMx\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DU4PR05MB11790.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(39142699007)(31052699007)(7053199007)(4013099003)(13003099007)(8096899003)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_017_DU4PR05MB11790F17506E37F5C7BC0D6179D16ADU4PR05MB11790eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-Auto-Response-Suppress: DR, OOF, AutoReply\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: 1y9762VSL5VwAGULgSxgatC1YrIEyHU9hbXblpZKzPir+FapQO+XzPDDaZ9XIN9NSwAyrEj4DBxuhu+/SSAr59tMU8lWbPgsxM/62sl6mMFXerIBJ366GzTvVlGUDMVF3xYM/kswtUM1Z8CnLLCpcJrQecIZranly74d1j4H1p1hWmBr1LDGpYgPuONuDww70rXUh+QtOu8FLJtuvtUkYsMfws7vo3FiRl1YuFs1PvzoJHQOlNmHFtJhPuglaZaItbHWb2vJhsx6qCP2h0xODnaAebcDOHrAxdBZd9xYqo1F12jx/a34qD2TeMlZouT0t37HhCk6A3qZATGtJdHGa5WYd3TV4Y9IZZ18EGdcAFAu05iJ+Li6qCXlnICG0aUHf8VkpbFI+HaL1AaLhSPFUbDibBtcIiJe61aDmXunwbIf3GAy/RmnFWKGm5zRk+khYpKXAYs+rLVqGjO22ldXvURG2Ii/B7S9mLlGZ10zx+N3k31xU1P+i5YS9qHkQKsLuNVEMF3z2OXbc03RN3EqesHeF8Dech/Vq7ixZh1Z+ln30m98BL+PJ21RXCcP4AlbmMNY3pB4+o1y131DV3sHVLDw6CCAYNkcBULAt0SwhDWLzdTkgXbLmJyZLOOFWELp\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: DU4PR05MB11790.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 78fd98df-770b-42e9-f91b-08ddf6d14530\nX-MS-Exchange-CrossTenant-originalarrivaltime: 18 Sep 2025 16:34:42.5478 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: qdY8WKJA1JIROy2HyBhFm397SEnuUgg9XeGuFxYxFiCSWwMnn+yZt32U35jgiPZidr1dH4XLri47N2Tv1sdkny47VwqhYqWJDAdILZ7M6Ac=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS4PR05MB9522\nX-OrganizationHeadersPreserved: AS4PR05MB9522.eurprd05.prod.outlook.com",
+      "start_pos": 1882,
+      "end_pos": 5346,
+      "chunk_index": 1,
+      "chunk_size": 3464,
+      "metadata": {
+        "doc_id": "C1CV3KG - blanket insurance\\Headers\\C1CV3KG_02.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1CV3KG - blanket insurance\\Headers\\C1CV3KG_02.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:47.208351",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5391
+  }
+}

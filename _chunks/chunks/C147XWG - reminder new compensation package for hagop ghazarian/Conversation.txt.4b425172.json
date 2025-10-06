@@ -1,0 +1,53 @@
+{
+  "doc_id": "C147XWG - reminder new compensation package for hagop ghazarian\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C147XWG - reminder new compensation package for hagop ghazarian\\Conversation.txt",
+  "num_chunks": 3,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:41:21\nFolder: C147XWG - reminder new compensation package for hagop ghazarian\nMessage Count: 1\n\n--------------------------------------------------\nID: C147XWG_00\nFrom: DocuSign EU System <dse@eumail.docusign.net>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-04-28 12:15\nSubject: Reminder: New Compensation Package for Hagop GHAZARIAN\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\t <https://docucdn-a.akamaihd.net/olive/images/2.62.0/global-assets/email-templates/email-logo.png> \t\n <https://eu.docusign.net/member/Images/email/docInvite-white.png> \nChalhoub Group HR sent you a document to review and sign. \t\nREVIEW DOCUMENT <https://url.uk.m.mimecastprotect.com/s/vVXQCQ5DEU3mk8vUxfAcGuI2s?domain=eu.docusign.net> \t\nChalhoub Group HR \nHi Hagop GHAZARIAN,\n\nCONGRATULATIONS!\n\nWe are pleased to inform you that following the recent salary review, your monthly salary has been revised.\n\nKindly click on the above 'Review Document' button to view and digitally sign your letter.\n\nYour HR Team\n\n\n\t\nDo Not Share This Email\nThis email contains a secure link to DocuSign. Please do not share this email, link, or access code with others.",
+      "start_pos": 0,
+      "end_pos": 1538,
+      "chunk_index": 0,
+      "chunk_size": 1538,
+      "metadata": {
+        "doc_id": "C147XWG - reminder new compensation package for hagop ghazarian\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C147XWG - reminder new compensation package for hagop ghazarian\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Kindly click on the above 'Review Document' button to view and digitally sign your letter.\n\nYour HR Team\n\n\n\t\nDo Not Share This Email\nThis email contains a secure link to DocuSign. Please do not share this email, link, or access code with others.\n\n\nAlternate Signing Method\nVisit DocuSign.com, click 'Access Documents', and enter the security code:\nC1F14368007B4F42BEDB2F2B8B8A3BD14 \n\nAbout DocuSign\nSign documents electronically in just minutes. It's safe, secure, and legally binding. Whether you're in an office, at home, on-the-go -- or even across the globe -- DocuSign provides a professional trusted solution for Digital Transaction Management™. \n\nQuestions about the Document?\nIf you need to modify the document or have questions about the details in the document, please reach out to the sender by emailing them directly.\n\nStop receiving this email\nReport this email <https://url.uk.m.mimecastprotect.com/s/eciACR5EGUR8vJ4tNhpc19DRf?domain=protect.docusign.net>  or read more about Declining to sign <https://url.uk.m.mimecastprotect.com/s/bDf4CWjMNUPv52rins8coE-jU?domain=support.docusign.com>  and Managing notifications <https://url.uk.m.mimecastprotect.com/s/Nb3tCXkNOSq3X1Etmt1cWSdAy?domain=support.docusign.com> .\n\nIf you are having trouble signing the document, please visit the Help with Signing <https://url.uk.m.mimecastprotect.com/s/J3LNCV0LMU51x7qtyi3cEZUzo?domain=support.docusign.com>  page on our Support Center <https://url.uk.m.mimecastprotect.com/s/nrj4CYlOPUNPLQVuZu0cxD6pf?domain=docusign.com> .",
+      "start_pos": 1293,
+      "end_pos": 2816,
+      "chunk_index": 1,
+      "chunk_size": 1523,
+      "metadata": {
+        "doc_id": "C147XWG - reminder new compensation package for hagop ghazarian\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C147XWG - reminder new compensation package for hagop ghazarian\\Conversation.txt"
+      }
+    },
+    {
+      "text": "If you are having trouble signing the document, please visit the Help with Signing <https://url.uk.m.mimecastprotect.com/s/J3LNCV0LMU51x7qtyi3cEZUzo?domain=support.docusign.com>  page on our Support Center <https://url.uk.m.mimecastprotect.com/s/nrj4CYlOPUNPLQVuZu0cxD6pf?domain=docusign.com> .\n\n\n\nDownload the DocuSign App <https://url.uk.m.mimecastprotect.com/s/0xQaCZmPQtDy5EKUXC4cB88TA?domain=docusign.com> \n\nThis message was sent to you by Chalhoub Group HR who is using the DocuSign Electronic Signature Service. If you would rather not receive email from this sender you may contact the sender with your request.",
+      "start_pos": 2522,
+      "end_pos": 3141,
+      "chunk_index": 2,
+      "chunk_size": 619,
+      "metadata": {
+        "doc_id": "C147XWG - reminder new compensation package for hagop ghazarian\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C147XWG - reminder new compensation package for hagop ghazarian\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:04.486277",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 3316
+  }
+}

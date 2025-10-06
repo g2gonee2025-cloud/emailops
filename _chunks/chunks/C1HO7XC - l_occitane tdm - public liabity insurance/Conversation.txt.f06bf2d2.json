@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1HO7XC - l'occitane tdm - public liabity insurance\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1HO7XC - l'occitane tdm - public liabity insurance\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:40:48\nFolder: C1HO7XC - l'occitane tdm - public liabity insurance\nMessage Count: 1\n\n--------------------------------------------------\nID: C1HO7XC_00\nFrom: Marina Larisa <Marina.Larisa@tarzlifestyle.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Salwa Al Mamari <Salwa.Almamari@chalhoub.com>\nBCC: \nDate: 2025-05-06 17:35\nSubject: L'occitane TDM - public Liabity Insurance \n--------------------------------------------------\nDear Hagop, \n\n \n\nAppreciate if you could please share the Public Liability insurance for L’occitane TDM . Please treat this request as urgent . \n\n \n\nThank you & best regards,\n\nMarina",
+      "start_pos": 0,
+      "end_pos": 698,
+      "chunk_index": 0,
+      "chunk_size": 698,
+      "metadata": {
+        "doc_id": "C1HO7XC - l'occitane tdm - public liabity insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1HO7XC - l'occitane tdm - public liabity insurance\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:29.492923",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 734
+  }
+}

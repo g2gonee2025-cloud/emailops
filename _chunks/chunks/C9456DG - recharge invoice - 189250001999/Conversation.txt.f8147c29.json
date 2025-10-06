@@ -1,0 +1,31 @@
+{
+  "doc_id": "C9456DG - recharge invoice - 189250001999\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C9456DG - recharge invoice - 189250001999\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:30:30\nFolder: C9456DG - recharge invoice - 189250001999\nMessage Count: 1\n\n--------------------------------------------------\nID: C9456DG_00\nFrom: recharge-invoices@chalhoub.com <recharge-invoices@chalhoub.com>\nTo: Abdelrahman Abusabah <Abdelrahman.Abusabah@chalhoub.com>; Ahmed Moselhi <Ahmed.Moselhi@chalhoub.com>; Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>; Khaled Abdel Aziz <Khaled.M.Abdelaziz@chalhoub.com>; Osama Abbas <Osama.Abbas@chalhoub.com>; Wael Zaky\nCC: Bader Abdallah <Bader.Abdallah@chalhoub.com>; REAL UAE Accounting - Receivable <REALUAEAccounting-Receivable@chalhoub.com>; REAL UAE Accounting - Receivable <REALUAEAccounting-Receivable@chalhoub.com>; Rama Abukhalil <rama.abukhalil@chalhoub.com>; Hasnain Iqbal <Hasnain.Iqbal@ae.diormail.com>\nBCC: \nDate: 2025-07-09 16:24\nSubject: Recharge Invoice - 189250001999\n--------------------------------------------------\nHello \n\nRecharge of amount USD 37.5 has been raised from C.G.R. FZE to MAC FOR PROMOTING COMMERCIAL BUSINESS WLL for the supplier: DHL WORLDWIDE EXPRESS, invoice number: ZJFR002604276. \n\nPlease find attached the recharge invoice for your booking and payment reference. \n\nWe shall greatly appreciate your kind attention to this matter. \n\n\n*** This is a system generated email, please do not reply ***",
+      "start_pos": 0,
+      "end_pos": 1364,
+      "chunk_index": 0,
+      "chunk_size": 1364,
+      "metadata": {
+        "doc_id": "C9456DG - recharge invoice - 189250001999\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C9456DG - recharge invoice - 189250001999\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:09.423878",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1396
+  }
+}

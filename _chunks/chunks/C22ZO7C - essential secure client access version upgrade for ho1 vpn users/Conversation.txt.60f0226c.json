@@ -1,0 +1,31 @@
+{
+  "doc_id": "C22ZO7C - essential secure client access version upgrade for ho1 vpn users\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C22ZO7C - essential secure client access version upgrade for ho1 vpn users\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:36:09\nFolder: C22ZO7C - essential secure client access version upgrade for ho1 vpn users\nMessage Count: 1\n\n--------------------------------------------------\nID: C22ZO7C_00\nFrom: One Reach <OneReach@chalhoub.com>\nTo: \nCC: \nBCC: \nDate: 2025-05-14 13:48\nSubject: Essential Secure Client Access Version Upgrade for HO1 VPN Users\n--------------------------------------------------\n \n\n <https://onereach.status.freshservice.com/> \n\n \n\nDear Colleague, \n\n \n\nPlease note that essential maintenance has been scheduled for the HO1 Ivanti Secure VPN.\n\nAs a result, Users will receive Secure Access Client Version Upgrade prompt and user need to click on upgrade so Secure Access Client version will be upgraded automatically in backend later on Users can resume using VPN services.\n\n \n\nThis is non service Impacting Activity.\n\n \n\nMaintenance start time: Wednesday, May 14, 2025, | 02:00 PM GST\n\nMaintenance end time: Wednesday, May 14, 2025, | 03:00 PM GST\n\n\nWe appreciate your patience and cooperation as we work to enhance your experience with our services.\n\n\nFor support during this period, please raise a ticket via OneReach. You can also check real-time status updates via the Tech&Data System Status & Health <https://onereach.status.freshservice.com/>  Dashboard.\n\n \n\n \n\n \n\nThis mail was sent to you by\n\n <https://onereach.chalhoub.com/support/home>",
+      "start_pos": 0,
+      "end_pos": 1424,
+      "chunk_index": 0,
+      "chunk_size": 1424,
+      "metadata": {
+        "doc_id": "C22ZO7C - essential secure client access version upgrade for ho1 vpn users\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C22ZO7C - essential secure client access version upgrade for ho1 vpn users\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:01.121584",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1492
+  }
+}

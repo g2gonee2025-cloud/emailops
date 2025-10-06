@@ -1,0 +1,31 @@
+{
+  "doc_id": "CIG3EWG - nio et5 insurance\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CIG3EWG - nio et5 insurance\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:33:19\nFolder: CIG3EWG - nio et5 insurance\nMessage Count: 1\n\n--------------------------------------------------\nID: CIG3EWG_00\nFrom: Jackie Merchant <jmerchant@ev-lab.io>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Kevin Chalhoub <Kevin.Chalhoub@chalhoub.com>; Saadeddine Elnakib <selnakib@ev-lab.io>\nBCC: \nDate: 2025-06-25 16:34\nSubject: NIO ET5 Insurance\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\nDear Hagop,\n\nAs discussed, the NIO ET5 insurance certificate will be shared either this evening or tomorrow. The insurance rates will be confirmed later. \n\n@Kevin Chalhoub <mailto:Kevin.Chalhoub@chalhoub.com>  Could you confirm if this arrangement works for you?\n\nIn the meantime, please provide Liva Insurance with the required documents as mentioned below so they can prepare a quotation for us: \n\n*\tLast 3 years’ loss report from GIG\n*\tFleet details\n\n\n\nBest regards,\nJackie Merchant\nEV Leasing & Rental\n+971 58 541 4500\nBuilding 6, The Greenhouse\nDubai Design District\nDubai, UAE",
+      "start_pos": 0,
+      "end_pos": 1375,
+      "chunk_index": 0,
+      "chunk_size": 1375,
+      "metadata": {
+        "doc_id": "CIG3EWG - nio et5 insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CIG3EWG - nio et5 insurance\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:01.018452",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1524
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "doc_id": "CEYXSPC - allied enterprises l.l.c. to real emirates llc aed\\Headers\\CEYXSPC_02.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CEYXSPC - allied enterprises l.l.c. to real emirates llc aed\\Headers\\CEYXSPC_02.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by DB9PR05MB8315.eurprd05.prod.outlook.com (2603:10a6:10:251::10) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8632.19; Thu, 10 Apr 2025 12:12:51 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%2]) with mapi id 15.20.8632.017; Thu, 10 Apr 2025 12:12:51 +0000\nContent-Type: multipart/mixed; boundary=\"_000_AS8PR05MB108240A325249995EFBFF718E9DB72AS8PR05MB10824eu_\"\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Vivek Bhosle <Vivek.Bhosle@chalhoub.com>\nCC: Clive Godinho <Clive.Godinho@thedealoutlet.com>, Ajeesh Ramachandran <Ajeesh.Ramachandran@chalhoub.com>, Rukshad Doomasia <Rukshad.Doomasia@chalhoub.com>, Jerome Curtis <Jerome.Curtis@chalhoub.com>, Praveen Kamalakshan <Praveen.Kamalakshan@chalhoub.com>, Sherit PETER <Sherit.Peter@chalhoub.com>\nSubject: Re: ALLIED ENTERPRISES L.L.C.\tTo REAL EMIRATES LLC AED\nThread-Topic: ALLIED ENTERPRISES L.L.C.\tTo REAL EMIRATES LLC AED\nThread-Index: AdseOfLqH1GBDZRET7+1zVpA1mKfShcj+mCwBk5yf3AAAPXrwAGIO0KAAM5Wb+AAN7IwwAAAQuNwAY5S0gABZXueYg==\nDate: Thu, 10 Apr 2025 12:12:51 +0000\nMessage-ID: <AS8PR05MB108240A325249995EFBFF718E9DB72@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <DU2PR05MB87916483AFB10296D6E298D588442@DU2PR05MB8791.eurprd05.prod.outlook.com> <DU2PR05MB8791798737BE1BF0940C2E4188F32@DU2PR05MB8791.eurprd05.prod.outlook.com> <DU2PR05MB8791DED699F2E116F2D59DA688D32@DU2PR05MB8791.eurprd05.prod.outlook.com> <AS8PR05MB83922AC4CAAD196A51A488B2F5D32@AS8PR05MB8392.eurprd05.prod.outlook.com> <AS8PR05MB8392C40999239B2CF4B38FA4F5DB2@AS8PR05MB8392.eurprd05.prod.outlook.com> <AS8PR05MB83925F302F9DF260E927B28CF5A72@AS8PR05MB8392.eurprd05.prod.outlook.com> <DB5PR05MB10832C9D83C71A302029B9D4DEAA62@DB5PR05MB10832.eurprd05.prod.outlook.com> <AS8PR05MB83923D22EE1D1E5F8BBF9D2DF5A62@AS8PR05MB8392.eurprd05.prod.outlook.com> <AS8PR05MB83920C210EDF770FA63CC264F5AE2@AS8PR05MB8392.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB83920C210EDF770FA63CC264F5AE2@AS8PR05MB8392.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator: <AS8PR05MB108240A325249995EFBFF718E9DB72@AS8PR05MB10824.eurprd05.prod.outlook.com>\nmsip_labels:",
+      "start_pos": 0,
+      "end_pos": 2408,
+      "chunk_index": 0,
+      "chunk_size": 2407,
+      "metadata": {
+        "doc_id": "CEYXSPC - allied enterprises l.l.c. to real emirates llc aed\\Headers\\CEYXSPC_02.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CEYXSPC - allied enterprises l.l.c. to real emirates llc aed\\Headers\\CEYXSPC_02.txt"
+      }
+    },
+    {
+      "text": "k.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator: <AS8PR05MB108240A325249995EFBFF718E9DB72@AS8PR05MB10824.eurprd05.prod.outlook.com>\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|DB9PR05MB8315:EE_\nx-ms-office365-filtering-correlation-id: 40d2545c-9e2a-4aba-f7ed-08dd782903e8\nx-ms-exchange-atpmessageproperties: SA\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|31052699007|39142699007|7053199007|4013099003|13003099007|8096899003|41050700001;\nx-microsoft-antispam-message-info: M9471XBghrdV8F5nc2u/jG8v0gZ/5z/+KvT7A6kfHpkX1MeaCZ42g8Q7ipdNw1+X/z3BlGlk6JoaTa1SutkD2jl+CBieXsU81bcntcRqRHtND0G3XL7sxBLpu+FxAQvcUMY7DqqFY/hXF+olUCj1CWcyUFkmSqYeVjx/hcAcPWlP3NkrAxq4PBPDLjLYu9GGAiF/9WAILKNr3XgdoSm/gWQ0IN+fzmq0LRH9ZVMfS7ParoVZOkF9hP5NswsYDI7qCj/wiCDt/35S3nP5I+dqXeeVmbi540rASlxmGrgtrnrV4oxtOHhYfL2GMGU9UzojvwNLZmxZ23vEBjYeWuwNZFoHOT5Q6vNrc4bFz+H8U0pt2D8xAhnr/HvO5tZObCd7mPvtWR8hDd2tJJr0qK+oDtbqQDC3FW8ANfzAEHDc3qUtbNsGynwKp7k+ag3LoLOaIMEFMR0PP6vElmu2DZCbWAgkhkGgvOcNa64gOZRVEwguLPs6QD4NsVymuaCdi+5qYY39+J8Z2AfHN343McEmUv50DA7zHXF0fws09sa1xa7Uz42H91/jWt0vxzpP+RLmbfXODOwVl1qnEU2zWZOBi3op1/2e/gogPoubchqcwNL43NKwgzy+F5suS9aDJ9amf1OoIVHk+o8P/hnyI0FKuuA88xSNCUUDv0B+SeZ88gAjd9Ckaaqw/cWLF7TRc5tfc9n2XEKqVMjvJDr/kxECGhHiXegcBApxjUZXO2qON7zWnJwBovcKYmWAZvNOvE5Q\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(31052699007)(39142699007)(7053199007)(4013099003)(13003099007)(8096899003)(41050700001);DIR:INT;\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: LIWEQ855vYNyDDXYJoSxhI6WearQWEMnukKIF6uvjKxFIkVI4OEqHOpJu3k0Fxt1cLxOocQUqLJqO2chz19DyHkuBv89ADsuPWfHl74nTU1eAbUAuWIv4emRNQD3bcPe4cNDZCcEejv7Z0XbbxPfGry+qqIGEJpTeqiIIG8oNAtOMr74VRyqRjcFlLBmARisYisx/B4ZydDiGXIOOaZuvC8t8wlwCpN+oxRa6ziA7ISU4DfeqfZc7HqJAMvHoUO7ufFTrPCeohZnsOZG+8E3dq5lbAiufgPP0saWqppjqqsTBCq4PjSZMTQ98FE2Qn7o4Clx2KoM8ZqOeYiHmID1O+F5cDAvLxBpuQ2isBVVzNPH0dgwR9em/5kFsp55A7bx5x30WXiwz8fFjJtns6VTXymV29g4GFQLHqrenfPQguVBXFahpI9INCDn/IJYhpMLZq7MoFiak9Cnx8/qJHzpfTDPLPcD8usQYnFy+SWoL6tdmCOnFFDEmIB02UV4x0cb7w/Iw8hrqAFjukl0rcgBSBUXbZpbbf9CYpdmVGvqz+hVbETON6vkgx4LLqRfpnk/zjIeL2fPpBBMBEdIx3h8erpV2h7+XMoVpsHC8jQX8/FZ8k28s/Wi06qqgHFVv95u\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 40d2545c-9e2a-4aba-f7ed-08dd782903e8\nX-MS-Exchange-CrossTenant-originalarrivaltime: 10 Apr 2025 12:12:51.0962 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: 7oXatTa8OZxxT60vaFwlsEs0dY6kX4tao+zOTKAhVXvZ73DmbhFoDMqQd1M6gWcaj5e0xUIw+hAqQVzmrlD6/rLQXc8/2m+bXDRPkvtFnes=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: DB9PR05MB8315\nX-OrganizationHeadersPreserved: DB9PR05MB8315.eurprd05.prod.outlook.com",
+      "start_pos": 2208,
+      "end_pos": 5478,
+      "chunk_index": 1,
+      "chunk_size": 3270,
+      "metadata": {
+        "doc_id": "CEYXSPC - allied enterprises l.l.c. to real emirates llc aed\\Headers\\CEYXSPC_02.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CEYXSPC - allied enterprises l.l.c. to real emirates llc aed\\Headers\\CEYXSPC_02.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:29.033391",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5522
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "doc_id": "C17WSQE - uae villari incident report\\Headers\\C17WSQE_04.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C17WSQE - uae villari incident report\\Headers\\C17WSQE_04.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from PA2PR05MB11530.eurprd05.prod.outlook.com (::1) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Thu, 10 Jul 2025 14:15:59 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from AS2PR05MB9814.eurprd05.prod.outlook.com (2603:10a6:20b:5f1::6) by PA2PR05MB11530.eurprd05.prod.outlook.com (2603:10a6:102:404::8) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8901.26; Thu, 10 Jul 2025 14:15:58 +0000\nReceived: from AS2PR05MB9814.eurprd05.prod.outlook.com ([::1]) by AS2PR05MB9814.eurprd05.prod.outlook.com ([fe80::ab06:b747:d0f1:6413%5]) with Microsoft SMTP Server id 15.20.8901.028; Thu, 10 Jul 2025 14:15:58 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Rekha Sujay <Rekha.Sujay@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: UAE : Villari Incident Report\nThread-Topic: UAE : Villari Incident Report\nThread-Index: AdqjeVKXporDkU9jSjCmQTc105JXWQAAHXlQAP/pLbAABIj9gAC7JQRAAAd92IAAAD2G4AHS6CTAAB5CF6AANQIr8ApA6gEAO6+mSRAJq8kVgAAA24LSAAAkH08=\nReferences: <AM6PR05MB6215089185FC92BD1B98DDF99FE02@AM6PR05MB6215.eurprd05.prod.outlook.com> <AM9PR05MB76048ADD1E4BA0123BB475DAF3E02@AM9PR05MB7604.eurprd05.prod.outlook.com> <AM9PR05MB7604299BF7B45870056BF9ABF3ED2@AM9PR05MB7604.eurprd05.prod.outlook.com> <DU0PR05MB10219932BB234EE42678E9AF59BED2@DU0PR05MB10219.eurprd05.prod.outlook.com> <DU0PR05MB102194FCA9551911EC14A705D9BE92@DU0PR05MB10219.eurprd05.prod.outlook.com> <AS8PR05MB108246ED9E2F7CEDFD112B7E99DE92@AS8PR05MB10824.eurprd05.prod.outlook.com> <DU0PR05MB10219EB5B667DBC91E5E5D2BD9BE92@DU0PR05MB10219.eurprd05.prod.outlook.com> <DU0PR05MB102197768EBBC32188130F9759BF22@DU0PR05MB10219.eurprd05.prod.outlook.com> <AS4PR10MB5598B9848BFB5CA94F80BC31D0F32@AS4PR10MB5598.EURPRD10.PROD.OUTLOOK.COM> <DU0PR05MB1021954FADA0512C9380798119BFC2@DU0PR05MB10219.eurprd05.prod.outlook.com> <DU0PR05MB102198C1C618E8FC84365E1C49BA82@DU0PR05MB10219.eurprd05.prod.outlook.com> <PA4PR05MB761562B57B618E5AAD15F62FF399A@PA4PR05MB7615.eurprd05.prod.outlook.com> <CAKKKc0D+3MHHao-MU6ZwEPrR-Atx79FCytA+wC-N=OyQceWtjA@mail.gmail.com> <AS8PR05MB108241E5177CADFC76B8F166B9D48A@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB108241E5177CADFC76B8F166B9D48A@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 2455,
+      "chunk_index": 0,
+      "chunk_size": 2454,
+      "metadata": {
+        "doc_id": "C17WSQE - uae villari incident report\\Headers\\C17WSQE_04.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C17WSQE - uae villari incident report\\Headers\\C17WSQE_04.txt"
+      }
+    },
+    {
+      "text": "om> <AS8PR05MB108241E5177CADFC76B8F166B9D48A@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB108241E5177CADFC76B8F166B9D48A@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Rekha.Sujay@chalhoub.com\nX-MS-TNEF-Correlator: 54ea36be-00fd-4cc8-89fe-ad7a400c35fe\nMIME-Version: 1.0\nDate: Thu, 10 Jul 2025 14:15:58 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: AS2PR05MB9814.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <97f5aa43de6a4e369473113c979b6eef@AS2PR05MB9814.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: 226e1435-fb0c-4999-5463-08ddbfbc4abd\nX-MS-Exchange-Parent-Message-Id: <AS8PR05MB108241E5177CADFC76B8F166B9D48A@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: AS2PR05MB9814:EE_|PA2PR05MB11530:EE_|AS8PR05MB10824:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 10 Jul 2025 14:15:58.6003 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: 226e1435-fb0c-4999-5463-08ddbfbc4abd\nX-MS-Exchange-AtpMessageProperties: SA\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS2PR05MB9814.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Jul 2025 14:15:58.4976 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: AS2PR05MB9814.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: 226e1435-fb0c-4999-5463-08ddbfbc4abd\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PA2PR05MB11530\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:00.9537791\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8901.023\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910005)(944506478)(944626604)(920097)(425001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: 4MJnRLEI0KF2u6l/XMcN/eWmHzQSNaHkfwIhhUcvkqa4jn9KsmEYSEskTfW8cmwJMZbJ9ngH19araSCe0QKCJw8aBDWk38P5C8KiIV9MFNLaXdtg+3/XZG2gyXrVCcYeDKOLTqyS/eYPP+yUHOF+UVRkfkbbOxz6V0rc/dBuH1cy25M9lhR7RMNnrqVzo0R/TFznqbhCbZlry0TTzAzFGHaDbMaJEFhfU0OOLBHGs9Ory/EgDSFqfjOzAHNuewQROV2IS3knJOuPhnhQXU52s5J56AQ+wH13np9j337Mfe6CTUl68R1HAc8OO4cFRhVe0GrG12o37qsq2ILahmRv3q4PVYvmzpgc9DGZDDAPSPCmB3+omN82oVXXjmPLUVYTU/oNwT+PR1RCKPJokNvLF+vZz+w6xN4ZP9IMWbXY17/itsEtM2qmxsDomh4pX51+x7Q3Fm4MU0aRD8ZA5EEMUDIgCkXFX5bzQ9CSncgXiMFrtdDQGXStfdEugbhiA0uqePLEM4LumbrkNhqfkDVZBVKGipOEElh74qc5pLaHF3Q7oEg/XO+Yo5UFNBTFEaJpT+X13XJ5obTGGgd8yQmQDaqsknJuh3lABAmdiwHNs8Bx2C4xk7pFJfefU7QsQxXFByX1/ZaYfy+400+gn0lvJg3x3OSskHYf880QKCkbWmzG0DBrEikauBd61s9cZSCJDb4PgmYiJEfLshO/6gn4gzMjm1yNiVpkbQ2ntElPK7Hb9D+njH1fwLJ+5DF2c9zmFdLC8QoTYITiu8Czywqvn0ad6GJMsY0dEGUmzhEn9gBVAMU0cnSF9I/vqLKq3y3aC4EDGfIryz9OoZ55gYbBXtnWtUJZi2fwBgFzMdjbq+nGGuMEq/Zcybs9I8JMiE+OtlrcsyIn3kQVhLSVdJAeCQ==",
+      "start_pos": 2255,
+      "end_pos": 5841,
+      "chunk_index": 1,
+      "chunk_size": 3586,
+      "metadata": {
+        "doc_id": "C17WSQE - uae villari incident report\\Headers\\C17WSQE_04.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C17WSQE - uae villari incident report\\Headers\\C17WSQE_04.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:42.333340",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5897
+  }
+}

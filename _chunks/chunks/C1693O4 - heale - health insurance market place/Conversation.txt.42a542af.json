@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1693O4 - heale - health insurance market place\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1693O4 - heale - health insurance market place\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 12:09:28\nFolder: C1693O4 - heale - health insurance market place\nMessage Count: 1\n\n--------------------------------------------------\nID: C1693O4_00\nFrom: Jules Angibeau <julesangibeau@gmail.com>\nTo: Ziad Sobh <Ziad.Sobh@chalhoub.com>; Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>; jules@heale.io <jules@heale.io>; hugo@heale.io <hugo@heale.io>\nCC: \nBCC: \nDate: 2024-09-26 15:15\nSubject: Heale - Health Insurance market place\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\nDear Hagop and Ziad,\n\nThank you both again for your time yesterday and your constructive feedback on Heale. These conversations are precious to us and allow us to enhance the way we are presenting our product.\n\n@Ziad, we look forward to continuing our conversation on our deck.\n\n@Hagop, it was encouraging to see your understanding of Heale's value, particularly regarding savings for the group and process simplification. We would greatly appreciate the opportunity to connect with your HR team to run some tests. We can come to the office at their convenience.\n\nLooking forward to hearing from you,\nHave a great afternoon,\n\nJules",
+      "start_pos": 0,
+      "end_pos": 1482,
+      "chunk_index": 0,
+      "chunk_size": 1482,
+      "metadata": {
+        "doc_id": "C1693O4 - heale - health insurance market place\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1693O4 - heale - health insurance market place\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:00.122783",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1621
+  }
+}

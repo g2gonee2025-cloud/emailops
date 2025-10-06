@@ -1,0 +1,42 @@
+{
+  "doc_id": "CIQH30S - infosys renewal - insurance provision\\Headers\\CIQH30S_03.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CIQH30S - infosys renewal - insurance provision\\Headers\\CIQH30S_03.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by DB9PR05MB7770.eurprd05.prod.outlook.com (2603:10a6:10:21a::10) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8813.22; Mon, 9 Jun 2025 11:50:59 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%5]) with mapi id 15.20.8813.020; Mon, 9 Jun 2025 11:50:59 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Faraz Hasan <Faraz.hasan@chalhoub.com>\nCC: David Smith <David.Smith@chalhoub.com>, Regi Punnoli <Regi.Punnoli@chalhoub.com>, Asfand Khan <Asfand.Khan@chalhoub.com>, Fernalyn Tosloc <Fernalyn.Tosloc@chalhoub.com>, Zain Manna <Zain.Manna@chalhoub.com>, Jacek Roszkowiak <Jacek.Roszkowiak@chalhoub.com>\nSubject: RE: Infosys Renewal - Insurance Provision\nThread-Topic: Infosys Renewal - Insurance Provision\nThread-Index: AQHb0WL0Mo2e6ML5HEa6RVqhLw9TsbPxNn3rgAGVvWuAB/oCEA==\nDate: Mon, 9 Jun 2025 11:50:59 +0000\nMessage-ID: <AS8PR05MB10824BCEE7E9E54B84A7F82469D6BA@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <PAWPR05MB10669A32FD7B081F10CD294049661A@PAWPR05MB10669.eurprd05.prod.outlook.com> <PAWPR05MB106697E616D859C83DACE0FED966DA@PAWPR05MB10669.eurprd05.prod.outlook.com> <PAWPR05MB1066915A2108F1BC1EDFB5873966CA@PAWPR05MB10669.eurprd05.prod.outlook.com>\nIn-Reply-To: <PAWPR05MB1066915A2108F1BC1EDFB5873966CA@PAWPR05MB10669.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 1618,
+      "chunk_index": 0,
+      "chunk_size": 1617,
+      "metadata": {
+        "doc_id": "CIQH30S - infosys renewal - insurance provision\\Headers\\CIQH30S_03.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CIQH30S - infosys renewal - insurance provision\\Headers\\CIQH30S_03.txt"
+      }
+    },
+    {
+      "text": "k.com>\nIn-Reply-To: <PAWPR05MB1066915A2108F1BC1EDFB5873966CA@PAWPR05MB10669.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|DB9PR05MB7770:EE_\nx-ms-office365-filtering-correlation-id: 166743d0-7b9d-4416-b271-08dda74be70b\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|4013099003|13003099007|8096899003|7053199007|41050700001;\nx-microsoft-antispam-message-info: 70X+aEcDi20wM5FLqnjn99hYlWs+4JQA9/qaEDvKUTQHFs7rgo8EmRjISySE9XN23PBXUWi6/kJvTpSy5hnxNX4kEdG7DR77mycfTqxn9noC6BpJA5dEL9mEXzpxNMrSSLRis5TjOBmk95zfKBUN8mYrA8lZfcpk5M7uvzXGKGCqz5Y1XIiMpEkz+2jrg2foPt7R0CEPjVu2ceSiW1htXvk6ZTuKIwOft7D0cBtRDlnJXUunXwqJsKe/xWd1B/aJ2b3HbnV7RKoisRiTbuDl02bNC8bg2CtQJTVikcp6WdmOGSDk68F40/zpvDbofwApgmoa0l0zQT15aqkAMPVRaDNzqOrerjKJYrzSRBnqSPY/zu/SAwh+ZZ4JNwhRE5P5Zo2aUBt9WsT7WCBb0WrnsdunN73+6XzQQOyxMiuEnzSCpgGVkUFgaZf5JQhMVIDVgZzlysX6eWoI727Oit8zC7240IRYJZKKPaTr6ksEtnuAUYNp7yeXMNe6UlOtEtdr6X3QnEA+nox8BZAKE1cycGsBbLPgoRKgT9jLPoYOcH2vQAlkfB7ujXrUPcDkVP3IjUyFYe9r43O6ruzVFm00t6zJ2j8vkzLSiyWRXjxqiDShZC56rn4W1rqK3bK3qI+KmpsmkxVLt6KOPyckkFQcAbeRbQRLqsyBf9uNTsiZUvfb/u94hxA8B1kJH0hZFgQGH35wPJCLnx+KH7xASQmuNTa0ex2djUfPBhILj5Mb9Fo=\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(4013099003)(13003099007)(8096899003)(7053199007)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_010_AS8PR05MB10824BCEE7E9E54B84A7F82469D6BAAS8PR05MB10824eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: wrYE67T8fLGRO3OA4OHnYW3wvtGieKNEci/dw2/lxHC+mdUZKZ60BwOzShn+04Cf036pM8tw9v2J5gXQF/P4Sj7ohruaX28PXMupltIiuXblODWtgc9rTknIRt4u7giczPKSaRJdlv48kOmnjDf1/JwT1SLOkw9vDj4ikKD4m9NtgiAn2ydqp8ZjfdmDVfqnWBofaSp2qUrV8ZL3O+7XzUNJRYxKikgiO3aCfbW4KUvGI6ooqqvg/HlA1Uf6oTuT6t3/RNRznshOogcmK95gVIYs/6cW6+O+bvc6fSGLmq9NwXn/3Bm/iH+FnQQWOfHhxrneqtvuDzXkz2xXhPbIhyb3poYWARQnEelBwTOZptlcBkUit2kSpickOzrg/EJHQlHhLVsOXWdt09RcPkZMF6r63MNlkq3TvQFfWhI8xwX41C7pOACoKwKbBVolHzWBLbMvZ23FQsJS5iByUbQqX6RiMorkEhJfaWRZ7VE2WqvnY7GIAKEh7ZDD/4QjNofpHGeR6hnsD/gfmFTeV//fG0fdRy+ad9ro118uLG7wZ3mr90E2Fhg4I+4ETAEogg0f3roVS9r2JN+sL1iumuY5dZfEuYykNXPyrxlMloiTh4Hf2lbGk/9pInNf7J6K2T0p\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 166743d0-7b9d-4416-b271-08dda74be70b\nX-MS-Exchange-CrossTenant-originalarrivaltime: 09 Jun 2025 11:50:59.6911 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: Z3az5Xy8ckBNWVs3nF/qSKY9ymCeYd5owrYHXkdZWdd2zj0W7BBYSTfZwPD2JWiEcRclyBKhLul4L6WaKMi3ZKAdvXcs/8/qjd0yoFL3TRU=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: DB9PR05MB7770\nX-OrganizationHeadersPreserved: DB9PR05MB7770.eurprd05.prod.outlook.com",
+      "start_pos": 1418,
+      "end_pos": 4728,
+      "chunk_index": 1,
+      "chunk_size": 3310,
+      "metadata": {
+        "doc_id": "CIQH30S - infosys renewal - insurance provision\\Headers\\CIQH30S_03.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CIQH30S - infosys renewal - insurance provision\\Headers\\CIQH30S_03.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:39.412332",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4771
+  }
+}

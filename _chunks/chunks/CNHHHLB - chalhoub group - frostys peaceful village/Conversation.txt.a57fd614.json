@@ -1,0 +1,31 @@
+{
+  "doc_id": "CNHHHLB - chalhoub group - frostys peaceful village\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CNHHHLB - chalhoub group - frostys peaceful village\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:52:33\nFolder: CNHHHLB - chalhoub group - frostys peaceful village\nMessage Count: 1\n\n--------------------------------------------------\nID: CNHHHLB_00\nFrom: postmaster@sqrevent.sqrneo.com <postmaster@sqrevent.sqrneo.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2024-12-11 13:10\nSubject: Chalhoub Group - Frostys Peaceful Village\n--------------------------------------------------\nJoin us together with your little ones at the Chalhoub Group - Frosty&#039;s Peaceful Village 2024\n\nDecember 14, 2024\n4:00 - 7:00 PM\nMadinat Arena at Madinat Jumeirah\n\nLimited Parking available at the venue, we recommend carpooling or taking a Taxi.\n\nEvent is by invitation only for Chalhoub Group employees, their spouses and their children (from 0 to 10 years old); The QR code gives access to 2 Adults only.\n\nThe QR CODE is individual by family (not to be shared) and can only be scanned once; Make sure to present a copy of your chalhoub ID along with the QR code at the entrance.",
+      "start_pos": 0,
+      "end_pos": 1070,
+      "chunk_index": 0,
+      "chunk_size": 1070,
+      "metadata": {
+        "doc_id": "CNHHHLB - chalhoub group - frostys peaceful village\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CNHHHLB - chalhoub group - frostys peaceful village\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:56.420570",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1102
+  }
+}

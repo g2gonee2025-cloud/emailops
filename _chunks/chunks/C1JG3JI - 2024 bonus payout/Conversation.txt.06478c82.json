@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1JG3JI - 2024 bonus payout\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JG3JI - 2024 bonus payout\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:41:54\nFolder: C1JG3JI - 2024 bonus payout\nMessage Count: 1\n\n--------------------------------------------------\nID: C1JG3JI_00\nFrom: People & Culture <GroupHR@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-04-24 19:09\nSubject: 2024 bonus payout\n--------------------------------------------------\n                                                            \n\n \n\n \n\nDear Hagop,\n\n \n\nPlease find below the details of the bonus payout that will be settled along with your April 2025 salary. \n\nBelow are the details of your 2024 bonus:\n\n \n\nYour total bonus entitlement for 2024 (before rating)\n\n37,200\n\nA\n\n \n\nFinal Score\n\n 96.8%\n\nB\n\n \n\nYour Full year bonus \n\n36,010\n\nC = A x B\n\n \n\nAdvance paid in December 2024\n\n13,020\n\nD\n\nWhat you will receive along with your April 2025 salary\n\n22,990\n\nF=C-D\n\n \n\n \n\nAll numbers are expressed in local currency AED\n\n \n\nNote that, where applicable, your yearly bonus entitlement takes into consideration any change impacting your basic salary and/ or your bonus entitlement (as a percentage) that may have happened in 2024.\n\n \n\nIn case you have any query, please do not hesitate to contact your respective People Partner or Elmer.Villarama@chalhoub.com (Director - Payroll)\n\n \n\nRegards,\n\nPeople & Culture",
+      "start_pos": 0,
+      "end_pos": 1349,
+      "chunk_index": 0,
+      "chunk_size": 1349,
+      "metadata": {
+        "doc_id": "C1JG3JI - 2024 bonus payout\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JG3JI - 2024 bonus payout\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:38.971135",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1467
+  }
+}

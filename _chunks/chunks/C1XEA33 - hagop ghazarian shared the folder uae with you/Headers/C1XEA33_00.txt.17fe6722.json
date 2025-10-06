@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1XEA33 - hagop ghazarian shared the folder uae with you\\Headers\\C1XEA33_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1XEA33 - hagop ghazarian shared the folder uae with you\\Headers\\C1XEA33_00.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by DBAPR05MB7349.eurprd05.prod.outlook.com (2603:10a6:10:1b3::14) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7962.17; Tue, 1 Oct 2024 10:18:15 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%3]) with mapi id 15.20.7982.033; Tue, 1 Oct 2024 10:18:15 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Connie Madeira <Connie.Madeira@chalhoub.com>, Mary Janice Dofeliz <MaryJanice.Dofeliz@chalhoub.com>, Salwa Al Mamari <Salwa.Almamari@chalhoub.com>, Sharon Pinto <Sharon.Pinto@chalhoub.com>\nSubject: Hagop Ghazarian shared the folder \"UAE\" with you\nThread-Topic: Hagop Ghazarian shared the folder \"UAE\" with you\nThread-Index: AQHbE+s6Ro/xDFc0nU+qbLN5hYPSVw==\nDate: Tue, 1 Oct 2024 10:18:15 +0000\nMessage-ID: <Share-309c55a1-b0c7-9000-e252-a21aaba71976,309c55a1-b0c7-9000-e252-a21aaba71976-2fb8d277-abda-44ce-8836-b8e472351cc9-ecfdf72c-8ae9-43e0-a8fc-53b85013507a-SendEmail-PreprocessPayload@odspnotify>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|DBAPR05MB7349:EE_\nx-ms-office365-filtering-correlation-id: 588a2b9f-11bc-48d3-9db5-08dce2025ccf\nx-ms-exchange-atpmessageproperties: SA|SL\nx-microsoft-antispam: BCL:0;ARA:13230040|69100299015|366016|41050700001;\nx-microsoft-antispam-message-info: GSCPO5xEd1DZCQY17BGzrQ3IxKlrwCGjB6yXZZo4/2m+k4rbuCRdkzx2dH1N/NpBBA8wByjJsoFveL5bJ/PKTCdaIjm8BN0PNqniib1xQKQTT2ZQjRhSfbGXqvpS71hbBFf07eUQhXDNpk2orlSbKL7eYCvYg4RAw6YCdVxer1EEjR/Bdqx9XmXE1C2PP0m0slGOfVsMfaMV8WTfr9SnsTDSXuz2yXO4Ns/HUoeJcsqxbD9WFlS+5SKNR95108QEXe42KuS62KNGw9WnJGjXBefwI1IEr7WGg56legdLfMAKuSuoL9LjHboT8VY4q/bmCZkElNBhv7vBJ6X0ZzmRl5QlAhMsLnRv+apmzAsRTI/KHHS2b8IrXEx56JYPtETDpYsJUrxN0VCzsxFTCQH08TimvtKcubYvtT29uCctqRWItQav3o4CXL3B+Y5omxGdqEcBaJFyG8VyzeQr7qiJ2gB800r7dPG8oJ9ZM2LJ1+L2Zm+m+pAQHZlf8FWqzNbU49EdulsbOMG/5jzh200Rr/j8HUTVCr2Lh607ourIa6Fpjs/pH5aAVi/dM0ljphl9SciJ4VnChMWmQ/APh9eao7A1asFkWSJ/xqi9AuzRdr89ekdj4SZdDqPRqnMrW7aMBSz2w6m3Y/FuBzMzFlzrO8qiZkwtxomlcW4tVepnTNRXRHpaD8OwewhAKWfsv9kXkZBG/mrVMhc+cGEEbiAhcXGq0zW4NbyngdS3kXOKda5KGNFUx6DmWIS5Z78kd6OpRF2rJ91IPDmqVorkMH87SA==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(69100299015)(366016)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_007_Share309c55a1b0c79000e252a21aaba71976309c55a1b0c79000e2_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: hvxq3U3jBpgIEqiK/juhP4lOXIk3jY7B4wWmDjm7XCwAqZLQzKcKO3pFOMGw/2tYThzvjPEukFZ1Z2QxRuYWBJYEtYIrQJ45d7oPg4xU0ma4g4cIIl8UJ2JT7IiOjDrTJDWRX24TToefGAVEffuzq7BMDlsFs9RXAApU2+2xFa21amwbzYcCw4RCWZtcYY4yNd+juRQENo3GHk/GhF9ON+LqR8rB6grd/GhWLYmNo5nZdSr1NpZ5l1kzUC81mQjU9r95HKKzEXswg3rzQ/8sWU/MEzM7aK9E/NHcYlkiE+PUY4mHIitbwjzMSDKBZVtxi5gq8UVnmnWzQZxuaLbVSJ57Inmvcqaqk4vTXFU6hgpzrCJcrfB1rGt7VDI5qWigiBJQp5Wf3FPerSPQbBSlarSDhOtxLVUD7dUwlV6BtGDwQmJqsPFBXFjfiCtVA4Xs4DxDNtqRM7yDuPvj5wFc3UtWSsoFktaghAkjCq5KqC1SudfA/Q/9wMKbi770HffBklAPZQn1OOTR2smJofpRtZMpY84mw+ZlihDgs23LFdhArx72X5c5qQ14QesBZQVyOCWCgJ8VTjsXVrB7KGvu1PRB1jDQST0P7MkwyPwfPFaTB3tZrXHkIjsih+K+wxQ0\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 588a2b9f-11bc-48d3-9db5-08dce2025ccf\nX-MS-Exchange-CrossTenant-originalarrivaltime: 01 Oct 2024 10:18:15.4320 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: dLbg+KOMpTnSnkRVcf0TLkILYRJ4OYrj0m77mJtTV9ORbtkA2+UC3C5oDo+XTsaI+HcPBy6jyNHpeLTi6oS+qRv7pYszb0LsVJe+CJVizv0=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: DBAPR05MB7349\nX-OrganizationHeadersPreserved: DBAPR05MB7349.eurprd05.prod.outlook.com",
+      "start_pos": 0,
+      "end_pos": 4367,
+      "chunk_index": 0,
+      "chunk_size": 4367,
+      "metadata": {
+        "doc_id": "C1XEA33 - hagop ghazarian shared the folder uae with you\\Headers\\C1XEA33_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1XEA33 - hagop ghazarian shared the folder uae with you\\Headers\\C1XEA33_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:15.627441",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4407
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "doc_id": "C57I6OO - cn insurance- rtc lvmh\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C57I6OO - cn insurance- rtc lvmh\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:30:21\nFolder: C57I6OO - cn insurance- rtc lvmh\nMessage Count: 1\n\n--------------------------------------------------\nID: C57I6OO_00\nFrom: Melanie Rebulanan <Melanie.Rebulanan@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Carlota Nacional <Carlota.Nacional@chalhoub.com>\nBCC: \nDate: 2025-07-10 16:07\nSubject: CN Insurance-  RTC LVMH\n--------------------------------------------------\nDear @Hagop Ghazarian <mailto:Hagop.Ghazarian@chalhoub.com> , \n\n \n\nPlease advise if we have received Credit note related to RTC-LVMH entities for Insurance since they moved out in May-2024 til date.\n\n \n\nKR, \n\n \n\nMELANIE REBULANAN\t\nACCOUNTANT ‑ REPORTING\t\nREAL FZE\t\nDUBAI\t\n‑\t\nUNITED ARAB EMIRATES\t\n\t\t\n \t\n <https://chalhoubgroup.com/> \t\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\t\n‑\n\t\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\t\n <https://twitter.com/ChalhoubGroup> \t\n <https://www.facebook.com/chalhoubgroup/> \t\n <https://www.instagram.com/chalhoubgroup> \t\n <https://www.linkedin.com/company/chalhoub-group/> \t\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 0,
+      "end_pos": 1210,
+      "chunk_index": 0,
+      "chunk_size": 1210,
+      "metadata": {
+        "doc_id": "C57I6OO - cn insurance- rtc lvmh\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C57I6OO - cn insurance- rtc lvmh\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:25.414378",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1280
+  }
+}

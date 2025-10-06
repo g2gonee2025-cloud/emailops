@@ -1,0 +1,53 @@
+{
+  "doc_id": "C1LUWHB - winter skin challenge adapting your skincare for the season\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1LUWHB - winter skin challenge adapting your skincare for the season\\Conversation.txt",
+  "num_chunks": 3,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:43:12\nFolder: C1LUWHB - winter skin challenge adapting your skincare for the season\nMessage Count: 1\n\n--------------------------------------------------\nID: C1LUWHB_00\nFrom: Wellness at NASCO <Wellness@nascodubai.com>\nTo: \nCC: \nBCC: \nDate: 2025-01-21 11:02\nSubject: Winter Skin Challenge : Adapting Your Skincare For The Season\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\nDear Valued Partners,\n\nWith winter in full swing, the colder weather can significantly impact your skin. This season presents its own challenges, but practical tips can help you maintain a healthy skincare routine and keep your skin nourished and hydrated.\n\nWe’re excited to share this month's newsletter, focusing on the Winter Skin Challenge: Adapting Your Skincare for the Season. This guide offers effective tips to help you maintain your skin's health and hydration throughout winter.\n\nHappy reading.\n\nWarm Regards, \n\n\n <https://nascoconnect.com/resources/images/memberPortal/Icon_Colored_Logo.png> \n\nNasco Middle East\nP.O. Box 62528, Dubai, UAE\nT +971 4 351 4292  F +971 4 351 4291",
+      "start_pos": 0,
+      "end_pos": 1445,
+      "chunk_index": 0,
+      "chunk_size": 1442,
+      "metadata": {
+        "doc_id": "C1LUWHB - winter skin challenge adapting your skincare for the season\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1LUWHB - winter skin challenge adapting your skincare for the season\\Conversation.txt"
+      }
+    },
+    {
+      "text": "We’re excited to share this month's newsletter, focusing on the Winter Skin Challenge: Adapting Your Skincare for the Season. This guide offers effective tips to help you maintain your skin's health and hydration throughout winter.\n\nHappy reading.\n\nWarm Regards, \n\n\n <https://nascoconnect.com/resources/images/memberPortal/Icon_Colored_Logo.png> \n\nNasco Middle East\nP.O. Box 62528, Dubai, UAE\nT +971 4 351 4292  F +971 4 351 4291   \n\nwww.nascomiddleeast.com <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Furl.uk.m.mimecastprotect.com%2Fs%2F07lwCgQl4SqomMLCohnS47diK%3Fdomain%3Dnascomiddleeast.com%2F&data=05%7C02%7Chagop.ghazarian%40chalhoub.com%7Cd06335b8b1fb4cd898d808dd39e98ac7%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638730397414128114%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=qMF7oI9jVw5S7Op%2F6lmixy9f2iIjxdwQ1LQh5ycyP1A%3D&reserved=0> \n\nRegistered Name: Nasco M.E. Insurance Brokers LLC \nInsurance Brokers License No. 167\nA member of the Nasco Insurance Group\n\nGet in touch with us if you have any complaints – call 8001008, email at complaints@nascodubai.com <mailto:complaints@nascodubai.com>  or visit our website",
+      "start_pos": 1013,
+      "end_pos": 2256,
+      "chunk_index": 1,
+      "chunk_size": 1243,
+      "metadata": {
+        "doc_id": "C1LUWHB - winter skin challenge adapting your skincare for the season\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1LUWHB - winter skin challenge adapting your skincare for the season\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Registered Name: Nasco M.E. Insurance Brokers LLC \nInsurance Brokers License No. 167\nA member of the Nasco Insurance Group\n\nGet in touch with us if you have any complaints – call 8001008, email at complaints@nascodubai.com <mailto:complaints@nascodubai.com>  or visit our website\n\n\nGeneral Disclaimer:\nThis email message including any attachments are confidential to the intended recipient. If you are not the intended recipient, be advised that you have received this e-mail in error and that any use, dissemination, forwarding, printing or copying of this e-mail is strictly prohibited. It may not be disclosed to or used by anyone other than its intended recipient, nor may it be copied in any way. If received in error please email a reply to the sender, and then delete it from your system. Nasco may monitor and record e-mail traffic and data. Nasco accepts no liability for any damage caused by any virus transmitted by this email.\n\n\n\nSanctions Disclaimer:\nThis quote is subject to sanctions screening and verification by Nasco that there are no sanctions against any party that is covered under this risk and any party related thereto that has an interest regardless of any type of risk.",
+      "start_pos": 1977,
+      "end_pos": 3172,
+      "chunk_index": 2,
+      "chunk_size": 1195,
+      "metadata": {
+        "doc_id": "C1LUWHB - winter skin challenge adapting your skincare for the season\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1LUWHB - winter skin challenge adapting your skincare for the season\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:28.634265",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 3345
+  }
+}

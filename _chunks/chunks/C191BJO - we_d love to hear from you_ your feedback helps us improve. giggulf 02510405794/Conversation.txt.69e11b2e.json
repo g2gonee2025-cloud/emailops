@@ -1,0 +1,42 @@
+{
+  "doc_id": "C191BJO - we'd love to hear from you! your feedback helps us improve. giggulf 02510405794\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C191BJO - we'd love to hear from you! your feedback helps us improve. giggulf 02510405794\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:24:50\nFolder: C191BJO - we'd love to hear from you! your feedback helps us improve. giggulf 02510405794\nMessage Count: 1\n\n--------------------------------------------------\nID: C191BJO_00\nFrom: GIG Gulf Insurance Survey <customerfeedback@gig-gulf.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-09-18 13:01\nSubject: We'd love to hear from you! Your feedback helps us improve. GIGGulf:02510405794\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\t \t   <https://app-eu.clickdimensions.com/blob/axa-gulfcom-a8l5p/files/giglogo850e.png?m=5/24/2022%2010:55:24%20AM> \t\t\n\n \t \n \t \n\t\n\tDear  Customer,\n\nThank you for choosing GIG Insurance.\n\nWe just need a minute of your time, please.\n\nWere you satisfied with your recent experience? \nPlease help us improve by telling us about the service you have received so far.\n\nThanks & regards,\n\nGIG Gulf\n\n\t\n\tGive feedback • إعطاء الملاحظات <https://url.uk.m.mimecastprotect.com/s/6hiWC4YN0FL6QZASxhZt4u9ZR?domain=smartforms.ekomi.com> \n\n\t\n\t\t\t\n\t\nعزيزنا العميل،\n\nشكرًا لاختيارك جي.آي.جي. للتأمين.\n\nمن فضلك، نحتاج إلى دقيقة من وقتك فقط.\n\nهل كنت راضيًا عن تجربتك الأخيرة؟\n\nنرجو منك إخبارنا عن الخدمة التي تلقيتها حتى الآن حتى نتمكن من تحسين تجربتك.",
+      "start_pos": 0,
+      "end_pos": 1583,
+      "chunk_index": 0,
+      "chunk_size": 1583,
+      "metadata": {
+        "doc_id": "C191BJO - we'd love to hear from you! your feedback helps us improve. giggulf 02510405794\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C191BJO - we'd love to hear from you! your feedback helps us improve. giggulf 02510405794\\Conversation.txt"
+      }
+    },
+    {
+      "text": "عزيزنا العميل،\n\nشكرًا لاختيارك جي.آي.جي. للتأمين.\n\nمن فضلك، نحتاج إلى دقيقة من وقتك فقط.\n\nهل كنت راضيًا عن تجربتك الأخيرة؟\n\nنرجو منك إخبارنا عن الخدمة التي تلقيتها حتى الآن حتى نتمكن من تحسين تجربتك.\n\nشكرًالك وتحياتنا،\n\nجي.آي.جي. الخليج\n\n\t\nCONFIDENTIALITY NOTICE: This email (including any attachments) is confidential and intended only for the use of the addressee(s). It may contain information covered by legal, professional or other privileges. If you are not the intended addressee, please inform the sender immediately and destroy this email. Any views expressed in this communication are those of the individual sender, except where the sender explicitly and with authority states them to be the views of Gulf Insurance Group (Gulf) B.S.C.(c). Before opening any attachments, please check them for viruses and defects. _______________________________________________________________________________________________________________ إشعار بالسرية: يعتبر هذا البريد الإلكتروني (وبالإضافة لأي مرفقات) سرّي ومخصّص فقط لاستخدام المُرسَل إليه (المُرسَل إليهم). قد يحتوي على معلومات لحقوق أو امتيازات قانونية أو مهنية أو أخرى. إذا لم تكن المُرسَل إليه المقصود، يرجى إبلاغ المُرسِل على الفور وإتلاف هذا البريد الإلكتروني. أي وجهات نظر أو آراء يتم التعبير عنها أو ذكرها في هذه الرسالة هي آراء المرسل الشخصيّة، باستثناء الحالات التي يوضّحها المرسل بشكل صريح وبالسُلطة المخوّلة إليه بأنها وجهات نظر مجموعة الخليج للتأمين (الخليج) ش.م.ب. (م). قبل فتح أي مرفقات، يرجى التحقق منها وفحصها من الفيروسات والعيوب.",
+      "start_pos": 1376,
+      "end_pos": 2885,
+      "chunk_index": 1,
+      "chunk_size": 1501,
+      "metadata": {
+        "doc_id": "C191BJO - we'd love to hear from you! your feedback helps us improve. giggulf 02510405794\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C191BJO - we'd love to hear from you! your feedback helps us improve. giggulf 02510405794\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:26.520306",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 3711
+  }
+}

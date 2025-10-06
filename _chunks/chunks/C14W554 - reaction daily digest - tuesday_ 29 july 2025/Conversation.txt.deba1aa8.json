@@ -1,0 +1,53 @@
+{
+  "doc_id": "C14W554 - reaction daily digest - tuesday, 29 july 2025\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C14W554 - reaction daily digest - tuesday, 29 july 2025\\Conversation.txt",
+  "num_chunks": 3,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:28:46\nFolder: C14W554 - reaction daily digest - tuesday, 29 july 2025\nMessage Count: 1\n\n--------------------------------------------------\nID: C14W554_00\nFrom: Microsoft Outlook Reactions <no-reply@microsoft.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-07-29 05:52\nSubject: Reaction Daily Digest - Tuesday, 29 July 2025\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن",
+      "start_pos": 0,
+      "end_pos": 777,
+      "chunk_index": 0,
+      "chunk_size": 777,
+      "metadata": {
+        "doc_id": "C14W554 - reaction daily digest - tuesday, 29 july 2025\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C14W554 - reaction daily digest - tuesday, 29 july 2025\\Conversation.txt"
+      }
+    },
+    {
+      "text": "--------------------------------------------------\nID: C14W554_00\nFrom: Microsoft Outlook Reactions <no-reply@microsoft.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-07-29 05:52\nSubject: Reaction Daily Digest - Tuesday, 29 July 2025\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن",
+      "start_pos": 167,
+      "end_pos": 777,
+      "chunk_index": 1,
+      "chunk_size": 610,
+      "metadata": {
+        "doc_id": "C14W554 - reaction daily digest - tuesday, 29 july 2025\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C14W554 - reaction daily digest - tuesday, 29 july 2025\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Microsoft Outlook\n <https://outlook-1.cdn.office.net/assets/reaction/outlook.png> \t\n <https://outlook-1.cdn.office.net/assets/reaction/persona.png> \t\n <https://outlook-1.cdn.office.net/assets/reaction/like.png>   \tMohamed BATA reacted to your message Mon 07/28/2025 19:08 \t\nRe: All Insurance certificates for Zimmermann The Galleria, Off site (External) storage, Insurance\nDear Mohamed, Please find attached the revised insurance certificate for Zimmermann, which now includes cover for the external storage as well as the store. Trust the above satisfies. Best Regards, Hagop HAGOP GHAZARIAN SPECIALIST ‑ ADMINIST\nGo to message <https://outlook.office365.com/owa/?ItemID=AAkALgAAAAAAHYQDEapmEc2byACqAC%2FEWg0AHMFVbh16gUWLoLLyob%2BkCAALSbdM%2BQAA&exvsurl=1&viewmodel=ReadMessageItem&nativeOutlookCommand=openMessage> \nUnsubscribe <https://outlook.office365.com/mail/deeplink/unsubscribe?feature=ReactionDigestEmailDisabled>  • Privacy statement <https://go.microsoft.com/fwlink/?LinkId=512132> \nMicrosoft Corporation, One Microsoft Way, Redmond, WA 98052",
+      "start_pos": 779,
+      "end_pos": 1833,
+      "chunk_index": 2,
+      "chunk_size": 1054,
+      "metadata": {
+        "doc_id": "C14W554 - reaction daily digest - tuesday, 29 july 2025\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C14W554 - reaction daily digest - tuesday, 29 july 2025\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:08.134048",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1976
+  }
+}

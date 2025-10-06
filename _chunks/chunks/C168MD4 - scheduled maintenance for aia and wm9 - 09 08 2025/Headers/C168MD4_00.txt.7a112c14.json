@@ -1,0 +1,31 @@
+{
+  "doc_id": "C168MD4 - scheduled maintenance for aia and wm9 - 09 08 2025\\Headers\\C168MD4_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C168MD4 - scheduled maintenance for aia and wm9 - 09 08 2025\\Headers\\C168MD4_00.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from DU0PR05MB9702.eurprd05.prod.outlook.com (::1) by PAXPR05MB8317.eurprd05.prod.outlook.com with HTTPS; Wed, 6 Aug 2025 06:22:58 +0000\nReceived: from VI1PR05MB7101.eurprd05.prod.outlook.com (2603:10a6:800:178::22) by DU0PR05MB9702.eurprd05.prod.outlook.com (2603:10a6:10:318::8) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8989.21; Wed, 6 Aug 2025 06:22:53 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from DB9PR05MB8672.eurprd05.prod.outlook.com (2603:10a6:10:2c8::15) by VI1PR05MB7101.eurprd05.prod.outlook.com (2603:10a6:800:178::22) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9009.13; Wed, 6 Aug 2025 06:22:09 +0000\nReceived: from DB9PR05MB8672.eurprd05.prod.outlook.com ([fe80::cb38:7f3b:c339:ddf]) by DB9PR05MB8672.eurprd05.prod.outlook.com ([fe80::cb38:7f3b:c339:ddf%7]) with mapi id 15.20.9009.013; Wed, 6 Aug 2025 06:22:09 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: One Reach <OneReach@chalhoub.com>\nSubject: Scheduled Maintenance for AIA and WM9 - 09/08/2025\nThread-Topic: Scheduled Maintenance for AIA and WM9 - 09/08/2025\nThread-Index: AdwGmjfkCsbe/EdeRB+57+eHA0483Q==\nX-MS-Exchange-MessageSentRepresentingType: 1\nDate: Wed, 6 Aug 2025 06:22:09 +0000\nMessage-ID: <DB9PR05MB8672DB4DDB57F87638434EE8DA2DA@DB9PR05MB8672.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-Exchange-Organization-SCL: 1\nX-MS-TNEF-Correlator: <DB9PR05MB8672DB4DDB57F87638434EE8DA2DA@DB9PR05MB8672.eurprd05.prod.outlook.com>\nMIME-Version: 1.0\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: DB9PR05MB8672.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 04\nX-MS-Exchange-Organization-Network-Message-Id: a3228794-4245-45d3-45ca-08ddd4b192bb\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: DB9PR05MB8672:EE_|VI1PR05MB7101:EE_|DU0PR05MB9702:EE_|PAXPR05MB8317:EE_\nTo: Undisclosed recipients:;\nReturn-Path: OneReach@chalhoub.com\nX-MS-Exchange-Organization-ExpirationStartTime: 06 Aug 2025 06:22:09.8668 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: a3228794-4245-45d3-45ca-08ddd4b192bb\nX-LD-Processed: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3,ExtAddr,ExtFwd,ExtAddr\nX-MS-Exchange-AtpMessageProperties: SA\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|8096899003|13003099007|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI1PR05MB7101.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(13003099007)(41050700001);DIR:INT;\nX-Auto-Response-Suppress: DR, OOF, AutoReply\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 06 Aug 2025 06:22:09.2137 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: DB9PR05MB8672.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: a3228794-4245-45d3-45ca-08ddd4b192bb\nX-MS-Exchange-CrossTenant-MailboxType: HOSTED\nX-MS-Exchange-CrossTenant-UserPrincipalName: xRfPgCyODjtYj2CbK+3vht+DxVt6iurd4bUF1aa029jTmpvTjKam//EwgMNK0b9YtX8m8yKiLdQIF5mZs0exeGUuh1/1N+Wkd7wY3QgcP84=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: DU0PR05MB9702\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:49.4171948\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.9009.009\nX-Microsoft-Antispam-Mailbox-Delivery: wl:1;pcwl:1;ucf:0;jmr:0;auth:0;dest:I;ENG:(910005)(920097)(811242)(255002)(410001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: jEnY9QTk7Rx5sf1Mg321lETCQAIcVx/olIhkjT4ivlhKPI39G99ntfNk7oW/hEK+ERCir3AGr3uMjryS7uJeDZittgg5TbLAUQtyka/VwsFjqFJfIwAyphnPjy8sjrVk/mdJd4t+39pOj9SPx8vzU8aqFeJJTQl+MG/Ap8VDezw8YCj2Tw9Dt66j7PYI9PF9JyQqx/eAJM6KP1sYTsIeFWBBz0/HLfKcfbOjGBfZXVUEbRjmqp92jYoDtRw1KSoJDXiVv4CWL2gqT9NfpcGbPrbCqVFA1EvGVIWHaTj/Hgqkk00/mg0rmWcntuacZCHjHWpaOK9/uibLwRuOJ4+St6FbY3kB0EIAqicmkThCdKa60aw1KmDF+O5wttZUXw8kKcOpeXapg+JAuVnochPCx54hg4ZC3Rspjl+kve/im1IK9oePw1/qk0g78+Re7qhn9sznD/M8Ha+K62GBdvZtAo3a/d2FSI8xASqtGvqRvd1D592+CvoBaLcwT0LSfB5MA4M6N4mYveIp4f0CW0So9yLR+3IOKdGJNP/84kkeo9pBtTCauI573+XvObj1HnFOPLTNM2orJ+CCOR3UKBBJ1Rq8zGDkHsVLWvOqfG2F1ZqMJVExuc68Fd/P1c2YnPrwwpyt8bKDjGNCLIXfsCFrsUukdBGkbjQvGBR8M/zEbCDVnPG2vXdtH0wz+NH/KawsfoEQEhnh0PA27Ir8mSk6IQYizc4SjCc20fRyqprpnMGqLkWqWwf9e+IlLxeKeKrgIklSULajrHbXs07ctQCxvkMTBF5OH765BUoo0Af5y9Wo4abITdoFjV+QmRq4xhfOBj58Y9ZfqUa3A0dfsJu+FnttJxujSzL6c9L/EUfseUjFjz52Hh2fYcsJPE3ACY/7",
+      "start_pos": 0,
+      "end_pos": 4928,
+      "chunk_index": 0,
+      "chunk_size": 4928,
+      "metadata": {
+        "doc_id": "C168MD4 - scheduled maintenance for aia and wm9 - 09 08 2025\\Headers\\C168MD4_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C168MD4 - scheduled maintenance for aia and wm9 - 09 08 2025\\Headers\\C168MD4_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:36.914818",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4984
+  }
+}

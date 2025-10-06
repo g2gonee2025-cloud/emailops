@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1PXZ58 - urgent oracle cloud services outage resolved\\Headers\\C1PXZ58_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1PXZ58 - urgent oracle cloud services outage resolved\\Headers\\C1PXZ58_00.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from PA2PR05MB11532.eurprd05.prod.outlook.com (::1) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Mon, 19 May 2025 14:40:06 +0000\nReceived: from DU0PR05MB9785.eurprd05.prod.outlook.com (2603:10a6:10:40e::9) by PA2PR05MB11532.eurprd05.prod.outlook.com (2603:10a6:102:409::18) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8746.30; Mon, 19 May 2025 14:40:01 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from AS1PR05MB8963.eurprd05.prod.outlook.com (2603:10a6:20b:4dd::6) by DU0PR05MB9785.eurprd05.prod.outlook.com (2603:10a6:10:40e::9) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8746.30; Mon, 19 May 2025 14:39:07 +0000\nReceived: from AS1PR05MB8963.eurprd05.prod.outlook.com ([fe80::8ce4:ecdc:46e7:56dd]) by AS1PR05MB8963.eurprd05.prod.outlook.com ([fe80::8ce4:ecdc:46e7:56dd%5]) with mapi id 15.20.8746.029; Mon, 19 May 2025 14:39:07 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: One Reach <OneReach@chalhoub.com>\nSubject: Urgent: Oracle Cloud Services Outage Resolved \nThread-Topic: Urgent: Oracle Cloud Services Outage Resolved \nThread-Index: AdvIyxHtNWztGmRSSWawrfp6sazCWA==\nImportance: high\nX-Priority: 1\nX-MS-Exchange-MessageSentRepresentingType: 1\nDate: Mon, 19 May 2025 14:39:06 +0000\nMessage-ID: <AS1PR05MB896382ADB5F234AE24A14444DA9CA@AS1PR05MB8963.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 1620,
+      "chunk_index": 0,
+      "chunk_size": 1619,
+      "metadata": {
+        "doc_id": "C1PXZ58 - urgent oracle cloud services outage resolved\\Headers\\C1PXZ58_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1PXZ58 - urgent oracle cloud services outage resolved\\Headers\\C1PXZ58_00.txt"
+      }
+    },
+    {
+      "text": "e: 1\nDate: Mon, 19 May 2025 14:39:06 +0000\nMessage-ID: <AS1PR05MB896382ADB5F234AE24A14444DA9CA@AS1PR05MB8963.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach:\nX-MS-Exchange-Organization-SCL: 1\nX-MS-TNEF-Correlator: <AS1PR05MB896382ADB5F234AE24A14444DA9CA@AS1PR05MB8963.eurprd05.prod.outlook.com>\nMIME-Version: 1.0\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: AS1PR05MB8963.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 04\nX-MS-Exchange-Organization-Network-Message-Id: 8fb80c49-3ce7-496d-9bd9-08dd96e2e8dc\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: AS1PR05MB8963:EE_|DU0PR05MB9785:EE_|PA2PR05MB11532:EE_|AS8PR05MB10824:EE_\nTo: Undisclosed recipients:;\nReturn-Path: OneReach@chalhoub.com\nX-MS-Exchange-Organization-ExpirationStartTime: 19 May 2025 14:39:07.3464 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: 8fb80c49-3ce7-496d-9bd9-08dd96e2e8dc\nX-LD-Processed: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3,ExtAddr,ExtAddr\nX-MS-Exchange-AtpMessageProperties: SA\nX-Microsoft-Antispam: BCL:0;ARA:13230040|69100299015|366016|8096899003|13003099007|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DU0PR05MB9785.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(69100299015)(366016)(8096899003)(13003099007)(41050700001);DIR:INT;\nX-Auto-Response-Suppress: DR, OOF, AutoReply\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 May 2025 14:39:07.0001 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: AS1PR05MB8963.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: 8fb80c49-3ce7-496d-9bd9-08dd96e2e8dc\nX-MS-Exchange-CrossTenant-MailboxType: HOSTED\nX-MS-Exchange-CrossTenant-UserPrincipalName: qvKwLYG/uJ4AOl7wXAlgMbOBPx9q6T8dPvdg85uY23Zao0NOTcQRizKkELHQR4KQj4A+XkwVZUwRYXvsb7qa/FuD90Z/BDgbGxUoR4EWu1k=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PA2PR05MB11532\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:59.4272460\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8746.028\nX-Microsoft-Antispam-Mailbox-Delivery: wl:1;pcwl:1;ucf:0;jmr:0;auth:0;dest:I;ENG:(910005)(920097)(811242)(255002)(410001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: jC9nJrL2DKjloWTMO3w82tQYusdeZTV5rIinZjT3DuJb2n/3cU6poRTUlqPnGi2K6Xg6HRlD6IH5IpMWc2cuhPzqBWo8wiZNHqB+oDQiltUQp3pM6wK5SGpvDL0ypLXTu0pqmtmlYDstsQP+fTeNh5kTQ9IvY1mdEXdxO952lnuDLpp9Zxw1xul92XqB1SoOjL7NrdynpLmQ54S9kQW/cij7UNY7E896TmduxJb3xa6oPCKCQkRDx1iLAFm13q6ZGLT4hMJPNei3HFH941qjy9jXlg6YGZSUsw4831VpcWpC+6LAfNvVe7uxoytTsPV7pUZaR7gVxWzVcKUhz4gchuBTRTozg8IY97qQwGDuK54JsQ+/gLU9BW5SKn9WmTxcyqSk1Rp7e0YtHSZNIKEjlX+bUTtzNDTyUDgP4up78XISMQmvxSMrEJDUYjhYTzZHx/Kkhhh9ZLj9Y5sXGF3DsG+Ik+j3ImKq/s74l4twR7L7LciacHGUurG0oil66E18tNi4GikSEBir61v65FQfDkRFZC8GDASKRfEBoRQtW3RDGeTnvUwMCK755IuQBVnWUPKZ7w3mIaSso4TSlJQSDDtcOeHAiZm8IkQt+LAiRswKOmhQmSqpu1n7JYoxIS8SihY1wApebcpJNgXUTwi90UK/f1XKV5rOC3qLLG35yvIl+LZwdio5XUsBQR7CEKZmBPsnSJ/yFf5I7AIhFV/vJXiiRE1BBBsDRpkSWD3lA3Jx72kpCNfyoF5l9kHHLjK++9kH/jYrWI55/1koFi32Kh55TMKL6KFnVtjTR5IebdzuizUeGurZHrnp6ULvr2LGnZ3Pz6iZBOocT0NJAfxd5k02RI3mF8WFujtB8zrKMjRcKhi04DYy2/05881rUgfH",
+      "start_pos": 1420,
+      "end_pos": 4976,
+      "chunk_index": 1,
+      "chunk_size": 3556,
+      "metadata": {
+        "doc_id": "C1PXZ58 - urgent oracle cloud services outage resolved\\Headers\\C1PXZ58_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1PXZ58 - urgent oracle cloud services outage resolved\\Headers\\C1PXZ58_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:34.070662",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5034
+  }
+}

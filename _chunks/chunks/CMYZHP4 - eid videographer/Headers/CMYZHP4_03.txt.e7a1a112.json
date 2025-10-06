@@ -1,0 +1,42 @@
+{
+  "doc_id": "CMYZHP4 - eid videographer\\Headers\\CMYZHP4_03.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CMYZHP4 - eid videographer\\Headers\\CMYZHP4_03.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from PAWPR05MB11011.eurprd05.prod.outlook.com (::1) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Sun, 15 Dec 2024 23:42:25 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from DBBPR05MB6298.eurprd05.prod.outlook.com (2603:10a6:10:cc::15) by PAWPR05MB11011.eurprd05.prod.outlook.com (2603:10a6:102:390::19) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8251.20; Sun, 15 Dec 2024 23:42:23 +0000\nReceived: from DBBPR05MB6298.eurprd05.prod.outlook.com ([::1]) by DBBPR05MB6298.eurprd05.prod.outlook.com ([fe80::2c1a:ef80:efb:8fdf%7]) with Microsoft SMTP Server id 15.20.8251.015; Sun, 15 Dec 2024 23:42:23 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Tala Harmalani <Tala.Harmalani@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: EID videographer\nThread-Topic: EID videographer\nThread-Index: AQHbS6gDtoT4Fb+Zg0SWs8faecYC+7LiRBmQgAAbx0qAABoS4oAFfAodgAAIrvQ=\nReferences: <VI1PR05MB4654F9572EF117AB3B8EB101F33E2@VI1PR05MB4654.eurprd05.prod.outlook.com> <DB9PR05MB9623D34C55AB04DF329ED51FFF3F2@DB9PR05MB9623.eurprd05.prod.outlook.com> <VI1PR05MB465426F468372A2052C32AC9F33F2@VI1PR05MB4654.eurprd05.prod.outlook.com> <DB9PR05MB83144AED60C31543A8FC76EC813F2@DB9PR05MB8314.eurprd05.prod.outlook.com> <AS8PR05MB108241C1B49035D1B78FA5A589D3A2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB108241C1B49035D1B78FA5A589D3A2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 1643,
+      "chunk_index": 0,
+      "chunk_size": 1642,
+      "metadata": {
+        "doc_id": "CMYZHP4 - eid videographer\\Headers\\CMYZHP4_03.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CMYZHP4 - eid videographer\\Headers\\CMYZHP4_03.txt"
+      }
+    },
+    {
+      "text": "om> <AS8PR05MB108241C1B49035D1B78FA5A589D3A2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB108241C1B49035D1B78FA5A589D3A2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Tala.Harmalani@chalhoub.com\nX-MS-TNEF-Correlator: a0374ad8-97de-4031-8d38-24af1878b268\nMIME-Version: 1.0\nDate: Sun, 15 Dec 2024 23:42:23 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: DBBPR05MB6298.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <2e6400d68407428fbc9099e8a1f863ed@DBBPR05MB6298.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: c912a617-c618-4d54-8b2f-08dd1d621fc3\nX-MS-Exchange-Parent-Message-Id: <AS8PR05MB108241C1B49035D1B78FA5A589D3A2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: DBBPR05MB6298:EE_|PAWPR05MB11011:EE_|AS8PR05MB10824:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 15 Dec 2024 23:42:23.6834 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: c912a617-c618-4d54-8b2f-08dd1d621fc3\nX-MS-Exchange-AtpMessageProperties: SA|SL\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DBBPR05MB6298.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Dec 2024 23:42:23.3229 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: DBBPR05MB6298.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: c912a617-c618-4d54-8b2f-08dd1d621fc3\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PAWPR05MB11011\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:01.8938798\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8251.004\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910001)(944506478)(944626604)(920097)(425001)(930097)(140003)(1420198);\nX-Microsoft-Antispam-Message-Info: XOR9eOyu9omuRjUu52WVVC4njW429zd99UDqKkCNHjk3bFOCpXB+Zm+hsmRuQgR3lZ6JVHvWDgv2GR7xvU8P8t25WoODKzv4UOX7NCVgZon5ITGEWgdi7/CQhdO+VYyLnxpGwImmcXeykZWRNzDEIDM//b2UVB9TfWzgXcuh3EI/0Kk9GwC+GLBg4RypWc6D38ZNbuXRxVNU8WOQak2nkI0OoEyL/iv73M6EdOn3eKGqvXJGv3zofbUJttngXumao4D2i2hHWDnxG11emPDpY4hjh6wu/cXAZe7jhi2PuA7M7X+vc9uQ8LwMzT9VA3ox5sjNYcpmZ2lICOxRQLi5aCUXN1z+7fSgZHvs6rZ1zpA5yvNkUAAuQjnH6ii6VKFeG1R3I3z4iT1vFUF14oOrteRHC5cP9ywBZk0h6vzetiQPAryBQb1OkSM9R1OyzQh4AknYbjFH7trRI8ecDt2FbKDy+TgMIgJiDKuRYOr7JVfdgAoz+1FQrWNIlrWyyqR+Nd4E/hI81CgQg4mma4vVpoo1mDFu82/acmV+hkUdexVIryeeFz9SYcn/ObT6j6fcClFvxuDac/Ok5WrOpzVP9uAIUxqYVMrnRhyxQcCxtZUO5/XyQtf+69E6mMs5lHsBvuxemW8qFKDREfLMauY8gmtOPKp9nvAsAHmR78350eub2EF9Ox6Irckr5irYSNbKcXmXKZEH7wiDkYmqopnqmlQVQMQRF+S+epXdZR9KNupBlod0m58ZGf/7KHCjmvefkj8R4zB2BbKNwB3392XknCZRlzdJUOP6ATroj3J7lI9kdjXmg9LzXySGdv7UdA6K6EoGL/ftxIQDZNECUvqjKVHW+qgYC305LxTvM7JKHqEz/1aZ2CwZ+SHp2seAlSZ/MDIxm+HvjQX1SgPv5pDz6w==",
+      "start_pos": 1443,
+      "end_pos": 5044,
+      "chunk_index": 1,
+      "chunk_size": 3601,
+      "metadata": {
+        "doc_id": "CMYZHP4 - eid videographer\\Headers\\CMYZHP4_03.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CMYZHP4 - eid videographer\\Headers\\CMYZHP4_03.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:21.069163",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5100
+  }
+}

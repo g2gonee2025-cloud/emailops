@@ -1,0 +1,31 @@
+{
+  "doc_id": "C18QVDM - planned activity notification building 10 capacitor bank tripped\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C18QVDM - planned activity notification building 10 capacitor bank tripped\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:32:32\nFolder: C18QVDM - planned activity notification building 10 capacitor bank tripped\nMessage Count: 1\n\n--------------------------------------------------\nID: C18QVDM_00\nFrom: One Reach <OneReach@chalhoub.com>\nTo: \nCC: \nBCC: \nDate: 2025-08-29 12:34\nSubject: Planned Activity Notification: Building 10 capacitor bank tripped\n--------------------------------------------------\n <https://onereach.status.freshservice.com/> \n\n \n\nDear Colleague,\n\n \n\nPlease be advised that essential electricity power maintenance has been scheduled for the D3 BLDG 10 & 11 due to repeated tripping in the capacitor bank of Building 11. Consequently, LAN and WIFI Services will be unavailable during these maintenance windows. Rest assured, users will be able to resume using services once the maintenance is complete.\n\n \n\nMaintenance start time: Saturday, AUG 30, 2025, | 12:00 AM GST\n\nMaintenance end time: Saturday, AUG 30, 2025, | 02:00 AM GST\n\n \n\nWe appreciate your patience and cooperation as we work to enhance your experience with our services.\n\n\nFor support during this period, please raise a ticket via One Reach. You can also check real-time status updates via the Tech&Data System Status & Health <https://onereach.status.freshservice.com/>  Dashboard.\n\n \n\n \n\n \n\n \n\nThis mail was sent to you by\n\n <https://onereach.chalhoub.com/support/home>",
+      "start_pos": 0,
+      "end_pos": 1412,
+      "chunk_index": 0,
+      "chunk_size": 1412,
+      "metadata": {
+        "doc_id": "C18QVDM - planned activity notification building 10 capacitor bank tripped\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C18QVDM - planned activity notification building 10 capacitor bank tripped\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:09.193467",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1475
+  }
+}

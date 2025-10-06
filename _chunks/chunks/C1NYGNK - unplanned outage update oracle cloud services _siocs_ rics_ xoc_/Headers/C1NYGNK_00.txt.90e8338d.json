@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1NYGNK - unplanned outage update oracle cloud services (siocs, rics, xoc)\\Headers\\C1NYGNK_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1NYGNK - unplanned outage update oracle cloud services (siocs, rics, xoc)\\Headers\\C1NYGNK_00.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from DBBPR05MB11251.eurprd05.prod.outlook.com (::1) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Mon, 19 May 2025 10:41:25 +0000\nReceived: from DB9PR05MB8090.eurprd05.prod.outlook.com (2603:10a6:10:263::22) by DBBPR05MB11251.eurprd05.prod.outlook.com (2603:10a6:10:52b::11) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8746.30; Mon, 19 May 2025 10:41:21 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from AS1PR05MB8963.eurprd05.prod.outlook.com (2603:10a6:20b:4dd::6) by DB9PR05MB8090.eurprd05.prod.outlook.com (2603:10a6:10:263::22) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8722.33; Mon, 19 May 2025 10:40:40 +0000\nReceived: from AS1PR05MB8963.eurprd05.prod.outlook.com ([fe80::8ce4:ecdc:46e7:56dd]) by AS1PR05MB8963.eurprd05.prod.outlook.com ([fe80::8ce4:ecdc:46e7:56dd%5]) with mapi id 15.20.8746.029; Mon, 19 May 2025 10:40:40 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: One Reach <OneReach@chalhoub.com>\nSubject: Unplanned Outage Update: Oracle Cloud Services (SIOCS, RICS, XOC)\nThread-Topic: Unplanned Outage Update: Oracle Cloud Services (SIOCS, RICS, XOC)\nThread-Index: AdvIqmdsXLM7aVq3RDSfn0thc2zkJQ==\nX-MS-Exchange-MessageSentRepresentingType: 1\nDate: Mon, 19 May 2025 10:40:40 +0000\nMessage-ID: <AS1PR05MB8963A3189A776A527AF84974DA9CA@AS1PR05MB8963.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 1628,
+      "chunk_index": 0,
+      "chunk_size": 1627,
+      "metadata": {
+        "doc_id": "C1NYGNK - unplanned outage update oracle cloud services (siocs, rics, xoc)\\Headers\\C1NYGNK_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1NYGNK - unplanned outage update oracle cloud services (siocs, rics, xoc)\\Headers\\C1NYGNK_00.txt"
+      }
+    },
+    {
+      "text": "e: 1\nDate: Mon, 19 May 2025 10:40:40 +0000\nMessage-ID: <AS1PR05MB8963A3189A776A527AF84974DA9CA@AS1PR05MB8963.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach:\nX-MS-Exchange-Organization-SCL: 1\nX-MS-TNEF-Correlator: <AS1PR05MB8963A3189A776A527AF84974DA9CA@AS1PR05MB8963.eurprd05.prod.outlook.com>\nMIME-Version: 1.0\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: AS1PR05MB8963.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 04\nX-MS-Exchange-Organization-Network-Message-Id: 85ffff93-5e74-4c1e-4181-08dd96c1998b\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: AS1PR05MB8963:EE_|DB9PR05MB8090:EE_|DBBPR05MB11251:EE_|AS8PR05MB10824:EE_\nTo: Undisclosed recipients:;\nReturn-Path: OneReach@chalhoub.com\nX-MS-Exchange-Organization-ExpirationStartTime: 19 May 2025 10:40:40.8462 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: 85ffff93-5e74-4c1e-4181-08dd96c1998b\nX-LD-Processed: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3,ExtAddr,ExtAddr\nX-MS-Exchange-AtpMessageProperties: SA\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|69100299015|8096899003|13003099007|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR05MB8090.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(69100299015)(8096899003)(13003099007)(41050700001);DIR:INT;\nX-Auto-Response-Suppress: DR, OOF, AutoReply\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 May 2025 10:40:40.4789 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: AS1PR05MB8963.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: 85ffff93-5e74-4c1e-4181-08dd96c1998b\nX-MS-Exchange-CrossTenant-MailboxType: HOSTED\nX-MS-Exchange-CrossTenant-UserPrincipalName: jaAF2Df5GOL6wMzsASB2474Hxh/Pnz1dMqQqG4d8PjgUzsoftbNhoSLYARvHuTj2pHUomNLUDipNRV6Xs8ttNwC1vYd6OrHyYWyCNEezGK4=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: DBBPR05MB11251\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:44.8041413\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8746.028\nX-Microsoft-Antispam-Mailbox-Delivery: wl:1;pcwl:1;ucf:0;jmr:0;auth:0;dest:I;ENG:(910005)(920097)(811242)(255002)(410001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: cuIqZESlN5yuvDx4mg8IEbSQOlZ1x5qpx9USo/rO+QetPSUfIs2LsqBlwf4bLSOm3GXx3KhEb4LCEUni6odZVoE23NOE189cEENVz/PKSo7aa5jCcIbYWaYxTxq7tBKKtAp3R1mynBoajVJ40wys85D0Fm/tEEUTJ5f0FxGEAhzIQI7weEoR89nOnyj/PIXdTWuhXTJBDH5wI6RcmFDW0GngUAzU0yoS/sNX2vl2wxJhEq9rh1q10B/dcFU92KFJhjtC8tUWdGgRqhJgOhstilJS9uJhnasrqzgJFH++ameKfE3cVthZuNDeVPE1WSLAY8twgvs4CxbFj0pt1RnEGGqkEqXLogbJe9Eldh4R+FDwQnzZu1tymKE8fU+iIvRjB1X4QItG2CQZbjz703VDgTFrWMVbK4inUr2Hc63CIdpwoTElsLayoQna1YUujV+gqUzrxz/kMJnDcTmteHbCAigkZU85se4RtzW6x0wAnA/AGpOAmqV3KW6fQzuZPBh0TsMSc02gFNIwi/KI3432BlINJehzno3+pxaJiHPLIhNJeV0gh2ItPVvk6aavVBt6i2eLxteOEHLDO40QWwnIJqZ5O7HBKKlYuvcG4FmvrKGuBD7vzF6Y8y3Swbwn1Xk6MTm4Af2+6QffAUtlJtvM8hxj7XE8/0xZIyhtUDAnsCcZ8EqHEyx/ohEEJp8xnr/W9uYsaxxQrdLX8jlSiYKhi7vcmPgQta5cnOD6x9J/LzReq+GriZnsU4gPUo6Vq5taB2kskDUGum/QbyqqsWqwoVYnqDTzjE89tk54W2CXLSHiLzD79Proly6dfBKTRZsZTdj1NN7UuY3MNORimMFt0wDuuFtemXoW+Lo54iw3ifZdfQHm8eKqZWmTxviDZ2AZ",
+      "start_pos": 1428,
+      "end_pos": 4984,
+      "chunk_index": 1,
+      "chunk_size": 3556,
+      "metadata": {
+        "doc_id": "C1NYGNK - unplanned outage update oracle cloud services (siocs, rics, xoc)\\Headers\\C1NYGNK_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1NYGNK - unplanned outage update oracle cloud services (siocs, rics, xoc)\\Headers\\C1NYGNK_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:35.338865",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5040
+  }
+}

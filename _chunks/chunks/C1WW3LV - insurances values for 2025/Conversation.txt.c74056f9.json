@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1WW3LV - insurances values for 2025\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1WW3LV - insurances values for 2025\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:46:07\nFolder: C1WW3LV - insurances values for 2025\nMessage Count: 1\n\n--------------------------------------------------\nID: C1WW3LV_00\nFrom: Marion Bellec <m.bellec@christofle.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Pauline Battini <p.battini@christofle.com>; Chloé Benyahia <c.benyahia@christofle.com>; Robin Saunier <r.saunier@christofle.com>\nBCC: \nDate: 2025-02-06 02:10\nSubject: Insurances values for 2025\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\nDear Hagop,\n\n \n\nI hope you are fine.\n\nAs requested last time over the phone please find enclosed the updated values we are used to declaring for all main insurances programs.\n\n \n\nAlso, I introduce Robin in copy who will take over my position during my maternity leave.\n\n \n\nKind regards,\n\n \n\nMarion BELLEC\n\nContrôleuse de gestion\n\nFinancial controller\n\n\n\nChristofle | 191, avenue Charles de Gaulle 92200 - Neuilly-sur-Seine | France\n\nTel. : +33.1.55.27.99.96\n\nm.bellec@christofle.com <mailto:m.bellec@christofle.com> | | www.christofle.com <https://url.uk.m.mimecastprotect.com/s/yB1vCx7J4fmvVwWfvhQTypZjO?domain=christofle.com/>",
+      "start_pos": 0,
+      "end_pos": 1487,
+      "chunk_index": 0,
+      "chunk_size": 1485,
+      "metadata": {
+        "doc_id": "C1WW3LV - insurances values for 2025\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1WW3LV - insurances values for 2025\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Christofle | 191, avenue Charles de Gaulle 92200 - Neuilly-sur-Seine | France\n\nTel. : +33.1.55.27.99.96\n\nm.bellec@christofle.com <mailto:m.bellec@christofle.com> | | www.christofle.com <https://url.uk.m.mimecastprotect.com/s/yB1vCx7J4fmvVwWfvhQTypZjO?domain=christofle.com/>  \n\n <https://url.uk.m.mimecastprotect.com/s/oTEPCyJKgf6owkBfQiRTxgrB7?domain=facebook.com>   <https://url.uk.m.mimecastprotect.com/s/ilJTCzxLjS8qZ9jhKs9T9JO7Y?domain=instagram.com/>   <https://url.uk.m.mimecastprotect.com/s/9bfZCA90kIrOX2DiQtjTGuQy5?domain=linkedin.com/>   <https://url.uk.m.mimecastprotect.com/s/9i6hCBRk0iPKrBLt1u8T24sU_?domain=pinterest.fr/>   <https://url.uk.m.mimecastprotect.com/s/raCcCDJmnfjAz08FRClTjpfTl?domain=youtube.com>",
+      "start_pos": 1211,
+      "end_pos": 1935,
+      "chunk_index": 1,
+      "chunk_size": 724,
+      "metadata": {
+        "doc_id": "C1WW3LV - insurances values for 2025\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1WW3LV - insurances values for 2025\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:49.112036",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2108
+  }
+}

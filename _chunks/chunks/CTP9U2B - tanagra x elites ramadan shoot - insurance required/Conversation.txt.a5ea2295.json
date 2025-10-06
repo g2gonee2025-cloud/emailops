@@ -1,0 +1,31 @@
+{
+  "doc_id": "CTP9U2B - tanagra x elites ramadan shoot - insurance required\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CTP9U2B - tanagra x elites ramadan shoot - insurance required\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:46:03\nFolder: CTP9U2B - tanagra x elites ramadan shoot - insurance required\nMessage Count: 1\n\n--------------------------------------------------\nID: CTP9U2B_00\nFrom: Nesma Shahin <Nesma.Shahin@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Ayesha Alshamsi <Ayesha.Alshamsi@chalhoub.com>\nBCC: \nDate: 2025-02-06 18:28\nSubject: Tanagra x Elites Ramadan Shoot - Insurance Required\n--------------------------------------------------\nHello Hagop, \n\nHope all is well. \n\nI need your assistance in creating insurance for the items in the attached list. We will need these items for a shoot that is happening next week in Dubai. Ideally, the items need to be insured from the 9th of February to the 12th of February to ensure their safety. \n\nLet me know if you have any questions.\n\nBest,\nNesma Shahin.",
+      "start_pos": 0,
+      "end_pos": 892,
+      "chunk_index": 0,
+      "chunk_size": 892,
+      "metadata": {
+        "doc_id": "CTP9U2B - tanagra x elites ramadan shoot - insurance required\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CTP9U2B - tanagra x elites ramadan shoot - insurance required\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:10.672284",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 924
+  }
+}

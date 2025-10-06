@@ -1,0 +1,31 @@
+{
+  "doc_id": "CF7PB3S - 463120 schedule (002).xlsx\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CF7PB3S - 463120 schedule (002).xlsx\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:42:18\nFolder: CF7PB3S - 463120 schedule (002).xlsx\nMessage Count: 1\n\n--------------------------------------------------\nID: CF7PB3S_00\nFrom: Nicolekaye Hilario <nicolekaye.hilario@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Furqan Akhai <Furqan.Akhai@chalhoub.com>\nBCC: \nDate: 2025-04-16 18:16\nSubject: 463120 Schedule (002).xlsx\n--------------------------------------------------\nHi @Hagop <mailto:Hagop.Ghazarian@chalhoub.com> ,\n\n \n\nSharing with you 463120 as discussed earlier.\n\n \n\nKR,\n\n \n\nNikki\n\nNICOLEKAYE HILARIO​​​​\n\nASSOCIATE SENIOR ACCOUNTANT ‑ REPORTING\n\nREAL FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n\t\t\n \t\n <https://chalhoubgroup.com/> \n\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\n\n‑\n\n\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\n\n <https://twitter.com/ChalhoubGroup> \n\n <https://www.facebook.com/chalhoubgroup/> \n\n <https://www.instagram.com/chalhoubgroup> \n\n <https://www.linkedin.com/company/chalhoub-group/> \n\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 0,
+      "end_pos": 1140,
+      "chunk_index": 0,
+      "chunk_size": 1140,
+      "metadata": {
+        "doc_id": "CF7PB3S - 463120 schedule (002).xlsx\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CF7PB3S - 463120 schedule (002).xlsx\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:42.632299",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1230
+  }
+}

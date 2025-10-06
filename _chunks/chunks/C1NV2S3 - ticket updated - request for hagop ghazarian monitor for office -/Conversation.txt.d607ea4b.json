@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1NV2S3 - ticket updated - request for hagop ghazarian monitor for office -\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1NV2S3 - ticket updated - request for hagop ghazarian monitor for office -\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:28:54\nFolder: C1NV2S3 - ticket updated - request for hagop ghazarian monitor for office -\nMessage Count: 1\n\n--------------------------------------------------\nID: C1NV2S3_00\nFrom: OneReach <onereach@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-07-28 08:43\nSubject: Ticket Updated - Request for Hagop Ghazarian : Monitor for Office - [#SR-1388626]\n--------------------------------------------------\n\n <https://eucattachment.freshservice.com/inline/attachment?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6NTIwNTM1NzgwNzQsImRvbWFpbiI6ImNoYWxob3ViZ3JvdXAtc2VydmljZWRlc2suZnJlc2hzZXJ2aWNlLmNvbSIsInR5cGUiOjF9.YBg4r70xeykiWEdioigXAmbqrOGddUQXep-K5gXLdFw> \n\n \n\n \n\nDear Hagop Ghazarian,\n\n \n\nThere is a new comment on your ticket. You can view your ticket by visiting https://onereach.chalhoub.com/helpdesk/tickets/1388626\n\nYou can also reply to this email to your comment. \n\n \n\nJade Yulo added a note: –\nJade Yulo : \nSetup the new HP Series 5 Pro 524pm Monitor 23.8-inch Diagonal FHD USB-C Conferencing Monitor (S/N: CNC4470PZX) on the end user's desk\n\n \n\nTo view the status of the ticket or add comments, please visit\n\nhttps://onereach.chalhoub.com/helpdesk/tickets/1388626 \n\n \n\nThank you for your patience. \n\n \n\nSincerely, \n\n <data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==> \n\n \n\nThis mail was sent to you by\n\n <https://onereach.chalhoub.com/support/home> \n\n \n\n\n[#SR-1388626]:485094:fs",
+      "start_pos": 0,
+      "end_pos": 1542,
+      "chunk_index": 0,
+      "chunk_size": 1542,
+      "metadata": {
+        "doc_id": "C1NV2S3 - ticket updated - request for hagop ghazarian monitor for office -\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1NV2S3 - ticket updated - request for hagop ghazarian monitor for office -\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:08.801024",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1613
+  }
+}

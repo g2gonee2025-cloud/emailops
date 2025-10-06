@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1QCJCY - form - your team performance forms for review notification (summary)\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1QCJCY - form - your team performance forms for review notification (summary)\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:44:32\nFolder: C1QCJCY - form - your team performance forms for review notification (summary)\nMessage Count: 1\n\n--------------------------------------------------\nID: C1QCJCY_00\nFrom: Drive Admin <system@successfactors.eu>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-03-06 16:40\nSubject: Form -  Your Team Performance forms for review notification (Summary)\n--------------------------------------------------\n <https://performancemanager5.successfactors.eu/companyLogoServlet/?companyId=Chalhoub> \t\nDear GHAZARIAN Hagop, \n\nPlease note that the form 2024 Goals & Competencies Review Form for GHAZARIAN Hagop is now available in your DRIVE Inbox for approval. \n\nYou can access this form at the following URL: \nDocument Link <https://url.uk.m.mimecastprotect.com/s/KL5HC9LVMt2zxr9sOsOUqwVcz?domain=performancemanager5.successfactors.eu>  \n\n\t\n\t\nDRIVE Copyright 2008 SuccessFactors, Inc. All rights reserved. This message was sent by the Drive Application. For any inquiries, please contact your HRBP.",
+      "start_pos": 0,
+      "end_pos": 1103,
+      "chunk_index": 0,
+      "chunk_size": 1103,
+      "metadata": {
+        "doc_id": "C1QCJCY - form - your team performance forms for review notification (summary)\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1QCJCY - form - your team performance forms for review notification (summary)\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:10.376769",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1136
+  }
+}

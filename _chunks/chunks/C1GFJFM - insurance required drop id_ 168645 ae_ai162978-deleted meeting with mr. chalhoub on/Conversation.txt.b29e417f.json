@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1GFJFM - insurance required drop id# 168645 ae_ai162978-deleted meeting with mr. chalhoub on\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1GFJFM - insurance required drop id# 168645 ae_ai162978-deleted meeting with mr. chalhoub on\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:40:49\nFolder: C1GFJFM - insurance required drop id# 168645 ae_ai162978-deleted meeting with mr. chalhoub on\nMessage Count: 1\n\n--------------------------------------------------\nID: C1GFJFM_00\nFrom: Geeta Manjal <Geeta.Manjal@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Lali Das <Lali.Das@chalhoub.com>; Yasir Panthakkal <yasir.panthakkal@etoilegroup.com>; Hiba Assaf <hiba.assaf@etoilegroup.com>\nBCC: \nDate: 2025-05-06 09:57\nSubject: Insurance Required // DROP ID# 168645 //  AE_AI162978-deleted // meeting with Mr. CHALHOUB on February 28th\n--------------------------------------------------\nHi  @Hagop Ghazarian <mailto:Hagop.Ghazarian@chalhoub.com> \n\n \n\nWe would like to insure the subject Personal shipment for Mr. Patrick Challhoub\n\nKindly let us know once Insured\n\n \n\nTerms are EXW.\n\nMOT – Air or Sea \n\n \n\nRegards\n\nGEETA MANJAL\t\nSENIOR COORDINATOR ‑ SHIPPING\t\nREAL FZE\t\nDUBAI\t\n‑\t\nUNITED ARAB EMIRATES\t\n\t\t\n \t\n <https://chalhoubgroup.com/> \t\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\t\n‑\n\t\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\t\n <https://twitter.com/ChalhoubGroup> \t\n <https://www.facebook.com/chalhoubgroup/> \t\n <https://www.instagram.com/chalhoubgroup> \t\n <https://www.linkedin.com/company/chalhoub-group/> \t\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 0,
+      "end_pos": 1441,
+      "chunk_index": 0,
+      "chunk_size": 1441,
+      "metadata": {
+        "doc_id": "C1GFJFM - insurance required drop id# 168645 ae_ai162978-deleted meeting with mr. chalhoub on\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1GFJFM - insurance required drop id# 168645 ae_ai162978-deleted meeting with mr. chalhoub on\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:52.336282",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1519
+  }
+}

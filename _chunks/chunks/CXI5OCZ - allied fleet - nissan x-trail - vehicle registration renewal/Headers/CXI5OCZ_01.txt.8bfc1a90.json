@@ -1,0 +1,31 @@
+{
+  "doc_id": "CXI5OCZ - allied fleet - nissan x-trail - vehicle registration renewal\\Headers\\CXI5OCZ_01.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CXI5OCZ - allied fleet - nissan x-trail - vehicle registration renewal\\Headers\\CXI5OCZ_01.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from DU0PR05MB10266.eurprd05.prod.outlook.com (::1) by PAXPR05MB8317.eurprd05.prod.outlook.com with HTTPS; Tue, 5 Aug 2025 09:19:19 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from AS4PR05MB9327.eurprd05.prod.outlook.com (2603:10a6:20b:4ef::20) by DU0PR05MB10266.eurprd05.prod.outlook.com (2603:10a6:10:442::8) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8989.20; Tue, 5 Aug 2025 09:19:17 +0000\nReceived: from AS4PR05MB9327.eurprd05.prod.outlook.com ([::1]) by AS4PR05MB9327.eurprd05.prod.outlook.com ([fe80::3dab:6994:a225:a46f%4]) with Microsoft SMTP Server id 15.20.8989.018; Tue, 5 Aug 2025 09:19:17 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Mary Janice Dofeliz <MaryJanice.Dofeliz@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: Allied Fleet - NISSAN X-TRAIL - Vehicle Registration Renewal\nThread-Topic: Allied Fleet - NISSAN X-TRAIL - Vehicle Registration Renewal\nThread-Index: AQHcBehzur40pxkUEkWvcOv+QJP+xrRTyDiw\nReferences: <PAXPR05MB831747BC5EBE59E0335D15829D22A@PAXPR05MB8317.eurprd05.prod.outlook.com>\nIn-Reply-To: <PAXPR05MB831747BC5EBE59E0335D15829D22A@PAXPR05MB8317.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: MaryJanice.Dofeliz@chalhoub.com\nX-MS-TNEF-Correlator: 54c453e0-1e79-41d3-95fb-0f7303a4da1b\nMIME-Version: 1.0\nDate: Tue, 5 Aug 2025 09:19:17 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: AS4PR05MB9327.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <b95e0a57c85b4b39be0a07070848ddc6@AS4PR05MB9327.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: 0aefed06-61de-4199-0359-08ddd4012724\nX-MS-Exchange-Parent-Message-Id: <PAXPR05MB831747BC5EBE59E0335D15829D22A@PAXPR05MB8317.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: AS4PR05MB9327:EE_|DU0PR05MB10266:EE_|PAXPR05MB8317:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 05 Aug 2025 09:19:17.4218 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: 0aefed06-61de-4199-0359-08ddd4012724\nX-MS-Exchange-AtpMessageProperties: SA\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS4PR05MB9327.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Aug 2025 09:19:17.3034 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: AS4PR05MB9327.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: 0aefed06-61de-4199-0359-08ddd4012724\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: DU0PR05MB10266\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:02.6490071\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8989.017\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910005)(944506478)(944626604)(920097)(425001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: zEjdNRmdeRVAGWJaQe7eFsc10CyV2zo49WHE0+sSwjCfkE6p8USZ6O4Ezq3B+u7e+5VdyHt0Bt6rZtj7I28S4E9pKf2sFDqPqE2ystrezechjPnznxYT8Ucr+2lMbU8k3bM0+OWW21F8jBOonLSGyCI98XdVIkRWfiaipSJGAUdvGzMkEmHrqXsdWtPtEB+vqYuzR7h7fbzOD5secgWtFY3WWWGWDpPuf6RUANSkr9cxrNu6AoSNpeMHe+fzSKny+becAnMSTXipiagbzf6x0UY+BbPkXuczhz8y2+WBTCZYM00XT9TE5iCzWVtwqJk+8fb1jsCHdj2GI0a9hpPFVL0Jsf3Lhm/UN9+qdyNXc5QgRf2mvxE83xfLz2a5YGRcREsIl0hHaCtzIcnTOKgsXYDRJy5DM2QlGg2uWsNVDZ/PgHBlToQCPg1ZK+mr4EICkP5zJuqEyyAISweBT9OKefnLIm5aYa5q98ojIDhnX+oZ6Qt1Bj4YpVefKCu346EuWlk7iT0AKyvOD/mWtfnrsMZwsb8qm/y3lnyn/HOrowFQVpaUcMRvJ+S+/1ApG8wR3KwncVeqSfQ9jLj60QE8mm1u85yjy4K50PfdHAnZvv85/EXyuUw9v6NpHY54Gky7/53ygzs1DQex4UGH3/FtFRtlZE8l19MsOcrVweSSPP9xgMvESWwqnL4wyQAKFN6YWXohTJJn6szWsvBj3zrHgnAb9taNV6vgU+l54CdVfMS3FyWFUG5J95blHnXftk0j2DA1H6MS6vSwRyTo73ywAxp/XVtoMNb3neA3FKitpw3l06stKNM1r9hkTJIe8MNpg/oVDyCOYSgvzhJa1UU0knUUohaE81JTpzNHIgHUIXBJHCIrjYgB9fFPuSnCREMnyVFUj6yqo750DdsyFWPLMg==",
+      "start_pos": 0,
+      "end_pos": 4770,
+      "chunk_index": 0,
+      "chunk_size": 4770,
+      "metadata": {
+        "doc_id": "CXI5OCZ - allied fleet - nissan x-trail - vehicle registration renewal\\Headers\\CXI5OCZ_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CXI5OCZ - allied fleet - nissan x-trail - vehicle registration renewal\\Headers\\CXI5OCZ_01.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:39.679353",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4826
+  }
+}

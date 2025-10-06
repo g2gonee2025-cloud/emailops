@@ -1,0 +1,42 @@
+{
+  "doc_id": "C16RI4G - sum insured 2024-2025\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C16RI4G - sum insured 2024-2025\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:45:19\nFolder: C16RI4G - sum insured 2024-2025\nMessage Count: 1\n\n--------------------------------------------------\nID: C16RI4G_00\nFrom: Fashiuddin Jaffar <Fashiuddin.Jaffar@etoilegroup.com>\nTo: Tarek Fakhereddin <Tarek.Fakhereddin@chalhoub.com>\nCC: Joe Bourjeili <joe.bourjeili@etoilegroup.com>; Hattan Halabi <Hattan.Halabi@chalhoub.com>; Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nBCC: \nDate: 2024-10-31 18:36\nSubject: RE: SUM INSURED 2024-2025\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\nDear Tarek, \n\nGood day. \n\n \n\nPlease be informed that the Chanel Jeddah boutique was renovated and we moved all the stocks from the Temporary location to the renovated store on 31/08/2024.  \n\nWe would like to request you to cancel the below Chanel Temp Insurance accordingly.\n\nAl Nujaima\n\nCHANEL BOUTIQUE, JEDDAH (Temp)\n\n\t          6,000,000 \n\n                                2,373,920 \n\n        2,373,920 \n\n                                 3,400,000 \n\n                   11,773,920 \n\n \n\nKindly let me know if any clarification required. Thanks \n\n \n\nRegards\n\nFashiuddin Jaffar\n\n \n\nAl Nujaima Trading Company LTD.,\n\nOffice No. 106, 1st Floor, Gate 3, \n\nEl Khayyat Centre\n\nTahlia Street, Andalus District",
+      "start_pos": 0,
+      "end_pos": 1579,
+      "chunk_index": 0,
+      "chunk_size": 1579,
+      "metadata": {
+        "doc_id": "C16RI4G - sum insured 2024-2025\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C16RI4G - sum insured 2024-2025\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Kindly let me know if any clarification required. Thanks \n\n \n\nRegards\n\nFashiuddin Jaffar\n\n \n\nAl Nujaima Trading Company LTD.,\n\nOffice No. 106, 1st Floor, Gate 3, \n\nEl Khayyat Centre\n\nTahlia Street, Andalus District\n\nJeddah, Saudi Arabia\n\nP.O. Box 53270 Jeddah 21583, Saudi Arabia\n\nTel +966 (12) 660 3820 / 660 3406 / 284 2863 / 284 2865\n\nFax +966 (12) 667 2197\n\n\n\n \n\nThe information in this email and any files transmitted with it is intended only for the named recipient and may be privileged or confidential. If you are not the intended recipient please notify us immediately and do not copy, distribute, disclose, forward or take action based on this email. Al Nujaima Trading Company LTD. and any of its subsidiaries or holding companies shall not be liable for the message if altered, changed or falsified. Al Nujaima Trading Company LTD. accepts no liability for the content of this email or for the consequences of any actions taken as a consequence or reliance on the information provided in this e-mail and any file(s) transmitted with it, unless and until that information is subsequently confirmed in writing and signed by an authorized representative of Al Nujaima Trading Company LTD.",
+      "start_pos": 1365,
+      "end_pos": 2562,
+      "chunk_index": 1,
+      "chunk_size": 1197,
+      "metadata": {
+        "doc_id": "C16RI4G - sum insured 2024-2025\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C16RI4G - sum insured 2024-2025\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:28.571487",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2755
+  }
+}

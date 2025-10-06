@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1DFFDV - group insurance renewal - data collection exercise - groupwide property insurance renewal\\Headers\\C1DFFDV_01.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1DFFDV - group insurance renewal - data collection exercise - groupwide property insurance renewal\\Headers\\C1DFFDV_01.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from DB9PR05MB10908.eurprd05.prod.outlook.com (2603:10a6:10:4ce::21) by DU4PR05MB11790.eurprd05.prod.outlook.com with HTTPS; Mon, 15 Sep 2025 13:10:16 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from VI0PR05MB11522.eurprd05.prod.outlook.com (2603:10a6:800:245::16) by DB9PR05MB10908.eurprd05.prod.outlook.com (2603:10a6:10:4ce::21) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9115.21; Mon, 15 Sep 2025 13:10:14 +0000\nReceived: from VI0PR05MB11522.eurprd05.prod.outlook.com ([::1]) by VI0PR05MB11522.eurprd05.prod.outlook.com ([fe80::156b:7e63:5e8b:ada%4]) with Microsoft SMTP Server id 15.20.9094.021; Mon, 15 Sep 2025 13:10:14 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Thalia Papadopoulou <Efthalia.Papadopoulou@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: Group Insurance Renewal - Data Collection Exercise - Groupwide Property Insurance Renewal \nThread-Topic: Group Insurance Renewal - Data Collection Exercise - Groupwide Property Insurance Renewal \nThread-Index: AQHcFuB0/78bJCf0BkCNMKYW8bZFcrSUVmXX\nReferences: <DU4PR05MB11790F205D41635408254E8879D39A@DU4PR05MB11790.eurprd05.prod.outlook.com>\nIn-Reply-To: <DU4PR05MB11790F205D41635408254E8879D39A@DU4PR05MB11790.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Efthalia.Papadopoulou@chalhoub.com\nX-MS-TNEF-Correlator: 3f97d075-dc0a-4cde-aa9c-a4f32931beeb\nMIME-Version: 1.0\nDate: Mon, 15 Sep 2025 13:10:14 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: VI0PR05MB11522.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <fbe950c8ee084b5e890f82539501c49e@VI0PR05MB11522.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: ffe5101c-9ad1-4e88-ec5f-08ddf45935d9\nX-MS-Exchange-Parent-Message-Id: <DU4PR05MB11790F205D41635408254E8879D39A@DU4PR05MB11790.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: VI0PR05MB11522:EE_|DB9PR05MB10908:EE_|DU4PR05MB11790:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 15 Sep 2025 13:10:15.1281 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: ffe5101c-9ad1-4e88-ec5f-08ddf45935d9\nX-MS-Exchange-AtpMessageProperties: SA\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI0PR05MB11522.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Sep 2025 13:10:14.8753 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: VI0PR05MB11522.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: ffe5101c-9ad1-4e88-ec5f-08ddf45935d9\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: DB9PR05MB10908\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:01.1447228\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.9115.005\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910005)(944506478)(944626604)(920097)(425001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: PRI1Gljm+tzB8LUX6TEBUwsV3MJBxTSjeMv/UoMX5ujiZ//MsAsfHN3coPPNyM5EJ45RFHJ3xByX07z2RYcl+sXaPkTFNDTe7q22/OjI2+upTAx1GxG6EfRzPwNx8P60/nSrKGUVgcyGlVeq83tcktpKU0qG32ndvQDmHRSq+StHet9zD92H1HfxmoT4rCb3q0tTdNMjsAylLBVr6WkKPYIygqHtLj2P9qLQN/4+gadE2TyrofzIXuuJBCwaAe/EVqIrek3xIqMdKLguhZ9+w0rajsL0HLU0bDGYcQZiNv6rXYe6MPVFy09mbFXfvU9ujA5jaFtzGOmN4l7Xw5DC2q7feajdjm9pFk4cJl9Q7LOtGj41QbQdin4r6T/Ee9Ry0y24P1tLy8qVFo3+O+rohoTDPWL8GphlrmzDkZbC+Yu0aH0jPnrOowLCBGqx5xo8F4MsS9S4Dyi7J2peqFdCMF7X2O0iFQyHyS1xrIZxrbk/WBQBwAoNHe5iJRLkYnAhOImIFIitcxeLUz5Lfr0vc7BDYuGtIExzj+deP08W/x5kSty8LZEsEpJx2bRKSDap9/0q/CsIodavG4HqOKz37Yb2wipM+beV1PK0Zv9fkA9rtz/7CtmhlUxqSfFFSBtstFXC8mt6OgODXsOdCM2Mf5/QXHO6sluQzROEYX//dvBH7VtnfMPegHAnlHB3c2Hwc/bmBts0F/8egOaHkcou7Kxf3uOvnvRslEsMWhieoHvrXDXFSqzFeb0KDIvemDLF/w4TfjC0T8Dwypflp1bDuFv3fXnSgnS55ttnDtjhgXzUweaS3ee0yHIx+cABpeSIuoVnDv23k7K/Kziw+sC/RkCKeCb08nxvs0ZY3SRn0IMLqkBHm9Z8ROOeFu1tEsMf",
+      "start_pos": 0,
+      "end_pos": 4849,
+      "chunk_index": 0,
+      "chunk_size": 4849,
+      "metadata": {
+        "doc_id": "C1DFFDV - group insurance renewal - data collection exercise - groupwide property insurance renewal\\Headers\\C1DFFDV_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1DFFDV - group insurance renewal - data collection exercise - groupwide property insurance renewal\\Headers\\C1DFFDV_01.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:27:50.456001",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4905
+  }
+}

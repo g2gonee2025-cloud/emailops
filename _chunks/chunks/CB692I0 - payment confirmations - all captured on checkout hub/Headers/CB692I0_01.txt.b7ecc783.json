@@ -1,0 +1,42 @@
+{
+  "doc_id": "CB692I0 - payment confirmations - all captured on checkout hub\\Headers\\CB692I0_01.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CB692I0 - payment confirmations - all captured on checkout hub\\Headers\\CB692I0_01.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by PAXPR05MB9028.eurprd05.prod.outlook.com (2603:10a6:102:2b2::21) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8699.21; Thu, 8 May 2025 08:04:07 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%5]) with mapi id 15.20.8699.026; Thu, 8 May 2025 08:04:07 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Mohammed El Neel <Mohammed.Elneel@chalhoub.com>, Wassim Mallik <Wassim.Mallik@chalhoub.com>, Sharmina Hans <Sharmina.Hans@chalhoub.com>\nCC: Carol Miranda <Carol.Miranda@chalhoub.com>, ePayments <adminpayments@chalhoub.com>, Zafar Mahmood <Zafar.Mahmood@chalhoub.com>, Rene Caovilla <dubaimall@caovilla.ae>, May Karaki <May.Karaki@chalhoub.com>, Mohammed AL-AREQI <Mohammed.Al-areqi@chalhoub.com>, Hamid Ahmadi <Hamid.Ahmadi@chalhoub.com>\nSubject: Re: Payment confirmations - All captured on Checkout Hub\nThread-Topic: Payment confirmations - All captured on Checkout Hub\nThread-Index: Adu+dBduCvBRDUjxQhKniXCbHkNx3QAFMIvWAAA6i/AAARPLPgAj/Q/AAAFhzeAAABVasAAUXE3AAB46/TE=\nDate: Thu, 8 May 2025 08:04:07 +0000\nMessage-ID: <AS8PR05MB10824E1FA3321F8CB03EA1FED9D8BA@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <PA4PR05MB8993B5DD7D8FAE5EFE56AF4282892@PA4PR05MB8993.eurprd05.prod.outlook.com> <PAXPR05MB902543CE7D92D9AB331093D29A89A@PAXPR05MB9025.eurprd05.prod.outlook.com> <VE1PR05MB719861E3A2B91F2F670490D69189A@VE1PR05MB7198.eurprd05.prod.outlook.com> <PAXPR05MB902513CE7A505E5B44117C169A89A@PAXPR05MB9025.eurprd05.prod.outlook.com> <VE1PR05MB7198B6BDD500978B22289E949188A@VE1PR05MB7198.eurprd05.prod.outlook.com> <VE1PR05MB7198E02690CE7425D7E649CD9188A@VE1PR05MB7198.eurprd05.prod.outlook.com> <GV1PR05MB9723F8299900577F29653F1AC988A@GV1PR05MB9723.eurprd05.prod.outlook.com> <AM7PR05MB7042DD640E77440B6B966A5D8C88A@AM7PR05MB7042.eurprd05.prod.outlook.com>\nIn-Reply-To: <AM7PR05MB7042DD640E77440B6B966A5D8C88A@AM7PR05MB7042.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 2216,
+      "chunk_index": 0,
+      "chunk_size": 2215,
+      "metadata": {
+        "doc_id": "CB692I0 - payment confirmations - all captured on checkout hub\\Headers\\CB692I0_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CB692I0 - payment confirmations - all captured on checkout hub\\Headers\\CB692I0_01.txt"
+      }
+    },
+    {
+      "text": "ook.com>\nIn-Reply-To: <AM7PR05MB7042DD640E77440B6B966A5D8C88A@AM7PR05MB7042.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|PAXPR05MB9028:EE_\nx-ms-office365-filtering-correlation-id: ef7f2137-229d-485b-4388-08dd8e06e83a\nx-ms-exchange-atpmessageproperties: SA\nx-microsoft-antispam: BCL:0;ARA:13230040|31052699007|39142699007|366016|7053199007|13003099007|4013099003|8096899003|3613699012|41050700001;\nx-microsoft-antispam-message-info: kqgpFITBH9Rc80nzb4LJMeljhuk2qotJXbegL40quHebHDJZ4StnK8PjGG4RLjxZMPS6sEWLp0NOPrv7/v8fcP10btJBZKaB4De83kBZZR42VAfoYPw7Zy1SfY9j+e0F/R00LQ8bjeynWh+LowcmDqdH+pF75wFnfWcQn8xcgEsUEuv9iIpZTk5WuwGVZ6hS+Lx//17Agoz3lqXV+NbMvTuAguAyeEQFviT50D69TJlENYPHY2BIM/NFFHfAOYPZt9RvH5lWTTVxsglScxLhBG8rk6LRfhglZb/lJOiVtVDiIa0WrkWJpyRn5oPkvJCSMnZ7QV9hUunOz8xKhZMNtXA5gAbLzwoq4/iLhjUbDu2CJ0qvfBgDpU9uSX8kYvDpj848kB+vjpm+H+0sXMXIrfbfC5F1iRb4n9Y8kjoXtHKmj0D44rH9StMWSlF/dCdg0kBjGufE04/3iVluEdFG09mQW6YluQLahZNu2cahEB/fnwc/6FeAKBvqgksYiWcqQyb3oYQrQCSHqMk4/LXXHeKdj3P7p0KfGYIVeEZFwlv6ft9dnZKnxW0Huyd+bIHoCBB4DcjiBfmmHJfaCig1BtHSjSGcnUPEdNUgxMCA5i4nWbrx98Q/Mad3BQOGHh3qraHwo3HNS5QDQALAmzEg5th5/hnv5a/XVKyWrO+shq1IELqqw8l37OTRSY/LWJxJ5q7dNRJ7d/QXucYQrn2XweEiWWg0wolXyFPPtGWkUVI1lyX9eiuJSM9pu26didmnP3270OeqUJgeBNfdWVSowA==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(31052699007)(39142699007)(366016)(7053199007)(13003099007)(4013099003)(8096899003)(3613699012)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_022_AS8PR05MB10824E1FA3321F8CB03EA1FED9D8BAAS8PR05MB10824eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: Nl8ZEKq4DTnVATybAIdqcg809gfaeegWSaZzuFgsfPf1+25Oba6ZssRT9R4KKnAIzjQCipmvcILJ3jWCuqOu0JiRbfP2t3moj+0WE6QZlA/0GZwGHm7yjlIX++sJ5YUj1obCiPX4pvjnudiWf7/qxuDeS66rXqVKvLlGdmDcfV+IdJjp8m3SVtpwQpDT1xhWM7lTgVnAXu2q0saEA9uD2bO+0LU8riBdEgGSoZ8seWZHaGgGxmrRUJnRr0X7VSQu9ynYZ3H1L/SY6XiygJc4Rs7P752HV7e4m66nyKMb2ctc+MVtyCH1672RjAxVo7/lTxSvwitH5IBdF8N9YilWVUc8xh9d38GlQnkFVFOwVEe05fLN+uWXiSpzCzIzEA4wKMv2hvBw6tyvw1gZ4cTPosM1deesZ3BBkIAi4ygyiryfJ99Saf2+PiVkkVtAT+JXNHf99dLzwntnczgtubQc2JJP+7TIUI98OyO7dmirkR0SinBa7Y6gW0ClA5ifq6Ul6M7i3Vnydw5eHfJzV7YjX5WTw1LczdFMEwVNh+zS236Wipyabhn168O23RdVLHU84CAgIvpjsYZy0VPo0rFvv4FCY30VY50POtNu9oxfgcXSnHy1djvL1B1N1ta5A/hl\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: ef7f2137-229d-485b-4388-08dd8e06e83a\nX-MS-Exchange-CrossTenant-originalarrivaltime: 08 May 2025 08:04:07.3236 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: O0VNpmLffr/hWcJj7RgmBpYsUGAuUdmiwna7p/cW8B+S+NQuVUTegKpPIuiqSeGozjO5cAV6aRuVnv94SHuOrKPxOwUwuY8mLbimJcMJ42g=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR05MB9028\nX-OrganizationHeadersPreserved: PAXPR05MB9028.eurprd05.prod.outlook.com",
+      "start_pos": 2016,
+      "end_pos": 5482,
+      "chunk_index": 1,
+      "chunk_size": 3466,
+      "metadata": {
+        "doc_id": "CB692I0 - payment confirmations - all captured on checkout hub\\Headers\\CB692I0_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CB692I0 - payment confirmations - all captured on checkout hub\\Headers\\CB692I0_01.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:41.028995",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5526
+  }
+}

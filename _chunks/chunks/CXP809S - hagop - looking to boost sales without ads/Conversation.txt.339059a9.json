@@ -1,0 +1,53 @@
+{
+  "doc_id": "CXP809S - hagop - looking to boost sales without ads\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CXP809S - hagop - looking to boost sales without ads\\Conversation.txt",
+  "num_chunks": 3,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:48:55\nFolder: CXP809S - hagop - looking to boost sales without ads\nMessage Count: 2\n\n--------------------------------------------------\nID: CXP809S_00\nFrom: Jonathan Otani <jonathan@gtmoutboundgen.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2024-12-23 18:02\nSubject: Hagop - Looking to boost sales without ads?\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe.\nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\nDear Chalhoub Group's team,\n\nI'm Jonathan. We specialize in boosting online store sales without monthly fee. Our success-based model means you only pay when we increase your revenue.\n\nRecently, we helped a luxury goods & jewelry business grow their sales by 300% in just 3 months. They saw an additional $150K in revenue from our custom email campaigns.\n\nWould you like to explore how we can achieve similar results for Chalhoub Group?\n\nLet's schedule a brief call to chat about it.\n\nLooking forward to connecting,\n\nJonathan Otani\nBrand Development Specialist\nEmail On Performance\n\nPlease reply with \"Not interested\", if this seems irrelevant, thanks!",
+      "start_pos": 0,
+      "end_pos": 1416,
+      "chunk_index": 0,
+      "chunk_size": 1416,
+      "metadata": {
+        "doc_id": "CXP809S - hagop - looking to boost sales without ads\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CXP809S - hagop - looking to boost sales without ads\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Let's schedule a brief call to chat about it.\n\nLooking forward to connecting,\n\nJonathan Otani\nBrand Development Specialist\nEmail On Performance\n\nPlease reply with \"Not interested\", if this seems irrelevant, thanks!\n\n\n--------------------------------------------------\nID: CXP809S_01\nFrom: Jonathan Otani <jonathan@gtmoutboundgen.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2024-12-27 20:37\nSubject: Re: Hagop - Looking to boost sales without ads?\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe.\nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\nHagop,\n\nReached out the other day did you reveiw it?\n\nWe are helping online shops make the most out of their traffic through our targeted email and SMS marketing, not just talks, been there done that!\n\nHow about we book a free consultation for Chalhoub Group?\n\n\nJonathan Otani\nBrand Development Specialist\nEmail On Performance\n\nOn Mon, December 23, 2024 1:50 PM, Jonathan Otani <jonathan@gtmoutboundgen.com>\n[jonathan@gtmoutboundgen.com]> wrote:",
+      "start_pos": 1202,
+      "end_pos": 2469,
+      "chunk_index": 1,
+      "chunk_size": 1267,
+      "metadata": {
+        "doc_id": "CXP809S - hagop - looking to boost sales without ads\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CXP809S - hagop - looking to boost sales without ads\\Conversation.txt"
+      }
+    },
+    {
+      "text": "How about we book a free consultation for Chalhoub Group?\n\n\nJonathan Otani\nBrand Development Specialist\nEmail On Performance\n\nOn Mon, December 23, 2024 1:50 PM, Jonathan Otani <jonathan@gtmoutboundgen.com>\n[jonathan@gtmoutboundgen.com]> wrote:\n\n> Dear Chalhoub Group's team,\n>\n> I'm Jonathan. We specialize in boosting online store sales without monthly fee. Our success-based model means you only pay when we increase your revenue.\n>\n> Recently, we helped a luxury goods & jewelry business grow their sales by 300% in just 3 months. They saw an additional $150K in revenue from our custom email campaigns.\n>\n> Would you like to explore how we can achieve similar results for Chalhoub Group?\n>\n> Let's schedule a brief call to chat about it.\n>\n> Looking forward to connecting,\n>\n> Jonathan Otani\n> Brand Development Specialist\n> Email On Performance\n>\n> Please reply with \"Not interested\", if this seems irrelevant, thanks!\n>",
+      "start_pos": 2226,
+      "end_pos": 3151,
+      "chunk_index": 2,
+      "chunk_size": 925,
+      "metadata": {
+        "doc_id": "CXP809S - hagop - looking to boost sales without ads\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CXP809S - hagop - looking to boost sales without ads\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:49.802516",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 3448
+  }
+}

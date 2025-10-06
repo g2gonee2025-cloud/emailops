@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1562H5 - payment processed - batch id 473411\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1562H5 - payment processed - batch id 473411\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:42:04\nFolder: C1562H5 - payment processed - batch id 473411\nMessage Count: 1\n\n--------------------------------------------------\nID: C1562H5_00\nFrom: REALUAEAccounting-Receivable@chalhoub.com <REALUAEAccounting-Receivable@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Fathima Parakkat <Fathima.Parakkat@chalhoub.com>; Real Jordan Payments <realjordan.payments@chalhoub.com>\nBCC: \nDate: 2025-04-22 08:47\nSubject: Payment Processed - Batch ID: 473411\n--------------------------------------------------\nHello,\n\nWe are pleased to inform you that your payment has been processed and attached are the details for your reference.\n\nCOMPANY\t PAYEE\t CURRENCY\t AMOUNT\t INVOICE\t \nMCT FZE\t NASCO GULF INSURANCE AGENCY LLC\t EUR\t 153,300.0\t PDN-000886\t \n\n\n*** This is a system generated email, please do not reply to this mail. ***",
+      "start_pos": 0,
+      "end_pos": 918,
+      "chunk_index": 0,
+      "chunk_size": 918,
+      "metadata": {
+        "doc_id": "C1562H5 - payment processed - batch id 473411\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1562H5 - payment processed - batch id 473411\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:05.151559",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 950
+  }
+}

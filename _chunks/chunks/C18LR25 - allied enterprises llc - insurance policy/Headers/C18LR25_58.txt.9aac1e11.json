@@ -1,0 +1,42 @@
+{
+  "doc_id": "C18LR25 - allied enterprises llc - insurance policy\\Headers\\C18LR25_58.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C18LR25 - allied enterprises llc - insurance policy\\Headers\\C18LR25_58.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by DB4PR05MB10557.eurprd05.prod.outlook.com (2603:10a6:10:3cf::22) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8655.20; Tue, 15 Apr 2025 08:19:35 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%2]) with mapi id 15.20.8655.018; Tue, 15 Apr 2025 08:19:35 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Neeku Dsouza <Neeku.Dsouza@chalhoub.com>\nCC: Michelle Cantalejo <Michelle.Cantalejo@chalhoub.com>, Emily Dimaranan <Emily.Dimaranan@chalhoub.com>, Joe Hobeika <Joe.Hobeika@chalhoub.com>\nSubject: Re: URGENT: ALLIED ENTERPRISES LLC - insurance policy\nThread-Topic: URGENT: ALLIED ENTERPRISES LLC - insurance policy\nThread-Index: AdsOltdhjDizpb4QS62iDzawjZoGsQFi4cZQAS2QLrABgIFtcAAAJJqAAV20OmAC69f3sAAFhsZ/ADD11oAA+jJ3AAAEQNJQAdA52rAAAVZKoAAD5KnWAOTtuLAACkD5AAAAMLhgAYmKGEAA+6rDwABijx1AAP9fF4AAQtcJYAMRE9swAM/kVKAAOSqgsAEiL/YgABOi/q8AHae3IAAFvjFwADibN+AA9c420AAtvxUQAcnqu8ABWCNcAAEFQxjAAACj8gAAa/lxMAAAMVLgAoV0WFAAAo6SgAEtZFIwAADkugQAI3/pwAAERgiAAACPG8AANwbF8AAAgU7AAAJM6HAA8wGEsAFpohgABBlt90AALTndIAAE87vAAAD8E7kALk+iQAACYuX+AP2f5LQ=\nDate: Tue, 15 Apr 2025 08:19:35 +0000\nMessage-ID: <AS8PR05MB1082476CAA85451C8E686A67C9DB22@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <DB6PR05MB3382DFB32D0FDB96226DA4ABEBD12@DB6PR05MB3382.eurprd05.prod.outlook.com> <DB6PR05MB3382F7F24FB8480D67772D65EBDE2@DB6PR05MB3382.eurprd05.prod.outlook.com> <DB6PR05MB3382C906876C70FDB04CDFACEBB52@DB6PR05MB3382.eurprd05.prod.outlook.com> <AS1PR05MB89624A575B5251D37B8B1BA48AB42@AS1PR05MB8962.eurprd05.prod.outlook.com> <DB6PR05MB3382E5B72810538B5A6C8CE8EBB42@DB6PR05MB3382.eurprd05.prod.outlook.com> <AS8PR05MB1082486624DA19C544AAC4A0E9DB42@AS8PR05MB10824.eurprd05.prod.outlook.com> <DB6PR05MB33829ED493189815DBEA5AB1EBB72@DB6PR05MB3382.eurprd05.prod.outlook.com> <AS8PR05MB108245E7C98A3DFB6899294929DB72@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB108245E7C98A3DFB6899294929DB72@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 2287,
+      "chunk_index": 0,
+      "chunk_size": 2286,
+      "metadata": {
+        "doc_id": "C18LR25 - allied enterprises llc - insurance policy\\Headers\\C18LR25_58.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C18LR25 - allied enterprises llc - insurance policy\\Headers\\C18LR25_58.txt"
+      }
+    },
+    {
+      "text": "k.com>\nIn-Reply-To: <AS8PR05MB108245E7C98A3DFB6899294929DB72@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|DB4PR05MB10557:EE_\nx-ms-office365-filtering-correlation-id: a364792d-c603-46fe-2498-08dd7bf641b1\nx-ms-exchange-atpmessageproperties: SA|HVE\nx-microsoft-antispam: BCL:0;ARA:13230040|31052699007|366016|39142699007|7053199007|8096899003|13003099007|4013099003|41050700001;\nx-microsoft-antispam-message-info: V1eFLDAeNbejBZIqyYM8X1883qsWvOKy6acinhdiVfw+A6HvO6EB0S8GLwcRv3+HPxAPpx8aTjiX4gvbZyyQaj6EoLMIpJPOtNAnGYEapoO1ac9XBnWo8fmlKwsAN7RBlyHCZJ5EPnanYgIWC4GFr8bqCL3TDLw3Q3f9Ly1z+kp5vXmnUlHG5dx/V4fmIxiBXMvOOrJwIetjy0FqGIXmKHjp7FZHq7YvDK7MdZ4AGFfWJhjQc0zUQR7Vt0cR+zVvkj7tLz8oGcsceK3y8b534QCoDqL+dsa/WkxK9H2ENgrsmaK1ihBhNOy7w4xv4KW0s/inmviB+kctjSwU5/J9wgxfa9O/hHau7tcinCii4K6dkCa+9+yipLPp6QL4MGDeeveJxiHn4imEgFLd7QpndOS33FkF5vK33I2FnqejwBe/MAjpgQjS8HWE0Y4p+9b+Xfmi6R2lM7t8RSi+dxTKPar3RY5WLDH3GbHtDATfWo4ydcyU3bkXujciWCAeu9qMLdTXbToKTmLlfahZQgaGzznRmwEL14gjf6BsfhPt90qPhDCbedj0o6aRUJmGDp4J2hVPDiBihv54WiVmunBI7dwCwAdZdpoCGuUAdxVoO8HZDWX+qyeKJ4sd0JArxtRA1GKyxMuz19Tz08d7Lz9tYuRJy+O2L8VQR5PBMDvIiSnl1qM0jKuTh0uQIP7PPSHySEXzI54U8gYfnRGDyrBf04tn9wJGl/lDRO1RUmSKjOLyUKrvnDKmosdUIpO4446YyCXSHvmrGw0jYTUqKcWGqw==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:zh-cn;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(31052699007)(366016)(39142699007)(7053199007)(8096899003)(13003099007)(4013099003)(41050700001);DIR:INT;\nContent-Type: multipart/mixed; boundary=\"_031_AS8PR05MB1082476CAA85451C8E686A67C9DB22AS8PR05MB10824eu_\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: ORTZjH+l26t5VAKbmr6O+kvn29oEPqUQUCGrTJOAfLpccNblxpgsgngH78lgtHcbdMULltP9b8IzlYacTfWpfQqHH/6xCNZc+7A2/XuEYelfkhnsKMBQUt2F+mMwCH1d3/DN7TdQ4YzLZ0FL2SYu8QTVyE9srx/44e7s2QgM3fWKYo9NnwKldsiUYkZPw1FiJKbpkYQ4S2HEi9LMx2QGD/AElMyEV4FebUkcJogTqa2j+duWPBzZ1JQ+cimoryETTLM+2UsT5aHtiiHnFZWh2TsgiYbM5GSHDBMDOXyud2TKe47H+7xPzW0EYGF/rw+lwLaGETlM/BIMrJHfQZRPO+i4Tp6yYfDI/fX4v/ZfLUHRmf25+cR3gqPuzXng6LOy4ZwPWpb5xfu32Jb0/h/zCVCQRKgwKroJFbxl98oW+nDQHVFoVz5Y4KKqaJAzXygNvSOqGKDOCFnGf/hfW/ZBsNXjo+2a77X3tu3rZgwqczD6d6to+Q246jOQsq5pHoDIUvE++rTNYnWOr8bB8es0hNw9NWHOBQdz43mB1R55rjYk1ziVNcScl/CZXgWMh5kRep5vqtgv+/kmFZL70vR1F6wIJ3CwfMOYmx868Qg6al2IsnaNGFNol/iYlRqbehdM\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: a364792d-c603-46fe-2498-08dd7bf641b1\nX-MS-Exchange-CrossTenant-originalarrivaltime: 15 Apr 2025 08:19:35.0700 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: sabN2vzHcYUt/u+mijoFGeAva4fnWFBJWYKcvNgtMdEvwYq4kUUI49NeRKbeo/lS0gLwh4jRW1EYrM6wZfcCmoPJbi17SxMW4XDunsf796U=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: DB4PR05MB10557\nX-OrganizationHeadersPreserved: DB4PR05MB10557.eurprd05.prod.outlook.com",
+      "start_pos": 2087,
+      "end_pos": 5508,
+      "chunk_index": 1,
+      "chunk_size": 3421,
+      "metadata": {
+        "doc_id": "C18LR25 - allied enterprises llc - insurance policy\\Headers\\C18LR25_58.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C18LR25 - allied enterprises llc - insurance policy\\Headers\\C18LR25_58.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:27:40.485141",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5552
+  }
+}

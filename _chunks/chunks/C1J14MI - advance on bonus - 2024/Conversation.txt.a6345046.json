@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1J14MI - advance on bonus - 2024\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1J14MI - advance on bonus - 2024\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:51:55\nFolder: C1J14MI - advance on bonus - 2024\nMessage Count: 1\n\n--------------------------------------------------\nID: C1J14MI_00\nFrom: People & Culture <GroupHR@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2024-12-17 11:57\nSubject: Advance on Bonus - 2024\n--------------------------------------------------\n                                                            \n\n \n\n \n\nDear Hagop,\n\n \n\nAs we approach the end of 2024, we want to take a moment to recognize and appreciate your dedication and contribution to the Group. As a gesture of gratitude, we are pleased to advance a portion of your 2024 end-of-year performance bonus.\n\n \n\nYour on-target bonus entitlement for 2024 is equivalent to 37,200 - AED. \n\nWith your December 2024 salary, you will be receiving an advance of 35% of your on-target entitlement, which will be equivalent to 13,020 – AED.\n\n\nThe remaining balance will be determined based on your end-of-year performance review and will be paid in April - 2025.\n\n \n\nWe are grateful for your hard work, commitment, and the impact you’ve made throughout the year. Wishing you every success as we step into 2025!\n\n \n\nIf you have any questions or need further clarification, please don’t hesitate to reach out to Jad.nassif@chalhoub.com <mailto:Jad.nassif@chalhoub.com>  or to your respective people partner.\n\n \n\nEnjoy the holidays!\n\nRewards Team – People & Culture",
+      "start_pos": 0,
+      "end_pos": 1494,
+      "chunk_index": 0,
+      "chunk_size": 1494,
+      "metadata": {
+        "doc_id": "C1J14MI - advance on bonus - 2024\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1J14MI - advance on bonus - 2024\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:59.684591",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1578
+  }
+}

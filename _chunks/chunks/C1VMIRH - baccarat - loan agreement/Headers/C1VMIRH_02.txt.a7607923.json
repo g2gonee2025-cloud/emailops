@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1VMIRH - baccarat - loan agreement\\Headers\\C1VMIRH_02.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1VMIRH - baccarat - loan agreement\\Headers\\C1VMIRH_02.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from DB9PR05MB11868.eurprd05.prod.outlook.com (2603:10a6:10:5e1::18) by PAXPR05MB8317.eurprd05.prod.outlook.com with HTTPS; Tue, 12 Aug 2025 08:15:13 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from AM6PR05MB4502.eurprd05.prod.outlook.com (2603:10a6:209:44::11) by DB9PR05MB11868.eurprd05.prod.outlook.com (2603:10a6:10:5e1::18) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9009.22; Tue, 12 Aug 2025 08:15:12 +0000\nReceived: from AM6PR05MB4502.eurprd05.prod.outlook.com ([::1]) by AM6PR05MB4502.eurprd05.prod.outlook.com ([fe80::6b11:4d0d:d447:21cc%4]) with Microsoft SMTP Server id 15.20.9009.018; Tue, 12 Aug 2025 08:15:11 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Samantha Booth <Samantha.Booth@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: Baccarat - Loan agreement \nThread-Topic: Baccarat - Loan agreement \nThread-Index: AdvAKnn0FLVLz166T3GAKVOaFy8DYAJXs2oADIlYQGAAAEOo4AABex4QAAWGswAD5V7DTw==\nReferences: <AM6PR05MB55889FC6C648F543763D3D53988BA@AM6PR05MB5588.eurprd05.prod.outlook.com> <VI1PR05MB559770C034CB82FAC20DE8E0989FA@VI1PR05MB5597.eurprd05.prod.outlook.com> <AM6PR05MB5588439ECAEDDEF4B423B013985FA@AM6PR05MB5588.eurprd05.prod.outlook.com> <DBBPR05MB6298BE768AF5A8D541A1F059E85FA@DBBPR05MB6298.eurprd05.prod.outlook.com> <AM6PR05MB5588B82275B5A95B5C42E4C1985FA@AM6PR05MB5588.eurprd05.prod.outlook.com> <AS8PR05MB108246993353FAB44636F0E3C9D5FA@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB108246993353FAB44636F0E3C9D5FA@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 1769,
+      "chunk_index": 0,
+      "chunk_size": 1768,
+      "metadata": {
+        "doc_id": "C1VMIRH - baccarat - loan agreement\\Headers\\C1VMIRH_02.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1VMIRH - baccarat - loan agreement\\Headers\\C1VMIRH_02.txt"
+      }
+    },
+    {
+      "text": "om> <AS8PR05MB108246993353FAB44636F0E3C9D5FA@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB108246993353FAB44636F0E3C9D5FA@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Samantha.Booth@chalhoub.com\nX-MS-TNEF-Correlator: fba23bc0-e6d0-439a-91b3-9fa9aa68f2f8\nMIME-Version: 1.0\nDate: Tue, 12 Aug 2025 08:15:11 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: AM6PR05MB4502.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <267f6de828d3411a977a44c25c5e350c@AM6PR05MB4502.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: b4c1fb8b-83e2-4105-b1ef-08ddd9785c09\nX-MS-Exchange-Parent-Message-Id: <AS8PR05MB108246993353FAB44636F0E3C9D5FA@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: AM6PR05MB4502:EE_|DB9PR05MB11868:EE_|PAXPR05MB8317:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 12 Aug 2025 08:15:12.1112 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: b4c1fb8b-83e2-4105-b1ef-08ddd9785c09\nX-MS-Exchange-AtpMessageProperties: SA\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM6PR05MB4502.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Aug 2025 08:15:11.9743 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: AM6PR05MB4502.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: b4c1fb8b-83e2-4105-b1ef-08ddd9785c09\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: DB9PR05MB11868\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:01.0416361\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.9009.009\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910005)(944506478)(944626604)(920097)(425001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: xrD4aMWPSuB8yb+P5CBkj5K302mdz6obbE6KBRh6Ld8HtAJAM7uFfXH+yGlK32tbg91mAvQzv4wr+h9/bcpRrZEEuUsZgXkV8Ac/oX52MKphWSyfxKjsE57aBS2HbTpDpLF+kJrj7FquJaj1zs0husYoXBbCNhQwVJoK1tGz6D63z7Uu3gWeA5ytOx5Br8ZoDKonJo29xrAjEcGVVvAc7YsPWYdP82pLoKW17hgRzUvsi27BfvYSBshmh5/WoURqeFy4q1vjFIFRmDRolniKsSml0K8mv/QoOFIY7Py39fS/w3DF66WTn++bH0oGPlt1aL3H0ZrRpJd0Cc+n/M49oHxMDdPLUM+69Lfufm1C5I2Ds75i1izZtjchO22IfsnHbFVGbcTxhKoOK72qkV0aUpZ++hDl3Aoo1MlDn6fqJSev1wZkdypbCF1FvnEGEIpOAAW+UzpT1HkC5we2Ju/+aZo+uLlPiiJftY2nOYCmOQnmXhS76CfvgJQu1csmSo09YwRlpdY02Mns8V/xqHZXUK67jcZuB2b9rUa7ntrNXz/iRlbMpTtRAm8TgyYAPpZ8ZHV31ap7BKY1WJI1Cu7LM86mD004H7HVt872c+JUfq/ioN3adgz4Qqf5kBrG4rzojXpOxwR5sEsb/UijZDhDjaTyRIv1H6v8QIFbtuFQwRMfKyFxzVnePq8dtE7NiFzNocc+AmmMTSAYeF33WLTnjDI6pAPlrN/j8ndElopRdwWNjpujJbO87gCOxq+u9Jlf2a/BYqxYLUQPh5gpNLvkil0omBexEjYippFJIAhLOaFNl6yVor6S6hhRKxm7Jlv5EWP6QHBxdnrvaFhQZYCefsqh2k+bwGZI6Y1Wz5m6Vk/sLbXc4jQQH05A6xgx1G1SMG+UT4RJv7olmgS/Gkp2Qw==",
+      "start_pos": 1569,
+      "end_pos": 5157,
+      "chunk_index": 1,
+      "chunk_size": 3588,
+      "metadata": {
+        "doc_id": "C1VMIRH - baccarat - loan agreement\\Headers\\C1VMIRH_02.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1VMIRH - baccarat - loan agreement\\Headers\\C1VMIRH_02.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:01.252865",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5213
+  }
+}

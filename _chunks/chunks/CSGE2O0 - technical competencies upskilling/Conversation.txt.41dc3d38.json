@@ -1,0 +1,42 @@
+{
+  "doc_id": "CSGE2O0 - technical competencies upskilling\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CSGE2O0 - technical competencies upskilling\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:25:46\nFolder: CSGE2O0 - technical competencies upskilling\nMessage Count: 1\n\n--------------------------------------------------\nID: CSGE2O0_00\nFrom: Chalhoub University <Chalhoub.University@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-09-04 14:07\nSubject: Technical Competencies Upskilling\n--------------------------------------------------\n\n\n \n\nDear Hagop GHAZARIAN,\n\n \n\nAs part of our shared commitment to your professional growth, we’ve reviewed your 2024 Performance Review and identified a few learning opportunities to help you strengthen key technical competencies.\n\n \n\nNote: See below for details on accessing your Coursera license. \n\n \n\nWe encourage you to explore the following Coursera courses, available through our Learning Pathways:\n\n \n\nOperations Management: Organization and Analysis: https://www.coursera.org/learn/operations-management-organization-and-analysis\n\nOperations Management: Quality and Supply Chain: https://www.coursera.org/learn/operations-management-quality-and-supply-chain\n\n \n\n \n\nYou’re also welcome to browse other relevant courses and competencies here:\n\n\n\n     Administrative Learning Pathways:  Administrative Job Family <https://chalhoubuniversity.com/course/view.php?id=3026> \n\n \n\nIf you don’t yet have a Coursera license, you can request one here: Coursera License <https://chalhoubuniversity.com/course/view.php?id=619>  \n\nOr simply scan the QR code below to receive your Coursera license",
+      "start_pos": 0,
+      "end_pos": 1551,
+      "chunk_index": 0,
+      "chunk_size": 1551,
+      "metadata": {
+        "doc_id": "CSGE2O0 - technical competencies upskilling\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CSGE2O0 - technical competencies upskilling\\Conversation.txt"
+      }
+    },
+    {
+      "text": "If you don’t yet have a Coursera license, you can request one here: Coursera License <https://chalhoubuniversity.com/course/view.php?id=619>  \n\nOr simply scan the QR code below to receive your Coursera license\n\n \n\n\n\n \n\nWe’re here to support you on your learning journey. If you have any questions, need guidance in selecting courses, or would like to discuss your development goals, please feel free to connect with us anytime.\n\n \n\nWith you at heart, \n\nChalhoub University \n\n \n\nCHALHOUB UNIVERSITY\t\n​​​​\t\nCOMPANY ACCOUNT\t\nGroup Human Resources\t\n\n\t\nDUBAI\t\n‑\t\nUNITED ARAB EMIRATES\t\n\t\t\n \t\n <https://chalhoubgroup.com/> \t\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\t\n‑\n\t\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\t\n <https://twitter.com/ChalhoubGroup> \t\n <https://www.facebook.com/chalhoubgroup/> \t\n <https://www.instagram.com/chalhoubgroup> \t\n <https://www.linkedin.com/company/chalhoub-group/> \t\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 1342,
+      "end_pos": 2351,
+      "chunk_index": 1,
+      "chunk_size": 1009,
+      "metadata": {
+        "doc_id": "CSGE2O0 - technical competencies upskilling\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CSGE2O0 - technical competencies upskilling\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:14.109045",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2476
+  }
+}

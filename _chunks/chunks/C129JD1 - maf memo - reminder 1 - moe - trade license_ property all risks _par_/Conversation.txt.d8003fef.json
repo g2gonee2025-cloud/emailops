@@ -1,0 +1,31 @@
+{
+  "doc_id": "C129JD1 - maf memo - reminder 1 - moe - trade license, property all risks (par),\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C129JD1 - maf memo - reminder 1 - moe - trade license, property all risks (par),\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:29:21\nFolder: C129JD1 - maf memo - reminder 1 - moe - trade license, property all risks (par),\nMessage Count: 1\n\n--------------------------------------------------\nID: C129JD1_00\nFrom: Ramez Zebdie <Ramez.Zebdie@chalhoub.com>\nTo: Salwa Al Mamari <Salwa.Almamari@chalhoub.com>; Sharon Pinto <Sharon.Pinto@chalhoub.com>; Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Muhammed Sweadan <Muhammed.Sweadan@chalhoub.com>; Government Affairs <Government.Affairs@chalhoub.com>\nBCC: \nDate: 2025-07-18 15:30\nSubject: MAF Memo - REMINDER 1 - MOE - TRADE LICENSE, PROPERTY ALL RISKS (PAR), PUBLIC LIABILITY INSURANCE CERTIFICATE & STORAGE INSURANCE CERTIFICATE\n--------------------------------------------------\nDear Team,\n\n \n\nPlease find below Memo email from MAF management team for your information and any necessary action.\n\n \n\nBest Regards,\n\nRamez Zebdie\n\n \n\n\n\nRAMEZ ZEBDIE\t\nSPECIALIST ‑ RSO\t\nALLIED ENTERPRISES LLC\t\nDUBAI\t\n‑\t\nUNITED ARAB EMIRATES\t\n+971 4 563 2000\t\n+971504769298\t\n \t\n <https://chalhoubgroup.com/> \t\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\t\n‑\n\t\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\t\n <https://twitter.com/ChalhoubGroup> \t\n <https://www.facebook.com/chalhoubgroup/> \t\n <https://www.instagram.com/chalhoubgroup> \t\n <https://www.linkedin.com/company/chalhoub-group/> \t\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 0,
+      "end_pos": 1483,
+      "chunk_index": 0,
+      "chunk_size": 1483,
+      "metadata": {
+        "doc_id": "C129JD1 - maf memo - reminder 1 - moe - trade license, property all risks (par),\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C129JD1 - maf memo - reminder 1 - moe - trade license, property all risks (par),\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:38.479147",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1558
+  }
+}

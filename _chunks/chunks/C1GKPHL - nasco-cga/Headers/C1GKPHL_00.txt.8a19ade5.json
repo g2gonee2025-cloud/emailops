@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1GKPHL - nasco-cga\\Headers\\C1GKPHL_00.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1GKPHL - nasco-cga\\Headers\\C1GKPHL_00.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by PAWPR05MB10283.eurprd05.prod.outlook.com (2603:10a6:102:2f3::5) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7982.34; Wed, 2 Oct 2024 08:47:29 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%3]) with mapi id 15.20.7982.033; Wed, 2 Oct 2024 08:47:28 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Muhannad Alhuneidi <Muhannad.Alhuneidi@chalhoub.com>, Tarek Fakhereddin <Tarek.Fakhereddin@chalhoub.com>, Firas Babuk <Firas.Babuk@chalhoub.com>, Anwar Baig <Anwar.Baig@chalhoub.com>, Abla Qteishat <Abla.Qteishat@chalhoub.com>, Omar Alkhatib <Omar.Alkhatib@chalhoub.com>, Bader Abdallah <Bader.Abdallah@chalhoub.com>, Rawan Sallam <Rawan.Sallam@chalhoub.com>, Furqan Akhai <Furqan.Akhai@chalhoub.com>\nCC: Mohammed Zaher Tayara <Md.zaher.Tayara@chalhoub.com>, Siyavudheen Kizhissery <Siyavudheen.Kizhissery@chalhoub.com>, Alaaaldeen Alasaad <Alaaaldeen.Alasaad@chalhoub.com>\nSubject: Re: NASCO-CGA\nThread-Topic: NASCO-CGA\nThread-Index: AdsP38x4UqylpO7MQXWSvDNT9nPj4wAAvWNAAABcDuAA+0969AAAjF8AAAASkEEALeLPgAAAG2zZAACmF1gAAF0+sAADgM+f\nDate: Wed, 2 Oct 2024 08:47:28 +0000\nMessage-ID: <AS8PR05MB1082475212768F99238843C579D702@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <AS8PR05MB10778AC219EA80E9C749ACE5EEB6A2@AS8PR05MB10778.eurprd05.prod.outlook.com> <AM0PR05MB4596D4313DF3BA1D81A1F1E0956A2@AM0PR05MB4596.eurprd05.prod.outlook.com> <GV1PR05MB97963936DA223B108273BF079D6A2@GV1PR05MB9796.eurprd05.prod.outlook.com> <AM0PR05MB4596C7BD9971EAB7B4DCE4B795772@AM0PR05MB4596.eurprd05.prod.outlook.com> <GV1PR05MB979639AAE8A519FD9A34067E9D772@GV1PR05MB9796.eurprd05.prod.outlook.com> <AM0PR05MB4596EE81CB6350FA6A7D1AAC95772@AM0PR05MB4596.eurprd05.prod.outlook.com> <DU0PR05MB9605151CE34796AE8E0ABF01E6702@DU0PR05MB9605.eurprd05.prod.outlook.com> <AM0PR05MB45967A92748EF8874470BF7495702@AM0PR05MB4596.eurprd05.prod.outlook.com> <AM0PR05MB4596AAAF187D74056BEFD6F195702@AM0PR05MB4596.eurprd05.prod.outlook.com> <DU0PR05MB960572EBDC61F9A2483559F3E6702@DU0PR05MB9605.eurprd05.prod.outlook.com>\nIn-Reply-To: <DU0PR05MB960572EBDC61F9A2483559F3E6702@DU0PR05MB9605.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 2435,
+      "chunk_index": 0,
+      "chunk_size": 2434,
+      "metadata": {
+        "doc_id": "C1GKPHL - nasco-cga\\Headers\\C1GKPHL_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1GKPHL - nasco-cga\\Headers\\C1GKPHL_00.txt"
+      }
+    },
+    {
+      "text": "od.outlook.com>\nIn-Reply-To: <DU0PR05MB960572EBDC61F9A2483559F3E6702@DU0PR05MB9605.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|PAWPR05MB10283:EE_\nx-ms-office365-filtering-correlation-id: 621646a9-a376-4994-f3db-08dce2bed8bc\nx-ms-exchange-atpmessageproperties: SA|SL\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|41050700001;\nx-microsoft-antispam-message-info: MSbOLtnWiW3cJPT7JXwQ1xI2TkTwiDy6BPMNhrlTTYVr+AZBnC9UIiWDA98JD6cfqyqxHCdQHh5fSuubUu75f+Q3dr7yTgvbSPYP229CaE5588GTbyHQq+cbCkelZvx4z6HrSSReZv7GmypKZt4aHZ0gtOiWCarcuxWHyAECd2VxoFTUzFghkmR04UkaGtqz7JkdQum0kvVeIS5HfWyD2R+T/mkSAgXt5GnbUXJrGe3b1BDqwMTvdkihgy6LAGKKn7/sMDmeW1n6NHCRyAwrEgkXDLIcUGyA3nU82GqGxsr+wFj6Pg5b80KvGwOcT868p63AfhJnMx++1wZO1a5Tt40dLlS3d5ocKo8jMgXQbzhea97fAOi/YbTxk2mEWC5oZOfd7sj6/gBpt8MhbRV1AP8CHRGd2s3UxMiAOYVOUTIpVLk9b4QAA5HRm0/OTApSGzpQ/iDLrFRG4vQpKBblZawtwYgTRmaWd/3XLPEGPeo7y+0lsV+pYWVsov8VCDfWjTbKu6x6hO4faQIScUojkLT4LlduKOwcRm7qAeWsmwXiaZq39AUHmP1v+4Fm+6fsEwguAGnZArjgEtvOCTYucdXc+cwXt17o1hM9I6fFRIj9QZfX/KTE3Dk0OZO6V3HG3TIYZiGB1vbDwbTDNSRz4Uqbop0Ls/EuuiAONuBwlZ6DvELamz04rQvX0sRg4zmKWLqrxLHF7UeJPSeGN13Z6BXJYtAiFffbiRgKKFJ2Nb/MgM/hPIf77WgfXbOwALvfCxhtnfEPIj+2haXmaFMpdw==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_018_AS8PR05MB1082475212768F99238843C579D702AS8PR05MB10824eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: rdWNyl5RRkLY4s2571YFPfSVtUXW1cqTt2iLd4yIqoZVm4vfC/wDSSLDKtRTnHkj9+WTrmpNnrxHqEK6YXB+zzyPXoXPal3sqeKrF6LjoLvE7BbJcrBGlyuw0OL02m6Si/lwtCUCWMoleC3NhOyxcdEectp7wPa8+l4cJ/wHrDlz3UJM4t8s+bls3RXv7Hkw5WpSk2zNcY5FC41+VrFaVfUvlt/CVo8slZCLzHPbwysXFJFSr5Q7w3LPL298y/lBsSLo/TVyauvIUGHHIu83UX6KhQp50zPQYNhieHWr0BxX7MgqNGbQSsxLF/h2/V9BqLoxlqUJpvPzgt1H+MyfZh0br+QVgm6bKs//Vgtuu7cdMla18WCSGiAycdwGag2t1Rw7YP3gC3mTHEgsGzwEwZm9B9V8n3a45U2SvLKNF1utkjJH0zrH979GEFWO6yvcq9d3BDyciW34n6pExfnr6QWxicl4YTJju7CVtL5qmqIHislaaV9RoVR3ymlGeeRleQI2EJPu71ZfXLiuGKMK46UNRzb/rYtB3VYRgGsyDCOzNVTbQMO8/o2h6iWuKGFxZDcz8h7K6UYY0eTIOjpSi4JkqnT6Gr+ruSkXIdrHMh2Dzt6zBWLETTKAf1ydTEWL\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 621646a9-a376-4994-f3db-08dce2bed8bc\nX-MS-Exchange-CrossTenant-originalarrivaltime: 02 Oct 2024 08:47:28.7115 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: 9u24WS3kPOLuGfhMKTUiuw6J0G92E3HZ3TdZG6qZDuSt1TThQWAr07TZlF8PzjRhoQzGmUnm+6Gxf9tMlSR01dUCMLMl/TiouBUIIThPLeA=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PAWPR05MB10283\nX-OrganizationHeadersPreserved: PAWPR05MB10283.eurprd05.prod.outlook.com",
+      "start_pos": 2235,
+      "end_pos": 5540,
+      "chunk_index": 1,
+      "chunk_size": 3305,
+      "metadata": {
+        "doc_id": "C1GKPHL - nasco-cga\\Headers\\C1GKPHL_00.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1GKPHL - nasco-cga\\Headers\\C1GKPHL_00.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:01.507133",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5584
+  }
+}

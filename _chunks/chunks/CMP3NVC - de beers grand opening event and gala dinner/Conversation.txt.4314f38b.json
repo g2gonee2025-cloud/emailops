@@ -1,0 +1,42 @@
+{
+  "doc_id": "CMP3NVC - de beers grand opening event and gala dinner\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CMP3NVC - de beers grand opening event and gala dinner\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:42:44\nFolder: CMP3NVC - de beers grand opening event and gala dinner\nMessage Count: 1\n\n--------------------------------------------------\nID: CMP3NVC_00\nFrom: Christopher Matsumoto <Chris.Matsumoto@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>; Rawad Hossein <Rawad.Hossein@chalhoub.com>; Ahmed Eltahan <Ahmed.Eltahan@chalhoub.com>; Kawttar Nassik <Kawttar.Nassik@chalhoub.com>\nCC: Romy Ammar <Romy.Ammar@chalhoub.com>\nBCC: \nDate: 2025-04-04 16:37\nSubject: De Beers Grand Opening event and Gala Dinner \n--------------------------------------------------\nDear Hagop, Rawad, and Ahmed,\n\n\nI hope this finds you well.\n\nFollowing the launch of our De Beers boutique in Dubai Mall, we are organizing our store's opening on April 16th with an event in a venue next to our boutique. \nWe would like to request your support in coordinating this together, as we will need insurance coverage and security coverage.\n\n\nHere are the details I have received so far:\n\n\nApproximately 20 high jewellery pieces are to be picked-up from our boutique by secured transport (Brinks/Ferrari/Malca Amit)  on the day of the event. \nThese are to be delivered immediately at the venue with no other stops in between. (The venue is attached to Dubai Mall: Address Hotel). \n6 Vitrines will be at the venue to showcase these pieces. \n\nTotal Value of goods: 9.5 million AED",
+      "start_pos": 0,
+      "end_pos": 1438,
+      "chunk_index": 0,
+      "chunk_size": 1438,
+      "metadata": {
+        "doc_id": "CMP3NVC - de beers grand opening event and gala dinner\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CMP3NVC - de beers grand opening event and gala dinner\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Approximately 20 high jewellery pieces are to be picked-up from our boutique by secured transport (Brinks/Ferrari/Malca Amit)  on the day of the event. \nThese are to be delivered immediately at the venue with no other stops in between. (The venue is attached to Dubai Mall: Address Hotel). \n6 Vitrines will be at the venue to showcase these pieces. \n\nTotal Value of goods: 9.5 million AED\n\nItems must be picked-up from the boutique between 15:00 and 15:30 with delivery immediately at the venue. De Beers staff will be onsite to received the sealed transportation bag.\n\nAfter the event, a secured transport should also be scheduled at 23:00 to return the items from the venue with immediate delivery to our boutique so we can secure them in our vault overnight.\n\nLocation: The Restaurant, 12th Floor, Address Hotel, Dubai Mall\n\nOne security guard is to be scheduled at the venue from 16:00 until the departure of the piece.\n\nRomy Ammar, myself, and 2 of my Client Advisors will be on site to receive and re-package the pieces to be returned to our store before closing. \n\nOur in-store team will wait until the pieces are returned from the event to close our store.  \n\n\nIn order to orchestrate this event as smoothly and securely as possible, can we please have your support and guidance? \nPerhaps we can schedule a Teams Meeting if that would be easier for clarity and all parties involved.\n\n\nI look forward to your response.\n\nWith best regards,\nChris Matsumoto\nBoutique Manager\n\n\nDubai Mall - Grand Atrium\nGround Floor, Unit 271\nT: + 971 4 271 9838\ndebeers.dubaimall@chalhoub.com",
+      "start_pos": 1050,
+      "end_pos": 2630,
+      "chunk_index": 1,
+      "chunk_size": 1580,
+      "metadata": {
+        "doc_id": "CMP3NVC - de beers grand opening event and gala dinner\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CMP3NVC - de beers grand opening event and gala dinner\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:33.114584",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2701
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "doc_id": "CJ802FC - dubai national insurance & reinsurance - medical policy online payment\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CJ802FC - dubai national insurance & reinsurance - medical policy online payment\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:43:48\nFolder: CJ802FC - dubai national insurance & reinsurance - medical policy online payment\nMessage Count: 1\n\n--------------------------------------------------\nID: CJ802FC_00\nFrom: online@dni.ae <online@dni.ae>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: mridul.nambiar@nascodubai.com <mridul.nambiar@nascodubai.com>; IndividualMedical-Dubai@nascodubai.com <IndividualMedical-Dubai@nascodubai.com>\nBCC: \nDate: 2025-03-18 10:29\nSubject: Dubai National Insurance & Reinsurance - Medical Policy Online Payment\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\n  \n\n <https://url.uk.m.mimecastprotect.com/s/xuqyCx7J4fxEM8KT8flUyFrnH?domain=dni.ae> \n\nDear Valued Client, \n\nThank you for choosing Dubai National Insurance. \n\nFor online payment of your policy 09/957/NEX/2025/50041 premium AED 731.85, Please click PAY ONLINE and type your 10 digit mobile number and OTP 295628. \n\nPlease do not press F5 or refresh button while payment is progressing. \n\nDue Before:  25-MAR-25 \n\nTotal amount (AED) \n\n731.85 \n\n <https://url.uk.m.mimecastprotect.com/s/P41PCyJKgfLOXDECMhnUxKSQk?domain=dni.ae> \n\nThank you for trusting us for over three decades of offering best-in-class insurance solutions.",
+      "start_pos": 0,
+      "end_pos": 1573,
+      "chunk_index": 0,
+      "chunk_size": 1572,
+      "metadata": {
+        "doc_id": "CJ802FC - dubai national insurance & reinsurance - medical policy online payment\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CJ802FC - dubai national insurance & reinsurance - medical policy online payment\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Total amount (AED) \n\n731.85 \n\n <https://url.uk.m.mimecastprotect.com/s/P41PCyJKgfLOXDECMhnUxKSQk?domain=dni.ae> \n\nThank you for trusting us for over three decades of offering best-in-class insurance solutions. \n\nAt DNI, we care about Protecting What Matters. \n\nYour trusted partner, \n\nDubai National Insurance \n\n <https://www.dni.ae/resources/paymenteml/onlineprod.png> \n\nContact Center \n\n600 5 80000 \n\ncontactcenter@dni.ae <mailto:contactcenter@dni.ae>  \n\n\twww.dni.ae <https://url.uk.m.mimecastprotect.com/s/F_aDCzxLjS4WgDvtgiBU9Lxaj?domain=dni.ae>  \n\n <https://url.uk.m.mimecastprotect.com/s/X-jzCA90kIEp60MCYs6UG45p9?domain=facebook.com>  \n\n <https://url.uk.m.mimecastprotect.com/s/Bv0HCBRk0i8W6q3cWtRU2Dil_?domain=instagram.com>  \n\n <https://url.uk.m.mimecastprotect.com/s/6hJHCDJmnf3YvpQHkugUjAu87?domain=twitter.com>  \n\n <https://url.uk.m.mimecastprotect.com/s/lUitCE6noUp49yKfBC6U7d8AN?domain=linkedin.com>  \n\n  \n\n  \n\n  \n\n-",
+      "start_pos": 1363,
+      "end_pos": 2293,
+      "chunk_index": 1,
+      "chunk_size": 930,
+      "metadata": {
+        "doc_id": "CJ802FC - dubai national insurance & reinsurance - medical policy online payment\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CJ802FC - dubai national insurance & reinsurance - medical policy online payment\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:11.301782",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2475
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "doc_id": "C3U3XDK - workshop booking confirmation understanding and developing self workshop, 9 00 am-1 00 pm, 3 july 2025\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C3U3XDK - workshop booking confirmation understanding and developing self workshop, 9 00 am-1 00 pm, 3 july 2025\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:32:52\nFolder: C3U3XDK - workshop booking confirmation understanding and developing self workshop, 9 00 am-1 00 pm, 3 july 2025\nMessage Count: 1\n\n--------------------------------------------------\nID: C3U3XDK_00\nFrom: Chalhoub University <Chalhoub.University@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-07-01 12:24\nSubject: Workshop booking confirmation: Understanding and Developing Self Workshop, 9:00 AM-1:00 PM, 3 July 2025\n--------------------------------------------------\n <https://mcusercontent.com/101e49fb58ec7b23a147c194a/images/6e974675-f229-4be5-8274-4b1df53b3acd.png> \n\n\n________________________________\n\n\n\n\nDear Hagop,\n\nCongratulations! You have now been booked on Understanding and Developing Self Workshop:\n\nHere are the details of your upcoming workshop:\nWorkshop: Understanding and Developing Self Workshop\nDuration: \nDate(s): 3 July 2025, 9:00 AM to 1:00 PM\n\n\nWe encourage you to discuss the programme with your direct manager and align on expected outcomes both for you and your team, prior to attending this workshop.\n\nUse the email attachment to save a reminder to your calendar. We will also buzz you about this 2 business days in advance.\n\nIf you would like to reschedule or cancel your booking, you can do so by visiting the link below:\nCancel or Reschedule Workshop <https://chalhoubuniversity.com/mod/facetoface/view.php?f=693> \n\nWith you at heart,\nChalhoub University Team\n\n\n________________________________\n\n\n\nعزيزي Hagop,",
+      "start_pos": 0,
+      "end_pos": 1573,
+      "chunk_index": 0,
+      "chunk_size": 1573,
+      "metadata": {
+        "doc_id": "C3U3XDK - workshop booking confirmation understanding and developing self workshop, 9 00 am-1 00 pm, 3 july 2025\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C3U3XDK - workshop booking confirmation understanding and developing self workshop, 9 00 am-1 00 pm, 3 july 2025\\Conversation.txt"
+      }
+    },
+    {
+      "text": "If you would like to reschedule or cancel your booking, you can do so by visiting the link below:\nCancel or Reschedule Workshop <https://chalhoubuniversity.com/mod/facetoface/view.php?f=693> \n\nWith you at heart,\nChalhoub University Team\n\n\n________________________________\n\n\n\nعزيزي Hagop,\n\nتهانينا! لقد تم حجزك الآن في Understanding and Developing Self Workshop:\n\nفيما يلي تفاصيل ورشة العمل القادمة الخاصة بك:\n\nورشة العمل: Understanding and Developing Self Workshop\nالمدة: \nالتاريخ(ات): 3 July 2025, 9:00 AM to 1:00 PM\n\n\nنشجعك على مناقشة البرنامج مع مديرك المباشر والتوافق على النتائج المتوقعة لك ولفريقك قبل حضور ورشة العمل. \n\nاستخدم المرفق البريدي لحفظ تذكير في تقويمك. سنقوم أيضًا بتذكيرك بهذا قبل يومين عمل.\n\nإذا كنت ترغب في إعادة جدولة أو إلغاء حجزك، يمكنك القيام بذلك عن طريق زيارة الرابط أدناه:\nإلغاء أو إعادة جدولة الورشة <https://chalhoubuniversity.com/mod/facetoface/view.php?f=693> \n\nمعكم في القلب،\nفريق جامعة شالهوب\n\n\nCHALHOUB UNIVERSITY\t\nCOMPANY ACCOUNT\t\nGroup Human Resources\t\n\n\t\nDUBAI\t\n‑\t\nUNITED ARAB EMIRATES\t\n\t\t\n \t\n <https://chalhoubgroup.com/> \t\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\t\n‑\n\t\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\t\n <https://twitter.com/ChalhoubGroup> \t\n <https://www.facebook.com/chalhoubgroup/> \t\n <https://www.instagram.com/chalhoubgroup> \t\n <https://www.linkedin.com/company/chalhoub-group/> \t\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 1286,
+      "end_pos": 2740,
+      "chunk_index": 1,
+      "chunk_size": 1454,
+      "metadata": {
+        "doc_id": "C3U3XDK - workshop booking confirmation understanding and developing self workshop, 9 00 am-1 00 pm, 3 july 2025\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C3U3XDK - workshop booking confirmation understanding and developing self workshop, 9 00 am-1 00 pm, 3 july 2025\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:50.875840",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 3216
+  }
+}

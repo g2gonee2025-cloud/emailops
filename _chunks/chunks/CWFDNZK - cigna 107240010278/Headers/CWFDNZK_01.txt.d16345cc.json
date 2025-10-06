@@ -1,0 +1,31 @@
+{
+  "doc_id": "CWFDNZK - cigna 107240010278\\Headers\\CWFDNZK_01.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CWFDNZK - cigna 107240010278\\Headers\\CWFDNZK_01.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from VI1PR05MB10819.eurprd05.prod.outlook.com (2603:10a6:800:1bf::14) by AM9PR05MB8779.eurprd05.prod.outlook.com (2603:10a6:20b:432::8) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8901.26; Tue, 8 Jul 2025 14:30:05 +0000\nReceived: from VI1PR05MB10819.eurprd05.prod.outlook.com ([fe80::efd7:79e3:f356:1cc3]) by VI1PR05MB10819.eurprd05.prod.outlook.com ([fe80::efd7:79e3:f356:1cc3%6]) with mapi id 15.20.8901.024; Tue, 8 Jul 2025 14:30:04 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Rasheed ALNAJAR <Rasheed.ALNAJAR@chalhoub.com>, Joe Hobeika <Joe.Hobeika@chalhoub.com>\nCC: Marah Aljunaidi <Marah.Aljunaidi@chalhoub.com>\nSubject: Re: Cigna 107240010278\nThread-Topic: Cigna 107240010278\nThread-Index: AdvpwWL1OFaEOCqtRKWw2T6IMJIGsACOPoRAAQMJFvAAAZnh6Q==\nDate: Tue, 8 Jul 2025 14:30:04 +0000\nMessage-ID: <VI1PR05MB108192E178683D965DBF3CDD09D4EA@VI1PR05MB10819.eurprd05.prod.outlook.com>\nReferences: <HE1PR0502MB3707FBB604133DF414DF06F29A46A@HE1PR0502MB3707.eurprd05.prod.outlook.com> <HE1PR0502MB370761321DBD0B880221BD769A43A@HE1PR0502MB3707.eurprd05.prod.outlook.com> <HE1PR0502MB37076B0155D15D90DECB0E1B9A4EA@HE1PR0502MB3707.eurprd05.prod.outlook.com>\nIn-Reply-To: <HE1PR0502MB37076B0155D15D90DECB0E1B9A4EA@HE1PR0502MB3707.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: VI1PR05MB10819:EE_|AM9PR05MB8779:EE_\nx-ms-office365-filtering-correlation-id: 78284b44-fb13-4e79-e0f5-08ddbe2bee3b\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|7053199007|13003099007|4013099003|8096899003|41050700001;\nx-microsoft-antispam-message-info: tmQ9pzZbxkrEszVKbRaiE3LtVJSXIr3okfovZSzHCFA/IQqde13zXxVjOM52QRocKGm5YEsF5273VSDUTNgE/dH/u98sGx8Rw4AndMExseRaF2fF4YrptcaX1aiXNaPuHz7jqaz8Dky30HCcUHDxVWnwwjkLfo8OCCDbKIFC5yrLwvJw33ExGaB+EerQEedY6uJ/MJdk5BRBS+rA58rtTmx+WVATk5lpKtjU3ux7zWsxPsJo7v3gIcS4YEQtxWiBdHxnuOoOHxIipNAWRXfaqvWMeR0hcririkJe79jktoax9xucD+NV9o5mR5k3LhhtPNXcULM/71kiXHZ8Zx7CdmNII4T/rfm3bWhhCBm3NDjXc+p3CNxyS+Qw36WNQql9ADnFTxmtRlcLkCCq7Xugox9ak9DZmgbfAaub8IyjiSeXFNSvB1wiQuQVC6CMPV97aHjhyeAIMOewPXiHqymbPqiKznQgiK9lBT/s8qf0B4DAUSkMHSpH5bIAI/s6lYaum+eyQT3wb2jXsUmYAje6peA6+4/SIPk4YNzrPjEkQbwq35vmL6JwNO0WxqrJj0AaUkELIMclyq6gfdbW3zDbOT9x5Vj86a9FtUltJIsYbvTJKBG6v5EO6sqOkKgmDoebfXiIf9Wm/e5VsCkvb107XuiLxnCQ5izDlGtbaRvQbbHmeX5UNu3zCsplJq1GFHxpMotTDyG9R7XcFWwSu10frzsjebj59KkyHQoNPUYgwj4z2r2PTkJ2yOF784DbiqyZZl67sHE2G+wBKJz+hYBdMA==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI1PR05MB10819.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(7053199007)(13003099007)(4013099003)(8096899003)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_015_VI1PR05MB108192E178683D965DBF3CDD09D4EAVI1PR05MB10819eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: Fs1zmDgfP9E5ykzQBirEw2r62whfyR8LKLPhuyVR87it6iuxw3cYXLL33IAw2VfyBgE0xDKNsLEvQLGmyPaayg5LPD0mS7U+J/ETx2UxzJiICOdE6GToUSSYnwR1Zs8h4T22Z7ylsdwz9uUnlsrokR5E3gEv7JVRIuRdnY6m8k5T0v8fMm1KWlspMIM9AJc2PCLrNl1D5sreoTN9Zsol2lEjr6KBd4VP+SDwSf3E8mZQAusvtIcpYm0BSMBUJdo7pUQDH6ZcUWvx533afhV41q3rEP/ygA35wRVD0AG1MD4gga498qqAr40Bh1ElYcqfKvrh9hTK1WO8IH/Qp66N1vD9lzxpyM02PuJGi1bhB2fJtidXDVhM5hksIYK8oeh0jea5AGP4E9M8lJRzPVG7E6wfOSu2ZppdV/M4B/mNbtXDNK0lzmGdr6OLxdT+/lSC32mvrhzoOH4mDQuTmH+0PLUC1sydD6s72fhxmILJjZCiNOyWdMSU5HOOZmwor12rkO0KdHajDxgJKgDH/OG4YZk4eo1E8VaybpslAuQZA7G4p+i2cTzmM34xOfiQ364I5PVZlJimOmcKwIR8/8xlMx5NNBo776ONtdlnG7PgdKAJtdBwrssm2EFeU5qwOeng\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: VI1PR05MB10819.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 78284b44-fb13-4e79-e0f5-08ddbe2bee3b\nX-MS-Exchange-CrossTenant-originalarrivaltime: 08 Jul 2025 14:30:04.5866 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: SyaoGLFbsVnTH7Hy2ICaDGWFutnvEvtrrN3P2YJo7T6O1Oms9YaUq8qA/PY8HmLY7snNWGwtSbSsmQweg9CmtAJAtOiSUZpmHiiNa7yPUsM=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR05MB8779\nX-OrganizationHeadersPreserved: AM9PR05MB8779.eurprd05.prod.outlook.com",
+      "start_pos": 0,
+      "end_pos": 4582,
+      "chunk_index": 0,
+      "chunk_size": 4582,
+      "metadata": {
+        "doc_id": "CWFDNZK - cigna 107240010278\\Headers\\CWFDNZK_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CWFDNZK - cigna 107240010278\\Headers\\CWFDNZK_01.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:42.846000",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4625
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1OPOJ8 - voice mail (2 seconds)\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1OPOJ8 - voice mail (2 seconds)\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:29:15\nFolder: C1OPOJ8 - voice mail (2 seconds)\nMessage Count: 1\n\n--------------------------------------------------\nID: C1OPOJ8_00\nFrom: Sagar Sreenivas <Sagar.Sreenivas@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-07-22 11:11\nSubject: Voice Mail (2 seconds)\n--------------------------------------------------\nYou received a voice mail from Sagar Sreenivas at Sagar.Sreenivas@chalhoub.com <sip:Sagar.Sreenivas@chalhoub.com> .\n\nJob Title:\tCoordinator - Shipping\t\nCompany:\tOperations\t\nEmail:\tSagar.Sreenivas@chalhoub.com <mailto:Sagar.Sreenivas@chalhoub.com> \t\n\n\n________________________________\n\n\nThank you for using Transcription! If you don't see a transcript above, it's because the audio quality was not clear enough to transcribe.\n\nSet Up Voice Mail <https://aka.ms/vmsettings>",
+      "start_pos": 0,
+      "end_pos": 902,
+      "chunk_index": 0,
+      "chunk_size": 902,
+      "metadata": {
+        "doc_id": "C1OPOJ8 - voice mail (2 seconds)\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1OPOJ8 - voice mail (2 seconds)\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:26.584089",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 937
+  }
+}

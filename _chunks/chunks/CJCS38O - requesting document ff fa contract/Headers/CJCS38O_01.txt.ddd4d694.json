@@ -1,0 +1,31 @@
+{
+  "doc_id": "CJCS38O - requesting document ff fa contract\\Headers\\CJCS38O_01.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CJCS38O - requesting document ff fa contract\\Headers\\CJCS38O_01.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Content-Type: multipart/related; boundary=\"----_=_NextPart_8309471e-53b9-48be-8a70-a957048c5bde\"\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by AS8PR05MB7943.eurprd05.prod.outlook.com (2603:10a6:20b:33f::5) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8114.31; Wed, 6 Nov 2024 10:35:01 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%3]) with mapi id 15.20.8114.031; Wed, 6 Nov 2024 10:35:01 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Sreeraj Prakasam <Sreeraj.Prakasam@chalhoub.com>, Shibu Janardhanan <Shibu.Janardhanan@chalhoub.com>, L'Occitane En Provence Nakheel Mall The Palm <Loccitane.NakheelPalm@Loccitane.me>\nCC: Lorena Dimaala <Lorena.Dimaala@chalhoub.com>, Alof Joseph <Alof.Joseph@chalhoub.com>\nSubject: Re: requesting document FF/FA contract\nThread-Topic: requesting document FF/FA contract\nThread-Index: AQHbL50rA6lU2/lcFEGRZ7QTZcc32bKqDylc\nDate: Wed, 6 Nov 2024 10:35:01 +0000\nMessage-ID: <AS8PR05MB10824D9E5D3F2DE9E2276EF019D532@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <VI1PR05MB6702A30166FC40FC036E28FB82532@VI1PR05MB6702.eurprd05.prod.outlook.com>\nIn-Reply-To: <VI1PR05MB6702A30166FC40FC036E28FB82532@VI1PR05MB6702.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nX-Mentions: Loccitane.NakheelPalm@Loccitane.me\nX-MS-Has-Attach:\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|AS8PR05MB7943:EE_\nx-ms-office365-filtering-correlation-id: f26827b3-58e4-4cc2-450f-08dcfe4eab6f\nx-ms-exchange-atpmessageproperties: SA|SL\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nx-microsoft-antispam-message-info: YFAqeS1uEN68FZf6TU3e6433pzrzoVYlxPVOqCx6zk1iJ19LCNVIOlJtpYnmfa1W3xAPXWBtz/FY1reUNA2ZgdBIAVFssthvrUYeJr1fRa4zpn26ZwdVgRVMSUINV5mbNQBqgK8qFzzS5HTT5hJdoSIM9h5Yxt3ChtRIi4a0EGUOX+rC0zhtcwzmaYC8nDBhueeD81bdj7MqviZSRd/24aEl7lCeL5Z0IYmwuPPNNgHd3e4+dBXwE/EkAImDQxDHjERx3MShh34E41DJ2pqKxetqWU/elvKIFj9vsgz/AN9QEMwB1JGMdvLmz/AhIkfyIc7lLVLij/D/yckamDYFyFez9FlV+wT+Ufcmtus8t4Qlnw5FNntUbML6l0bHCz6UoxIGZCQCg86lUgIc4l/fzB6MjYJfB3jzAVCcUuDiYV3ce+mX7ZoTgRCmXhAsJr5wVykqYOErJsTv4Q9kfZrugWbP6hBXLbnYJOxkIRziLeQJXvOFeMnyQAUYraw/DTNNugOm1VQ7clNNexNOGWi6bA8LX3OvKHfSYd/xrBwkV0RygT6z+y9dYFbKYcr2+VoG3Ha5sismTOcEbKT9fcFwcPuk0vOKfS5JNBEXm2kbWfKOyvzFZJx6F5UuZj0OYpJ1zifTcy4xvPtW4gJDrEfxZB9pNRo24RQ/JMgsv0J17dynnLRMhif6E2SX+N7Ewv36hHcYLMhZV1F7s8oy7y8d5ScErduw2882HIZWdvLx9Z7wAKg0p9EFan0F3lyDFtS2g6Wc2M0VmN/tLXb/VnodXg==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: EmdDLCIUJN3ZOw9Gt7aw3cVus/LERaE/JfLA+U8AE49HzTGr177TNlt8z/LN2YA5bPz34HY8Ur90qR3XkivIc1SF/HAKkCyE2EOTdMNa+brnoJcxFcrk3JwtXZhdRfDe916M26+jOo/hh3i1f2w5tyOGxGO4yXOX/D2MLGpUy+Gj8Nf1w3ECLQEIc74UVlXyoVamI85141Oz89BDiTWBh5xt0f4e4vkA6va8HDskLXlYZZYyAKkJNNCcwF52sElsfzdDsJmrwVvG5R0YiY8I1tFQ5xrrTPdKmyLWl3zdTdXYiySyflLLqJYJkceC6vUXKekwZUo4V+diBWIp27+AP60EeN27VUMHGvMGUyYVAfZCYVbqIBbyIq7K2juzvNbbFNmIR8vqM7RA5UsXYaQm5SekmX+zq4bPOe6Pnau+EozL1ihgGw+eaQrOLummYmHTSNnN712safrBDGZooY8177pi9zuot0R6rcjJ5A7qVzLCaIlR+rfhBy7wi7GhuLyh2WSyOY0fY6mWNn9jBHoPePrPOUlOeV7rGLEQgmeUgyV2w3652Ayi7cvcwfSU4NTCnnZA+fShWMFq2t+AyVczhrvbH1+LrAwwN/uiiYHdrs9SGGcPcAW5hOLX2Nj2lhuk\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: f26827b3-58e4-4cc2-450f-08dcfe4eab6f\nX-MS-Exchange-CrossTenant-originalarrivaltime: 06 Nov 2024 10:35:01.6810 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: hQIr/f2Vgn78qr+k+OU/JqvzJ6azYMJl+Gmtm7FQTCja6B2p6cY7qHr/ay53aNvK92fG/jWsCFhU5FLPBusveeeKrEn0c3IuqPMDLR2UteY=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR05MB7943\nX-OrganizationHeadersPreserved: AS8PR05MB7943.eurprd05.prod.outlook.com",
+      "start_pos": 0,
+      "end_pos": 4504,
+      "chunk_index": 0,
+      "chunk_size": 4504,
+      "metadata": {
+        "doc_id": "CJCS38O - requesting document ff fa contract\\Headers\\CJCS38O_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CJCS38O - requesting document ff fa contract\\Headers\\CJCS38O_01.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:42.122399",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4548
+  }
+}

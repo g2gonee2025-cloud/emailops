@@ -1,0 +1,31 @@
+{
+  "doc_id": "CZHXVF4 - invoice successful submission - details (r352567)\\Headers\\CZHXVF4_03.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CZHXVF4 - invoice successful submission - details (r352567)\\Headers\\CZHXVF4_03.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by PA4PR05MB7807.eurprd05.prod.outlook.com (2603:10a6:102:f4::13) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8922.32; Mon, 14 Jul 2025 11:33:45 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%4]) with mapi id 15.20.8901.024; Mon, 14 Jul 2025 11:33:45 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Yazan Alqaralleh <Yazan.Alqaralleh@chalhoub.com>\nSubject: Re: Invoice Successful Submission - Details (R352567)\nThread-Topic: Invoice Successful Submission - Details (R352567)\nThread-Index: AQHb4CGhqUfwNo0FtECReNarZuALqrQKe0kAgCcMjACAAB2y/w==\nDate: Mon, 14 Jul 2025 11:33:45 +0000\nMessage-ID: <AS8PR05MB108241C3500B1A9E6B37E5B989D54A@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <175023122753.13028.958411916540137170@vmaz-hiveprddb.chalhoub.org> <AS1PR05MB89889447CCBA8BA392CA0116E37DA@AS1PR05MB8988.eurprd05.prod.outlook.com> <AS1PR05MB898814F489D3526F5B711267E354A@AS1PR05MB8988.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS1PR05MB898814F489D3526F5B711267E354A@AS1PR05MB8988.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|PA4PR05MB7807:EE_\nx-ms-office365-filtering-correlation-id: 29a0e55d-0dd8-427e-dff0-08ddc2ca4aee\nx-ms-exchange-atpmessageproperties: SA\nx-microsoft-antispam: BCL:0;ARA:13230040|31052699007|39142699007|366016|8096899003|3613699012|13003099007|4013099003|7053199007|41050700001;\nx-microsoft-antispam-message-info: bIqJ6PkvYgohX4wkxXK+R59T3Sj/nqzEpunDZpwg+VdfJK5DbMjTshg/pHxVczKkprTF5cT5AEhEUFkfhslBLApIGLJWdb6C28L+e7JyhWdDHYeH4MOoaBImAnfy2iP7O9APFMWR/Q3rhb4g6jAGv3F3O3G7BxUD6PJfFTvuVQhUxHRD5q4MQ5J94g4OnreUvS0WYW09lnotmep2GBkRkwwKcAiIEISfOpJi2yCXHxoi1guHPaGwnoy629ZkX8E+znh5ZT4W7pScQfoCL4Py2Ly4GX0agNk3L2UAzaqAGBhi56XG01qKrGu6FMBDi8cFu8FPWsgpzbf0ObSmEolR8kSG9fXetIEL0rlOP89EW54+n8rNqj3DvcMI1vIO7XDa4jOe/NstkQnS9c/wetRosVpo9sdBDGaG4q6VEE/qIHheB3rNet8QqNZseEnUKY5eua6G2LqF2Sr4NdEueprdh37Fr0ixba/GjLfMY6RFc7elXJWXER7Q3e+VcpqSVLpuoM1xvvSMpfdZ+heM+C++EM8DA1ldSAUMiaBsQuOiccUg4DAhN+rV4uydwWEwpy9GoA6/DAinhHsD2K5vpIARIthEyno0RW/S7m5qZiC7gKAbF6E9TNmsS/7n90d76f+4EwNUE79HCQd6c+pnRj2YjUT8n/eyRVdLdVG3Vc6rEgDdB6CXG0asYj0+d9oM1d+ALSDFB0D8MqfJSni0Tt0D87GehpS16q7dCW2McgEL86Quf5eCl6tjqsrfOgzpDCpVTgo/BKrvI2rGA8FE1DWwjO67S0NQTjPXM3BzOA+YZtF44EO0XrHpVGmXBDdcvWub\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(31052699007)(39142699007)(366016)(8096899003)(3613699012)(13003099007)(4013099003)(7053199007)(41050700001);DIR:INT;\nContent-Type: multipart/mixed; boundary=\"_019_AS8PR05MB108241C3500B1A9E6B37E5B989D54AAS8PR05MB10824eu_\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: TDNtPSTZZAcD7C5LEIFK4Ccca7v+4XjvVjpAQ9oBJf6RVcvGEnM4p+coaPi72PnMEH4lOzgczjIdMrrCf7rSvrwPCjGpbdJdw5fbRUcreUknE/ddQxBfqNo3QDHK+RgTRDcTy1Ol5FvnNADLsRMH5IQVH+2rvRVD9JOWtqMm+Q614Cb+5Ka+Rm9NzgTLHCmVgymmgsZNIQJHaDIZDli2QxH1h1zUg7BNZUD8+SE4zVBtfE+bAnQr11Arxgfl1AMEfKm+gTv13C9pAet6+xN2+5ZDBR1eFGdMNtvKMz5tcnfFZ4g9CL+1172IPdKnWvElXF+weMrfNduK9ouKX0Gz7TtUBNGJQp24mvz+NZdb454esZQaOKB4VEugO27wpEOhWSzYVvhPiWzBqrHfDyOnShAxbU+D8zuHiGXgqE3fq+1s9Bt/q0EdRwJ8BtAfGroIqbAkN78dcZJCemVI2hnmgVEP6lM/2yDCMQfPGyoAs+UyCXAZAyz21DpJ7bVeLQI+249DihnJpS3QCE27lAKuLAow7jR3HIneq1NI7MMXYSDaK91UnYF5mnSe7wrLIRib7NOh5NAIFf0ammhy1tUZGPPAepw7r3xmn1+W/kByWwllu/IdKTMQHTuteeP6gTXn\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 29a0e55d-0dd8-427e-dff0-08ddc2ca4aee\nX-MS-Exchange-CrossTenant-originalarrivaltime: 14 Jul 2025 11:33:45.2524 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: G7i8lJq8GsiwWS9eu28NhuxpVDhozBc+uw/48NzaD8RZhl9BNSboTQhMPhbNQn4Yh9fflSS0clAYhCPA4uZRg7W7WdEQrxuqxltoYZuBa0c=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PA4PR05MB7807\nX-OrganizationHeadersPreserved: PA4PR05MB7807.eurprd05.prod.outlook.com",
+      "start_pos": 0,
+      "end_pos": 4647,
+      "chunk_index": 0,
+      "chunk_size": 4647,
+      "metadata": {
+        "doc_id": "CZHXVF4 - invoice successful submission - details (r352567)\\Headers\\CZHXVF4_03.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CZHXVF4 - invoice successful submission - details (r352567)\\Headers\\CZHXVF4_03.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:41.932625",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4690
+  }
+}

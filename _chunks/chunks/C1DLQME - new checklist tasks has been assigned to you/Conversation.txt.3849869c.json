@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1DLQME - new checklist tasks has been assigned to you\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1DLQME - new checklist tasks has been assigned to you\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:31:05\nFolder: C1DLQME - new checklist tasks has been assigned to you\nMessage Count: 1\n\n--------------------------------------------------\nID: C1DLQME_00\nFrom: RSO@chalhoub.com <RSO@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-07-07 15:18\nSubject: New Checklist tasks has been assigned to you :\n--------------------------------------------------\nFocus Checklist Reminder\t \nDear Hagop Ghazarian, \n\nNew Checklist tasks has been assigned to you : \t\n\nFocus Checklist Request Details\t \nChecklist Title\t Store\t Type\t \nZimmermann The Galleria Sowwah Opening\t Zimmermann - The Galleria Sowwah Mall - Boutique\t Projects\t \n\n\nAlternately, click here <https://rso.e-mac.com//pages/managechecklist.aspx?IntGUID=e620e16b-99c2-3515-a12f-7a1794ce78c7>  to review it on RSO.\t \nThis is an auto-generated email, please do not reply.",
+      "start_pos": 0,
+      "end_pos": 933,
+      "chunk_index": 0,
+      "chunk_size": 933,
+      "metadata": {
+        "doc_id": "C1DLQME - new checklist tasks has been assigned to you\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1DLQME - new checklist tasks has been assigned to you\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:10.559218",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 968
+  }
+}

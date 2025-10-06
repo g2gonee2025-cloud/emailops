@@ -1,0 +1,42 @@
+{
+  "doc_id": "CWFDD0O - updates on generative ai for everyone e-learning\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CWFDD0O - updates on generative ai for everyone e-learning\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:46:00\nFolder: CWFDD0O - updates on generative ai for everyone e-learning\nMessage Count: 1\n\n--------------------------------------------------\nID: CWFDD0O_00\nFrom: Nasser Alblooshi <Nasser.Alblooshi@chalhoub.com>\nTo: \nCC: Sabitha Menon <Sabitha.Menon@chalhoub.com>\nBCC: \nDate: 2025-02-10 10:47\nSubject: Updates on Generative AI For Everyone E-learning\n--------------------------------------------------\nDear All, \n\n \n\nHope you are well.\n\n \n\nAs you are aware we deployed our GEN AI Learning Strategy, Phase 1 on 11 NOV 2024, with the deployment of our AI Central (learning hub for AI) and “Generative AI for Everyone” e-Learning <https://chalhoubuniversity.com/course/view.php?id=3339&section=1> . \n\n \n\nThe objectives of this course are:\n\n1.\tLevelling the ground and aligning our colleagues on the terms and notions of AI\n2.\tDemystifying AI and creating global awareness on how it can benefit our teams and business\n3.\tCreating awareness on the impact of AI on Community and Ethics. \n\n \n\nOur ambition (of course, with your support and sponsorship) is to achieve 75% completion across the Group by end of Q1. We understand that while our employees in various roles, functions and businesses will have varying levels of impact or connection to AI, it’s important that ALL of our teams have solid and aligned foundation, as well as remain committed to Ethical use of AI while protecting the Group privacy. This makes the course not a choice but a necessity that we, as leaders must embrace.",
+      "start_pos": 0,
+      "end_pos": 1565,
+      "chunk_index": 0,
+      "chunk_size": 1564,
+      "metadata": {
+        "doc_id": "CWFDD0O - updates on generative ai for everyone e-learning\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CWFDD0O - updates on generative ai for everyone e-learning\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Our ambition (of course, with your support and sponsorship) is to achieve 75% completion across the Group by end of Q1. We understand that while our employees in various roles, functions and businesses will have varying levels of impact or connection to AI, it’s important that ALL of our teams have solid and aligned foundation, as well as remain committed to Ethical use of AI while protecting the Group privacy. This makes the course not a choice but a necessity that we, as leaders must embrace. \n\n \n\nMay I kindly request that we all complete this module and assessment to gain the certificate earliest possible.\n\n \n\n“Generative AI for Everyone” e-Learning <https://chalhoubuniversity.com/course/view.php?id=3339&section=1> .\n\n \n\nHighly appreciated.\n\n \n\nBest Regards,\n\n \n\nNASSER ALBLOOSHI​​​​\n\nMANAGING DIRECTOR ‑ UAE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n+971 4 804 5000\n\n+9710524466137\n\n \t\n <https://chalhoubgroup.com/> \n\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\n\n‑\n\n\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\n\n <https://twitter.com/ChalhoubGroup> \n\n <https://www.facebook.com/chalhoubgroup/> \n\n <https://www.instagram.com/chalhoubgroup> \n\n <https://www.linkedin.com/company/chalhoub-group/> \n\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 1065,
+      "end_pos": 2379,
+      "chunk_index": 1,
+      "chunk_size": 1314,
+      "metadata": {
+        "doc_id": "CWFDD0O - updates on generative ai for everyone e-learning\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CWFDD0O - updates on generative ai for everyone e-learning\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:07.132618",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2510
+  }
+}

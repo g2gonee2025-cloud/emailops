@@ -1,0 +1,42 @@
+{
+  "doc_id": "CNMCWS0 - a day in the life of jumana & nina, molton brown - build your\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CNMCWS0 - a day in the life of jumana & nina, molton brown - build your\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:32:48\nFolder: CNMCWS0 - a day in the life of jumana & nina, molton brown - build your\nMessage Count: 1\n\n--------------------------------------------------\nID: CNMCWS0_00\nFrom: Internal News <internalnews@onechalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-07-02 14:36\nSubject: A day in the Life of Jumana & Nina, Molton Brown - Build Your Own Gift\n--------------------------------------------------\n <https://onechalhoubmedia.connexionsnow.com/newsletter/topbanner/daily-english.png> \t\n <https://onechalhoubmedia.connexionsnow.com/newsletter/numbers/01-1-min.png> \t\n\nA day in the life of Jumana & Nina\n\n <https://onechalhoub.connexionsnow.com/mtracking/linkref.php?link1id=1417&user=10620> \t\n\n\n\n\n\n\n\nDiscover the behind-the-scenes of a day in the life of Jumana & Nina from Group Communications.\n\nFollow along as they take us through their day on our Group’s Instagram stories <https://onechalhoub.connexionsnow.com/mtracking/linkref.php?link1id=1417&user=10620> !\n\n <https://onechalhoubmedia.connexionsnow.com/newsletter/numbers/02-3-min.png> \t\n\nMolton Brown - Build Your Own Gift\n\nWe’re excited to launch our Online Exclusive – Build Your Own Gift feature for Molton Brown in the UAE and KSA!\n\nCustomers can now hand-pick their favorite products to create the perfect, personalized gift – all online.",
+      "start_pos": 0,
+      "end_pos": 1418,
+      "chunk_index": 0,
+      "chunk_size": 1418,
+      "metadata": {
+        "doc_id": "CNMCWS0 - a day in the life of jumana & nina, molton brown - build your\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CNMCWS0 - a day in the life of jumana & nina, molton brown - build your\\Conversation.txt"
+      }
+    },
+    {
+      "text": "We’re excited to launch our Online Exclusive – Build Your Own Gift feature for Molton Brown in the UAE and KSA!\n\nCustomers can now hand-pick their favorite products to create the perfect, personalized gift – all online.\n\nLive now:\nUAE <https://onechalhoub.connexionsnow.com/mtracking/linkref.php?link1id=1418&user=10620>  | KSA <https://onechalhoub.connexionsnow.com/mtracking/linkref.php?link1id=1419&user=10620> \n\n <https://onechalhoub.connexionsnow.com/mtracking/linkref.php?link1id=1418&user=10620> \t\nFor inquiries and to share your news in the Internal News please contact rasha.nashashibi@chalhoub.com <https://onechalhoub.connexionsnow.com/mtracking/linkref.php?link1id=1420&user=10620>  \n\nCopyright © 2025 Chalhoub Group. All rights reserved. \n\nYou are receiving this email because your are a part of the Chalhoub Group family. \n <https://onechalhoub.connexionsnow.com/mtracking/newsletter-open.php?nli=305&user=10620>",
+      "start_pos": 1199,
+      "end_pos": 2125,
+      "chunk_index": 1,
+      "chunk_size": 926,
+      "metadata": {
+        "doc_id": "CNMCWS0 - a day in the life of jumana & nina, molton brown - build your\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CNMCWS0 - a day in the life of jumana & nina, molton brown - build your\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:57.567669",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2191
+  }
+}

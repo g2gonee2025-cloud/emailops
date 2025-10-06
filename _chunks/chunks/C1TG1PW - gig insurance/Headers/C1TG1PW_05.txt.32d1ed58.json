@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1TG1PW - gig insurance\\Headers\\C1TG1PW_05.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1TG1PW - gig insurance\\Headers\\C1TG1PW_05.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by PAWPR05MB10062.eurprd05.prod.outlook.com (2603:10a6:102:33f::19) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8583.25; Wed, 26 Mar 2025 10:54:22 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%2]) with mapi id 15.20.8583.023; Wed, 26 Mar 2025 10:54:22 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Zainab Alqadhi <Zainab.Alqadhi@chalhoub.com>, Shereen Omar <Shereen.Omar@chalhoub.com>, Maribel Derla <Maribel.Derla@chalhoub.com>\nSubject: RE: GIG INSURANCE\nThread-Topic: GIG INSURANCE\nThread-Index: AQHbe6ox3a072jAlnkmcQKPsvqB3SrNPMQxggDYg5wCAACkmgIAACFBA\nDate: Wed, 26 Mar 2025 10:54:22 +0000\nMessage-ID: <AS8PR05MB108243C04E55CAF17E8673E259DA62@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <VI1PR05MB673383CB7FDDB52D058C5094FE122@VI1PR05MB6733.eurprd05.prod.outlook.com> <DB9PR05MB104503AE1A425FE0D1FA0BAA89B122@DB9PR05MB10450.eurprd05.prod.outlook.com> <VI1PR05MB673387AF1883A9575DFCBE5DFE122@VI1PR05MB6733.eurprd05.prod.outlook.com> <AS8PR05MB10824644488DDD60C2991CF439D1C2@AS8PR05MB10824.eurprd05.prod.outlook.com> <DB8PR05MB67315F4078AF9239823E4F56FEF72@DB8PR05MB6731.eurprd05.prod.outlook.com> <VI1PR05MB6015539FCA97106FCA46F8B48FF22@VI1PR05MB6015.eurprd05.prod.outlook.com> <AS8PR05MB10824CFA50792F3B9262FA9209DC42@AS8PR05MB10824.eurprd05.prod.outlook.com> <AS8PR05MB1082473A54EB7F0F69A2853D99DA62@AS8PR05MB10824.eurprd05.prod.outlook.com> <DB9PR05MB9437234450B76616756E07E1EAA62@DB9PR05MB9437.eurprd05.prod.outlook.com>\nIn-Reply-To: <DB9PR05MB9437234450B76616756E07E1EAA62@DB9PR05MB9437.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 1896,
+      "chunk_index": 0,
+      "chunk_size": 1895,
+      "metadata": {
+        "doc_id": "C1TG1PW - gig insurance\\Headers\\C1TG1PW_05.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1TG1PW - gig insurance\\Headers\\C1TG1PW_05.txt"
+      }
+    },
+    {
+      "text": "ook.com>\nIn-Reply-To: <DB9PR05MB9437234450B76616756E07E1EAA62@DB9PR05MB9437.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|PAWPR05MB10062:EE_\nx-ms-office365-filtering-correlation-id: 6e17ac40-81f2-45a7-2141-08dd6c549151\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|8096899003|4013099003|13003099007|7053199007|41050700001;\nx-microsoft-antispam-message-info: wZUH8Lq8RurT86j29qY8cKLXp1Dcw8J6XMd43LhC8/YHEOO4KLBo60edZMBYDRIqj28Ku1KRiO7uh79qXpm/tlv90mwH5XR6xQWKQJ/BRwKskr4qOtx0FDW5LxRx9hObkiUp+9WevxyrbGob4uZDWHvb1NqFp3rHtIVG9b6oi0RR7221NvgRRY7d6GxEr7V0aV3GfD8SrFAk4MsUTByGIUPo2WuL6DLTa9EiptjN70V9fgydTcUH8h9LEwQAicm7f1cZp3wiPtFsExLMg0DZlczq8Hn2beFUTDEM5O8eosgMKm4VT2iGTPESOuG6qW7ljFAZ6dply2PQWFXS187Y1xPnOzUvyNxqa0SdJRNAl55yQattsM9nl75yGoKt1LnrmtUdoj1HQS/aQPPizScXFjL+c5/XDnXQnjkrc5y2y/XOepnTZeLwRSytbekarjXZHWXlW/R0gJbWi6SzVA1D5ITTPhUKyLkvUw+8GVLcOnvNvBIatRsfCzUagmOU9PLMgeYWbMcaWvJmYDMggAp/ygGK4qTLr//vgKNFM6e9Y9EZ90ppctIuNJsoBwzq4XWyk5vGyio9QT3qsrT+e463Fdmr/azogaN9oFbm3Wn63Zw8+16ENWvMSV+wtNuVztn/HjZIGY2xYE0uHcH7ZqMc+Yg29yO6MdmP7tMDB2lrK0USK4svt1BrJiiBXHoubDahjyMpAu+W30neEQP4Ie3hMxsZYFx3naAnnjCd1IiYa6XuO262N2JBIqpQ/rIC6UJQCP73RocMLDHDM6jSwGCGuw==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(4013099003)(13003099007)(7053199007)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_010_AS8PR05MB108243C04E55CAF17E8673E259DA62AS8PR05MB10824eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: eM2gr94u8lY/N4U9xe5a4xGmyhZseljkGZpSVNBupn0GupHNK/O+7KkO1wwgkAakbznsHIGxOxieAoUnF/Mwx9XJOh5VLAk4YrSxU+WW5y2WS1atNCwwGg+U+kWMo8sfnPMD5N33Ysw1VZc0jA51u3kkwJKYm4Xtv290ccDgbREtuG3vsYwG0RlUg/Zt0fWDO48ohqrJv6Ru0B1SFHLPcjj36BciJXN51BVKZC2rfk+yJ+BQ9ox3BIOJD7NWilSoOu7fzHVvArDmPLqf0mA7KZB0OqXf9oywrRtNbbTxoS+4zPqXzfKTadqGDqkTcwIQHNwrJn1c8wqi51e9id09to/CSBhG5hEtsFX91Kdn0AZrd/73s5hOV1l2ACKwF9JbIX/lklRaPltatQbYtxzMjvEKr/MaYYSlXWilx9iIjoXda1mPgKiBa+ggzhqXzKjSS1WC6S6BfE6yz0O8QheFo88kf901tf7I3dg1p6CNaSzR78pbTjV+JR/+ZFzQ0NFgmBb6tcAiGB4H99wavN1NOlzLpgwvqNXwwJkOH0MCnMll07TvrlVrsh2cH+n/ivuB4WZ+L5EiyXEf4VwZfvEPJjfmcguGRX9eGsNCxgd3JL8ogrkYh4Tw0Q2IS0S7le3w\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 6e17ac40-81f2-45a7-2141-08dd6c549151\nX-MS-Exchange-CrossTenant-originalarrivaltime: 26 Mar 2025 10:54:22.7084 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: QVn2vFlLmZCWz5ZQ0kheQsDmRlA//a+Exnfmg7Cp/nPy9aUQUXVife3zlqpnvasWWzTwFM0W/2pLW+rM3jpn0POrOX9o3Z2PkSyk44iVFaY=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PAWPR05MB10062\nX-OrganizationHeadersPreserved: PAWPR05MB10062.eurprd05.prod.outlook.com",
+      "start_pos": 1696,
+      "end_pos": 5040,
+      "chunk_index": 1,
+      "chunk_size": 3344,
+      "metadata": {
+        "doc_id": "C1TG1PW - gig insurance\\Headers\\C1TG1PW_05.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1TG1PW - gig insurance\\Headers\\C1TG1PW_05.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:27:46.238488",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5081
+  }
+}

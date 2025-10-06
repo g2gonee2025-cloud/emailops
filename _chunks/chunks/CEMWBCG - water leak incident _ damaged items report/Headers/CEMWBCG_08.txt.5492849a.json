@@ -1,0 +1,42 @@
+{
+  "doc_id": "CEMWBCG - water leak incident – damaged items report\\Headers\\CEMWBCG_08.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CEMWBCG - water leak incident – damaged items report\\Headers\\CEMWBCG_08.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from DU4PR05MB11790.eurprd05.prod.outlook.com (2603:10a6:10:5d8::22) by GV4PR05MB11807.eurprd05.prod.outlook.com (2603:10a6:150:29a::21) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9094.19; Mon, 8 Sep 2025 08:50:39 +0000\nReceived: from DU4PR05MB11790.eurprd05.prod.outlook.com ([fe80::e061:cd4a:54bd:13a8]) by DU4PR05MB11790.eurprd05.prod.outlook.com ([fe80::e061:cd4a:54bd:13a8%5]) with mapi id 15.20.9094.018; Mon, 8 Sep 2025 08:50:39 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: \"Ralph Lauren, Vendome, QTR\" <ralphlauren.vendome@star-middleeast.com>\nCC: Ani Asatryan <ani.asatryan@star-middleeast.com>, Moaz Gaber <moaz.gaber@etoilegroup.com>, Nemer Wehbe <Nemer.Wehbe@star-middleeast.com>, Lina El Moabbi <Lina.Elmoabbi@chalhoub.com>, Rahul Mohite <Rahul.Mohite@chalhoub.com>\nSubject: =?utf-8?B?UkU6IFdhdGVyIExlYWsgSW5jaWRlbnQg4oCTIERhbWFnZWQgSXRlbXMgUmVw?= =?utf-8?Q?ort?=\nThread-Topic: =?utf-8?B?V2F0ZXIgTGVhayBJbmNpZGVudCDigJMgRGFtYWdlZCBJdGVtcyBSZXBvcnQ=?=\nThread-Index: AdwQE0yuhlJui3YJTQGvtOlKiIJ9TQAA1LQAAABcv+ABMQ0ZEAGLbrUQAAUi930AAIVxqwALbFuAAVPDIqA=\nDate: Mon, 8 Sep 2025 08:50:38 +0000\nMessage-ID: <DU4PR05MB117908C27C043B760347F95C89D0CA@DU4PR05MB11790.eurprd05.prod.outlook.com>\nReferences: <AS8PR09MB5271E969351A35D18D05ADC3B431A@AS8PR09MB5271.eurprd09.prod.outlook.com> <GV1PR09MB7856458131D140F575B9BA5BEC31A@GV1PR09MB7856.eurprd09.prod.outlook.com> <GVXPR05MB1128528FDB67AE02DA5A5A96E8431A@GVXPR05MB11285.eurprd05.prod.outlook.com> <AS8PR09MB527110F7AFC36D40D1F5E884B43FA@AS8PR09MB5271.eurprd09.prod.outlook.com> <AS8PR09MB527143F85311584DD7A2349EB407A@AS8PR09MB5271.eurprd09.prod.outlook.com> <PAVPR05MB1030107669771CBC0048243F78E07A@PAVPR05MB10301.eurprd05.prod.outlook.com> <DU4PR05MB117909100C01780E4C3462B5C9D07A@DU4PR05MB11790.eurprd05.prod.outlook.com> <AS8PR09MB5271F5337AFE6AC8F377DF8BB407A@AS8PR09MB5271.eurprd09.prod.outlook.com>\nIn-Reply-To: <AS8PR09MB5271F5337AFE6AC8F377DF8BB407A@AS8PR09MB5271.eurprd09.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 2136,
+      "chunk_index": 0,
+      "chunk_size": 2135,
+      "metadata": {
+        "doc_id": "CEMWBCG - water leak incident – damaged items report\\Headers\\CEMWBCG_08.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CEMWBCG - water leak incident – damaged items report\\Headers\\CEMWBCG_08.txt"
+      }
+    },
+    {
+      "text": "ook.com>\nIn-Reply-To: <AS8PR09MB5271F5337AFE6AC8F377DF8BB407A@AS8PR09MB5271.eurprd09.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: DU4PR05MB11790:EE_|GV4PR05MB11807:EE_\nx-ms-office365-filtering-correlation-id: 42ab4a4c-57c4-4797-d2f1-08ddeeb4c8e6\nx-ld-processed: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3,ExtAddr\nx-ms-exchange-atpmessageproperties: SA\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|13003099007|4013099003|8096899003|7053199007|41050700001;\nx-microsoft-antispam-message-info: sIRQtGRtXj4Do4pR7l4A9XXw39IA21WoliZaLBWcavpmiF/L8AyYVmbnZqnkqJ7RkiCOQVsZt5QDBAmThB/WKOIylUaG8eaJLN8/tR+N1jeRf7gntEPrwn6QeZXAz4xNNEHTG2BbIh4fEKkU29gRR+xHCODLZo68MIcXXHGHvGg4zSG2Bp5JeoB6Tfag1vR+ZEDUk9ena9+wzT4DPflaNQ08xmJ9cYU3IFpi6lPUMLFxcQl+IGDRakWPPCBC+J8qR9ZgXt7OfxMSc0txYjci2a//HR/klQ2/rFh5rc7sBa/uz3bnA+U63qYTVAgMggkXiXpmrwKr+lZ89oR+1EyeEWCbauWJaGZuHpOgXoTtmTkc69xbiPTXcE7itNs7RUWSsaFZvktwtPYfXBn4S0lXIa5kgL8c/5JXcZ/I6cFi/za358+seDT3dbQKkmSQavx77yM3H51HAxuxpDE6Twy6d6FA5ges3DSOWyvyZWbpPeCyAX4RjKwortlQAUzlSZ+Ynfk3m10XQhlZHzUGlIy+4jU/CbRPOuxPrcP0s8pQKfSiuVl/pCUgAYcs27Fp+M2DayRVTWx7ARo2zh9tMrKgEsBcKj4c2brUXUnMn/gOAnkgOmJZYW9I4+HOmL89E/zzjNBLtzhhECYe07DWzDzBnFHx2ACJ6GDyEc7ADzlLsnFMsN+I7EgLprvCwMKcz0ay5xfQqmII75GWIfpSJj49x+5QDm7mb4ylU2b6nYhZQp/8iN/KmcoB0eaU1uiLmUNY\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DU4PR05MB11790.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(13003099007)(4013099003)(8096899003)(7053199007)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_013_DU4PR05MB117908C27C043B760347F95C89D0CADU4PR05MB11790eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: Tp6xH3zvDyhyqbDy59b1PteReekXqlzF+PsBUoBoqJKehwTclhO4z6yyRVMqWCIKObS6oR2CP5NlbSEZXrknWJV2XfBLc9gSz9zNISMV38umJgFLpmipea0EuaaBtXTwwAgAKnVbyVd2In/cZdRlrCTp7FIpYeANXYDWQAvwkGAKKUwpnTQ7d6YjIcHbRJ/35Qxs66B5NuHLFRzxEr4Tdp9CrHrF1byVAaiQ/Wd9Hoxcd53CdjFEpqFOekxyNHy+Kko7BH0Fhn87+enTXKKpv5OSDmwntLyaGrf/DX4R+2OHl38pqKIf1NMV7XN68zsJbMeTMarMGzbnDe7oJ+RPz9B4i7p+cuZjR7nvAvDuK/UI3wqFHxW3P0EmupW9C7cfK0mJdt9eEevZ7BBPqhrnlX7qAVw8FLB5hJsLvkoNMmb6V/EFwBfUkwGx+cVvYNGB8nnQi4EEqWU/lVC1j518ugvIp5cEIEJODv3hGCYQ4cIBWf62i/Y9WkvdqTgw5ambKYq+PYvtts5cHp4kiESspvJK4sInBixO47wh1vgg/X9fHNJnAxTKQLdYnQoJAMiUeDCHMj3Nj7bES52iCsAnr9srQGrD982fHT6B7gFDQhfjHQl75T+q1BOh8ZIJTGLA\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: DU4PR05MB11790.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 42ab4a4c-57c4-4797-d2f1-08ddeeb4c8e6\nX-MS-Exchange-CrossTenant-originalarrivaltime: 08 Sep 2025 08:50:38.7951 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: dNvn3+oFNUeGR/+XVdT57ogSqpTB2eczmW9g/coZerUOjyJn7w8bqr2lXOEbN8XJqtiNcOPRY5j2lIErTIJBDxr4OmzpcTpfs2RtBqXVObU=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: GV4PR05MB11807\nX-OrganizationHeadersPreserved: GV4PR05MB11807.eurprd05.prod.outlook.com",
+      "start_pos": 1936,
+      "end_pos": 5369,
+      "chunk_index": 1,
+      "chunk_size": 3433,
+      "metadata": {
+        "doc_id": "CEMWBCG - water leak incident – damaged items report\\Headers\\CEMWBCG_08.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CEMWBCG - water leak incident – damaged items report\\Headers\\CEMWBCG_08.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:16.802691",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5414
+  }
+}

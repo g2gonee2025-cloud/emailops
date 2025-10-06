@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1T824X - recharge invoice - 131250016275\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1T824X - recharge invoice - 131250016275\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:24:47\nFolder: C1T824X - recharge invoice - 131250016275\nMessage Count: 1\n\n--------------------------------------------------\nID: C1T824X_00\nFrom: recharge-invoices@chalhoub.com <recharge-invoices@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>; Reynaldo Cacacho <Reynaldo.Cacacho@chalhoub.com>; Rolando Romano Genebraldo <Rolando.Genebraldo@chalhoub.com>; Sean Menezes\nCC: Bader Abdallah <Bader.Abdallah@chalhoub.com>; REAL UAE Accounting - Receivable <REALUAEAccounting-Receivable@chalhoub.com>; REAL UAE Accounting - Receivable <REALUAEAccounting-Receivable@chalhoub.com>\nBCC: \nDate: 2025-09-19 11:39\nSubject: Recharge Invoice - 131250016275\n--------------------------------------------------\nHello \n\nRecharge of amount AED 23,063.4 has been raised from HABCHI & CHALHOUB to FACES FOR GENERAL TRADING WLL for the supplier: GULF INSURANCE GROUP GULF BSC DUBAI BRANCH, invoice number: 94DN4358522. \n\nPlease find attached the recharge invoice for your booking and payment reference. \n\nWe shall greatly appreciate your kind attention to this matter. \n\n\n*** This is a system generated email, please do not reply ***",
+      "start_pos": 0,
+      "end_pos": 1208,
+      "chunk_index": 0,
+      "chunk_size": 1208,
+      "metadata": {
+        "doc_id": "C1T824X - recharge invoice - 131250016275\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1T824X - recharge invoice - 131250016275\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:23.158361",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1240
+  }
+}

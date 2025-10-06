@@ -1,0 +1,31 @@
+{
+  "doc_id": "CH53K9C - beazley cyber quote via marsh\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CH53K9C - beazley cyber quote via marsh\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:41:54\nFolder: CH53K9C - beazley cyber quote via marsh\nMessage Count: 1\n\n--------------------------------------------------\nID: CH53K9C_00\nFrom: Kechichian, Kevork <Kevork.Kechichian@marsh.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-04-24 16:21\nSubject: Beazley Cyber Quote via Marsh\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\n \n\nHI Hagop , \n\n \n\nPlease find Beazley’s cyber quote attached .\n\n \n\nWe are still waiting for them to put the name of the vendor names and sign in on the quote .\n\n \n\nAnything else is as per initial discussions , feedbacks and comments .\n\n \n\nKind regards,\n\nKev\n\n \n\n\n________________________________\n\n\nرقم القید في السجل:23\nMarsh Emirates Insurance Brokerage LLC\nBroker registration number: 23\nLicence No 219888 Registered Office: Mezzanine & 16th Floor, Riggat Al Buteen, Al Gurg Tower 3\nP.O.Box 64057 & 1019, Dubai\nUnited Arab Emirates",
+      "start_pos": 0,
+      "end_pos": 1278,
+      "chunk_index": 0,
+      "chunk_size": 1278,
+      "metadata": {
+        "doc_id": "CH53K9C - beazley cyber quote via marsh\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CH53K9C - beazley cyber quote via marsh\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:39.139456",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1461
+  }
+}

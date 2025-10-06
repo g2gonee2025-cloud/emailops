@@ -1,0 +1,31 @@
+{
+  "doc_id": "COOBG3K - major incident resolved users unable to access vpn at ho1 and d3\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\COOBG3K - major incident resolved users unable to access vpn at ho1 and d3\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:32:29\nFolder: COOBG3K - major incident resolved users unable to access vpn at ho1 and d3.\nMessage Count: 1\n\n--------------------------------------------------\nID: COOBG3K_00\nFrom: One Reach <OneReach@chalhoub.com>\nTo: \nCC: \nBCC: \nDate: 2025-09-01 14:33\nSubject: Major Incident Resolved: users unable to access VPN at HO1 and D3.\n--------------------------------------------------\n \n\n \n\n <https://onereach.status.freshservice.com/> \n\n \n\nDear Colleagues,\n\n \n\nWe have now confirmed that the VPN issue impacting HO1 and D3 locations has been resolved.  All users are now able to successfully connect, and Infosys are able to provide remote support capability. \n\n \n\nImpacted Locations:\n\n•   HO1 and D3\n\n \n\nStart Date and Time: Mon, 1 Sep 11.00 AM\n\n End Time: Mon, 1 Sep 14.10 PM\n\n \n\nWe appreciate your patience and cooperation as we work to enhance your experience with our services.\n\n\nFor support during this period, please raise a ticket via OneReach. You can also check real-time status updates via the Tech&Data System Status & Health <https://onereach.status.freshservice.com/>  Dashboard.\n\n \n\n \n\n \n\nThis mail was sent to you by\n\n <https://onereach.chalhoub.com/support/home>",
+      "start_pos": 0,
+      "end_pos": 1254,
+      "chunk_index": 0,
+      "chunk_size": 1254,
+      "metadata": {
+        "doc_id": "COOBG3K - major incident resolved users unable to access vpn at ho1 and d3\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\COOBG3K - major incident resolved users unable to access vpn at ho1 and d3\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:43.893433",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1332
+  }
+}

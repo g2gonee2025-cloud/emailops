@@ -1,0 +1,53 @@
+{
+  "doc_id": "CK1IQSO - insurance premium for the month of oct to dec 2024- qatar\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CK1IQSO - insurance premium for the month of oct to dec 2024- qatar\\Conversation.txt",
+  "num_chunks": 3,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:43:27\nFolder: CK1IQSO - insurance premium for the month of oct to dec 2024- qatar\nMessage Count: 1",
+      "start_pos": 0,
+      "end_pos": 177,
+      "chunk_index": 0,
+      "chunk_size": 177,
+      "metadata": {
+        "doc_id": "CK1IQSO - insurance premium for the month of oct to dec 2024- qatar\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CK1IQSO - insurance premium for the month of oct to dec 2024- qatar\\Conversation.txt"
+      }
+    },
+    {
+      "text": "--------------------------------------------------\nID: CK1IQSO_01\nFrom: Rahees Kulathil <Rahees.Kulathil@chalhoub.com>\nTo: DL_axaqatar.uw <axaqatar.uw@gig-gulf.com>; 'Hermon Agnel Lobo' <Hermon.Lobo@gig-gulf.com>; Qatar Luxury - Accounting <QatarLuxury-Accounting@chalhoub.com>; jean-pierre.aaraj@nascoqatar.com <jean-pierre.aaraj@nascoqatar.com>; crian.demetria@nascoqatar.com <crian.demetria@nascoqatar.com>; Ahmad.Abu-Shaaban@nascoqatar.com <Ahmad.Abu-Shaaban@nascoqatar.com>\nCC: 'Joanne B El Kharrat' <joanne.kharrat@gig-gulf.com>; 'Mohammad Galadari' <mohammad.galadari@gig-gulf.com>; Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>; Ajaz Mirza; Carlota Nacional <Carlota.Nacional@chalhoub.com>; Jessica Cal; Sudakshina Das <Sudakshina.Das@chalhoub.com>; Md Anam Khan <Mdanam.Khan@chalhoub.com>; Arlin Aranha; med shipping <med.shipping@chalhoub.com>; mea shipping <mea.shipping@chalhoub.com>; neur shipping <neur.shipping@chalhoub.com>; cnd shipping <cnd.shipping@chalhoub.com>; row shipping <row.shipping@chalhoub.com>; Lizel Gallardo; Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>; Vishal.Arora@nascodubai.com <Vishal.Arora@nascodubai.com>; Shruthi.Kunder@nascodubai.com <Shruthi.Kunder@nascodubai.com>; Abhijet.Chamaliyil@nascodubai.com <Abhijet.Chamaliyil@nascodubai.com>; Aswathy Vijayan <Aswathy.Vijayan@chalhoub.com>; Shayma Dsouza <Shayma.Dsouza@chalhoub.com>\nBCC: \nDate: 2025-01-13 08:36\nSubject: INSURANCE PREMIUM FOR THE MONTH OF OCT TO DEC 2024- QATAR\n--------------------------------------------------\n \n\nDear All,",
+      "start_pos": 179,
+      "end_pos": 1712,
+      "chunk_index": 1,
+      "chunk_size": 1533,
+      "metadata": {
+        "doc_id": "CK1IQSO - insurance premium for the month of oct to dec 2024- qatar\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CK1IQSO - insurance premium for the month of oct to dec 2024- qatar\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Dear All,\n\n \n\nPlease find attached details of Import declarations for the month of OCT to DEC 2024\n\nDear @Qatar Luxury – Accounting FYI\n\n \n\n \n\nRegards,\n\nRAHEES KULATHIL​​​​\n\nSENIOR COORDINATOR ‑ SHIPPING\n\nREAL FZE\n\nDUBAI\n\n‑\n\nUNITED ARAB EMIRATES\n\n+971 4 816 8000\n\n\t\n \t\n <https://chalhoubgroup.com/> \n\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\n\n‑\n\n\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\n\n <https://twitter.com/ChalhoubGroup> \n\n <https://www.facebook.com/chalhoubgroup/> \n\n <https://www.instagram.com/chalhoubgroup> \n\n <https://www.linkedin.com/company/chalhoub-group/> \n\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 1703,
+      "end_pos": 2395,
+      "chunk_index": 2,
+      "chunk_size": 692,
+      "metadata": {
+        "doc_id": "CK1IQSO - insurance premium for the month of oct to dec 2024- qatar\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CK1IQSO - insurance premium for the month of oct to dec 2024- qatar\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:13.776553",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2491
+  }
+}

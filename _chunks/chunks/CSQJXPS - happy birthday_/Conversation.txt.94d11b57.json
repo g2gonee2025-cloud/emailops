@@ -1,0 +1,31 @@
+{
+  "doc_id": "CSQJXPS - happy birthday!\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CSQJXPS - happy birthday!\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:37:50\nFolder: CSQJXPS - happy birthday!\nMessage Count: 1\n\n--------------------------------------------------\nID: CSQJXPS_00\nFrom: HRoperations@chalhoub.com <HRoperations@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Margot Diab <Margot.Diab@chalhoub.com>\nBCC: \nDate: 2025-06-07 11:02\nSubject: Happy Birthday!\n--------------------------------------------------\n\n\n\nThis is an automatically generated email, please do not reply",
+      "start_pos": 0,
+      "end_pos": 526,
+      "chunk_index": 0,
+      "chunk_size": 526,
+      "metadata": {
+        "doc_id": "CSQJXPS - happy birthday!\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CSQJXPS - happy birthday!\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:29.668714",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 552
+  }
+}

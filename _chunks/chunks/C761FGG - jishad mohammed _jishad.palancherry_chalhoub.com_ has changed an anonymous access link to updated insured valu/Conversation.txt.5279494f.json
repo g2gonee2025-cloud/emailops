@@ -1,0 +1,53 @@
+{
+  "doc_id": "C761FGG - jishad mohammed (jishad.palancherry@chalhoub.com) has changed an anonymous access link to updated insured valu\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C761FGG - jishad mohammed (jishad.palancherry@chalhoub.com) has changed an anonymous access link to updated insured valu\\Conversation.txt",
+  "num_chunks": 3,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:24:52\nFolder: C761FGG - jishad mohammed (jishad.palancherry@chalhoub.com) has changed an anonymous access link to updated insured valu\nMessage Count: 1\n\n--------------------------------------------------\nID: C761FGG_00\nFrom: SharePoint Online <no-reply@sharepointonline.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-09-17 19:30\nSubject: Jishad Mohammed (Jishad.Palancherry@chalhoub.com) has changed an anonymous access link to \"Updated Insured Values - Groupwide.xlsx\"\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن",
+      "start_pos": 0,
+      "end_pos": 925,
+      "chunk_index": 0,
+      "chunk_size": 925,
+      "metadata": {
+        "doc_id": "C761FGG - jishad mohammed (jishad.palancherry@chalhoub.com) has changed an anonymous access link to updated insured valu\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C761FGG - jishad mohammed (jishad.palancherry@chalhoub.com) has changed an anonymous access link to updated insured valu\\Conversation.txt"
+      }
+    },
+    {
+      "text": "--------------------------------------------------\nID: C761FGG_00\nFrom: SharePoint Online <no-reply@sharepointonline.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-09-17 19:30\nSubject: Jishad Mohammed (Jishad.Palancherry@chalhoub.com) has changed an anonymous access link to \"Updated Insured Values - Groupwide.xlsx\"\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن",
+      "start_pos": 232,
+      "end_pos": 925,
+      "chunk_index": 1,
+      "chunk_size": 693,
+      "metadata": {
+        "doc_id": "C761FGG - jishad mohammed (jishad.palancherry@chalhoub.com) has changed an anonymous access link to updated insured valu\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C761FGG - jishad mohammed (jishad.palancherry@chalhoub.com) has changed an anonymous access link to updated insured valu\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Jishad Mohammed (Jishad.Palancherry@chalhoub.com) has changed an anonymous access link to \"Updated Insured Values - Groupwide.xlsx\" \t\n \t \t \t \n <https://mctfze-my.sharepoint.com/personal/hagop_ghazarian_chalhoub_com/_layouts/15/images/savexc.png> \tUpdated Insured Values - Groupwide.xlsx\t \nLast modified 09/17/25 \t\nOpen in Excel <https://url.uk.m.mimecastprotect.com/s/OOw1Cv9E4IMLRo4tQfptQYKB1?domain=mctfze-my.sharepoint.com>  \t   \t Remove Access <https://url.uk.m.mimecastprotect.com/s/KK5-CwRG4iYV2XPUqhotJaA_b?domain=mctfze-my.sharepoint.com>  \t\nWhen and where did this happen \t\nDate: \t\nWednesday, September 17, 2025 8:30 AM \t\nBrowser: \t\nUnknown \t\nOperating System: \t\nUnknown \t\nYou are receiving this information because someone shared a file from your OneDrive. If you don't want people to be able to access this item anonymously, remove the link <https://url.uk.m.mimecastprotect.com/s/KK5-CwRG4iYV2XPUqhotJaA_b?domain=mctfze-my.sharepoint.com> . \t\n <http://odsp-ext.azurewebsites.net/projects/email/images/logos/microsoft.onedrive.png> \tPrivacy Statement <https://url.uk.m.mimecastprotect.com/s/t29KCx7J4frRzKBiYiqtykO5Q?domain=privacy.microsoft.com> \nMicrosoft Corporation, One Microsoft Way, Redmond, WA 98052",
+      "start_pos": 927,
+      "end_pos": 2147,
+      "chunk_index": 2,
+      "chunk_size": 1218,
+      "metadata": {
+        "doc_id": "C761FGG - jishad mohammed (jishad.palancherry@chalhoub.com) has changed an anonymous access link to updated insured valu\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C761FGG - jishad mohammed (jishad.palancherry@chalhoub.com) has changed an anonymous access link to updated insured valu\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:57.004633",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2292
+  }
+}

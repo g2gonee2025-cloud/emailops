@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1EF25Y - the deal d3 staff sale - insurance\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1EF25Y - the deal d3 staff sale - insurance\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:27:21\nFolder: C1EF25Y - the deal d3 staff sale - insurance\nMessage Count: 1\n\n--------------------------------------------------\nID: C1EF25Y_00\nFrom: Clive Godinho <Clive.Godinho@thedealoutlet.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Muhammed Sweadan <Muhammed.Sweadan@chalhoub.com>; Rami Riman <Rami.Riman@chalhoub.com>; May Karaki <May.Karaki@chalhoub.com>\nBCC: \nDate: 2025-08-12 10:49\nSubject: The Deal D3 Staff Sale - Insurance\n--------------------------------------------------\nDear Hagop,\n\n \n\nPlease note, total cost of items which will be transferred for upcoming D3 Deal Staff Sale is $700,000.\n\n \n\nBest Regards,\n\n \n\nCLIVE GODINHO\t\n​​​​\t\nSPECIALIST ‑ SUPPLY PLANNING\t\nC.G.R. FZE\t\nDUBAI\t\n‑\t\nUNITED ARAB EMIRATES\t\n+965 22979000\t\n\t\n \t\n <https://chalhoubgroup.com/> \t\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\t\n‑\n\t\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\t\n\t\n <https://www.facebook.com/chalhoubgroup/> \t\n <https://www.instagram.com/chalhoubgroup> \t\n <https://www.linkedin.com/company/chalhoub-group/> \t\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 0,
+      "end_pos": 1223,
+      "chunk_index": 0,
+      "chunk_size": 1223,
+      "metadata": {
+        "doc_id": "C1EF25Y - the deal d3 staff sale - insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1EF25Y - the deal d3 staff sale - insurance\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:41.993057",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1297
+  }
+}

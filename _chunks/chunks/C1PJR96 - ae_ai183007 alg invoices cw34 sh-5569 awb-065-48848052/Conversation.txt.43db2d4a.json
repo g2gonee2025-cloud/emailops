@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1PJR96 - ae_ai183007 alg invoices cw34 sh-5569 awb-065-48848052\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1PJR96 - ae_ai183007 alg invoices cw34 sh-5569 awb-065-48848052\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:31:10\nFolder: C1PJR96 - ae_ai183007 alg invoices cw34 sh-5569 awb-065-48848052\nMessage Count: 1\n\n--------------------------------------------------\nID: C1PJR96_00\nFrom: Abdul Karim <Abdul.Karim@chalhoub.com>\nTo: Bander Mubarak Al Besher <Bander.AlBesher@gig.sa>; Inayath Nawaz QURIESHI <inayat.qureshi@gig.sa>; Layan Alrshoud <Layan.Alrshoud@gig.sa>\nCC: row shipping <row.shipping@chalhoub.com>; Nezar AlMadani <Nezar.AlMadani@gig.sa>; Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nBCC: \nDate: 2025-09-18 10:34\nSubject: AE_AI183007 ALG Invoices CW34  SH-5569 AWB-065-48848052  \n--------------------------------------------------\n \n\nDear @Bander Mubarak Al Besher <mailto:Bander.AlBesher@gig.sa> \n\n \n\nKindly find attached related documents for subject shipment, please assist for claim request.\n\n \n\nPlease find attached details of new shipment for - ALG SWAROVSKI \n\n.  \n\n.  Consignment No: SH-5569\n\n \n\nConsignment By\n\nCompany & Brand\n\nAWB. No.\n\nShipment Type\n\nInvoice No.\n\nNo. of Plts/CTN\n\nDiscrepancy Y/N\n\n \n\nSWAROVSKI INTERNATIONAL DISTRIBUTION AG\n\nSWAROVSKI\n\n065-48848052\n\nSHIPMENT\n\n6470957344 TO\n\n6470957371\n\n15 PLTS\n\nCLAIM FORM ATTACHED      \n\n \n\n \n\n[Abdul Karim]",
+      "start_pos": 0,
+      "end_pos": 1248,
+      "chunk_index": 0,
+      "chunk_size": 1247,
+      "metadata": {
+        "doc_id": "C1PJR96 - ae_ai183007 alg invoices cw34 sh-5569 awb-065-48848052\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1PJR96 - ae_ai183007 alg invoices cw34 sh-5569 awb-065-48848052\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Invoice No.\n\nNo. of Plts/CTN\n\nDiscrepancy Y/N\n\n \n\nSWAROVSKI INTERNATIONAL DISTRIBUTION AG\n\nSWAROVSKI\n\n065-48848052\n\nSHIPMENT\n\n6470957344 TO\n\n6470957371\n\n15 PLTS\n\nCLAIM FORM ATTACHED      \n\n \n\n \n\n[Abdul Karim] \n\nABDUL KARIM\t\n​​​​\t\nSENIOR COORDINATOR ‑ SHIPPING\t\nREAL FZE\t\nDUBAI\t\n‑\t\nUNITED ARAB EMIRATES\t\n\t+9710564157368\t\n \t\n <https://chalhoubgroup.com/> \t\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\t\n‑\n\t\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\t\n\t\n <https://www.facebook.com/chalhoubgroup/> \t\n <https://www.instagram.com/chalhoubgroup> \t\n <https://www.linkedin.com/company/chalhoub-group/> \t\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 1039,
+      "end_pos": 1748,
+      "chunk_index": 1,
+      "chunk_size": 709,
+      "metadata": {
+        "doc_id": "C1PJR96 - ae_ai183007 alg invoices cw34 sh-5569 awb-065-48848052\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1PJR96 - ae_ai183007 alg invoices cw34 sh-5569 awb-065-48848052\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:34.735222",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1865
+  }
+}

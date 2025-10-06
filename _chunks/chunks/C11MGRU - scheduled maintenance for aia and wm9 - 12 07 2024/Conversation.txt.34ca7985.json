@@ -1,0 +1,42 @@
+{
+  "doc_id": "C11MGRU - scheduled maintenance for aia and wm9 - 12 07 2024\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C11MGRU - scheduled maintenance for aia and wm9 - 12 07 2024\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:44:37\nFolder: C11MGRU - scheduled maintenance for aia and wm9 - 12 07 2024\nMessage Count: 1\n\n--------------------------------------------------\nID: C11MGRU_00\nFrom: One Reach <OneReach@chalhoub.com>\nTo: \nCC: \nBCC: \nDate: 2024-12-02 11:23\nSubject: Scheduled Maintenance for AIA and WM9 - 12/07/2024\n--------------------------------------------------\n \n\n      \n\n \n\n \n\nNotification: Essential Logistics Weekly Maintenance\n\n______________________________________________________________________________\n\n______________________________________________________________________________ \n\nDear Colleagues,\n\n \n\nTo ensure business continuity, we have scheduled essential maintenance to enhance the underlying infrastructure of the database systems for WMS and AIA\n\nSaturday, December 07, 2024, | 10:00 PM – 11:59 PM GST\n\nPlease be aware that during this period, access to the Warehouse Application (WMS) and Oracle AIA will be temporarily unavailable. \n\nIf you require assistance during this time, kindly raise a support ticket via the following  link: https://onereach.chalhoub.com <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fonereach.chalhoub.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cdaa2cec95a2b4de7868b08dd12a21059%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638687210277036711%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=8lLE%2FogL8rqdKwiU%2FqDx0MqY0h0oLj45JlMYQx0UI40%3D&reserved=0>",
+      "start_pos": 0,
+      "end_pos": 1588,
+      "chunk_index": 0,
+      "chunk_size": 1587,
+      "metadata": {
+        "doc_id": "C11MGRU - scheduled maintenance for aia and wm9 - 12 07 2024\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C11MGRU - scheduled maintenance for aia and wm9 - 12 07 2024\\Conversation.txt"
+      }
+    },
+    {
+      "text": "If you require assistance during this time, kindly raise a support ticket via the following  link: https://onereach.chalhoub.com <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fonereach.chalhoub.com%2F&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cdaa2cec95a2b4de7868b08dd12a21059%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638687210277036711%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=8lLE%2FogL8rqdKwiU%2FqDx0MqY0h0oLj45JlMYQx0UI40%3D&reserved=0> \n\n \n\nChalhoub Tech.\n\n\n\n\n    If you have any questions, please reach out to the IT Service Desk via One reach Link <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fonereach.chalhoub.com%2Fa%2Fdashboard%2Fdefault&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cdaa2cec95a2b4de7868b08dd12a21059%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638687210277072448%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=vYcYxJBqtiq6FXFHCOsoR65xuWe0O8ID%2FiGZWwC03j8%3D&reserved=0>",
+      "start_pos": 1023,
+      "end_pos": 2158,
+      "chunk_index": 1,
+      "chunk_size": 1135,
+      "metadata": {
+        "doc_id": "C11MGRU - scheduled maintenance for aia and wm9 - 12 07 2024\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C11MGRU - scheduled maintenance for aia and wm9 - 12 07 2024\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:56.156065",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2228
+  }
+}

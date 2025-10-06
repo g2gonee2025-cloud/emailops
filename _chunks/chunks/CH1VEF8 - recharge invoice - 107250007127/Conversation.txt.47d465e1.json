@@ -1,0 +1,31 @@
+{
+  "doc_id": "CH1VEF8 - recharge invoice - 107250007127\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CH1VEF8 - recharge invoice - 107250007127\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:32:55\nFolder: CH1VEF8 - recharge invoice - 107250007127\nMessage Count: 1\n\n--------------------------------------------------\nID: CH1VEF8_00\nFrom: recharge-invoices@chalhoub.com <recharge-invoices@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>; Meldon Azavedo\nCC: Aboobaker Noushad; Bader Abdallah <Bader.Abdallah@chalhoub.com>; Sharda Kumar <Sharda.Kumar@chalhoub.com>; REAL UAE Accounting - Receivable <REALUAEAccounting-Receivable@chalhoub.com>; REAL UAE Accounting - Receivable <REALUAEAccounting-Receivable@chalhoub.com>; Laith Alkhateeb <Laith.Alkhateeb@chalhoub.com>; Imelda Manansala\nBCC: \nDate: 2025-07-01 08:42\nSubject: Recharge Invoice - 107250007127\n--------------------------------------------------\nHello \n\nRecharge of amount AED 2,195.0 has been raised from ALLIED - RETAIL to SAJ EMIRATES TRADING LLC for the supplier: GULF INSURANCE GROUP GULF BSC -DUBAI BRANCH, invoice number: PDB474715. \n\nPlease find attached the recharge invoice for your booking and payment reference. \n\nWe shall greatly appreciate your kind attention to this matter. \n\n\n*** This is a system generated email, please do not reply ***",
+      "start_pos": 0,
+      "end_pos": 1217,
+      "chunk_index": 0,
+      "chunk_size": 1217,
+      "metadata": {
+        "doc_id": "CH1VEF8 - recharge invoice - 107250007127\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CH1VEF8 - recharge invoice - 107250007127\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:09.925161",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1249
+  }
+}

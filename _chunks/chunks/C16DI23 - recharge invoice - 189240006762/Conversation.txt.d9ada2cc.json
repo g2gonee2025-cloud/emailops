@@ -1,0 +1,31 @@
+{
+  "doc_id": "C16DI23 - recharge invoice - 189240006762\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C16DI23 - recharge invoice - 189240006762\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:49:55\nFolder: C16DI23 - recharge invoice - 189240006762\nMessage Count: 1\n\n--------------------------------------------------\nID: C16DI23_00\nFrom: recharge-invoices@chalhoub.com <recharge-invoices@chalhoub.com>\nTo: Ankit Bhagchandani <Ankit.Bhagchandani@chalhoub.com>; Ahmed Moselhi <Ahmed.Moselhi@chalhoub.com>; Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>; Khaled Abdel Aziz <Khaled.M.Abdelaziz@chalhoub.com>; Osama Abbas <Osama.Abbas@chalhoub.com>; Wael Zaky\nCC: Aboobaker Noushad; Bader Abdallah <Bader.Abdallah@chalhoub.com>; Sharda Kumar <Sharda.Kumar@chalhoub.com>; REAL UAE Accounting - Receivable <REALUAEAccounting-Receivable@chalhoub.com>; REAL UAE Accounting - Receivable <REALUAEAccounting-Receivable@chalhoub.com>; Hasnain Iqbal <Hasnain.Iqbal@ae.diormail.com>\nBCC: \nDate: 2024-12-21 01:07\nSubject: Recharge Invoice - 189240006762\n--------------------------------------------------\nHello \n\nRecharge of amount EUR 2,747.0 has been raised from C.G.R. FZE to MAC FOR PROMOTING COMMERCIAL BUSINESS WLL for the supplier: RETAIL UNITY BV, invoice number: 2018090. \n\nPlease find attached the recharge invoice for your booking and payment reference. \n\nWe shall greatly appreciate your kind attention to this matter. \n\n\n*** This is a system generated email, please do not reply ***",
+      "start_pos": 0,
+      "end_pos": 1366,
+      "chunk_index": 0,
+      "chunk_size": 1366,
+      "metadata": {
+        "doc_id": "C16DI23 - recharge invoice - 189240006762\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C16DI23 - recharge invoice - 189240006762\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:39.813750",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1398
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1FK2D1 - insurance claim (baccarat 2814006)\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1FK2D1 - insurance claim (baccarat 2814006)\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:47:22\nFolder: C1FK2D1 - insurance claim (baccarat 2814006)\nMessage Count: 1\n\n--------------------------------------------------\nID: C1FK2D1_00\nFrom: Tanagra MOE <Tanagra.MOE@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Harout Karakoulian <Harout.Karakoulian@chalhoub.com>; Shahobiddin Mukaramov <Shahobiddin.Mukaramov@chalhoub.com>; Richard Samuel <Richard.Samuel@chalhoub.com>\nBCC: \nDate: 2025-01-14 21:43\nSubject: Insurance Claim (Baccarat 2814006)\n--------------------------------------------------\nDear @Hagop Ghazarian <mailto:Hagop.Ghazarian@chalhoub.com> ,\n\n \n\nI hope you’re doing well.\n\n \n\nI kindly request you to submit for insurance claim for the item attached, as the item was damaged by a customer in the store while checking from the display.\n\n \n\nKindly, let us know.\n\n \n\n \n\nRegards,\n\nRichard S.",
+      "start_pos": 0,
+      "end_pos": 911,
+      "chunk_index": 0,
+      "chunk_size": 911,
+      "metadata": {
+        "doc_id": "C1FK2D1 - insurance claim (baccarat 2814006)\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1FK2D1 - insurance claim (baccarat 2814006)\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:04.237070",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 957
+  }
+}

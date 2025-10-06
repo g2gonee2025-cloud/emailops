@@ -1,0 +1,53 @@
+{
+  "doc_id": "C1UADXH - testing unsubscribe page\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1UADXH - testing unsubscribe page\\Conversation.txt",
+  "num_chunks": 3,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:46:56\nFolder: C1UADXH - testing unsubscribe page\nMessage Count: 1\n\n--------------------------------------------------\nID: C1UADXH_00\nFrom: Swarovski <marketing@noreply.swarovski.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-01-22 11:58\nSubject: Testing Unsubscribe page\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\nTesting Unsubscribe page\n <http://click.noreply.swarovski.com/open.aspx?ffcb10-fe9b15717065007e70-fe631075746503797710-fe31157075640575701378-ff8e1d78-fe5e11737461057a7012-ff301d707065&d=100208&bmt=0> \n\t\n  \n\nFree standard shipping on all orders",
+      "start_pos": 0,
+      "end_pos": 973,
+      "chunk_index": 0,
+      "chunk_size": 972,
+      "metadata": {
+        "doc_id": "C1UADXH - testing unsubscribe page\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1UADXH - testing unsubscribe page\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Testing Unsubscribe page\n <http://click.noreply.swarovski.com/open.aspx?ffcb10-fe9b15717065007e70-fe631075746503797710-fe31157075640575701378-ff8e1d78-fe5e11737461057a7012-ff301d707065&d=100208&bmt=0> \n\t\n  \n\nFree standard shipping on all orders",
+      "start_pos": 728,
+      "end_pos": 973,
+      "chunk_index": 1,
+      "chunk_size": 244,
+      "metadata": {
+        "doc_id": "C1UADXH - testing unsubscribe page\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1UADXH - testing unsubscribe page\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Free standard shipping on all orders \n\n \t \n <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Furl.uk.m.mimecastprotect.com%2Fs%2FEO5ICgQl4SPA4YRHNfnS4P1r4%3Fdomain%3Dclick.noreply.swarovski.com&data=05%7C02%7Chagop.ghazarian%40chalhoub.com%7C5e2fc31faba54de4e6fc08dd3aba87e8%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638731295004163178%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=htpr%2BVJbVOIm%2B1y4T0cF9pBLMaw8NB6oGn%2BZqE1me28%3D&reserved=0> \t\n \t \n \t \n<https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Furl.uk.m.mimecastprotect.com%2Fs%2FR2IwCjOo4FlnZyXfRhlSmbDfw%3Fdomain%3Dclick.noreply.swarovski.com&data=05%7C02%7Chagop.ghazarian%40chalhoub.com%7C5e2fc31faba54de4e6fc08dd3aba87e8%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638731295004188325%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=h6SWz1iabBqHYBqLi3Bt0q7XHN1SQnW2U2ZG30QkIQk%3D&reserved=0> \t\nTest Unfollow <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Furl.uk.m.mimecastprotect.com%2Fs%2FK8cyCkOp4FYOoqjfQijSGoJGS%3Fdomain%3Dclick.noreply.swarovski.com&data=05%7C02%7Chagop.ghazarian%40chalhoub.com%7C5e2fc31faba54de4e6fc08dd3aba87e8%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638731295004201914%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=Hkj0Ses0%2FTmgE0vXNfXfIlY7km4ZLVHcr1RpzNzgRIk%3D&reserved=0>",
+      "start_pos": 936,
+      "end_pos": 2534,
+      "chunk_index": 2,
+      "chunk_size": 1598,
+      "metadata": {
+        "doc_id": "C1UADXH - testing unsubscribe page\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1UADXH - testing unsubscribe page\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:54.908640",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2679
+  }
+}

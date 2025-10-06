@@ -1,0 +1,31 @@
+{
+  "doc_id": "C10V3TI - mct fze nasco gulf insurance agency llc pdn-000886 bdu\\Headers\\C10V3TI_02.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C10V3TI - mct fze nasco gulf insurance agency llc pdn-000886 bdu\\Headers\\C10V3TI_02.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from DB5PR05MB10740.eurprd05.prod.outlook.com (2603:10a6:10:48d::6) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Fri, 18 Apr 2025 00:52:53 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from AM0PR05MB6692.eurprd05.prod.outlook.com (2603:10a6:20b:155::11) by DB5PR05MB10740.eurprd05.prod.outlook.com (2603:10a6:10:48d::6) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8655.26; Fri, 18 Apr 2025 00:52:51 +0000\nReceived: from AM0PR05MB6692.eurprd05.prod.outlook.com ([::1]) by AM0PR05MB6692.eurprd05.prod.outlook.com ([fe80::5345:8f68:1702:7c5%4]) with Microsoft SMTP Server id 15.20.8655.018; Fri, 18 Apr 2025 00:52:51 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Mohamed Qarqash <Mohamed.Qarqash@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: MCT FZE//NASCO GULF INSURANCE AGENCY LLC//PDN-000886//BDU \nThread-Topic: MCT FZE//NASCO GULF INSURANCE AGENCY LLC//PDN-000886//BDU \nThread-Index: Aduvw11YLd5mge/oS0KWQXp8kIKQxQAOEJY0AAAlsos=\nReferences: <DBAPR05MB69339DF21575E0DF63E2EC23E0BC2@DBAPR05MB6933.eurprd05.prod.outlook.com> <AS8PR05MB108249A51A0E67951F8F987289DBF2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB108249A51A0E67951F8F987289DBF2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Mohamed.Qarqash@chalhoub.com\nX-MS-TNEF-Correlator: 0ecb003f-f243-45f6-b3b2-e4366b465e13\nMIME-Version: 1.0\nDate: Fri, 18 Apr 2025 00:52:51 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: AM0PR05MB6692.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <73d2f41d2ecc423c9f7d1ee6e3b322d7@AM0PR05MB6692.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: ef1ea8d5-3614-4cbe-b6cf-08dd7e1358f4\nX-MS-Exchange-Parent-Message-Id: <AS8PR05MB108249A51A0E67951F8F987289DBF2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: AM0PR05MB6692:EE_|DB5PR05MB10740:EE_|AS8PR05MB10824:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 18 Apr 2025 00:52:51.9779 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: ef1ea8d5-3614-4cbe-b6cf-08dd7e1358f4\nX-MS-Exchange-AtpMessageProperties: SA\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR05MB6692.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Apr 2025 00:52:51.8247 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: AM0PR05MB6692.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: ef1ea8d5-3614-4cbe-b6cf-08dd7e1358f4\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: DB5PR05MB10740\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:01.2739382\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8655.018\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910005)(944506478)(944626604)(920097)(425001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: KMSSh/Qb0Mi10qfBo3R4AHMcvWBzjx++KJRUizuqFIwMODxPGS8H2jR9MjHct8vVXQEQnJbWYVIIR4+39XUkrMRlvn+hVEsgK2dba1rYa2FG4q76XsBEZotzZ/OBScTRbkkTtleVnLA33cITzWrTFxD7qymhgOw+XmklOkqMx/BoZY/wtxGkMijNEC2yds10ugebwT0NSO6WPF78mOG5tOc6P/y1Jfrgfvsk/5N1Y1MUv32jkDU3US+HwI9JvGiTyG6xXMAwumNM12G+OW044eHarpRO2ysy+NKT8AzywWZmaJjVOPYL3LGkG3auEx7V4bNocALwmtkwF6dBTBfc0tf+FU7t6nwA4PNeM19phfHS4UMn5drkxMiMN0xkWZwa78iu5qBkA9N5HSCmKF5F4IU1g0lW/4+emD4IC2QNoABwTF7r5JlacynQHED6Y1wmR7RRYwdzL2/hWJwrZ/KmcmHxRCZ/oCK/PrAhwhZQYZDE3IXFHuQTu7Pe5jEJAaX6bNMk2Cwd08TNQTDaJdHI4zxZR1/GOUeUNJscy305J/OMPQ9oWiOmn487jtXO/LKwB60KFQI1+4Zape4VCGlRODNPwml03zwZTCZVasN6rUCA1e6vr1JJW5D95FwFt9jLsp8yRLxgNzeqrPV9LVeiiqbmFr2FSGVaJaj/hb4/u2qHfCqjEzz/QqTnGsgklmLaHb7aM8jrJlyLnWSneak7qavlbd7J6ziCU3cFLJ0IRfKoU1m20f5je8B+w08QghlFhkQckYVIRAmpi8qi7B7EGQFeaUlXlJTpllhGN/UR4Qmgaj0UHlphlJMhMKEOdNuJADBfjpzgmSVK2rmbxlniLZm3B422FaSNpDxGGwy0fD+/2rOzyXqFbhwkppwk6k0LCm862GQIVs4qhGU79PSgxw==",
+      "start_pos": 0,
+      "end_pos": 4872,
+      "chunk_index": 0,
+      "chunk_size": 4872,
+      "metadata": {
+        "doc_id": "C10V3TI - mct fze nasco gulf insurance agency llc pdn-000886 bdu\\Headers\\C10V3TI_02.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C10V3TI - mct fze nasco gulf insurance agency llc pdn-000886 bdu\\Headers\\C10V3TI_02.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:26.078177",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4928
+  }
+}

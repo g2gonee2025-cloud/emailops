@@ -1,0 +1,42 @@
+{
+  "doc_id": "C5IIK8W - faces closure insurance\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C5IIK8W - faces closure insurance\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:25:19\nFolder: C5IIK8W - faces closure insurance\nMessage Count: 2\n\n--------------------------------------------------\nID: C5IIK8W_00\nFrom: Shereen Omar <Shereen.Omar@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-09-14 15:10\nSubject: Faces Closure Insurance \n--------------------------------------------------\nDear Hagop, \n\n \n\nHope this email finds you well. Please note last trading date will be 21st of September and store handover to the mall will be on the 30 September. \n\nSHEREEN OMAR\t\n​​​​\t\nSENIOR MANAGER ‑ ADMINISTRATION\t\nCHALHOUB & BUHINDI CO. W.L.L.\t\nMANAMA\t\n‑\t\nBAHRAIN\t\n\t\t\n \t\n <https://chalhoubgroup.com/> \t\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\t\n‑\n\t\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\t\n <https://twitter.com/ChalhoubGroup> \t\n <https://www.facebook.com/chalhoubgroup/> \t\n <https://www.instagram.com/chalhoubgroup> \t\n <https://www.linkedin.com/company/chalhoub-group/> \t\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm> \t\n\t\n\n--------------------------------------------------\nID: C5IIK8W_01\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Shereen Omar <Shereen.Omar@chalhoub.com>\nCC: \nBCC: \nDate: 2025-09-15 15:18\nSubject: Re: Faces Closure Insurance \n--------------------------------------------------\nDear Shereen,\n\nThank you. Well noted.\n\nBest Regards,\nHagop\n________________________________",
+      "start_pos": 0,
+      "end_pos": 1512,
+      "chunk_index": 0,
+      "chunk_size": 1512,
+      "metadata": {
+        "doc_id": "C5IIK8W - faces closure insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C5IIK8W - faces closure insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "--------------------------------------------------\nID: C5IIK8W_01\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Shereen Omar <Shereen.Omar@chalhoub.com>\nCC: \nBCC: \nDate: 2025-09-15 15:18\nSubject: Re: Faces Closure Insurance \n--------------------------------------------------\nDear Shereen,\n\nThank you. Well noted.\n\nBest Regards,\nHagop\n________________________________\n\nFrom: Shereen Omar <Shereen.Omar@chalhoub.com>\nSent: 14 September 2025 3:10 PM\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Faces Closure Insurance \n \n\nDear Hagop, \n\n \n\nHope this email finds you well. Please note last trading date will be 21st of September and store handover to the mall will be on the 30 September. \n\nSHEREEN OMAR\t \n​​​​\t \nSENIOR MANAGER ‑ ADMINISTRATION\t \nCHALHOUB & BUHINDI CO. W.L.L.\t \nMANAMA\t \n‑\t \nBAHRAIN\t \n\t\t\n \t \n <https://chalhoubgroup.com/> \t \nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\t\n‑\n\t\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\t\n <https://twitter.com/ChalhoubGroup> \t \n <https://www.facebook.com/chalhoubgroup/> \t \n <https://www.instagram.com/chalhoubgroup> \t \n <https://www.linkedin.com/company/chalhoub-group/> \t \n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 1134,
+      "end_pos": 2394,
+      "chunk_index": 1,
+      "chunk_size": 1260,
+      "metadata": {
+        "doc_id": "C5IIK8W - faces closure insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C5IIK8W - faces closure insurance\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:13.605668",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2529
+  }
+}

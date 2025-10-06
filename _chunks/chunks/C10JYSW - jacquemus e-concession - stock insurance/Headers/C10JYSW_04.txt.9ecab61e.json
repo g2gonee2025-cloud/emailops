@@ -1,0 +1,42 @@
+{
+  "doc_id": "C10JYSW - jacquemus e-concession - stock insurance\\Headers\\C10JYSW_04.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C10JYSW - jacquemus e-concession - stock insurance\\Headers\\C10JYSW_04.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from PAXPR05MB8706.eurprd05.prod.outlook.com (2603:10a6:102:1da::20) by AS8PR05MB10824.eurprd05.prod.outlook.com with HTTPS; Tue, 22 Jul 2025 12:45:18 +0000\nAuthentication-Results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nReceived: from PAVPR05MB10474.eurprd05.prod.outlook.com (2603:10a6:102:2f9::17) by PAXPR05MB8706.eurprd05.prod.outlook.com (2603:10a6:102:1da::20) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8943.30; Tue, 22 Jul 2025 12:45:16 +0000\nReceived: from PAVPR05MB10474.eurprd05.prod.outlook.com ([::1]) by PAVPR05MB10474.eurprd05.prod.outlook.com ([fe80::c1c1:ae7b:357e:3a9d%7]) with Microsoft SMTP Server id 15.20.8943.029; Tue, 22 Jul 2025 12:45:16 +0000\nContent-Type: application/ms-tnef; name=\"winmail.dat\"\nContent-Transfer-Encoding: binary\nFrom: Natalia Sanchez <Natalia.Sanchez@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nSubject: Automatic reply: Jacquemus e-concession - stock insurance\nThread-Topic: Jacquemus e-concession - stock insurance\nThread-Index: AQHb9YsuYk5FFSCqKkOU2Ro+dfEQIbQzPhnAgAk18ZmAAZAwcIAACO6VgAAUtAg=\nReferences: <AS8PR05MB1053798F31FFF312E92DE613FEE57A@AS8PR05MB10537.eurprd05.prod.outlook.com> <VE1PR05MB734229982AF14FEF3A56B519EB57A@VE1PR05MB7342.eurprd05.prod.outlook.com> <AS8PR05MB10537439C8512A4C228E202C6EE5DA@AS8PR05MB10537.eurprd05.prod.outlook.com> <VE1PR05MB734289A6248E0CF628653EE6EB5CA@VE1PR05MB7342.eurprd05.prod.outlook.com> <AS8PR05MB10824B7D99C95AB310E3F193F9D5CA@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824B7D99C95AB310E3F193F9D5CA@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:",
+      "start_pos": 0,
+      "end_pos": 1719,
+      "chunk_index": 0,
+      "chunk_size": 1718,
+      "metadata": {
+        "doc_id": "C10JYSW - jacquemus e-concession - stock insurance\\Headers\\C10JYSW_04.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C10JYSW - jacquemus e-concession - stock insurance\\Headers\\C10JYSW_04.txt"
+      }
+    },
+    {
+      "text": "om> <AS8PR05MB10824B7D99C95AB310E3F193F9D5CA@AS8PR05MB10824.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS8PR05MB10824B7D99C95AB310E3F193F9D5CA@AS8PR05MB10824.eurprd05.prod.outlook.com>\nX-MS-Has-Attach:\nX-Auto-Response-Suppress: All\nX-MS-Exchange-Organization-SCL: 1\nX-MS-Exchange-Inbox-Rules-Loop: Natalia.Sanchez@chalhoub.com\nX-MS-TNEF-Correlator: a3c13a07-a946-49b1-b4a1-1a55b49904e3\nMIME-Version: 1.0\nDate: Tue, 22 Jul 2025 12:45:16 +0000\nX-MS-Exchange-Organization-MessageDirectionality: Originating\nX-MS-Exchange-Organization-AuthSource: PAVPR05MB10474.eurprd05.prod.outlook.com\nX-MS-Exchange-Organization-AuthAs: Internal\nX-MS-Exchange-Organization-AuthMechanism: 03\nMessage-Id: <51b05118c27849638aa2f6e15e9c4d51@PAVPR05MB10474.eurprd05.prod.outlook.com>\nX-MS-Exchange-Organization-Network-Message-Id: bc41bf48-0755-4e58-9fc0-08ddc91d9bf6\nX-MS-Exchange-Parent-Message-Id: <AS8PR05MB10824B7D99C95AB310E3F193F9D5CA@AS8PR05MB10824.eurprd05.prod.outlook.com>\nAuto-Submitted: auto-generated\nX-MS-Exchange-Generated-Message-Source: Mailbox Rules Agent\nX-MS-PublicTrafficType: Email\nX-MS-TrafficTypeDiagnostic: PAVPR05MB10474:EE_|PAXPR05MB8706:EE_|AS8PR05MB10824:EE_\nReturn-Path: <>\nX-MS-Exchange-Organization-ExpirationStartTime: 22 Jul 2025 12:45:16.5164 (UTC)\nX-MS-Exchange-Organization-ExpirationStartTimeReason: OriginalSubmit\nX-MS-Exchange-Organization-ExpirationInterval: 1:00:00:00.0000000\nX-MS-Exchange-Organization-ExpirationIntervalReason: OriginalSubmit\nX-MS-Office365-Filtering-Correlation-Id: bc41bf48-0755-4e58-9fc0-08ddc91d9bf6\nX-MS-Exchange-AtpMessageProperties: SA\nX-ExclaimerHostedSignatures-MessageProcessed: true\nX-Microsoft-Antispam: BCL:0;ARA:13230040|366016|8096899003|41050700001;\nX-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAVPR05MB10474.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(8096899003)(41050700001);DIR:INT;\nX-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Jul 2025 12:45:16.4106 (UTC)\nX-MS-Exchange-CrossTenant-FromEntityHeader: Hosted\nX-MS-Exchange-CrossTenant-Id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-AuthSource: PAVPR05MB10474.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-Network-Message-Id: bc41bf48-0755-4e58-9fc0-08ddc91d9bf6\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR05MB8706\nX-MS-Exchange-Transport-EndToEndLatency: 00:00:01.6550290\nX-MS-Exchange-Processed-By-BccFoldering: 15.20.8943.027\nX-Microsoft-Antispam-Mailbox-Delivery: ucf:1;jmr:0;auth:0;dest:C;OFR:CustomRules;ENG:(910005)(944506478)(944626604)(920097)(425001)(930097)(140003);\nX-Microsoft-Antispam-Message-Info: 90y///jcNob+3k2YmbgS5LxaZELUvpwA1hpCSx6K25cb/dORiq3+WG51qVJoOG+/apJQ+WP6xUxvljgb70B/7gXSyT+fRNIovunoi6fLPciRQH6qImEpRJcmR5oE92eENKhstsi7OwA6+PvepEUeQ07b38DQv3fNDvn4NSq5KIC5Zdf74nC+ZH/I+8oBg1fD1Sznb57SoUdx8jgGQ88WtWtGameU526zybwqaDFznz6WSpLKnpOZMc1UWG96nBfaExzNU5/YbQ9Mh+N1wZ5EaYEOyAn9Dx+CZXkoY/Bkz+2Zjva7xp0CPobjNtHBYbHE9FW0BH3kVzl4eME5foCKziT9tT/Jbu6l094DWElPPDplhCzyaElLnbZHssDdg+3pDmOpPLk83QFQLNwRUbmsht1TRw002OuJeT372w6vgIo0hamlPAcWE+miSISoLA2/EQAborG3hyDFyQUhBdxwXrwiJ1axFNWBRDHHzvRdCIOMENckjxiXldU/kne1+VukdUwm4nmtfTf+rOncoYGk22QD6IqXXLENRP6lNcod1sO4ElcKa6atCRIypsI//BF60N0tFh/46X1JqP8Go7ppaLowzd52XImxmH+VypXcnDz3sxlv8qcuH1y+powbAjgpR9SXKuVHarDM3FyKgAAsVS/QblzwnYK04asYcMyn0bUVenafoSBg1MMabYYbYBYlKGF5BHHIx391MlTSBkkFx78GyA1UXcOsyXveWmZ6Z96MqVtKzlFgeWjegTi9T6OUc8aIEt7ov0DQPZm0SrX+/2YAoPZZ8iNPvSEO1qWfNoy4fG5wM6pSBWIPNBgU9sH4J6iUcdUdRv8xiQLZM15ALjOpp/X7V4jWBnoQ04F9BKcvShTofJ0PwcZxbwFeInESXF2Jg6Z9Dd0KbzH/SNX68A==",
+      "start_pos": 1519,
+      "end_pos": 5112,
+      "chunk_index": 1,
+      "chunk_size": 3593,
+      "metadata": {
+        "doc_id": "C10JYSW - jacquemus e-concession - stock insurance\\Headers\\C10JYSW_04.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C10JYSW - jacquemus e-concession - stock insurance\\Headers\\C10JYSW_04.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:27:44.893214",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5168
+  }
+}

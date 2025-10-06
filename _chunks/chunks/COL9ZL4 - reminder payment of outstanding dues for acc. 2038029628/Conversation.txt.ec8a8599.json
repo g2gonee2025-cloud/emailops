@@ -1,0 +1,31 @@
+{
+  "doc_id": "COL9ZL4 - reminder payment of outstanding dues for acc. 2038029628\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\COL9ZL4 - reminder payment of outstanding dues for acc. 2038029628\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:51:56\nFolder: COL9ZL4 - reminder payment of outstanding dues for acc. 2038029628\nMessage Count: 1\n\n--------------------------------------------------\nID: COL9ZL4_00\nFrom: noreply@dewa.gov.ae <noreply@dewa.gov.ae>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2024-12-17 06:39\nSubject: Reminder: Payment of outstanding dues for Acc. 2038029628\n--------------------------------------------------\n[No message body]",
+      "start_pos": 0,
+      "end_pos": 512,
+      "chunk_index": 0,
+      "chunk_size": 512,
+      "metadata": {
+        "doc_id": "COL9ZL4 - reminder payment of outstanding dues for acc. 2038029628\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\COL9ZL4 - reminder payment of outstanding dues for acc. 2038029628\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:57.876112",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 534
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "doc_id": "CKML1Q8 - chalmex insurance cost\\Headers\\CKML1Q8_01.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CKML1Q8 - chalmex insurance cost\\Headers\\CKML1Q8_01.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by AS2PR05MB10772.eurprd05.prod.outlook.com (2603:10a6:20b:64a::5) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8272.15; Thu, 19 Dec 2024 10:40:35 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%6]) with mapi id 15.20.8272.005; Thu, 19 Dec 2024 10:40:35 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Ashish Tekwani <Ashish.Tekwani@chalmax.me>\nSubject: Re: Chalmex Insurance Cost\nThread-Topic: Chalmex Insurance Cost\nThread-Index: Adq1+J8tdp0nlCvfSVyGnwOpDtU58BTpPmhAAACnO08AXU3cMAADlCFQEbIABVAABaHSWg==\nDate: Thu, 19 Dec 2024 10:40:35 +0000\nMessage-ID: <AS8PR05MB10824FBE1F0070B619B26DD049D062@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <AS8PR05MB108242BA6E3A4A94F96515F8C9DFF2@AS8PR05MB10824.eurprd05.prod.outlook.com> <DB9PR05MB10421C766A7593928DED90B7CE3622@DB9PR05MB10421.eurprd05.prod.outlook.com> <AS8PR05MB1082438F95008ED15F16A0C389D622@AS8PR05MB10824.eurprd05.prod.outlook.com> <AS8PR05MB10824540D988F69CDDB708FC59D6C2@AS8PR05MB10824.eurprd05.prod.outlook.com> <DB9PR05MB10421463047C12295F7C0958BE36C2@DB9PR05MB10421.eurprd05.prod.outlook.com> <DB9PR05MB10421CE87C464A4CFF494DB09E3062@DB9PR05MB10421.eurprd05.prod.outlook.com>\nIn-Reply-To: <DB9PR05MB10421CE87C464A4CFF494DB09E3062@DB9PR05MB10421.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 1604,
+      "chunk_index": 0,
+      "chunk_size": 1603,
+      "metadata": {
+        "doc_id": "CKML1Q8 - chalmex insurance cost\\Headers\\CKML1Q8_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CKML1Q8 - chalmex insurance cost\\Headers\\CKML1Q8_01.txt"
+      }
+    },
+    {
+      "text": "k.com>\nIn-Reply-To: <DB9PR05MB10421CE87C464A4CFF494DB09E3062@DB9PR05MB10421.eurprd05.prod.outlook.com>\nAccept-Language: en-GB, en-US\nContent-Language: en-GB\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|AS2PR05MB10772:EE_\nx-ms-office365-filtering-correlation-id: fdef6fe2-25b3-4d9d-f09a-08dd20199206\nx-ms-exchange-atpmessageproperties: SA|SL\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|7053199007|8096899003|41050700001;\nx-microsoft-antispam-message-info: kcSMimPs1zcPz5OP8yH3WnkeTYumfj2UJr+BHbXgDQU7XVjezMw8Rmon62f52bhoqRQNHUY9+dPEIQnWHw62HnB8DC0UXT7LdhzUOdQXk96/nCXcDgptxCd2iX3qkAY0KmgkYOkt3qZUS8VEgdCeI5O6UtHSbgh1kLe/1GzhD4vPQ+a1bRIRJcdioIiVRRztj2QAc8Un05PkqCUYKXh4J/AU5QU1sd7d72btaAC1ywxxb5dJ2pf6abv17v+m7zvSc5NTOEDQwozGZrdTCcgb0H8ng4vpj7FwKjfGFixZHGuLUFpMEcIMYZRmYESGLvAfvEcvoOkmTtIzAuTG1IcSaizb3fsujhBsZFSWVrl8R9iGZ2DEf84YXHJ6hKDLCCvZCv6xOoL7cMzxzcRM1me63GVQFAORo/IkpcpNXq8WOXeXGu9PKNqJuSvn4ExL0MPjXTmotk0+GJD6URr78LsD0vYkq0nVj40QVA+6u+bJVm8NIhcLZGXSioL7OEhprbKxXyFkKNt2R7C+xbaMTmBssffODfQ3veRvXMMsM3554wLKHy2OMrrTX04k9rZnsfpj4cQ3pp+PXCfYxH71Ibjah9R9HrElpKClBGjerdGWfkGimzSIfU4PTZSNZ72LmmcBWj6D6GBVqHNZICOrlJpv8IHw8vihWXRhWkz9qoixJNdiSWOVOS7oEuF5nKMpT0Zcs72jGJ6sygW+uhemNgeA5gQfTyICzf7KwWe+Aq+K2rJe1PKqzNPdFrP/H8A9bZxqlN57RJZuEyIqkDZKuLz+Vg==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(7053199007)(8096899003)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_017_AS8PR05MB10824FBE1F0070B619B26DD049D062AS8PR05MB10824eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: jhmqrYUmTN29F4Sda8RcAelb8B1OBVOdHIEGzLebLLyRcT/JrX2nXWYdmcXxjqgBO/I1pGSkJfsfX2Osg/+QAU0YPQIx5RH3j9C4Xbdm6P28nlUCTn7SnbsdYIQBWIYxK7Al3Dsl5bvLGaYqYW1Dx2cC1LrP23xkQr3KxqfSBNPMB/h/USsChNbtHbwqLSIMCyCMQ+sdnFbf8ufMjF6tFRKgKqlUvdO7FX58qwgzHptOE6U+9v/rmHjB36KAblfvqguuxitVKY0r07WMMSQ2s8cz1pcaUVzFe7Tgq0tbr6n7bZvzw6lyVrn/7DtB5hNrvYBU21OSC0H8fKpEuO60EMYltKkFIiAdGhzsbXDJmfWg7AhvHKm2DOIN5ca4dVrFfw5Qq1byoolZ99LywcWxyZDob4wDvR8qS0lME9IQ9Qr+1VdxZ5lsZEscxakFXAjt5CEkDxMkN7s/IU9gz/e8902grbmeADnkVfnPpkoTefCbm1uj17BLACskmSQPxRDeJ8WNO83yfu0dFwyLHbhjj9B496kWj+1sRWs6gnYB+R/7XLa7m+3ZHo3agva2HoCs6XMtF5+zzIphcz/w9FaC6D4roLli4i0EKbTco2dMGGgrkdzZiR3kHGAeM/OBOF3h\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: fdef6fe2-25b3-4d9d-f09a-08dd20199206\nX-MS-Exchange-CrossTenant-originalarrivaltime: 19 Dec 2024 10:40:35.2463 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: zuc/8qzTqo7iAP/N8zpsc2pK4kzqVf3BYQwi2L2197ELlWJzgvvU5cu2KD8LwhAv5UEBKrzkJIeCZTulGMtD+QVvfqPAYDBzNAut5Cfm1Go=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS2PR05MB10772\nX-OrganizationHeadersPreserved: AS2PR05MB10772.eurprd05.prod.outlook.com",
+      "start_pos": 1404,
+      "end_pos": 4742,
+      "chunk_index": 1,
+      "chunk_size": 3338,
+      "metadata": {
+        "doc_id": "CKML1Q8 - chalmex insurance cost\\Headers\\CKML1Q8_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CKML1Q8 - chalmex insurance cost\\Headers\\CKML1Q8_01.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:29.271177",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4784
+  }
+}

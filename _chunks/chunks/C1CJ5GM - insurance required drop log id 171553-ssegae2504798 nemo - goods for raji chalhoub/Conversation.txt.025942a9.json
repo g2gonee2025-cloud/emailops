@@ -1,0 +1,31 @@
+{
+  "doc_id": "C1CJ5GM - insurance required drop log id 171553-ssegae2504798 nemo - goods for raji chalhoub\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1CJ5GM - insurance required drop log id 171553-ssegae2504798 nemo - goods for raji chalhoub\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:40:32\nFolder: C1CJ5GM - insurance required drop log id 171553-ssegae2504798 nemo - goods for raji chalhoub\nMessage Count: 1\n\n--------------------------------------------------\nID: C1CJ5GM_00\nFrom: Geeta Manjal <Geeta.Manjal@chalhoub.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: Yasir Panthakkal <yasir.panthakkal@etoilegroup.com>; Lali Das <Lali.Das@chalhoub.com>; Hiba Assaf <hiba.assaf@etoilegroup.com>\nBCC: \nDate: 2025-05-13 11:54\nSubject: Insurance Required // DROP LOG ID 171553-SSEGAE2504798 // NEMO - goods for raji chalhoub ready to be collected\n--------------------------------------------------\nHi @Hagop Ghazarian <mailto:Hagop.Ghazarian@chalhoub.com> \n\n \n\nWe would like to insure the subject Personal shipment for Mr. Patrick Challhoub\n\nKindly let us know once Insured\n\n \n\nTerms are EXW.\n\nMOT – Air \n\n \n\nRegards\n\nGEETA MANJAL\t\nSENIOR COORDINATOR ‑ SHIPPING\t\nREAL FZE\t\nDUBAI\t\n‑\t\nUNITED ARAB EMIRATES\t\n\t\t\n \t\n <https://chalhoubgroup.com/> \t\nCHALHOUBGROUP.COM <http://www.chalhoubgroup.com/> \n\t\n‑\n\t\nCAREERS.CHALHOUBGROUP.COM <https://careers.chalhoubgroup.com/> \n\t\n <https://twitter.com/ChalhoubGroup> \t\n <https://www.facebook.com/chalhoubgroup/> \t\n <https://www.instagram.com/chalhoubgroup> \t\n <https://www.linkedin.com/company/chalhoub-group/> \t\n <https://www.glassdoor.com/Overview/Working-at-Chalhoub-Group-EI_IE499602.11,25.htm>",
+      "start_pos": 0,
+      "end_pos": 1435,
+      "chunk_index": 0,
+      "chunk_size": 1435,
+      "metadata": {
+        "doc_id": "C1CJ5GM - insurance required drop log id 171553-ssegae2504798 nemo - goods for raji chalhoub\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1CJ5GM - insurance required drop log id 171553-ssegae2504798 nemo - goods for raji chalhoub\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:00.061908",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1513
+  }
+}

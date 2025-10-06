@@ -1,0 +1,42 @@
+{
+  "doc_id": "C91QOE8 - faces moe store incident - water leakage - gig - doa 15 08 2023 - 66-fir-2023-08-000148\\Headers\\C91QOE8_01.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C91QOE8 - faces moe store incident - water leakage - gig - doa 15 08 2023 - 66-fir-2023-08-000148\\Headers\\C91QOE8_01.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by AS2PR05MB10174.eurprd05.prod.outlook.com (2603:10a6:20b:602::12) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7982.34; Wed, 9 Oct 2024 03:55:10 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%3]) with mapi id 15.20.7982.033; Wed, 9 Oct 2024 03:55:10 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Akhil Philip <Akhil.Philip@faces.com>, Elmer Miranda <Elmer.Miranda@faces.com>\nCC: Joe Hobeika <Joe.Hobeika@chalhoub.com>, Sabah Shaissah <Sabah.Shaissah@faces.com>, Mazen Ichtay <Mazen.Ichtay@chalhoub.com>, Waheeb AlYounes <Waheeb.Alyounes@faces.com>, Constance Bacha <Constance.Bacha@faces.com>, Mohammed Chelakkoden <Mohammed.Chelakkoden@faces.com>\nSubject: RE: Faces MOE Store Incident - water leakage - GIG - DOA: 15/08/2023 - 66-FIR-2023-08-000148 || 13/FA/2012513, BSLA/GIG/PAR/2023-074\nThread-Topic: Faces MOE Store Incident - water leakage - GIG - DOA: 15/08/2023 - 66-FIR-2023-08-000148 || 13/FA/2012513, BSLA/GIG/PAR/2023-074\nThread-Index: AQHaXYfUV4CG3Of6m0Gtvje4juK7JrEcqiWAgBWu+gCAFfPegIALXiVwgAKk2QCAEu1jgIAAAMeggAvovlCAAJVWAIABtkeAgANxBqCAATq1AIAAYlIAgAZNCgCAAtc+AIAE2X/wgAAKSwCAAcBSAIACuL7wgAACUgCABigVgIAANZyAgAtUrYCAAQGqAIAUcDaAgAAth0yAAzfoAIAAC1FrgAykQdqAAAjDAIAAHuJdgAADpgCACps9gIAAQUtugAZdTQCAENiUgIALEyKAgAscHwCAACUDkIAUS9SAgAADttCAAzYHgIAAVUxggA2mqgCAAAULYIBHDtOAgBLaZgCAAIrSIA==\nDate: Wed, 9 Oct 2024 03:55:10 +0000\nMessage-ID: <AS8PR05MB10824682208CADB3E155196339D7F2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <AM6PR09MB30264D2D3ECEFA738768090AFFB22@AM6PR09MB3026.eurprd09.prod.outlook.com> <AS8PR05MB1082462F2BC36DA9F83DF16EA9DB22@AS8PR05MB10824.eurprd05.prod.outlook.com> <AM6PR09MB3026CC7A463281A123153787FFBC2@AM6PR09MB3026.eurprd09.prod.outlook.com> <AS8PR05MB10824A375C924532369B035D59DBC2@AS8PR05MB10824.eurprd05.prod.outlook.com> <AS8PR09MB5191B06C05D48FC02007C2118C852@AS8PR09MB5191.eurprd09.prod.outlook.com> <AS8PR05MB10824D6722239FBD5327090FC9D852@AS8PR05MB10824.eurprd05.prod.outlook.com> <DB9PR05MB8169BE3F8E170065B44FD1F2E66A2@DB9PR05MB8169.eurprd05.prod.outlook.com> <AS1PR05MB9553B063D8AA043423F733D58A7E2@AS1PR05MB9553.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS1PR05MB9553B063D8AA043423F733D58A7E2@AS1PR05MB9553.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:",
+      "start_pos": 0,
+      "end_pos": 2550,
+      "chunk_index": 0,
+      "chunk_size": 2549,
+      "metadata": {
+        "doc_id": "C91QOE8 - faces moe store incident - water leakage - gig - doa 15 08 2023 - 66-fir-2023-08-000148\\Headers\\C91QOE8_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C91QOE8 - faces moe store incident - water leakage - gig - doa 15 08 2023 - 66-fir-2023-08-000148\\Headers\\C91QOE8_01.txt"
+      }
+    },
+    {
+      "text": "od.outlook.com>\nIn-Reply-To: <AS1PR05MB9553B063D8AA043423F733D58A7E2@AS1PR05MB9553.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|AS2PR05MB10174:EE_\nx-ms-office365-filtering-correlation-id: 30268144-37a4-4af5-7f07-08dce8162bd9\nx-ms-exchange-atpmessageproperties: SA|SL\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|41050700001;\nx-microsoft-antispam-message-info: NnAfDDGy5JPXivfKvH4ArWTGcGIcxhspAgzh1zxxNITWzxif0O+1AXIrhbGao2hgT87W+dF/zpvJ0fpZ5lFue/XvYJmGXBMFL6Nyp2ssIXtJ9mgri9GR44MctMefRZsB5I1CZQ1C0CRqiKcchdYDmQGLVOkjcrGuboC+fa2SKy3aODYDBdh+sdEX9A/RJL02LRhVSqy9PBTimuV2jiPM9jccajHXz5OzmCIAhXrAXEI4i5e2lT7XAXUVG3QygM6YD4A1GUiVEI5xvqt1iYPR+N/Xo6BjKHY3HxYXvv3dGTyUpXNQLMEIAGO+ERAbTEbxCeMldPASv8+RSt7sBdEbrNmatPILARlCiCFuYI5SSoRqTA+x8a6oHtW//F2eP73IQiMcY76MXp5d1LimYgra0MuCAB+TBwVTQ2+7iCq3aupM8L59SfQQy5CitBo8UWjJilDApZ4N2XofJUFL/ueHsLJR0a1QN3Gb5BAPsFXSK/ZJ0/pVzfiGdpTm25slQ4fx4aWxP7JMQJPGT2RSR3s/nYYCggcEox8gdxebb/tLcG3pq7VyjkUWa+54NWeoJImVj7ZVHanppNDJd1cm2D/2DPJS7szNxzvx/Dx2lg2D2EPstXYC86d2GcQYO8DZEPh6mmAriXxvffbnSnao+9fHPjyRVTzoS25bYzddcdVcpGYzaLO3XtvEa9FuBYRolOAfB5VV9Dw7LNlcwWXJj6y2Qqezt0G/nBbwzZzzZKjLxBzO3W8gNidudsqRKHC/e3xXNXuKJhvtbF9DmW01hM3qpw==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(41050700001);DIR:INT;\nContent-Type: multipart/mixed; boundary=\"_118_AS8PR05MB10824682208CADB3E155196339D7F2AS8PR05MB10824eu_\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: Q3/fYVnTwtu8HAKa26QBqJKywwdo4a7KKbLTHhBROI2ZOGraW2bm22fI/DGRyC5g7YUaEAljnxOI2owrw/JxFL12rY8NYkP/F7Vi5y1CNn/TXBTRn7D0mredeYeFhTM/xtP8ifGz3348cBsMCFUOmlgqRu52+G2QdEG6jAORgdDMueMoWZJfIwdp4F/TMPBYK4BNcDNufC8pBtfjgcozw8XKRbyioeLJx1UdvZMkL0YBg+7QBAI79N52fDrNCBcbIqjQYxS+IGe8wiA/rqQ2Zu75y8v0STPdI7hR/Ne4PCRtcMYl7k8vehTy8GxEWwo7XAbIGfY6zS9OpCenfC2EfPHDpmu1OHHIT67u1jTm3B4bio/P14ufBR/sri7KKd7d3aNs76xoYc1rKRMTW7rZbG3qJ50R/1ylb25TpToj+riGA76J/JiEgIucjS7OIIUfw9Ui4O7m4jlPfSojVVu2cgcRoh6dDolJYbaYOTY2cNqL93VrU7VBQLBnKhDk2w0oOyB4mK4v+6170xX/qViyXQ4C90CbA9thAn1onr7hb9GnE9gZFdSPc9kH9oH1oPDwiJN1QYPVb5MsGyw7SrxnaIpN0hr05uwx7PgL4MBzJBJwNjvxgbPqMqOeGfoMXUoq\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: 30268144-37a4-4af5-7f07-08dce8162bd9\nX-MS-Exchange-CrossTenant-originalarrivaltime: 09 Oct 2024 03:55:10.2299 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: mp41WbvlXD3A3WO69rs4P9We74gA+P6Nc9r2bBGuf4pqU4ntqcG8IzTPMPPlbRomB3MEs18XEktEBCheDj5EKqVYpD/JStxn1i9EJbVMMo4=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: AS2PR05MB10174\nX-OrganizationHeadersPreserved: AS2PR05MB10174.eurprd05.prod.outlook.com",
+      "start_pos": 2350,
+      "end_pos": 5623,
+      "chunk_index": 1,
+      "chunk_size": 3273,
+      "metadata": {
+        "doc_id": "C91QOE8 - faces moe store incident - water leakage - gig - doa 15 08 2023 - 66-fir-2023-08-000148\\Headers\\C91QOE8_01.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C91QOE8 - faces moe store incident - water leakage - gig - doa 15 08 2023 - 66-fir-2023-08-000148\\Headers\\C91QOE8_01.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:26.896280",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 5667
+  }
+}

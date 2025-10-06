@@ -1,0 +1,31 @@
+{
+  "doc_id": "C15TMBX - insurance claim request for mfc barrier\\Headers\\C15TMBX_02.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C15TMBX - insurance claim request for mfc barrier\\Headers\\C15TMBX_02.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Received: from AS8PR05MB10824.eurprd05.prod.outlook.com (2603:10a6:20b:62b::11) by DB9PR05MB7804.eurprd05.prod.outlook.com (2603:10a6:10:21e::8) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7982.27; Fri, 27 Sep 2024 12:51:53 +0000\nReceived: from AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d]) by AS8PR05MB10824.eurprd05.prod.outlook.com ([fe80::c3d7:9fd1:eab:f91d%3]) with mapi id 15.20.7982.022; Fri, 27 Sep 2024 12:51:52 +0000\nFrom: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nTo: Tarun Gulati <Tarun.Gulati@levelshoes.com>\nCC: Sujith Stephen <Sujith.Stephen@chalhoub.com>, Kristina Tokieva <Kristina.Tokieva@levelshoes.com>\nSubject: Re: Insurance claim request for MFC Barrier \nThread-Topic: Insurance claim request for MFC Barrier \nThread-Index: AdsPEOUA1XRMWfjcT6S6Qfw/Kfxi7wBywENs\nDate: Fri, 27 Sep 2024 12:51:52 +0000\nMessage-ID: <AS8PR05MB108249D8D76479FE8609A995E9D6B2@AS8PR05MB10824.eurprd05.prod.outlook.com>\nReferences: <AS2PR05MB1082598BBE8DB4903B74F15CDF1692@AS2PR05MB10825.eurprd05.prod.outlook.com>\nIn-Reply-To: <AS2PR05MB1082598BBE8DB4903B74F15CDF1692@AS2PR05MB10825.eurprd05.prod.outlook.com>\nAccept-Language: en-US\nContent-Language: en-US\nX-MS-Has-Attach: yes\nX-MS-TNEF-Correlator:\nmsip_labels:\nauthentication-results: dkim=none (message not signed) header.d=none;dmarc=none action=none header.from=chalhoub.com;\nx-ms-publictraffictype: Email\nx-ms-traffictypediagnostic: AS8PR05MB10824:EE_|DB9PR05MB7804:EE_\nx-ms-office365-filtering-correlation-id: b65daab9-c74c-4e0a-2ac2-08dcdef328f3\nx-ms-exchange-atpmessageproperties: SA|SL\nx-microsoft-antispam: BCL:0;ARA:13230040|366016|41050700001;\nx-microsoft-antispam-message-info: X8hT282wOTu1yRexcvy5bL5Z7ev82b+ZGKcTSaqyoI2hxzl2VFSJHdxwl0OyeXbcxMU4/pvsH/sB61WM/py1v68fmQl5wRcdzzQlEoClCG9NrCL1N2X0ETk8Uv5hDDaftmHnk8M+hRQNMJczRMgo412TB3h/7du6Gh+gFQYs8K8mRXW7ImZvWG39hBvMMMFAoXfEj+mYxaOEThOkfG0yQ/NaxK8u3xCIvOYzHNdryUApsZqW6ZczRjBfjJfJM8Wi36fVTicSd8duG/OePt3ZdCTecDnKlmgZtqaHc9ya5ZZ8F1XtgQdCyg4xvWnXFZrnEZ/nXMb9IwoQb89i7OAiY3OEOp9wnXOqjqlZz6wWq4eCUHm6Hvi7sfhPwHSmy8qrdwcUS7BgSCgFxx5pXKb5lPgp5goejgnR5cLGME+gHcV7R7kw91y/uggWicTv3Ii2iTamwfny1YrAMctMF7Z7YdWD51SHeopnnJizAp4NeLUU0zEomF6ZSCpTduXnWYnpMN63PsUKHTqgIfat/3UT1+eWvwuVBE9ge2SL6U97sRnOhe0sopClyermG9eF1uoDbgBI5sivke38Un3D2L+Yw9RenPDDplEWjW9esKVYhf1mkbatmJ2pQZHEsszzQ8ddxvnxydBsxaufwjlPkQ2SPQ4ObW+IU7C5xEtoAYDO0bAnZt9iC9Xz7pcn/DsMkkrEy4zuk0GcX9FvwqxccBdwHcjW+ZnH6uQFOqVXL1qYsGEN4d8gy2JaeIKQQo6DAkY+4DRxt17aN5ERfowX4hVCew==\nx-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR05MB10824.eurprd05.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(41050700001);DIR:INT;\nContent-Type: multipart/related; boundary=\"_011_AS8PR05MB108249D8D76479FE8609A995E9D6B2AS8PR05MB10824eu_\"; type=\"multipart/alternative\"\nMIME-Version: 1.0\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1\nX-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: ZeOVJC8rHH7Zg8xNwwnv7QcKCgoxjtZw/OmgnZ78dNBAa6LOq4lUKWJV6/ZfFqy6xOK2z8QAovsE/AHjxI5XO7KfltLkg7yVFpGuP2QpLjXDS6KmYPxihFJkIyveqz6YIFv0Aj99U2VTSfTlF4HB3ZoFPEqEPAvnsDaNjLPQ3LHwfT5aVkOkiEOjSSevdzwq8DZD8NM/fDEb2cujrvBR01m9KlB2HBH8mDNum9bprUU3xMyA0H11+W9T2RGxtTTZVrqZOpteBycUEg507usitqVAMRhSL87hnHm+pqHcL4IP8CNolBftvv1AUYpauaNckcEFtKd3+unTM563Ijjr8RK3dspbD1hPKgK9z3VWCfcx9T2gU4gb3gAQGMLRplonedOrq/bwNXK/Ua4oW6FKcAMWh236Wllary1W6K+qK7gBJpW1EYOJWvidXBFu0qGpu+OqJsBDmveCmXxzmR0BA1zUzSOhxw6u8EP1ROXgPQi3+Fro7zhqtyJmGiJcknpq9jXysikV9Y82EVx5INU2wWhZjWMd+0LU30w1xMmNpWCVi02tMQjB5HKXyfmKG4u3Q8jeNdMSx91397SaRbolj5zt5WbdA7vY0MF2P2qEOVQCaJekKjFyi6t19/kVA+JE\nX-OriginatorOrg: chalhoub.com\nX-MS-Exchange-CrossTenant-AuthAs: Internal\nX-MS-Exchange-CrossTenant-AuthSource: AS8PR05MB10824.eurprd05.prod.outlook.com\nX-MS-Exchange-CrossTenant-Network-Message-Id: b65daab9-c74c-4e0a-2ac2-08dcdef328f3\nX-MS-Exchange-CrossTenant-originalarrivaltime: 27 Sep 2024 12:51:52.4980 (UTC)\nX-MS-Exchange-CrossTenant-fromentityheader: Hosted\nX-MS-Exchange-CrossTenant-id: 6ef8304c-f37b-42a5-a569-0a7d8249fbf3\nX-MS-Exchange-CrossTenant-mailboxtype: HOSTED\nX-MS-Exchange-CrossTenant-userprincipalname: vW0rWqVONqSF9pLT3uB4kdkd1tD63sYQKBoaiAdWM8IaUkgoqxGHSLqwwBcGdHbJkxXdyvLabjK/Z5ElRdlUhS2nmrPZsjo8GiDuQ2LvFOQ=\nX-MS-Exchange-Transport-CrossTenantHeadersStamped: DB9PR05MB7804\nX-OrganizationHeadersPreserved: DB9PR05MB7804.eurprd05.prod.outlook.com",
+      "start_pos": 0,
+      "end_pos": 4383,
+      "chunk_index": 0,
+      "chunk_size": 4383,
+      "metadata": {
+        "doc_id": "C15TMBX - insurance claim request for mfc barrier\\Headers\\C15TMBX_02.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C15TMBX - insurance claim request for mfc barrier\\Headers\\C15TMBX_02.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:44.831556",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 4427
+  }
+}

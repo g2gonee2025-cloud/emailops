@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1JQ5FL - pcfc pass successfully created\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JQ5FL - pcfc pass successfully created\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:41:57\nFolder: C1JQ5FL - pcfc pass successfully created\nMessage Count: 1\n\n--------------------------------------------------\nID: C1JQ5FL_00\nFrom: noreply@pcfcsecurity.ae <noreply@pcfcsecurity.ae>\nTo: Connie Madeira <Connie.Madeira@chalhoub.com>; Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: \nBCC: \nDate: 2025-04-23 20:41\nSubject: PCFC PASS SUCCESSFULLY CREATED\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\n \n \n\nPCFC | Gate Pass Approval Attached \n\nDear ashok,\n\nYour Gate Pass Request with reference number 24042519874647 has been approved.\nKindly print attached pass to present at the Gate.\n\n\nTo learn more details about your host company,click here \n\n\n\nWe are committed to providing you with our best services. \n\nRegards, \nPCFC\n\nNote: This is an automatically generated email - please do not reply this message. \n\nFor any enquiries \n\nEmail Us info@pcfc.ae <mailto:info@pcfc.ae>  Call Us 800990 WhatsApp <https://url.uk.m.mimecastprotect.com/s/6MWKCZmPQtD7J8BTzf4cBhzsO?domain=wa.me>  Us 800990  Visit www.tasreeh.ae <https://url.uk.m.mimecastprotect.com/s/IS-cC1BKACk6VBWuGh0cV7XTY?domain=tasreeh.ae>  \n\n\n________________________________",
+      "start_pos": 0,
+      "end_pos": 1525,
+      "chunk_index": 0,
+      "chunk_size": 1525,
+      "metadata": {
+        "doc_id": "C1JQ5FL - pcfc pass successfully created\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JQ5FL - pcfc pass successfully created\\Conversation.txt"
+      }
+    },
+    {
+      "text": "Email Us info@pcfc.ae <mailto:info@pcfc.ae>  Call Us 800990 WhatsApp <https://url.uk.m.mimecastprotect.com/s/6MWKCZmPQtD7J8BTzf4cBhzsO?domain=wa.me>  Us 800990  Visit www.tasreeh.ae <https://url.uk.m.mimecastprotect.com/s/IS-cC1BKACk6VBWuGh0cV7XTY?domain=tasreeh.ae>  \n\n\n________________________________\n\nTerms & Conditions | Privacy Policy Copyright - PCFC . All rights reserved \n\n________________________________\n\nDisclaimer:\nThis email and any files transmitted with it are confidential and may contain privileged or copyright information. If you are not the intended recipient you must not copy, distribute or use this email or the information contained in it for any purpose other than to notify us of the receipt thereof. If you have received this message in error, please notify the sender immediately, and delete this email from your system.\nPlease note that e-mails are susceptible to change.The sender shall not be liable for the improper or incomplete transmission of the information contained in this communication,nor for any delay in its receipt or damage to your system.The sender does not guarantee that this material is free from viruses or any other defects although due care has been taken to minimise the risk.",
+      "start_pos": 1222,
+      "end_pos": 2452,
+      "chunk_index": 1,
+      "chunk_size": 1230,
+      "metadata": {
+        "doc_id": "C1JQ5FL - pcfc pass successfully created\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1JQ5FL - pcfc pass successfully created\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:28:29.347809",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2619
+  }
+}

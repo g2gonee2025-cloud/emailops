@@ -1,0 +1,42 @@
+{
+  "doc_id": "C1C7F8V - ksa salon the hotel show - insurance\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1C7F8V - ksa salon the hotel show - insurance\\Conversation.txt",
+  "num_chunks": 2,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 11:43:51\nFolder: C1C7F8V - ksa salon the hotel show - insurance\nMessage Count: 1\n\n--------------------------------------------------\nID: C1C7F8V_00\nFrom: Pauline Battini <p.battini@christofle.com>\nTo: Hagop Ghazarian <Hagop.Ghazarian@chalhoub.com>\nCC: m bellec <m.bellec@christofle.com>\nBCC: \nDate: 2025-03-14 14:37\nSubject: KSA / Salon The Hotel Show - Insurance\n--------------------------------------------------\nCAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you recognize the sender and know the content is safe. \nتم إرسال هذا البريد الإلكتروني من خارج مجموعة شلهوب. لا تنقر على الروابط أو تفتح المرفقات إلا إذا كنت تعرف المرسل وتعلم أنه آمن\n\n\nDear Hagop,\n\n \n\nPlease find all the details as well as the products list with associated values attached.\n\n \n\nThanks a lot,\n\nPauline\n\n \n\nPauline BATTINI\n\nResponsable  Juridique Groupe\n\nGroup Legal Manager\n\n \n\n\n\n \n\n  <https://url.uk.m.mimecastprotect.com/s/EyMTC7WQKcZqGvVi8fWUohuJC?domain=billetterie.madparis.fr> \n\n \n\n+33 1 55 27 99 68\n\n191, avenue Charles de Gaulle, 92200 Neuilly-sur-Seine - France\n\np.battini@christofle.com <mailto:p.battini@christofle.com>  - www.christofle.com <https://url.uk.m.mimecastprotect.com/s/bxODC9LVMt214vNt3iOUqXrqR?domain=christofle.com/>",
+      "start_pos": 0,
+      "end_pos": 1362,
+      "chunk_index": 0,
+      "chunk_size": 1361,
+      "metadata": {
+        "doc_id": "C1C7F8V - ksa salon the hotel show - insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1C7F8V - ksa salon the hotel show - insurance\\Conversation.txt"
+      }
+    },
+    {
+      "text": "191, avenue Charles de Gaulle, 92200 Neuilly-sur-Seine - France\n\np.battini@christofle.com <mailto:p.battini@christofle.com>  - www.christofle.com <https://url.uk.m.mimecastprotect.com/s/bxODC9LVMt214vNt3iOUqXrqR?domain=christofle.com/> \n\n \n\nThis message and its possible attachments (hereinafter “the Message”) are intended solely for the addressees and are confidential. Any use not in accord with its purpose, any dissemination or disclosure, either whole or partial, is prohibited  without formal approval.\n\nIf you receive this Message in error, please delete it from your system and do not copy this Message or disclose to any other person, and immediately notify the sender.\n\nThe Internet cannot guarantee the integrity of this Message. ORFEVRERIE CHRISTOFLE, and any LBD/CHRISTOFLE companies (hereinafter “CHRISTOFLE Group”) shall not therefore be liable for this Message if intercepted, altered, modified or falsified by anyone. CHRISTOFLE Group refuses to accept any responsibility for any damage caused by the contamination of your information systems.",
+      "start_pos": 1126,
+      "end_pos": 2187,
+      "chunk_index": 1,
+      "chunk_size": 1061,
+      "metadata": {
+        "doc_id": "C1C7F8V - ksa salon the hotel show - insurance\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\C1C7F8V - ksa salon the hotel show - insurance\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:30:07.502937",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 2369
+  }
+}

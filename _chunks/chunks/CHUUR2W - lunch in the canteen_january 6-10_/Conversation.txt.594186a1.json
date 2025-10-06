@@ -1,0 +1,31 @@
+{
+  "doc_id": "CHUUR2W - lunch in the canteen(january 6-10)\\Conversation.txt",
+  "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CHUUR2W - lunch in the canteen(january 6-10)\\Conversation.txt",
+  "num_chunks": 1,
+  "chunks": [
+    {
+      "text": "Email Conversation Export\n=========================\nExport Date: 2025-09-26 13:43:45\nFolder: CHUUR2W - lunch in the canteen(january 6-10)\nMessage Count: 1\n\n--------------------------------------------------\nID: CHUUR2W_00\nFrom: Canteen.Lunch@chalhoub.com <Canteen.Lunch@chalhoub.com>\nTo: HO1Canteen\nCC: \nBCC: \nDate: 2025-01-03 09:34\nSubject: Lunch in the Canteen(January 6-10)\n--------------------------------------------------\n\n\n\n\n\nIt’s time to book your canteen meals!\n\nLet us know if you’re having lunch at the canteen next week!\n\nIf you haven’t already booked your meals for next week, please take a moment to do it now.\n\n\n\nFor those who did not make their booking in advance, we appreciate if you can come and have your lunch 1:40 onwards.\n\n\n\n \t Select dates and canteens <https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.e-mac.com%2Fen%2FPages%2Fcanteen.aspx&data=05%7C02%7CHagop.Ghazarian%40chalhoub.com%7Cf9a6d9012df3449155a108dd2bb8504c%7C6ef8304cf37b42a5a5690a7d8249fbf3%7C0%7C0%7C638714792864751697%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=UotiEpElEejM9rerkvS4C%2FqThowhgd6FUeEZZhmwH6E%3D&reserved=0> \t  \t Unsubscribe <mailto:ITServiceDesk@chalhoub.com?subject=Please remove my email address from email distribution list Ho1canteen@chalhoub.com> \t  \t \n\n\n\nIf you are a new joiner and would like to register to the canteen, please contact IT Service Desk. \n\nTo stop receiving our canteen booking emails, please Unsubscribe!",
+      "start_pos": 0,
+      "end_pos": 1548,
+      "chunk_index": 0,
+      "chunk_size": 1548,
+      "metadata": {
+        "doc_id": "CHUUR2W - lunch in the canteen(january 6-10)\\Conversation.txt",
+        "doc_path": "C:\\Users\\ASUS\\Desktop\\Outlook\\CHUUR2W - lunch in the canteen(january 6-10)\\Conversation.txt"
+      }
+    }
+  ],
+  "metadata": {
+    "chunked_at": "2025-10-06T06:29:40.415200",
+    "chunk_config": {
+      "chunk_size": 1600,
+      "chunk_overlap": 200,
+      "min_chunk_size": 100,
+      "respect_sentences": true,
+      "respect_paragraphs": true,
+      "base_max_chunks": 25,
+      "progressive_scaling": true
+    },
+    "original_size": 1601
+  }
+}
