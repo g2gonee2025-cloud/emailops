@@ -113,7 +113,7 @@ def _normalize_analysis(data: Any, catalog: List[str]) -> Dict[str, Any]:
     d: Dict[str, Any] = dict(data) if isinstance(data, dict) else {}
 
     # Required top-level keys
-    d.setdefault("category", catalog[-1])
+    d.setdefault("category", (catalog or DEFAULT_CATALOG)[-1])
     d.setdefault("subject", "Email thread")
     d.setdefault("participants", [])
     d.setdefault("facts_ledger", {})
@@ -122,8 +122,8 @@ def _normalize_analysis(data: Any, catalog: List[str]) -> Dict[str, Any]:
     d.setdefault("risk_indicators", [])
 
     # Validate/normalize category
-    if d.get("category") not in catalog:
-        d["category"] = catalog[-1]
+    if d.get("category") not in (catalog or DEFAULT_CATALOG):
+        d["category"] = (catalog or DEFAULT_CATALOG)[-1]
 
     # Subject length cap per description
     subj = d.get("subject")
@@ -178,7 +178,7 @@ def _read_manifest(convo_dir: Path) -> Dict[str, Any]:
     try:
         text = manifest_path.read_text(encoding="utf-8-sig")
         # Minimal sanitation: drop control chars that break JSON
-        text = re.sub(r"[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F-\\x9F]", "", text)
+        text = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]", "", text)
         return json.loads(text)
     except Exception as e:
         logger.warning("Failed to read manifest at %s: %s", manifest_path, e)
@@ -296,10 +296,12 @@ def analyze_email_thread_with_ledger(
           category, subject, participants, facts_ledger, summary, next_actions, risk_indicators
         plus internal _metadata.
     """
+    # Ensure non-empty catalog for schema enum
+    catalog = catalog or DEFAULT_CATALOG
+
     # Sanitize defensively (callers outside CLI may pass raw text)
     cleaned_thread = clean_email_text(thread_text or "")
     if not cleaned_thread.strip():
-        # Return a minimal, schema-compliant object
         now = datetime.now(timezone.utc).isoformat()
         return {
             "category": catalog[-1],
@@ -412,10 +414,10 @@ def analyze_email_thread_with_ledger(
 
     # Stop sequences (ensure we break on original/forwarded markers)
     stop_sequences = [
-        "\\n\\n---",
-        "\\n\\nFrom:",
-        "\\n\\nSent:",
-        "\\n\\n-----Original Message-----",
+        "\n\n---",
+        "\n\nFrom:",
+        "\n\nSent:",
+        "\n\n-----Original Message-----",
         "```",
     ]
 
@@ -642,7 +644,7 @@ def analyze_conversation_dir(
 
     data = analyze_email_thread_with_ledger(
         thread_text=cleaned,
-        catalog=catalog,
+        catalog=(catalog or DEFAULT_CATALOG),
         provider=provider,
         temperature=temperature,
     )
@@ -651,7 +653,7 @@ def analyze_conversation_dir(
         data = _merge_manifest_into_analysis(data, convo, raw)
 
     # Safety: enforce caps again in case merge added items
-    data = _normalize_analysis(data, catalog)
+    data = _normalize_analysis(data, (catalog or DEFAULT_CATALOG))
 
     return data
 
@@ -671,6 +673,7 @@ def _atomic_write_text(path: Path, content: str, encoding: str = "utf-8") -> Non
 def _append_todos_csv(root: Path, thread_name: str, todos: List[Dict[str, Any]]) -> None:
     """
     Append next_actions to root todo.csv with basic deduplication (owner+what+thread).
+    Uses DictReader/Writer to avoid comma-splitting pitfalls.
     """
     out = root / "todo.csv"
     ensure_dir(out.parent)
@@ -678,25 +681,32 @@ def _append_todos_csv(root: Path, thread_name: str, todos: List[Dict[str, Any]])
     existing_keys = set()
     if out.exists():
         try:
-            for line in out.read_text(encoding="utf-8").splitlines()[1:]:
-                # very small, safe heuristics (CSV w/o commas in keys)
-                parts = [p.strip() for p in line.split(",")]
-                if len(parts) >= 5:
-                    key = (parts[0].lower(), parts[1].strip().lower(), parts[4].strip().lower())
-                    existing_keys.add(key)
+            with out.open("r", newline="", encoding="utf-8") as f:
+                r = csv.DictReader(f)
+                for row in r:
+                    who = (row.get("who") or "").strip().lower()
+                    what = (row.get("what") or "").strip().lower()
+                    thread = (row.get("thread") or "").strip().lower()
+                    if who or what or thread:
+                        existing_keys.add((who, what, thread))
         except Exception:
+            # best-effort; continue without existing keys
             pass
 
-    # Open in append mode and write header if file didn't exist
-    exists = out.exists()
+    # Open in append mode and write header if file didn't exist or was empty
+    write_header = not out.exists() or out.stat().st_size == 0
     with out.open("a", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=["who", "what", "due", "status", "priority", "thread"])
-        if not exists:
+        if write_header:
             w.writeheader()
         for t in todos or []:
             if not isinstance(t, dict):
                 continue
-            key = (str(t.get("owner","")).lower(), str(t.get("action","")).strip().lower(), thread_name.lower())
+            key = (
+                str(t.get("owner", "")).strip().lower(),
+                str(t.get("action", "")).strip().lower(),
+                thread_name.strip().lower(),
+            )
             if key in existing_keys:
                 continue
             w.writerow(
@@ -727,6 +737,10 @@ def main() -> None:
     ap.add_argument("--output-format", choices=["json", "markdown"], default="json", help="Output format")
     ap.add_argument("--no-manifest-merge", action="store_true", help="Do NOT merge manifest metadata (subject/participants/dates)")
     args = ap.parse_args()
+
+    # Guard: if user passed --catalog with no values, fall back to defaults
+    if not args.catalog:
+        args.catalog = DEFAULT_CATALOG
 
     tdir = Path(args.thread).expanduser().resolve()
     convo = tdir / "Conversation.txt"

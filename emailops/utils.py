@@ -64,14 +64,13 @@ def read_text_file(path: Path, *, max_chars: Optional[int] = None) -> str:
         Decoded and sanitized string (may be truncated if max_chars is set)
     """
     # Try a few common encodings; fall back to latin-1 with ignore
-    for enc, strict in (("utf-8", True), ("utf-8-sig", True), ("utf-16", True)):
+    for enc in ("utf-8", "utf-8-sig", "utf-16"):
         try:
             data = path.read_text(encoding=enc)
             break
         except UnicodeDecodeError:
             continue
         except Exception:
-            # Some OS errors (e.g., permission) should bubble up as empty string to avoid crash
             logger.warning("Failed reading %s with %s", path, enc)
             return ""
     else:
@@ -248,16 +247,17 @@ def extract_text(path: Path, *, max_chars: Optional[int] = None) -> str:
                     win_text = _extract_text_from_doc_win32(path)
                     if win_text:
                         return win_text[:max_chars] if max_chars else win_text
-                # Fallback: try antiword/pandoc/docx2txt if available
+                # Cross‑platform best-effort: try textract if installed; otherwise skip
                 try:
-                    import docx2txt  # type: ignore
-                    txt = docx2txt.process(str(path)) or ""
+                    import textract  # type: ignore
+                    raw = textract.process(str(path))  # bytes
+                    txt = raw.decode("utf-8", errors="ignore")
                     return _strip_control_chars(txt[:max_chars] if max_chars else txt)
-                except Exception as e:
-                    logger.warning("Failed to read legacy .doc file %s with docx2txt: %s. Skipping.", path, e)
+                except Exception:
+                    logger.info("No supported reader for legacy .doc file on this platform: %s", path)
                     return ""
         except ImportError:
-            logger.info("python-docx/docx2txt not installed, skipping Word file: %s", path)
+            logger.info("python-docx/textract not installed, skipping Word file: %s", path)
             return ""
         except Exception as e:
             logger.warning("Failed to read Word document %s: %s", path, e)
@@ -302,7 +302,7 @@ def extract_text(path: Path, *, max_chars: Optional[int] = None) -> str:
     # PDFs
     if suffix in PDF_EXTENSIONS:
         try:
-            from pypdf import PdfReader, errors  # type: ignore
+            from pypdf import PdfReader  # type: ignore
             try:
                 pdf = PdfReader(str(path))
                 # Try empty-password decryption when possible
@@ -326,11 +326,9 @@ def extract_text(path: Path, *, max_chars: Optional[int] = None) -> str:
                 text = "\n".join(parts)
                 return _strip_control_chars(text[:max_chars] if max_chars else text)
             except Exception as e:
-                # Handle known pypdf error type when available
-                if "PdfReadError" in e.__class__.__name__:
-                    logger.warning("Failed to read PDF %s due to corruption: %s. Skipping.", path, e)
-                    return ""
-                raise
+                # Handle corruption or unexpected errors
+                logger.warning("Failed to read PDF %s: %s. Skipping.", path, e)
+                return ""
         except ImportError:
             logger.info("pypdf not installed, skipping PDF file: %s", path)
             return ""
@@ -618,15 +616,21 @@ def load_conversation(
         attachment_files.extend([p for p in attachments_dir.rglob("*") if p.is_file()])
 
     excluded = {"Conversation.txt", "manifest.json", "summary.json"}
-    for child in convo_dir.iterdir():
-        if child.is_file() and child.name not in excluded:
-            attachment_files.append(child)
+    try:
+        for child in convo_dir.iterdir():
+            if child.is_file() and child.name not in excluded:
+                attachment_files.append(child)
+    except Exception as e:
+        logger.warning("Failed to iterate conversation dir %s: %s", convo_dir, e)
 
     # Deduplicate while preserving order
     seen: set[str] = set()
     unique_files: List[Path] = []
     for f in attachment_files:
-        s = str(f.resolve())
+        try:
+            s = str(f.resolve())
+        except Exception:
+            s = str(f)
         if s not in seen:
             seen.add(s)
             unique_files.append(f)

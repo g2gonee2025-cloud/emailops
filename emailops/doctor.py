@@ -7,6 +7,7 @@ import logging
 import os
 import subprocess
 import sys
+import importlib
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -49,8 +50,12 @@ _PKG_IMPORT_MAP: Dict[str, str] = {
 }
 
 def _try_import(import_name: str) -> bool:
+    """
+    Returns True only if the *module or submodule* can be imported.
+    Using importlib avoids false positives from __import__ on dotted names.
+    """
     try:
-        __import__(import_name)
+        importlib.import_module(import_name)
         return True
     except Exception:
         return False
@@ -108,7 +113,7 @@ def _packages_for_provider(provider: str) -> Tuple[List[str], List[str]]:
     return critical, optional
 
 def check_and_install_dependencies(provider: str, auto_install: bool = False) -> None:
-    """Non-interactive dependency check with optional auto-install."""
+    """Non-interactive dependency check with optional auto-install (+recheck)."""
     critical, optional = _packages_for_provider(provider)
 
     missing_critical = [pkg for pkg in critical if not _try_import(_PKG_IMPORT_MAP[pkg])]
@@ -120,6 +125,11 @@ def check_and_install_dependencies(provider: str, auto_install: bool = False) ->
             req = _find_requirements_file()
             if not _install_packages(missing_critical, req):
                 sys.exit(1)
+            # Re-check after installation to guarantee readiness
+            missing_critical = [pkg for pkg in critical if not _try_import(_PKG_IMPORT_MAP[pkg])]
+            if missing_critical:
+                logger.error("Still missing critical packages after install: %s", ", ".join(missing_critical))
+                sys.exit(1)
         else:
             req_hint = _find_requirements_file()
             if req_hint:
@@ -129,8 +139,10 @@ def check_and_install_dependencies(provider: str, auto_install: bool = False) ->
             sys.exit(1)
 
     if missing_optional:
-        logger.warning("Optional packages not found (some attachments may be skipped by the indexer): %s",
-                       ", ".join(missing_optional))
+        logger.warning(
+            "Optional packages not found (some attachments may be skipped by the indexer): %s",
+            ", ".join(missing_optional)
+        )
 
 # -------------------------
 # Index & Environment Checks

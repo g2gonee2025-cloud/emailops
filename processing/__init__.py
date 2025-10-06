@@ -4,7 +4,7 @@ Provides text processing, embedding, and monitoring capabilities
 """
 
 from .processor import UnifiedProcessor, ChunkJob, WorkerConfig, WorkerStats, ProcessingStats
-from .monitor import IndexMonitor, IndexStatus, ProcessInfo
+from ..diagnostics.monitor import IndexMonitor, IndexStatus, ProcessInfo
 
 __all__ = [
     # Main classes

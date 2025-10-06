@@ -1,12 +1,20 @@
 #!/usr/bin/env python3
 """
 Text chunking utilities for EmailOps.
-Implements smart text chunking with overlap for large documents.
 
-Refactor highlights:
-- Centralized defaults (env-overridable)
-- Added `prepare_index_units` convenience to emit either a single record or chunks
-- Kept existing, battle-tested chunking logic intact
+Production‑ready highlights:
+- Robust env parsing (no import‑time crashes on bad env values)
+- Centralized text normalization (BOM/newlines)
+- Paragraph/sentence/window chunking with conservative overlap
+- Configurable pass‑through clamp for very large records
+- Stable public API compatible with existing callers
+
+Public API:
+  - ChunkConfig
+  - TextChunker
+  - should_chunk_text
+  - chunk_for_indexing
+  - prepare_index_units
 """
 from __future__ import annotations
 
@@ -18,10 +26,46 @@ from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
-# ---- Tunables (env overrides allowed) ---------------------------------------
-DEFAULT_CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "1600"))
-DEFAULT_CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "200"))
-DEFAULT_CHUNK_THRESHOLD = int(os.getenv("CHUNK_THRESHOLD", "8000"))  # when to chunk vs. pass-through
+# --------------------------- helpers / env parsing ---------------------------
+
+def _env_int(name: str, default: int) -> int:
+    """Parse an int env var safely; fallback to default on any error."""
+    val = os.getenv(name)
+    if val is None:
+        return default
+    try:
+        return int(str(val).strip())
+    except Exception:
+        logger.warning("Invalid %s=%r; using default %d", name, val, default)
+        return default
+
+def _normalize_text_input(text: Any) -> str:
+    """Coerce to str, strip BOM, normalize whitespace minimally."""
+    if text is None:
+        return ""
+    s = str(text)
+    # Drop UTF‑8 BOM if present
+    if s.startswith("\ufeff"):
+        s = s[1:]
+    # Normalize CRLF/CR -> LF and trim edges
+    s = s.replace("\r\n", "\n").replace("\r", "\n").strip()
+    return s
+
+# ---- Tunables (env overrides allowed; safe parsing) -------------------------
+DEFAULT_CHUNK_SIZE = _env_int("CHUNK_SIZE", 1600)
+DEFAULT_CHUNK_OVERLAP = _env_int("CHUNK_OVERLAP", 200)
+DEFAULT_CHUNK_THRESHOLD = _env_int("CHUNK_THRESHOLD", 8000)  # when to chunk vs. pass-through
+MAX_PASSTHROUGH_CHARS = _env_int("MAX_PASSTHROUGH_CHARS", 200_000)
+
+__all__ = [
+    "ChunkConfig",
+    "TextChunker",
+    "should_chunk_text",
+    "chunk_for_indexing",
+    "prepare_index_units",
+]
+
+# ----------------------------- configuration --------------------------------
 
 @dataclass
 class ChunkConfig:
@@ -55,12 +99,14 @@ class ChunkConfig:
             logger.warning("base_max_chunks must be > 0; setting to 25")
             self.base_max_chunks = 25
 
+# ------------------------------- chunker ------------------------------------
+
 class TextChunker:
     """Intelligent text chunker that respects semantic boundaries when possible."""
     _SENTENCE_END_RE = re.compile(
-        r'(?:(?<=\.)|(?<=\!)|(?<=\?))[\s\n]+'
-        r'|:\s*\n+'
-        r'|\n{2,}'
+        r'(?:(?<=\.)|(?<=\!)|(?<=\?))[\s\n]+'   # sentence end + whitespace
+        r'|:\s*\n+'                             # colon then a hard break often separates sections
+        r'|\n{2,}'                              # paragraph breaks
     )
     _PARA_BREAK_RE = re.compile(r'\n{2,}')
 
@@ -68,29 +114,38 @@ class TextChunker:
         self.config = config or ChunkConfig()
 
     # ----------------------------- Public API ----------------------------- #
-    def chunk_text(self, text: str, metadata: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
-        if not text:
+    def chunk_text(self, text: Any, metadata: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+        """
+        Split text into chunks (with overlap) using paragraph/sentence/window strategies.
+        Returns an ordered list of chunk dicts with keys: text, start_pos, end_pos, chunk_index, chunk_size.
+        """
+        s = _normalize_text_input(text)
+        if not s:
             return []
-        if text.startswith('\ufeff'):
-            text = text[1:]
-        text = text.strip()
-        if not text:
-            return []
-        if len(text) <= self.config.chunk_size:
-            return [self._create_chunk(text, 0, len(text), 0, metadata)]
 
+        # Small documents pass through as a single chunk
+        if len(s) <= self.config.chunk_size:
+            return [self._create_chunk(s, 0, len(s), 0, metadata)]
+
+        # Try paragraphs first, then sentences, then fixed windows
         chunks: List[Dict[str, Any]] = []
         if self.config.respect_paragraphs:
-            chunks = self._chunk_by_paragraphs(text, metadata)
+            chunks = self._chunk_by_paragraphs(s, metadata)
         if not chunks and self.config.respect_sentences:
-            chunks = self._chunk_by_sentences(text, metadata)
+            chunks = self._chunk_by_sentences(s, metadata)
         if not chunks:
-            chunks = self._chunk_by_window(text, metadata)
+            chunks = self._chunk_by_window(s, metadata)
 
-        max_allowed = self._calculate_max_chunks(len(chunks)) if self.config.progressive_scaling else self.config.base_max_chunks
+        # Progressive limit for pathological inputs (ensures bounded output)
+        max_allowed = (
+            self._calculate_max_chunks(len(chunks)) if self.config.progressive_scaling
+            else self.config.base_max_chunks
+        )
         if len(chunks) > max_allowed:
             logger.warning("Document produced %d chunks; limiting to %d", len(chunks), max_allowed)
             chunks = chunks[:max_allowed]
+
+        # Normalize indices
         for i, ch in enumerate(chunks):
             ch["chunk_index"] = i
         return chunks
@@ -101,7 +156,7 @@ class TextChunker:
         if chunks_needed <= base:
             return chunks_needed
         above = chunks_needed - base
-        additional = above // 3
+        additional = above // 3  # taper growth
         return base + additional
 
     def _iter_paragraph_spans(self, text: str) -> List[Tuple[int, int]]:
@@ -120,41 +175,46 @@ class TextChunker:
         spans = self._iter_paragraph_spans(text)
         if len(spans) <= 1:
             return []
+        # If any single paragraph exceeds chunk_size, abandon paragraph mode (fallback to sentence/window)
         for a, b in spans:
             if (b - a) > self.config.chunk_size:
                 return []
+
         chunks: List[Dict[str, Any]] = []
         i = 0
         last_start_pos = -1
         while i < len(spans):
+            prev_i = i  # for forward-progress guard
+            # grow [i, j) as far as possible under chunk_size
             j = i
             while j < len(spans) and (spans[j][1] - spans[i][0]) <= self.config.chunk_size:
                 j += 1
             start_pos = spans[i][0]
             end_pos = spans[j - 1][1]
+
+            # Avoid accidental duplication if overlap math ever returns same start
             if start_pos == last_start_pos:
                 i = max(i + 1, j)
                 continue
+
             chunk_text = text[start_pos:end_pos].strip()
             chunks.append(self._create_chunk(chunk_text, start_pos, end_pos, len(chunks), metadata))
             last_start_pos = start_pos
+
             if j >= len(spans):
                 break
+
+            # Compute next i based on overlap
             if self.config.chunk_overlap > 0:
-                desired = max(spans[i][0], end_pos - self.config.chunk_overlap)
-                k = i
-                for idx in range(i, j):
-                    s, e = spans[idx]
-                    if s <= desired < e:
-                        k = idx
+                desired_start = max(spans[i][0], end_pos - self.config.chunk_overlap)
+                # pick first span whose start >= desired_start, but keep within [i+1, j]
+                new_i = j - 1
+                for cand in range(i + 1, j):
+                    if spans[cand][0] >= desired_start:
+                        new_i = cand
                         break
-                    if desired < s:
-                        k = max(i, idx - 1)
-                        break
-                if k <= i:
-                    i = j - 1
-                else:
-                    i = k
+                # forward-progress guard
+                i = new_i if new_i > prev_i else j
             else:
                 i = j
         return chunks
@@ -174,6 +234,7 @@ class TextChunker:
                     chunks.append(self._create_chunk(ctext, chunk_start, boundary, len(chunks), metadata))
                 if not is_last and self.config.chunk_overlap > 0:
                     desired = max(0, boundary - self.config.chunk_overlap)
+                    # align the new start to a prior sentence boundary when possible
                     new_start = desired
                     for j in range(idx - 1, -1, -1):
                         prev_b = boundaries[j]
@@ -181,7 +242,7 @@ class TextChunker:
                             new_start = prev_b
                             break
                     if new_start <= chunk_start:
-                        new_start = boundary
+                        new_start = boundary  # forward progress guard
                     chunk_start = new_start
                 else:
                     chunk_start = boundary
@@ -193,6 +254,7 @@ class TextChunker:
         start = 0
         while start < text_len:
             end = min(start + self.config.chunk_size, text_len)
+            # Prefer to break at a soft boundary for readability
             if end < text_len:
                 lower_bound = max(start + self.config.min_chunk_size, end - 50)
                 i = end - 1
@@ -208,24 +270,37 @@ class TextChunker:
             if end >= text_len:
                 break
             next_start = max(0, end - self.config.chunk_overlap)
+            # Ensure we always advance at least one character
             if chunks and next_start <= chunks[-1]["start_pos"]:
                 next_start = end
             start = next_start
         return chunks
 
-    def _create_chunk(self, text: str, start_pos: int, end_pos: int, chunk_index: int, metadata: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        chunk = {"text": text, "start_pos": start_pos, "end_pos": end_pos, "chunk_index": chunk_index, "chunk_size": len(text)}
+    def _create_chunk(
+        self,
+        text: str,
+        start_pos: int,
+        end_pos: int,
+        chunk_index: int,
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        chunk = {
+            "text": text,
+            "start_pos": start_pos,
+            "end_pos": end_pos,
+            "chunk_index": chunk_index,
+            "chunk_size": len(text),
+        }
         if metadata:
             chunk["metadata"] = metadata
         return chunk
-
 
 # ---------------------------- Convenience API ---------------------------- #
 
 def should_chunk_text(text: str, threshold: Optional[int] = None) -> bool:
     """Decide if text should be chunked based on configurable size threshold."""
     th = int(threshold if threshold is not None else DEFAULT_CHUNK_THRESHOLD)
-    return len(text) > th
+    return len(text or "") > th
 
 def chunk_for_indexing(
     text: str,
@@ -236,23 +311,36 @@ def chunk_for_indexing(
     subject: Optional[str] = None,
     date: Optional[str] = None
 ) -> List[Dict[str, Any]]:
-    config = ChunkConfig(chunk_size=chunk_size, chunk_overlap=chunk_overlap, respect_sentences=True, respect_paragraphs=True)
+    """
+    Chunk a document into records suitable for indexing.
+    Each record has id "{doc_id}::chunk{N}", path, text, chunk_index, chunk_size,
+    plus forwarded metadata (subject/date).
+    """
+    config = ChunkConfig(
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+        respect_sentences=True,
+        respect_paragraphs=True
+    )
     chunker = TextChunker(config)
-    metadata: Dict[str, Any] = {"doc_id": doc_id, "doc_path": doc_path}
+    # Pack lightweight metadata for provenance
+    meta: Dict[str, Any] = {"doc_id": doc_id, "doc_path": doc_path}
     if subject:
-        metadata["subject"] = subject
+        meta["subject"] = subject
     if date:
-        metadata["date"] = date
-    chunks = chunker.chunk_text(text, metadata)
+        meta["date"] = date
+
+    chunks = chunker.chunk_text(text, meta)
     out: List[Dict[str, Any]] = []
     for ch in chunks:
-        rec = {
+        rec: Dict[str, Any] = {
             "id": f"{doc_id}::chunk{ch['chunk_index']}",
             "path": doc_path,
             "text": ch["text"],
             "chunk_index": ch["chunk_index"],
             "chunk_size": ch["chunk_size"],
         }
+        # Forward selected metadata (omit internal ids)
         if "metadata" in ch:
             for k, v in ch["metadata"].items():
                 if k not in ("doc_id", "doc_path"):
@@ -272,27 +360,43 @@ def prepare_index_units(
     chunk_size: int = DEFAULT_CHUNK_SIZE,
     chunk_overlap: int = DEFAULT_CHUNK_OVERLAP,
 ) -> List[Dict[str, Any]]:
-    """Emit either a single record or a set of chunks for indexing with consistent metadata."""
-    if force_chunk or should_chunk_text(text, threshold=threshold):
+    """
+    Emit either a single record (pass‑through) or a set of chunks for indexing with consistent metadata.
+
+    Pass‑through:
+      id = doc_id
+      text = truncated to MAX_PASSTHROUGH_CHARS (configurable)
+    Chunked:
+      ids = doc_id::chunk{N}
+    """
+    s = _normalize_text_input(text)
+    if not s:
+        return []
+
+    if force_chunk or should_chunk_text(s, threshold=threshold):
         return chunk_for_indexing(
-            text, doc_id=doc_id, doc_path=doc_path,
-            chunk_size=chunk_size, chunk_overlap=chunk_overlap,
-            subject=subject, date=date
+            s,
+            doc_id=doc_id,
+            doc_path=doc_path,
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            subject=subject,
+            date=date,
         )
     # pass-through (no chunking)
     record = {
         "id": doc_id,
         "path": doc_path,
-        "text": text[:200000],
+        "text": s[:MAX_PASSTHROUGH_CHARS],
         "subject": subject or "",
         "date": date,
     }
     return [record]
 
 if __name__ == "__main__":
-    # Simple smoke test / demo consistency with previous API remains the same.
+    # Simple smoke test / demo (kept minimal to avoid side effects in production)
     import json
-    logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)s %(name)s - %(message)s")
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s - %(message)s")
     sample = "Hello. This is a sample paragraph.\n\nAnother paragraph follows. It has multiple sentences for testing."
     res = prepare_index_units(sample, doc_id="D1", doc_path="/tmp/doc.txt", subject="Demo", date="2024-01-01")
     print(json.dumps(res[:2], indent=2))

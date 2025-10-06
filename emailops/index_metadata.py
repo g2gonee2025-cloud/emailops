@@ -26,11 +26,13 @@ META_FILENAME = "meta.json"
 FAISS_INDEX_FILENAME = "index.faiss"
 MAPPING_FILENAME = "mapping.json"
 EMBEDDINGS_FILENAME = "embeddings.npy"
+TIMESTAMP_FILENAME = "last_run.txt"
+FILE_TIMES_FILENAME = "file_times.json"
 INDEX_DIRNAME_DEFAULT = os.getenv("INDEX_DIRNAME", "_index")
 
 __all__ = [
     "META_FILENAME", "FAISS_INDEX_FILENAME", "MAPPING_FILENAME", "EMBEDDINGS_FILENAME",
-    "INDEX_DIRNAME_DEFAULT",
+    "TIMESTAMP_FILENAME", "FILE_TIMES_FILENAME", "INDEX_DIRNAME_DEFAULT",
     "create_index_metadata", "save_index_metadata", "load_index_metadata",
     "validate_index_compatibility", "get_index_info",
     "index_paths", "read_mapping", "write_mapping",
@@ -44,6 +46,8 @@ class IndexPaths:
     mapping: Path
     embeddings: Path
     faiss: Path
+    timestamp: Path
+    file_times: Path
 
 def index_paths(index_dir: Path) -> IndexPaths:
     index_dir = index_dir.resolve()
@@ -53,6 +57,8 @@ def index_paths(index_dir: Path) -> IndexPaths:
         mapping=index_dir / MAPPING_FILENAME,
         embeddings=index_dir / EMBEDDINGS_FILENAME,
         faiss=index_dir / FAISS_INDEX_FILENAME,
+        timestamp=index_dir / TIMESTAMP_FILENAME,
+        file_times=index_dir / FILE_TIMES_FILENAME,
     )
 
 # -----------------------------------------------------------------------------
