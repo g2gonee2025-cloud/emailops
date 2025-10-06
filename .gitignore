@@ -167,3 +167,10 @@ emailops/sample/_index/
 /.vs
 /emailops/sample
 emailops.zip
+
+# Additional ignores
+__pycache__/
+_chunks/
+_index/
+.conda/
+.vs/
