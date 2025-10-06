@@ -1,20 +1,25 @@
 """
-Processing module for EmailOps Vertex AI.
-
-This module contains scripts for data processing, indexing, and embedding generation.
+Processing Module for EmailOps
+Provides text processing, embedding, and monitoring capabilities
 """
 
-from pathlib import Path
-import sys
-
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
+from .processor import UnifiedProcessor, ChunkJob, WorkerConfig, WorkerStats, ProcessingStats
+from .monitor import IndexMonitor, IndexStatus, ProcessInfo
 
 __all__ = [
-    'vertex_indexer',
-    'parallel_chunker', 
-    'parallel_summarizer',
-    'fix_failed_embeddings',
-    'repair_vertex_parallel_index',
-    'run_vertex_finalize'
+    # Main classes
+    'UnifiedProcessor',
+    'IndexMonitor',
+    
+    # Data classes
+    'ChunkJob',
+    'WorkerConfig', 
+    'WorkerStats',
+    'ProcessingStats',
+    'IndexStatus',
+    'ProcessInfo',
 ]
+
+# Module information
+__version__ = '2.0.0'
+__author__ = 'EmailOps Team'

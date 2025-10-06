@@ -110,49 +110,52 @@ Examples:
     try:
         # Route to appropriate module based on command
         if args.command == 'index':
-            from processing.vertex_indexer import main as index_main
-            sys.argv = ['vertex_indexer.py']
-            if args.root != '.':
-                sys.argv.extend(['--root', args.root])
-            sys.argv.extend(['--mode', args.mode])
-            if args.workers:
-                sys.argv.extend(['--workers', str(args.workers)])
-            if args.test_mode:
-                sys.argv.append('--test-mode')
-                sys.argv.extend(['--test-chunks', str(args.test_chunks)])
-            return index_main()
+            # Index command now uses unified processor
+            from processing.processor import UnifiedProcessor
+            processor = UnifiedProcessor(
+                root_dir=args.root,
+                mode="embed",
+                num_workers=args.workers,
+                test_mode=args.test_mode
+            )
+            processor.create_embeddings(use_chunked_files=True)
+            return 0
             
         elif args.command == 'chunk':
-            from processing.parallel_chunker import main as chunk_main
-            os.chdir(args.root)
-            return chunk_main()
+            from processing.processor import UnifiedProcessor
+            processor = UnifiedProcessor(
+                root_dir=args.root,
+                mode="chunk",
+                num_workers=args.workers
+            )
+            processor.chunk_documents(args.root, "*.txt")
+            return 0
             
         elif args.command == 'diagnose':
             if args.accounts:
-                from diagnostics.diagnose_accounts import main as diagnose_main
-                return diagnose_main()
+                from diagnostics.diagnostics import diagnose_all_accounts
+                return diagnose_all_accounts()
             elif args.index:
-                from diagnostics.verify_index_alignment import main as verify_main
-                sys.argv = ['verify_index_alignment.py', args.root]
-                return verify_main()
+                from diagnostics.diagnostics import verify_index_alignment
+                verify_index_alignment(args.root if hasattr(args, 'root') else '.')
+                return 0
             elif args.files:
-                from diagnostics.check_all_files import main as check_main
-                return check_main()
+                print("File checking functionality needs to be implemented")
+                return 1
             else:
                 print("Please specify what to diagnose: --accounts, --index, or --files")
                 return 1
                 
         elif args.command == 'monitor':
-            from analysis.monitor_indexing import monitor_worker2
-            monitor_worker2()
+            from diagnostics.statistics import monitor_indexing_progress
+            monitor_indexing_progress()
             return 0
             
         elif args.command == 'repair':
-            from processing.repair_vertex_parallel_index import main as repair_main
-            sys.argv = ['repair_vertex_parallel_index.py']
-            if args.remove_batches:
-                sys.argv.append('--remove-batches')
-            return repair_main()
+            from processing.processor import UnifiedProcessor
+            processor = UnifiedProcessor(root_dir=args.root, mode="repair")
+            processor.repair_index(remove_batches=args.remove_batches)
+            return 0
             
         elif args.command == 'ui':
             import subprocess
@@ -179,13 +182,15 @@ Examples:
                 
         elif args.command == 'analyze':
             if args.files:
-                from analysis.file_processing_analysis import main
-                return main() if hasattr(main, '__call__') else 0
+                from diagnostics.statistics import analyze_file_processing
+                analyze_file_processing()
+                return 0
             elif args.stats:
-                from analysis.file_stats import main
-                return main() if hasattr(main, '__call__') else 0
+                from diagnostics.statistics import get_file_statistics
+                get_file_statistics()
+                return 0
             elif args.chunks:
-                from analysis.count_chunks import count_total_chunks
+                from diagnostics.statistics import count_total_chunks
                 count_total_chunks(os.getcwd())
                 return 0
             else:

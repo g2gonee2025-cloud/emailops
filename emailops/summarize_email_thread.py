@@ -7,19 +7,36 @@ import json
 import logging
 import os
 import re
+import tempfile
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from datetime import datetime, timezone
 
-from .utils import logger, clean_email_text, read_text_file, ensure_dir
+from .utils import (
+    logger,
+    clean_email_text,
+    read_text_file,
+    ensure_dir,
+    extract_email_metadata,
+)
+
 from .llm_client import complete_json, complete_text
 
-# -----------------------------------------------------------------------------
-# Configuration (env-overridable) to keep prompts bounded and predictable
-# -----------------------------------------------------------------------------
+# =============================================================================
+# Configuration (env‑overridable) to keep prompts bounded and predictable
+# =============================================================================
+ANALYZER_VERSION = os.getenv("SUMMARIZER_VERSION", "2.2-facts-ledger")
+
 MAX_THREAD_CHARS = int(os.getenv("SUMMARIZER_THREAD_MAX_CHARS", "16000"))
 CRITIC_THREAD_CHARS = int(os.getenv("SUMMARIZER_CRITIC_MAX_CHARS", "5000"))
 IMPROVE_THREAD_CHARS = int(os.getenv("SUMMARIZER_IMPROVE_MAX_CHARS", "8000"))
+
+# Hard caps to avoid pathological JSON explosions
+MAX_PARTICIPANTS = int(os.getenv("SUMMARIZER_MAX_PARTICIPANTS", "25"))
+MAX_SUMMARY_POINTS = int(os.getenv("SUMMARIZER_MAX_SUMMARY_POINTS", "25"))
+MAX_NEXT_ACTIONS = int(os.getenv("SUMMARIZER_MAX_NEXT_ACTIONS", "50"))
+MAX_FACT_ITEMS = int(os.getenv("SUMMARIZER_MAX_FACT_ITEMS", "50"))
+SUBJECT_MAX_LEN = int(os.getenv("SUMMARIZER_SUBJECT_MAX_LEN", "100"))
 
 DEFAULT_CATALOG = [
     "insurance_coverage_query",
@@ -33,9 +50,9 @@ DEFAULT_CATALOG = [
     "other",
 ]
 
-# -----------------------------------------------------------------------------
-# Helpers
-# -----------------------------------------------------------------------------
+# =============================================================================
+# Internal helpers
+# =============================================================================
 def _try_load_json(s: str) -> Optional[Dict[str, Any]]:
     """
     Robustly parse JSON from model output:
@@ -73,6 +90,21 @@ def _try_load_json(s: str) -> Optional[Dict[str, Any]]:
     return None
 
 
+def _safe_str(v: Any, max_len: int) -> str:
+    s = "" if v is None else str(v)
+    if len(s) > max_len:
+        s = s[:max_len].rstrip()
+    return s
+
+
+def _limit_list(lst: Any, max_len: int) -> List[Any]:
+    if not isinstance(lst, list):
+        return []
+    if max_len <= 0:
+        return []
+    return lst[:max_len]
+
+
 def _normalize_analysis(data: Any, catalog: List[str]) -> Dict[str, Any]:
     """
     Coerce potentially imperfect LLM output to the required schema
@@ -95,8 +127,8 @@ def _normalize_analysis(data: Any, catalog: List[str]) -> Dict[str, Any]:
 
     # Subject length cap per description
     subj = d.get("subject")
-    if isinstance(subj, str) and len(subj) > 100:
-        d["subject"] = subj[:100].rstrip()
+    if isinstance(subj, str) and len(subj) > SUBJECT_MAX_LEN:
+        d["subject"] = subj[:SUBJECT_MAX_LEN].rstrip()
 
     # Types
     if not isinstance(d["participants"], list):
@@ -124,7 +156,130 @@ def _normalize_analysis(data: Any, catalog: List[str]) -> Dict[str, Any]:
             fl[k] = []
     d["facts_ledger"] = fl
 
+    # Apply size caps defensively
+    d["participants"] = _limit_list(d["participants"], MAX_PARTICIPANTS)
+    d["summary"] = _limit_list(d["summary"], MAX_SUMMARY_POINTS)
+    d["next_actions"] = _limit_list(d["next_actions"], MAX_NEXT_ACTIONS)
+    for k in ("explicit_asks", "commitments_made", "unknowns", "forbidden_promises", "key_dates"):
+        fl[k] = _limit_list(fl.get(k, []), MAX_FACT_ITEMS)
+    d["facts_ledger"] = fl
+
     return d
+
+
+def _read_manifest(convo_dir: Path) -> Dict[str, Any]:
+    """
+    Lightweight manifest reader with BOM tolerance and basic sanitation.
+    Returns {} if unavailable or invalid.
+    """
+    manifest_path = convo_dir / "manifest.json"
+    if not manifest_path.exists():
+        return {}
+    try:
+        text = manifest_path.read_text(encoding="utf-8-sig")
+        # Minimal sanitation: drop control chars that break JSON
+        text = re.sub(r"[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F-\\x9F]", "", text)
+        return json.loads(text)
+    except Exception as e:
+        logger.warning("Failed to read manifest at %s: %s", manifest_path, e)
+        return {}
+
+
+def _participants_from_manifest(manifest: Dict[str, Any]) -> List[Dict[str, str]]:
+    """
+    Convert first-message participants in manifest to summarizer schema.
+    Roles default to 'other'; tone 'neutral'; stance 'N/A' to avoid assumptions.
+    """
+    out: List[Dict[str, str]] = []
+    try:
+        messages = manifest.get("messages") or []
+        first = messages[0] if messages else {}
+        def _mk(name: str, email: str, role: str = "other") -> Dict[str, str]:
+            return {
+                "name": _safe_str(name, 80),
+                "role": role,
+                "email": _safe_str(email, 120),
+                "tone": "neutral",
+                "stance": "N/A",
+            }
+        if first.get("from"):
+            f = first["from"]
+            out.append(_mk(f.get("name",""), f.get("smtp",""), role="other"))
+        for rec in (first.get("to") or []):
+            if isinstance(rec, dict):
+                out.append(_mk(rec.get("name",""), rec.get("smtp",""), role="other"))
+        for rec in (first.get("cc") or []):
+            if isinstance(rec, dict):
+                out.append(_mk(rec.get("name",""), rec.get("smtp",""), role="other"))
+    except Exception:
+        return out
+    # de-duplicate by lowercase email
+    seen = set()
+    deduped: List[Dict[str, str]] = []
+    for p in out:
+        key = (p.get("email") or "").lower()
+        if key in seen and key:
+            continue
+        seen.add(key)
+        deduped.append(p)
+    return _limit_list(deduped, MAX_PARTICIPANTS)
+
+
+def _merge_manifest_into_analysis(
+    analysis: Dict[str, Any],
+    convo_dir: Path,
+    raw_thread_text: str
+) -> Dict[str, Any]:
+    """
+    Merge subject/participants/dates from manifest + raw headers when the model
+    couldn't infer them reliably. Never overrides non-empty, already-populated fields.
+    """
+    manifest = _read_manifest(convo_dir)
+
+    # Subject: prefer existing; otherwise manifest.smart_subject/subject; otherwise parsed raw headers
+    if not (isinstance(analysis.get("subject"), str) and analysis["subject"].strip() and analysis["subject"] != "Email thread"):
+        subj_candidates: List[str] = []
+        if isinstance(manifest, dict):
+            smart = (manifest.get("smart_subject") or "").strip()
+            if smart:
+                subj_candidates.append(smart)
+            subj = (manifest.get("subject") or "").strip()
+            if subj:
+                subj_candidates.append(subj)
+        # Parse from raw headers (before cleaning) using utils helper
+        md = extract_email_metadata(raw_thread_text or "")
+        if isinstance(md, dict) and md.get("subject"):
+            subj_candidates.append(str(md["subject"]).strip())
+        # Pick the first non-empty candidate
+        if subj_candidates:
+            analysis["subject"] = _safe_str(subj_candidates[0], SUBJECT_MAX_LEN)
+
+    # Participants: if model didn't provide any, add from manifest
+    if not analysis.get("participants"):
+        pts = _participants_from_manifest(manifest) if manifest else []
+        if pts:
+            analysis["participants"] = pts
+
+    # Key dates: if ledger.key_dates is empty, add start/end
+    fl = analysis.get("facts_ledger", {}) or {}
+    kd = fl.get("key_dates") or []
+    if not kd and isinstance(manifest, dict):
+        try:
+            time_span = manifest.get("time_span") or {}
+            start = time_span.get("start_local") or time_span.get("start")
+            end = time_span.get("end_local") or time_span.get("end")
+            key_dates: List[Dict[str, str]] = []
+            if start:
+                key_dates.append({"date": str(start), "event": "Conversation start", "importance": "reference"})
+            if end:
+                key_dates.append({"date": str(end), "event": "Conversation end", "importance": "reference"})
+            if key_dates:
+                fl["key_dates"] = _limit_list(key_dates, MAX_FACT_ITEMS)
+                analysis["facts_ledger"] = fl
+        except Exception:
+            pass
+
+    return analysis
 
 
 def analyze_email_thread_with_ledger(
@@ -164,7 +319,7 @@ def analyze_email_thread_with_ledger(
                 "analyzed_at": now,
                 "provider": provider,
                 "completeness_score": 0,
-                "version": "2.1-facts-ledger",
+                "version": ANALYZER_VERSION,
                 "input_chars": 0,
             },
         }
@@ -257,10 +412,10 @@ def analyze_email_thread_with_ledger(
 
     # Stop sequences (ensure we break on original/forwarded markers)
     stop_sequences = [
-        "\n\n---",
-        "\n\nFrom:",
-        "\n\nSent:",
-        "\n\n-----Original Message-----",
+        "\\n\\n---",
+        "\\n\\nFrom:",
+        "\\n\\nSent:",
+        "\\n\\n-----Original Message-----",
         "```",
     ]
 
@@ -456,12 +611,109 @@ Generate an improved analysis that addresses all feedback while maintaining the 
         "analyzed_at": datetime.now(timezone.utc).isoformat(),
         "provider": provider,
         "completeness_score": int(critic_feedback.get("completeness_score", 0) or 0),
-        "version": "2.1-facts-ledger",
+        "version": ANALYZER_VERSION,
         "input_chars": len(cleaned_thread),
     }
     return final_analysis
 
 
+# =============================================================================
+# Higher‑level API: analyze a conversation directory (read, analyze, enrich)
+# =============================================================================
+def analyze_conversation_dir(
+    thread_dir: Path,
+    catalog: List[str] = DEFAULT_CATALOG,
+    provider: str = os.getenv("EMBED_PROVIDER", "vertex"),
+    temperature: float = 0.2,
+    merge_manifest: bool = True,
+) -> Dict[str, Any]:
+    """
+    Read Conversation.txt from `thread_dir`, run the facts‑ledger analysis, and
+    (optionally) merge manifest metadata (subject, participants, dates).
+    Returns the final analysis dict.
+    """
+    convo = Path(thread_dir).expanduser().resolve()
+    convo_txt = convo / "Conversation.txt"
+    if not convo_txt.exists():
+        raise FileNotFoundError(f"Conversation.txt not found in {convo}")
+
+    raw = read_text_file(convo_txt)
+    cleaned = clean_email_text(raw)
+
+    data = analyze_email_thread_with_ledger(
+        thread_text=cleaned,
+        catalog=catalog,
+        provider=provider,
+        temperature=temperature,
+    )
+
+    if merge_manifest:
+        data = _merge_manifest_into_analysis(data, convo, raw)
+
+    # Safety: enforce caps again in case merge added items
+    data = _normalize_analysis(data, catalog)
+
+    return data
+
+
+# =============================================================================
+# Filesystem utilities
+# =============================================================================
+def _atomic_write_text(path: Path, content: str, encoding: str = "utf-8") -> None:
+    """Write text atomically to avoid partial files on interruptions."""
+    ensure_dir(path.parent)
+    with tempfile.NamedTemporaryFile("w", delete=False, encoding=encoding, dir=str(path.parent)) as tmp:
+        tmp.write(content)
+        tmp_path = Path(tmp.name)
+    os.replace(tmp_path, path)
+
+
+def _append_todos_csv(root: Path, thread_name: str, todos: List[Dict[str, Any]]) -> None:
+    """
+    Append next_actions to root todo.csv with basic deduplication (owner+what+thread).
+    """
+    out = root / "todo.csv"
+    ensure_dir(out.parent)
+
+    existing_keys = set()
+    if out.exists():
+        try:
+            for line in out.read_text(encoding="utf-8").splitlines()[1:]:
+                # very small, safe heuristics (CSV w/o commas in keys)
+                parts = [p.strip() for p in line.split(",")]
+                if len(parts) >= 5:
+                    key = (parts[0].lower(), parts[1].strip().lower(), parts[4].strip().lower())
+                    existing_keys.add(key)
+        except Exception:
+            pass
+
+    # Open in append mode and write header if file didn't exist
+    exists = out.exists()
+    with out.open("a", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=["who", "what", "due", "status", "priority", "thread"])
+        if not exists:
+            w.writeheader()
+        for t in todos or []:
+            if not isinstance(t, dict):
+                continue
+            key = (str(t.get("owner","")).lower(), str(t.get("action","")).strip().lower(), thread_name.lower())
+            if key in existing_keys:
+                continue
+            w.writerow(
+                {
+                    "who": t.get("owner", ""),
+                    "what": t.get("action", ""),
+                    "due": t.get("due", ""),
+                    "status": t.get("status", "open"),
+                    "priority": t.get("priority", "medium"),
+                    "thread": thread_name,
+                }
+            )
+
+
+# =============================================================================
+# CLI
+# =============================================================================
 def main() -> None:
     # Configure logging for CLI entry point
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -473,6 +725,7 @@ def main() -> None:
     ap.add_argument("--provider", default=os.getenv("EMBED_PROVIDER", "vertex"), help="LLM provider to record in metadata")
     ap.add_argument("--temperature", type=float, default=0.2, help="Temperature for generation")
     ap.add_argument("--output-format", choices=["json", "markdown"], default="json", help="Output format")
+    ap.add_argument("--no-manifest-merge", action="store_true", help="Do NOT merge manifest metadata (subject/participants/dates)")
     args = ap.parse_args()
 
     tdir = Path(args.thread).expanduser().resolve()
@@ -480,20 +733,21 @@ def main() -> None:
     if not convo.exists():
         raise SystemExit(f"Conversation.txt not found in {tdir}")
 
-    raw = read_text_file(convo)
-    cleaned = clean_email_text(raw)
+    # Enhanced analysis + (optional) manifest enrichment
+    try:
+        data = analyze_conversation_dir(
+            thread_dir=tdir,
+            catalog=args.catalog,
+            provider=args.provider,
+            temperature=args.temperature,
+            merge_manifest=(not args.no_manifest_merge),
+        )
+    except Exception as e:
+        raise SystemExit(f"Failed to analyze thread: {e}")
 
-    # Enhanced analysis
-    data = analyze_email_thread_with_ledger(
-        thread_text=cleaned,
-        catalog=args.catalog,
-        provider=args.provider,
-        temperature=args.temperature,
-    )
-
-    # Save as JSON
+    # Save JSON (atomically)
     out_json = tdir / "summary.json"
-    out_json.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    _atomic_write_text(out_json, json.dumps(data, ensure_ascii=False, indent=2))
     logger.info("Wrote %s", out_json)
 
     # Optionally save as markdown for readability
@@ -540,6 +794,11 @@ def main() -> None:
         for forbidden in data.get("facts_ledger", {}).get("forbidden_promises", []):
             md_content += f"- ⚠️ {forbidden}\n"
 
+        md_content += "\n## Key Dates\n"
+        for kd in data.get("facts_ledger", {}).get("key_dates", []):
+            if isinstance(kd, dict):
+                md_content += f"- **{kd.get('date','')}**: {kd.get('event','')} ({kd.get('importance','')})\n"
+
         md_content += "\n## Next Actions\n"
         for action in data.get("next_actions", []):
             if isinstance(action, dict):
@@ -554,34 +813,15 @@ def main() -> None:
             md_content += f"- 🚨 {risk}\n"
 
         out_md = tdir / "summary.md"
-        out_md.write_text(md_content, encoding="utf-8")
+        _atomic_write_text(out_md, md_content)
         logger.info("Wrote %s", out_md)
 
-    # Handle CSV export for todos
+    # Handle CSV export for todos with basic de-dupe
     if args.write_todos_csv:
         todos = data.get("next_actions") or []
         if todos and isinstance(todos, list):
             root = tdir.parent
-            out = root / "todo.csv"
-            exists = out.exists()
-            with out.open("a", newline="", encoding="utf-8") as f:
-                w = csv.DictWriter(f, fieldnames=["who", "what", "due", "status", "priority", "thread"])
-                if not exists:
-                    w.writeheader()
-                for t in todos:
-                    if isinstance(t, dict):
-                        w.writerow(
-                            {
-                                "who": t.get("owner", ""),
-                                "what": t.get("action", ""),
-                                "due": t.get("due", ""),
-                                "status": t.get("status", "open"),
-                                "priority": t.get("priority", "medium"),
-                                "thread": str(tdir.name),
-                            }
-                        )
-            logger.info("Appended todos to %s", out)
-
+            _append_todos_csv(root, tdir.name, todos)
 
 if __name__ == "__main__":
     main()

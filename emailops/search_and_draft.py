@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
+import mimetypes
+from email.utils import parseaddr
 """
 Search the email index, optionally draft a reply or a fresh email, and chat over context.
 
@@ -27,6 +29,8 @@ This module depends on:
 - utils: logger, load_conversation
 - index_metadata: validate_index_compatibility, get_index_info, load_index_metadata
 """
+
+from __future__ import annotations
 
 import argparse
 import os
@@ -275,98 +279,105 @@ def list_conversations_newest_first(ix_dir: Path) -> List[Dict[str, Any]]:
 
 def _load_conv_data(conv_dir: Path) -> Dict[str, Any]:
     """
-    Load conversation structure using utils.load_conversation(folder_path).
-    Returns {} if not loadable.
+    Load conversation structure using utils.load_conversation(folder_path),
+    then normalize manifest->messages and an effective subject.
     """
     try:
-        return load_conversation(conv_dir)
+        data = load_conversation(conv_dir)
     except Exception as e:
         logger.debug("load_conversation failed for %s: %s", conv_dir, e)
         return {}
 
+    manifest = data.get("manifest") or {}
+    messages = _extract_messages_from_manifest(manifest)
+    data["messages"] = messages
+    data["subject"] = _effective_subject(data, messages)
+    return data
+
+
 
 def _last_inbound_message(conv_data: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Pick the latest message not sent by the locked sender.
-    Heuristics: prefer messages whose from_email != Hagop's email.
+    Pick the latest message NOT sent by the locked sender.
+    Falls back to the latest message if all were from the sender.
     """
-    messages = conv_data.get("messages") or []
-    if not isinstance(messages, list) or not messages:
+    msgs = conv_data.get("messages") or []
+    if not msgs:
         return {}
-    # Extract date and filter
+
     best = None
     best_dt = None
-    for msg in messages:
-        from_email = (msg.get("from_email") or "").strip().lower()
-        try_dt = _parse_date_any(msg.get("date"))
-        if from_email and SENDER_LOCKED_EMAIL.lower() not in from_email:
-            if not best or (try_dt and (not best_dt or try_dt > best_dt)):
-                best = msg
-                best_dt = try_dt
+    for m in msgs:
+        from_email = (m.get("from_email") or "").lower()
+        dt = _parse_date_any(m.get("date"))
+        if from_email and (SENDER_LOCKED_EMAIL.lower() not in from_email):
+            if not best or (dt and (not best_dt or dt > best_dt)):
+                best = m
+                best_dt = dt
     if best:
         return best
-    # fallback to the latest message
+
+    # fallback to latest by date
     latest = None
     latest_dt = None
-    for msg in messages:
-        try_dt = _parse_date_any(msg.get("date"))
-        if not latest or (try_dt and (not latest_dt or try_dt > latest_dt)):
-            latest = msg
-            latest_dt = try_dt
+    for m in msgs:
+        dt = _parse_date_any(m.get("date"))
+        if not latest or (dt and (not latest_dt or dt > latest_dt)):
+            latest = m
+            latest_dt = dt
     return latest or {}
 
 
 def _derive_recipients_for_reply(conv_data: Dict[str, Any]) -> Tuple[List[str], List[str]]:
     """
-    Compute To/CC for the reply based on the last inbound message.
-    Remove our own address from recipients.
+    Compute To/CC for reply from the last inbound message. Use reply_to/sender.
+    Remove our own address; dedupe while preserving order.
     """
-    msg = _last_inbound_message(conv_data)
-    tos = []
-    ccs = []
+    msg = _last_inbound_message(conv_data) or {}
+    tos: List[str] = []
+    ccs: List[str] = []
+
     if msg:
-        tos = [ _clean_addr(x) for x in (msg.get("reply_to") or msg.get("from_email") or "").split(",") if _clean_addr(x) ]
-        # If the inbound To included our address, reply to sender primarily:
-        if not tos:
-            tos = [ _clean_addr(msg.get("from_email") or "") ]
-        ccs = [ _clean_addr(x) for x in (msg.get("cc_recipients") or msg.get("cc") or "") .split(",") if _clean_addr(x) ]
-    # Remove our own address if present
+        # Prefer explicit reply_to, else sender
+        rt = (msg.get("reply_to") or "").strip()
+        frm = (msg.get("from_email") or "").strip()
+        primary = [rt] if rt and rt != frm else [frm]
+        tos = [_clean_addr(x) for x in primary if _clean_addr(x)]
+
+        # Seed CC with the original To/CC minus ourselves and the chosen To
+        orig_to = [t for t in (msg.get("to_emails") or []) if t]
+        orig_cc = [c for c in (msg.get("cc_emails") or []) if c]
+        ccs = [x for x in orig_to + orig_cc if x]
+
+    # Remove our address anywhere
     tos = [t for t in tos if SENDER_LOCKED_EMAIL.lower() not in t.lower()]
     ccs = [c for c in ccs if SENDER_LOCKED_EMAIL.lower() not in c.lower()]
+
+    # Avoid duplicating To into Cc
+    to_set = {t.lower() for t in tos}
+    ccs = [c for c in ccs if c.lower() not in to_set]
+
     return (_dedupe_keep_order(tos), _dedupe_keep_order(ccs))
 
 
 def _derive_subject_for_reply(conv_data: Dict[str, Any]) -> str:
-    """
-    Derive 'Re: <subject>'.
-    """
-    subj = conv_data.get("subject") or ""
-    if not subj and conv_data.get("messages"):
-        for msg in reversed(conv_data["messages"]):
-            if msg.get("subject"):
-                subj = msg["subject"]
-                break
-    subj = subj.strip()
-    if not subj.lower().startswith("re:"):
-        subj = f"Re: {subj}" if subj else "Re:"
-    return subj
+    return conv_data.get("subject") or "Re:"
 
 
 def _derive_query_from_last_inbound(conv_data: Dict[str, Any]) -> str:
-    """
-    When user leaves the query empty for a reply, we create a concise intent from
-    the last inbound email (subject + first part of body).
-    """
-    msg = _last_inbound_message(conv_data)
-    if not msg:
-        return "Draft a professional and factual reply to the most recent message in this conversation."
-    subj = (msg.get("subject") or "").strip()
-    body = (msg.get("text") or msg.get("body") or msg.get("html") or "").strip()
-    body = body.replace("\r", " ").replace("\n", " ")
-    body = body[:800]  # keep concise
-    prefix = f"Reply to: {subj} — " if subj else "Reply intent — "
-    return prefix + body
-
+    msgs = conv_data.get("messages") or []
+    if msgs:
+        # prefer last inbound
+        last = _last_inbound_message(conv_data) or msgs[-1]
+        subj = (last.get("subject") or "").strip()
+        body = (last.get("text") or "").replace("\r", " ").replace("\n", " ")
+        body = body[:800]
+        prefix = f"Reply to: {subj} — " if subj else "Reply intent — "
+        return (prefix + body).strip() or "Draft a professional and factual reply."
+    # else: fallback to conversation text
+    raw = (conv_data.get("conversation_txt") or "").strip().replace("\r", " ").replace("\n", " ")
+    return ("Reply intent — " + raw[:800]).strip() if raw else \
+        "Draft a professional and factual reply to the most recent message in this conversation."
 
 # --------------------------- Context Gathering --------------------------- #
 
@@ -527,6 +538,106 @@ def _gather_context_fresh(
 
     return results
 
+def _normalize_email_field(v: Any) -> str:
+    """
+    Accepts dicts like {'smtp': 'a@b.com', 'name': 'A'} or plain strings.
+    Returns a plain email address (lowercased), or ''.
+    """
+    if not v:
+        return ""
+    if isinstance(v, dict):
+        for k in ("smtp", "email", "address"):
+            if v.get(k):
+                return str(v[k]).strip().lower()
+        # Try to parse from a display string if present
+        if v.get("name"):
+            _, addr = parseaddr(str(v.get("name")))
+            return addr.strip().lower()
+        return ""
+    # string
+    _, addr = parseaddr(str(v))
+    return addr.strip().lower()
+
+
+def _extract_messages_from_manifest(manifest: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """
+    Convert manifest['messages'] (if present) into a normalized list of message dicts:
+      {
+        from_email, from_name, to_emails[], cc_emails[], reply_to, subject, date,
+        message_id, references, text
+      }
+    Any missing fields become empty/[].
+    """
+    raw = manifest.get("messages") or []
+    out: List[Dict[str, Any]] = []
+    if not isinstance(raw, list):
+        return out
+
+    for m in raw:
+        if not isinstance(m, dict):
+            continue
+        f = m.get("from", {}) or {}
+        to_list = m.get("to", []) or []
+        cc_list = m.get("cc", []) or []
+
+        from_email = _normalize_email_field(f)
+        from_name = (f.get("name") or "").strip()
+
+        to_emails = [_normalize_email_field(t) for t in to_list]
+        to_emails = [e for e in to_emails if e]
+        cc_emails = [_normalize_email_field(c) for c in cc_list]
+        cc_emails = [e for e in cc_emails if e]
+
+        # Prefer explicit reply_to; else fall back to sender
+        reply_to = _normalize_email_field(m.get("reply_to")) or from_email
+
+        subj = (m.get("subject") or "").strip()
+        date = m.get("date") or m.get("sent") or ""
+        msgid = (m.get("message_id") or m.get("Message-ID") or "").strip()
+        refs = m.get("references") or m.get("References") or ""
+        if isinstance(refs, str):
+            refs_list = [x for x in refs.split() if x]
+        elif isinstance(refs, list):
+            refs_list = [str(x).strip() for x in refs if x]
+        else:
+            refs_list = []
+
+        body = (m.get("text") or m.get("body") or m.get("html") or "").strip()
+
+        out.append({
+            "from_email": from_email,
+            "from_name": from_name,
+            "to_emails": to_emails,
+            "cc_emails": cc_emails,
+            "reply_to": reply_to,
+            "subject": subj,
+            "date": date,
+            "message_id": msgid,
+            "references": refs_list,
+            "text": body
+        })
+    return out
+
+
+def _effective_subject(conv_data: Dict[str, Any], messages: List[Dict[str, Any]]) -> str:
+    """
+    Best‑effort subject for reply: prefer manifest.smart_subject,
+    then last message subject; prefix 'Re:' if needed.
+    """
+    manifest = conv_data.get("manifest") or {}
+    subj = (manifest.get("smart_subject") or manifest.get("subject") or "").strip()
+
+    if not subj:
+        # Try newest message with a subject
+        for m in reversed(messages):
+            if m.get("subject"):
+                subj = m["subject"].strip()
+                break
+
+    subj = subj or ""
+    if not subj.lower().startswith("re:"):
+        subj = f"Re: {subj}" if subj else "Re:"
+    return subj
 
 # --------------------------- Attachment Selection --------------------------- #
 
@@ -778,6 +889,8 @@ def _coerce_draft_dict(data: Any) -> Dict[str, Any]:
             continue
     d["citations"] = norm_cites
     return d
+
+
 
 
 # ------------------------------ Drafting ------------------------------ #
@@ -1097,7 +1210,7 @@ def _build_eml(
 ) -> bytes:
     """
     Construct a minimal, standards-compliant .eml with text/plain body and attachments.
-    No quoted history included (per requirements).
+    Uses mimetypes to set appropriate content types for attachments.
     """
     msg = EmailMessage()
     msg["From"] = from_display
@@ -1116,7 +1229,7 @@ def _build_eml(
         msg["References"] = " ".join(references)
 
     # Plain text body
-    msg.set_content(body_text)
+    msg.set_content(body_text or "")
 
     # Attachments
     if attachments:
@@ -1124,8 +1237,11 @@ def _build_eml(
             try:
                 p = Path(att["path"])
                 data = p.read_bytes()
-                maintype = "application"
-                subtype = "octet-stream"
+                ctype, _ = mimetypes.guess_type(str(p))
+                if ctype:
+                    maintype, subtype = ctype.split("/", 1)
+                else:
+                    maintype, subtype = "application", "octet-stream"
                 filename = att.get("filename") or p.name
                 msg.add_attachment(data, maintype=maintype, subtype=subtype, filename=filename)
             except Exception as e:

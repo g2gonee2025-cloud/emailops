@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """
 Index metadata management for EmailOps.
-Handles creation and validation of index metadata files.
+Handles creation, validation and *consistent file naming* for index metadata files.
+
+This refactor centralizes filename constants and adds small helpers for reading/writing
+mapping.json safely so other modules (indexer, search) don't duplicate this logic.
 """
 from __future__ import annotations
 
@@ -9,21 +12,54 @@ import json
 import os
 import sys
 import logging
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 logger = logging.getLogger(__name__)
 
-# Filenames used throughout the index directory (keep in sync with indexer/search)
+# -----------------------------------------------------------------------------
+# Filenames & Paths (single source of truth)
+# -----------------------------------------------------------------------------
 META_FILENAME = "meta.json"
 FAISS_INDEX_FILENAME = "index.faiss"
 MAPPING_FILENAME = "mapping.json"
 EMBEDDINGS_FILENAME = "embeddings.npy"
+INDEX_DIRNAME_DEFAULT = os.getenv("INDEX_DIRNAME", "_index")
 
+__all__ = [
+    "META_FILENAME", "FAISS_INDEX_FILENAME", "MAPPING_FILENAME", "EMBEDDINGS_FILENAME",
+    "INDEX_DIRNAME_DEFAULT",
+    "create_index_metadata", "save_index_metadata", "load_index_metadata",
+    "validate_index_compatibility", "get_index_info",
+    "index_paths", "read_mapping", "write_mapping",
+]
+
+@dataclass(frozen=True)
+class IndexPaths:
+    """Convenience container for common index file paths."""
+    base: Path
+    meta: Path
+    mapping: Path
+    embeddings: Path
+    faiss: Path
+
+def index_paths(index_dir: Path) -> IndexPaths:
+    index_dir = index_dir.resolve()
+    return IndexPaths(
+        base=index_dir,
+        meta=index_dir / META_FILENAME,
+        mapping=index_dir / MAPPING_FILENAME,
+        embeddings=index_dir / EMBEDDINGS_FILENAME,
+        faiss=index_dir / FAISS_INDEX_FILENAME,
+    )
+
+# -----------------------------------------------------------------------------
+# Internal helpers
+# -----------------------------------------------------------------------------
 
 def _safe_int(val: Optional[str]) -> Optional[int]:
-    """Parse int from env string, returning None on failure."""
     if val is None:
         return None
     try:
@@ -31,12 +67,7 @@ def _safe_int(val: Optional[str]) -> Optional[int]:
     except (TypeError, ValueError):
         return None
 
-
 def _resolve_provider_config(provider: str) -> Dict[str, Any]:
-    """
-    Resolve model name and expected dimensions dynamically from environment,
-    per provider. Dimensions may be None when unknown (deployment-dependent).
-    """
     p = (provider or "").strip().lower()
 
     # Vertex AI (Google)
@@ -78,7 +109,7 @@ def _resolve_provider_config(provider: str) -> Dict[str, Any]:
     # Cohere
     if p == "cohere":
         model = os.getenv("COHERE_EMBED_MODEL", "embed-english-v3.0")
-        dim = _safe_int(os.getenv("COHERE_EMBED_DIM")) or 1024  # embed-english-v3.* typically 1024
+        dim = _safe_int(os.getenv("COHERE_EMBED_DIM")) or 1024
         return {"model": model, "dimensions": dim, "reranker": os.getenv("COHERE_RERANKER_MODEL")}
 
     # HuggingFace Inference API
@@ -91,13 +122,12 @@ def _resolve_provider_config(provider: str) -> Dict[str, Any]:
     # Local (sentence-transformers)
     if p == "local":
         model = os.getenv("LOCAL_EMBED_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
-        dim = _safe_int(os.getenv("LOCAL_EMBED_DIM")) or 384  # all-MiniLM-L6-v2 has 384 dims
+        dim = _safe_int(os.getenv("LOCAL_EMBED_DIM")) or 384
         return {"model": model, "dimensions": dim, "reranker": None}
 
-    # Qwen
     if p == "qwen":
         model = os.getenv("QWEN_EMBED_MODEL", "Qwen/Qwen3-Embedding-8B")
-        dim = _safe_int(os.getenv("QWEN_DIM")) or 4096  # default, may differ by model
+        dim = _safe_int(os.getenv("QWEN_DIM")) or 4096
         return {"model": model, "dimensions": dim, "reranker": os.getenv("QWEN_RERANKER_MODEL")}
 
     # Unknown provider: fall back to generic envs if present
@@ -105,24 +135,18 @@ def _resolve_provider_config(provider: str) -> Dict[str, Any]:
     dim = _safe_int(os.getenv("EMBED_DIM"))
     return {"model": model, "dimensions": dim, "reranker": None}
 
-
 def _detect_actual_dimensions(index_dir: Path) -> Optional[int]:
-    """
-    Try to infer the actual embedding dimensionality from embeddings.npy without
-    loading the whole array into memory.
-    """
     npy = index_dir / EMBEDDINGS_FILENAME
     if not npy.exists():
         return None
     try:
-        import numpy as np  # local import to avoid hard dependency at module import
+        import numpy as np
         arr = np.load(str(npy), mmap_mode="r")
         if arr.ndim == 2:
             return int(arr.shape[1])
     except Exception as e:
         logger.debug(f"Could not read {EMBEDDINGS_FILENAME} to infer dimensions: {e}")
     return None
-
 
 def _detect_index_type(index_dir: Path) -> str:
     if (index_dir / FAISS_INDEX_FILENAME).exists():
@@ -131,6 +155,9 @@ def _detect_index_type(index_dir: Path) -> str:
         return "numpy"
     return "none"
 
+# -----------------------------------------------------------------------------
+# Public API
+# -----------------------------------------------------------------------------
 
 def create_index_metadata(
     provider: str,
@@ -139,19 +166,6 @@ def create_index_metadata(
     index_dir: Path,
     custom_metadata: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
-    """
-    Create metadata for the index.
-
-    Args:
-        provider: Embedding provider used (case-insensitive)
-        num_documents: Total number of indexed items (rows in mapping)
-        num_folders: Number of conversation folders processed
-        index_dir: Directory where the index is stored
-        custom_metadata: Optional additional metadata to include
-
-    Returns:
-        Dictionary containing the metadata
-    """
     provider_norm = (provider or "").strip().lower()
     model_info = _resolve_provider_config(provider_norm)
 
@@ -168,8 +182,8 @@ def create_index_metadata(
         "created_at": datetime.now(timezone.utc).isoformat(),
         "provider": provider_norm,
         "model": model_info["model"],
-        "dimensions": model_info.get("dimensions"),     # configured / expected
-        "actual_dimensions": actual_dim,               # observed from embeddings, when known
+        "dimensions": model_info.get("dimensions"),
+        "actual_dimensions": actual_dim,
         "reranker": model_info.get("reranker"),
         "num_documents": int(num_documents),
         "num_folders": int(num_folders),
@@ -189,70 +203,38 @@ def create_index_metadata(
 
     return metadata
 
-
 def save_index_metadata(metadata: Dict[str, Any], index_dir: Path) -> None:
-    """
-    Save metadata to the index directory.
-    """
-    index_dir.mkdir(parents=True, exist_ok=True)
-    meta_path = index_dir / META_FILENAME
-    meta_path.write_text(json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8")
-    logger.info(f"Saved index metadata to {meta_path}")
-
+    p = index_paths(index_dir).meta
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8")
+    logger.info(f"Saved index metadata to {p}")
 
 def load_index_metadata(index_dir: Path) -> Optional[Dict[str, Any]]:
-    """
-    Load metadata from the index directory.
-
-    Returns:
-        Metadata dictionary if found, None otherwise
-    """
-    meta_path = index_dir / META_FILENAME
-    if not meta_path.exists():
-        logger.warning(f"No metadata found at {meta_path}")
+    p = index_paths(index_dir).meta
+    if not p.exists():
+        logger.warning(f"No metadata found at {p}")
         return None
-
     try:
-        metadata = json.loads(meta_path.read_text(encoding="utf-8"))
-        logger.info(f"Loaded index metadata from {meta_path}")
-        return metadata
+        return json.loads(p.read_text(encoding="utf-8"))
     except Exception as e:
-        logger.error(f"Failed to load metadata from {meta_path}: {e}")
+        logger.error(f"Failed to load metadata from {p}: {e}")
         return None
 
-
-def validate_index_compatibility(
-    index_dir: Path,
-    provider: str,
-    raise_on_mismatch: bool = False
-) -> bool:
-    """
-    Validate that the index is compatible with the requested provider.
-
-    Args:
-        index_dir: Directory where index is stored
-        provider: Embedding provider to validate against (case-insensitive)
-        raise_on_mismatch: If True, raise an exception on mismatch
-
-    Returns:
-        True if compatible (or unknown), False if a hard mismatch was detected
-    """
+def validate_index_compatibility(index_dir: Path, provider: str, raise_on_mismatch: bool = False) -> bool:
     provider_norm = (provider or "").strip().lower()
     metadata = load_index_metadata(index_dir)
 
     # If no metadata, warn but allow (backward compatibility).
     if metadata is None:
         logger.warning(
-            "No index metadata found. Cannot validate provider compatibility. "
-            "Proceeding with caution - results may be incorrect if provider mismatch."
+            "No index metadata found. Cannot validate provider compatibility. Proceeding with caution."
         )
         return True
 
     indexed_provider = (metadata.get("provider") or "").strip().lower()
     if indexed_provider and indexed_provider != provider_norm:
         msg = (
-            f"Index was created with provider '{indexed_provider}' "
-            f"but trying to search with provider '{provider_norm}'. "
+            f"Index was created with provider '{indexed_provider}' but trying to search with provider '{provider_norm}'. "
             f"This will likely produce incorrect results!"
         )
         if raise_on_mismatch:
@@ -267,8 +249,7 @@ def validate_index_compatibility(
 
     if actual_dims is not None and expected_dims is not None and actual_dims != expected_dims:
         logger.warning(
-            f"Dimension mismatch: index has {actual_dims} dimensions, "
-            f"but provider '{provider_norm}' is configured for {expected_dims}. "
+            f"Dimension mismatch: index has {actual_dims} dimensions, but provider '{provider_norm}' is configured for {expected_dims}. "
             "Proceeding with indexed dimensions."
         )
 
@@ -277,17 +258,11 @@ def validate_index_compatibility(
     detected_type = _detect_index_type(index_dir)
     if meta_index_type != detected_type:
         logger.warning(
-            f"Index type in metadata ('{meta_index_type}') does not match files present ('{detected_type}'). "
-            "Search will still attempt to proceed."
+            f"Index type in metadata ('{meta_index_type}') does not match files present ('{detected_type}'). Search will still attempt to proceed."
         )
-
     return True
 
-
 def get_index_info(index_dir: Path) -> str:
-    """
-    Get a human-readable summary of the index metadata and on-disk state.
-    """
     metadata = load_index_metadata(index_dir)
     if metadata is None:
         return "No index metadata available"
@@ -297,10 +272,10 @@ def get_index_info(index_dir: Path) -> str:
     embeddings_count: Optional[int] = None
     inferred_dim: Optional[int] = None
 
-    mapping_path = index_dir / MAPPING_FILENAME
-    if mapping_path.exists():
+    p = index_paths(index_dir)
+    if p.mapping.exists():
         try:
-            mapping = json.loads(mapping_path.read_text(encoding="utf-8"))
+            mapping = json.loads(p.mapping.read_text(encoding="utf-8"))
             if isinstance(mapping, list):
                 mapping_count = len(mapping)
         except Exception:
@@ -311,8 +286,8 @@ def get_index_info(index_dir: Path) -> str:
         embeddings_count = None  # count still unknown without loading header fully
         # We can still read row count cheaply via npy header
         try:
-            import numpy as np  # local import
-            arr = np.load(str(index_dir / EMBEDDINGS_FILENAME), mmap_mode="r")
+            import numpy as np
+            arr = np.load(str(p.embeddings), mmap_mode="r")
             embeddings_count = int(arr.shape[0]) if arr.ndim == 2 else None
         except Exception:
             pass
@@ -340,8 +315,28 @@ def get_index_info(index_dir: Path) -> str:
         f"  Index Type: {metadata.get('index_type', 'unknown')}",
         f"  Half-life (days): {metadata.get('half_life_days', 'unknown')}",
     ])
-
-    if reranker := metadata.get("reranker"):
-        lines.append(f"  Reranker: {reranker}")
-
+    if (rer := metadata.get("reranker")):
+        lines.append(f"  Reranker: {rer}")
     return "\n".join(lines)
+
+# -----------------------------------------------------------------------------
+# Mapping helpers (BOM/JSON tolerant)
+# -----------------------------------------------------------------------------
+
+def read_mapping(index_dir: Path) -> List[Dict[str, Any]]:
+    p = index_paths(index_dir).mapping
+    if not p.exists():
+        return []
+    try:
+        # tolerate BOM
+        with p.open("r", encoding="utf-8-sig") as f:
+            return json.load(f)
+    except Exception as e:
+        logger.warning(f"Failed to read {p.name}: {e}")
+        return []
+
+def write_mapping(index_dir: Path, mapping: List[Dict[str, Any]]) -> Path:
+    p = index_paths(index_dir).mapping
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps(mapping, ensure_ascii=False, indent=2), encoding="utf-8")
+    return p
