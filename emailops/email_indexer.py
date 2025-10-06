@@ -661,7 +661,8 @@ def main() -> None:
                     help="Override embedding model for selected provider "
                          "(e.g., vertex: gemini-embedding-001; openai: text-embedding-3-small; "
                          "azure: deployment name)")
-    ap.add_argument("--batch", type=int, default=int(os.getenv("EMBED_BATCH","128")), help="Embedding batch size")
+    ap.add_argument("--batch", type=int, default=int(os.getenv("EMBED_BATCH","64")),
+                    help="Embedding batch size (max 250 for Vertex AI)")
     ap.add_argument("--force-reindex", action="store_true", help="Force a full re-indexing of all conversations.")
     ap.add_argument("--limit", type=int, default=0, help="Limit the number of conversations to process (for testing). 0 means no limit.")
     args = ap.parse_args()

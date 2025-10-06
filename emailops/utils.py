@@ -192,9 +192,7 @@ def _extract_msg(path: Path) -> str:
             body = ""
 
         if not body:
-            body = (m.body or ""
-
-)
+            body = m.body or ""
         headers = []
         for k in ("from", "to", "cc", "bcc", "subject", "date"):
             val = getattr(m, k, None)

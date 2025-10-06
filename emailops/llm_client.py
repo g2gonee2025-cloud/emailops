@@ -344,7 +344,8 @@ def _embed_vertex(texts: List[str], model: Optional[str] = None) -> np.ndarray:
         dim = int(out_dim) if out_dim else 3072
 
         vectors: List[List[float]] = []
-        B = int(os.getenv("EMBED_BATCH", "256"))
+        # Vertex AI Gemini Embedding API max batch size is 250 (1-251 exclusive)
+        B = min(int(os.getenv("EMBED_BATCH", "64")), 250)
 
         for i in range(0, len(texts), B):
             chunk = texts[i:i + B]
@@ -396,7 +397,8 @@ def _embed_vertex(texts: List[str], model: Optional[str] = None) -> np.ndarray:
 
     # Path 2: Legacy Vertex TextEmbeddingModel (e.g., text-embedding-005)
     vectors: List[List[float]] = []
-    B = int(os.getenv("EMBED_BATCH", "256"))
+    # Vertex AI API max batch size is 250 for safety
+    B = min(int(os.getenv("EMBED_BATCH", "64")), 250)
 
     for i in range(0, len(texts), B):
         chunk = texts[i:i + B]

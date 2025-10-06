@@ -1,3 +1,4 @@
+# Core Dependencies
 google-cloud-aiplatform>=1.66.0
 google-genai>=1.40.0  # For Gemini models via Gen AI SDK
 faiss-cpu>=1.7.4
@@ -6,10 +7,13 @@ numpy>=1.26.4
 pandas>=2.0.0
 pypdf>=4.0.0
 python-docx>=1.0.0
+python-pptx>=0.6.21  # For PowerPoint file support
 requests>=2.31.0
 openpyxl>=3.1.0
+extract-msg>=0.45.0  # For Outlook .msg file support
+cryptography>=3.1.0  # For encrypted PDF support
 pytest>=7.4.0
-
+streamlit>=1.28.0
 python-dotenv>=1.0.1
 
 # Optional: LLM Embedding Providers (install as needed)

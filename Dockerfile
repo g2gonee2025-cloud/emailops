@@ -1,4 +1,4 @@
-# Production-ready container for EmailOps with Qwen AI integration
+# Production-ready container for EmailOps Vertex AI
 FROM python:3.11-slim
 
 # Build arguments
@@ -10,6 +10,7 @@ ARG GROUP_ID=1001
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
+    git \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd -g ${GROUP_ID} emailops \
     && useradd -m -u ${USER_ID} -g emailops emailops
@@ -25,10 +26,26 @@ RUN pip install --no-cache-dir -r requirements.txt \
     && pip install --no-cache-dir gunicorn \
     && rm -rf /root/.cache/pip
 
-# Copy application code
+# Copy application structure
 COPY --chown=emailops:emailops emailops ./emailops
-COPY --chown=emailops:emailops README.md .
+COPY --chown=emailops:emailops processing ./processing
+COPY --chown=emailops:emailops analysis ./analysis
+COPY --chown=emailops:emailops diagnostics ./diagnostics
+COPY --chown=emailops:emailops tests ./tests
+COPY --chown=emailops:emailops setup ./setup
+COPY --chown=emailops:emailops utils ./utils
+COPY --chown=emailops:emailops ui ./ui
+COPY --chown=emailops:emailops data ./data
+COPY --chown=emailops:emailops docs ./docs
+COPY --chown=emailops:emailops cli.py ./
 COPY --chown=emailops:emailops *.md ./
+COPY --chown=emailops:emailops .env.example ./
+
+# Create necessary directories
+RUN mkdir -p /app/logs /app/.streamlit
+
+# Note: Streamlit config should be copied manually if needed
+# or mounted as a volume at runtime
 
 # Switch to non-root user
 USER emailops
@@ -39,20 +56,18 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app \
     LOG_LEVEL=INFO
 
-# Create necessary directories
-RUN mkdir -p /app/logs /app/data
-
-# Healthcheck - tests if the Python module loads correctly
+# Healthcheck - tests if the CLI loads correctly
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import emailops; print('Healthcheck: OK')" || exit 1
+    CMD python cli.py --help > /dev/null 2>&1 || exit 1
 
-# Expose port for API service (if running)
-EXPOSE 8080
+# Expose ports
+EXPOSE 8080 8501
 
-# Default command - can be overridden
-CMD ["python", "-m", "emailops.email_indexer", "--help"]
+# Default command - show help
+CMD ["python", "cli.py", "--help"]
 
 # Alternative commands for different use cases:
-# For indexing: CMD ["python", "-m", "emailops.email_indexer", "--root", "/data", "--provider", "qwen"]
-# For API service: CMD ["gunicorn", "-b", "0.0.0.0:8080", "-w", "2", "--timeout", "300", "api_service:app"]
-# For search: CMD ["python", "-m", "emailops.search_and_draft"]
+# For indexing: CMD ["python", "cli.py", "index"]
+# For UI: CMD ["python", "cli.py", "ui"]
+# For monitoring: CMD ["python", "cli.py", "monitor"]
+# For analysis: CMD ["python", "cli.py", "analyze", "--files"]

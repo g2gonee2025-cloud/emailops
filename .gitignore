@@ -1,7 +1,50 @@
+# ============================================
+# RUNTIME DATA - EXCLUDE ALL
+# ============================================
+
+# All index/chunk/metadata files and directories
+*_index/
+*_index*
+_index/
+*index.faiss
+*index.pkl
+*.faiss
+*.pkl
+*_chunks/
+*chunks/
+*_chunk*
+chunk_*
+*metadata*
+*.metadata
+*.meta
+
+# All log files and directories
+*.log
+*.logs
+logs/
+*_logs/
+*.log.*
+*.out
+*.err
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.sqlite-journal
+
+# ============================================
+# PYTHON
+# ============================================
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
+*.pyo
+*.pyd
 
 # C extensions
 *.so
@@ -49,53 +92,19 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-target/
-
 # Jupyter Notebook
 .ipynb_checkpoints
+*.ipynb_checkpoints
 
 # IPython
 profile_default/
 ipython_config.py
 
-# pyenv
-.python-version
+# ============================================
+# ENVIRONMENTS
+# ============================================
 
-# pipenv
-Pipfile.lock
-
-# PEP 582
-__pypackages__/
-
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
-
-# SageMath parsed files
-*.sage.py
-
-# Environments
+# Virtual environments
 .env
 .venv
 env/
@@ -103,74 +112,181 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+virtualenv/
+.virtualenv/
 
-# Spyder project settings
-.spyderproject
-.spyproject
+# Conda
+.conda/
+conda-meta/
+*.conda
+miniconda/
+anaconda/
 
-# Rope project settings
-.ropeproject
+# pipenv
+Pipfile.lock
 
-# mkdocs documentation
-/site
+# pyenv
+.python-version
 
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
+# ============================================
+# IDE / EDITORS
+# ============================================
 
 # VS Code
 .vscode/
 *.code-workspace
+.history/
 
-# IDE settings
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# PyCharm / JetBrains
 .idea/
 *.iml
+*.iws
+out/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.*.swp
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# ============================================
+# OS FILES
+# ============================================
 
 # MacOS
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
 
 # Windows
 Thumbs.db
 ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
 
-# Project specific
+# Linux
+.directory
+.Trash-*
+
+# ============================================
+# PROJECT SPECIFIC
+# ============================================
+
+# Secrets and credentials
 secrets/
 *.key
 *.pem
 *.crt
-service-account-key.json
-*_checkpoint.json
-*_index/
-*.faiss
-*.npy
+*.cert
+service-account*.json
+credentials*.json
+*_credentials*
+gcp-key*.json
+
+# Sample data and test outputs
+emailops/sample/
+sample/
+samples/
 test_outputs/
+test_output/
 temp/
 tmp/
+*.tmp
+*.temp
+*.bak
+*.backup
 
-# Conda
-.conda/
+# Processing outputs
+processing/output/
+processing/temp/
+*_output/
+*_processed/
 
-# Local test files
-test_*.py
-!test_setup.py
-!test_comprehensive.py
-!test_local_setup.py
-!test_vertex_embedding.py
+# Analysis results
+analysis/results/
+analysis/output/
+*_results/
 
-# Production data
-C:/Users/ASUS/Desktop/Outlook/
-emailops/sample/_index/
-/.vs
-/emailops/sample
+# Data files (keep only config JSONs)
+data/*.csv
+data/*.tsv
+data/*.txt
+data/*.xml
+data/*.html
+!data/validated_accounts.json
+!data/account_diagnostics*.json
+!data/live_api_test_results.json
+
+# Model files
+*.h5
+*.model
+*.pt
+*.pth
+*.bin
+*.onnx
+*.pb
+models/
+
+# Checkpoints
+*checkpoint*
+*.ckpt
+checkpoints/
+
+# Cache directories
+cache/
+.cache/
+*_cache/
+__cache__/
+
+# Streamlit
+.streamlit/cache/
+.streamlit/secrets.toml
+ui/.streamlit/cache/
+
+# Generated documentation
+docs/_build/
+docs/generated/
+site/
+
+# Large files
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# Specific paths to exclude
+C:/Users/*/Desktop/Outlook/
 emailops.zip
 
-# Additional ignores
-__pycache__/
-_chunks/
-_index/
-.conda/
-.vs/
+# NPM/Node (if used for any tooling)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Any hidden directories except .streamlit config
+.*/
+!.streamlit/
+!.streamlit/config.toml
+
+# Exclude all directories starting with underscore
+_*/
