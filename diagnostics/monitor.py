@@ -7,14 +7,15 @@ Provides utilities to monitor indexing progress, analyze rates, and inspect proc
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import logging
 import os
 import sys
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 # Optional psutil import
 try:
@@ -29,8 +30,8 @@ except ImportError:
     load_index_metadata = None
 
 try:
-    from emailops.utils import find_conversation_dirs
     from diagnostics.utils import setup_logging
+    from emailops.utils import find_conversation_dirs
 except ImportError:
     find_conversation_dirs = None
     setup_logging = None
@@ -193,7 +194,7 @@ class IndexMonitor:
         # Find most recent artifact
         newest_path, newest_mtime = self._find_newest_artifact()
         if newest_path and newest_mtime:
-            dt_utc = datetime.fromtimestamp(newest_mtime, tz=timezone.utc)
+            dt_utc = datetime.fromtimestamp(newest_mtime, tz=UTC)
             status.last_updated = dt_utc.isoformat()
             status.active_source = newest_path.name
 
@@ -202,12 +203,10 @@ class IndexMonitor:
             p = self.index_dir / candidate
             if p.exists():
                 status.index_file = candidate
-                try:
+                with contextlib.suppress(Exception):
                     status.index_file_size_mb = round(
                         p.stat().st_size / (1024 * 1024), 1
                     )
-                except Exception:
-                    pass
                 break
 
         # Calculate progress
@@ -218,8 +217,8 @@ class IndexMonitor:
 
         # Check if actively indexing
         if newest_mtime:
-            now_utc = datetime.now(timezone.utc)
-            dt_utc = datetime.fromtimestamp(newest_mtime, tz=timezone.utc)
+            now_utc = datetime.now(UTC)
+            dt_utc = datetime.fromtimestamp(newest_mtime, tz=UTC)
             status.is_active = (now_utc - dt_utc) <= self.active_window
 
         if emit_text:
@@ -251,7 +250,7 @@ class IndexMonitor:
                 logger.warning(colored("Cannot determine start time", Colors.YELLOW))
             return {}
 
-        elapsed = (datetime.now(timezone.utc) - created).total_seconds()
+        elapsed = (datetime.now(UTC) - created).total_seconds()
         if elapsed <= 0:
             return {}
 
@@ -480,9 +479,9 @@ class IndexMonitor:
             created = datetime.fromisoformat(s)
 
             if created.tzinfo is None:
-                created = created.replace(tzinfo=timezone.utc)
+                created = created.replace(tzinfo=UTC)
 
-            return created.astimezone(timezone.utc)
+            return created.astimezone(UTC)
         except Exception:
             return None
 
@@ -517,7 +516,7 @@ class IndexMonitor:
             try:
                 dt = datetime.fromisoformat(status.last_updated)
                 local_dt = dt.astimezone()
-                ago = int((datetime.now(timezone.utc) - dt).total_seconds())
+                ago = int((datetime.now(UTC) - dt).total_seconds())
                 logger.info(
                     f"Last updated:          {local_dt.strftime('%Y-%m-%d %H:%M:%S %Z')}  ({ago} seconds ago)"
                 )

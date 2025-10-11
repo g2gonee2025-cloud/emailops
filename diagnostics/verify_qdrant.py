@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 """Verify Qdrant vector database connectivity and functionality."""
 
-import requests
+import builtins
+import contextlib
 import json
 from datetime import datetime
+
+import requests
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams, PointStruct
+from qdrant_client.models import Distance, PointStruct, VectorParams
+
 
 def check_qdrant_health():
     """Check if Qdrant is healthy via HTTP API."""
@@ -29,33 +33,31 @@ def test_qdrant_client():
         "delete_collection": False,
         "errors": []
     }
-    
+
     try:
         # Initialize client
         client = QdrantClient(host="localhost", port=6333)
         results["connection"] = True
-        
+
         # List collections
         collections = client.get_collections()
         results["list_collections"] = True
         print(f"✓ Listed collections: {len(collections.collections)} found")
-        
+
         # Create test collection
         test_collection = "test_verification_collection"
-        
+
         # Delete if exists
-        try:
+        with contextlib.suppress(builtins.BaseException):
             client.delete_collection(test_collection)
-        except:
-            pass
-            
+
         client.create_collection(
             collection_name=test_collection,
             vectors_config=VectorParams(size=4, distance=Distance.DOT),
         )
         results["create_collection"] = True
         print(f"✓ Created test collection: {test_collection}")
-        
+
         # Insert test points
         points = [
             PointStruct(
@@ -72,7 +74,7 @@ def test_qdrant_client():
                 id=2,
                 vector=[0.18, 0.01, 0.85, 0.80],
                 payload={
-                    "city": "London", 
+                    "city": "London",
                     "country": "UK",
                     "population": 9000000,
                     "info": "Capital of UK"
@@ -83,20 +85,20 @@ def test_qdrant_client():
                 vector=[0.24, 0.18, 0.22, 0.44],
                 payload={
                     "city": "Paris",
-                    "country": "France", 
+                    "country": "France",
                     "population": 2200000,
                     "info": "Capital of France"
                 }
             ),
         ]
-        
+
         client.upsert(
             collection_name=test_collection,
             points=points
         )
         results["insert_points"] = True
         print(f"✓ Inserted {len(points)} test points")
-        
+
         # Search for similar vectors
         search_result = client.search(
             collection_name=test_collection,
@@ -105,16 +107,16 @@ def test_qdrant_client():
         )
         results["search_points"] = True
         print(f"✓ Search successful, found {len(search_result)} results")
-        
+
         # Clean up
         client.delete_collection(test_collection)
         results["delete_collection"] = True
-        print(f"✓ Cleaned up test collection")
-        
+        print("✓ Cleaned up test collection")
+
     except Exception as e:
         results["errors"].append(str(e))
         print(f"✗ Error: {e}")
-    
+
     return results
 
 def main():
@@ -124,26 +126,26 @@ def main():
     print(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 60)
     print()
-    
+
     # Check health endpoint
     print("Checking Qdrant health...")
     print("-" * 60)
     health_ok, health_info = check_qdrant_health()
-    
+
     if health_ok:
-        print(f"✓ Qdrant is healthy")
+        print("✓ Qdrant is healthy")
         print(f"  Version: {health_info.get('version', 'Unknown')}")
         print(f"  Title: {health_info.get('title', 'Unknown')}")
     else:
         print(f"✗ Qdrant health check failed: {health_info}")
-    
+
     print()
-    
+
     # Test client operations
     print("Testing Qdrant client operations...")
     print("-" * 60)
     test_results = test_qdrant_client()
-    
+
     # Summary
     print()
     print("=" * 60)
@@ -156,20 +158,20 @@ def main():
         if operation != "errors":
             status = "✓ PASSED" if success else "✗ FAILED"
             print(f"  {operation:<20} {status}")
-    
+
     # Overall status
     all_passed = health_ok and all(
         v for k, v in test_results.items() if k != "errors" and v is not False
     )
-    
+
     print()
     print(f"Overall Status: {'✓ ALL TESTS PASSED' if all_passed else '✗ SOME TESTS FAILED'}")
-    
+
     if test_results["errors"]:
         print("\nErrors encountered:")
         for error in test_results["errors"]:
             print(f"  - {error}")
-    
+
     # Save results
     results = {
         "timestamp": datetime.now().isoformat(),
@@ -180,10 +182,10 @@ def main():
         "client_tests": test_results,
         "overall_status": "PASSED" if all_passed else "FAILED"
     }
-    
+
     with open('qdrant_verification_results.json', 'w') as f:
         json.dump(results, f, indent=2)
-    
+
     print("\nResults saved to: qdrant_verification_results.json")
 
 if __name__ == "__main__":

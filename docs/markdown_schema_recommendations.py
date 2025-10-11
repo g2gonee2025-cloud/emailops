@@ -231,7 +231,7 @@ NEXT_STEPS = """
 IMMEDIATE ACTIONS (This Week):
 
 1. **Start with Email Draft Schema** (Highest ROI)
-   - Implement template-based approach for email_draft_response  
+   - Implement template-based approach for email_draft_response
    - Create robust parser with multiple fallback patterns
    - Test with existing context snippets
    - Measure user satisfaction vs current JSON
@@ -241,7 +241,7 @@ IMMEDIATE ACTIONS (This Week):
    - Allow A/B testing between JSON and Markdown approaches
    - Implement gradual rollout capability
 
-3. **Enhance Error Handling** 
+3. **Enhance Error Handling**
    - Modify complete_json() to accept markdown templates
    - Add markdown parsing with JSON fallback
    - Implement detailed error logging
@@ -265,7 +265,7 @@ LONG TERM (1-2 Months):
    - Use Markdown for human-reviewed outputs
    - Document architectural decisions and patterns
 
-7. **Tooling and Documentation**  
+7. **Tooling and Documentation**
    - Create schema validation tools
    - Build markdown-to-JSON converters for compatibility
    - Update team documentation with best practices

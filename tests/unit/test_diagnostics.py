@@ -10,8 +10,7 @@ Tests cover:
 
 import json
 from datetime import datetime
-from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import patch
 
 import numpy as np
 import pytest
@@ -25,14 +24,13 @@ from diagnostics.diagnostics import (
 )
 from emailops.llm_runtime import VertexAccount
 
-
 # ============================================================================
 # test_account Tests
 # ============================================================================
 
 class TestAccountTesting:
     """Tests for test_account function."""
-    
+
     def test_account_with_missing_credentials_returns_failure(self, sample_vertex_account):
         """Test that test_account fails when credentials file doesn't exist."""
         account = VertexAccount(
@@ -40,12 +38,12 @@ class TestAccountTesting:
             credentials_path="/nonexistent/path/credentials.json",
             account_group=0
         )
-        
+
         success, message = test_account(account)
-        
+
         assert success is False
         assert "not found" in message.lower()
-    
+
     @patch('diagnostics.diagnostics.reset_vertex_init')
     @patch('diagnostics.diagnostics._init_vertex')
     @patch('diagnostics.diagnostics.embed_texts')
@@ -61,20 +59,20 @@ class TestAccountTesting:
         # Mock should return array with shape (n, 768) as expected
         mock_embeddings = np.random.randn(1, 768).astype(np.float32)
         mock_embed.return_value = mock_embeddings
-        
+
         account = VertexAccount(
             project_id=sample_vertex_account["project_id"],
             credentials_path=str(mock_credentials_file),
             account_group=0
         )
-        
+
         success, message = test_account(account)
-        
+
         assert success is True
         assert message == "All tests passed"
         mock_init.assert_called_once()
         mock_embed.assert_called_once()
-    
+
     @patch('diagnostics.diagnostics.reset_vertex_init')
     @patch('diagnostics.diagnostics._init_vertex')
     def test_account_with_init_failure_returns_error(
@@ -83,18 +81,18 @@ class TestAccountTesting:
         """Test that test_account handles initialization failures."""
         mock_reset.return_value = None
         mock_init.side_effect = Exception("Init failed")
-        
+
         account = VertexAccount(
             project_id=sample_vertex_account["project_id"],
             credentials_path=str(mock_credentials_file),
             account_group=0
         )
-        
+
         success, message = test_account(account)
-        
+
         assert success is False
         assert "Init failed" in message
-    
+
     @patch('diagnostics.diagnostics.reset_vertex_init')
     @patch('diagnostics.diagnostics._init_vertex')
     @patch('diagnostics.diagnostics.embed_texts')
@@ -105,18 +103,18 @@ class TestAccountTesting:
         mock_reset.return_value = None
         mock_init.return_value = None
         mock_embed.side_effect = Exception("Embedding failed")
-        
+
         account = VertexAccount(
             project_id=sample_vertex_account["project_id"],
             credentials_path=str(mock_credentials_file),
             account_group=0
         )
-        
+
         success, message = test_account(account)
-        
+
         assert success is False
         assert "Embedding failed" in message
-    
+
     @patch('diagnostics.diagnostics.reset_vertex_init')
     @patch('diagnostics.diagnostics._init_vertex')
     @patch('diagnostics.diagnostics.embed_texts')
@@ -128,15 +126,15 @@ class TestAccountTesting:
         mock_init.return_value = None
         # Return None to simulate no embeddings
         mock_embed.return_value = None
-        
+
         account = VertexAccount(
             project_id=sample_vertex_account["project_id"],
             credentials_path=str(mock_credentials_file),
             account_group=0
         )
-        
+
         success, message = test_account(account)
-        
+
         assert success is False
         assert "No embeddings returned" in message
 
@@ -147,47 +145,47 @@ class TestAccountTesting:
 
 class TestVerifyIndexAlignment:
     """Tests for verify_index_alignment function."""
-    
+
     def test_verify_with_missing_index_dir_exits(self, temp_dir):
         """Test that verify_index_alignment exits when index directory missing."""
         with pytest.raises(SystemExit) as exc_info:
             verify_index_alignment(str(temp_dir))
-        
+
         assert exc_info.value.code == 2
-    
+
     def test_verify_with_missing_mapping_exits(self, mock_index_dir):
         """Test that verify_index_alignment exits when mapping.json missing."""
         # Create only index dir, no mapping file
         with pytest.raises(SystemExit) as exc_info:
             verify_index_alignment(str(mock_index_dir.parent))
-        
+
         assert exc_info.value.code == 2
-    
+
     def test_verify_with_valid_index_succeeds(self, mock_index_files):
         """Test that verify_index_alignment succeeds with valid index."""
         # Should complete without raising SystemExit
         verify_index_alignment(str(mock_index_files["index_dir"].parent))
-        
+
         # If we get here, verification passed
         assert True
-    
+
     def test_verify_with_mismatched_counts_exits(self, mock_index_dir, sample_mapping_data):
         """Test that verify_index_alignment exits when counts don't match."""
         # Create mapping with 2 entries
         mapping_path = mock_index_dir / "mapping.json"
-        with open(mapping_path, "w") as f:
+        with mapping_path.open("w") as f:
             json.dump(sample_mapping_data, f)
-        
+
         # Create embeddings with 3 entries (mismatch)
         embeddings_path = mock_index_dir / "embeddings.npy"
         embeddings = np.random.randn(3, 768).astype(np.float32)
         np.save(embeddings_path, embeddings)
-        
+
         with pytest.raises(SystemExit) as exc_info:
             verify_index_alignment(str(mock_index_dir.parent))
-        
+
         assert exc_info.value.code == 2
-    
+
     def test_verify_with_missing_required_field_exits(self, mock_index_dir, sample_embeddings):
         """Test that verify_index_alignment exits when required field missing."""
         # Create mapping with missing field
@@ -198,20 +196,20 @@ class TestVerifyIndexAlignment:
                 # Missing other required fields
             }
         ]
-        
+
         mapping_path = mock_index_dir / "mapping.json"
-        with open(mapping_path, "w") as f:
+        with mapping_path.open("w") as f:
             json.dump(incomplete_mapping, f)
-        
+
         embeddings_path = mock_index_dir / "embeddings.npy"
         embeddings = sample_embeddings[:1]  # Match count
         np.save(embeddings_path, embeddings)
-        
+
         with pytest.raises(SystemExit) as exc_info:
             verify_index_alignment(str(mock_index_dir.parent))
-        
+
         assert exc_info.value.code == 2
-    
+
     def test_verify_with_duplicate_ids_exits(self, mock_index_dir, sample_embeddings):
         """Test that verify_index_alignment exits when duplicate IDs found."""
         # Create mapping with duplicate IDs
@@ -235,19 +233,19 @@ class TestVerifyIndexAlignment:
                 "modified_time": "2024-01-01T12:00:00Z"
             }
         ]
-        
+
         mapping_path = mock_index_dir / "mapping.json"
-        with open(mapping_path, "w") as f:
+        with mapping_path.open("w") as f:
             json.dump(duplicate_mapping, f)
-        
+
         embeddings_path = mock_index_dir / "embeddings.npy"
         np.save(embeddings_path, sample_embeddings)
-        
+
         with pytest.raises(SystemExit) as exc_info:
             verify_index_alignment(str(mock_index_dir.parent))
-        
+
         assert exc_info.value.code == 2
-    
+
     def test_verify_with_invalid_doctype_exits(self, mock_index_dir, sample_embeddings):
         """Test that verify_index_alignment exits with invalid doc_type."""
         invalid_mapping = [
@@ -261,18 +259,18 @@ class TestVerifyIndexAlignment:
                 "modified_time": "2024-01-01T12:00:00Z"
             }
         ]
-        
+
         mapping_path = mock_index_dir / "mapping.json"
-        with open(mapping_path, "w") as f:
+        with mapping_path.open("w") as f:
             json.dump(invalid_mapping, f)
-        
+
         embeddings_path = mock_index_dir / "embeddings.npy"
         embeddings = sample_embeddings[:1]
         np.save(embeddings_path, embeddings)
-        
+
         with pytest.raises(SystemExit) as exc_info:
             verify_index_alignment(str(mock_index_dir.parent))
-        
+
         assert exc_info.value.code == 2
 
 
@@ -282,55 +280,55 @@ class TestVerifyIndexAlignment:
 
 class TestCheckIndexConsistency:
     """Tests for check_index_consistency function."""
-    
+
     def test_check_with_missing_index_returns_error(self, temp_dir):
         """Test that check_index_consistency reports missing index."""
         result = check_index_consistency(temp_dir)
-        
+
         assert "errors" in result
         assert len(result["errors"]) > 0
         assert result["checks"]["index_exists"] is False
-    
+
     def test_check_with_valid_index_returns_healthy(self, mock_index_files):
         """Test that check_index_consistency reports healthy for valid index."""
         result = check_index_consistency(mock_index_files["index_dir"].parent)
-        
+
         assert result["status"] == "HEALTHY"
         assert result["checks"]["index_exists"] is True
         assert result["checks"]["mapping_exists"] is True
         assert result["checks"]["embeddings_exists"] is True
         assert result["checks"]["counts_aligned"] is True
-    
+
     def test_check_with_missing_mapping_returns_errors(self, mock_index_dir):
         """Test that check_index_consistency detects missing mapping."""
         # Create only embeddings, no mapping
         embeddings_path = mock_index_dir / "embeddings.npy"
         np.save(embeddings_path, np.random.randn(5, 768).astype(np.float32))
-        
+
         result = check_index_consistency(mock_index_dir.parent)
-        
+
         assert result["checks"]["mapping_exists"] is False
         assert "mapping.json not found" in result["errors"]
-    
+
     def test_check_with_mismatched_counts_returns_critical(
         self, mock_index_dir, sample_mapping_data
     ):
         """Test that check_index_consistency detects count mismatch."""
         # Create mapping with 2 entries
         mapping_path = mock_index_dir / "mapping.json"
-        with open(mapping_path, "w") as f:
+        with mapping_path.open("w") as f:
             json.dump(sample_mapping_data, f)
-        
+
         # Create embeddings with 5 entries (mismatch)
         embeddings_path = mock_index_dir / "embeddings.npy"
         np.save(embeddings_path, np.random.randn(5, 768).astype(np.float32))
-        
+
         result = check_index_consistency(mock_index_dir.parent)
-        
+
         assert result["status"] == "CRITICAL"
         assert result["checks"]["counts_aligned"] is False
         assert any("mismatch" in err.lower() for err in result["errors"])
-    
+
     def test_check_with_duplicate_ids_returns_error(
         self, mock_index_dir, sample_embeddings
     ):
@@ -341,50 +339,50 @@ class TestCheckIndexConsistency:
             {"id": "dup", "path": "/b", "conv_id": "c2", "doc_type": "conversation",
              "subject": "S2", "snippet": "Sn2", "modified_time": "2024-01-01T12:00:00Z"}
         ]
-        
+
         mapping_path = mock_index_dir / "mapping.json"
-        with open(mapping_path, "w") as f:
+        with mapping_path.open("w") as f:
             json.dump(duplicate_mapping, f)
-        
+
         embeddings_path = mock_index_dir / "embeddings.npy"
         np.save(embeddings_path, sample_embeddings)
-        
+
         result = check_index_consistency(mock_index_dir.parent)
-        
+
         assert result["checks"]["ids_unique"] is False
         assert any("duplicate" in err.lower() for err in result["errors"])
-    
+
     def test_check_includes_timestamp(self, mock_index_files):
         """Test that check_index_consistency includes timestamp."""
         result = check_index_consistency(mock_index_files["index_dir"].parent)
-        
+
         assert "timestamp" in result
         # Should be parseable as datetime
         datetime.fromisoformat(result["timestamp"])
-    
+
     def test_check_includes_recommendations_for_errors(self, mock_index_dir):
         """Test that check_index_consistency provides recommendations."""
         # Create scenario with missing files
         result = check_index_consistency(mock_index_dir.parent)
-        
+
         assert "recommendations" in result
         if result["errors"]:
             assert len(result["recommendations"]) > 0
-    
+
     def test_check_validates_meta_dimensions(self, mock_index_files):
         """Test that check_index_consistency validates meta.json dimensions."""
         # Modify meta.json to have wrong dimensions
         meta_path = mock_index_files["meta"]
-        with open(meta_path, "r") as f:
+        with meta_path.open() as f:
             meta = json.load(f)
-        
+
         meta["actual_dimensions"] = 512  # Wrong dimension
-        
-        with open(meta_path, "w") as f:
+
+        with meta_path.open("w") as f:
             json.dump(meta, f)
-        
+
         result = check_index_consistency(mock_index_files["index_dir"].parent)
-        
+
         assert result["checks"]["meta_dimensions_match"] is False
         assert any("dimension" in warn.lower() for warn in result.get("warnings", []))
 
@@ -395,35 +393,35 @@ class TestCheckIndexConsistency:
 
 class TestFieldValidation:
     """Tests for field validation constants and logic."""
-    
+
     def test_required_fields_constant_is_complete(self):
         """Test that REQUIRED_FIELDS contains all necessary fields."""
         expected_fields = [
             "id", "path", "conv_id", "doc_type",
             "subject", "snippet", "modified_time"
         ]
-        
+
         assert all(field in REQUIRED_FIELDS for field in expected_fields)
-    
+
     def test_valid_doctypes_constant_is_correct(self):
         """Test that VALID_DOCTYPES contains expected values."""
         assert "conversation" in VALID_DOCTYPES
         assert "attachment" in VALID_DOCTYPES
         assert len(VALID_DOCTYPES) == 2
-    
+
     def test_mapping_entry_with_all_fields_is_valid(self, sample_mapping_data):
         """Test that sample mapping data has all required fields."""
         for entry in sample_mapping_data:
             for field in REQUIRED_FIELDS:
                 assert field in entry, f"Missing field: {field}"
-    
+
     def test_mapping_entry_doctype_validation(self):
         """Test doc_type validation logic."""
         valid_types = ["conversation", "attachment"]
-        
+
         for doc_type in valid_types:
             assert doc_type in VALID_DOCTYPES
-        
+
         invalid_types = ["email", "document", "message"]
         for doc_type in invalid_types:
             assert doc_type not in VALID_DOCTYPES
@@ -435,37 +433,37 @@ class TestFieldValidation:
 
 class TestDiagnosticsEdgeCases:
     """Edge case tests for diagnostics functions."""
-    
+
     def test_check_with_empty_mapping_returns_healthy(self, mock_index_dir):
         """Test that check_index_consistency handles empty mapping."""
         # Create empty mapping and embeddings
         mapping_path = mock_index_dir / "mapping.json"
-        with open(mapping_path, "w") as f:
+        with mapping_path.open("w") as f:
             json.dump([], f)
-        
+
         embeddings_path = mock_index_dir / "embeddings.npy"
         np.save(embeddings_path, np.zeros((0, 768), dtype=np.float32))
-        
+
         result = check_index_consistency(mock_index_dir.parent)
-        
+
         assert result["checks"]["mapping_valid"] is True
         assert result["checks"]["mapping_count"] == 0
         assert result["checks"]["counts_aligned"] is True
-    
+
     def test_check_with_corrupted_json_returns_error(self, mock_index_dir):
         """Test that check_index_consistency handles corrupted JSON."""
         # Create corrupted mapping file
         mapping_path = mock_index_dir / "mapping.json"
         mapping_path.write_text("{ invalid json }")
-        
+
         embeddings_path = mock_index_dir / "embeddings.npy"
         np.save(embeddings_path, np.random.randn(5, 768).astype(np.float32))
-        
+
         result = check_index_consistency(mock_index_dir.parent)
-        
+
         assert result["checks"]["mapping_valid"] is False
         assert any("failed to load mapping" in err.lower() for err in result["errors"])
-    
+
     def test_verify_with_non_string_snippet_exits(self, mock_index_dir, sample_embeddings):
         """Test that verify_index_alignment catches non-string snippet."""
         invalid_mapping = [
@@ -479,16 +477,16 @@ class TestDiagnosticsEdgeCases:
                 "modified_time": "2024-01-01T12:00:00Z"
             }
         ]
-        
+
         mapping_path = mock_index_dir / "mapping.json"
-        with open(mapping_path, "w") as f:
+        with mapping_path.open("w") as f:
             json.dump(invalid_mapping, f)
-        
+
         embeddings_path = mock_index_dir / "embeddings.npy"
         embeddings = sample_embeddings[:1]
         np.save(embeddings_path, embeddings)
-        
+
         with pytest.raises(SystemExit) as exc_info:
             verify_index_alignment(str(mock_index_dir.parent))
-        
+
         assert exc_info.value.code == 2

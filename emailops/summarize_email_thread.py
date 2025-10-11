@@ -10,7 +10,7 @@ import random
 import re
 import tempfile
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -533,7 +533,7 @@ def analyze_email_thread_with_ledger(
     # Sanitize defensively (callers outside CLI may pass raw text)
     cleaned_thread = clean_email_text(thread_text or "")
     if not cleaned_thread.strip():
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         return {
             "category": catalog[-1],
             "subject": "Email thread",
@@ -949,7 +949,7 @@ Generate an improved analysis that addresses all feedback while maintaining the 
 
     # Attach metadata (stable; helpful for auditability)
     final_analysis["_metadata"] = {
-        "analyzed_at": datetime.now(timezone.utc).isoformat(),
+        "analyzed_at": datetime.now(UTC).isoformat(),
         "provider": provider,
         "completeness_score": _score_int,
         "version": ANALYZER_VERSION,
@@ -995,6 +995,117 @@ def analyze_conversation_dir(
     data = _normalize_analysis(data, (catalog or DEFAULT_CATALOG))
 
     return data
+
+
+def format_analysis_as_markdown(analysis: dict[str, Any]) -> str:
+    """
+    Format an email thread analysis as Markdown text.
+    
+    Args:
+        analysis: Analysis dictionary from analyze_email_thread_with_ledger()
+        
+    Returns:
+        Formatted markdown string
+    """
+    md_parts: list[str] = []
+    
+    # Header
+    md_parts.append("# Email Thread Analysis\n\n")
+    
+    # Summary section
+    md_parts.append("## Summary\n\n")
+    md_parts.append(f"**Category**: {analysis.get('category', 'unknown')}  \n")
+    md_parts.append(f"**Subject**: {analysis.get('subject', 'No subject')}\n\n")
+    
+    # Overview
+    md_parts.append("### Overview\n\n")
+    for point in analysis.get("summary", []):
+        md_parts.append(f"- {_md_escape(point)}\n")
+    
+    # Participants
+    md_parts.append("\n## Participants\n\n")
+    for p in analysis.get("participants", []):
+        if isinstance(p, dict):
+            md_parts.append(
+                f"- **{_md_escape(p.get('name', ''))}** ({_md_escape(p.get('role', ''))})\n"
+                f"  - Email: {_md_escape(p.get('email', ''))}\n"
+                f"  - Tone: {_md_escape(p.get('tone', ''))}\n"
+                f"  - Stance: {_md_escape(p.get('stance', ''))}\n"
+            )
+    
+    # Facts Ledger
+    md_parts.append("\n## Facts Ledger\n\n")
+    
+    # Explicit Requests
+    md_parts.append("### Explicit Requests\n\n")
+    for ask in analysis.get("facts_ledger", {}).get("explicit_asks", []):
+        if isinstance(ask, dict):
+            md_parts.append(
+                f"- **From**: {_md_escape(ask.get('from', ''))}\n"
+                f"  - **Request**: {_md_escape(ask.get('request', ''))}\n"
+                f"  - **Urgency**: {_md_escape(ask.get('urgency', ''))}\n"
+                f"  - **Status**: {_md_escape(ask.get('status', ''))}\n\n"
+            )
+    
+    # Commitments Made
+    md_parts.append("### Commitments Made\n\n")
+    for commit in analysis.get("facts_ledger", {}).get("commitments_made", []):
+        if isinstance(commit, dict):
+            md_parts.append(
+                f"- **By**: {_md_escape(commit.get('by', ''))}\n"
+                f"  - **Commitment**: {_md_escape(commit.get('commitment', ''))}\n"
+                f"  - **Deadline**: {_md_escape(commit.get('deadline', ''))}\n"
+                f"  - **Feasibility**: {_md_escape(commit.get('feasibility', ''))}\n\n"
+            )
+    
+    # Unknown Information
+    md_parts.append("### Unknown Information\n\n")
+    for unknown in analysis.get("facts_ledger", {}).get("unknowns", []):
+        md_parts.append(f"- {_md_escape(unknown)}\n")
+    
+    # Forbidden Promises
+    md_parts.append("\n### Forbidden Promises\n\n")
+    for forbidden in analysis.get("facts_ledger", {}).get("forbidden_promises", []):
+        md_parts.append(f"- ⚠️ {_md_escape(forbidden)}\n")
+    
+    # Key Dates
+    md_parts.append("\n### Key Dates\n\n")
+    for kd in analysis.get("facts_ledger", {}).get("key_dates", []):
+        if isinstance(kd, dict):
+            md_parts.append(
+                f"- **{_md_escape(kd.get('date', ''))}**: {_md_escape(kd.get('event', ''))} "
+                f"({_md_escape(kd.get('importance', ''))})\n"
+            )
+    
+    # Next Actions
+    md_parts.append("\n## Next Actions\n\n")
+    for action in analysis.get("next_actions", []):
+        if isinstance(action, dict):
+            md_parts.append(
+                f"- **{_md_escape(action.get('owner', ''))}**: {_md_escape(action.get('action', ''))}\n"
+                f"  - Priority: {_md_escape(action.get('priority', ''))}\n"
+                f"  - Status: {_md_escape(action.get('status', ''))}\n"
+            )
+            if action.get('due'):
+                md_parts.append(f"  - Due: {_md_escape(action.get('due', ''))}\n")
+            md_parts.append("\n")
+    
+    # Risk Indicators
+    md_parts.append("## Risk Indicators\n\n")
+    for risk in analysis.get("risk_indicators", []):
+        md_parts.append(f"- 🚨 {_md_escape(risk)}\n")
+    
+    # Metadata
+    if "_metadata" in analysis:
+        meta = analysis["_metadata"]
+        md_parts.append("\n---\n\n")
+        md_parts.append("## Metadata\n\n")
+        md_parts.append(f"- **Analyzed at**: {meta.get('analyzed_at', 'N/A')}\n")
+        md_parts.append(f"- **Provider**: {meta.get('provider', 'N/A')}\n")
+        md_parts.append(f"- **Completeness score**: {meta.get('completeness_score', 0)}%\n")
+        md_parts.append(f"- **Version**: {meta.get('version', 'N/A')}\n")
+    
+    return "".join(md_parts)
 
 
 # =============================================================================

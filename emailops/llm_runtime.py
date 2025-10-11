@@ -2,6 +2,7 @@
 # emailops/llm_runtime.py
 from __future__ import annotations
 
+import contextlib
 import json
 import logging
 import os
@@ -34,7 +35,7 @@ logger = logging.getLogger(__name__)
 # --------------------------------------------------------------------------------------
 # Accounts / validation (from env_utils, consolidated)
 # --------------------------------------------------------------------------------------
-_validated_accounts: list[dict[str, Any]] | None = None
+_validated_accounts: list[VertexAccount] | None = None
 _vertex_initialized = False
 
 
@@ -331,7 +332,7 @@ def _rotate_to_next_project() -> str:
         conf = _PROJECT_ROTATION["projects"][_PROJECT_ROTATION["current_index"]]
 
         creds_path = conf["credentials_path"]
-        if not os.path.isabs(creds_path):
+        if not Path(creds_path).is_absolute():
             creds_path = str(Path(__file__).resolve().parent.parent / creds_path)
 
         os.environ["GCP_PROJECT"] = conf["project_id"]
@@ -416,6 +417,8 @@ def _vertex_model(system_instruction: str | None = None):
 
 
 def _normalize_model_alias(name: str | None) -> str | None:
+    if name is None:
+        return None
     return {"gemini-embedded-001": "gemini-embedding-001"}.get(name, name)
 
 
@@ -439,9 +442,9 @@ def complete_text(
         try:
             _init_vertex()
             model = _vertex_model(system_instruction=system)
-            cfg: dict[str, Any] = dict(
-                max_output_tokens=max_output_tokens, temperature=temperature
-            )
+            cfg: dict[str, Any] = {
+                "max_output_tokens": max_output_tokens, "temperature": temperature
+            }
             if stop_sequences:
                 cfg["stop_sequences"] = stop_sequences
             resp = model.generate_content(user, generation_config=cfg)
@@ -489,11 +492,11 @@ def complete_json(
             from vertexai.generative_models import GenerationConfig
 
             model = _vertex_model(system_instruction=system)
-            cfg: dict[str, Any] = dict(
-                max_output_tokens=max_output_tokens,
-                temperature=temperature,
-                response_mime_type="application/json",
-            )
+            cfg: dict[str, Any] = {
+                "max_output_tokens": max_output_tokens,
+                "temperature": temperature,
+                "response_mime_type": "application/json",
+            }
             if response_schema:
                 cfg["response_schema"] = response_schema
             if stop_sequences:
@@ -523,7 +526,7 @@ def complete_json(
 
 
 # --------------------------------------------------------------------------------------
-# Embeddings (Vertex/OpenAI/Azure/Cohere/HF/Qwen/local) – merged from llm_client
+# Embeddings (Vertex/OpenAI/Azure/Cohere/HF/Qwen/local) - merged from llm_client
 # --------------------------------------------------------------------------------------
 def _normalize(vectors: list[list[float]]) -> np.ndarray:
     if not vectors:
@@ -547,24 +550,42 @@ def embed_texts(
     if not texts:
         return np.zeros((0, 0), dtype="float32")
 
+    # Run provider-specific embedding, then apply final sanity checks before returning.
     if provider == "vertex":
-        return _embed_vertex(texts, model=model)
+        arr = _embed_vertex(texts, model=model)
     elif provider == "openai":
-        return _embed_openai(texts, model=model)
+        arr = _embed_openai(texts, model=model)
     elif provider == "azure":
-        return _embed_azure_openai(texts, model=model)
+        arr = _embed_azure_openai(texts, model=model)
     elif provider == "cohere":
-        return _embed_cohere(texts, model=model)
+        arr = _embed_cohere(texts, model=model)
     elif provider == "huggingface":
-        return _embed_huggingface(texts, model=model)
+        arr = _embed_huggingface(texts, model=model)
     elif provider == "qwen":
-        return _embed_qwen(texts, model=model)
+        arr = _embed_qwen(texts, model=model)
     else:
-        return _embed_local(texts, model=model)
+        arr = _embed_local(texts, model=model)
+
+    # -------- Final sanity checks (post-normalization) --------
+    arr = np.asarray(arr, dtype="float32")
+    if arr.ndim != 2:
+        raise LLMError(f"Embedding array must be 2-D; got shape {arr.shape}")
+    if arr.shape[0] != len(texts):
+        raise LLMError(
+            f"Embedding row count mismatch: got {arr.shape[0]}, expected {len(texts)}"
+        )
+    if not np.isfinite(arr).all():
+        raise LLMError("Non-finite values found in embeddings")
+    # Norms should not all be ~0 after normalization; catch broken providers.
+    with np.errstate(invalid="ignore"):
+        row_norms = np.linalg.norm(arr, axis=1)
+    if row_norms.size and float(np.max(row_norms)) < 1e-3:
+        raise LLMError("Embeddings appear degenerate (near-zero norms); aborting")
+    return arr
 
 
 def _embed_vertex(texts: list[str], model: str | None = None) -> np.ndarray:
-    """Vertex embeddings with rotation on quota exhaustion (google‑genai path + legacy fallback)."""
+    """Vertex embeddings with rotation on quota exhaustion (google-genai path + legacy fallback)."""
     _init_vertex()
     _ensure_projects_loaded()
 
@@ -577,7 +598,7 @@ def _embed_vertex(texts: list[str], model: str | None = None) -> np.ndarray:
             from google import genai
             from google.genai.types import EmbedContentConfig
         except Exception as e:
-            raise LLMError(f"google-genai not installed: {e}")
+            raise LLMError(f"google-genai not installed: {e}") from e
 
         out_dim = os.getenv("VERTEX_EMBED_DIM")
         cfg = (
@@ -594,23 +615,31 @@ def _embed_vertex(texts: list[str], model: str | None = None) -> np.ndarray:
                 project = os.getenv("GCP_PROJECT") or os.getenv("GOOGLE_CLOUD_PROJECT")
                 try:
                     location = os.getenv("GCP_REGION", "global")
+                    from typing import cast
                     client = genai.Client(
                         vertexai=True, project=project, location=location
                     )
                     resp = client.models.embed_content(
-                        model=embed_name, contents=chunk, config=cfg
+                        model=embed_name, contents=cast(Any, chunk), config=cfg
                     )
-                    if (
-                        resp
-                        and getattr(resp, "embeddings", None)
-                        and len(resp.embeddings) == len(chunk)
-                    ):
+                    if resp and resp.embeddings and len(resp.embeddings) == len(chunk):
+                        # Treat any missing values as a failed batch (no silent zeros).
+                        batch_vals: list[list[float]] = []
+                        missing_values = False
                         for emb in resp.embeddings:
-                            vectors.append(
-                                emb.values
-                                if getattr(emb, "values", None)
-                                else [0.0] * dim
+                            if getattr(emb, "values", None) is None:
+                                missing_values = True
+                                break
+                            batch_vals.append(emb.values)  # type: ignore[arg-type]
+                        if missing_values:
+                            logger.warning(
+                                "Empty embedding values returned by %s; rotating project",
+                                project,
                             )
+                            _rotate_to_next_project()
+                            _init_vertex()
+                            continue
+                        vectors.extend(batch_vals)
                         embedded = True
                         _PROJECT_ROTATION["consecutive_errors"] = 0
                         break
@@ -628,11 +657,11 @@ def _embed_vertex(texts: list[str], model: str | None = None) -> np.ndarray:
                     logger.exception("Vertex (gemini) embedding failed: %s", e)
                     break
             if not embedded:
-                logger.error(
-                    "All embedding attempts failed for batch starting at %d; zero vectors",
-                    i,
+                # Exhausted rotations (if any). Do not substitute zero vectors.
+                raise LLMError(
+                    f"Vertex (gemini) embedding failed for batch starting at index {i}; "
+                    "exhausted rotation attempts."
                 )
-                vectors.extend([[0.0] * dim] * len(chunk))
         return _normalize(vectors)
 
     # Path 2: legacy vertexai TextEmbeddingModel
@@ -660,8 +689,16 @@ def _embed_vertex(texts: list[str], model: str | None = None) -> np.ndarray:
                 embs = model_obj.get_embeddings(
                     cast(list[str | TextEmbeddingInput], inputs)
                 )
+                # Fail the batch if any embedding is missing instead of returning zeros.
+                batch_vals: list[list[float]] = []
                 for e in embs:
-                    vectors.append(e.values)
+                    vals = getattr(e, "values", None)
+                    if vals is None:
+                        raise RuntimeError(
+                            "Vertex (legacy) returned empty embedding values"
+                        )
+                    batch_vals.append(vals)
+                vectors.extend(batch_vals)
                 success = True
                 break
             except Exception as e:
@@ -674,16 +711,19 @@ def _embed_vertex(texts: list[str], model: str | None = None) -> np.ndarray:
                 )
                 break
         if not success:
-            dim = int(os.getenv("EMBED_DIM", "768"))
-            vectors.extend([[0.0] * dim for _ in chunk])
+            # Exhausted rotations (if any). Do not substitute zero vectors.
+            raise LLMError(
+                f"Vertex (legacy) embedding failed for batch {i}:{i + B}; "
+                "exhausted rotation attempts."
+            )
     return _normalize(vectors)
 
 
 def _embed_openai(texts: list[str], model: str | None = None) -> np.ndarray:
     try:
         from openai import OpenAI
-    except ImportError:
-        raise LLMError("Install openai: pip install openai")
+    except ImportError as e:
+        raise LLMError("Install openai: pip install openai") from e
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise LLMError("Set OPENAI_API_KEY")
@@ -699,15 +739,15 @@ def _embed_openai(texts: list[str], model: str | None = None) -> np.ndarray:
                 vectors.append(item.embedding)
         except Exception as e:
             logger.exception("OpenAI embedding failed: %s", e)
-            raise LLMError(f"OpenAI embedding failed: {e}")
+            raise LLMError(f"OpenAI embedding failed: {e}") from e
     return _normalize(vectors)
 
 
 def _embed_azure_openai(texts: list[str], model: str | None = None) -> np.ndarray:
     try:
         from openai import AzureOpenAI
-    except ImportError:
-        raise LLMError("Install openai: pip install openai")
+    except ImportError as e:
+        raise LLMError("Install openai: pip install openai") from e
     api_key = os.getenv("AZURE_OPENAI_API_KEY")
     endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
     deployment = model or os.getenv("AZURE_OPENAI_DEPLOYMENT")
@@ -730,15 +770,15 @@ def _embed_azure_openai(texts: list[str], model: str | None = None) -> np.ndarra
                 vectors.append(item.embedding)
         except Exception as e:
             logger.exception("Azure OpenAI embedding failed: %s", e)
-            raise LLMError(f"Azure OpenAI embedding failed: {e}")
+            raise LLMError(f"Azure OpenAI embedding failed: {e}") from e
     return _normalize(vectors)
 
 
 def _embed_cohere(texts: list[str], model: str | None = None) -> np.ndarray:
     try:
         import cohere
-    except ImportError:
-        raise LLMError("Install cohere: pip install cohere")
+    except ImportError as e:
+        raise LLMError("Install cohere: pip install cohere") from e
     api_key = os.getenv("COHERE_API_KEY")
     if not api_key:
         raise LLMError("Set COHERE_API_KEY")
@@ -755,15 +795,15 @@ def _embed_cohere(texts: list[str], model: str | None = None) -> np.ndarray:
                 vectors.extend(resp.embeddings)
         except Exception as e:
             logger.exception("Cohere embedding failed: %s", e)
-            raise LLMError(f"Cohere embedding failed: {e}")
+            raise LLMError(f"Cohere embedding failed: {e}") from e
     return _normalize(vectors)
 
 
 def _embed_huggingface(texts: list[str], model: str | None = None) -> np.ndarray:
     try:
         from huggingface_hub import InferenceClient
-    except ImportError:
-        raise LLMError("Install huggingface_hub: pip install huggingface_hub")
+    except ImportError as e:
+        raise LLMError("Install huggingface_hub: pip install huggingface_hub") from e
     api_key = os.getenv("HF_API_KEY") or os.getenv("HUGGINGFACE_API_KEY")
     if not api_key:
         raise LLMError("Set HF_API_KEY or HUGGINGFACE_API_KEY")
@@ -776,7 +816,7 @@ def _embed_huggingface(texts: list[str], model: str | None = None) -> np.ndarray
             vectors.append(emb if isinstance(emb, list) else emb.tolist())
         except Exception as e:
             logger.exception("HuggingFace embedding failed: %s", e)
-            raise LLMError(f"HuggingFace embedding failed: {e}")
+            raise LLMError(f"HuggingFace embedding failed: {e}") from e
     return _normalize(vectors)
 
 
@@ -788,7 +828,7 @@ def _embed_qwen(texts: list[str], model: str | None = None) -> np.ndarray:
     model_name = model or os.getenv("QWEN_EMBED_MODEL", "Qwen/Qwen3-Embedding-8B")
     if not all([api_key, base_url]):
         raise LLMError("Set QWEN_API_KEY and QWEN_BASE_URL")
-    endpoint = base_url.rstrip("/") + "/v1/embeddings"
+    endpoint = (base_url.rstrip("/") if base_url else "") + "/v1/embeddings"
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
     B = int(os.getenv("QWEN_EMBED_BATCH", os.getenv("EMBED_BATCH", "50")))
     vectors: list[list[float]] = []
@@ -832,9 +872,6 @@ def _embed_local(texts: list[str], model: str | None = None) -> np.ndarray:
 # --------------------------------------------------------------------------------------
 # (Optional) Convenience re-exports from utils so callers can import from one place
 # --------------------------------------------------------------------------------------
-try:
+with contextlib.suppress(Exception):
     # These are used widely by indexer/search/summarizer; re-export for a single surface.
-    pass
-except Exception:
-    # If utils isn't accessible for some reason, the runtime remains functional for LLM ops.
     pass

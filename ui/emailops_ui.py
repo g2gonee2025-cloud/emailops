@@ -105,7 +105,7 @@ st.markdown(
         margin: 5px 0;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
-    
+
     /* Make metric labels more visible */
     [data-testid="metric-container"] {
         background-color: #ffffff;
@@ -114,24 +114,24 @@ st.markdown(
         border-radius: 8px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
-    
+
     [data-testid="metric-container"] > div:first-child {
         color: #666666;
         font-weight: 500;
         font-size: 0.9rem;
     }
-    
+
     [data-testid="metric-container"] > div:nth-child(2) {
         color: #1a1a1a;
         font-weight: 600;
         font-size: 1.5rem;
     }
-    
+
     [data-testid="metric-container"] > div:last-child {
         color: #0ea5e9;
         font-weight: 500;
     }
-    
+
     /* Success/Warning/Error boxes with better visibility */
     .success-box {
         background-color: #f0fdf4;
@@ -142,7 +142,7 @@ st.markdown(
         margin: 10px 0;
         color: #14532d;
     }
-    
+
     .warning-box {
         background-color: #fffbeb;
         border: 1px solid #fde68a;
@@ -152,7 +152,7 @@ st.markdown(
         margin: 10px 0;
         color: #451a03;
     }
-    
+
     .error-box {
         background-color: #fef2f2;
         border: 1px solid #fecaca;
@@ -162,84 +162,84 @@ st.markdown(
         margin: 10px 0;
         color: #450a0a;
     }
-    
+
     /* Improve text area readability */
     .stTextArea textarea {
         background-color: #ffffff !important;
         color: #1a1a1a !important;
         border: 1px solid #d4d4d4 !important;
     }
-    
+
     .stTextArea textarea:focus {
         border-color: #0ea5e9 !important;
         box-shadow: 0 0 0 1px #0ea5e9 !important;
     }
-    
+
     /* Better code block visibility */
     .stCodeBlock {
         background-color: #f8f9fa !important;
         border: 1px solid #dee2e6 !important;
     }
-    
+
     /* Improve selectbox and input visibility */
     .stSelectbox > div > div {
         background-color: #ffffff !important;
     }
-    
+
     .stTextInput > div > div > input {
         background-color: #ffffff !important;
         color: #1a1a1a !important;
     }
-    
+
     /* Better visibility for expanders */
     .streamlit-expanderHeader {
         background-color: #f8f9fa;
         border-radius: 5px;
         color: #1a1a1a;
     }
-    
+
     .streamlit-expanderHeader:hover {
         background-color: #e9ecef;
     }
-    
+
     /* Improve dataframe visibility */
     .dataframe {
         background-color: #ffffff !important;
     }
-    
+
     .dataframe thead tr th {
         background-color: #f8f9fa !important;
         color: #1a1a1a !important;
         font-weight: 600 !important;
     }
-    
+
     .dataframe tbody tr:nth-child(even) {
         background-color: #f8f9fa !important;
     }
-    
+
     .dataframe tbody tr:hover {
         background-color: #e9ecef !important;
     }
-    
+
     /* Better tab styling */
     .stTabs [data-baseweb="tab-list"] {
         background-color: #f8f9fa;
         border-radius: 8px;
         padding: 4px;
     }
-    
+
     .stTabs [data-baseweb="tab"] {
         background-color: transparent;
         color: #666666;
     }
-    
+
     .stTabs [aria-selected="true"] {
         background-color: #ffffff !important;
         color: #1a1a1a !important;
         border-radius: 6px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
-    
+
     /* Improve button visibility */
     .stButton > button {
         background-color: #ffffff;
@@ -247,22 +247,22 @@ st.markdown(
         border: 1px solid #d4d4d4;
         font-weight: 500;
     }
-    
+
     .stButton > button:hover {
         background-color: #f8f9fa;
         border-color: #a3a3a3;
     }
-    
+
     .stButton > button[kind="primary"] {
         background-color: #0ea5e9;
         color: #ffffff;
         border: none;
     }
-    
+
     .stButton > button[kind="primary"]:hover {
         background-color: #0284c7;
     }
-    
+
     /* Info box styling */
     .stInfo {
         background-color: #eff6ff !important;
@@ -270,7 +270,7 @@ st.markdown(
         border: 1px solid #93c5fd !important;
         border-left: 4px solid #3b82f6 !important;
     }
-    
+
     /* Success message styling */
     .stSuccess {
         background-color: #f0fdf4 !important;
@@ -278,7 +278,7 @@ st.markdown(
         border: 1px solid #86efac !important;
         border-left: 4px solid #22c55e !important;
     }
-    
+
     /* Warning message styling */
     .stWarning {
         background-color: #fffbeb !important;
@@ -286,7 +286,7 @@ st.markdown(
         border: 1px solid #fde68a !important;
         border-left: 4px solid #f59e0b !important;
     }
-    
+
     /* Error message styling */
     .stError {
         background-color: #fef2f2 !important;
@@ -451,52 +451,49 @@ def _run_command(
     # Import validators
     try:
         from emailops.validators import (
+            quote_shell_arg,
             validate_command_args,
             validate_directory_path,
-            quote_shell_arg,
         )
     except ImportError:
         st.error("Security module not available. Cannot execute commands.")
         logger.error("Failed to import emailops.validators")
         return 1
-    
+
     with st.status(title, expanded=True) as status:
         # Validate command is not empty
         if not cmd or not cmd[0]:
             st.error("Invalid command: empty command provided")
             logger.error("Attempted to run empty command")
             return 1
-        
+
         # Security: Validate command and arguments
         # Whitelist of allowed commands for EmailOps
         allowed_commands = [
             "python", "python3", "py",  # Python interpreters
             sys.executable,  # Current Python executable
         ]
-        
+
         command = cmd[0]
         args = cmd[1:] if len(cmd) > 1 else []
-        
+
         # Check if using python with -m flag (module execution)
         is_valid_cmd = False
-        if command in allowed_commands:
+        if command in allowed_commands or (os.path.isabs(command) and Path(command).resolve() == Path(sys.executable).resolve()):
             is_valid_cmd = True
-        # Also allow full path to current python executable
-        elif os.path.isabs(command) and Path(command).resolve() == Path(sys.executable).resolve():
-            is_valid_cmd = True
-        
+
         if not is_valid_cmd:
             st.error(f"❌ Security: Command '{command}' not in allowed list")
             logger.error("Blocked execution of non-whitelisted command: %s", command)
             return 1
-        
+
         # Validate arguments for injection attempts
         is_valid, msg = validate_command_args(command, args, allowed_commands)
         if not is_valid:
             st.error(f"❌ Security: {msg}")
             logger.error("Command validation failed: %s", msg)
             return 1
-        
+
         # Validate working directory if provided
         if workdir:
             is_valid, msg = validate_directory_path(workdir, must_exist=True)
@@ -504,7 +501,7 @@ def _run_command(
                 st.error(f"❌ Invalid working directory: {msg}")
                 logger.error("Working directory validation failed: %s", msg)
                 return 1
-        
+
         # Display sanitized command
         safe_cmd_display = " ".join(quote_shell_arg(c) for c in cmd)
         st.code(safe_cmd_display, language="bash")
@@ -1233,10 +1230,7 @@ with tabs[3]:
                     if conv_folders:
                         selected_folder = st.selectbox(
                             "Select conversation folder:",
-                            [""]
-                            + sorted(conv_folders)[
-                                :100
-                            ],  # Limit to 100 for performance
+                            ["", *sorted(conv_folders)[:100]],  # Limit to 100 for performance
                             help="Select a specific conversation to search within",
                         )
                         if selected_folder:
@@ -1549,7 +1543,7 @@ with tabs[3]:
                                     # Determine conv_id if filter identifies single conversation
                                     conv_id_for_turn = None
                                     if conv_id_filter and len(conv_id_filter) == 1:
-                                        conv_id_for_turn = list(conv_id_filter)[0]
+                                        conv_id_for_turn = next(iter(conv_id_filter))
 
                                     chat_session.add_message(
                                         "user", query, conv_id=conv_id_for_turn
@@ -1674,7 +1668,7 @@ with tabs[3]:
                             if chat_session:
                                 conv_id_for_turn = None
                                 if conv_id_filter and len(conv_id_filter) == 1:
-                                    conv_id_for_turn = list(conv_id_filter)[0]
+                                    conv_id_for_turn = next(iter(conv_id_filter))
 
                                 chat_session.add_message(
                                     "user", query, conv_id=conv_id_for_turn
@@ -2221,25 +2215,25 @@ with tabs[7]:
 
     st.markdown("""
     ## Quick Start Guide
-    
+
     ### 1. Initial Setup
     - Set the **Project Root** to your EmailOps directory
     - Set the **Export Root** to your conversation exports directory
     - Configure Google Cloud credentials if using Vertex AI
     - Click **Load/Reload Modules** to initialize
-    
+
     ### 2. Building an Index
     - Go to the **Index** tab
     - Pick the embedding provider and optional model override
     - Adjust batch size or enable the document limit for smoke tests
     - Click **Start Indexing** to build or refresh the FAISS index
-    
+
     ### 3. Searching & Drafting
     - Use the **Search & Draft** tab to query your emails
     - Adjust Top-K for more/fewer results
     - Provide sender info to generate draft responses
     - Use filters for targeted searches
-    
+
     ### 4. Thread Summarization
     - Navigate to **Summarize** tab
     - Point to a conversation directory
@@ -2248,70 +2242,70 @@ with tabs[7]:
     ### 5. Diagnostics (Optional)
     - If the System Doctor module is installed, run checks from the **Doctor** tab
     - Review recommendations before contacting support
-    
+
     ## Key Features
-    
+
     ### 🚀 Performance Optimizations
     - **Parallel Processing**: Multi-core indexing and chunking
     - **Incremental Updates**: Only index new conversations
     - **Resume Capability**: Continue from interruptions
     - **Chunked Files**: Handle large documents efficiently
-    
+
     ### 🔧 Advanced Capabilities
     - **Multi-Provider Support**: Vertex, OpenAI, Azure, Cohere, etc.
     - **Chat Mode**: Conversational search interface
     - **Attachment Handling**: Intelligent attachment selection
     - **Facts Ledger**: Track facts and their evolution
-    
+
     ### 📊 Monitoring
     - **Live Status**: Real-time indexing progress
     - **Rate Analysis**: Estimate completion times
     - **Health Checks**: System diagnostics
-    
+
     ## Troubleshooting
-    
+
     ### Common Issues
-    
+
     **Modules won't load**
     - Verify project root contains 'emailops' folder
     - Check Python environment has all dependencies
     - Run System Doctor (when available) for detailed diagnostics
-    
+
     **Indexing fails**
     - Ensure export root has conversation folders
     - Check file permissions
     - Verify API credentials are set
-    
+
     **Search returns no results**
     - Confirm index exists (check Status tab)
     - Verify provider matches index provider
     - Try broader search terms
-    
+
     **Draft generation errors**
     - Ensure Vertex AI is configured
     - Check API quotas and limits
     - Verify sender information format
-    
+
     ### Environment Variables
-    
+
     Required for Vertex AI:
     ```
     GCP_PROJECT=your-project-id
     GCP_REGION=global
     GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json
     ```
-    
+
     Optional:
     ```
     EMBED_PROVIDER=vertex|openai|azure|cohere
     INDEX_DIRNAME={config.INDEX_DIRNAME}
     CHUNK_DIRNAME={config.CHUNK_DIRNAME}
     ```
-    
+
     ## CLI Commands
-    
+
     The UI executes these underlying commands:
-    
+
     ```bash
     # Standard indexing
     python -m emailops.email_indexer --root /path/to/exports --provider vertex --batch 64
@@ -2325,9 +2319,9 @@ with tabs[7]:
     # Thread summarization
     python -m emailops.summarize_email_thread /path/to/thread
     ```
-    
+
     ## Support
-    
+
     For issues or questions:
     - Check the System Doctor tab for diagnostics
     - Review logs in the terminal output

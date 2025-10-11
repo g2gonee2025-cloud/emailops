@@ -122,7 +122,7 @@ def _runtime_exports() -> list[str]:
     return []
 
 
-def __getattr__(name: str) -> Any:  # PEP 562 – module-level getattr
+def __getattr__(name: str) -> Any:  # PEP 562 - module-level getattr
     """
     Dynamic attribute forwarding to the runtime.
 

@@ -1,6 +1,8 @@
-# emailops/env_utils.py
 from __future__ import annotations
 
+from . import llm_runtime as _rt
+
+# emailops/env_utils.py
 """
 Back-compat shim over the merged runtime module.
 
@@ -11,8 +13,6 @@ or import-time side effects here to keep behavior predictable.
 
 # Import the runtime module once and re-export the required names. This pattern
 # prevents linter "imported but unused" warnings (F401) and keeps the shim pure.
-from . import llm_runtime as _rt
-
 LLMError = _rt.LLMError
 VertexAccount = _rt.VertexAccount
 load_validated_accounts = _rt.load_validated_accounts

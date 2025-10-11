@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Verify key Python dependencies for emailops_vertex_ai project."""
 
-import sys
 import json
+import sys
 from datetime import datetime
+
 
 def check_import(module_name):
     """Check if a module can be imported."""
@@ -36,7 +37,7 @@ dependencies = [
     'google.cloud.aiplatform',
     'google.auth',
     'google.api_core',
-    
+
     # Core dependencies
     'streamlit',
     'qdrant_client',
@@ -45,7 +46,7 @@ dependencies = [
     'pydantic',
     'langchain',
     'openai',
-    
+
     # Other important packages
     'requests',
     'pytest',
@@ -72,7 +73,7 @@ module_checks = {
 }
 
 print("=" * 60)
-print(f"Python Dependencies Verification Report")
+print("Python Dependencies Verification Report")
 print(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 print(f"Python Version: {sys.version}")
 print("=" * 60)

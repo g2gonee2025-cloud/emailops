@@ -13,16 +13,16 @@ from processing.processor import (
 )
 
 __all__ = [
-    # Main classes
-    "UnifiedProcessor",
-    "IndexMonitor",
     # Data classes
     "ChunkJob",
-    "WorkerConfig",
-    "WorkerStats",
-    "ProcessingStats",
+    "IndexMonitor",
     "IndexStatus",
     "ProcessInfo",
+    "ProcessingStats",
+    # Main classes
+    "UnifiedProcessor",
+    "WorkerConfig",
+    "WorkerStats",
 ]
 
 # Module information

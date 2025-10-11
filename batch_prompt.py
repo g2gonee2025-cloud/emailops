@@ -1,7 +1,8 @@
-import google.generativeai as genai
 import asyncio
 import os
-import glob
+from pathlib import Path
+
+import google.generativeai as genai
 
 # --- 1. Configuration ---
 
@@ -12,9 +13,9 @@ import glob
 
 # --- List of files to process ---
 # Use glob to easily select multiple files. Examples:
-# FILES_TO_PROCESS = glob.glob("src/**/*.py", recursive=True) # All Python files in src
-# FILES_TO_PROCESS = ["file1.py", "docs/file2.txt"] # Specific files
-FILES_TO_PROCESS = glob.glob("emailops/*.py") # Example: All Python files in the emailops directory
+# FILES_TO_PROCESS = Path("src").rglob("*.py") # All Python files in src
+# FILES_TO_PROCESS = [Path("file1.py"), Path("docs/file2.txt")] # Specific files
+FILES_TO_PROCESS = Path("emailops").glob("*.py") # Example: All Python files in the emailops directory
 
 # --- The Master Prompt ---
 # The {file_content} placeholder will be replaced with the content of each file.
@@ -33,15 +34,14 @@ OUTPUT_DIR = "analysis_results"
 
 # --- 2. The Asynchronous API Call Function ---
 
-async def analyze_file(file_path: str):
+async def analyze_file(file_path: Path):
     """
     Reads a file, formats the prompt, calls the Gemini API, and saves the result.
     """
     print(f"[STARTING] Analysis for {file_path}")
     try:
         # Read the content of the code file
-        with open(file_path, 'r', encoding='utf-8') as f:
-            file_content = f.read()
+        file_content = file_path.read_text(encoding='utf-8')
 
         # Create the specific prompt for this file
         prompt = MASTER_PROMPT.format(file_content=file_content)
@@ -51,12 +51,12 @@ async def analyze_file(file_path: str):
         response = await model.generate_content_async(prompt)
 
         # Create the output directory if it doesn't exist
-        os.makedirs(OUTPUT_DIR, exist_ok=True)
+        output_dir = Path(OUTPUT_DIR)
+        output_dir.mkdir(exist_ok=True)
 
         # Save the response to a new file
-        output_filename = os.path.join(OUTPUT_DIR, os.path.basename(file_path) + ".md")
-        with open(output_filename, 'w', encoding='utf-8') as f:
-            f.write(response.text)
+        output_filename = output_dir / f"{file_path.stem}.md"
+        output_filename.write_text(response.text, encoding='utf-8')
 
         print(f"[SUCCESS] Analysis for {file_path} saved to {output_filename}")
 

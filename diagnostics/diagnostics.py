@@ -10,7 +10,7 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Tuple, Optional
+from typing import Any
 
 import numpy as np
 
@@ -20,8 +20,12 @@ from diagnostics.utils import (
     save_json_report,
     setup_logging,
 )
-from emailops.llm_runtime import (_init_vertex, load_validated_accounts, reset_vertex_init, VertexAccount)
 from emailops.llm_client import embed_texts
+from emailops.llm_runtime import (
+    _init_vertex,
+    load_validated_accounts,
+    reset_vertex_init,
+)
 
 # Setup logging
 logger = setup_logging()
@@ -249,50 +253,55 @@ def verify_index_alignment(root: str) -> None:
         fail(f"embeddings.npy missing at {ep}")
 
     # Load mapping
+    mapping = None
     try:
         mapping = json.loads(mp.read_text(encoding="utf-8"))
         if not isinstance(mapping, list) or not mapping:
             fail("mapping.json is empty or not a list")
     except Exception as e:
         fail(f"Failed to read mapping.json: {e}")
-    ok(f"mapping.json loaded with {len(mapping)} rows")
+    if mapping is not None:
+        ok(f"mapping.json loaded with {len(mapping)} rows")
 
     # Load embeddings
+    embs = None
     try:
         embs = np.load(ep, mmap_mode="r")
         if embs.ndim != 2 or embs.shape[0] <= 0 or embs.shape[1] <= 0:
             fail(f"Invalid embeddings shape: {getattr(embs, 'shape', None)}")
     except Exception as e:
         fail(f"Failed to read embeddings.npy: {e}")
-    ok(f"embeddings.npy shape OK: {embs.shape}")
+    if embs is not None:
+        ok(f"embeddings.npy shape OK: {embs.shape}")
 
     # Count alignment
-    if embs.shape[0] != len(mapping):
+    if embs is not None and mapping is not None and embs.shape[0] != len(mapping):
         fail(f"Row mismatch: embeddings={embs.shape[0]} mapping={len(mapping)}")
     ok("Row counts aligned")
 
     # Field checks
     ids = set()
-    for i, m in enumerate(mapping):
-        for k in REQUIRED_FIELDS:
-            if k not in m:
-                fail(
-                    f"Missing field '{k}' at mapping row {i} (id={m.get('id', '<no-id>')})"
-                )
-        did = str(m["id"]).strip()
-        if did in ids:
-            fail(f"Duplicate id found: {did}")
-        ids.add(did)
+    if mapping is not None:
+        for i, m in enumerate(mapping):
+            for k in REQUIRED_FIELDS:
+                if k not in m:
+                    fail(
+                        f"Missing field '{k}' at mapping row {i} (id={m.get('id', '<no-id>')})"
+                    )
+            did = str(m["id"]).strip()
+            if did in ids:
+                fail(f"Duplicate id found: {did}")
+            ids.add(did)
 
-        if m.get("doc_type") not in VALID_DOCTYPES:
-            fail(f"Invalid doc_type at id={did}: {m.get('doc_type')}")
+            if m.get("doc_type") not in VALID_DOCTYPES:
+                fail(f"Invalid doc_type at id={did}: {m.get('doc_type')}")
 
-        if not isinstance(m.get("snippet", ""), str):
-            fail(f"snippet must be string at id={did}")
+            if not isinstance(m.get("snippet", ""), str):
+                fail(f"snippet must be string at id={did}")
 
-        # Optional sanity
-        if "chunk_index" in m and not isinstance(m["chunk_index"], int):
-            fail(f"chunk_index must be int when present (id={did})")
+            # Optional sanity
+            if "chunk_index" in m and not isinstance(m["chunk_index"], int):
+                fail(f"chunk_index must be int when present (id={did})")
 
     ok("Mapping fields, id uniqueness, doc_type values are valid")
 
@@ -300,11 +309,10 @@ def verify_index_alignment(root: str) -> None:
     if meta.exists():
         try:
             md = json.loads(meta.read_text(encoding="utf-8"))
-            if "actual_dimensions" in md:
-                if int(md["actual_dimensions"]) != int(embs.shape[1]):
-                    fail(
-                        f"meta.json actual_dimensions={md['actual_dimensions']} != embeddings dim={embs.shape[1]}"
-                    )
+            if embs is not None and "actual_dimensions" in md and int(md["actual_dimensions"]) != int(embs.shape[1]):
+                fail(
+                    f"meta.json actual_dimensions={md['actual_dimensions']} != embeddings dim={embs.shape[1]}"
+                )
         except Exception as e:
             fail(f"Failed to read meta.json: {e}")
         ok("meta.json present and dimension matches")

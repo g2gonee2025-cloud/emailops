@@ -10,7 +10,7 @@ import sys
 from collections import Counter
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from diagnostics.utils import get_index_path, setup_logging
 

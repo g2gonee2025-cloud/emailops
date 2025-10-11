@@ -10,15 +10,13 @@ This module provides:
 
 import json
 import os
-import tempfile
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List
-from unittest.mock import MagicMock, Mock, patch
+from typing import Any
+from unittest.mock import patch
 
 import numpy as np
 import pytest
-
 
 # ============================================================================
 # Fixture Scopes and Cleanup
@@ -28,7 +26,7 @@ import pytest
 def test_data_dir() -> Path:
     """
     Provides path to test data directory.
-    
+
     Returns:
         Path to tests/test_data directory
     """
@@ -41,7 +39,7 @@ def test_data_dir() -> Path:
 def temp_dir(tmp_path):
     """
     Provides a temporary directory for test operations.
-    
+
     Yields:
         Path to temporary directory
     """
@@ -53,7 +51,7 @@ def temp_dir(tmp_path):
 def mock_index_dir(temp_dir):
     """
     Creates a mock index directory structure.
-    
+
     Returns:
         Path to mock _index directory
     """
@@ -70,7 +68,7 @@ def mock_index_dir(temp_dir):
 def sample_vertex_account():
     """
     Creates a sample VertexAccount object for testing.
-    
+
     Returns:
         Dictionary with account configuration
     """
@@ -86,7 +84,7 @@ def sample_vertex_account():
 def sample_accounts_list(sample_vertex_account):
     """
     Creates a list of sample accounts.
-    
+
     Returns:
         List of account dictionaries
     """
@@ -105,7 +103,7 @@ def sample_accounts_list(sample_vertex_account):
 def sample_mapping_data():
     """
     Creates sample mapping.json data structure.
-    
+
     Returns:
         List of mapping dictionaries
     """
@@ -136,7 +134,7 @@ def sample_mapping_data():
 def sample_embeddings():
     """
     Creates sample embeddings array.
-    
+
     Returns:
         NumPy array of shape (2, 768) with normalized embeddings
     """
@@ -150,7 +148,7 @@ def sample_embeddings():
 def sample_chunk_data():
     """
     Creates sample chunk data structure.
-    
+
     Returns:
         Dictionary with chunk data
     """
@@ -192,24 +190,24 @@ def sample_chunk_data():
 def mock_index_files(mock_index_dir, sample_mapping_data, sample_embeddings):
     """
     Creates mock index files in the temp directory.
-    
+
     Args:
         mock_index_dir: Path to mock index directory
         sample_mapping_data: Sample mapping data
         sample_embeddings: Sample embeddings array
-    
+
     Returns:
         Dictionary with paths to created files
     """
     # Create mapping.json
     mapping_path = mock_index_dir / "mapping.json"
-    with open(mapping_path, "w", encoding="utf-8") as f:
+    with mapping_path.open("w", encoding="utf-8") as f:
         json.dump(sample_mapping_data, f, indent=2)
-    
+
     # Create embeddings.npy
     embeddings_path = mock_index_dir / "embeddings.npy"
     np.save(embeddings_path, sample_embeddings)
-    
+
     # Create meta.json
     meta_path = mock_index_dir / "meta.json"
     meta_data = {
@@ -219,9 +217,9 @@ def mock_index_files(mock_index_dir, sample_mapping_data, sample_embeddings):
         "index_type": "flat",
         "created_at": datetime.now().isoformat()
     }
-    with open(meta_path, "w", encoding="utf-8") as f:
+    with meta_path.open("w", encoding="utf-8") as f:
         json.dump(meta_data, f, indent=2)
-    
+
     return {
         "mapping": mapping_path,
         "embeddings": embeddings_path,
@@ -234,13 +232,13 @@ def mock_index_files(mock_index_dir, sample_mapping_data, sample_embeddings):
 def mock_conversation_structure(temp_dir):
     """
     Creates a mock conversation directory structure.
-    
+
     Returns:
         Path to conversation directory
     """
     conv_dir = temp_dir / "conversation_1"
     conv_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Create Conversation.txt
     conv_file = conv_dir / "Conversation.txt"
     conv_file.write_text(
@@ -250,15 +248,15 @@ def mock_conversation_structure(temp_dir):
         "This is a test email content.\n"
         "It has multiple lines.\n"
     )
-    
+
     # Create Attachments directory
     attach_dir = conv_dir / "Attachments"
     attach_dir.mkdir(exist_ok=True)
-    
+
     # Create a sample attachment
     attach_file = attach_dir / "document.txt"
     attach_file.write_text("This is attachment content.")
-    
+
     return conv_dir
 
 
@@ -270,7 +268,7 @@ def mock_conversation_structure(temp_dir):
 def mock_vertex_ai():
     """
     Provides mocked Vertex AI initialization.
-    
+
     Yields:
         Mock object for vertexai module
     """
@@ -283,18 +281,18 @@ def mock_vertex_ai():
 def mock_embed_texts():
     """
     Provides mocked embed_texts function.
-    
+
     Yields:
         Mock function that returns normalized embeddings
     """
-    def mock_embed(texts, provider="vertex", **kwargs):
+    def mock_embed(texts, **_):
         """Mock embedding function that returns random normalized vectors."""
         n = len(texts)
         dim = 768
         embeddings = np.random.randn(n, dim).astype(np.float32)
         norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
         return embeddings / norms
-    
+
     with patch("emailops.llm_client.embed_texts", side_effect=mock_embed) as mock:
         yield mock
 
@@ -303,7 +301,7 @@ def mock_embed_texts():
 def mock_vertex_account_validation():
     """
     Provides mocked account validation that always succeeds.
-    
+
     Yields:
         Mock validation function
     """
@@ -316,13 +314,13 @@ def mock_vertex_account_validation():
 def mock_credentials_file(temp_dir):
     """
     Creates a mock credentials JSON file.
-    
+
     Returns:
         Path to mock credentials file
     """
     creds_dir = temp_dir / "secrets"
     creds_dir.mkdir(exist_ok=True)
-    
+
     creds_file = creds_dir / "test-credentials.json"
     creds_data = {
         "type": "service_account",
@@ -334,10 +332,10 @@ def mock_credentials_file(temp_dir):
         "auth_uri": "https://accounts.google.com/o/oauth2/auth",
         "token_uri": "https://oauth2.googleapis.com/token"
     }
-    
-    with open(creds_file, "w") as f:
+
+    with creds_file.open("w") as f:
         json.dump(creds_data, f)
-    
+
     return creds_file
 
 
@@ -349,7 +347,7 @@ def mock_credentials_file(temp_dir):
 def mock_env_vars():
     """
     Provides context manager for mocking environment variables.
-    
+
     Yields:
         Dictionary to update with environment variables
     """
@@ -362,9 +360,9 @@ def mock_env_vars():
         "INDEX_DIRNAME": "_index"
     }
     os.environ.update(env_updates)
-    
+
     yield env_updates
-    
+
     # Restore original environment
     os.environ.clear()
     os.environ.update(original_env)
@@ -378,10 +376,10 @@ def mock_env_vars():
 def capture_logs(caplog):
     """
     Provides enhanced log capturing with level filtering.
-    
+
     Args:
         caplog: pytest's built-in caplog fixture
-    
+
     Returns:
         Caplog fixture with helper methods
     """
@@ -397,32 +395,32 @@ def capture_logs(caplog):
 def generate_random_text(length: int = 100) -> str:
     """
     Generates random text for testing.
-    
+
     Args:
         length: Approximate length of text in words
-    
+
     Returns:
         Random text string
     """
     import random
     import string
-    
+
     words = []
     for _ in range(length):
         word_len = random.randint(3, 10)
         word = ''.join(random.choices(string.ascii_lowercase, k=word_len))
         words.append(word)
-    
+
     return ' '.join(words)
 
 
 def generate_embedding(dim: int = 768) -> np.ndarray:
     """
     Generates a random normalized embedding vector.
-    
+
     Args:
         dim: Embedding dimension
-    
+
     Returns:
         Normalized embedding vector
     """
@@ -434,44 +432,44 @@ def generate_embedding(dim: int = 768) -> np.ndarray:
 # Assertion Helpers
 # ============================================================================
 
-def assert_valid_mapping_entry(entry: Dict[str, Any]) -> None:
+def assert_valid_mapping_entry(entry: dict[str, Any]) -> None:
     """
     Asserts that a mapping entry has all required fields.
-    
+
     Args:
         entry: Mapping dictionary to validate
-    
+
     Raises:
         AssertionError: If required fields are missing or invalid
     """
     required_fields = ["id", "path", "conv_id", "doc_type", "subject", "snippet", "modified_time"]
-    
+
     for field in required_fields:
         assert field in entry, f"Missing required field: {field}"
         assert entry[field] is not None, f"Field {field} is None"
-    
+
     assert entry["doc_type"] in ["conversation", "attachment"], \
         f"Invalid doc_type: {entry['doc_type']}"
-    
+
     assert isinstance(entry["snippet"], str), "snippet must be a string"
 
 
 def assert_normalized_embeddings(embeddings: np.ndarray, tolerance: float = 1e-5) -> None:
     """
     Asserts that embeddings are properly normalized.
-    
+
     Args:
         embeddings: NumPy array of embeddings
         tolerance: Tolerance for normalization check
-    
+
     Raises:
         AssertionError: If embeddings are not normalized
     """
     if embeddings.size == 0:
         return
-    
+
     assert embeddings.ndim == 2, f"Embeddings must be 2D, got shape {embeddings.shape}"
-    
+
     norms = np.linalg.norm(embeddings, axis=1)
     assert np.allclose(norms, 1.0, atol=tolerance), \
         f"Embeddings not normalized: norms range from {norms.min():.4f} to {norms.max():.4f}"
@@ -484,7 +482,7 @@ def assert_normalized_embeddings(embeddings: np.ndarray, tolerance: float = 1e-5
 def pytest_configure(config):
     """
     Pytest configuration hook.
-    
+
     Args:
         config: Pytest config object
     """
@@ -503,7 +501,7 @@ def pytest_configure(config):
 def pytest_collection_modifyitems(config, items):
     """
     Modify test collection to add markers automatically.
-    
+
     Args:
         config: Pytest config object
         items: List of test items

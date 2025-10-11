@@ -8,7 +8,7 @@ import logging
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 
 def setup_logging(level: str = "INFO") -> logging.Logger:
@@ -22,19 +22,19 @@ def setup_logging(level: str = "INFO") -> logging.Logger:
         Configured logger instance
     """
     log_level = getattr(logging, level.upper(), logging.INFO)
-    
+
     # Get the logger first
     logger = logging.getLogger(__name__)
-    
+
     # Set the level on the logger itself
     logger.setLevel(log_level)
-    
+
     # Also configure basic config
     logging.basicConfig(
         level=log_level,
         format="%(asctime)s - %(levelname)s - %(message)s",
     )
-    
+
     return logger
 
 

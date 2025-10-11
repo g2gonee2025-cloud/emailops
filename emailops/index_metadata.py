@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Index metadata management for EmailOps (Vertex-only, Gemini-optimized).
+Index metadata management for EmailOps (multi‑provider; Vertex‑optimized by default).
 
 Final patched drop-in replacement.
 
@@ -353,12 +353,9 @@ def create_index_metadata(
     custom_metadata: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     provider_norm = _normalize_provider(provider)
-    if provider_norm != "vertex":
-        raise ValueError(
-            f"Only 'vertex' provider is supported in this build; got '{provider}'."
-        )
-
-    model_info = _resolve_vertex_config()
+    is_vertex = provider_norm == "vertex"
+    # Vertex-specific config; non-Vertex providers do not use hardcoded dims.
+    model_info = _resolve_vertex_config() if is_vertex else {}
 
     # Determine index type and detect actual dimension (custom_metadata can override)
     index_type = _detect_index_type(index_dir)
@@ -381,9 +378,18 @@ def create_index_metadata(
     metadata: Dict[str, Any] = {
         "version": "1.0",
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "provider": provider_norm,
-        "model": model_info["model"],  # keep as provided (may be a full resource name)
-        "dimensions": model_info.get("dimensions"),
+        # Store exactly what the caller passed; keep a normalized copy for internal checks.
+        "provider": provider,
+        "provider_norm": provider_norm,
+        # Vertex: prefer configured model/dims; others: advisory fields only (may be None/"unknown")
+        "model": (
+            model_info.get("model")
+            if is_vertex
+            else ((custom_metadata or {}).get("model") or "unknown")
+        ),
+        "dimensions": (
+            model_info.get("dimensions") if is_vertex else (custom_metadata or {}).get("dimensions")
+        ),
         "actual_dimensions": actual_dim,
         "num_documents": int(num_documents),
         "num_folders": int(num_folders),
@@ -397,6 +403,7 @@ def create_index_metadata(
         "version",
         "created_at",
         "provider",
+        "provider_norm",
         "model",
         "dimensions",
         "actual_dimensions",
@@ -413,6 +420,12 @@ def create_index_metadata(
             metadata[k] = v
         if "actual_dimensions" in custom_metadata:
             metadata["actual_dimensions"] = custom_metadata["actual_dimensions"]
+        # For non-Vertex providers, allow custom model/dimensions to be recorded as advisory.
+        if not is_vertex:
+            if "model" in custom_metadata:
+                metadata["model"] = custom_metadata["model"]
+            if "dimensions" in custom_metadata:
+                metadata["dimensions"] = custom_metadata["dimensions"]
 
     return metadata
 
@@ -443,6 +456,7 @@ def check_index_consistency(index_dir: Union[str, Path], raise_on_mismatch: bool
     """
     Ensure mapping.json entries == embeddings.npy rows (when present)
     and/or == FAISS ntotal (when present).
+    Intended to be called immediately after a build/save step so drift is caught early.
     Returns True on success; raises or returns False on mismatch.
     """
     p = index_paths(index_dir)
@@ -520,12 +534,7 @@ def validate_index_compatibility(
     check_counts: bool = True,
 ) -> bool:
     provider_norm = _normalize_provider(provider)
-    if provider_norm != "vertex":
-        msg = f"Only 'vertex' provider is supported; got '{provider}'."
-        if raise_on_mismatch:
-            raise ValueError(msg)
-        logger.error(msg)
-        return False
+    is_vertex = provider_norm == "vertex"
 
     metadata = load_index_metadata(index_dir)
     if metadata is None:
@@ -535,7 +544,8 @@ def validate_index_compatibility(
         logger.error(msg)
         return False
 
-    indexed_provider = _normalize_provider(metadata.get("provider", ""))
+    # Compare normalized providers, but allow metadata to store provider as originally passed.
+    indexed_provider = _normalize_provider(metadata.get("provider", "") or metadata.get("provider_norm", ""))
     if indexed_provider and indexed_provider != provider_norm:
         msg = (
             f"Index was created with provider '{indexed_provider}' but trying to search with '{provider_norm}'."
@@ -554,32 +564,37 @@ def validate_index_compatibility(
         logger.error(msg)
         return False
 
-    # Compare dimensions
-    expected_cfg = _resolve_vertex_config()
-    expected_dims = expected_cfg.get("dimensions")
-
     # Prefer on-disk detection; fall back to metadata.actual_dimensions only if needed.
     detected_dims = _detect_actual_dimensions(index_dir) or _detect_faiss_dimensions(index_dir)
     meta_actual = metadata.get("actual_dimensions")
-    if detected_dims is None:
-        actual_dims = meta_actual
-    else:
-        actual_dims = detected_dims
-        if meta_actual is not None and meta_actual != detected_dims:
+    if is_vertex:
+        # Vertex-specific: enforce configured output dimension if both sides are known.
+        expected_cfg = _resolve_vertex_config()
+        expected_dims = expected_cfg.get("dimensions")
+        actual_dims = detected_dims if detected_dims is not None else meta_actual
+        if meta_actual is not None and detected_dims is not None and meta_actual != detected_dims:
             logger.warning(
                 "Metadata actual_dimensions (%s) disagrees with on-disk dimensions (%s).",
                 meta_actual,
                 detected_dims,
             )
-
-    if actual_dims is not None and expected_dims is not None and actual_dims != expected_dims:
-        msg = (
-            f"Dimension mismatch: index has {actual_dims} dims, but Vertex config is {expected_dims}."
-        )
-        if raise_on_mismatch:
-            raise ValueError(msg)
-        logger.error(msg)
-        return False
+        if actual_dims is not None and expected_dims is not None and actual_dims != expected_dims:
+            msg = f"Dimension mismatch: index has {actual_dims} dims, but Vertex config is {expected_dims}."
+            if raise_on_mismatch:
+                raise ValueError(msg)
+            logger.error(msg)
+            return False
+    else:
+        # Non-Vertex: skip provider-specific dimension checks. Only enforce that on-disk dims
+        # match the recorded actual_dimensions (if both are present), to catch cross-run drift.
+        if detected_dims is not None and meta_actual is not None and detected_dims != meta_actual:
+            msg = (
+                f"Dimension drift: on-disk dims ({detected_dims}) != metadata.actual_dimensions ({meta_actual})."
+            )
+            if raise_on_mismatch:
+                raise ValueError(msg)
+            logger.error(msg)
+            return False
 
     # Sanity: index_type vs. files present
     meta_index_type = (metadata.get("index_type") or "unknown").lower()

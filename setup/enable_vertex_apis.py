@@ -16,7 +16,7 @@ from datetime import datetime
 from pathlib import Path
 
 
-def print_colored(text: str, color = None):
+def print_colored(text: str):
     """Print colored text"""
     print(text)
 
@@ -36,7 +36,7 @@ def load_accounts() -> list[dict]:
     validated_file = Path("validated_accounts.json")
     if validated_file.exists():
         try:
-            with open(validated_file) as f:
+            with validated_file.open() as f:
                 data = json.load(f)
                 return data.get("accounts", [])
         except Exception:
@@ -73,7 +73,7 @@ def load_accounts() -> list[dict]:
 
 def check_gcloud() -> bool:
     """Check if gcloud CLI is installed"""
-    success, output, _ = run_command("gcloud --version")
+    success, _output, _ = run_command("gcloud --version")
     return success
 
 

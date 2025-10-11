@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import logging
+import os
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -66,10 +69,10 @@ def _find_requirements_file() -> Path | None:
     return None
 
 
-def _install_packages(packages: list[str], requirements_hint: Path | None) -> bool:
+def _install_packages(packages: list[str]) -> bool:
     try:
         import subprocess
-        cmd = [sys.executable, "-m", "pip", "install"] + packages
+        cmd = [sys.executable, "-m", "pip", "install", *packages]
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
         if result.returncode == 0:
             logger.info("Successfully installed packages: %s", packages)
@@ -120,7 +123,6 @@ def _packages_for_provider(provider: str) -> tuple[list[str], list[str]]:
 
 def check_and_install_dependencies(provider: str, auto_install: bool = False) -> None:
     critical, optional = _packages_for_provider(provider)
-    all_packages = critical + optional
 
     missing_critical = [pkg for pkg in critical if not _try_import(_PKG_IMPORT_MAP.get(pkg, pkg))]
     missing_optional = [pkg for pkg in optional if not _try_import(_PKG_IMPORT_MAP.get(pkg, pkg))]
@@ -128,8 +130,7 @@ def check_and_install_dependencies(provider: str, auto_install: bool = False) ->
     if missing_critical:
         logger.error("Missing critical packages for %s: %s", provider, missing_critical)
         if auto_install:
-            requirements_file = _find_requirements_file()
-            if _install_packages(missing_critical, requirements_file):
+            if _install_packages(missing_critical):
                 logger.info("Critical packages installed successfully")
             else:
                 logger.error("Failed to install critical packages")
@@ -141,7 +142,7 @@ def check_and_install_dependencies(provider: str, auto_install: bool = False) ->
     if missing_optional:
         logger.warning("Missing optional packages: %s", missing_optional)
         if auto_install:
-            if _install_packages(missing_optional, None):
+            if _install_packages(missing_optional):
                 logger.info("Optional packages installed successfully")
             else:
                 logger.warning("Failed to install some optional packages")
@@ -159,12 +160,12 @@ def _load_mapping(index_dir: Path) -> list[dict[str, Any]]:
     return read_mapping(index_dir)
 
 
-def _get_index_statistics(root: Path, index_dir: Path) -> dict[str, Any]:
+def _get_index_statistics(index_dir: Path) -> dict[str, Any]:
     stats = {}
     try:
         mapping = _load_mapping(index_dir)
         stats["num_documents"] = len(mapping)
-        stats["num_conversations"] = len(set(m.get("conv_id") for m in mapping if m.get("conv_id")))
+        stats["num_conversations"] = len({m.get("conv_id") for m in mapping if m.get("conv_id")})
         stats["total_chars"] = sum(len(m.get("snippet", "")) for m in mapping)
     except Exception as e:
         logger.warning("Failed to load mapping for statistics: %s", e)
@@ -229,7 +230,7 @@ def main() -> None:
 
     if args.check_index and index_dir.exists():
         print("\nChecking index health...")
-        stats = _get_index_statistics(root, index_dir)
+        stats = _get_index_statistics(index_dir)
         print(f"Documents: {stats.get('num_documents', 'unknown')}")
         print(f"Conversations: {stats.get('num_conversations', 'unknown')}")
         print(f"Total snippet chars: {stats.get('total_chars', 'unknown')}")

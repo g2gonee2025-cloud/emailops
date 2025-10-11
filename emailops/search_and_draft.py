@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import logging
 import mimetypes
@@ -8,7 +9,7 @@ import os
 import time
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from email.message import EmailMessage
 from email.utils import formatdate, make_msgid, parseaddr
 from pathlib import Path
@@ -26,7 +27,7 @@ from .utils import load_conversation, logger  # lightweight imports only
 
 # ---------------------------- Configuration ---------------------------- #
 
-# Locked sender as default; can be overridden via --sender if allow‑listed
+# Locked sender as default; can be overridden via --sender if allow-listed
 SENDER_LOCKED_NAME = os.getenv("SENDER_LOCKED_NAME", "Hagop Ghazarian")
 SENDER_LOCKED_EMAIL = os.getenv("SENDER_LOCKED_EMAIL", "Hagop.Ghazarian@chalhoub.com")
 SENDER_LOCKED = f"{SENDER_LOCKED_NAME} <{SENDER_LOCKED_EMAIL}>"
@@ -43,7 +44,7 @@ INDEX_DIRNAME = os.getenv("INDEX_DIRNAME", INDEX_DIRNAME_DEFAULT)
 INDEX_NAME = "index.faiss"
 MAPPING_NAME = "mapping.json"
 
-# conservative char budget ≈ tokens * 4 (English text). Gemini often fits ~3.5–4.0.
+# conservative char budget ≈ tokens * 4 (English text). Gemini often fits ~3.5-4.0.
 CHARS_PER_TOKEN = float(os.getenv("CHARS_PER_TOKEN", "3.8"))
 
 # STRICT cap to keep memory predictable; search/chat will window around hits.
@@ -412,21 +413,50 @@ def _load_mapping(ix_dir: Path) -> list[dict[str, Any]]:
     return rows
 
 
+def _find_conv_ids_by_subject(
+    mapping: list[dict[str, Any]], subject_keyword: str
+) -> set[str]:
+    """
+    Find conversation IDs whose subject contains the given keyword (case-insensitive).
+    
+    Args:
+        mapping: List of document metadata dictionaries from mapping.json
+        subject_keyword: Keyword or phrase to search for in subjects
+        
+    Returns:
+        Set of conversation IDs that match the subject filter
+    """
+    if not subject_keyword or not subject_keyword.strip():
+        return set()
+    
+    keyword_lower = subject_keyword.strip().lower()
+    conv_ids: set[str] = set()
+    
+    for doc in mapping:
+        subject = str(doc.get("subject") or "").lower()
+        conv_id = str(doc.get("conv_id") or "")
+        
+        if keyword_lower in subject and conv_id:
+            conv_ids.add(conv_id)
+    
+    return conv_ids
+
+
 def _parse_date_any(date_str: str | None) -> datetime | None:
-    """Best‑effort parser tolerant to many email/date formats; returns aware UTC datetime."""
+    """Best-effort parser tolerant to many email/date formats; returns aware UTC datetime."""
     if not date_str:
         return None
     s = str(date_str).strip()
     try:
         dt = datetime.fromisoformat(s.replace("Z", "+00:00"))
-        return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+        return dt if dt.tzinfo else dt.replace(tzinfo=UTC)
     except Exception:
         pass
     try:
         from email.utils import parsedate_to_datetime
 
         dt = parsedate_to_datetime(s)
-        return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+        return dt if dt.tzinfo else dt.replace(tzinfo=UTC)
     except Exception as e:
         logger.debug("Date parse failed for %r: %s", s, e)
         return None
@@ -438,7 +468,7 @@ def _boost_scores_for_indices(
     base_scores: np.ndarray,
     now: datetime,
 ) -> np.ndarray:
-    """Apply time‑decay recency boost only over a small candidate set."""
+    """Apply time-decay recency boost only over a small candidate set."""
     boosted = base_scores.astype("float32").copy()
     for pos, idx in enumerate(candidate_indices):
         try:
@@ -449,7 +479,7 @@ def _boost_scores_for_indices(
         if not doc_date:
             continue
         try:
-            days_old = (now - doc_date.astimezone(timezone.utc)).days
+            days_old = (now - doc_date.astimezone(UTC)).days
             if days_old >= 0:
                 decay = 0.5 ** (days_old / HALF_LIFE_DAYS)
                 boosted[pos] *= 1.0 + RECENCY_BOOST_STRENGTH * decay
@@ -584,7 +614,7 @@ def list_conversations_newest_first(ix_dir: Path) -> list[dict[str, Any]]:
 
     convs = list(by_conv.values())
     convs.sort(
-        key=lambda r: (r["last_date"] or datetime(1970, 1, 1, tzinfo=timezone.utc)),
+        key=lambda r: (r["last_date"] or datetime(1970, 1, 1, tzinfo=UTC)),
         reverse=True,
     )
     for r in convs:
@@ -795,10 +825,9 @@ def _last_inbound_message(conv_data: dict[str, Any]) -> dict[str, Any]:
     for m in msgs:
         from_email = (m.get("from_email") or "").lower()
         dt = _parse_date_any(m.get("date"))
-        if from_email and (SENDER_LOCKED_EMAIL.lower() not in from_email):
-            if not best or (dt and (not best_dt or dt > best_dt)):
-                best = m
-                best_dt = dt
+        if from_email and (SENDER_LOCKED_EMAIL.lower() not in from_email) and (not best or (dt and (not best_dt or dt > best_dt))):
+            best = m
+            best_dt = dt
     if best:
         return best
 
@@ -955,7 +984,7 @@ def _gather_context_for_conv(
         return []
 
     base_scores = _sim_scores_for_indices(q, sub_embs)
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     # recency boost in-candidate space (full since already sliced)
     idxs = np.arange(len(sub_mapping), dtype=np.int64)
     boosted = _boost_scores_for_indices(sub_mapping, idxs, base_scores, now)
@@ -1023,7 +1052,7 @@ def _gather_context_fresh(
         return []
 
     base = _sim_scores_for_indices(q, embs)
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     # Candidate pool bounded by the actual number of vectors
     N = int(getattr(base, "shape", [0, 0])[0])
@@ -1151,7 +1180,7 @@ def _effective_subject(
     conv_data: dict[str, Any], messages: list[dict[str, Any]]
 ) -> str:
     """
-    Best‑effort subject for reply: prefer manifest.smart_subject,
+    Best-effort subject for reply: prefer manifest.smart_subject,
     then last message subject; prefix 'Re:' if needed.
     """
     manifest = conv_data.get("manifest") or {}
@@ -1232,7 +1261,7 @@ def draft_email_structured(
                 "temperature": temperature,
                 "context_snippets_used": len(context_snippets),
                 "attachments_selected": 0,
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
                 "workflow_state": "failed_validation",
             },
         }
@@ -1408,7 +1437,7 @@ Available Context:
     final_draft = initial_draft
     workflow_state = "completed"
 
-    # Auditor pass: 1–10 across 5 criteria; require ≥8 or rewrite up to 5 times
+    # Auditor pass: 1-10 across 5 criteria; require ≥8 or rewrite up to 5 times
     def _audit_scores(
         email_text: str, citations: list[dict[str, Any]]
     ) -> dict[str, int]:
@@ -1436,10 +1465,8 @@ Return bullet points exactly with five lines:
             if len(parts) == 2:
                 key, val = parts
                 key = key.strip("•*- ").lower()
-                try:
+                with contextlib.suppress(Exception):
                     scores[key] = int("".join(ch for ch in val if ch.isdigit()))
-                except Exception:
-                    pass
         return scores
 
     def _passes(scores: dict[str, int]) -> bool:
@@ -1492,7 +1519,7 @@ Constraints:
             "temperature": temperature,
             "context_snippets_used": len(context_snippets),
             "attachments_selected": len(selected_attachments),
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "workflow_state": workflow_state,
             "draft_word_count": len(final_draft.get("email_draft", "").split()),
             "citation_count": len(final_draft.get("citations", [])),
@@ -1817,11 +1844,9 @@ class ChatSession:
             self.messages = msgs
         except json.JSONDecodeError as e:
             # backup corrupted file then reset
-            ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
-            try:
+            ts = datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
+            with contextlib.suppress(Exception):
                 p.rename(p.with_suffix(f".corrupt-{ts}.json"))
-            except Exception:
-                pass
             logger.warning(
                 "Session %s JSON decode error: %s - backed up and starting fresh",
                 self.session_id,
@@ -1862,7 +1887,7 @@ class ChatSession:
             ChatMessage(
                 role=role,
                 content=content or "",
-                timestamp=datetime.now(timezone.utc).isoformat(),
+                timestamp=datetime.now(UTC).isoformat(),
                 conv_id=conv_id,
             )
         )
@@ -2028,7 +2053,7 @@ def _search(
         return []
     k = min(250, k)
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     candidates_k = max(1, k * CANDIDATES_MULTIPLIER)
 
     effective_provider = _resolve_effective_provider(ix_dir, provider)
@@ -2054,6 +2079,7 @@ def _search(
 
     # preferred path: embeddings
     embs = _ensure_embeddings_ready(ix_dir, mapping)
+    results: list[dict[str, Any]] = []
     if embs is not None:
         if embs.shape[0] != len(mapping):
             mapping = mapping[: embs.shape[0]]
@@ -2088,19 +2114,18 @@ def _search(
             else:
                 return []
 
-        if q.ndim != 2 or q.shape[1] != sub_embs.shape[1]:
-            if effective_provider != index_provider:
-                try:
-                    q = embed_texts([query], provider=index_provider).astype(
-                        "float32", copy=False
-                    )
-                except Exception as e:
-                    logger.error(
-                        "Re-embed with index provider '%s' failed: %s",
-                        index_provider,
-                        e,
-                    )
-                    return []
+        if (q.ndim != 2 or q.shape[1] != sub_embs.shape[1]) and (effective_provider != index_provider):
+            try:
+                q = embed_texts([query], provider=index_provider).astype(
+                    "float32", copy=False
+                )
+            except Exception as e2:
+                logger.error(
+                    "Re-embed with index provider '%s' failed: %s",
+                    index_provider,
+                    e2,
+                )
+                return []
         if q.ndim != 2 or q.shape[1] != sub_embs.shape[1]:
             logger.error(
                 "Query embedding dim %s does not match index dim %s.",
@@ -2329,7 +2354,7 @@ def main() -> None:
             session.save()
         return
 
-    # Default: Search‑Only (polished behavior)
+    # Default: Search-Only (polished behavior)
     if args.query:
         ctx = _search(
             ix_dir, args.query, k=args.k, provider=args.provider, conv_id_filter=None

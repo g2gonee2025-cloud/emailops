@@ -11,22 +11,24 @@ Unified Processing Module for EmailOps (revised)
 
 from __future__ import annotations
 
-import os
-import sys
-import json
-import time
-import pickle
-import logging
 import argparse
-import multiprocessing as mp
-import numpy as np
-import re
+import contextlib
 import hashlib
+import json
+import logging
+import multiprocessing as mp
+import os
+import pickle
 import queue
-from pathlib import Path
-from typing import List, Dict, Any, Optional, Iterable, Tuple
+import re
+import sys
+import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any
+
+import numpy as np
 
 # =============================================================================
 # Data Classes
@@ -46,8 +48,8 @@ class ChunkJob:
 class WorkerConfig:
     """Configuration for a chunking worker (serialized primitives only)"""
     worker_id: int
-    jobs_assigned: List[Tuple[str, str, int]]  # (doc_id, doc_path_str, file_size)
-    chunk_config: Dict[str, Any]               # kwargs for ChunkConfig
+    jobs_assigned: list[tuple[str, str, int]]  # (doc_id, doc_path_str, file_size)
+    chunk_config: dict[str, Any]               # kwargs for ChunkConfig
 
 
 @dataclass
@@ -63,7 +65,7 @@ class WorkerStats:
     last_update: float
     errors: int
     status: str
-    current_doc: Optional[str] = None
+    current_doc: str | None = None
 
     @property
     def progress_percent(self) -> float:
@@ -73,7 +75,7 @@ class WorkerStats:
         return min(max(p, 0), 100)
 
     @property
-    def estimated_time_remaining(self) -> Optional[timedelta]:
+    def estimated_time_remaining(self) -> timedelta | None:
         if self.bytes_processed <= 0:
             return None
         elapsed = max(1e-6, time.time() - self.start_time)
@@ -104,7 +106,7 @@ class ProcessingStats:
         return (self.chunks_processed / self.chunks_total) * 100
 
     @property
-    def estimated_time_remaining(self) -> Optional[timedelta]:
+    def estimated_time_remaining(self) -> timedelta | None:
         if self.chunks_processed == 0:
             return None
         elapsed = time.time() - self.start_time
@@ -130,7 +132,7 @@ def _safe_filename_for_doc(doc_id: str) -> str:
     return f"{safe_id}.{h}.json"
 
 
-def _save_chunks_to_path(chunks_dir: Path, doc_id: str, chunks: List[Dict], file_size: int) -> Path:
+def _save_chunks_to_path(chunks_dir: Path, doc_id: str, chunks: list[dict], file_size: int) -> Path:
     """Save chunks to JSON file; returns the output path."""
     output_file = chunks_dir / _safe_filename_for_doc(doc_id)
     chunk_data = {
@@ -143,12 +145,12 @@ def _save_chunks_to_path(chunks_dir: Path, doc_id: str, chunks: List[Dict], file
         },
     }
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    with open(output_file, "w", encoding="utf-8") as f:
+    with output_file.open("w", encoding="utf-8") as f:
         json.dump(chunk_data, f, ensure_ascii=False, indent=2)
     return output_file
 
 
-def _initialize_gcp_credentials() -> Optional[str]:
+def _initialize_gcp_credentials() -> str | None:
     """
     Initialize GCP credentials using the centralized config module.
     Returns the path to the credentials file if successful, None otherwise.
@@ -156,9 +158,9 @@ def _initialize_gcp_credentials() -> Optional[str]:
     try:
         # Import here to avoid circular dependencies
         from emailops.config import get_config
-        
+
         config = get_config()
-        
+
         # Check if credentials are already set in environment
         env_creds = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
         if env_creds:
@@ -166,7 +168,7 @@ def _initialize_gcp_credentials() -> Optional[str]:
             if creds_path.exists():
                 logging.info("Using existing GCP credentials from environment: %s", env_creds)
                 return str(creds_path)
-        
+
         # Use config to find credential file
         cred_file = config.get_credential_file()
         if not cred_file:
@@ -174,34 +176,34 @@ def _initialize_gcp_credentials() -> Optional[str]:
             logging.error("No valid GCP credentials found in secrets directory: %s", secrets_dir)
             logging.info("Checked for credential files in priority order")
             return None
-        
+
         # Validate and set up credentials
         try:
-            with open(cred_file, "r") as f:
+            with cred_file.open() as f:
                 creds_data = json.load(f)
                 project_id = creds_data.get("project_id")
-            
+
             # Set environment variables for GCP authentication
             os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(cred_file)
             if project_id:
                 os.environ["GCP_PROJECT"] = project_id
                 os.environ["GOOGLE_CLOUD_PROJECT"] = project_id
                 os.environ["VERTEX_PROJECT"] = project_id
-            
+
             # Set default location if not already set
             os.environ.setdefault("GCP_REGION", config.GCP_REGION)
             os.environ.setdefault("VERTEX_LOCATION", config.VERTEX_LOCATION)
-            
+
             logging.info("Initialized GCP credentials from %s (project: %s)", cred_file.name, project_id)
             return str(cred_file)
-            
+
         except json.JSONDecodeError as e:
             logging.error("Invalid JSON in credentials file %s: %s", cred_file, e)
             return None
         except Exception as e:
             logging.error("Error reading credentials file %s: %s", cred_file, e)
             return None
-            
+
     except ImportError as e:
         logging.error("Failed to import config module: %s", e)
         logging.error("Ensure emailops.config is available")
@@ -213,8 +215,8 @@ def _initialize_gcp_credentials() -> Optional[str]:
 # =============================================================================
 
 def _chunk_worker_entry(worker_id: int,
-                        jobs_assigned: List[Tuple[str, str, int]],
-                        chunk_config: Dict[str, Any],
+                        jobs_assigned: list[tuple[str, str, int]],
+                        chunk_config: dict[str, Any],
                         chunks_dir: str,
                         stats_queue,
                         control_queue,
@@ -310,10 +312,10 @@ class UnifiedProcessor:
         self,
         root_dir: str,
         mode: str = "chunk",  # "chunk", "embed", "repair", "fix"
-        num_workers: Optional[int] = None,
-        batch_size: Optional[int] = None,
-        chunk_size: Optional[int] = None,
-        chunk_overlap: Optional[int] = None,
+        num_workers: int | None = None,
+        batch_size: int | None = None,
+        chunk_size: int | None = None,
+        chunk_overlap: int | None = None,
         resume: bool = True,
         test_mode: bool = False,
         log_level: str = "INFO",
@@ -378,19 +380,25 @@ class UnifiedProcessor:
         )
         self.logger = logging.getLogger(f"UnifiedProcessor.{self.mode}")
 
+    def close(self):
+        """Close logging handlers to release file locks."""
+        for handler in self.logger.handlers[:]:
+            handler.close()
+            self.logger.removeHandler(handler)
+
     # ---------------------------------------------------------------------
     # Text Chunking Operations
     # ---------------------------------------------------------------------
 
-    def _build_chunk_config_kwargs(self) -> Dict[str, Any]:
+    def _build_chunk_config_kwargs(self) -> dict[str, Any]:
         """Return kwargs for constructing ChunkConfig in any process."""
-        return dict(
-            chunk_size=self.chunk_size,
-            chunk_overlap=self.chunk_overlap,
-            respect_sentences=True,
-            respect_paragraphs=True,
-            progressive_scaling=True,
-        )
+        return {
+            "chunk_size": self.chunk_size,
+            "chunk_overlap": self.chunk_overlap,
+            "respect_sentences": True,
+            "respect_paragraphs": True,
+            "progressive_scaling": True,
+        }
 
     def chunk_documents(self, input_dir: str, file_pattern: str = "*.txt") -> None:
         """Process documents into chunks"""
@@ -417,9 +425,9 @@ class UnifiedProcessor:
         """Return expected output path for a given doc_id."""
         return self.chunks_dir / _safe_filename_for_doc(doc_id)
 
-    def _find_documents(self, file_pattern: str) -> List[ChunkJob]:
+    def _find_documents(self, file_pattern: str) -> list[ChunkJob]:
         """Find documents to process"""
-        jobs: List[ChunkJob] = []
+        jobs: list[ChunkJob] = []
         skipped = 0
         for file_path in self.input_dir.rglob(file_pattern):
             if not file_path.is_file():
@@ -445,7 +453,7 @@ class UnifiedProcessor:
             self.logger.info("Resume enabled: skipped %d already-chunked files", skipped)
         return jobs
 
-    def _parallel_chunk(self, jobs: List[ChunkJob], chunk_config: Dict[str, Any]):
+    def _parallel_chunk(self, jobs: list[ChunkJob], chunk_config: dict[str, Any]):
         """Process chunks in parallel"""
         # Distribute work
         worker_configs = self._distribute_chunking_work(jobs, chunk_config)
@@ -483,10 +491,10 @@ class UnifiedProcessor:
                     w.terminate()
                     w.join(timeout=1)
 
-    def _sequential_chunk(self, jobs: List[ChunkJob], chunk_config: Dict[str, Any]):
+    def _sequential_chunk(self, jobs: list[ChunkJob], chunk_config: dict[str, Any]):
         """Process chunks sequentially"""
         try:
-            from emailops.text_chunker import TextChunker, ChunkConfig
+            from emailops.text_chunker import ChunkConfig, TextChunker
             from emailops.utils import read_text_file
         except ImportError as e:
             self.logger.error("Missing dependencies: %s", e)
@@ -507,17 +515,17 @@ class UnifiedProcessor:
             except Exception as e:
                 self.logger.error(f"Error processing {job.doc_path}: {e}")
 
-    def _distribute_chunking_work(self, jobs: List[ChunkJob], chunk_config: Dict[str, Any]) -> List[WorkerConfig]:
+    def _distribute_chunking_work(self, jobs: list[ChunkJob], chunk_config: dict[str, Any]) -> list[WorkerConfig]:
         """Distribute jobs across workers (balanced by file size)"""
         n_workers = min(self.num_workers, len(jobs))
-        worker_bins: List[List[ChunkJob]] = [[] for _ in range(n_workers)]
+        worker_bins: list[list[ChunkJob]] = [[] for _ in range(n_workers)]
         worker_sizes = [0] * n_workers
         for job in jobs:
             idx = worker_sizes.index(min(worker_sizes))
             worker_bins[idx].append(job)
             worker_sizes[idx] += job.file_size
 
-        configs: List[WorkerConfig] = []
+        configs: list[WorkerConfig] = []
         for i, worker_jobs in enumerate(worker_bins):
             if worker_jobs:
                 configs.append(
@@ -573,7 +581,7 @@ class UnifiedProcessor:
             chunk_dirname = config.CHUNK_DIRNAME
         except ImportError:
             chunk_dirname = "_chunks"
-        
+
         chunks_dir = self.root_dir / chunk_dirname / "chunks"
         if not chunks_dir.exists():
             self.logger.error("No chunks directory found at: %s", chunks_dir)
@@ -591,7 +599,7 @@ class UnifiedProcessor:
         batch_id = 0
         total_chunks = 0
 
-        def flush_batch(batch_chunks: List[Dict[str, Any]]):
+        def flush_batch(batch_chunks: list[dict[str, Any]]):
             nonlocal batch_id, total_chunks
             if not batch_chunks:
                 return
@@ -606,16 +614,16 @@ class UnifiedProcessor:
             embs = np.asarray(embs, dtype="float32")
             data = {"chunks": batch_chunks, "embeddings": embs}
             out_path = emb_dir / f"worker_0_batch_{batch_id:05d}.pkl"
-            with open(out_path, "wb") as f:
+            with out_path.open("wb") as f:
                 pickle.dump(data, f)
             self.logger.info("Wrote %s (chunks=%d, dim=%s)", out_path.name, len(batch_chunks), embs.shape[1] if embs.ndim == 2 else "?")
             total_chunks += len(batch_chunks)
             batch_id += 1
 
-        batch: List[Dict[str, Any]] = []
+        batch: list[dict[str, Any]] = []
         for jf in chunk_files:
             try:
-                with open(jf, "r", encoding="utf-8") as f:
+                with jf.open(encoding="utf-8") as f:
                     data = json.load(f)
                 doc_id = data.get("doc_id", jf.name)
                 for ch in data.get("chunks", []):
@@ -637,7 +645,7 @@ class UnifiedProcessor:
         """Create embeddings directly from documents by chunking on the fly."""
         # We'll mirror the chunking config and chunk before embedding.
         try:
-            from emailops.text_chunker import TextChunker, ChunkConfig
+            from emailops.text_chunker import ChunkConfig, TextChunker
             from emailops.utils import read_text_file
         except ImportError as e:
             self.logger.error("Missing dependencies for document embedding: %s", e)
@@ -645,7 +653,7 @@ class UnifiedProcessor:
 
         # Find input documents under root_dir
         patterns = ["*.txt", "*.md"]
-        doc_paths: List[Path] = []
+        doc_paths: list[Path] = []
         for pat in patterns:
             doc_paths.extend(self.root_dir.rglob(pat))
         doc_paths = [p for p in doc_paths if p.is_file()]
@@ -658,7 +666,7 @@ class UnifiedProcessor:
         emb_dir.mkdir(parents=True, exist_ok=True)
 
         chunker = TextChunker(ChunkConfig(**self._build_chunk_config_kwargs()))
-        batch: List[Dict[str, Any]] = []
+        batch: list[dict[str, Any]] = []
         batch_id = 0
         total_chunks = 0
 
@@ -676,7 +684,7 @@ class UnifiedProcessor:
             embs = np.asarray(embs, dtype="float32")
             data = {"chunks": batch, "embeddings": embs}
             out_path = emb_dir / f"worker_0_batch_{batch_id:05d}.pkl"
-            with open(out_path, "wb") as f:
+            with out_path.open("wb") as f:
                 pickle.dump(data, f)
             self.logger.info("Wrote %s (chunks=%d, dim=%s)", out_path.name, len(batch), embs.shape[1] if embs.ndim == 2 else "?")
             total_chunks += len(batch)
@@ -704,9 +712,9 @@ class UnifiedProcessor:
     # Monitoring
     # ---------------------------------------------------------------------
 
-    def _monitor_workers(self, workers: List[mp.Process], stats_queue, control_queue):
+    def _monitor_workers(self, workers: list[mp.Process], stats_queue, control_queue):
         """Monitor worker progress with liveness checks and graceful shutdown."""
-        worker_states: Dict[int, WorkerStats] = {}
+        worker_states: dict[int, WorkerStats] = {}
         last_stats_time = time.time()
 
         try:
@@ -741,14 +749,12 @@ class UnifiedProcessor:
             self.logger.warning("Interrupt received. Attempting graceful shutdown...")
             # Signal shutdown to workers
             for _ in workers:
-                try:
+                with contextlib.suppress(Exception):
                     control_queue.put_nowait("SHUTDOWN")
-                except Exception:
-                    pass
         finally:
             self._print_summary(worker_states)
 
-    def _display_progress(self, worker_states: Dict[int, WorkerStats]):
+    def _display_progress(self, worker_states: dict[int, WorkerStats]):
         """Display progress"""
         if sys.stdout.isatty():
             os.system("cls" if os.name == "nt" else "clear")
@@ -766,7 +772,7 @@ class UnifiedProcessor:
             if hasattr(stats, "docs_processed"):
                 print(f"  Docs: {stats.docs_processed}/{stats.docs_total}")
                 print(f"  Chunks: {stats.chunks_created}")
-            elif hasattr(stats, "chunks_processed"):
+            elif hasattr(stats, "chunks_processed") and hasattr(stats, "chunks_total"):
                 print(f"  Chunks: {stats.chunks_processed}/{stats.chunks_total}")
 
             if stats.errors > 0:
@@ -774,7 +780,7 @@ class UnifiedProcessor:
             if stats.current_doc:
                 print(f"  Current: {stats.current_doc}")
 
-    def _print_summary(self, worker_states: Dict[int, WorkerStats]):
+    def _print_summary(self, worker_states: dict[int, WorkerStats]):
         """Print final summary"""
         print("\n" + "=" * 80)
         print("PROCESSING COMPLETED")
@@ -817,7 +823,7 @@ class UnifiedProcessor:
 
         for pkl_file in pkl_files:
             try:
-                with open(pkl_file, "rb") as f:
+                with pkl_file.open("rb") as f:
                     data = pickle.load(f)
 
                 chunks = data.get("chunks", [])
@@ -843,7 +849,7 @@ class UnifiedProcessor:
 
         # Save mapping
         mapping_file = self.index_dir / "mapping.json"
-        with open(mapping_file, "w", encoding="utf-8") as f:
+        with mapping_file.open("w", encoding="utf-8") as f:
             json.dump(all_chunks, f, ensure_ascii=False, indent=2)
 
         self.logger.info(f"Saved {len(all_chunks)} chunks with embeddings")
@@ -863,10 +869,8 @@ class UnifiedProcessor:
         # Clean up batches if requested
         if remove_batches:
             for pkl_file in pkl_files:
-                try:
+                with contextlib.suppress(Exception):
                     pkl_file.unlink()
-                except Exception:
-                    pass
             self.logger.info(f"Removed {len(pkl_files)} batch files")
 
     def fix_failed_embeddings(self):
@@ -897,7 +901,7 @@ class UnifiedProcessor:
 
         for pkl_file in pkl_files:
             try:
-                with open(pkl_file, "rb") as f:
+                with pkl_file.open("rb") as f:
                     data = pickle.load(f)
 
                 embeddings = np.array(data.get("embeddings", []), dtype="float32")
@@ -931,7 +935,7 @@ class UnifiedProcessor:
 
                         # Save updated
                         data["embeddings"] = embeddings
-                        with open(pkl_file, "wb") as f:
+                        with pkl_file.open("wb") as f:
                             pickle.dump(data, f)
 
                         self.logger.info(f"Fixed {num_zeros} vectors in {pkl_file.name}")
@@ -976,7 +980,7 @@ def main():
         default_chunk_size = 1600
         default_chunk_overlap = 200
         default_batch_size = 64
-    
+
     chunk_parser.add_argument("--chunk-size", type=int, default=default_chunk_size)
     chunk_parser.add_argument("--chunk-overlap", type=int, default=default_chunk_overlap)
     chunk_parser.add_argument("--pattern", default="*.txt", help="File pattern (e.g., '*.txt' or '*.md')")

@@ -7,45 +7,44 @@ Manages all configuration values, environment variables, and default settings.
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional, List
 
 
 @dataclass
 class EmailOpsConfig:
     """Centralized configuration for EmailOps"""
-    
+
     # Directory names
     INDEX_DIRNAME: str = field(default_factory=lambda: os.getenv("INDEX_DIRNAME", "_index"))
     CHUNK_DIRNAME: str = field(default_factory=lambda: os.getenv("CHUNK_DIRNAME", "_chunks"))
-    
+
     # Processing defaults
     DEFAULT_CHUNK_SIZE: int = field(default_factory=lambda: int(os.getenv("CHUNK_SIZE", "1600")))
     DEFAULT_CHUNK_OVERLAP: int = field(default_factory=lambda: int(os.getenv("CHUNK_OVERLAP", "200")))
     DEFAULT_BATCH_SIZE: int = field(default_factory=lambda: int(os.getenv("EMBED_BATCH", "64")))
     DEFAULT_NUM_WORKERS: int = field(default_factory=lambda: int(os.getenv("NUM_WORKERS", str(os.cpu_count() or 4))))
-    
+
     # Embedding provider settings
     EMBED_PROVIDER: str = field(default_factory=lambda: os.getenv("EMBED_PROVIDER", "vertex"))
     VERTEX_EMBED_MODEL: str = field(default_factory=lambda: os.getenv("VERTEX_EMBED_MODEL", "gemini-embedding-001"))
-    
+
     # GCP settings
-    GCP_PROJECT: Optional[str] = field(default_factory=lambda: os.getenv("GCP_PROJECT"))
+    GCP_PROJECT: str | None = field(default_factory=lambda: os.getenv("GCP_PROJECT"))
     GCP_REGION: str = field(default_factory=lambda: os.getenv("GCP_REGION", "us-central1"))
     VERTEX_LOCATION: str = field(default_factory=lambda: os.getenv("VERTEX_LOCATION", "us-central1"))
-    
+
     # Paths
     SECRETS_DIR: Path = field(default_factory=lambda: Path(os.getenv("SECRETS_DIR", "secrets")))
-    GOOGLE_APPLICATION_CREDENTIALS: Optional[str] = field(
+    GOOGLE_APPLICATION_CREDENTIALS: str | None = field(
         default_factory=lambda: os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
     )
-    
+
     # File patterns
-    ALLOWED_FILE_PATTERNS: List[str] = field(
+    ALLOWED_FILE_PATTERNS: list[str] = field(
         default_factory=lambda: ["*.txt", "*.pdf", "*.docx", "*.doc", "*.xlsx", "*.xls", "*.md", "*.csv"]
     )
-    
+
     # Credential file priority list (for auto-discovery)
-    CREDENTIAL_FILES_PRIORITY: List[str] = field(default_factory=lambda: [
+    CREDENTIAL_FILES_PRIORITY: list[str] = field(default_factory=lambda: [
         "embed2-474114-fca38b4d2068.json",
         "api-agent-470921-4e2065b2ecf9.json",
         "apt-arcana-470409-i7-ce42b76061bf.json",
@@ -53,54 +52,54 @@ class EmailOpsConfig:
         "my-project-31635v-8ec357ac35b2.json",
         "semiotic-nexus-470620-f3-3240cfaf6036.json",
     ])
-    
+
     # Security settings
     ALLOW_PARENT_TRAVERSAL: bool = field(default_factory=lambda: os.getenv("ALLOW_PARENT_TRAVERSAL", "false").lower() == "true")
     COMMAND_TIMEOUT_SECONDS: int = field(default_factory=lambda: int(os.getenv("COMMAND_TIMEOUT", "3600")))
-    
+
     # Logging
     LOG_LEVEL: str = field(default_factory=lambda: os.getenv("LOG_LEVEL", "INFO"))
-    
+
     # Monitoring
     ACTIVE_WINDOW_SECONDS: int = field(default_factory=lambda: int(os.getenv("ACTIVE_WINDOW_SECONDS", "120")))
-    
+
     @classmethod
     def load(cls) -> 'EmailOpsConfig':
         """
         Load configuration from environment.
-        
+
         Returns:
             Configured EmailOpsConfig instance
         """
         return cls()
-    
+
     def get_secrets_dir(self) -> Path:
         """
         Get the secrets directory path, resolving relative paths.
-        
+
         Returns:
             Absolute path to secrets directory
         """
         if self.SECRETS_DIR.is_absolute():
             return self.SECRETS_DIR
-        
+
         # Try relative to current working directory
         cwd_secrets = Path.cwd() / self.SECRETS_DIR
         if cwd_secrets.exists():
             return cwd_secrets.resolve()
-        
+
         # Try relative to this file's parent (emailops package root)
         package_secrets = Path(__file__).parent.parent / self.SECRETS_DIR
         if package_secrets.exists():
             return package_secrets.resolve()
-        
+
         # Return default, even if it doesn't exist
         return self.SECRETS_DIR.resolve()
-    
-    def get_credential_file(self) -> Optional[Path]:
+
+    def get_credential_file(self) -> Path | None:
         """
         Find a valid credential file from the priority list.
-        
+
         Returns:
             Path to credential file if found, None otherwise
         """
@@ -109,27 +108,27 @@ class EmailOpsConfig:
             creds_path = Path(self.GOOGLE_APPLICATION_CREDENTIALS)
             if creds_path.exists():
                 return creds_path
-        
+
         # Search in secrets directory
         secrets_dir = self.get_secrets_dir()
         if not secrets_dir.exists():
             return None
-        
+
         for cred_file in self.CREDENTIAL_FILES_PRIORITY:
             cred_path = secrets_dir / cred_file
             if cred_path.exists():
                 try:
                     # Validate it's a proper JSON file
                     import json
-                    with open(cred_path, 'r') as f:
+                    with cred_path.open() as f:
                         data = json.load(f)
                         if "project_id" in data and "client_email" in data:
                             return cred_path
                 except Exception:
                     continue
-        
+
         return None
-    
+
     def update_environment(self) -> None:
         """
         Update os.environ with configuration values.
@@ -145,21 +144,21 @@ class EmailOpsConfig:
         os.environ["GCP_REGION"] = self.GCP_REGION
         os.environ["VERTEX_LOCATION"] = self.VERTEX_LOCATION
         os.environ["LOG_LEVEL"] = self.LOG_LEVEL
-        
+
         if self.GCP_PROJECT:
             os.environ["GCP_PROJECT"] = self.GCP_PROJECT
             os.environ["GOOGLE_CLOUD_PROJECT"] = self.GCP_PROJECT
             os.environ["VERTEX_PROJECT"] = self.GCP_PROJECT
-        
+
         # Set credentials if found
         cred_file = self.get_credential_file()
         if cred_file:
             os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(cred_file)
-    
+
     def to_dict(self) -> dict:
         """
         Convert configuration to dictionary.
-        
+
         Returns:
             Configuration as dictionary
         """
@@ -183,13 +182,13 @@ class EmailOpsConfig:
 
 
 # Global configuration instance
-_config: Optional[EmailOpsConfig] = None
+_config: EmailOpsConfig | None = None
 
 
 def get_config() -> EmailOpsConfig:
     """
     Get the global configuration instance (singleton pattern).
-    
+
     Returns:
         Global EmailOpsConfig instance
     """

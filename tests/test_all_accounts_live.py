@@ -9,12 +9,18 @@ import os
 import sys
 import time
 from datetime import datetime
+from pathlib import Path
 
 import pytest
 from dotenv import load_dotenv
 
-from emailops.llm_runtime import _init_vertex, load_validated_accounts, reset_vertex_init, LLMError
 from emailops.llm_client import embed_texts
+from emailops.llm_runtime import (
+    LLMError,
+    _init_vertex,
+    load_validated_accounts,
+    reset_vertex_init,
+)
 
 # Load environment variables
 load_dotenv()
@@ -87,7 +93,7 @@ def make_live_api_call(account):
 
 
 @pytest.mark.skipif(
-    not os.path.exists("validated_accounts.json") and not os.path.exists("secrets"),
+    not Path("validated_accounts.json").exists() and not Path("secrets").exists(),
     reason="GCP credentials not available for testing"
 )
 def test_parallel_calls():
@@ -165,8 +171,8 @@ def main():
                 logger.info(f"   - Error: {result['details']['error']}")
 
         # Save results
-        output_file = "live_api_test_results.json"
-        with open(output_file, "w") as f:
+        output_file = Path("live_api_test_results.json")
+        with output_file.open("w") as f:
             json.dump(
                 {
                     "timestamp": datetime.now().isoformat(),

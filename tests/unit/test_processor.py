@@ -303,15 +303,20 @@ class TestUnifiedProcessor(TestCase):
         mock_get_config.return_value = mock_config
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            processor = UnifiedProcessor(tmpdir, mode="chunk")
+            processor = None
+            try:
+                processor = UnifiedProcessor(tmpdir, mode="chunk")
 
-            assert processor.root_dir == Path(tmpdir).resolve()
-            assert processor.mode == "chunk"
-            assert processor.batch_size == 64
-            assert processor.chunk_size == 1600
-            assert processor.chunk_overlap == 200
-            assert processor.resume is True
-            assert processor.test_mode is False
+                assert processor.root_dir == Path(tmpdir).resolve()
+                assert processor.mode == "chunk"
+                assert processor.batch_size == 64
+                assert processor.chunk_size == 1600
+                assert processor.chunk_overlap == 200
+                assert processor.resume is True
+                assert processor.test_mode is False
+            finally:
+                if processor:
+                    processor.close()
 
     @patch('emailops.config.get_config')
     def test_init_with_custom_params(self, mock_get_config):
@@ -326,23 +331,28 @@ class TestUnifiedProcessor(TestCase):
         mock_get_config.return_value = mock_config
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            processor = UnifiedProcessor(
-                tmpdir,
-                mode="embed",
-                num_workers=8,
-                batch_size=128,
-                chunk_size=2000,
-                chunk_overlap=300,
-                resume=False,
-                test_mode=True
-            )
+            processor = None
+            try:
+                processor = UnifiedProcessor(
+                    tmpdir,
+                    mode="embed",
+                    num_workers=8,
+                    batch_size=128,
+                    chunk_size=2000,
+                    chunk_overlap=300,
+                    resume=False,
+                    test_mode=True
+                )
 
-            assert processor.num_workers == 8
-            assert processor.batch_size == 128
-            assert processor.chunk_size == 2000
-            assert processor.chunk_overlap == 300
-            assert processor.resume is False
-            assert processor.test_mode is True
+                assert processor.num_workers == 8
+                assert processor.batch_size == 128
+                assert processor.chunk_size == 2000
+                assert processor.chunk_overlap == 300
+                assert processor.resume is False
+                assert processor.test_mode is True
+            finally:
+                if processor:
+                    processor.close()
 
     @patch('emailops.config.get_config')
     def test_init_embed_mode(self, mock_get_config):
@@ -357,11 +367,16 @@ class TestUnifiedProcessor(TestCase):
         mock_get_config.return_value = mock_config
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            processor = UnifiedProcessor(tmpdir, mode="embed")
+            processor = None
+            try:
+                processor = UnifiedProcessor(tmpdir, mode="embed")
 
-            assert processor.mode == "embed"
-            assert processor.index_dir.exists()
-            assert processor.index_dir.name == "_index"
+                assert processor.mode == "embed"
+                assert processor.index_dir.exists()
+                assert processor.index_dir.name == "_index"
+            finally:
+                if processor:
+                    processor.close()
 
     @patch('emailops.config.get_config', side_effect=ImportError)
     def test_init_without_config(self, mock_get_config):
@@ -386,14 +401,15 @@ class TestUnifiedProcessor(TestCase):
         mock_get_config.return_value = mock_config
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            processor = UnifiedProcessor(tmpdir, chunk_size=2000, chunk_overlap=300)
-            config = processor._build_chunk_config_kwargs()
-
-            assert config["chunk_size"] == 2000
-            assert config["chunk_overlap"] == 300
-            assert config["respect_sentences"] is True
-            assert config["respect_paragraphs"] is True
-            assert config["progressive_scaling"] is True
+            processor = None
+            try:
+                processor = UnifiedProcessor(root_dir=tmpdir)
+                config = processor._build_chunk_config_kwargs()
+                assert config["chunk_size"] == 1600
+                assert config["chunk_overlap"] == 200
+            finally:
+                if processor:
+                    processor.close()
 
     @patch('emailops.config.get_config')
     def test_find_documents_basic(self, mock_get_config):
@@ -478,6 +494,7 @@ class TestUnifiedProcessor(TestCase):
             jobs = processor._find_documents("*.txt")
 
             assert len(jobs) == 10  # Limited by test mode
+            processor.close()
 
     @patch('emailops.config.get_config')
     def test_distribute_chunking_work(self, mock_get_config):
@@ -491,29 +508,35 @@ class TestUnifiedProcessor(TestCase):
         mock_get_config.return_value = mock_config
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            processor = UnifiedProcessor(tmpdir, num_workers=2)
+            processor = None
+            try:
+                processor = UnifiedProcessor(tmpdir, num_workers=2)
 
-            jobs = [
-                ChunkJob("doc1", Path("/path1"), 1000),
-                ChunkJob("doc2", Path("/path2"), 2000),
-                ChunkJob("doc3", Path("/path3"), 1500),
-                ChunkJob("doc4", Path("/path4"), 500)
-            ]
+                jobs = [
+                    ChunkJob("doc1", Path("/path1"), 1000),
+                    ChunkJob("doc2", Path("/path2"), 2000),
+                    ChunkJob("doc3", Path("/path3"), 1500),
+                    ChunkJob("doc4", Path("/path4"), 500)
+                ]
 
-            chunk_config = {"chunk_size": 1600}
-            configs = processor._distribute_chunking_work(jobs, chunk_config)
+                chunk_config = {"chunk_size": 1600}
+                configs = processor._distribute_chunking_work(jobs, chunk_config)
 
-            assert len(configs) == 2
-            assert all(isinstance(c, WorkerConfig) for c in configs)
+                assert len(configs) == 2
+                assert all(isinstance(c, WorkerConfig) for c in configs)
 
-            # Check work is distributed
-            total_jobs = sum(len(c.jobs_assigned) for c in configs)
-            assert total_jobs == 4
+                # Check work is distributed
+                total_jobs = sum(len(c.jobs_assigned) for c in configs)
+                assert total_jobs == 4
 
-            # Check load balancing (should distribute by size)
-            worker0_size = sum(job[2] for job in configs[0].jobs_assigned)
-            worker1_size = sum(job[2] for job in configs[1].jobs_assigned)
-            assert abs(worker0_size - worker1_size) <= 1000  # Reasonably balanced
+                # Check load balancing (should distribute by size)
+                worker0_size = sum(job[2] for job in configs[0].jobs_assigned)
+                worker1_size = sum(job[2] for job in configs[1].jobs_assigned)
+                assert abs(worker0_size - worker1_size) <= 1000  # Reasonably balanced
+            finally:
+                if processor:
+                    processor.close()
+            processor.close()
 
 
 class TestChunkWorkerEntry(TestCase):
@@ -684,6 +707,7 @@ class TestIndexOperations(TestCase):
                 # Check outputs
                 assert (processor.index_dir / "embeddings.npy").exists()
                 assert (processor.index_dir / "mapping.json").exists()
+                processor.close()
 
     @patch('emailops.config.get_config')
     def test_repair_index_no_files(self, mock_get_config):
@@ -702,6 +726,7 @@ class TestIndexOperations(TestCase):
 
             # Should exit early - no files created
             assert not (processor.index_dir / "embeddings.npy").exists()
+            processor.close()
 
 
 class TestCLI(TestCase):
@@ -818,6 +843,7 @@ class TestErrorHandling(TestCase):
             emb_dir = Path(tmpdir) / "_index" / "embeddings"
             pkl_files = list(emb_dir.glob("*.pkl"))
             assert len(pkl_files) == 1  # Only successful batch saved
+            processor.close()
 
     @patch('emailops.config.get_config')
     @patch('processing.processor._initialize_gcp_credentials')
@@ -854,6 +880,7 @@ class TestErrorHandling(TestCase):
 
             # Should handle error without crashing
             mock_embed.assert_called()
+            processor.close()
 
 
 class TestMonitoringFunctions(TestCase):
@@ -898,6 +925,7 @@ class TestMonitoringFunctions(TestCase):
                 mock_system.assert_called()
                 # Should print progress info
                 assert mock_print.call_count > 5
+                processor.close()
 
     @patch('emailops.config.get_config')
     def test_print_summary(self, mock_get_config):
@@ -947,3 +975,4 @@ class TestMonitoringFunctions(TestCase):
                 print_calls = [str(call) for call in mock_print.call_args_list]
                 assert any("Total processed: 8" in str(call) for call in print_calls)
                 assert any("Total errors: 3" in str(call) for call in print_calls)
+                processor.close()

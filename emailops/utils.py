@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import contextlib
 import datetime
 import json
 import logging
 import os
 import re
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 
 """
@@ -17,7 +19,7 @@ Notes:
   newlines so downstream JSON serialization and indexing are reliable.
 """
 
-# Best‑effort env loading (safe if python-dotenv isn't installed)
+# Best-effort env loading (safe if python-dotenv isn't installed)
 try:  # pragma: no cover
     from dotenv import load_dotenv
 
@@ -135,7 +137,7 @@ def _extract_text_from_doc_win32(path: Path) -> str:
         finally:
             if doc:
                 doc.Close(False)
-            word.Quit()  # type: ignore[attr-defined]
+            word.Quit()
     except ImportError:
         logger.warning("pywin32 not installed; cannot process .doc files on Windows.")
         return ""
@@ -170,17 +172,13 @@ def _extract_eml(path: Path) -> str:
         for part in msg.walk():
             ctype = part.get_content_type()
             if ctype == "text/plain":
-                try:
+                with contextlib.suppress(Exception):
                     bodies.append(part.get_content())
-                except Exception:
-                    pass
         if not bodies:
             for part in msg.walk():
                 if part.get_content_type() == "text/html":
-                    try:
+                    with contextlib.suppress(Exception):
                         bodies.append(_html_to_text(part.get_content()))
-                    except Exception:
-                        pass
     else:
         ctype = msg.get_content_type()
         try:
@@ -222,7 +220,7 @@ def _extract_msg(path: Path) -> str:
             if val:
                 headers.append(f"{k.capitalize()}: {val}")
 
-        text = "\n".join(headers + ["", body])
+        text = "\n".join([*headers, "", body])
         return _strip_control_chars(text)
     except Exception as e:
         logger.warning("Failed to parse MSG %s: %s", path, e)
@@ -275,7 +273,7 @@ def extract_text(path: Path, *, max_chars: int | None = None) -> str:
                     win_text = _extract_text_from_doc_win32(path)
                     if win_text:
                         return win_text[:max_chars] if max_chars else win_text
-                # Cross‑platform best-effort: try textract if installed; otherwise skip
+                # Cross-platform best-effort: try textract if installed; otherwise skip
                 try:
                     import textract  # type: ignore
 
@@ -581,7 +579,6 @@ def split_email_thread(text: str) -> list[str]:
         return [text.strip()]
 
     # If multiple parts have recognizable Date headers, sort them
-    from email.utils import parsedate_to_datetime
 
     def _parse_date(s: str):
         m = re.search(r"(?mi)^Date:\s*(.+?)$", s)
