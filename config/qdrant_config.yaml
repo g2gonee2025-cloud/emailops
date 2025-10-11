@@ -1,0 +1,53 @@
+# Qdrant Vector Database Configuration for EmailOps
+# This configuration file contains settings for connecting to and using Qdrant
+
+qdrant:
+  # Connection settings
+  host: "localhost"
+  port: 6333
+  grpc_port: 6334
+  api_key: null  # Set if using Qdrant Cloud or secured instance
+  https: false   # Set to true for HTTPS connections
+  
+  # Collection settings
+  collection_name: "emailops_embeddings"
+  
+  # Vector configuration
+  vector_config:
+    size: 768  # Default embedding dimension (adjust based on your model)
+    distance: "Cosine"  # Options: Cosine, Euclid, Dot
+  
+  # Performance settings
+  batch_size: 100
+  parallel: 4
+  
+  # Search settings
+  search_limit: 10  # Default number of results to return
+  
+  # Storage settings
+  on_disk_payload: true  # Store payload on disk for large datasets
+  
+  # Indexing settings
+  indexing_threshold: 20000  # Switch to HNSW index after this many vectors
+  
+  # Optional: Quantization settings for memory optimization
+  quantization:
+    enabled: false
+    type: "scalar"  # Options: scalar, product
+    
+  # Collection optimization settings
+  optimizers_config:
+    deleted_threshold: 0.2
+    vacuum_min_vector_number: 1000
+    default_segment_number: 2
+    max_segment_size: 200000
+    memmap_threshold: 50000
+    indexing_threshold: 20000
+    flush_interval_sec: 5
+    max_optimization_threads: 1
+
+# Development settings
+development:
+  recreate_collection: false  # Set to true to recreate collection on startup
+  enable_telemetry: false
+  log_level: "INFO"

@@ -3,23 +3,28 @@ Processing Module for EmailOps
 Provides text processing, embedding, and monitoring capabilities
 """
 
-from .processor import UnifiedProcessor, ChunkJob, WorkerConfig, WorkerStats, ProcessingStats
-from ..diagnostics.monitor import IndexMonitor, IndexStatus, ProcessInfo
+from diagnostics.monitor import IndexMonitor, IndexStatus, ProcessInfo
+from processing.processor import (
+    ChunkJob,
+    ProcessingStats,
+    UnifiedProcessor,
+    WorkerConfig,
+    WorkerStats,
+)
 
 __all__ = [
     # Main classes
-    'UnifiedProcessor',
-    'IndexMonitor',
-    
+    "UnifiedProcessor",
+    "IndexMonitor",
     # Data classes
-    'ChunkJob',
-    'WorkerConfig', 
-    'WorkerStats',
-    'ProcessingStats',
-    'IndexStatus',
-    'ProcessInfo',
+    "ChunkJob",
+    "WorkerConfig",
+    "WorkerStats",
+    "ProcessingStats",
+    "IndexStatus",
+    "ProcessInfo",
 ]
 
 # Module information
-__version__ = '2.0.0'
-__author__ = 'EmailOps Team'
+__version__ = "2.0.0"
+__author__ = "EmailOps Team"

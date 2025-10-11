@@ -1,4 +1,12 @@
-﻿from __future__ import annotations
+from __future__ import annotations
+
+import datetime
+import json
+import logging
+import os
+import re
+from pathlib import Path
+
 """
 Utilities for reading conversation exports and attachments.
 
@@ -8,16 +16,11 @@ Notes:
 - All extracted text is sanitized to remove control characters and normalize
   newlines so downstream JSON serialization and indexing are reliable.
 """
-import os
-import re
-import json
-import logging
-from pathlib import Path
-from typing import Iterable, List, Optional, Dict
 
 # Best‑effort env loading (safe if python-dotenv isn't installed)
 try:  # pragma: no cover
     from dotenv import load_dotenv
+
     load_dotenv()
 except Exception:  # pragma: no cover - optional dependency
     pass
@@ -29,7 +32,16 @@ logger = logging.getLogger(__name__)
 # File type support
 # ---------------------------------------------------------------------------
 TEXT_EXTENSIONS = {
-    ".txt", ".md", ".log", ".json", ".yaml", ".yml", ".csv", ".xml", ".html", ".htm"
+    ".txt",
+    ".md",
+    ".log",
+    ".json",
+    ".yaml",
+    ".yml",
+    ".csv",
+    ".xml",
+    ".html",
+    ".htm",
 }
 DOCX_EXTENSIONS = {".docx", ".doc"}
 PDF_EXTENSIONS = {".pdf"}
@@ -44,6 +56,7 @@ EMAIL_EXTENSIONS = {".eml", ".msg"}
 # Control chars (except TAB, LF) frequently break JSON & indexing
 _CONTROL_CHARS = re.compile(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]")
 
+
 def _strip_control_chars(s: str) -> str:
     """Remove non-printable control characters and normalize newlines."""
     if not s:
@@ -52,7 +65,8 @@ def _strip_control_chars(s: str) -> str:
     s = s.replace("\r\n", "\n").replace("\r", "\n")
     return _CONTROL_CHARS.sub("", s)
 
-def read_text_file(path: Path, *, max_chars: Optional[int] = None) -> str:
+
+def read_text_file(path: Path, *, max_chars: int | None = None) -> str:
     """
     Read a text file with multiple fallbacks and basic sanitation.
 
@@ -64,7 +78,8 @@ def read_text_file(path: Path, *, max_chars: Optional[int] = None) -> str:
         Decoded and sanitized string (may be truncated if max_chars is set)
     """
     # Try a few common encodings; fall back to latin-1 with ignore
-    for enc in ("utf-8", "utf-8-sig", "utf-16"):
+    # Try utf-8-sig first to handle BOM properly
+    for enc in ("utf-8-sig", "utf-8", "utf-16"):
         try:
             data = path.read_text(encoding=enc)
             break
@@ -84,6 +99,7 @@ def read_text_file(path: Path, *, max_chars: Optional[int] = None) -> str:
         data = data[:max_chars]
     return _strip_control_chars(data)
 
+
 def _html_to_text(html: str) -> str:
     """Best-effort conversion of HTML to text; falls back to regex strip."""
     if not html:
@@ -91,6 +107,7 @@ def _html_to_text(html: str) -> str:
     # Try BeautifulSoup if available for better results
     try:
         from bs4 import BeautifulSoup  # type: ignore
+
         soup = BeautifulSoup(html, "html.parser")
         # Remove script/style
         for tag in soup(["script", "style", "noscript"]):
@@ -103,10 +120,12 @@ def _html_to_text(html: str) -> str:
         text = re.sub(r"<[^>]+>", " ", text)
         return re.sub(r"\s+", " ", text)
 
+
 def _extract_text_from_doc_win32(path: Path) -> str:
     """Use pywin32/Word to extract text from legacy .doc files on Windows."""
     try:
         import win32com.client  # type: ignore
+
         word = win32com.client.Dispatch("Word.Application")
         word.Visible = False
         doc = None
@@ -124,25 +143,29 @@ def _extract_text_from_doc_win32(path: Path) -> str:
         logger.error("Error processing .doc file %s with win32com: %s", path, e)
         return ""
 
+
 def _extract_eml(path: Path) -> str:
     """Parse .eml messages using the stdlib 'email' package."""
     try:
         from email import policy
         from email.parser import BytesParser
-        from email.utils import parsedate_to_datetime  # noqa: F401  (imported for potential future use)
+        from email.utils import (
+            parsedate_to_datetime,  # noqa: F401  (imported for potential future use)
+        )
+
         msg = BytesParser(policy=policy.default).parsebytes(path.read_bytes())
     except Exception as e:
         logger.warning("Failed to parse EML %s: %s", path, e)
         return ""
 
-    parts: List[str] = []
+    parts: list[str] = []
     # Include a minimal header block for context
     for hdr in ("From", "To", "Cc", "Bcc", "Subject", "Date"):
         if msg.get(hdr):
             parts.append(f"{hdr}: {msg.get(hdr)}")
 
     # Prefer text/plain; fall back to text/html
-    bodies: List[str] = []
+    bodies: list[str] = []
     if msg.is_multipart():
         for part in msg.walk():
             ctype = part.get_content_type()
@@ -171,6 +194,7 @@ def _extract_eml(path: Path) -> str:
     parts.append("")  # blank line between headers and body
     parts.append("\n\n".join(bodies))
     return _strip_control_chars("\n".join(parts)).strip()
+
 
 def _extract_msg(path: Path) -> str:
     """Parse Outlook .msg files if extract_msg is available."""
@@ -204,7 +228,8 @@ def _extract_msg(path: Path) -> str:
         logger.warning("Failed to parse MSG %s: %s", path, e)
         return ""
 
-def extract_text(path: Path, *, max_chars: Optional[int] = None) -> str:
+
+def extract_text(path: Path, *, max_chars: int | None = None) -> str:
     """
     Extract text from supported file types with robust error handling.
     Unknown formats return an empty string.
@@ -230,8 +255,11 @@ def extract_text(path: Path, *, max_chars: Optional[int] = None) -> str:
         try:
             if suffix == ".docx":
                 import docx  # type: ignore
+
                 doc = docx.Document(str(path))
-                parts: List[str] = [p.text for p in doc.paragraphs if p.text and p.text.strip()]
+                parts: list[str] = [
+                    p.text for p in doc.paragraphs if p.text and p.text.strip()
+                ]
                 # Include table cells
                 for table in getattr(doc, "tables", []):
                     for row in table.rows:
@@ -250,14 +278,20 @@ def extract_text(path: Path, *, max_chars: Optional[int] = None) -> str:
                 # Cross‑platform best-effort: try textract if installed; otherwise skip
                 try:
                     import textract  # type: ignore
+
                     raw = textract.process(str(path))  # bytes
                     txt = raw.decode("utf-8", errors="ignore")
                     return _strip_control_chars(txt[:max_chars] if max_chars else txt)
                 except Exception:
-                    logger.info("No supported reader for legacy .doc file on this platform: %s", path)
+                    logger.info(
+                        "No supported reader for legacy .doc file on this platform: %s",
+                        path,
+                    )
                     return ""
         except ImportError:
-            logger.info("python-docx/textract not installed, skipping Word file: %s", path)
+            logger.info(
+                "python-docx/textract not installed, skipping Word file: %s", path
+            )
             return ""
         except Exception as e:
             logger.warning("Failed to read Word document %s: %s", path, e)
@@ -267,8 +301,9 @@ def extract_text(path: Path, *, max_chars: Optional[int] = None) -> str:
     if suffix in PPT_EXTENSIONS:
         try:
             from pptx import Presentation  # type: ignore
+
             prs = Presentation(str(path))
-            parts: List[str] = []
+            parts: list[str] = []
             for slide in prs.slides:
                 for shape in slide.shapes:
                     # Many shapes expose .text; ignore drawing objects without text
@@ -289,7 +324,10 @@ def extract_text(path: Path, *, max_chars: Optional[int] = None) -> str:
     if suffix in RTF_EXTENSIONS:
         try:
             from striprtf.striprtf import rtf_to_text  # type: ignore
-            data = path.read_bytes().decode("latin-1", errors="ignore")  # RTF is ASCII/latin-1 compatible
+
+            data = path.read_bytes().decode(
+                "latin-1", errors="ignore"
+            )  # RTF is ASCII/latin-1 compatible
             text = rtf_to_text(data)
             return _strip_control_chars(text[:max_chars] if max_chars else text)
         except ImportError:
@@ -303,6 +341,7 @@ def extract_text(path: Path, *, max_chars: Optional[int] = None) -> str:
     if suffix in PDF_EXTENSIONS:
         try:
             from pypdf import PdfReader  # type: ignore
+
             try:
                 pdf = PdfReader(str(path))
                 # Try empty-password decryption when possible
@@ -310,9 +349,11 @@ def extract_text(path: Path, *, max_chars: Optional[int] = None) -> str:
                     try:
                         pdf.decrypt("")  # type: ignore[attr-defined]
                     except Exception:
-                        logger.warning("Skipping encrypted PDF (unable to decrypt): %s", path)
+                        logger.warning(
+                            "Skipping encrypted PDF (unable to decrypt): %s", path
+                        )
                         return ""
-                parts: List[str] = []
+                parts: list[str] = []
                 for i, page in enumerate(getattr(pdf, "pages", [])):
                     try:
                         t = page.extract_text() or ""
@@ -322,7 +363,12 @@ def extract_text(path: Path, *, max_chars: Optional[int] = None) -> str:
                         if max_chars and sum(len(p) for p in parts) >= max_chars:
                             break
                     except Exception as e:
-                        logger.warning("Failed to extract text from page %d of %s: %s", i + 1, path, e)
+                        logger.warning(
+                            "Failed to extract text from page %d of %s: %s",
+                            i + 1,
+                            path,
+                            e,
+                        )
                 text = "\n".join(parts)
                 return _strip_control_chars(text[:max_chars] if max_chars else text)
             except Exception as e:
@@ -340,13 +386,14 @@ def extract_text(path: Path, *, max_chars: Optional[int] = None) -> str:
     if suffix in EXCEL_EXTENSIONS:
         try:
             import pandas as pd  # type: ignore
+
             # Prefer explicit engines; fall back to pandas auto-detection
             engine = "openpyxl" if suffix == ".xlsx" else "xlrd"
             try:
                 xl = pd.ExcelFile(str(path), engine=engine)
             except Exception:
                 xl = pd.ExcelFile(str(path))  # let pandas pick an engine
-            text_parts: List[str] = []
+            text_parts: list[str] = []
             # Guardrails for very large spreadsheets
             max_cells = int(os.getenv("EXCEL_MAX_CELLS", "200000"))
             for sheet_name in xl.sheet_names:
@@ -356,15 +403,21 @@ def extract_text(path: Path, *, max_chars: Optional[int] = None) -> str:
                     if df.size > max_cells and df.shape[1] > 0:
                         max_rows = max_cells // max(1, df.shape[1])
                         df = df.head(max_rows)
-                    text_parts.append(f"[Sheet: {sheet_name}]\n{df.to_string(index=False)}")
+                    text_parts.append(
+                        f"[Sheet: {sheet_name}]\n{df.to_string(index=False)}"
+                    )
                     if max_chars and sum(len(p) for p in text_parts) >= max_chars:
                         break
                 except Exception as e:
-                    logger.warning("Failed reading sheet '%s' in %s: %s", sheet_name, path, e)
+                    logger.warning(
+                        "Failed reading sheet '%s' in %s: %s", sheet_name, path, e
+                    )
             text = "\n".join(text_parts)
             return _strip_control_chars(text[:max_chars] if max_chars else text)
         except ImportError:
-            logger.info("pandas/openpyxl/xlrd not installed, skipping Excel file: %s", path)
+            logger.info(
+                "pandas/openpyxl/xlrd not installed, skipping Excel file: %s", path
+            )
             return ""
         except Exception as e:
             logger.warning("Failed to read Excel file %s: %s", path, e)
@@ -377,29 +430,40 @@ def extract_text(path: Path, *, max_chars: Optional[int] = None) -> str:
     logger.debug("Unsupported file format for text extraction: %s", suffix)
     return ""
 
+
 # ---------------------------------------------------------------------------
 # Email cleaning / parsing helpers
 # ---------------------------------------------------------------------------
-_HEADER_PATTERNS = [re.compile(p) for p in [
-    r"(?mi)^(From|Sent|To|Subject|Cc|Bcc|Date|Reply-To|Message-ID|In-Reply-To|References):.*$",
-    r"(?mi)^(Importance|X-Priority|X-Mailer|Content-Type|MIME-Version):.*$",
-    r"(?mi)^(Thread-Topic|Thread-Index|Accept-Language|Content-Language):.*$",
-]]
-_SIGNATURE_PATTERNS = [re.compile(p, re.MULTILINE) for p in [
-    r"(?si)^--\s*\n.*",                 # traditional signature delimiter
-    r"(?si)^\s*best regards.*?$",
-    r"(?si)^\s*kind regards.*?$",
-    r"(?si)^\s*sincerely.*?$",
-    r"(?si)^\s*thanks.*?$",
-    r"(?si)^sent from my.*?$",
-    r"(?si)\*{3,}.*?confidential.*?\*{3,}",
-    r"(?si)this email.*?intended recipient.*?$",
-]]
-_FORWARDING_PATTERNS = [re.compile(p) for p in [
-    r"(?m)^-{3,}\s*Original Message\s*-{3,}.*?$",
-    r"(?m)^-{3,}\s*Forwarded Message\s*-{3,}.*?$",
-    r"(?m)^_{10,}.*?$",
-]]
+_HEADER_PATTERNS = [
+    re.compile(p)
+    for p in [
+        r"(?mi)^(From|Sent|To|Subject|Cc|Bcc|Date|Reply-To|Message-ID|In-Reply-To|References):.*$",
+        r"(?mi)^(Importance|X-Priority|X-Mailer|Content-Type|MIME-Version):.*$",
+        r"(?mi)^(Thread-Topic|Thread-Index|Accept-Language|Content-Language):.*$",
+    ]
+]
+_SIGNATURE_PATTERNS = [
+    re.compile(p, re.MULTILINE)
+    for p in [
+        r"(?si)^--\s*\n.*",  # traditional signature delimiter
+        r"(?si)^\s*best regards.*?$",
+        r"(?si)^\s*kind regards.*?$",
+        r"(?si)^\s*sincerely.*?$",
+        r"(?si)^\s*thanks.*?$",
+        r"(?si)^sent from my.*?$",
+        r"(?si)\*{3,}.*?confidential.*?\*{3,}",
+        r"(?si)this email.*?intended recipient.*?$",
+    ]
+]
+_FORWARDING_PATTERNS = [
+    re.compile(p)
+    for p in [
+        r"(?m)^-{3,}\s*Original Message\s*-{3,}.*?$",
+        r"(?m)^-{3,}\s*Forwarded Message\s*-{3,}.*?$",
+        r"(?m)^_{10,}.*?$",
+    ]
+]
+
 
 def clean_email_text(text: str) -> str:
     """
@@ -435,7 +499,9 @@ def clean_email_text(text: str) -> str:
 
     # Remove '>' quoting markers and normalize noise
     text = re.sub(r"(?m)^\s*>+\s?", "", text)
-    text = re.sub(r"[a-zA-Z0-9._%+-]+@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})", r"[email@\1]", text)
+    text = re.sub(
+        r"[a-zA-Z0-9._%+-]+@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})", r"[email@\1]", text
+    )
     text = re.sub(r"https?://[^\s]+", "[URL]", text)
     text = re.sub(r"[=\-_*]{10,}", "", text)
     text = re.sub(r"\.{4,}", "...", text)
@@ -446,14 +512,15 @@ def clean_email_text(text: str) -> str:
     text = re.sub(r"(?m)^\s*$", "", text)  # drop blank-only lines
     return _strip_control_chars(text).strip()
 
-def extract_email_metadata(text: str) -> Dict[str, object]:
+
+def extract_email_metadata(text: str) -> dict[str, object]:
     """
     Extract structured metadata from raw RFC-822 style headers in text.
     Returns a dict with fields: sender, recipients, date, subject, cc, bcc.
 
     This is a best-effort heuristic and does not parse multi-line headers.
     """
-    md: Dict[str, object] = {
+    md: dict[str, object] = {
         "sender": None,
         "recipients": [],
         "date": None,
@@ -485,7 +552,8 @@ def extract_email_metadata(text: str) -> Dict[str, object]:
 
     return md
 
-def split_email_thread(text: str) -> List[str]:
+
+def split_email_thread(text: str) -> list[str]:
     """
     Split an email thread into individual messages.
 
@@ -514,6 +582,7 @@ def split_email_thread(text: str) -> List[str]:
 
     # If multiple parts have recognizable Date headers, sort them
     from email.utils import parsedate_to_datetime
+
     def _parse_date(s: str):
         m = re.search(r"(?mi)^Date:\s*(.+?)$", s)
         if not m:
@@ -523,8 +592,8 @@ def split_email_thread(text: str) -> List[str]:
         except Exception:
             return None
 
-    dated: List[tuple] = []
-    undated: List[str] = []
+    dated: list[tuple] = []
+    undated: list[str] = []
     for p in parts:
         d = _parse_date(p)
         if d:
@@ -533,25 +602,33 @@ def split_email_thread(text: str) -> List[str]:
             undated.append(p)
     if len(dated) >= 2:
         dated.sort(key=lambda x: x[0])
-        ordered = [p for _, p in dated] + undated  # put undated at the end in original order
+        ordered = [
+            p for _, p in dated
+        ] + undated  # put undated at the end in original order
     else:
         ordered = parts
 
     return ordered
 
-def find_conversation_dirs(root: Path) -> List[Path]:
+
+def find_conversation_dirs(root: Path) -> list[Path]:
     """
     Heuristic: a conversation directory contains a 'Conversation.txt' file.
     """
-    return sorted((p.parent for p in root.rglob("Conversation.txt")))
+    return sorted(p.parent for p in root.rglob("Conversation.txt"))
+
 
 def load_conversation(
     convo_dir: Path,
     include_attachment_text: bool = False,
     max_total_attachment_text: int = 10000,
     *,
-    max_attachment_text_chars: int = int(os.getenv("MAX_ATTACHMENT_TEXT_CHARS", "500000")),
-    skip_if_attachment_over_mb: Optional[float] = float(os.getenv("SKIP_ATTACHMENT_OVER_MB", "0"))
+    max_attachment_text_chars: int = int(
+        os.getenv("MAX_ATTACHMENT_TEXT_CHARS", "500000")
+    ),
+    skip_if_attachment_over_mb: float | None = float(
+        os.getenv("SKIP_ATTACHMENT_OVER_MB", "0")
+    ),
 ) -> dict:
     """
     Load conversation content, manifest/summary JSON, and attachment texts.
@@ -584,7 +661,7 @@ def load_conversation(
         "conversation_txt": conversation_text,
         "attachments": [],
         "summary": {},
-        "manifest": {}
+        "manifest": {},
     }
 
     # Load manifest.json (with UTF-8 BOM handling and control character sanitization)
@@ -594,23 +671,40 @@ def load_conversation(
             manifest_text = manifest_json.read_text(encoding="utf-8-sig")
             sanitized_text = _CONTROL_CHARS.sub("", manifest_text)
             # Fix stray single backslashes that break JSON
-            sanitized_text = re.sub(r'(?<!\\)\\(?!["\\/bfnrtu])', r'\\\\', sanitized_text)
+            sanitized_text = re.sub(
+                r'(?<!\\)\\(?!["\\/bfnrtu])', r"\\\\", sanitized_text
+            )
             conv["manifest"] = json.loads(sanitized_text)
         except json.JSONDecodeError as e:
-            logger.warning("Failed to load manifest from %s due to JSON error: %s. Attempting HJSON.", convo_dir, e)
+            logger.warning(
+                "Failed to load manifest from %s due to JSON error: %s. Attempting HJSON.",
+                convo_dir,
+                e,
+            )
             try:
                 import hjson  # type: ignore
+
                 conv["manifest"] = hjson.loads(sanitized_text)
-                logger.info("Successfully parsed manifest for %s using hjson.", convo_dir)
+                logger.info(
+                    "Successfully parsed manifest for %s using hjson.", convo_dir
+                )
             except Exception as hjson_e:
-                logger.error("hjson also failed to parse manifest for %s: %s. Skipping.", convo_dir, hjson_e)
+                logger.error(
+                    "hjson also failed to parse manifest for %s: %s. Skipping.",
+                    convo_dir,
+                    hjson_e,
+                )
                 conv["manifest"] = {}
         except Exception as e:
-            logger.warning("Unexpected error while loading manifest from %s: %s. Skipping.", convo_dir, e)
+            logger.warning(
+                "Unexpected error while loading manifest from %s: %s. Skipping.",
+                convo_dir,
+                e,
+            )
             conv["manifest"] = {}
 
     # Build attachment file list (avoid duplicates)
-    attachment_files: List[Path] = []
+    attachment_files: list[Path] = []
     attachments_dir = convo_dir / "Attachments"
     if attachments_dir.exists() and attachments_dir.is_dir():
         attachment_files.extend([p for p in attachments_dir.rglob("*") if p.is_file()])
@@ -625,7 +719,7 @@ def load_conversation(
 
     # Deduplicate while preserving order
     seen: set[str] = set()
-    unique_files: List[Path] = []
+    unique_files: list[Path] = []
     for f in attachment_files:
         try:
             s = str(f.resolve())
@@ -642,7 +736,12 @@ def load_conversation(
                 try:
                     mb = att_file.stat().st_size / (1024 * 1024)
                     if mb > skip_if_attachment_over_mb:
-                        logger.info("Skipping large attachment (%.2f MB > %.2f MB): %s", mb, skip_if_attachment_over_mb, att_file)
+                        logger.info(
+                            "Skipping large attachment (%.2f MB > %.2f MB): %s",
+                            mb,
+                            skip_if_attachment_over_mb,
+                            att_file,
+                        )
                         continue
                 except Exception:
                     pass
@@ -653,7 +752,10 @@ def load_conversation(
                 conv["attachments"].append(att_rec)
 
                 # Optionally append a truncated view of the attachment into conversation_txt
-                if include_attachment_text and total_appended < max_total_attachment_text:
+                if (
+                    include_attachment_text
+                    and total_appended < max_total_attachment_text
+                ):
                     remaining = max_total_attachment_text - total_appended
                     header = f"\n\n--- ATTACHMENT: {att_file.name} ---\n\n"
                     snippet = txt[: max(0, remaining - len(header))]
@@ -671,6 +773,41 @@ def load_conversation(
 
     return conv
 
+
 def ensure_dir(p: Path) -> None:
     """Create directory and parents if needed (idempotent)."""
     p.mkdir(parents=True, exist_ok=True)
+
+
+# ---------------------------------------------------------------------------
+# Person class with age property
+# ---------------------------------------------------------------------------
+class Person:
+    def __init__(self, name: str, birthdate: str):
+        """
+        Initialize a Person object.
+
+        Args:
+            name: Full name of the person
+            birthdate: Birthdate in ISO format (YYYY-MM-DD)
+        """
+        self.name = name
+        self.birthdate = birthdate
+
+    @property
+    def age(self) -> int:
+        """Calculate age based on the birthdate."""
+        if not self.birthdate:
+            return 0
+        try:
+            birth_date = datetime.datetime.strptime(self.birthdate, "%Y-%m-%d")
+            today = datetime.datetime.today()
+            return today.year - birth_date.year - (
+                (today.month, today.day) < (birth_date.month, birth_date.day)
+            )
+        except Exception:
+            return 0
+
+    def getAge(self) -> int:
+        """Alias for the age property."""
+        return self.age

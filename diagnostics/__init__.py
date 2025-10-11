@@ -9,50 +9,45 @@ Modules:
 - utils: Shared utility functions
 """
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Import main functions from consolidated modules
 from diagnostics.diagnostics import (
-    test_account,
+    check_index_consistency,
     diagnose_all_accounts,
+    test_account,
     verify_index_alignment,
-    check_index_consistency
 )
-
 from diagnostics.statistics import (
     analyze_file_processing,
-    get_file_statistics,
     count_total_chunks,
-    monitor_indexing_progress
+    get_file_statistics,
+    monitor_indexing_progress,
 )
-
 from diagnostics.utils import (
-    setup_logging,
-    get_index_path,
-    get_export_root,
     format_timestamp,
-    save_json_report
+    get_export_root,
+    get_index_path,
+    save_json_report,
+    setup_logging,
 )
 
 __all__ = [
-    # Diagnostics
-    'test_account',
-    'diagnose_all_accounts',
-    'verify_index_alignment',
-    'check_index_consistency',
-    # Statistics
-    'analyze_file_processing',
-    'get_file_statistics',
-    'count_total_chunks',
-    'monitor_indexing_progress',
-    # Utils
-    'setup_logging',
-    'get_index_path',
-    'get_export_root',
-    'format_timestamp',
-    'save_json_report',
+    "analyze_file_processing",
+    "check_index_consistency",
+    "count_total_chunks",
+    "diagnose_all_accounts",
+    "format_timestamp",
+    "get_export_root",
+    "get_file_statistics",
+    "get_index_path",
+    "monitor_indexing_progress",
+    "save_json_report",
+    "setup_logging",
+    "test_account",
+    "verify_index_alignment",
 ]
