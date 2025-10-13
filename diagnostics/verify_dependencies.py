@@ -4,6 +4,7 @@
 import json
 import sys
 from datetime import datetime
+from pathlib import Path
 
 
 def check_import(module_name):
@@ -28,7 +29,7 @@ def get_version(module_name):
             return module.VERSION
         else:
             return "Version unknown"
-    except:
+    except Exception:
         return "N/A"
 
 # List of critical dependencies to check
@@ -123,7 +124,7 @@ else:
     print("\n✓ All critical dependencies are properly installed!")
 
 # Save results to JSON
-with open('dependency_verification_results.json', 'w') as f:
+with Path('dependency_verification_results.json').open('w') as f:
     json.dump({
         "timestamp": datetime.now().isoformat(),
         "python_version": sys.version,

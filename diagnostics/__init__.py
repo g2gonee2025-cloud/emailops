@@ -16,12 +16,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Import main functions from consolidated modules
-from diagnostics.diagnostics import (
-    check_index_consistency,
-    diagnose_all_accounts,
-    test_account,
-    verify_index_alignment,
-)
 from diagnostics.statistics import (
     analyze_file_processing,
     count_total_chunks,

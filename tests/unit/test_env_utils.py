@@ -165,9 +165,8 @@ class TestEnvUtils(TestCase):
             mock_path_obj.exists.return_value = False
             mock_path.return_value = mock_path_obj
 
-            with patch('emailops.llm_runtime.DEFAULT_ACCOUNTS', []):
-                with pytest.raises(Exception):  # Will raise LLMError due to no valid accounts
-                    self.env_utils.load_validated_accounts("test.json")
+            with patch('emailops.llm_runtime.DEFAULT_ACCOUNTS', []), pytest.raises(self.env_utils.LLMError):
+                self.env_utils.load_validated_accounts("test.json")
 
 
 class TestEnvUtilsErrorHandling(TestCase):

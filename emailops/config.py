@@ -45,10 +45,10 @@ class EmailOpsConfig:
 
     # Credential file priority list (for auto-discovery)
     CREDENTIAL_FILES_PRIORITY: list[str] = field(default_factory=lambda: [
-        "embed2-474114-fca38b4d2068.json",
-        "api-agent-470921-4e2065b2ecf9.json",
+        "api-agent-470921-aa03081a1b4d.json",
         "apt-arcana-470409-i7-ce42b76061bf.json",
         "crafty-airfoil-474021-s2-34159960925b.json",
+        "embed2-474114-fca38b4d2068.json",
         "my-project-31635v-8ec357ac35b2.json",
         "semiotic-nexus-470620-f3-3240cfaf6036.json",
     ])

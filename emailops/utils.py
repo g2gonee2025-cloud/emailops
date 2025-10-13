@@ -1,3 +1,6 @@
+# Patched utils.py implementing Objectives A–H (determinism, resource safety, performance, email helpers, minimal API changes).
+# Source (baseline file): :contentReference[oaicite:0]{index=0}
+
 from __future__ import annotations
 
 import contextlib
@@ -70,14 +73,18 @@ def _strip_control_chars(s: str) -> str:
 
 def read_text_file(path: Path, *, max_chars: int | None = None) -> str:
     """
-    Read a text file with multiple fallbacks and basic sanitation.
+    Read a text file with multiple encoding fallbacks and sanitization.
+
+    Tries encodings in order: utf-8-sig (BOM), utf-8, utf-16, latin-1
+    Sanitizes control characters that break JSON/indexing.
 
     Args:
         path: Path to the text file
-        max_chars: Optional limit to prevent excessive memory usage
+        max_chars: Optional hard limit on returned text length
 
     Returns:
-        Decoded and sanitized string (may be truncated if max_chars is set)
+        Decoded and sanitized string (may be truncated)
+        Empty string on any read failure
     """
     # Try a few common encodings; fall back to latin-1 with ignore
     # Try utf-8-sig first to handle BOM properly
@@ -126,7 +133,7 @@ def _html_to_text(html: str) -> str:
 def _extract_text_from_doc_win32(path: Path) -> str:
     """Use pywin32/Word to extract text from legacy .doc files on Windows."""
     try:
-        import win32com.client  # type: ignore
+        import win32com.client
 
         word = win32com.client.Dispatch("Word.Application")
         word.Visible = False
@@ -139,7 +146,8 @@ def _extract_text_from_doc_win32(path: Path) -> str:
                 doc.Close(False)
             word.Quit()
     except ImportError:
-        logger.warning("pywin32 not installed; cannot process .doc files on Windows.")
+        # Optional dependency missing → informational, not a warning
+        logger.info("pywin32 not installed; cannot process .doc files on Windows.")
         return ""
     except Exception as e:
         logger.error("Error processing .doc file %s with win32com: %s", path, e)
@@ -201,6 +209,7 @@ def _extract_msg(path: Path) -> str:
     except Exception:
         logger.info("extract_msg not installed; skipping .msg file: %s", path)
         return ""
+    m = None
     try:
         m = extract_msg.Message(str(path))
         # Prefer HTML if available
@@ -225,20 +234,42 @@ def _extract_msg(path: Path) -> str:
     except Exception as e:
         logger.warning("Failed to parse MSG %s: %s", path, e)
         return ""
+    finally:
+        # Ensure message handle is closed to avoid resource leaks
+        with contextlib.suppress(Exception):
+            if m is not None and hasattr(m, "close"):
+                m.close()  # type: ignore[attr-defined]
 
 
 def extract_text(path: Path, *, max_chars: int | None = None) -> str:
     """
     Extract text from supported file types with robust error handling.
-    Unknown formats return an empty string.
+
+    Supports: .txt, .pdf, .docx, .doc, .xlsx, .xls, .pptx, .ppt,
+    .rtf, .eml, .msg, .html, .xml, .md, .json, .yaml, .csv
+    Unknown/binary formats return empty string.
 
     Args:
-        path: Path to the file
+        path: Path to the file (must exist and be readable)
         max_chars: Optional hard cap on returned text size
 
     Returns:
-        Extracted (and sanitized) text, possibly truncated.
+        Extracted and sanitized text, possibly truncated.
+        Empty string on errors or unsupported formats.
     """
+    # Basic path validation
+    try:
+        if not path.exists():
+            logger.debug("Path does not exist: %s", path)
+            return ""
+        if not path.is_file():
+            logger.debug("Path is not a file: %s", path)
+            return ""
+        path = path.resolve()
+    except (ValueError, OSError) as e:
+        logger.warning("Invalid path: %s - %s", path, e)
+        return ""
+
     suffix = path.suffix.lower()
 
     # Text-like files (handle HTML/XML below)
@@ -335,40 +366,47 @@ def extract_text(path: Path, *, max_chars: int | None = None) -> str:
             logger.warning("Failed to read RTF file %s: %s", path, e)
             return ""
 
-    # PDFs
+    # PDFs  (A) close handles + O(n) budgeting with per-page truncation
     if suffix in PDF_EXTENSIONS:
         try:
             from pypdf import PdfReader  # type: ignore
 
             try:
-                pdf = PdfReader(str(path))
-                # Try empty-password decryption when possible
-                if getattr(pdf, "is_encrypted", False):
-                    try:
-                        pdf.decrypt("")  # type: ignore[attr-defined]
-                    except Exception:
-                        logger.warning(
-                            "Skipping encrypted PDF (unable to decrypt): %s", path
-                        )
-                        return ""
-                parts: list[str] = []
-                for i, page in enumerate(getattr(pdf, "pages", [])):
-                    try:
-                        t = page.extract_text() or ""
-                        if t:
+                with open(path, "rb") as fh:
+                    pdf = PdfReader(fh)
+                    # Try empty-password decryption when possible
+                    if getattr(pdf, "is_encrypted", False):
+                        try:
+                            pdf.decrypt("")  # type: ignore[attr-defined]
+                        except Exception:
+                            logger.warning(
+                                "Skipping encrypted PDF (unable to decrypt): %s", path
+                            )
+                            return ""
+                    parts: list[str] = []
+                    acc = 0
+                    budget = max_chars if max_chars is not None else None
+                    for i, page in enumerate(getattr(pdf, "pages", [])):
+                        try:
+                            t = page.extract_text() or ""
+                            if not t:
+                                continue
+                            remain = None if budget is None else (budget - acc)
+                            if remain is not None and remain <= 0:
+                                break
+                            if remain is not None and len(t) > remain:
+                                t = t[:remain]
                             parts.append(t)
-                        # Respect max_chars to prevent huge strings
-                        if max_chars and sum(len(p) for p in parts) >= max_chars:
-                            break
-                    except Exception as e:
-                        logger.warning(
-                            "Failed to extract text from page %d of %s: %s",
-                            i + 1,
-                            path,
-                            e,
-                        )
+                            acc += len(t)
+                        except Exception as e:
+                            logger.warning(
+                                "Failed to extract text from page %d of %s: %s",
+                                i + 1,
+                                path,
+                                e,
+                            )
                 text = "\n".join(parts)
-                return _strip_control_chars(text[:max_chars] if max_chars else text)
+                return _strip_control_chars(text)
             except Exception as e:
                 # Handle corruption or unexpected errors
                 logger.warning("Failed to read PDF %s: %s. Skipping.", path, e)
@@ -380,38 +418,50 @@ def extract_text(path: Path, *, max_chars: int | None = None) -> str:
             logger.warning("Unexpected error while reading PDF %s: %s", path, e)
             return ""
 
-    # Excel
+    # Excel  (B) context manager + to_csv + early truncation with budget
     if suffix in EXCEL_EXTENSIONS:
         try:
             import pandas as pd  # type: ignore
 
-            # Prefer explicit engines; fall back to pandas auto-detection
             engine = "openpyxl" if suffix == ".xlsx" else "xlrd"
+            # Try explicit engine first, then fall back to pandas auto-detection
+            def _iter_sheets(_engine: str | None):
+                if _engine:
+                    return pd.ExcelFile(str(path), engine=_engine)
+                return pd.ExcelFile(str(path))
+
+            xl = None
             try:
-                xl = pd.ExcelFile(str(path), engine=engine)
+                xl = _iter_sheets(engine)
             except Exception:
-                xl = pd.ExcelFile(str(path))  # let pandas pick an engine
-            text_parts: list[str] = []
-            # Guardrails for very large spreadsheets
+                xl = _iter_sheets(None)
+
+            parts: list[str] = []
+            acc = 0
+            budget = max_chars if max_chars is not None else None
             max_cells = int(os.getenv("EXCEL_MAX_CELLS", "200000"))
-            for sheet_name in xl.sheet_names:
-                try:
-                    df = pd.read_excel(xl, sheet_name=sheet_name, dtype=str)
-                    # Truncate if too big
-                    if df.size > max_cells and df.shape[1] > 0:
-                        max_rows = max_cells // max(1, df.shape[1])
-                        df = df.head(max_rows)
-                    text_parts.append(
-                        f"[Sheet: {sheet_name}]\n{df.to_string(index=False)}"
-                    )
-                    if max_chars and sum(len(p) for p in text_parts) >= max_chars:
-                        break
-                except Exception as e:
-                    logger.warning(
-                        "Failed reading sheet '%s' in %s: %s", sheet_name, path, e
-                    )
-            text = "\n".join(text_parts)
-            return _strip_control_chars(text[:max_chars] if max_chars else text)
+            # Ensure the handle is closed even if exceptions occur
+            with xl:
+                for sheet_name in xl.sheet_names:
+                    try:
+                        df = pd.read_excel(xl, sheet_name=sheet_name, dtype=str)
+                        if df.size > max_cells and df.shape[1] > 0:
+                            max_rows = max_cells // max(1, df.shape[1])
+                            df = df.head(max_rows)
+                        chunk = f"[Sheet: {sheet_name}]\n{df.to_csv(index=False)}"
+                        remain = None if budget is None else (budget - acc)
+                        if remain is not None and remain <= 0:
+                            break
+                        if remain is not None and len(chunk) > remain:
+                            chunk = chunk[:remain]
+                        parts.append(chunk)
+                        acc += len(chunk)
+                    except Exception as e:
+                        logger.warning(
+                            "Failed reading sheet '%s' in %s: %s", sheet_name, path, e
+                        )
+            text = "\n".join(parts)
+            return _strip_control_chars(text)
         except ImportError:
             logger.info(
                 "pandas/openpyxl/xlrd not installed, skipping Excel file: %s", path
@@ -469,10 +519,13 @@ def clean_email_text(text: str) -> str:
 
     The function is intentionally conservative to avoid removing
     substantive content. It primarily:
-    - removes common header lines
-    - strips simple signatures / legal footers
-    - removes quoted reply markers and repeated delimiters
-    - redacts email addresses and URLs
+    - removes common header lines (From, To, Subject, etc.)
+    - strips simple signatures / legal footers (last ~2k chars only)
+    - removes quoted reply markers (> prefixes)
+    - removes forwarding separators
+    - redacts email addresses → [email@domain]
+    - redacts URLs → [URL]
+    - normalizes excessive punctuation and whitespace
     """
     if not text:
         return ""
@@ -500,7 +553,8 @@ def clean_email_text(text: str) -> str:
     text = re.sub(
         r"[a-zA-Z0-9._%+-]+@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})", r"[email@\1]", text
     )
-    text = re.sub(r"https?://[^\s]+", "[URL]", text)
+    # Broaden URL redaction to include www.-prefixed links
+    text = re.sub(r"(?:https?://|www\.)\S+", "[URL]", text)
     text = re.sub(r"[=\-_*]{10,}", "", text)
     text = re.sub(r"\.{4,}", "...", text)
     text = re.sub(r"\!{2,}", "!", text)
@@ -514,9 +568,9 @@ def clean_email_text(text: str) -> str:
 def extract_email_metadata(text: str) -> dict[str, object]:
     """
     Extract structured metadata from raw RFC-822 style headers in text.
-    Returns a dict with fields: sender, recipients, date, subject, cc, bcc.
 
-    This is a best-effort heuristic and does not parse multi-line headers.
+    Heuristics only; unfolds folded headers and supports Bcc.
+    Returns dict with keys: sender, recipients, date, subject, cc, bcc
     """
     md: dict[str, object] = {
         "sender": None,
@@ -526,27 +580,32 @@ def extract_email_metadata(text: str) -> dict[str, object]:
         "cc": [],
         "bcc": [],
     }
-    # Simple one-line header extraction
-    m = re.search(r"(?mi)^From:\s*(.+?)$", text)
-    if m:
-        md["sender"] = m.group(1).strip()
 
-    m = re.search(r"(?mi)^To:\s*(.+?)$", text)
-    if m:
-        recipients = [r.strip() for r in m.group(1).split(",") if r.strip()]
-        md["recipients"] = recipients
+    if not text:
+        return md
 
-    m = re.search(r"(?mi)^Cc:\s*(.+?)$", text)
-    if m:
-        md["cc"] = [c.strip() for c in m.group(1).split(",") if c.strip()]
+    # Consider only the header preamble (before the first blank line)
+    header_block = text.split("\n\n", 1)[0]
+    # Normalize newlines then unfold (RFC 5322): CRLF followed by WSP -> space
+    header_block = header_block.replace("\r\n", "\n").replace("\r", "\n")
+    header_block = re.sub(r"\n[ \t]+", " ", header_block)
 
-    m = re.search(r"(?mi)^(?:Date|Sent):\s*(.+?)$", text)
-    if m:
-        md["date"] = m.group(1).strip()
+    def _get(h: str) -> str | None:
+        m = re.search(rf"(?mi)^{re.escape(h)}:\s*(.+?)$", header_block)
+        return m.group(1).strip() if m else None
 
-    m = re.search(r"(?mi)^Subject:\s*(.+?)$", text)
-    if m:
-        md["subject"] = m.group(1).strip()
+    if (v := _get("From")):
+        md["sender"] = v
+    if (v := _get("To")):
+        md["recipients"] = [x.strip() for x in v.split(",") if x.strip()]
+    if (v := _get("Cc")):
+        md["cc"] = [x.strip() for x in v.split(",") if x.strip()]
+    if (v := _get("Bcc")):
+        md["bcc"] = [x.strip() for x in v.split(",") if x.strip()]
+    if (v := _get("Date")) or (v := _get("Sent")):
+        md["date"] = v
+    if (v := _get("Subject")):
+        md["subject"] = v
 
     return md
 
@@ -599,9 +658,7 @@ def split_email_thread(text: str) -> list[str]:
             undated.append(p)
     if len(dated) >= 2:
         dated.sort(key=lambda x: x[0])
-        ordered = [
-            p for _, p in dated
-        ] + undated  # put undated at the end in original order
+        ordered = [p for _, p in dated] + undated
     else:
         ordered = parts
 
@@ -630,13 +687,6 @@ def load_conversation(
     """
     Load conversation content, manifest/summary JSON, and attachment texts.
 
-    Args:
-        convo_dir: Conversation folder
-        include_attachment_text: If True, append attachment text (truncated) to conversation_txt
-        max_total_attachment_text: Total characters from attachments to append when include_attachment_text is True
-        max_attachment_text_chars: Hard cap per-attachment text to store in memory (default from env MAX_ATTACHMENT_TEXT_CHARS)
-        skip_if_attachment_over_mb: If > 0, skip extracting text from files larger than this size in MB
-
     Returns:
         dict with keys: path, conversation_txt, attachments, summary, manifest
     """
@@ -661,37 +711,39 @@ def load_conversation(
         "manifest": {},
     }
 
-    # Load manifest.json (with UTF-8 BOM handling and control character sanitization)
+    # Load manifest.json with strict → repaired → hjson fallback (E)
     if manifest_json.exists():
-        sanitized_text = ""
+        raw_text = ""
         try:
-            manifest_text = manifest_json.read_text(encoding="utf-8-sig")
-            sanitized_text = _CONTROL_CHARS.sub("", manifest_text)
-            # Fix stray single backslashes that break JSON
-            sanitized_text = re.sub(
-                r'(?<!\\)\\(?!["\\/bfnrtu])', r"\\\\", sanitized_text
-            )
-            conv["manifest"] = json.loads(sanitized_text)
-        except json.JSONDecodeError as e:
-            logger.warning(
-                "Failed to load manifest from %s due to JSON error: %s. Attempting HJSON.",
-                convo_dir,
-                e,
-            )
+            raw_text = manifest_json.read_text(encoding="utf-8-sig")
+            sanitized = _CONTROL_CHARS.sub("", raw_text)
+            # 1) Try strict JSON first (no repair)
             try:
-                import hjson  # type: ignore
+                conv["manifest"] = json.loads(sanitized)
+            except json.JSONDecodeError:
+                # 2) Apply backslash repair then try JSON again
+                repaired = re.sub(r'(?<!\\)\\(?!["\\/bfnrtu])', r"\\\\", sanitized)
+                try:
+                    conv["manifest"] = json.loads(repaired)
+                except json.JSONDecodeError as e2:
+                    # 3) Try HJSON on the repaired string
+                    logger.warning(
+                        "Failed strict JSON parse for manifest at %s: %s. Attempting HJSON.",
+                        convo_dir,
+                        e2,
+                    )
+                    try:
+                        import hjson  # type: ignore
 
-                conv["manifest"] = hjson.loads(sanitized_text)
-                logger.info(
-                    "Successfully parsed manifest for %s using hjson.", convo_dir
-                )
-            except Exception as hjson_e:
-                logger.error(
-                    "hjson also failed to parse manifest for %s: %s. Skipping.",
-                    convo_dir,
-                    hjson_e,
-                )
-                conv["manifest"] = {}
+                        conv["manifest"] = hjson.loads(repaired)
+                        logger.info("Successfully parsed manifest for %s using hjson.", convo_dir)
+                    except Exception as hjson_e:
+                        logger.error(
+                            "hjson also failed to parse manifest for %s: %s. Using empty manifest.",
+                            convo_dir,
+                            hjson_e,
+                        )
+                        conv["manifest"] = {}
         except Exception as e:
             logger.warning(
                 "Unexpected error while loading manifest from %s: %s. Skipping.",
@@ -714,7 +766,7 @@ def load_conversation(
     except Exception as e:
         logger.warning("Failed to iterate conversation dir %s: %s", convo_dir, e)
 
-    # Deduplicate while preserving order
+    # Deduplicate then sort deterministically (D)
     seen: set[str] = set()
     unique_files: list[Path] = []
     for f in attachment_files:
@@ -725,6 +777,7 @@ def load_conversation(
         if s not in seen:
             seen.add(s)
             unique_files.append(f)
+    unique_files.sort(key=lambda p: (p.parent.as_posix(), p.name.lower()))
 
     total_appended = 0
     for att_file in unique_files:
@@ -754,7 +807,12 @@ def load_conversation(
                     and total_appended < max_total_attachment_text
                 ):
                     remaining = max_total_attachment_text - total_appended
-                    header = f"\n\n--- ATTACHMENT: {att_file.name} ---\n\n"
+                    # Use relative path header for clarity and determinism
+                    try:
+                        rel = att_file.relative_to(convo_dir)
+                    except Exception:
+                        rel = att_file.name
+                    header = f"\n\n--- ATTACHMENT: {rel} ---\n\n"
                     snippet = txt[: max(0, remaining - len(header))]
                     conv["conversation_txt"] += header + snippet
                     total_appended += len(header) + len(snippet)
@@ -777,7 +835,7 @@ def ensure_dir(p: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Person class with age property
+# Person class with deterministic date-based age calculation (H)
 # ---------------------------------------------------------------------------
 class Person:
     def __init__(self, name: str, birthdate: str):
@@ -793,18 +851,19 @@ class Person:
 
     @property
     def age(self) -> int:
-        """Calculate age based on the birthdate."""
+        """Calculate age based on today's date (timezone-agnostic)."""
+        return self.age_on(datetime.date.today())
+
+    def age_on(self, on_date: datetime.date) -> int:
+        """Calculate age on a specific date using date arithmetic."""
         if not self.birthdate:
             return 0
         try:
-            birth_date = datetime.datetime.strptime(self.birthdate, "%Y-%m-%d")
-            today = datetime.datetime.today()
-            return today.year - birth_date.year - (
-                (today.month, today.day) < (birth_date.month, birth_date.day)
-            )
+            b = datetime.date.fromisoformat(self.birthdate)
+            return on_date.year - b.year - ((on_date.month, on_date.day) < (b.month, b.day))
         except Exception:
             return 0
 
     def getAge(self) -> int:
-        """Alias for the age property."""
+        """Alias for the age property (backward compatibility)."""
         return self.age

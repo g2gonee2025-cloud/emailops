@@ -204,8 +204,7 @@ class TestCountTotalChunks:
         }
 
         pkl_file = emb_dir / "worker_0_batch_00000.pkl"
-        with open(pkl_file, "wb") as f:
-            pickle.dump(chunks_data, f)
+        pkl_file.write_bytes(pickle.dumps(chunks_data))
 
         result = count_total_chunks(str(temp_dir))
 
@@ -222,12 +221,11 @@ class TestCountTotalChunks:
                 "chunks": [{"text": f"chunk {j}"} for j in range(5)]
             }
             pkl_file = emb_dir / f"worker_0_batch_{i:05d}.pkl"
-            with open(pkl_file, "wb") as f:
-                pickle.dump(chunks_data, f)
+            pkl_file.write_bytes(pickle.dumps(chunks_data))
 
         result = count_total_chunks(str(temp_dir))
 
-        assert result == 15  # 3 files × 5 chunks
+        assert result == 15  # 3 files x 5 chunks
 
     def test_count_total_chunks_handles_corrupted_pickle(self, temp_dir):
         """Test that count_total_chunks handles corrupted pickle files."""
@@ -237,8 +235,7 @@ class TestCountTotalChunks:
         # Create valid pickle
         valid_data = {"chunks": [{"text": "valid chunk"}]}
         valid_file = emb_dir / "worker_0_batch_00000.pkl"
-        with open(valid_file, "wb") as f:
-            pickle.dump(valid_data, f)
+        valid_file.write_bytes(pickle.dumps(valid_data))
 
         # Create corrupted pickle
         corrupted_file = emb_dir / "worker_0_batch_00001.pkl"
@@ -257,8 +254,7 @@ class TestCountTotalChunks:
         # Create pickle without chunks key
         invalid_data = {"embeddings": "some data"}
         pkl_file = emb_dir / "worker_0_batch_00000.pkl"
-        with open(pkl_file, "wb") as f:
-            pickle.dump(invalid_data, f)
+        pkl_file.write_bytes(pickle.dumps(invalid_data))
 
         result = count_total_chunks(str(temp_dir))
 

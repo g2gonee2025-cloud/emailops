@@ -6,7 +6,7 @@ from pathlib import Path
 
 # Test 1: Import the module
 try:
-    from processing.processor import UnifiedProcessor
+    from processor import UnifiedProcessor  # noqa: F401
     print("✓ SUCCESS: All imports work correctly")
 except ImportError as e:
     print(f"✗ FAILED: Import error - {e}")

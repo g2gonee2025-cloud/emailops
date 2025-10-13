@@ -2,18 +2,32 @@
 """
 Input validation and sanitization utilities for EmailOps.
 Provides security checks for paths, commands, and user inputs.
+
+NOTE: This module preserves the existing public API (functions returning
+(tuple[bool, str])) and adds *ergonomic* variants that return normalized
+values. See `validate_directory_path_info` and `validate_file_path_info`.
 """
 
+from __future__ import annotations
+
+import os
 import re
 import shlex
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Generic, TypeVar
 
+T = TypeVar("T")
+
+
+# -------------------------
+# Existing public API (unchanged)
+# -------------------------
 
 def validate_directory_path(
     path: str | Path, must_exist: bool = True, allow_parent_traversal: bool = False
 ) -> tuple[bool, str]:
-    """
-    Validate directory path with security checks.
+    """Validate directory path with security checks.
 
     Args:
         path: Directory path to validate
@@ -24,18 +38,16 @@ def validate_directory_path(
         Tuple of (is_valid: bool, message: str)
     """
     try:
-        # Convert to Path object and resolve
-        p = Path(path).expanduser().resolve()
+        # Convert to Path object (do not resolve yet so we can inspect raw segments)
+        p_raw = Path(path).expanduser()
 
-        # Security: Check for parent directory traversal attempts
-        if not allow_parent_traversal:
-            try:
-                # Check if the resolved path contains attempts to escape
-                path_str = str(path)
-                if '..' in path_str or path_str.startswith('/..'):
-                    return False, "Path traversal detected (.. not allowed)"
-            except Exception:
-                pass
+        # Security: Check for explicit parent-directory traversal segments ('..')
+        # Use Path.parts so that only real path segments are inspected (not substrings in filenames)
+        if not allow_parent_traversal and any(part == '..' for part in p_raw.parts):
+            return False, "Path traversal detected ('..' segments are not allowed)"
+
+        # Now resolve to an absolute canonical path for subsequent checks
+        p = p_raw.resolve()
 
         # Check existence if required
         if must_exist and not p.exists():
@@ -65,8 +77,7 @@ def validate_file_path(
     allowed_extensions: list[str] | None = None,
     allow_parent_traversal: bool = False,
 ) -> tuple[bool, str]:
-    """
-    Validate file path with extension checks.
+    """Validate file path with extension checks.
 
     Args:
         path: File path to validate
@@ -78,17 +89,16 @@ def validate_file_path(
         Tuple of (is_valid: bool, message: str)
     """
     try:
-        # Convert to Path object and resolve
-        p = Path(path).expanduser().resolve()
+        # Convert to Path object (do not resolve yet so we can inspect raw segments)
+        p_raw = Path(path).expanduser()
 
-        # Security: Check for parent directory traversal attempts
-        if not allow_parent_traversal:
-            try:
-                path_str = str(path)
-                if '..' in path_str or path_str.startswith('/..'):
-                    return False, "Path traversal detected (.. not allowed)"
-            except Exception:
-                pass
+        # Security: Check for explicit parent-directory traversal segments ('..')
+        # Use Path.parts so that only real path segments are inspected (not substrings in filenames)
+        if not allow_parent_traversal and any(part == '..' for part in p_raw.parts):
+            return False, "Path traversal detected ('..' segments are not allowed)"
+
+        # Now resolve to an absolute canonical path for subsequent checks
+        p = p_raw.resolve()
 
         # Check existence if required
         if must_exist and not p.exists():
@@ -119,8 +129,7 @@ def validate_file_path(
 
 
 def sanitize_path_input(path_input: str) -> str:
-    """
-    Sanitize user-provided path input by removing dangerous characters.
+    """Sanitize user-provided path input by removing dangerous characters.
 
     Args:
         path_input: Raw path string from user
@@ -138,7 +147,7 @@ def sanitize_path_input(path_input: str) -> str:
     sanitized = sanitized.strip()
 
     # Remove any shell metacharacters for extra safety
-    # Keep only: alphanumeric, ., _, -, /, \, :, space
+    # Keep only: alphanumeric, ., _, -, /, \\, :, space
     sanitized = re.sub(r'[^a-zA-Z0-9._\-/\\: ]', '', sanitized)
 
     return sanitized
@@ -147,8 +156,7 @@ def sanitize_path_input(path_input: str) -> str:
 def validate_command_args(
     command: str, args: list[str], allowed_commands: list[str] | None = None
 ) -> tuple[bool, str]:
-    """
-    Validate command and arguments for safe execution.
+    """Validate command and arguments for safe execution.
 
     Args:
         command: Command name (e.g., 'python', 'git')
@@ -164,9 +172,8 @@ def validate_command_args(
 
     # Check for shell injection attempts in command
     dangerous_patterns = [';', '|', '&', '$', '`', '\n', '\r']
-    for pattern in dangerous_patterns:
-        if pattern in command:
-            return False, f"Dangerous character '{pattern}' detected in command"
+    if any(pattern in command for pattern in dangerous_patterns):
+        return False, "Dangerous character detected in command"
 
     # Validate each argument
     for arg in args:
@@ -175,16 +182,17 @@ def validate_command_args(
             return False, "Null byte detected in argument"
 
         # Check for command chaining attempts
-        for pattern in dangerous_patterns:
-            if pattern in arg:
-                return False, f"Dangerous character '{pattern}' detected in argument: {arg}"
+        if any(pattern in arg for pattern in dangerous_patterns):
+            return False, f"Dangerous character detected in argument: {arg}"
 
     return True, "Valid"
 
 
 def quote_shell_arg(arg: str) -> str:
-    """
-    Safely quote a shell argument to prevent injection.
+    """Safely quote a shell argument to prevent injection.
+
+    This uses POSIX quoting via :func:`shlex.quote`. On Windows (`cmd.exe`/PowerShell),
+    prefer calling :func:`subprocess.run` with ``shell=False`` and an argument list.
 
     Args:
         arg: Argument to quote
@@ -196,8 +204,7 @@ def quote_shell_arg(arg: str) -> str:
 
 
 def validate_project_id(project_id: str) -> tuple[bool, str]:
-    """
-    Validate Google Cloud project ID format.
+    """Validate Google Cloud project ID format.
 
     Args:
         project_id: GCP project ID to validate
@@ -229,13 +236,14 @@ def validate_project_id(project_id: str) -> tuple[bool, str]:
     return True, "Valid"
 
 
-def validate_environment_variable(name: str, value: str) -> tuple[bool, str]:
-    """
-    Validate environment variable name and value for security.
+def validate_environment_variable(name: str, value: str, *, require_uppercase: bool = True) -> tuple[bool, str]:
+    """Validate environment variable name and value for security.
 
     Args:
         name: Environment variable name
         value: Environment variable value
+        require_uppercase: When True (default), enforce uppercase-only names.
+            When False, allow mixed/lowercase names.
 
     Returns:
         Tuple of (is_valid: bool, message: str)
@@ -244,11 +252,132 @@ def validate_environment_variable(name: str, value: str) -> tuple[bool, str]:
     if not name:
         return False, "Environment variable name cannot be empty"
 
-    if not re.match(r'^[A-Z_][A-Z0-9_]*$', name):
-        return False, "Environment variable name must contain only uppercase letters, numbers, and underscores"
+    name_pattern = r'^[A-Z_][A-Z0-9_]*$' if require_uppercase else r'^[A-Za-z_][A-Za-z0-9_]*$'
+    if not re.match(name_pattern, name):
+        policy = "uppercase letters, numbers, and underscores" if require_uppercase else "letters, numbers, and underscores"
+        return False, f"Environment variable name must contain only {policy}"
 
     # Check for null bytes in value
     if '\0' in value:
         return False, "Environment variable value contains null byte"
 
     return True, "Valid"
+
+
+def validate_email_format(email: str) -> tuple[bool, str]:
+    """Validate email address format.
+
+    Performs basic RFC 5322-compliant validation with additional
+    security checks for email length and format.
+
+    Args:
+        email: Email address to validate
+
+    Returns:
+        Tuple of (is_valid: bool, message: str)
+
+    Example:
+        >>> validate_email_format("user@example.com")
+        (True, 'Valid')
+        >>> validate_email_format("invalid email")
+        (False, 'Invalid email format: invalid email')
+    """
+    if not email or not email.strip():
+        return False, "Email cannot be empty"
+
+    email = email.strip()
+
+    # Basic RFC 5322 compliant pattern
+    # Matches: local-part@domain.tld
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+
+    if not re.match(pattern, email):
+        return False, f"Invalid email format: {email}"
+
+    # RFC 5321 limit: 320 characters total
+    if len(email) > 320:
+        return False, "Email address too long (max 320 chars)"
+
+    # Local part (before @) should not exceed 64 characters
+    local_part = email.split('@')[0]
+    if len(local_part) > 64:
+        return False, "Email local part too long (max 64 chars)"
+
+    return True, "Valid"
+
+
+# -------------------------
+# New ergonomic, typed variants (additive)
+# -------------------------
+
+@dataclass(frozen=True)
+class ValidationResult(Generic[T]):
+    ok: bool
+    msg: str
+    value: T | None = None
+
+
+def sanitize_path_input_report(path_input: str) -> tuple[str, bool]:
+    """Return (sanitized_value, changed_flag) for transparency."""
+    sanitized = sanitize_path_input(path_input)
+    return sanitized, sanitized != (path_input or "")
+
+
+def _maybe_expand_vars(p: str | Path, expand_vars: bool) -> str:
+    s = str(p)
+    return os.path.expandvars(s) if expand_vars else s
+
+
+def validate_directory_path_info(
+    path: str | Path,
+    *,
+    must_exist: bool = True,
+    allow_parent_traversal: bool = False,
+    expand_vars: bool = False,
+) -> ValidationResult[Path]:
+    """Validate a directory path and return a normalized Path on success.
+
+    Returns a :class:`ValidationResult` carrying the resolved absolute :class:`Path`
+    when validation succeeds; otherwise ``value`` is ``None``.
+    """
+    expanded = _maybe_expand_vars(path, expand_vars)
+    ok, msg = validate_directory_path(expanded, must_exist=must_exist, allow_parent_traversal=allow_parent_traversal)
+    if not ok:
+        return ValidationResult(False, msg, None)
+    return ValidationResult(True, "Valid", Path(expanded).expanduser().resolve())
+
+
+def validate_file_path_info(
+    path: str | Path,
+    *,
+    must_exist: bool = True,
+    allowed_extensions: list[str] | None = None,
+    allowed_multi_suffixes: list[str] | None = None,
+    allow_parent_traversal: bool = False,
+    expand_vars: bool = False,
+) -> ValidationResult[Path]:
+    """Validate a file path with support for single- and multi-suffix allowlists.
+
+    This wrapper accepts both ``allowed_extensions`` (single-suffix, e.g. ".pdf")
+    and ``allowed_multi_suffixes`` (e.g. ".tar.gz"). If either list is provided,
+    the file is accepted when it matches **any** of the provided patterns.
+    """
+    expanded = _maybe_expand_vars(path, expand_vars)
+    # Bypass extension checks in the base function to perform union logic here.
+    ok, msg = validate_file_path(expanded, must_exist=must_exist, allowed_extensions=None, allow_parent_traversal=allow_parent_traversal)
+    if not ok:
+        return ValidationResult(False, msg, None)
+
+    p = Path(expanded).expanduser().resolve()
+    if allowed_extensions or allowed_multi_suffixes:
+        ext_ok = False
+        if allowed_extensions:
+            ext_ok = p.suffix.lower() in [e.lower() for e in allowed_extensions]
+        multi_ok = False
+        if allowed_multi_suffixes:
+            combined = "".join(p.suffixes).lower()
+            multi_ok = any(combined == s.lower() for s in allowed_multi_suffixes)
+        if not (ext_ok or multi_ok):
+            return ValidationResult(False, f"File extension '{p.suffix}' not allowed (combined suffix '{''.join(p.suffixes)}')", None)
+
+    return ValidationResult(True, "Valid", p)

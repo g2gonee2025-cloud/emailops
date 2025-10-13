@@ -10,12 +10,19 @@ import random
 import re
 import tempfile
 import time
-from datetime import UTC, datetime
+# Python 3.10 compatibility for UTC
+try:
+    from datetime import UTC  # py311+
+except ImportError:
+    from datetime import timezone as _tz
+    UTC = _tz.utc
+
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+# Import strategy: Try package imports first, fail fast with clear error
 try:
-    # Attempt relative imports for package context
     from emailops.llm_client import complete_json, complete_text
     from emailops.utils import (
         clean_email_text,
@@ -24,46 +31,13 @@ try:
         logger,
         read_text_file,
     )
-except ImportError:
-    # Fallback for script execution: try absolute imports if available
-    try:
-        from llm_client import complete_json, complete_text
-        from utils import (
-            clean_email_text,
-            ensure_dir,
-            extract_email_metadata,
-            logger,
-            read_text_file,
-        )
-    except ImportError:
-        # Define minimal no-op fallbacks for CLI to run without full package
-        import logging
-        logger = logging.getLogger(__name__)
-
-        def _no_op_str_passthrough(s: str, *_args, **_kwargs) -> str:
-            return s if s else ""
-
-        def _no_op_read_text(p: Path) -> str:
-            return p.read_text(encoding="utf-8")
-
-        def _no_op_ensure_dir(p: Path) -> None:
-            p.mkdir(parents=True, exist_ok=True)
-
-        def _no_op_extract_email_metadata(_s: str) -> dict:
-            return {}
-
-        clean_email_text = _no_op_str_passthrough
-        read_text_file = _no_op_read_text
-        ensure_dir = _no_op_ensure_dir
-        extract_email_metadata = _no_op_extract_email_metadata
-
-        def _raise_runtime_error(*_args, **_kwargs):
-            raise RuntimeError(
-                "LLM client not found. Please install 'emailops' as a package "
-                "or ensure 'llm_client.py' is in your PYTHONPATH."
-            )
-        complete_json = _raise_runtime_error
-        complete_text = _raise_runtime_error
+except ImportError as e:
+    raise ImportError(
+        "Failed to import required emailops modules. "
+        "Please ensure the emailops package is properly installed or "
+        "that all required modules are in your PYTHONPATH.\n"
+        f"Original error: {e}"
+    ) from e
 
 # =============================================================================
 # Configuration (env-overridable) to keep prompts bounded and predictable
@@ -103,91 +77,145 @@ def _extract_first_balanced_json_object(s: str) -> str | None:
     Respects nested braces, strings, and escaped characters.
     Returns the object as a string, or None if no balanced object is found.
     """
+    # Type and empty validation
+    if not isinstance(s, str):
+        logger.warning(
+            "_extract_first_balanced_json_object: Non-string input type: %s",
+            type(s).__name__,
+        )
+        return None
+
     if not s or "{" not in s:
+        logger.debug(
+            "_extract_first_balanced_json_object: No JSON object found in string"
+        )
         return None
 
     first_brace = s.find("{")
+    # Note: This check is now redundant due to "{" not in s check above, but kept for safety
     if first_brace == -1:
         return None
 
     balance = 0
     in_string = False
     is_escaped = False
-    for i, char in enumerate(s[first_brace:]):
-        if is_escaped:
-            is_escaped = False
-            continue
 
-        if char == "\\":
-            is_escaped = True
-            continue
+    try:
+        for i, char in enumerate(s[first_brace:]):
+            if is_escaped:
+                is_escaped = False
+                continue
 
-        if char == '"':
-            in_string = not in_string
+            if char == "\\":
+                is_escaped = True
+                continue
 
-        if in_string:
-            continue
+            if char == '"':
+                in_string = not in_string
 
-        if char == "{":
-            balance += 1
-        elif char == "}":
-            balance -= 1
+            if in_string:
+                continue
 
-        if balance == 0:
-            return s[first_brace : first_brace + i + 1]
+            if char == "{":
+                balance += 1
+            elif char == "}":
+                balance -= 1
 
+            if balance == 0:
+                result = s[first_brace : first_brace + i + 1]
+                logger.debug(
+                    "_extract_first_balanced_json_object: Extracted %d char JSON object",
+                    len(result),
+                )
+                return result
+    except Exception as e:
+        logger.error("_extract_first_balanced_json_object: Unexpected error: %s", e)
+        return None
+
+    logger.debug("_extract_first_balanced_json_object: No balanced object found")
     return None
 
 
-def _try_load_json(data: Any) -> dict[str, Any] | None:
+def _try_load_json(data: Any) -> dict[str, Any]:
     """
     Robustly parse JSON from model output, accepting dict, bytes, or string.
     Handles:
       1) Pre-parsed dicts
       2) Byte strings (UTF-8 decoded)
       3) Direct JSON strings
-      4) Fenced ```json blocks
-      5) First balanced {...} object in the string
-    Returns a dict or None if not recoverable.
+      4) Lists containing dicts (scans for valid analysis dict)
+      5) Fenced ```json blocks
+      6) First balanced {...} object in the string
+    Raises ValueError if not recoverable.
     """
     if isinstance(data, dict):
+        logger.debug("JSON parsing: Already a dict, returning as-is")
         return data
-    if not data:
-        return None
+    if data is None or (isinstance(data, (str, bytes)) and not data):
+        logger.warning("JSON parsing: Empty or None data provided")
+        raise ValueError("Empty or None data provided for JSON parsing")
 
     s = ""
     if isinstance(data, bytes):
         try:
             s = data.decode("utf-8")
-        except UnicodeDecodeError:
-            return None  # Not valid UTF-8
+            logger.debug("JSON parsing: Decoded %d bytes from UTF-8", len(data))
+        except UnicodeDecodeError as e:
+            logger.error("JSON parsing: Failed to decode bytes as UTF-8: %s", e)
+            raise ValueError(f"Failed to decode bytes as UTF-8: {e}") from e
     elif isinstance(data, str):
         s = data
+        logger.debug("JSON parsing: Processing string of %d chars", len(s))
     else:
-        return None  # Unsupported type
+        logger.error("JSON parsing: Unsupported data type: %s", type(data).__name__)
+        raise ValueError(f"Unsupported data type: {type(data).__name__}")
 
     s = s.strip()
     if not s:
-        return None
+        logger.warning("JSON parsing: String is empty after stripping")
+        raise ValueError("Empty string after stripping whitespace")
 
     # 1) Try direct parsing first
     try:
         obj = json.loads(s)
         if isinstance(obj, dict):
+            logger.debug("JSON parsing: Direct parsing successful")
             return obj
-    except json.JSONDecodeError:
-        pass  # Continue to extraction methods
+        # Handle list containing potential analysis dicts
+        if isinstance(obj, list):
+            logger.debug("JSON parsing: Direct parse gave list, scanning for valid dict")
+            known_keys = {"category", "participants", "facts_ledger", "summary", "next_actions", "risk_indicators"}
+            for item in obj:
+                if isinstance(item, dict):
+                    # Check if dict has at least 2 known top-level keys
+                    matching_keys = sum(1 for k in known_keys if k in item)
+                    if matching_keys >= 2:
+                        logger.debug("JSON parsing: Found valid dict in list with %d matching keys", matching_keys)
+                        return item
+        logger.warning(
+            "JSON parsing: Direct parse gave non-dict: %s", type(obj).__name__
+        )
+    except json.JSONDecodeError as e:
+        logger.debug("JSON parsing: Direct parse failed: %s", e)
 
     # 2) Look for fenced ```json blocks
-    for m in re.finditer(r"```(?:json)?\s*([\s\S]*?)\s*```", s, flags=re.IGNORECASE):
+    fenced_matches = list(
+        re.finditer(r"```(?:json)?\s*([\s\S]*?)\s*```", s, flags=re.IGNORECASE)
+    )
+    logger.debug("JSON parsing: Found %d fenced code blocks", len(fenced_matches))
+
+    for i, m in enumerate(fenced_matches):
         block = _extract_first_balanced_json_object(m.group(1))
         if block:
             try:
                 obj = json.loads(block)
                 if isinstance(obj, dict):
+                    logger.debug("JSON parsing: Extracted from fenced block #%d", i + 1)
                     return obj
-            except json.JSONDecodeError:
-                continue
+            except json.JSONDecodeError as e:
+                logger.debug(
+                    "JSON parsing: Failed to parse fenced block #%d: %s", i + 1, e
+                )
 
     # 3) Fallback to the first balanced object in the whole string
     block = _extract_first_balanced_json_object(s)
@@ -195,53 +223,174 @@ def _try_load_json(data: Any) -> dict[str, Any] | None:
         try:
             obj = json.loads(block)
             if isinstance(obj, dict):
+                logger.debug("JSON parsing: Extracted balanced object from raw string")
                 return obj
-        except json.JSONDecodeError:
-            pass
+        except json.JSONDecodeError as e:
+            logger.debug("JSON parsing: Failed to parse balanced object: %s", e)
 
-    return None
+    # All strategies failed
+    logger.error(
+        "JSON parsing: All parsing strategies failed for %d char string", len(s)
+    )
+    sample = s[:200] + "..." if len(s) > 200 else s
+    raise ValueError(f"Failed to parse JSON from any strategy. Sample: {sample}")
 
 
 def _safe_str(v: Any, max_len: int) -> str:
-    s = "" if v is None else str(v)
-    if len(s) > max_len:
-        s = s[:max_len].rstrip()
-    return s
+    """
+    Safely convert any value to string with length limit.
+    Handles None values and enforces maximum length.
+    """
+    if max_len < 0:
+        logger.warning("_safe_str: Negative max_len %d, using 0", max_len)
+        max_len = 0
+
+    try:
+        s = "" if v is None else str(v)
+        return s[:max_len].rstrip() if len(s) > max_len else s
+    except Exception as e:
+        logger.error("_safe_str: Failed to convert value: %s", e)
+        return ""
+
+
+def _coerce_enum(val: Any, allowed: set[str], default: str, synonyms: dict[str, str] | None = None) -> str:
+    """
+    Coerce a value to an allowed enum with synonym mapping.
+    
+    Args:
+        val: The value to coerce
+        allowed: Set of allowed enum values
+        default: Default value if coercion fails
+        synonyms: Optional mapping of synonyms to canonical values
+    
+    Returns:
+        Coerced enum value or default
+    """
+    if val is None or not isinstance(val, str):
+        return default
+    
+    # Normalize: lowercase, trim, convert - to _
+    normalized = val.strip().lower().replace("-", "_")
+    
+    # Apply synonyms if provided
+    if synonyms:
+        normalized = synonyms.get(normalized, normalized)
+    
+    # Check if in allowed set
+    if normalized in allowed:
+        return normalized
+    
+    # Fallback to default
+    return default
 
 
 def _md_escape(v: Any) -> str:
-    """Escape text for safe Markdown rendering in generated summaries."""
+    """
+    Escape text for safe Markdown rendering in generated summaries.
+    Handles None values and conversion errors gracefully.
+    """
     if v is None:
         return ""
-    s = str(v)
-    # Escape common markdown-sensitive characters
-    return re.sub(r"([\\`*_{}\[\]()#+\-.!>])", r"\\\1", s)
 
-
-def _limit_list(lst: Any, max_len: int) -> list[Any]:
-    if not isinstance(lst, list):
-        return []
-    if max_len <= 0:
-        return []
-    return lst[:max_len]
+    try:
+        s = str(v)
+        # Escape common markdown-sensitive characters
+        return re.sub(r"([\\`*_{}\[\]()#+\-.!>])", r"\\\1", s)
+    except Exception as e:
+        logger.warning("_md_escape: Failed to escape value: %s", e)
+        return ""
 
 
 def _normalize_name(n: str) -> str:
-    """Normalize a name for de-duplication (simple lower/strip)."""
-    if not n:
+    """
+    Normalize a name for de-duplication (simple lower/strip).
+    Handles non-string inputs gracefully.
+    """
+    if not n or not isinstance(n, str):
         return ""
-    return re.sub(r"\s+", " ", n.strip().lower())
+
+    try:
+        return re.sub(r"\s+", " ", n.strip().lower())
+    except Exception as e:
+        logger.warning("_normalize_name: Failed to normalize '%s': %s", n, e)
+        return ""
+
+
+def _normalize_subject_line(s: str) -> str:
+    """
+    Clean up common subject prefixes and whitespace.
+    - Collapse repeated 'Re:' / 'Fwd:' chains to a single prefix.
+    - Normalize spacing after the prefix to 'Re: <subject>' or 'Fwd: <subject>'.
+    """
+    if not isinstance(s, str):
+        logger.debug(
+            "_normalize_subject_line: Non-string input type: %s", type(s).__name__
+        )
+        return ""
+
+    try:
+        subj = s.strip()
+        if not subj:
+            return ""
+
+        # Normalize multiple prefixes like "Re: RE: FWD: " -> single "Re:" or "Fwd:"
+        lowered = subj.lower()
+        prefix = ""
+        max_iterations = 20  # Prevent infinite loops on malformed input
+        iteration = 0
+
+        while lowered.startswith(("re:", "fw:", "fwd:")) and iteration < max_iterations:
+            iteration += 1
+            if lowered.startswith("re:"):
+                prefix = "Re:"
+                subj = subj[3:].lstrip()
+                lowered = subj.lower()
+                continue
+            if lowered.startswith("fwd:") or lowered.startswith("fw:"):
+                prefix = "Fwd:"
+                subj = subj[4:] if lowered.startswith("fwd:") else subj[3:]
+                subj = subj.lstrip()
+                lowered = subj.lower()
+                continue
+            break
+
+        # If there was a prefix, reattach once
+        return f"{prefix} {subj}".strip() if prefix else subj
+    except Exception as e:
+        logger.error("_normalize_subject_line: Failed to normalize '%s': %s", s[:50], e)
+        return s.strip() if isinstance(s, str) else ""
 
 
 def _normalize_analysis(data: Any, catalog: list[str]) -> dict[str, Any]:
     """
     Coerce potentially imperfect LLM output to the required schema
     with safe defaults and type checks.
+    Handles None, invalid types, and malformed data gracefully.
     """
-    d: dict[str, Any] = dict(data) if isinstance(data, dict) else {}
+    # Input validation
+    if data is None:
+        logger.warning("_normalize_analysis: None data provided, using empty dict")
+        d: dict[str, Any] = {}
+    elif isinstance(data, dict):
+        d = dict(data)
+    else:
+        logger.warning(
+            "_normalize_analysis: Non-dict data type %s, using empty dict",
+            type(data).__name__,
+        )
+        d = {}
+
+    # Validate catalog - ensure it always has a catch-all
+    if not catalog or not isinstance(catalog, list):
+        logger.warning("_normalize_analysis: Invalid catalog, using DEFAULT_CATALOG")
+        catalog = DEFAULT_CATALOG
+    else:
+        # Ensure catalog has a catch-all
+        if "other" not in catalog:
+            catalog = list(catalog) + ["other"]
 
     # Required top-level keys
-    d.setdefault("category", (catalog or DEFAULT_CATALOG)[-1])
+    d.setdefault("category", catalog[-1])
     d.setdefault("subject", "Email thread")
     d.setdefault("participants", [])
     d.setdefault("facts_ledger", {})
@@ -250,13 +399,15 @@ def _normalize_analysis(data: Any, catalog: list[str]) -> dict[str, Any]:
     d.setdefault("risk_indicators", [])
 
     # Validate/normalize category
-    if d.get("category") not in (catalog or DEFAULT_CATALOG):
-        d["category"] = (catalog or DEFAULT_CATALOG)[-1]
+    if d.get("category") not in catalog:
+        d["category"] = catalog[-1]
 
-    # Subject length cap per description
-    subj = d.get("subject")
-    if isinstance(subj, str) and len(subj) > SUBJECT_MAX_LEN:
-        d["subject"] = subj[:SUBJECT_MAX_LEN].rstrip()
+    # Always normalize and cap subject
+    subj = d.get("subject", "Email thread")
+    if not isinstance(subj, str):
+        subj = "Email thread"
+    normalized_subj = _normalize_subject_line(subj)
+    d["subject"] = _safe_str(normalized_subj, SUBJECT_MAX_LEN)
 
     # Types
     if not isinstance(d["participants"], list):
@@ -320,7 +471,7 @@ def _normalize_analysis(data: Any, catalog: list[str]) -> dict[str, Any]:
     fl.setdefault("forbidden_promises", [])
     fl.setdefault("key_dates", [])
 
-    # Ensure lists
+    # Ensure lists and coerce nested enums
     for k in (
         "explicit_asks",
         "commitments_made",
@@ -330,20 +481,129 @@ def _normalize_analysis(data: Any, catalog: list[str]) -> dict[str, Any]:
     ):
         if not isinstance(fl.get(k), list):
             fl[k] = []
+    
+    # Define enum synonyms
+    urgency_synonyms = {
+        "asap": "immediate",
+        "urgent": "immediate",
+        "high": "high",
+        "med": "medium",
+        "medium": "medium",
+        "low": "low",
+        "normal": "medium"
+    }
+    
+    status_synonyms = {
+        "pending": "pending",
+        "acknowledged": "acknowledged",
+        "in_progress": "in_progress",
+        "in-progress": "in_progress",
+        "inprogress": "in_progress",
+        "completed": "completed",
+        "done": "completed",
+        "blocked": "blocked"
+    }
+    
+    feasibility_synonyms = {
+        "achievable": "achievable",
+        "challenging": "challenging",
+        "risky": "risky",
+        "impossible": "impossible",
+        "easy": "achievable",
+        "hard": "challenging",
+        "difficult": "challenging"
+    }
+    
+    importance_synonyms = {
+        "critical": "critical",
+        "important": "important",
+        "reference": "reference",
+        "info": "reference",
+        "informational": "reference"
+    }
+    
+    priority_synonyms = {
+        "critical": "critical",
+        "high": "high",
+        "med": "medium",
+        "medium": "medium",
+        "low": "low",
+        "normal": "medium"
+    }
+    
+    # Coerce enums in explicit_asks
+    coerced_asks = []
+    for ask in fl.get("explicit_asks", []):
+        if isinstance(ask, dict):
+            ask["urgency"] = _coerce_enum(
+                ask.get("urgency"),
+                {"immediate", "high", "medium", "low"},
+                "medium",
+                urgency_synonyms
+            )
+            ask["status"] = _coerce_enum(
+                ask.get("status"),
+                {"pending", "acknowledged", "in_progress", "completed", "blocked"},
+                "pending",
+                status_synonyms
+            )
+            coerced_asks.append(ask)
+    fl["explicit_asks"] = coerced_asks
+    
+    # Coerce enums in commitments_made
+    coerced_commits = []
+    for commit in fl.get("commitments_made", []):
+        if isinstance(commit, dict):
+            commit["feasibility"] = _coerce_enum(
+                commit.get("feasibility"),
+                {"achievable", "challenging", "risky", "impossible"},
+                "achievable",
+                feasibility_synonyms
+            )
+            coerced_commits.append(commit)
+    fl["commitments_made"] = coerced_commits
+    
+    # Coerce enums in key_dates
+    coerced_dates = []
+    for kd in fl.get("key_dates", []):
+        if isinstance(kd, dict):
+            kd["importance"] = _coerce_enum(
+                kd.get("importance"),
+                {"critical", "important", "reference"},
+                "reference",
+                importance_synonyms
+            )
+            coerced_dates.append(kd)
+    fl["key_dates"] = coerced_dates
+    
     d["facts_ledger"] = fl
+    
+    # Coerce enums in next_actions
+    coerced_actions = []
+    for action in d.get("next_actions", []):
+        if isinstance(action, dict):
+            action["status"] = _coerce_enum(
+                action.get("status"),
+                {"open", "in_progress", "blocked", "completed"},
+                "open",
+                status_synonyms
+            )
+            action["priority"] = _coerce_enum(
+                action.get("priority"),
+                {"critical", "high", "medium", "low"},
+                "medium",
+                priority_synonyms
+            )
+            coerced_actions.append(action)
+    d["next_actions"] = coerced_actions
 
-    # Apply size caps defensively
-    d["participants"] = _limit_list(d["participants"], MAX_PARTICIPANTS)
-    d["summary"] = _limit_list(d["summary"], MAX_SUMMARY_POINTS)
-    d["next_actions"] = _limit_list(d["next_actions"], MAX_NEXT_ACTIONS)
-    for k in (
-        "explicit_asks",
-        "commitments_made",
-        "unknowns",
-        "forbidden_promises",
-        "key_dates",
-    ):
-        fl[k] = _limit_list(fl.get(k, []), MAX_FACT_ITEMS)
+    # Apply size caps defensively using direct slicing
+    d["participants"] = d["participants"][:MAX_PARTICIPANTS] if isinstance(d["participants"], list) else []
+    d["summary"] = d["summary"][:MAX_SUMMARY_POINTS] if isinstance(d["summary"], list) else []
+    d["next_actions"] = d["next_actions"][:MAX_NEXT_ACTIONS] if isinstance(d["next_actions"], list) else []
+    
+    for k in ("explicit_asks", "commitments_made", "unknowns", "forbidden_promises", "key_dates"):
+        fl[k] = fl.get(k, [])[:MAX_FACT_ITEMS] if isinstance(fl.get(k), list) else []
     d["facts_ledger"] = fl
 
     return d
@@ -354,16 +614,49 @@ def _read_manifest(convo_dir: Path) -> dict[str, Any]:
     Lightweight manifest reader with BOM tolerance and basic sanitation.
     Returns {} if unavailable or invalid.
     """
-    manifest_path = convo_dir / "manifest.json"
-    if not manifest_path.exists():
+    if not isinstance(convo_dir, Path):
+        logger.error(
+            "_read_manifest: Invalid convo_dir type: %s", type(convo_dir).__name__
+        )
         return {}
+
+    manifest_path = convo_dir / "manifest.json"
+
+    if not manifest_path.exists():
+        logger.debug("_read_manifest: Manifest not found at %s", manifest_path)
+        return {}
+
     try:
         text = manifest_path.read_text(encoding="utf-8-sig")
+
+        if not text.strip():
+            logger.warning("_read_manifest: Empty manifest file at %s", manifest_path)
+            return {}
+
         # Minimal sanitation: drop control chars that break JSON
         text = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]", "", text)
-        return json.loads(text)
+
+        parsed = json.loads(text)
+
+        if not isinstance(parsed, dict):
+            logger.warning(
+                "_read_manifest: Manifest is not a dict at %s", manifest_path
+            )
+            return {}
+
+        logger.debug(
+            "_read_manifest: Successfully loaded manifest from %s", manifest_path
+        )
+        return parsed
+
+    except json.JSONDecodeError as e:
+        logger.warning("_read_manifest: JSON decode error at %s: %s", manifest_path, e)
+        return {}
+    except OSError as e:
+        logger.warning("_read_manifest: File read error at %s: %s", manifest_path, e)
+        return {}
     except Exception as e:
-        logger.warning("Failed to read manifest at %s: %s", manifest_path, e)
+        logger.error("_read_manifest: Unexpected error at %s: %s", manifest_path, e)
         return {}
 
 
@@ -373,9 +666,24 @@ def _participants_from_manifest(manifest: dict[str, Any]) -> list[dict[str, str]
     Roles default to 'other'; tone 'neutral'; stance 'N/A' to avoid assumptions.
     """
     out: list[dict[str, str]] = []
+
+    if not isinstance(manifest, dict):
+        logger.warning(
+            "_participants_from_manifest: Non-dict manifest type: %s",
+            type(manifest).__name__,
+        )
+        return []
+
     try:
-        messages = manifest.get("messages") or []
-        first = messages[0] if messages else {}
+        messages = manifest.get("messages")
+        if not isinstance(messages, list) or not messages:
+            logger.debug("_participants_from_manifest: No messages in manifest")
+            return []
+
+        first = messages[0]
+        if not isinstance(first, dict):
+            logger.warning("_participants_from_manifest: First message is not a dict")
+            return []
 
         def _mk(name: str, email: str, role: str = "other") -> dict[str, str]:
             return {
@@ -386,16 +694,36 @@ def _participants_from_manifest(manifest: dict[str, Any]) -> list[dict[str, str]
                 "stance": "N/A",
             }
 
-        if first.get("from"):
+        # Extract 'from' participant
+        if first.get("from") and isinstance(first["from"], dict):
             f = first["from"]
             out.append(_mk(f.get("name", ""), f.get("smtp", ""), role="other"))
-        for rec in first.get("to") or []:
-            if isinstance(rec, dict):
-                out.append(_mk(rec.get("name", ""), rec.get("smtp", ""), role="other"))
-        for rec in first.get("cc") or []:
-            if isinstance(rec, dict):
-                out.append(_mk(rec.get("name", ""), rec.get("smtp", ""), role="other"))
-    except Exception:
+
+        # Extract 'to' participants
+        to_list = first.get("to")
+        if isinstance(to_list, list):
+            for rec in to_list:
+                if isinstance(rec, dict):
+                    out.append(
+                        _mk(rec.get("name", ""), rec.get("smtp", ""), role="other")
+                    )
+
+        # Extract 'cc' participants
+        cc_list = first.get("cc")
+        if isinstance(cc_list, list):
+            for rec in cc_list:
+                if isinstance(rec, dict):
+                    out.append(
+                        _mk(rec.get("name", ""), rec.get("smtp", ""), role="other")
+                    )
+
+    except (TypeError, AttributeError, KeyError) as e:
+        logger.warning(
+            "_participants_from_manifest: Error extracting participants: %s", e
+        )
+        return out
+    except Exception as e:
+        logger.error("_participants_from_manifest: Unexpected error: %s", e)
         return out
     # de-duplicate by lowercase email or normalized name; skip empty entries
     seen: set = set()
@@ -410,7 +738,7 @@ def _participants_from_manifest(manifest: dict[str, Any]) -> list[dict[str, str]
             continue
         seen.add(key)
         deduped.append(p)
-    return _limit_list(deduped, MAX_PARTICIPANTS)
+    return deduped[:MAX_PARTICIPANTS] if deduped else []
 
 
 def _merge_manifest_into_analysis(
@@ -420,68 +748,350 @@ def _merge_manifest_into_analysis(
     Merge subject/participants/dates from manifest + raw headers when the model
     couldn't infer them reliably. Never overrides non-empty, already-populated fields.
     """
+    # Input validation
+    if not isinstance(analysis, dict):
+        logger.error(
+            "_merge_manifest_into_analysis: analysis is not a dict, returning as-is"
+        )
+        return analysis if isinstance(analysis, dict) else {}
+
+    if not isinstance(convo_dir, Path):
+        logger.error("_merge_manifest_into_analysis: convo_dir is not a Path")
+        return analysis
+
+    if raw_thread_text is None:
+        logger.warning(
+            "_merge_manifest_into_analysis: raw_thread_text is None, using empty string"
+        )
+        raw_thread_text = ""
+
     manifest = _read_manifest(convo_dir)
 
-    # Subject: prefer existing; otherwise manifest.smart_subject/subject; otherwise parsed raw headers
-    if not (
-        isinstance(analysis.get("subject"), str)
-        and analysis["subject"].strip()
-        and analysis["subject"] != "Email thread"
-    ):
-        subj_candidates: list[str] = []
-        if isinstance(manifest, dict):
-            smart = (manifest.get("smart_subject") or "").strip()
-            if smart:
-                subj_candidates.append(smart)
-            subj = (manifest.get("subject") or "").strip()
-            if subj:
-                subj_candidates.append(subj)
-        # Parse from raw headers (before cleaning) using utils helper
-        md = extract_email_metadata(raw_thread_text or "")
-        if isinstance(md, dict) and md.get("subject"):
-            subj_candidates.append(str(md["subject"]).strip())
-        # Pick the first non-empty candidate
-        if subj_candidates:
-            analysis["subject"] = _safe_str(subj_candidates[0], SUBJECT_MAX_LEN)
+    # Always normalize subject even when already present
+    existing_subject = analysis.get("subject", "")
+    if not isinstance(existing_subject, str):
+        existing_subject = ""
+    
+    # Build subject candidates, preferring existing
+    subj_candidates: list[str] = []
+    if existing_subject and existing_subject != "Email thread":
+        subj_candidates.append(existing_subject)
+    
+    # Add manifest candidates
+    if isinstance(manifest, dict):
+        smart = (manifest.get("smart_subject") or "").strip()
+        if smart:
+            subj_candidates.append(smart)
+        subj = (manifest.get("subject") or "").strip()
+        if subj:
+            subj_candidates.append(subj)
+    
+    # Parse from raw headers
+    md = extract_email_metadata(raw_thread_text or "")
+    if isinstance(md, dict) and md.get("subject"):
+        subj_candidates.append(str(md["subject"]).strip())
+    
+    # Always normalize and cap
+    final_subject = subj_candidates[0] if subj_candidates else "Email thread"
+    analysis["subject"] = _safe_str(
+        _normalize_subject_line(final_subject), SUBJECT_MAX_LEN
+    )
 
-    # Participants: if model didn't provide any, add from manifest
-    if not analysis.get("participants"):
-        pts = _participants_from_manifest(manifest) if manifest else []
-        if pts:
-            analysis["participants"] = pts
+    # Participants: UNION merge (not just if empty)
+    existing_participants = analysis.get("participants", [])
+    if not isinstance(existing_participants, list):
+        existing_participants = []
+    
+    manifest_participants = _participants_from_manifest(manifest) if manifest else []
+    
+    # Union with de-duplication
+    seen_keys: set[str] = set()
+    merged_participants: list[dict[str, str]] = []
+    
+    # Add existing participants first
+    for p in existing_participants:
+        if isinstance(p, dict):
+            email_key = (p.get("email") or "").lower()
+            name_key = _normalize_name(p.get("name", ""))
+            if not email_key and not name_key:
+                continue
+            key = email_key or f"name:{name_key}"
+            if key not in seen_keys:
+                seen_keys.add(key)
+                merged_participants.append(p)
+    
+    # Add new participants from manifest
+    for p in manifest_participants:
+        if isinstance(p, dict):
+            email_key = (p.get("email") or "").lower()
+            name_key = _normalize_name(p.get("name", ""))
+            if not email_key and not name_key:
+                continue
+            key = email_key or f"name:{name_key}"
+            if key not in seen_keys:
+                seen_keys.add(key)
+                merged_participants.append(p)
+    
+    analysis["participants"] = merged_participants[:MAX_PARTICIPANTS]
 
-    # Key dates: if ledger.key_dates is empty, add start/end
+    # Key dates: ALWAYS add start/end from manifest, union with existing
     fl = analysis.get("facts_ledger", {}) or {}
-    kd = fl.get("key_dates") or []
-    if not kd and isinstance(manifest, dict):
+    if not isinstance(fl, dict):
+        fl = {}
+    
+    existing_dates = fl.get("key_dates", [])
+    if not isinstance(existing_dates, list):
+        existing_dates = []
+    
+    # Collect manifest dates
+    manifest_dates: list[dict[str, str]] = []
+    if isinstance(manifest, dict):
         try:
             time_span = manifest.get("time_span") or {}
             start = time_span.get("start_local") or time_span.get("start")
             end = time_span.get("end_local") or time_span.get("end")
-            key_dates: list[dict[str, str]] = []
             if start:
-                key_dates.append(
-                    {
-                        "date": str(start),
-                        "event": "Conversation start",
-                        "importance": "reference",
-                    }
-                )
+                manifest_dates.append({
+                    "date": str(start),
+                    "event": "Conversation start",
+                    "importance": "reference",
+                })
             if end:
-                key_dates.append(
-                    {
-                        "date": str(end),
-                        "event": "Conversation end",
-                        "importance": "reference",
-                    }
-                )
-            if key_dates:
-                fl["key_dates"] = _limit_list(key_dates, MAX_FACT_ITEMS)
-                analysis["facts_ledger"] = fl
+                manifest_dates.append({
+                    "date": str(end),
+                    "event": "Conversation end",
+                    "importance": "reference",
+                })
         except Exception:
             pass
+    
+    # Union dates with de-duplication by (date, event) pair
+    seen_date_keys: set[tuple[str, str]] = set()
+    merged_dates: list[dict[str, str]] = []
+    
+    # Add existing dates first
+    for d in existing_dates:
+        if isinstance(d, dict):
+            date_key = (str(d.get("date", "")).lower(), str(d.get("event", "")).lower())
+            if date_key not in seen_date_keys:
+                seen_date_keys.add(date_key)
+                merged_dates.append(d)
+    
+    # Add manifest dates
+    for d in manifest_dates:
+        date_key = (str(d.get("date", "")).lower(), str(d.get("event", "")).lower())
+        if date_key not in seen_date_keys:
+            seen_date_keys.add(date_key)
+            merged_dates.append(d)
+    
+    fl["key_dates"] = merged_dates[:MAX_FACT_ITEMS]
+    analysis["facts_ledger"] = fl
 
     return analysis
+
+
+def _union_analyses(improved: dict[str, Any], initial: dict[str, Any], catalog: list[str]) -> dict[str, Any]:
+    """
+    Union improved and initial analyses to avoid dropping valid content.
+    Improved items come first, then unique items from initial.
+    """
+    # Start with improved as base
+    result = dict(improved)
+    
+    # Helper to normalize keys for de-duplication
+    def _norm_key(s: str) -> str:
+        return s.strip().lower() if isinstance(s, str) else ""
+    
+    # Union participants
+    improved_participants = result.get("participants", [])
+    initial_participants = initial.get("participants", [])
+    
+    seen_p_keys: set[str] = set()
+    merged_p: list[dict[str, str]] = []
+    
+    # Add improved participants first
+    for p in improved_participants:
+        if isinstance(p, dict):
+            email_key = (p.get("email") or "").lower()
+            name_key = _normalize_name(p.get("name", ""))
+            key = email_key or f"name:{name_key}"
+            if key and key not in seen_p_keys:
+                seen_p_keys.add(key)
+                merged_p.append(p)
+    
+    # Add unique initial participants
+    for p in initial_participants:
+        if isinstance(p, dict):
+            email_key = (p.get("email") or "").lower()
+            name_key = _normalize_name(p.get("name", ""))
+            key = email_key or f"name:{name_key}"
+            if key and key not in seen_p_keys:
+                seen_p_keys.add(key)
+                merged_p.append(p)
+    
+    result["participants"] = merged_p[:MAX_PARTICIPANTS]
+    
+    # Union summary points
+    improved_summary = result.get("summary", [])
+    initial_summary = initial.get("summary", [])
+    
+    seen_summary: set[str] = set(_norm_key(s) for s in improved_summary if isinstance(s, str))
+    merged_summary = list(improved_summary)
+    
+    for s in initial_summary:
+        if isinstance(s, str) and _norm_key(s) not in seen_summary:
+            merged_summary.append(s)
+            seen_summary.add(_norm_key(s))
+    
+    result["summary"] = merged_summary[:MAX_SUMMARY_POINTS]
+    
+    # Union risk_indicators
+    improved_risks = result.get("risk_indicators", [])
+    initial_risks = initial.get("risk_indicators", [])
+    
+    seen_risks: set[str] = set(_norm_key(r) for r in improved_risks if isinstance(r, str))
+    merged_risks = list(improved_risks)
+    
+    for r in initial_risks:
+        if isinstance(r, str) and _norm_key(r) not in seen_risks:
+            merged_risks.append(r)
+            seen_risks.add(_norm_key(r))
+    
+    result["risk_indicators"] = merged_risks
+    
+    # Union facts_ledger items
+    improved_fl = result.get("facts_ledger", {})
+    initial_fl = initial.get("facts_ledger", {})
+    
+    if not isinstance(improved_fl, dict):
+        improved_fl = {}
+    if not isinstance(initial_fl, dict):
+        initial_fl = {}
+    
+    # Union explicit_asks
+    improved_asks = improved_fl.get("explicit_asks", [])
+    initial_asks = initial_fl.get("explicit_asks", [])
+    
+    seen_asks: set[tuple[str, str]] = set()
+    merged_asks: list[dict[str, Any]] = []
+    
+    for ask in improved_asks:
+        if isinstance(ask, dict):
+            key = (_norm_key(ask.get("from", "")), _norm_key(ask.get("request", "")))
+            if key not in seen_asks:
+                seen_asks.add(key)
+                merged_asks.append(ask)
+    
+    for ask in initial_asks:
+        if isinstance(ask, dict):
+            key = (_norm_key(ask.get("from", "")), _norm_key(ask.get("request", "")))
+            if key not in seen_asks:
+                seen_asks.add(key)
+                merged_asks.append(ask)
+    
+    improved_fl["explicit_asks"] = merged_asks[:MAX_FACT_ITEMS]
+    
+    # Union commitments_made
+    improved_commits = improved_fl.get("commitments_made", [])
+    initial_commits = initial_fl.get("commitments_made", [])
+    
+    seen_commits: set[tuple[str, str]] = set()
+    merged_commits: list[dict[str, Any]] = []
+    
+    for commit in improved_commits:
+        if isinstance(commit, dict):
+            key = (_norm_key(commit.get("by", "")), _norm_key(commit.get("commitment", "")))
+            if key not in seen_commits:
+                seen_commits.add(key)
+                merged_commits.append(commit)
+    
+    for commit in initial_commits:
+        if isinstance(commit, dict):
+            key = (_norm_key(commit.get("by", "")), _norm_key(commit.get("commitment", "")))
+            if key not in seen_commits:
+                seen_commits.add(key)
+                merged_commits.append(commit)
+    
+    improved_fl["commitments_made"] = merged_commits[:MAX_FACT_ITEMS]
+    
+    # Union unknowns (simple strings)
+    improved_unknowns = improved_fl.get("unknowns", [])
+    initial_unknowns = initial_fl.get("unknowns", [])
+    
+    seen_unknowns: set[str] = set(_norm_key(u) for u in improved_unknowns if isinstance(u, str))
+    merged_unknowns = list(improved_unknowns)
+    
+    for u in initial_unknowns:
+        if isinstance(u, str) and _norm_key(u) not in seen_unknowns:
+            merged_unknowns.append(u)
+            seen_unknowns.add(_norm_key(u))
+    
+    improved_fl["unknowns"] = merged_unknowns[:MAX_FACT_ITEMS]
+    
+    # Union forbidden_promises (simple strings)
+    improved_forbidden = improved_fl.get("forbidden_promises", [])
+    initial_forbidden = initial_fl.get("forbidden_promises", [])
+    
+    seen_forbidden: set[str] = set(_norm_key(f) for f in improved_forbidden if isinstance(f, str))
+    merged_forbidden = list(improved_forbidden)
+    
+    for f in initial_forbidden:
+        if isinstance(f, str) and _norm_key(f) not in seen_forbidden:
+            merged_forbidden.append(f)
+            seen_forbidden.add(_norm_key(f))
+    
+    improved_fl["forbidden_promises"] = merged_forbidden[:MAX_FACT_ITEMS]
+    
+    # Union key_dates
+    improved_dates = improved_fl.get("key_dates", [])
+    initial_dates = initial_fl.get("key_dates", [])
+    
+    seen_dates: set[tuple[str, str]] = set()
+    merged_dates: list[dict[str, Any]] = []
+    
+    for d in improved_dates:
+        if isinstance(d, dict):
+            key = (_norm_key(d.get("date", "")), _norm_key(d.get("event", "")))
+            if key not in seen_dates:
+                seen_dates.add(key)
+                merged_dates.append(d)
+    
+    for d in initial_dates:
+        if isinstance(d, dict):
+            key = (_norm_key(d.get("date", "")), _norm_key(d.get("event", "")))
+            if key not in seen_dates:
+                seen_dates.add(key)
+                merged_dates.append(d)
+    
+    improved_fl["key_dates"] = merged_dates[:MAX_FACT_ITEMS]
+    
+    result["facts_ledger"] = improved_fl
+    
+    # Union next_actions
+    improved_actions = result.get("next_actions", [])
+    initial_actions = initial.get("next_actions", [])
+    
+    seen_actions: set[tuple[str, str]] = set()
+    merged_actions: list[dict[str, Any]] = []
+    
+    for action in improved_actions:
+        if isinstance(action, dict):
+            key = (_norm_key(action.get("owner", "")), _norm_key(action.get("action", "")))
+            if key not in seen_actions:
+                seen_actions.add(key)
+                merged_actions.append(action)
+    
+    for action in initial_actions:
+        if isinstance(action, dict):
+            key = (_norm_key(action.get("owner", "")), _norm_key(action.get("action", "")))
+            if key not in seen_actions:
+                seen_actions.add(key)
+                merged_actions.append(action)
+    
+    result["next_actions"] = merged_actions[:MAX_NEXT_ACTIONS]
+    
+    # Re-apply normalization to ensure all caps and coercions are applied
+    return _normalize_analysis(result, catalog)
 
 
 def _retry(callable_fn, *args, retries: int = 2, delay: float = 0.5, **kwargs):
@@ -513,6 +1123,42 @@ def _retry(callable_fn, *args, retries: int = 2, delay: float = 0.5, **kwargs):
             time.sleep(sleep_for)
 
 
+def _calc_max_output_tokens() -> int:
+    """
+    Calculate dynamic token budget based on configured caps.
+    """
+    base = 600
+    budget = (
+        base
+        + 4 * MAX_SUMMARY_POINTS
+        + 20 * MAX_PARTICIPANTS
+        + 24 * MAX_NEXT_ACTIONS
+        + 20 * MAX_FACT_ITEMS * 5  # 5 ledgers
+    )
+    # Clamp to reasonable range
+    return max(1200, min(3500, budget))
+
+
+def _llm_routing_kwargs(provider: str) -> dict[str, Any]:
+    """
+    Build optional LLM routing kwargs based on provider and environment.
+    Returns empty dict if routing is not possible.
+    """
+    kwargs: dict[str, Any] = {}
+    
+    # Try to add provider
+    kwargs["provider"] = provider
+    
+    # Check for environment-based model configuration
+    provider_upper = provider.upper()
+    model_env_var = f"SUMMARIZER_MODEL_{provider_upper}"
+    model = os.getenv(model_env_var)
+    if model:
+        kwargs["model"] = model
+    
+    return kwargs
+
+
 def analyze_email_thread_with_ledger(
     thread_text: str,
     catalog: list[str] = DEFAULT_CATALOG,
@@ -532,6 +1178,46 @@ def analyze_email_thread_with_ledger(
 
     # Sanitize defensively (callers outside CLI may pass raw text)
     cleaned_thread = clean_email_text(thread_text or "")
+
+    # Calculate dynamic token budget
+    max_tokens = _calc_max_output_tokens()
+    
+    # Get routing kwargs
+    routing_kwargs = _llm_routing_kwargs(provider)
+    
+    # Import inspect for signature checking
+    import inspect
+    
+    # Check which routing kwargs are accepted by complete_json
+    try:
+        cj_sig = inspect.signature(complete_json)
+        cj_params = set(cj_sig.parameters.keys())
+        cj_routing = {k: v for k, v in routing_kwargs.items() if k in cj_params}
+        routing_applied = bool(cj_routing)
+    except Exception:
+        cj_routing = {}
+        routing_applied = False
+    
+    # Add comprehensive debug logging for LLM calls
+    if routing_applied:
+        logger.info(
+            "Starting email thread analysis: %d chars, %d categories, provider=%s used for routing, temp=%.2f, token_budget=%d",
+            len(cleaned_thread),
+            len(catalog),
+            provider,
+            temperature,
+            max_tokens,
+        )
+    else:
+        logger.info(
+            "Starting email thread analysis: %d chars, %d categories, provider=%s stored in metadata only, temp=%.2f, token_budget=%d",
+            len(cleaned_thread),
+            len(catalog),
+            provider,
+            temperature,
+            max_tokens,
+        )
+
     if not cleaned_thread.strip():
         now = datetime.now(UTC).isoformat()
         return {
@@ -761,53 +1447,129 @@ Create a detailed analysis following the schema. Be thorough in identifying:
 Output valid JSON matching the required schema."""
 
     # --- Pass 1: Initial analysis (robust JSON parsing) ---
+    initial_analysis = {}  # Initialize to avoid unbound variable errors
     try:
         _cj_kwargs = {
-            "max_output_tokens": 2000,
+            "max_output_tokens": max_tokens,
             "temperature": temperature,
             "response_schema": response_schema,
         }
         if json_stop_sequences:
             _cj_kwargs["stop_sequences"] = json_stop_sequences
+        # Add routing kwargs if supported
+        _cj_kwargs.update(cj_routing)
+        
         initial_response = _retry(
             complete_json,
             system,
             user,
             **_cj_kwargs,
         )
-        parsed = _try_load_json(initial_response)
-        if not parsed:
-            raise ValueError("Model returned non-parseable JSON")
-        initial_analysis = _normalize_analysis(parsed, catalog)
-    except Exception as e:
-        logger.warning("Failed to get structured analysis: %s", e)
-        # Fallback to text mode and try salvage (no stop sequences to avoid truncation)
-        _ct_kwargs = {
-            "max_output_tokens": 2000,
-            "temperature": temperature,
-        }
-        if text_stop_sequences:
-            _ct_kwargs["stop_sequences"] = text_stop_sequences
-        fb = _retry(
-            complete_text,
-            system,
-            user,
-            **_ct_kwargs,
-        )
-        parsed_fb = _try_load_json(fb) or {}
-        initial_analysis = _normalize_analysis(parsed_fb, catalog)
-        if not initial_analysis.get("summary"):
-            # Ensure a readable fallback summary if salvage didn't contain one
-            initial_analysis["summary"] = [fb[:500]]
+        try:
+            parsed = _try_load_json(initial_response)
+        except ValueError as parse_error:
+            logger.warning(
+                "Initial JSON parse failed: %s. Attempting recovery.", parse_error
+            )
+            raise
 
-        # Ensure unknowns reflect parse failure
-        fl = initial_analysis.get("facts_ledger", {})
-        if isinstance(fl, dict):
-            unknowns = fl.get("unknowns", [])
-            if isinstance(unknowns, list):
-                unknowns.append("Failed to parse thread properly")
-                fl["unknowns"] = unknowns
-                initial_analysis["facts_ledger"] = fl
+        initial_analysis = _normalize_analysis(parsed, catalog)
+
+        # Log initial analysis results
+        logger.info(
+            "Initial analysis complete: %d participants, %d summary points, %d next actions",
+            len(initial_analysis.get("participants", [])),
+            len(initial_analysis.get("summary", [])),
+            len(initial_analysis.get("next_actions", [])),
+        )
+    except Exception as e:
+        logger.error(
+            "Structured analysis failed: %s. Falling back to text mode with retry.", e
+        )
+
+        # Retry with text mode (improved error recovery)
+        retry_attempts = 3
+        last_error = None
+
+        # Check which routing kwargs are accepted by complete_text
+        try:
+            ct_sig = inspect.signature(complete_text)
+            ct_params = set(ct_sig.parameters.keys())
+            ct_routing = {k: v for k, v in routing_kwargs.items() if k in ct_params}
+        except Exception:
+            ct_routing = {}
+        
+        for attempt in range(retry_attempts):
+            try:
+                logger.debug(
+                    "Text mode recovery attempt %d/%d", attempt + 1, retry_attempts
+                )
+                _ct_kwargs = {
+                    "max_output_tokens": max_tokens,
+                    "temperature": temperature
+                    + (0.1 * attempt),  # Increase temp slightly on retries
+                }
+                if text_stop_sequences:
+                    _ct_kwargs["stop_sequences"] = text_stop_sequences
+                # Add routing kwargs if supported
+                _ct_kwargs.update(ct_routing)
+
+                fb = _retry(
+                    complete_text,
+                    system,
+                    user
+                    + "\n\nIMPORTANT: Output must be valid JSON matching the schema.",
+                    **_ct_kwargs,
+                )
+
+                # Try to parse the fallback response
+                try:
+                    parsed_fb = _try_load_json(fb)
+                except ValueError:
+                    # If JSON parsing fails, use the raw text
+                    logger.debug(
+                        "Text mode JSON parse failed on attempt %d", attempt + 1
+                    )
+                    parsed_fb = {}
+
+                initial_analysis = _normalize_analysis(parsed_fb, catalog)
+
+                # Validate we got something useful
+                if initial_analysis.get("summary") or initial_analysis.get(
+                    "participants"
+                ):
+                    logger.info(
+                        "Text mode recovery successful on attempt %d", attempt + 1
+                    )
+                    break
+
+            except Exception as retry_error:
+                last_error = retry_error
+                logger.warning(
+                    "Text mode attempt %d failed: %s", attempt + 1, retry_error
+                )
+                if attempt < retry_attempts - 1:
+                    time.sleep(1.0 * (attempt + 1))  # Exponential backoff
+
+        # Ensure we have initial_analysis even if all attempts failed
+        if not initial_analysis:
+            initial_analysis = _normalize_analysis({}, catalog)
+
+        # If we still don't have a good analysis, create a minimal one
+        if not initial_analysis.get("summary"):
+            logger.error("All recovery attempts failed. Creating minimal analysis.")
+            initial_analysis["summary"] = [
+                "Failed to fully parse email thread. Raw content preserved for manual review."
+            ]
+            initial_analysis["facts_ledger"] = initial_analysis.get("facts_ledger", {})
+            fl = initial_analysis["facts_ledger"]
+            if isinstance(fl, dict):
+                unknowns = fl.get("unknowns", [])
+                if isinstance(unknowns, list):
+                    unknowns.append(
+                        f"Automated parsing failed: {last_error or 'Unknown error'}"
+                    )
+                    fl["unknowns"] = unknowns
 
     # --- Pass 2: Critic review for completeness/accuracy ---
     critic_system = """You are a quality control specialist reviewing email thread analyses.
@@ -872,12 +1634,15 @@ Check for:
 
     try:
         _crit_kwargs = {
-            "max_output_tokens": 1000,
+            "max_output_tokens": 1000,  # Keep critic pass smaller
             "temperature": 0.1,
             "response_schema": critic_schema,
         }
         if json_stop_sequences:
             _crit_kwargs["stop_sequences"] = json_stop_sequences
+        # Add routing kwargs if supported
+        _crit_kwargs.update(cj_routing)
+        
         critic_response = _retry(
             complete_json,
             critic_system,
@@ -928,13 +1693,18 @@ Original Thread (for reference, first {IMPROVE_THREAD_CHARS} chars):
 Generate an improved analysis that addresses all feedback while maintaining the same schema."""
 
         try:
+            # Improvement pass gets 10% more token budget
+            improve_tokens = int(max_tokens * 1.1)
             _imp_kwargs = {
-                "max_output_tokens": 2000,
+                "max_output_tokens": improve_tokens,
                 "temperature": 0.2,
                 "response_schema": response_schema,
             }
             if json_stop_sequences:
                 _imp_kwargs["stop_sequences"] = json_stop_sequences
+            # Add routing kwargs if supported
+            _imp_kwargs.update(cj_routing)
+            
             improved_response = _retry(
                 complete_json,
                 improvement_system,
@@ -943,7 +1713,12 @@ Generate an improved analysis that addresses all feedback while maintaining the 
             )
             parsed_imp = _try_load_json(improved_response)
             if parsed_imp:
-                final_analysis = _normalize_analysis(parsed_imp, catalog)
+                # Union improved with initial to avoid dropping valid content
+                improved_analysis = _normalize_analysis(parsed_imp, catalog)
+                final_analysis = _union_analyses(improved_analysis, initial_analysis, catalog)
+                logger.debug(
+                    "Improved analysis applied with union merge (completeness score: %d)", _score_int
+                )
         except Exception as e:
             logger.warning("Failed to get improved analysis: %s", e)
 
@@ -1000,112 +1775,118 @@ def analyze_conversation_dir(
 def format_analysis_as_markdown(analysis: dict[str, Any]) -> str:
     """
     Format an email thread analysis as Markdown text.
-    
+    Optimized with StringIO for better performance.
+
     Args:
         analysis: Analysis dictionary from analyze_email_thread_with_ledger()
-        
+
     Returns:
         Formatted markdown string
     """
-    md_parts: list[str] = []
-    
+    from io import StringIO
+
+    # Use StringIO for efficient string building
+    buffer = StringIO()
+
     # Header
-    md_parts.append("# Email Thread Analysis\n\n")
-    
+    buffer.write("# Email Thread Analysis\n\n")
+
     # Summary section
-    md_parts.append("## Summary\n\n")
-    md_parts.append(f"**Category**: {analysis.get('category', 'unknown')}  \n")
-    md_parts.append(f"**Subject**: {analysis.get('subject', 'No subject')}\n\n")
-    
+    buffer.write("## Summary\n\n")
+    buffer.write(f"**Category**: {analysis.get('category', 'unknown')}  \n")
+    buffer.write(f"**Subject**: {analysis.get('subject', 'No subject')}\n\n")
+
     # Overview
-    md_parts.append("### Overview\n\n")
+    buffer.write("### Overview\n\n")
     for point in analysis.get("summary", []):
-        md_parts.append(f"- {_md_escape(point)}\n")
-    
+        buffer.write(f"- {_md_escape(point)}\n")
+
     # Participants
-    md_parts.append("\n## Participants\n\n")
+    buffer.write("\n## Participants\n\n")
     for p in analysis.get("participants", []):
         if isinstance(p, dict):
-            md_parts.append(
+            buffer.write(
                 f"- **{_md_escape(p.get('name', ''))}** ({_md_escape(p.get('role', ''))})\n"
                 f"  - Email: {_md_escape(p.get('email', ''))}\n"
                 f"  - Tone: {_md_escape(p.get('tone', ''))}\n"
                 f"  - Stance: {_md_escape(p.get('stance', ''))}\n"
             )
-    
+
     # Facts Ledger
-    md_parts.append("\n## Facts Ledger\n\n")
-    
+    buffer.write("\n## Facts Ledger\n\n")
+
     # Explicit Requests
-    md_parts.append("### Explicit Requests\n\n")
+    buffer.write("### Explicit Requests\n\n")
     for ask in analysis.get("facts_ledger", {}).get("explicit_asks", []):
         if isinstance(ask, dict):
-            md_parts.append(
+            buffer.write(
                 f"- **From**: {_md_escape(ask.get('from', ''))}\n"
                 f"  - **Request**: {_md_escape(ask.get('request', ''))}\n"
                 f"  - **Urgency**: {_md_escape(ask.get('urgency', ''))}\n"
                 f"  - **Status**: {_md_escape(ask.get('status', ''))}\n\n"
             )
-    
+
     # Commitments Made
-    md_parts.append("### Commitments Made\n\n")
+    buffer.write("### Commitments Made\n\n")
     for commit in analysis.get("facts_ledger", {}).get("commitments_made", []):
         if isinstance(commit, dict):
-            md_parts.append(
+            buffer.write(
                 f"- **By**: {_md_escape(commit.get('by', ''))}\n"
                 f"  - **Commitment**: {_md_escape(commit.get('commitment', ''))}\n"
                 f"  - **Deadline**: {_md_escape(commit.get('deadline', ''))}\n"
                 f"  - **Feasibility**: {_md_escape(commit.get('feasibility', ''))}\n\n"
             )
-    
+
     # Unknown Information
-    md_parts.append("### Unknown Information\n\n")
+    buffer.write("### Unknown Information\n\n")
     for unknown in analysis.get("facts_ledger", {}).get("unknowns", []):
-        md_parts.append(f"- {_md_escape(unknown)}\n")
-    
+        buffer.write(f"- {_md_escape(unknown)}\n")
+
     # Forbidden Promises
-    md_parts.append("\n### Forbidden Promises\n\n")
+    buffer.write("\n### Forbidden Promises\n\n")
     for forbidden in analysis.get("facts_ledger", {}).get("forbidden_promises", []):
-        md_parts.append(f"- ⚠️ {_md_escape(forbidden)}\n")
-    
+        buffer.write(f"- ⚠️ {_md_escape(forbidden)}\n")
+
     # Key Dates
-    md_parts.append("\n### Key Dates\n\n")
+    buffer.write("\n### Key Dates\n\n")
     for kd in analysis.get("facts_ledger", {}).get("key_dates", []):
         if isinstance(kd, dict):
-            md_parts.append(
+            buffer.write(
                 f"- **{_md_escape(kd.get('date', ''))}**: {_md_escape(kd.get('event', ''))} "
                 f"({_md_escape(kd.get('importance', ''))})\n"
             )
-    
+
     # Next Actions
-    md_parts.append("\n## Next Actions\n\n")
+    buffer.write("\n## Next Actions\n\n")
     for action in analysis.get("next_actions", []):
         if isinstance(action, dict):
-            md_parts.append(
+            buffer.write(
                 f"- **{_md_escape(action.get('owner', ''))}**: {_md_escape(action.get('action', ''))}\n"
                 f"  - Priority: {_md_escape(action.get('priority', ''))}\n"
                 f"  - Status: {_md_escape(action.get('status', ''))}\n"
             )
-            if action.get('due'):
-                md_parts.append(f"  - Due: {_md_escape(action.get('due', ''))}\n")
-            md_parts.append("\n")
-    
+            if action.get("due"):
+                buffer.write(f"  - Due: {_md_escape(action.get('due', ''))}\n")
+            buffer.write("\n")
+
     # Risk Indicators
-    md_parts.append("## Risk Indicators\n\n")
+    buffer.write("## Risk Indicators\n\n")
     for risk in analysis.get("risk_indicators", []):
-        md_parts.append(f"- 🚨 {_md_escape(risk)}\n")
-    
+        buffer.write(f"- 🚨 {_md_escape(risk)}\n")
+
     # Metadata
     if "_metadata" in analysis:
         meta = analysis["_metadata"]
-        md_parts.append("\n---\n\n")
-        md_parts.append("## Metadata\n\n")
-        md_parts.append(f"- **Analyzed at**: {meta.get('analyzed_at', 'N/A')}\n")
-        md_parts.append(f"- **Provider**: {meta.get('provider', 'N/A')}\n")
-        md_parts.append(f"- **Completeness score**: {meta.get('completeness_score', 0)}%\n")
-        md_parts.append(f"- **Version**: {meta.get('version', 'N/A')}\n")
-    
-    return "".join(md_parts)
+        buffer.write("\n---\n\n")
+        buffer.write("## Metadata\n\n")
+        buffer.write(f"- **Analyzed at**: {meta.get('analyzed_at', 'N/A')}\n")
+        buffer.write(f"- **Provider**: {meta.get('provider', 'N/A')}\n")
+        buffer.write(
+            f"- **Completeness score**: {meta.get('completeness_score', 0)}%\n"
+        )
+        buffer.write(f"- **Version**: {meta.get('version', 'N/A')}\n")
+
+    return buffer.getvalue()
 
 
 # =============================================================================
@@ -1208,10 +1989,14 @@ def _append_todos_csv(
 # CLI
 # =============================================================================
 def main() -> None:
-    # Configure logging for CLI entry point
+    # Configure logging for CLI entry point - ensure module logger propagates
     logging.basicConfig(
         level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
     )
+    
+    # Ensure the module logger propagates to root logger
+    logger.propagate = True
+    logger.setLevel(logging.INFO)
 
     ap = argparse.ArgumentParser(
         description="Summarize a single email thread directory with comprehensive facts ledger."
@@ -1232,7 +2017,7 @@ def main() -> None:
     ap.add_argument(
         "--provider",
         default=os.getenv("EMBED_PROVIDER", "vertex"),
-        help="Provider name recorded in metadata (does not route requests).",
+        help="Provider to use for LLM calls. If emailops.llm_client supports provider/model kwargs, this value is routed; otherwise it is stored in metadata. Defaults to $EMBED_PROVIDER or \'vertex\'.",
     )
     ap.add_argument(
         "--temperature", type=float, default=0.2, help="Temperature for generation"
@@ -1241,7 +2026,7 @@ def main() -> None:
         "--output-format",
         choices=["json", "markdown"],
         default="json",
-        help="Write JSON by default; with \"markdown\", also write summary.md. Combine with --no-json to skip JSON.",
+        help='Write JSON by default; with "markdown", also write summary.md. Combine with --no-json to skip JSON.',
     )
     ap.add_argument(
         "--no-json",
@@ -1285,74 +2070,11 @@ def main() -> None:
     else:
         logger.info("Skipped JSON output (--no-json with markdown)")
 
-    # Optionally save as markdown for readability
+    # Optionally save as markdown for readability (using the existing function)
     if args.output_format == "markdown":
-        md_parts: list[str] = []
-        md_parts.append("# Email Thread Analysis\n")
-        md_parts.append("## Summary\n")
-        md_parts.append(f"**Category**: {data.get('category', 'unknown')}  \n")
-        md_parts.append(f"**Subject**: {data.get('subject', 'No subject')}\n")
-        md_parts.append("### Overview\n")
-        for point in data.get("summary", []):
-            md_parts.append(f"- {_md_escape(point)}\n")
-
-        md_parts.append("\n## Participants\n")
-        for p in data.get("participants", []):
-            if isinstance(p, dict):
-                md_parts.append(
-                    f"- **{_md_escape(p.get('name', ''))}** ({_md_escape(p.get('role', ''))})\n  - Tone: {_md_escape(p.get('tone', ''))}\n  - Stance: {_md_escape(p.get('stance', ''))}\n"
-                )
-
-        md_parts.append("\n## Facts Ledger\n\n### Explicit Requests\n")
-        for ask in data.get("facts_ledger", {}).get("explicit_asks", []):
-            if isinstance(ask, dict):
-                md_parts.append(
-                    f"- **From**: {_md_escape(ask.get('from', ''))}\n"
-                    f"  - **Request**: {_md_escape(ask.get('request', ''))}\n"
-                    f"  - **Urgency**: {_md_escape(ask.get('urgency', ''))}\n"
-                    f"  - **Status**: {_md_escape(ask.get('status', ''))}\n\n"
-                )
-
-        md_parts.append("\n### Commitments Made\n")
-        for commit in data.get("facts_ledger", {}).get("commitments_made", []):
-            if isinstance(commit, dict):
-                md_parts.append(
-                    f"- **By**: {_md_escape(commit.get('by', ''))}\n"
-                    f"  - **Commitment**: {_md_escape(commit.get('commitment', ''))}\n"
-                    f"  - **Deadline**: {_md_escape(commit.get('deadline', ''))}\n"
-                    f"  - **Feasibility**: {_md_escape(commit.get('feasibility', ''))}\n"
-                )
-
-        md_parts.append("\n### Unknown Information\n")
-        for unknown in data.get("facts_ledger", {}).get("unknowns", []):
-            md_parts.append(f"- {_md_escape(unknown)}\n")
-
-        md_parts.append("\n### Forbidden Promises\n")
-        for forbidden in data.get("facts_ledger", {}).get("forbidden_promises", []):
-            md_parts.append(f"- ⚠️ {_md_escape(forbidden)}\n")
-
-        md_parts.append("\n## Key Dates\n")
-        for kd in data.get("facts_ledger", {}).get("key_dates", []):
-            if isinstance(kd, dict):
-                md_parts.append(
-                    f"- **{_md_escape(kd.get('date', ''))}**: {_md_escape(kd.get('event', ''))} ({_md_escape(kd.get('importance', ''))})\n"
-                )
-
-        md_parts.append("\n## Next Actions\n")
-        for action in data.get("next_actions", []):
-            if isinstance(action, dict):
-                md_parts.append(
-                    f"- **{_md_escape(action.get('owner', ''))}**: {_md_escape(action.get('action', ''))}\n"
-                    f"  - Priority: {_md_escape(action.get('priority', ''))}\n"
-                    f"  - Status: {_md_escape(action.get('status', ''))}\n\n"
-                )
-
-        md_parts.append("\n## Risk Indicators\n")
-        for risk in data.get("risk_indicators", []):
-            md_parts.append(f"- 🚨 {_md_escape(risk)}\n")
-
+        markdown_content = format_analysis_as_markdown(data)
         out_md = tdir / "summary.md"
-        _atomic_write_text(out_md, "".join(md_parts))
+        _atomic_write_text(out_md, markdown_content)
         logger.info("Wrote %s", out_md)
 
     # Handle CSV export for todos with basic de-dupe

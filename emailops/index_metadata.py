@@ -33,6 +33,7 @@ Public API preserved:
 
 from __future__ import annotations
 
+import contextlib
 import gc
 import json
 import logging
@@ -203,20 +204,19 @@ def _close_memmap(arr: Any) -> None:
     """
     Best-effort close of NumPy memmap to release file handles on Windows/NFS.
     """
+    if arr is None:
+        return
     try:
         base = arr
         while getattr(base, "base", None) is not None:
-            base = base.base  # unwrap views
+            base = base.base
         if hasattr(base, "close"):
-            base.close()  # type: ignore[attr-defined]
+            base.close()
     except Exception:
         pass
-    try:
-        # numpy.memmap frequently exposes the underlying mmap handle here
+    with contextlib.suppress(Exception):
         if hasattr(arr, "_mmap") and getattr(arr, "_mmap", None) is not None:
-            arr._mmap.close()  # type: ignore[attr-defined]
-    except Exception:
-        pass
+            arr._mmap.close()
 
 
 def _detect_actual_dimensions(index_dir: Union[str, Path]) -> Optional[int]:
@@ -234,6 +234,8 @@ def _detect_actual_dimensions(index_dir: Union[str, Path]) -> Optional[int]:
         arr = np.load(str(npy), mmap_mode="r")
         if arr.ndim == 2:
             width = int(arr.shape[1])
+            # MEDIUM #25: Add detection logging
+            logger.debug("Detected %d dimensions from %s", width, npy.name)
         else:
             _close_memmap(arr)
             return None
@@ -242,7 +244,8 @@ def _detect_actual_dimensions(index_dir: Union[str, Path]) -> Optional[int]:
         gc.collect()
         return width
     except Exception as e:
-        logger.debug(f"Could not read {EMBEDDINGS_FILENAME} to infer dimensions: {e}")
+        # MEDIUM #25: Add failure logging
+        logger.debug("Could not detect dimensions from %s: %s", npy.name, e)
     return None
 
 
@@ -256,10 +259,13 @@ def _detect_faiss_dimensions(index_dir: Union[str, Path]) -> Optional[int]:
 
         idx = faiss.read_index(str(fi))
         d = int(getattr(idx, "d", None) or idx.d)
+        # MEDIUM #25: Add detection logging
+        logger.debug("Detected %d dimensions from FAISS index", d)
         del idx
         return d
     except Exception as e:
-        logger.debug(f"Could not read FAISS index to infer dimensions: {e}")
+        # MEDIUM #25: Add failure logging
+        logger.debug("Could not detect dimensions from %s: %s", fi.name, e)
         return None
 
 

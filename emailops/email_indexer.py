@@ -2,11 +2,14 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
+import io
 import json
 import logging
 import os
 import re
 import time
+import hashlib
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -15,7 +18,7 @@ from typing import Any, DefaultDict, Dict, Iterable, List, Optional, Set, Tuple
 import numpy as np
 
 try:
-    from .index_metadata import (  # filenames + helpers (single source of truth)  :contentReference[oaicite:20]{index=20}
+    from .index_metadata import (  # filenames + helpers (single source of truth)
         FAISS_INDEX_FILENAME,
         FILE_TIMES_FILENAME,
         INDEX_DIRNAME_DEFAULT,
@@ -28,18 +31,26 @@ try:
         save_index_metadata,
         write_mapping,
     )
+    # Try to import the consistency checker (preferred); fall back to a local checker below.
+    try:
+        from .index_metadata import check_index_consistency  # type: ignore
+    except Exception:  # pragma: no cover
+        check_index_consistency = None  # type: ignore
     from .llm_client import (
-        embed_texts,  # shim over runtime (unit-normalized embeddings)  :contentReference[oaicite:19]{index=19}
+        embed_texts,  # shim over runtime (unit-normalized embeddings)
     )
     from .text_chunker import (
-        prepare_index_units,  # emits id="doc_id::chunk{N}" when chunking  :contentReference[oaicite:21]{index=21}
+        prepare_index_units,  # emits id="doc_id::chunk{N}" when chunking
     )
-    from .utils import (  # library-safe logger  :contentReference[oaicite:18]{index=18}
+    from .utils import (  # library-safe logger
         ensure_dir,
         find_conversation_dirs,
         load_conversation,
         logger,
+        read_text_file,          # robust text reader (BOM/UTF-16/latin-1) + control-char sanitization
+        clean_email_text,        # stronger cleaner for raw email bodies
     )
+    from .config import EmailOpsConfig  # single source of truth for env/secrets + chunk defaults
 except Exception:
     # Fallback for running as a script (no package context)
     import sys as _sys
@@ -60,9 +71,17 @@ except Exception:
         save_index_metadata,
         write_mapping,
     )
+    try:
+        from index_metadata import check_index_consistency  # type: ignore
+    except Exception:
+        check_index_consistency = None  # type: ignore
     from llm_client import embed_texts  # type: ignore
     from text_chunker import prepare_index_units  # type: ignore
-    from utils import ensure_dir, find_conversation_dirs, load_conversation, logger  # type: ignore
+    from utils import (  # type: ignore
+        ensure_dir, find_conversation_dirs, load_conversation, logger,
+        read_text_file, clean_email_text
+    )
+    from config import EmailOpsConfig
 
 try:
     import faiss  # type: ignore
@@ -78,73 +97,128 @@ except Exception:
 
 EMBED_MAX_BATCH = 250  # safe default for Vertex/HF/OpenAI et al.
 
+# HIGH #13: File size limits for indexing
+MAX_FILE_SIZE_MB = float(os.getenv("MAX_INDEXABLE_FILE_MB", "50"))
+MAX_TEXT_CHARS = int(os.getenv("MAX_INDEXABLE_CHARS", "5000000"))
+
 # File name constants
 CONVERSATION_FILENAME = "Conversation.txt"
 MANIFEST_FILENAME = "manifest.json"
 SUMMARY_FILENAME = "summary.json"
 
+
 # ============================================================================
-# GCP Credential Initialization
+# Atomic write helpers
 # ============================================================================
 
-def _initialize_gcp_credentials() -> Optional[str]:
+def _atomic_write_bytes(dest: Path, data: bytes) -> None:
     """
-    Initialize GCP credentials by preferring environment variables and then
-    scanning a 'secrets' directory for any service-account JSON file.
-    Returns the path to the credentials file if successful, None otherwise.
+    Write bytes atomically by writing to a temp file in the same directory and replacing.
+    CRITICAL FIX #3: Added comprehensive error handling for disk full, permissions, and I/O errors.
     """
-    # 1) Prefer explicit environment variable
-    env_creds = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-    if env_creds:
-        creds_path = Path(env_creds)
-        if creds_path.exists():
-            logger.info("Using existing GCP credentials from environment")
-            return str(creds_path)
-
-    # 2) Allow override for secrets directory, default to repo's ../secrets
-    secrets_base = os.getenv("SECRETS_DIR")
-    secrets_dir = Path(secrets_base).expanduser() if secrets_base else Path(__file__).parent.parent / "secrets"
-    if not secrets_dir.exists():
-        logger.warning("Secrets directory not found at %s", secrets_dir)
-        return None
-
-    # 3) Optional preference list via env (colon-separated basenames)
-    preferred = (os.getenv("PREFERRED_GCP_CREDENTIALS") or "").split(":")
-    preferred = [p for p in preferred if p]
-
-    candidates = []
-    for name in preferred:
-        p = secrets_dir / name
-        if p.exists():
-            candidates.append(p)
-
-    # If no preferred files, try any *.json in the secrets dir
-    if not candidates:
-        candidates = sorted(secrets_dir.glob("*.json"))
-
-    for cred_path in candidates:
+    tmp = dest.with_suffix(dest.suffix + ".tmp")
+    try:
+        # Ensure parent directory exists
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Write to temp file with error handling
         try:
-            with open(cred_path, "r") as f:
-                creds_data = json.load(f)
-            if "project_id" in creds_data and "client_email" in creds_data:
-                project_id = str(creds_data.get("project_id"))
-                # Set environment variables for GCP authentication
-                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(cred_path)
-                os.environ["GCP_PROJECT"] = project_id
-                os.environ["GOOGLE_CLOUD_PROJECT"] = project_id
-                os.environ["VERTEX_PROJECT"] = project_id
-                # Set default location if not already set
-                os.environ.setdefault("GCP_REGION", "us-central1")
-                os.environ.setdefault("VERTEX_LOCATION", "us-central1")
-                logger.info("Initialized GCP credentials from secrets directory")
-                return str(cred_path)
-        except json.JSONDecodeError as e:
-            logger.warning("Invalid JSON in credentials file '%s': %s", cred_path.name, e)
-        except Exception as e:
-            logger.warning("Error reading credentials file '%s': %s", cred_path.name, e)
+            with open(tmp, "wb") as f:
+                f.write(data)
+                f.flush()
+                os.fsync(f.fileno())
+        except OSError as e:
+            # Handle disk full, permission errors, etc.
+            if tmp.exists():
+                with contextlib.suppress(Exception):
+                    tmp.unlink()
+            raise IOError(f"Failed to write temp file {tmp}: {e}") from e
+        
+        # Verify file was written correctly
+        if not tmp.exists():
+            raise IOError(f"Temp file {tmp} was not created")
+        if tmp.stat().st_size != len(data):
+            tmp.unlink()
+            raise IOError(f"Temp file size mismatch: expected {len(data)}, got {tmp.stat().st_size}")
+        
+        # Atomic replace
+        os.replace(tmp, dest)
+        
+        # Verify destination exists after replace
+        if not dest.exists():
+            raise IOError(f"Destination file {dest} does not exist after replace")
+            
+    except Exception as e:
+        # Clean up temp file on any error
+        if tmp.exists():
+            with contextlib.suppress(Exception):
+                tmp.unlink()
+        raise IOError(f"Atomic write failed for {dest}: {e}") from e
 
-    logger.error("No valid GCP credentials found in secrets directory")
-    return None
+
+def _atomic_write_text(dest: Path, text: str, *, encoding: str = "utf-8") -> None:
+    """
+    Write text atomically using UTF-8 by default.
+    CRITICAL FIX #3: Added comprehensive error handling for disk full, permissions, and I/O errors.
+    """
+    tmp = dest.with_suffix(dest.suffix + ".tmp")
+    try:
+        # Ensure parent directory exists
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Write to temp file with error handling
+        try:
+            with open(tmp, "w", encoding=encoding) as f:
+                f.write(text)
+                f.flush()
+                os.fsync(f.fileno())
+        except OSError as e:
+            # Handle disk full, permission errors, etc.
+            if tmp.exists():
+                with contextlib.suppress(Exception):
+                    tmp.unlink()
+            raise IOError(f"Failed to write temp file {tmp}: {e}") from e
+        
+        # Verify file was written correctly
+        if not tmp.exists():
+            raise IOError(f"Temp file {tmp} was not created")
+        expected_size = len(text.encode(encoding))
+        actual_size = tmp.stat().st_size
+        # Allow some tolerance for encoding differences
+        if abs(actual_size - expected_size) > expected_size * 0.1:
+            tmp.unlink()
+            raise IOError(f"Temp file size suspicious: expected ~{expected_size}, got {actual_size}")
+        
+        # Atomic replace
+        os.replace(tmp, dest)
+        
+        # Verify destination exists after replace
+        if not dest.exists():
+            raise IOError(f"Destination file {dest} does not exist after replace")
+            
+    except Exception as e:
+        # Clean up temp file on any error
+        if tmp.exists():
+            with contextlib.suppress(Exception):
+                tmp.unlink()
+        raise IOError(f"Atomic write failed for {dest}: {e}") from e
+
+
+# ============================================================================
+# GCP Credential Initialization (delegated to EmailOpsConfig)
+# ============================================================================
+
+def _initialize_gcp_credentials() -> None:
+    """
+    Keep a single source of truth for secrets/env wiring.
+    """
+    try:
+        EmailOpsConfig.load().update_environment()
+        logger.info("Initialized GCP credentials via EmailOpsConfig")
+    except Exception as e:
+        logger.error("Failed to initialize GCP credentials: %s", e)
+        raise
+
 
 # ============================================================================
 # Small helpers
@@ -183,7 +257,8 @@ def _get_last_run_time(index_dir: Path) -> Optional[datetime]:
 
 
 def _save_run_time(index_dir: Path) -> None:
-    (index_dir / TIMESTAMP_FILENAME).write_text(datetime.now(timezone.utc).isoformat(), encoding="utf-8")
+    # Atomic timestamp write
+    _atomic_write_text(index_dir / TIMESTAMP_FILENAME, datetime.now(timezone.utc).isoformat(), encoding="utf-8")
 
 
 def _clean_index_text(text: str) -> str:
@@ -193,7 +268,7 @@ def _clean_index_text(text: str) -> str:
     """
     if not text:
         return ""
-    s = re.sub(r"[ \t]+", " ", text)
+    s = re.sub(r"[ 	]+", " ", text)
     s = re.sub(r"\n{3,}", "\n\n", s)
     s = re.sub(r"[=\-_]{10,}", " ", s)
     s = re.sub(r"(?m)^-{20,}\n", "", s)
@@ -248,20 +323,12 @@ def _extract_manifest_metadata(conv: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def _safe_read_text(path: Path, *, max_chars: int = 200_000) -> str:
-    try:
-        txt = path.read_text(encoding="utf-8", errors="ignore")
-        return txt[:max_chars]
-    except Exception:
-        return ""
-
-
 def _materialize_text_for_docs(docs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
     Ensure each doc has a non-empty 'text' field, using:
       1) existing 'text', else
       2) 'snippet' from prior mapping, else
-      3) file content at 'path' (bounded)
+      3) file content at 'path' (robustly read and sanitized)
     """
     out: List[Dict[str, Any]] = []
     for d in docs:
@@ -273,16 +340,35 @@ def _materialize_text_for_docs(docs: List[Dict[str, Any]]) -> List[Dict[str, Any
             else:
                 p = Path(str(d.get("path") or ""))
                 if p.exists():
-                    d["text"] = _safe_read_text(p)
+                    # Use robust reader (handles BOM/UTF-16/latin-1) and sanitizes control chars
+                    try:
+                        d["text"] = read_text_file(p)
+                    except Exception:
+                        d["text"] = ""
         out.append(d)
     return out
 
 
 def _prefix_from_id(doc_id: str) -> str:
     """
-    Normalize a doc id to its 2-part prefix:
-      "<conv_id>::conversation" or "<conv_id>::attN"
-    If no '::' present, returns the whole id.
+    Normalize a document ID to its 2-part prefix for grouping purposes.
+    
+    Extracts the conversation-level identifier from chunk-level IDs:
+      - "<conv_id>::conversation" (conversation main text)
+      - "<conv_id>::att:{HASH}" (attachment)
+      - "<conv_id>::conversation::chunk3" → "<conv_id>::conversation"
+    
+    Args:
+        doc_id: Full document ID (may include ::chunk suffix)
+        
+    Returns:
+        Two-part prefix without chunk suffix, or original ID if no '::' found
+        
+    Example:
+        >>> _prefix_from_id("conv123::conversation::chunk2")
+        'conv123::conversation'
+        >>> _prefix_from_id("conv123::att:abc123")
+        'conv123::att:abc123'
     """
     if not isinstance(doc_id, str):
         return ""
@@ -302,6 +388,33 @@ def _iter_attachment_files(convo_dir: Path) -> Iterable[Path]:
             yield child
 
 
+def _att_id(base_id: str, path: str) -> str:
+    """
+    Generate a stable attachment ID based on file path hash.
+    
+    Creates a consistent identifier for attachments using SHA-1 hash of
+    the absolute POSIX path. This ensures the same attachment always gets
+    the same ID across multiple index builds.
+    
+    Args:
+        base_id: Base conversation ID (e.g., "conv123")
+        path: File path to attachment (will be resolved to absolute)
+        
+    Returns:
+        Stable attachment ID in format: "<base_id>::att:{sha1_hash[:12]}"
+        
+    Example:
+        >>> _att_id("conv123", "/path/to/attachment.pdf")
+        'conv123::att:a1b2c3d4e5f6'
+    """
+    try:
+        ap = Path(path).resolve().as_posix()
+    except Exception:
+        ap = str(path)
+    h = hashlib.sha1(ap.encode("utf-8")).hexdigest()[:12]
+    return f"{base_id}::att:{h}"
+
+
 # ============================================================================
 # Chunk-building for a conversation (respects per-conversation limit)
 # ============================================================================
@@ -311,16 +424,56 @@ def _build_doc_entries(
     base_id: str,
     limit: Optional[int] = None,
     metadata: Optional[Dict[str, Any]] = None,
+    *,
+    chunk_size: int,
+    chunk_overlap: int,
 ) -> List[Dict[str, Any]]:
     """
-    Build per-document (conversation + attachments) index records for a conversation folder.
-    Enforces `limit` across conversation+attachments combined.
+    Build indexable document entries for a conversation and its attachments.
+    
+    Processes both the main Conversation.txt and any attachments, chunking
+    text content and adding metadata. Enforces per-conversation limit and
+    validates file sizes to prevent indexing oversized files.
+    
+    Args:
+        conv: Conversation dict with 'conversation_txt' and 'attachments' keys
+        convo_dir: Path to conversation directory
+        base_id: Base conversation ID (e.g., folder name)
+        limit: Optional max chunks per conversation (across all docs)
+        metadata: Metadata dict with 'subject', 'participants', dates, etc.
+        chunk_size: Character limit per chunk
+        chunk_overlap: Character overlap between chunks
+        
+    Returns:
+        List of chunk dicts, each with: id, text, path, subject, doc_type, etc.
+        Returns empty list if file is too large or conversation empty.
+        
+    Example:
+        >>> entries = _build_doc_entries(conv, conv_dir, "conv123", limit=50,
+        ...                               metadata={}, chunk_size=1600, chunk_overlap=100)
+        >>> len(entries)  # May be less than 50 if content is small
+        25
     """
     metadata = dict(metadata or {})
     out: List[Dict[str, Any]] = []
 
-    # Conversation main text
-    convo_txt = _clean_index_text(conv.get("conversation_txt", ""))
+    # Conversation main text (use robust email cleaner)
+    convo_txt_raw = conv.get("conversation_txt", "")
+    
+    # HIGH #13: Check file size before processing
+    conv_file = convo_dir / CONVERSATION_FILENAME
+    if conv_file.exists():
+        size_mb = conv_file.stat().st_size / (1024 * 1024)
+        if size_mb > MAX_FILE_SIZE_MB:
+            logger.warning("Skipping large conversation file: %s (%.1f MB > %.1f MB)",
+                          conv_file.name, size_mb, MAX_FILE_SIZE_MB)
+            return out
+        if len(convo_txt_raw) > MAX_TEXT_CHARS:
+            logger.warning("Truncating large conversation text: %s (%d chars > %d chars)",
+                          conv_file.name, len(convo_txt_raw), MAX_TEXT_CHARS)
+            convo_txt_raw = convo_txt_raw[:MAX_TEXT_CHARS]
+    
+    convo_txt = clean_email_text(convo_txt_raw)
     if convo_txt:
         conv_id = f"{base_id}::conversation"
         conv_chunks = prepare_index_units(
@@ -329,6 +482,8 @@ def _build_doc_entries(
             doc_path=str(convo_dir / CONVERSATION_FILENAME),
             subject=metadata.get("subject") or "",
             date=metadata.get("end_date") or metadata.get("start_date"),
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
         )
         upto = len(conv_chunks) if limit is None else max(0, min(limit, len(conv_chunks)))
         for ch in conv_chunks[:upto]:
@@ -345,20 +500,39 @@ def _build_doc_entries(
             out.append(ch)
 
     # Attachments (respect limit across attachments and chunks)
-    for i, att in enumerate(conv.get("attachments") or [], start=1):
+    for att in (conv.get("attachments") or []):
         if limit is not None and len(out) >= limit:
             break
         ap = Path(att.get("path", ""))
-        text = _clean_index_text(att.get("text", "") or "")
-        if not text:
+        
+        # HIGH #13: Check attachment file size before processing
+        if ap.exists():
+            size_mb = ap.stat().st_size / (1024 * 1024)
+            if size_mb > MAX_FILE_SIZE_MB:
+                logger.warning("Skipping large attachment: %s (%.1f MB > %.1f MB)",
+                              ap.name, size_mb, MAX_FILE_SIZE_MB)
+                continue
+        
+        text_raw = att.get("text", "") or ""
+        
+        # HIGH #13: Check text length
+        if len(text_raw) > MAX_TEXT_CHARS:
+            logger.warning("Truncating large attachment text: %s (%d chars > %d chars)",
+                          ap.name, len(text_raw), MAX_TEXT_CHARS)
+            text_raw = text_raw[:MAX_TEXT_CHARS]
+        
+        text = clean_email_text(text_raw)
+        if not text.strip():
             continue
-        att_id = f"{base_id}::att{i}"
+        att_id = _att_id(base_id, str(ap))
         att_chunks = prepare_index_units(
             text,
             doc_id=att_id,
             doc_path=str(ap),
             subject=metadata.get("subject") or ap.name,
             date=metadata.get("end_date") or metadata.get("start_date"),
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
         )
         for ch in att_chunks:
             if limit is not None and len(out) >= limit:
@@ -389,6 +563,8 @@ def build_corpus(
     *,
     last_run_time: Optional[datetime] = None,
     limit: Optional[int] = None,
+    chunk_size: int,
+    chunk_overlap: int,
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """
     Full scan of conversation folders; when last_run_time is provided, reuses prior
@@ -441,24 +617,25 @@ def build_corpus(
                         # Consider unreadable stat as changed to be safe
                         changed_attachment_paths.add(att_file.resolve())
 
-                # Build mapping path->index (1-based) for changed ones
-                path_to_index: Dict[Path, int] = {}
-                for j, att in enumerate(conv.get("attachments") or [], start=1):
+                # Build mapping path->stable att_id for changed ones
+                path_to_attid: Dict[Path, str] = {}
+                for att in (conv.get("attachments") or []):
                     try:
-                        path_to_index[Path(att.get("path", "")).resolve()] = j
+                        path_to_attid[Path(att.get("path", "")).resolve()] = _att_id(base_id, str(att.get("path", "")))
                     except Exception:
                         continue
 
                 # Compute prefixes that changed due to mtime
                 changed_prefixes: Set[str] = set()
                 for p in changed_attachment_paths:
-                    idx = path_to_index.get(p)
-                    if idx is not None:
-                        changed_prefixes.add(f"{base_id}::att{idx}")
+                    aid = path_to_attid.get(p)
+                    if aid:
+                        changed_prefixes.add(aid)
 
                 # Existing (current) attachment prefixes
                 current_att_prefixes: Set[str] = {
-                    f"{base_id}::att{j}" for j in range(1, len(conv.get("attachments") or []) + 1)
+                    _att_id(base_id, str(att.get("path", "")))
+                    for att in (conv.get("attachments") or [])
                 }
                 # Previously existing attachment prefixes for this conversation
                 old_att_prefixes: Set[str] = {
@@ -468,17 +645,7 @@ def build_corpus(
                 }
                 # Any newly-added attachments (present now but not before) must be rebuilt
                 for pref in current_att_prefixes - old_att_prefixes:
-                    try:
-                        idx = int(pref.split("::att")[1])
-                    except Exception:
-                        idx = None
-                    if idx is not None:
-                        try:
-                            ap = Path((conv.get("attachments") or [])[idx - 1].get("path", "")).resolve()
-                            changed_attachment_paths.add(ap)
-                            changed_prefixes.add(pref)
-                        except Exception:
-                            pass
+                    changed_prefixes.add(pref)
 
                 # Keep only truly unchanged docs (not changed AND still present)
                 for d in prior_docs_for_conv:
@@ -494,25 +661,28 @@ def build_corpus(
 
                 # Rebuild changed attachments (respect per-conversation limit)
                 added_for_conv = 0
-                for p in changed_attachment_paths:
-                    idx = path_to_index.get(p)
-                    if idx is None:
+                for att in (conv.get("attachments") or []):
+                    ap = Path(att.get("path", ""))
+                    pref = _att_id(base_id, str(ap))
+                    if pref not in changed_prefixes:
                         continue
-                    try:
-                        att = (conv.get("attachments") or [])[idx - 1]
-                    except Exception:
-                        att = None
-                    if not att or not (att.get("text") or "").strip():
+                    if not (att.get("text") or "").strip():
                         continue
                     att_meta = dict(meta)
-                    att_meta["subject"] = att_meta.get("subject") or Path(att.get("path", "")).name
+                    att_meta["subject"] = att_meta.get("subject") or ap.name
                     chunks = prepare_index_units(
-                        _clean_index_text(att.get("text", "")),
-                        doc_id=f"{base_id}::att{idx}",
-                        doc_path=str(att.get("path", "")),
+                        clean_email_text(att.get("text", "")),
+                        doc_id=pref,
+                        doc_path=str(ap),
                         subject=att_meta.get("subject") or "",
                         date=att_meta.get("end_date") or att_meta.get("start_date"),
+                        chunk_size=chunk_size,
+                        chunk_overlap=chunk_overlap,
                     )
+                    try:
+                        mt = ap.stat().st_mtime
+                    except Exception:
+                        mt = time.time()
                     for ch in chunks:
                         if limit is not None and added_for_conv >= limit:
                             break
@@ -520,21 +690,16 @@ def build_corpus(
                             {
                                 "conv_id": base_id,
                                 "doc_type": "attachment",
-                                "attachment_name": Path(att.get("path", "")).name,
-                                "attachment_type": Path(att.get("path", "")).suffix.lstrip(".").lower(),
-                                "attachment_size": Path(att.get("path", "")).stat().st_size
-                                if Path(att.get("path", "")).exists()
-                                else None,
+                                "attachment_name": ap.name,
+                                "attachment_type": ap.suffix.lstrip(".").lower(),
+                                "attachment_size": ap.stat().st_size if ap.exists() else None,
                                 "subject": att_meta.get("subject") or "",
                                 "participants": att_meta.get("participants") or [],
                                 "start_date": att_meta.get("start_date"),
                                 "end_date": att_meta.get("end_date"),
                             }
                         )
-                        try:
-                            ch["modified_time"] = Path(att.get("path", "")).stat().st_mtime
-                        except Exception:
-                            ch["modified_time"] = time.time()
+                        ch["modified_time"] = mt
                         new_or_updated_docs.append(ch)
                         added_for_conv += 1
                 continue  # next conversation
@@ -542,7 +707,8 @@ def build_corpus(
         # If conversation changed or no last_run_time -> rebuild fully
         conv = load_conversation(convo_dir)
         meta = _extract_manifest_metadata(conv)
-        docs = _build_doc_entries(conv, convo_dir, base_id, limit=limit, metadata=meta)
+        docs = _build_doc_entries(conv, convo_dir, base_id, limit=limit, metadata=meta,
+                                  chunk_size=chunk_size, chunk_overlap=chunk_overlap)
         try:
             mt = convo_txt_path.stat().st_mtime
         except Exception:
@@ -561,7 +727,10 @@ def build_incremental_corpus(
     root: Path,
     existing_file_times: Dict[str, float],
     existing_mapping: List[Dict[str, Any]],
-    limit: Optional[int] = None
+    limit: Optional[int] = None,
+    *,
+    chunk_size: int,
+    chunk_overlap: int,
 ) -> Tuple[List[Dict[str, Any]], Set[str]]:
     """
     True incremental build using stored per-doc file times.
@@ -615,13 +784,15 @@ def build_incremental_corpus(
 
         if (prior_time or 0) < conv_mtime:
             # Rebuild conversation
-            txt = _clean_index_text(conv.get("conversation_txt", ""))
+            txt = clean_email_text(conv.get("conversation_txt", ""))
             chunks = prepare_index_units(
                 txt,
                 doc_id=conv_doc_id,
                 doc_path=str(convo_dir / CONVERSATION_FILENAME),
                 subject=meta.get("subject") or "",
                 date=meta.get("end_date") or meta.get("start_date"),
+                chunk_size=chunk_size,
+                chunk_overlap=chunk_overlap,
             )
             # Old conv chunks → delete to avoid duplication
             for rid in (by_conv_prefix.get(base_id, {}).get(conv_doc_id, []) or []):
@@ -645,12 +816,12 @@ def build_incremental_corpus(
                 added_for_conv += 1
 
         # --- Attachments change / deletion detection ---
-        # Map current attachments
+        # Map current attachments (with stable IDs)
         current_att_prefixes: Set[str] = set()
-        for i, att in enumerate(conv.get("attachments") or [], start=1):
-            prefix = f"{base_id}::att{i}"
-            current_att_prefixes.add(prefix)
+        for att in (conv.get("attachments") or []):
             ap = Path(att.get("path", ""))
+            prefix = _att_id(base_id, str(ap))
+            current_att_prefixes.add(prefix)
             try:
                 mt = ap.stat().st_mtime
             except Exception:
@@ -664,13 +835,15 @@ def build_incremental_corpus(
                 for rid in (by_conv_prefix.get(base_id, {}).get(prefix, []) or []):
                     deleted_ids.add(rid)
 
-                text = _clean_index_text(att["text"])
+                text = clean_email_text(att["text"])
                 chunks = prepare_index_units(
                     text,
                     doc_id=prefix,
                     doc_path=str(ap),
                     subject=meta.get("subject") or ap.name,
                     date=meta.get("end_date") or meta.get("start_date"),
+                    chunk_size=chunk_size,
+                    chunk_overlap=chunk_overlap,
                 )
                 for ch in chunks:
                     if limit is not None and added_for_conv >= limit:
@@ -748,26 +921,58 @@ def load_existing_index(index_dir: Path) -> Tuple[Optional[Any], Optional[List[D
     return fidx, mapping, file_times, embeddings
 
 
+def _local_check_index_consistency(index_dir: Path) -> None:
+    """Fallback consistency check when package-provided checker is unavailable."""
+    try:
+        ixp = index_paths(index_dir)
+        # Embeddings vs mapping count
+        m = read_mapping(index_dir) or []
+        emb = None
+        if ixp.embeddings.exists():
+            try:
+                emb = np.load(str(ixp.embeddings), mmap_mode="r")
+            except Exception:
+                emb = None
+        if emb is not None and emb.shape[0] != len(m):
+            raise RuntimeError(f"Embeddings/document count mismatch: {emb.shape[0]} vs {len(m)}")
+        # FAISS ntotal vs embeddings
+        if HAVE_FAISS and faiss is not None and ixp.faiss.exists() and emb is not None:
+            try:
+                fidx = faiss.read_index(str(ixp.faiss))  # type: ignore
+                if int(getattr(fidx, 'ntotal', 0)) != int(emb.shape[0]):
+                    raise RuntimeError(f"FAISS ntotal {getattr(fidx, 'ntotal', 0)} != embeddings {emb.shape[0]}")
+            except Exception as e:
+                raise RuntimeError(f"FAISS consistency check failed: {e}")
+    except Exception as e:
+        raise
+
+
 def save_index(index_dir: Path, embeddings: np.ndarray, mapping: List[Dict[str, Any]], *, provider: str, num_folders: int) -> None:
     """
     Persist embeddings (embeddings.npy), mapping.json, (optional) FAISS index, and meta.json.
+    All writes are atomic. A post-save consistency check verifies alignment.
     """
     ixp = index_paths(index_dir)
     ensure_dir(ixp.base)
 
-    # 1) embeddings
-    np.save(str(ixp.embeddings), embeddings.astype("float32", order="C"))
+    # 1) embeddings (atomic NPY write via BytesIO buffer -> bytes)
+    buf = io.BytesIO()
+    np.save(buf, embeddings.astype("float32", order="C"))
+    _atomic_write_bytes(ixp.embeddings, buf.getvalue())
 
-    # 2) mapping
+    # 2) mapping (writer is already atomic)
     write_mapping(index_dir, mapping)
 
-    # 3) optional FAISS (Inner Product index – cosine ready because vectors are unit-normalized)
+    # 3) optional FAISS (Inner Product index - cosine ready because vectors are unit-normalized)
     if HAVE_FAISS and faiss is not None:
         try:
             dim = int(embeddings.shape[1])
             index = faiss.IndexFlatIP(dim)  # type: ignore
             index.add(np.ascontiguousarray(embeddings, dtype=np.float32))  # type: ignore
-            faiss.write_index(index, str(ixp.faiss))  # type: ignore
+            # Write FAISS to a temp path then replace
+            faiss_tmp = ixp.faiss.with_suffix(ixp.faiss.suffix + ".tmp")
+            faiss.write_index(index, str(faiss_tmp))  # type: ignore
+            os.replace(faiss_tmp, ixp.faiss)
         except Exception as e:
             logger.warning("FAISS indexing failed, continuing without faiss: %s", e)
 
@@ -782,6 +987,16 @@ def save_index(index_dir: Path, embeddings: np.ndarray, mapping: List[Dict[str, 
     save_index_metadata(meta, index_dir)
     logger.info("Saved index (vectors=%d, dimensions=%d)", embeddings.shape[0], embeddings.shape[1])
 
+    # 5) Post-save consistency check
+    try:
+        if check_index_consistency is not None:
+            check_index_consistency(index_dir, raise_on_mismatch=True)  # type: ignore
+        else:
+            _local_check_index_consistency(index_dir)
+    except Exception as e:
+        logger.error("Post-save consistency check failed: %s", e)
+        raise
+
 
 # ============================================================================
 # CLI
@@ -791,22 +1006,18 @@ def main() -> None:
 
     ap = argparse.ArgumentParser(description="Build or update the email search index.")
     ap.add_argument("--root", required=True, help="Export root that contains conversation folders and (optionally) an _index/ directory")
-    ap.add_argument("--provider", choices=["vertex", "openai", "azure", "cohere", "huggingface", "local", "qwen"], default=os.getenv("EMBED_PROVIDER", "vertex"), help="Embedding provider for index build")
+    # Constrain provider to 'vertex' for this build to match metadata/validator support.
+    ap.add_argument("--provider", choices=["vertex"], default=os.getenv("EMBED_PROVIDER", "vertex"), help="Embedding provider for index build (this build supports only 'vertex')")
     ap.add_argument("--model", help="Embedding model/deployment override for the chosen provider")
-    ap.add_argument("--batch", type=int, default=int(os.getenv("EMBED_BATCH", "64")), help="Embedding batch size (e.g., 64–250 for Vertex, will be clamped to max 250)")
+    ap.add_argument("--batch", type=int, default=int(os.getenv("EMBED_BATCH", "64")), help="Embedding batch size (e.g., 64-250 for Vertex, will be clamped to max 250)")
     ap.add_argument("--index-root", help="Directory where the _index folder should be created (defaults to --root)")
     ap.add_argument("--force-reindex", action="store_true", help="Force a full re-index of all conversations")
     ap.add_argument("--limit", type=int, help="Limit number of chunks per conversation (for quick smoke tests)")
     args = ap.parse_args()
-    
-    # Initialize GCP credentials if using Vertex AI
+
+    # Initialize GCP credentials for Vertex AI via config (single source of truth).
     if args.provider == "vertex":
-        creds_path = _initialize_gcp_credentials()
-        if not creds_path:
-            logger.error("Failed to initialize GCP credentials for Vertex AI")
-            logger.info("Please ensure valid service account JSON files exist in the 'secrets' directory")
-            logger.info("Expected files: embed2-474114-fca38b4d2068.json or other service account JSON files")
-            return
+        _initialize_gcp_credentials()
 
     root = Path(args.root).expanduser().resolve()
     index_base = Path(args.index_root).expanduser().resolve() if args.index_root else root
@@ -821,6 +1032,14 @@ def main() -> None:
 
     # Optional: pin model via env
     _apply_model_override(args.provider, args.model)
+
+    # Use config-backed chunk parameters (threaded to all prepare_index_units calls)
+    try:
+        cfg = EmailOpsConfig.load()
+        chunk_size = int(getattr(cfg, "DEFAULT_CHUNK_SIZE", 1500))
+        chunk_overlap = int(getattr(cfg, "DEFAULT_CHUNK_OVERLAP", 100))
+    except Exception:
+        chunk_size, chunk_overlap = 1500, 100  # safe defaults
 
     # Load previous index bits (if any)
     _, existing_mapping, existing_file_times, existing_embeddings = load_existing_index(out_dir)
@@ -849,7 +1068,9 @@ def main() -> None:
             root,
             existing_file_times,
             existing_mapping or [],
-            limit=args.limit
+            limit=args.limit,
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
         )
         new_ids = {d["id"] for d in new_docs}
         unchanged_docs = [
@@ -867,7 +1088,8 @@ def main() -> None:
                 "Starting incremental (timestamp) update from %s",
                 last_run_time.strftime("%Y-%m-%d %H:%M:%S %Z")
             )
-        new_docs, unchanged_docs = build_corpus(root, out_dir, last_run_time=last_run_time, limit=args.limit)
+        new_docs, unchanged_docs = build_corpus(root, out_dir, last_run_time=last_run_time, limit=args.limit,
+                                                chunk_size=chunk_size, chunk_overlap=chunk_overlap)
         logger.info("Corpus: %d new/updated, %d unchanged", len(new_docs), len(unchanged_docs))
 
     # Short-circuit: nothing to do
@@ -889,6 +1111,17 @@ def main() -> None:
 
     # Clamp batch size safely
     batch = max(1, min(int(args.batch or 64), EMBED_MAX_BATCH))
+
+    def _validate_batch(vecs: np.ndarray, expected_rows: int) -> None:
+        if vecs.size == 0:
+            raise RuntimeError("Embedding provider returned empty vectors; check provider credentials and model.")
+        if vecs.ndim != 2 or vecs.shape[0] != int(expected_rows):
+            raise RuntimeError(f"Invalid embeddings shape: got {vecs.shape}, expected rows={expected_rows}")
+        if not np.isfinite(vecs).all():
+            raise RuntimeError("Invalid embeddings returned (non-finite values detected)")
+        # At least one row must have a reasonable norm (~1.0 for unit-normalized embeddings)
+        if float(np.max(np.linalg.norm(vecs, axis=1))) < 1e-3:
+            raise RuntimeError("Embeddings look degenerate (all ~zero)")
 
     if existing_embeddings is not None and existing_mapping and not args.force_reindex:
         # Reuse unchanged vectors by id -> row index
@@ -914,9 +1147,9 @@ def main() -> None:
             for i in range(0, len(texts), batch):
                 chunk = texts[i: i + batch]
                 vecs = embed_texts(chunk, provider=embed_provider)  # normalized vectors
-                if vecs.size == 0:
-                    raise RuntimeError("Embedding provider returned empty vectors; check provider credentials and model.")
-                all_embeddings.append(np.asarray(vecs, dtype="float32"))
+                vecs = np.asarray(vecs, dtype="float32")
+                _validate_batch(vecs, expected_rows=len(chunk))
+                all_embeddings.append(vecs)
 
         final_docs = unchanged_with_vecs + valid_docs
     else:
@@ -933,9 +1166,9 @@ def main() -> None:
         for i in range(0, len(texts), batch):
             chunk = texts[i: i + batch]
             vecs = embed_texts(chunk, provider=embed_provider)
-            if vecs.size == 0:
-                raise RuntimeError("Embedding provider returned empty vectors; check provider credentials and model.")
-            all_embeddings.append(np.asarray(vecs, dtype="float32"))
+            vecs = np.asarray(vecs, dtype="float32")
+            _validate_batch(vecs, expected_rows=len(chunk))
+            all_embeddings.append(vecs)
         final_docs = docs
 
     if not all_embeddings:
@@ -969,9 +1202,9 @@ def main() -> None:
             "end_date": d.get("end_date"),
             "from_email": d.get("from_email", ""),
             "from_name": d.get("from_name", ""),
-            "to_emails": d.get("to_emails", []),  # SCHEMA FIX: Changed from to_recipients to to_emails
-            "cc_emails": d.get("cc_emails", []),  # SCHEMA FIX: Changed from cc_recipients to cc_emails
-            "participants": d.get("participants", []),  # SCHEMA FIX: Added missing participants field
+            "to_emails": d.get("to_emails", []),
+            "cc_emails": d.get("cc_emails", []),
+            "participants": d.get("participants", []),
             "attachment_name": d.get("attachment_name"),
             "attachment_type": d.get("attachment_type"),
             "attachment_size": d.get("attachment_size"),
@@ -988,10 +1221,10 @@ def main() -> None:
 
     save_index(out_dir, embeddings, mapping_out, provider=embed_provider, num_folders=len({(d["id"] or "").split("::")[0] for d in final_docs}))
 
-    # file_times.json + timestamp
+    # file_times.json (atomic) + timestamp (atomic)
     ixp = index_paths(out_dir)
     try:
-        ixp.file_times.write_text(json.dumps(file_times, ensure_ascii=False, indent=2), encoding="utf-8")
+        _atomic_write_text(ixp.file_times, json.dumps(file_times, ensure_ascii=False, indent=2), encoding="utf-8")
     except Exception as e:
         logger.warning("Failed to write %s: %s", ixp.file_times.name, e)
 

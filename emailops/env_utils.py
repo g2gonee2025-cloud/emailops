@@ -19,7 +19,7 @@ load_validated_accounts = _rt.load_validated_accounts
 save_validated_accounts = _rt.save_validated_accounts
 validate_account = _rt.validate_account
 DEFAULT_ACCOUNTS = _rt.DEFAULT_ACCOUNTS
-_init_vertex = _rt._init_vertex  # keep underscore name to preserve existing imports
+_init_vertex = _rt._init_vertex
 reset_vertex_init = _rt.reset_vertex_init
 
 __all__ = [

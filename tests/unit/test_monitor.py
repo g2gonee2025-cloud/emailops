@@ -261,7 +261,7 @@ class TestCheckStatus:
         assert status.index_file is not None
         assert status.index_file in ["embeddings.npy", "mapping.json"]
 
-    def test_check_status_calculates_progress(self, mock_index_files, mock_conversation_structure):
+    def test_check_status_calculates_progress(self, mock_index_files):
         """Test that check_status calculates progress percentage."""
         monitor = IndexMonitor(root_dir=str(mock_index_files["index_dir"].parent))
 
@@ -316,9 +316,8 @@ class TestAnalyzeRate:
         monitor = IndexMonitor(root_dir=str(mock_index_files["index_dir"].parent))
 
         past_time = datetime.now(UTC) - timedelta(hours=2)
-        with patch.object(monitor, '_get_created_time', return_value=past_time):
-            with patch.object(monitor, '_count_conversations', return_value=100):
-                result = monitor.analyze_rate(emit_text=False)
+        with patch.object(monitor, '_get_created_time', return_value=past_time), patch.object(monitor, '_count_conversations', return_value=100):
+            result = monitor.analyze_rate(emit_text=False)
 
         assert "eta_hours" in result
         assert "remaining" in result
@@ -502,8 +501,7 @@ class TestMonitorEdgeCases:
         """Test check_status handles empty mapping file."""
         # Create empty mapping
         mapping_path = mock_index_dir / "mapping.json"
-        with open(mapping_path, "w") as f:
-            json.dump([], f)
+        mapping_path.write_text(json.dumps([]))
 
         monitor = IndexMonitor(root_dir=str(mock_index_dir.parent))
         status = monitor.check_status(emit_text=False)
@@ -568,8 +566,7 @@ class TestMonitorEdgeCases:
         ]
 
         mapping_path = mock_index_dir / "mapping.json"
-        with open(mapping_path, "w") as f:
-            json.dump(large_mapping, f)
+        mapping_path.write_text(json.dumps(large_mapping))
 
         monitor = IndexMonitor(root_dir=str(mock_index_dir.parent))
         status = monitor.check_status(emit_text=False)

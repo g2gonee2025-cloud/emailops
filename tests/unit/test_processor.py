@@ -1,4 +1,3 @@
-
 """Unit tests for processing.processor module."""
 
 import json
@@ -15,7 +14,7 @@ from unittest.mock import MagicMock, Mock, mock_open, patch
 import numpy as np
 import pytest
 
-from processing.processor import (
+from processor import (
     ChunkJob,
     ProcessingStats,
     UnifiedProcessor,
@@ -218,14 +217,13 @@ class TestHelperFunctions(TestCase):
             ]
             file_size = 1024
 
-            result = _save_chunks_to_path(chunks_dir, doc_id, chunks, file_size)
+            result = _save_chunks_to_path(chunks_dir, doc_id, "test_doc", chunks, file_size)
 
             assert result.exists()
             assert result.suffix == ".json"
 
-            with open(result) as f:
+            with result.open() as f:
                 data = json.load(f)
-
             assert data["doc_id"] == doc_id
             assert data["num_chunks"] == 2
             assert len(data["chunks"]) == 2
@@ -637,11 +635,11 @@ class TestEmbeddingOperations(TestCase):
             assert len(pkl_files) > 0
 
             # Verify content of a pickle file
-            with open(pkl_files[0], "rb") as f:
+            with pkl_files[0].open("rb") as f:
                 data = pickle.load(f)
-                assert "embeddings" in data
-                assert len(data["embeddings"]) > 0
-                assert len(data["embeddings"][0]) > 1 # Embedding vector should have dimensions
+            assert "embeddings" in data
+            assert len(data["embeddings"]) > 0
+            assert len(data["embeddings"][0]) > 1 # Embedding vector should have dimensions
 
     @patch('emailops.config.get_config')
     @patch('processing.processor._initialize_gcp_credentials')
@@ -693,21 +691,19 @@ class TestIndexOperations(TestCase):
                 "embeddings": np.array([[0.1, 0.2]], dtype="float32")
             }
 
-            with open(emb_dir / "worker_0_batch_00000.pkl", "wb") as f:
-                pickle.dump(batch_data, f)
-
+            (emb_dir / "worker_0_batch_00000.pkl").write_bytes(pickle.dumps(batch_data))
             # Mock faiss import within the method
             with patch.dict('sys.modules', {'faiss': MagicMock()}):
-                import sys
-                mock_faiss = sys.modules['faiss']
-                mock_faiss.IndexFlatIP.return_value = Mock()
+                    import sys
+                    mock_faiss = sys.modules['faiss']
+                    mock_faiss.IndexFlatIP.return_value = Mock()
 
-                processor.repair_index(remove_batches=False)
+                    processor.repair_index(remove_batches=False)
 
-                # Check outputs
-                assert (processor.index_dir / "embeddings.npy").exists()
-                assert (processor.index_dir / "mapping.json").exists()
-                processor.close()
+                    # Check outputs
+                    assert (processor.index_dir / "embeddings.npy").exists()
+                    assert (processor.index_dir / "mapping.json").exists()
+                    processor.close()
 
     @patch('emailops.config.get_config')
     def test_repair_index_no_files(self, mock_get_config):
@@ -873,11 +869,8 @@ class TestErrorHandling(TestCase):
                 "embeddings": np.array([[0.0, 0.0]], dtype="float32")
             }
 
-            with open(emb_dir / "batch.pkl", "wb") as f:
-                pickle.dump(batch_data, f)
-
+            (emb_dir / "batch.pkl").write_bytes(pickle.dumps(batch_data))
             processor.fix_failed_embeddings()
-
             # Should handle error without crashing
             mock_embed.assert_called()
             processor.close()

@@ -290,7 +290,7 @@ def _normalize(vectors: list[list[float]]) -> np.ndarray:
 
 ### 7.2. Model Management
 - `_vertex_model()`: Creates GenerativeModel with optional system instruction
-- `_normalize_model_alias()`: Maps deprecated names (e.g., "gemini-embedded-001" → "gemini-embedding-001")
+- `_normalize_model_alias()`: Maps deprecated names (e.g., "gemini-embedding-001" → "gemini-embedding-001")
 
 ### 7.3. Project Rotation Helpers
 - `_ensure_projects_loaded()`: Thread-safe lazy loading of project list

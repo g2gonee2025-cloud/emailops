@@ -53,7 +53,8 @@ def complete_json(*args: Any, **kwargs: Any) -> Any:
 
 def embed_texts(texts: Iterable[str], **kwargs: Any) -> Any:
     """
-    Exact passthrough to runtime; does NOT realize non-list iterables.
+    Thin passthrough to runtime; the runtime now realizes non-list iterables once
+    at the boundary for provider compatibility and batching efficiency.
     """
     return _rt_attr("embed_texts")(texts, **kwargs)
 
@@ -84,7 +85,7 @@ def embed(texts: Iterable[str], **kwargs: Any) -> Any:
             "embed(texts) expects an iterable of strings, not a single string/bytes; "
             "wrap the value in a list, e.g., embed([text])."
         )
-    seq = texts if isinstance(texts, list) else list(texts)
+    seq = list(texts)
     if not all(isinstance(t, str) for t in seq):
         raise TypeError("embed(texts) expects an iterable of str.")
     return embed_texts(seq, **kwargs)

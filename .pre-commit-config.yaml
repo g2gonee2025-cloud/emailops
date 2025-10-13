@@ -20,4 +20,4 @@ repos:
     rev: v6.2.5
     hooks:
       - id: pytest
-        stages: [commit]
+        stages: [pre-commit]

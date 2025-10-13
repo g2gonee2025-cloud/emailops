@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from diagnostics.utils import get_index_path, setup_logging
+import logging
 
 # Import centralized configuration
 try:
@@ -30,7 +30,18 @@ except ImportError:
     DEFAULT_CHUNK_OVERLAP = 200
 
 # Setup logging
-logger = setup_logging()
+logging.basicConfig(
+    level=os.environ.get("LOG_LEVEL", "INFO").upper(),
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    stream=sys.stdout,
+)
+logger = logging.getLogger(__name__)
+
+
+def get_index_path() -> Path:
+    """Helper to find the index directory."""
+    # This is a simplified implementation. A more robust version might search parent dirs.
+    return Path.cwd() / INDEX_DIRNAME
 
 
 def analyze_file_processing() -> None:

@@ -38,7 +38,7 @@ class TestDocumentProcessingWorkflow(TestCase):
         mock_read.return_value = "Document content to be chunked"
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            from processing.processor import UnifiedProcessor
+            from processor import UnifiedProcessor
 
             processor = None
             try:
@@ -127,7 +127,7 @@ class TestDocumentProcessingWorkflow(TestCase):
         ]
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            from processing.processor import UnifiedProcessor
+            from processor import UnifiedProcessor
 
             processor = None
             try:
@@ -260,7 +260,7 @@ class TestIndexWorkflow(TestCase):
                 pickle.dump(batch_data, f)
 
             # Create processor and repair index
-            from processing.processor import UnifiedProcessor
+            from processor import UnifiedProcessor
 
             # Mock faiss import within the method
             with patch.dict('sys.modules', {'faiss': MagicMock()}):
@@ -314,7 +314,7 @@ class TestIndexWorkflow(TestCase):
                     pickle.dump(batch_data, f)
 
                 # Repair the index
-                from processing.processor import UnifiedProcessor
+                from processor import UnifiedProcessor
                 processor = UnifiedProcessor(tmpdir, mode="fix")
                 processor.fix_failed_embeddings()
 
@@ -368,6 +368,7 @@ class TestMonitoringWorkflow(TestCase):
     def test_diagnostics_workflow(self):
         """Test diagnostics and validation workflow."""
         from diagnostics.diagnostics import test_account
+
         from emailops.config import get_config
 
         # Test account validation
@@ -499,7 +500,7 @@ class TestEndToEndWorkflow(TestCase):
     def test_complete_pipeline(self):
         """Test complete pipeline from documents to embeddings."""
         from emailops.config import get_config
-        from processing.processor import UnifiedProcessor
+        from processor import UnifiedProcessor
 
         with tempfile.TemporaryDirectory() as tmpdir:
             processor1 = None
