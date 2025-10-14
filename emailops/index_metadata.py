@@ -49,6 +49,17 @@ from typing import Any, Dict, List, Optional, Union
 logger = logging.getLogger(__name__)
 
 # -----------------------------------------------------------------------------
+# Constants
+# -----------------------------------------------------------------------------
+# Atomic write retry configuration
+ATOMIC_WRITE_MAX_RETRIES = 6
+ATOMIC_WRITE_BASE_DELAY = 0.05
+ATOMIC_WRITE_EXPONENTIAL_BASE = 2
+
+# Default half-life for time decay
+DEFAULT_HALF_LIFE_DAYS = 30
+
+# -----------------------------------------------------------------------------
 # Filenames & Paths (single source of truth)
 # -----------------------------------------------------------------------------
 META_FILENAME = "meta.json"
@@ -219,6 +230,20 @@ def _close_memmap(arr: Any) -> None:
             arr._mmap.close()
 
 
+def _get_all_dimensions(index_dir: Union[str, Path]) -> Dict[str, Optional[int]]:
+    """
+    Consolidated dimension detection from all available sources.
+    Returns dict with keys: 'embeddings', 'faiss', 'detected'
+    """
+    dims = {
+        'embeddings': _detect_actual_dimensions(index_dir),
+        'faiss': _detect_faiss_dimensions(index_dir),
+        'detected': None
+    }
+    dims['detected'] = dims['embeddings'] or dims['faiss']
+    return dims
+
+
 def _detect_actual_dimensions(index_dir: Union[str, Path]) -> Optional[int]:
     """
     Detect embedding width from embeddings.npy (2D) without leaving file handles open.
@@ -234,7 +259,6 @@ def _detect_actual_dimensions(index_dir: Union[str, Path]) -> Optional[int]:
         arr = np.load(str(npy), mmap_mode="r")
         if arr.ndim == 2:
             width = int(arr.shape[1])
-            # MEDIUM #25: Add detection logging
             logger.debug("Detected %d dimensions from %s", width, npy.name)
         else:
             _close_memmap(arr)
@@ -244,7 +268,6 @@ def _detect_actual_dimensions(index_dir: Union[str, Path]) -> Optional[int]:
         gc.collect()
         return width
     except Exception as e:
-        # MEDIUM #25: Add failure logging
         logger.debug("Could not detect dimensions from %s: %s", npy.name, e)
     return None
 
@@ -259,12 +282,10 @@ def _detect_faiss_dimensions(index_dir: Union[str, Path]) -> Optional[int]:
 
         idx = faiss.read_index(str(fi))
         d = int(getattr(idx, "d", None) or idx.d)
-        # MEDIUM #25: Add detection logging
         logger.debug("Detected %d dimensions from FAISS index", d)
         del idx
         return d
     except Exception as e:
-        # MEDIUM #25: Add failure logging
         logger.debug("Could not detect dimensions from %s: %s", fi.name, e)
         return None
 
@@ -327,7 +348,7 @@ def _atomic_write_json(path: Path, data: Dict[str, Any] | List[Any]) -> None:
 
         # Retry os.replace a few times to handle transient locks (Windows)
         success = False
-        for attempt in range(6):
+        for attempt in range(ATOMIC_WRITE_MAX_RETRIES):
             try:
                 os.replace(tmp_name, path)
                 success = True
@@ -335,7 +356,7 @@ def _atomic_write_json(path: Path, data: Dict[str, Any] | List[Any]) -> None:
                 break
             except (PermissionError, OSError) as e:
                 last_exc = e
-                time.sleep(0.05 * (2**attempt))
+                time.sleep(ATOMIC_WRITE_BASE_DELAY * (ATOMIC_WRITE_EXPONENTIAL_BASE**attempt))
         if not success:
             assert last_exc is not None
             raise last_exc
@@ -379,7 +400,7 @@ def create_index_metadata(
         actual_dim = detected_dim
 
     half_life_env = _safe_int(os.getenv("HALF_LIFE_DAYS"))
-    half_life = 30 if (half_life_env is None or half_life_env < 1) else half_life_env
+    half_life = DEFAULT_HALF_LIFE_DAYS if (half_life_env is None or half_life_env < 1) else half_life_env
 
     metadata: Dict[str, Any] = {
         "version": "1.0",
@@ -533,16 +554,8 @@ def check_index_consistency(index_dir: Union[str, Path], raise_on_mismatch: bool
     return True
 
 
-def validate_index_compatibility(
-    index_dir: Union[str, Path],
-    provider: str,
-    raise_on_mismatch: bool = True,
-    check_counts: bool = True,
-) -> bool:
-    provider_norm = _normalize_provider(provider)
-    is_vertex = provider_norm == "vertex"
-
-    metadata = load_index_metadata(index_dir)
+def _validate_metadata(metadata: Optional[Dict[str, Any]], provider_norm: str, raise_on_mismatch: bool) -> bool:
+    """Validate metadata existence and provider match."""
     if metadata is None:
         msg = "No index metadata found; refusing to proceed."
         if raise_on_mismatch:
@@ -550,40 +563,53 @@ def validate_index_compatibility(
         logger.error(msg)
         return False
 
-    # Compare normalized providers, but allow metadata to store provider as originally passed.
+    # Compare normalized providers
     indexed_provider = _normalize_provider(metadata.get("provider", "") or metadata.get("provider_norm", ""))
     if indexed_provider and indexed_provider != provider_norm:
-        msg = (
-            f"Index was created with provider '{indexed_provider}' but trying to search with '{provider_norm}'."
-        )
+        msg = f"Index was created with provider '{indexed_provider}' but trying to search with '{provider_norm}'."
         if raise_on_mismatch:
             raise ValueError(msg)
         logger.error(msg)
         return False
+    
+    return True
 
-    # Ensure at least one index artifact exists
-    p = index_paths(index_dir)
+
+def _validate_artifacts(p: IndexPaths, raise_on_mismatch: bool) -> bool:
+    """Validate that at least one index artifact exists."""
     if not p.faiss.exists() and not p.embeddings.exists():
         msg = "No index artifacts found (missing index.faiss and embeddings.npy)."
         if raise_on_mismatch:
             raise FileNotFoundError(msg)
         logger.error(msg)
         return False
+    return True
 
-    # Prefer on-disk detection; fall back to metadata.actual_dimensions only if needed.
-    detected_dims = _detect_actual_dimensions(index_dir) or _detect_faiss_dimensions(index_dir)
+
+def _validate_dimensions(
+    index_dir: Union[str, Path],
+    metadata: Dict[str, Any],
+    is_vertex: bool,
+    raise_on_mismatch: bool
+) -> bool:
+    """Validate dimension compatibility."""
+    dims = _get_all_dimensions(index_dir)
+    detected_dims = dims['detected']
     meta_actual = metadata.get("actual_dimensions")
+    
     if is_vertex:
         # Vertex-specific: enforce configured output dimension if both sides are known.
         expected_cfg = _resolve_vertex_config()
         expected_dims = expected_cfg.get("dimensions")
         actual_dims = detected_dims if detected_dims is not None else meta_actual
+        
         if meta_actual is not None and detected_dims is not None and meta_actual != detected_dims:
             logger.warning(
                 "Metadata actual_dimensions (%s) disagrees with on-disk dimensions (%s).",
                 meta_actual,
                 detected_dims,
             )
+        
         if actual_dims is not None and expected_dims is not None and actual_dims != expected_dims:
             msg = f"Dimension mismatch: index has {actual_dims} dims, but Vertex config is {expected_dims}."
             if raise_on_mismatch:
@@ -591,16 +617,44 @@ def validate_index_compatibility(
             logger.error(msg)
             return False
     else:
-        # Non-Vertex: skip provider-specific dimension checks. Only enforce that on-disk dims
-        # match the recorded actual_dimensions (if both are present), to catch cross-run drift.
+        # Non-Vertex: only enforce that on-disk dims match metadata.actual_dimensions
         if detected_dims is not None and meta_actual is not None and detected_dims != meta_actual:
-            msg = (
-                f"Dimension drift: on-disk dims ({detected_dims}) != metadata.actual_dimensions ({meta_actual})."
-            )
+            msg = f"Dimension drift: on-disk dims ({detected_dims}) != metadata.actual_dimensions ({meta_actual})."
             if raise_on_mismatch:
                 raise ValueError(msg)
             logger.error(msg)
             return False
+    
+    return True
+
+
+def validate_index_compatibility(
+    index_dir: Union[str, Path],
+    provider: str,
+    raise_on_mismatch: bool = True,
+    check_counts: bool = True,
+) -> bool:
+    """
+    Validate index compatibility with the given provider.
+    Refactored for clarity with helper functions.
+    """
+    provider_norm = _normalize_provider(provider)
+    is_vertex = provider_norm == "vertex"
+
+    # Load and validate metadata
+    metadata = load_index_metadata(index_dir)
+    if not _validate_metadata(metadata, provider_norm, raise_on_mismatch):
+        return False
+
+    # Validate artifacts exist
+    p = index_paths(index_dir)
+    if not _validate_artifacts(p, raise_on_mismatch):
+        return False
+
+    # Validate dimensions (metadata is guaranteed to be non-None after validation)
+    assert metadata is not None  # For type checker
+    if not _validate_dimensions(index_dir, metadata, is_vertex, raise_on_mismatch):
+        return False
 
     # Sanity: index_type vs. files present
     meta_index_type = (metadata.get("index_type") or "unknown").lower()
@@ -622,89 +676,103 @@ def validate_index_compatibility(
     return True
 
 
-def get_index_info(index_dir: Union[str, Path]) -> str:
-    metadata = load_index_metadata(index_dir)
-    if metadata is None:
-        return "No index metadata available"
-
-    mapping_count: Optional[int] = None
-    embeddings_count: Optional[int] = None
-    inferred_dim: Optional[int] = None
-    faiss_count: Optional[int] = None
-
+def _gather_index_counts(index_dir: Union[str, Path]) -> Dict[str, Any]:
+    """Gather all index counts and dimensions."""
+    info: Dict[str, Any] = {
+        'mapping_count': None,
+        'mapping_error': None,
+        'embeddings_count': None,
+        'faiss_count': None,
+        'inferred_dim': None
+    }
+    
     p = index_paths(index_dir)
-
+    
     # mapping.json
-    mapping_error = None
     if p.mapping.exists():
         try:
             mapping = read_mapping(index_dir, strict=True)
             if isinstance(mapping, list):
-                mapping_count = len(mapping)
+                info['mapping_count'] = len(mapping)
         except Exception as e:
-            mapping_error = str(e)
-
+            info['mapping_error'] = str(e)
+    
     # embeddings.npy
     if p.embeddings.exists():
         try:
             import numpy as np  # type: ignore
-
             arr = np.load(str(p.embeddings), mmap_mode="r")
             if arr.ndim == 2:
-                embeddings_count = int(arr.shape[0])
-                inferred_dim = int(arr.shape[1])
+                info['embeddings_count'] = int(arr.shape[0])
+                info['inferred_dim'] = int(arr.shape[1])
             _close_memmap(arr)
             del arr
             gc.collect()
         except Exception:
             pass
-
+    
     # FAISS index
     if p.faiss.exists():
         try:
-            faiss_count = _detect_faiss_count(index_dir)
-            if inferred_dim is None:
-                inferred_dim = _detect_faiss_dimensions(index_dir)
+            info['faiss_count'] = _detect_faiss_count(index_dir)
+            if info['inferred_dim'] is None:
+                info['inferred_dim'] = _detect_faiss_dimensions(index_dir)
         except Exception:
             pass
+    
+    return info
 
-    actual = metadata.get("actual_dimensions") or inferred_dim
 
+def get_index_info(index_dir: Union[str, Path]) -> str:
+    """
+    Get formatted index information.
+    Refactored for clarity with helper function.
+    """
+    metadata = load_index_metadata(index_dir)
+    if metadata is None:
+        return "No index metadata available"
+
+    # Gather all counts and dimensions
+    counts = _gather_index_counts(index_dir)
+    
+    actual = metadata.get("actual_dimensions") or counts['inferred_dim']
     configured_dims = metadata.get("dimensions")
-    configured_dims_str = (
-        str(configured_dims) if configured_dims is not None else "unknown"
-    )
+    configured_dims_str = str(configured_dims) if configured_dims is not None else "unknown"
 
+    # Build output lines
     lines = [
         "Index Information:",
         f"  Provider: {metadata.get('provider', 'unknown')}",
         f"  Model: {metadata.get('model', 'unknown')}",
         f"  Configured Dimensions: {configured_dims_str}",
     ]
+    
     if actual is not None:
         lines.append(f"  Actual Dimensions: {actual}")
 
-    if mapping_count is not None:
-        lines.append(f"  Documents (mapping.json): {mapping_count}")
-    elif mapping_error is not None:
-        lines.append(f"  Documents (mapping.json): error reading ({mapping_error})")
+    # Document counts
+    if counts['mapping_count'] is not None:
+        lines.append(f"  Documents (mapping.json): {counts['mapping_count']}")
+    elif counts['mapping_error'] is not None:
+        lines.append(f"  Documents (mapping.json): error reading ({counts['mapping_error']})")
     else:
         lines.append(f"  Documents (metadata): {metadata.get('num_documents', 'unknown')}")
 
-    if embeddings_count is not None:
-        lines.append(f"  Embeddings (rows in {EMBEDDINGS_FILENAME}): {embeddings_count}")
+    # Embeddings and FAISS counts
+    if counts['embeddings_count'] is not None:
+        lines.append(f"  Embeddings (rows in {EMBEDDINGS_FILENAME}): {counts['embeddings_count']}")
 
-    if faiss_count is not None:
-        lines.append(f"  FAISS vectors (ntotal): {faiss_count}")
+    if counts['faiss_count'] is not None:
+        lines.append(f"  FAISS vectors (ntotal): {counts['faiss_count']}")
 
-    lines.extend(
-        [
-            f"  Folders: {metadata.get('num_folders', 'unknown')}",
-            f"  Created: {metadata.get('created_at', 'unknown')}",
-            f"  Index Type: {metadata.get('index_type', 'unknown')}",
-            f"  Half-life (days): {metadata.get('half_life_days', 'unknown')}",
-        ]
-    )
+    # Additional metadata
+    lines.extend([
+        f"  Folders: {metadata.get('num_folders', 'unknown')}",
+        f"  Created: {metadata.get('created_at', 'unknown')}",
+        f"  Index Type: {metadata.get('index_type', 'unknown')}",
+        f"  Half-life (days): {metadata.get('half_life_days', 'unknown')}",
+    ])
+    
     return "\n".join(lines)
 
 

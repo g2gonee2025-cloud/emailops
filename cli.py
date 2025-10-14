@@ -1,6 +1,17 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
+import contextlib
+import json
+import os
+import sys
+from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
+
 """
 EmailOps unified CLI and programmatic interface.
 
@@ -25,49 +36,36 @@ CLI:
 
 """
 
-import argparse
-import contextlib
-import json
-import os
-import sys
-from dataclasses import dataclass
-from datetime import datetime, timezone
-from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence
-
 # --- Robust imports (package and local script support) -----------------------
 try:
     # Package-relative imports
+    from . import email_indexer as _indexer
     from . import processor as _proc
     from . import summarize_email_thread as _summ
-    from . import email_indexer as _indexer
     from .index_metadata import INDEX_DIRNAME_DEFAULT
-    from .validators import validate_directory_path
     from .utils import logger
+    from .validators import validate_directory_path
 except Exception:
     # Fallback to local imports (when running as a script)
+    import email_indexer as _indexer  # type: ignore
     import processor as _proc  # type: ignore
     import summarize_email_thread as _summ  # type: ignore
-    import email_indexer as _indexer  # type: ignore
     from index_metadata import INDEX_DIRNAME_DEFAULT  # type: ignore
-    from validators import validate_directory_path  # type: ignore
     from utils import logger  # type: ignore
+    from validators import validate_directory_path  # type: ignore
 
 # ----------------------------- Module API surface ---------------------------
 __all__ = [
-    # Primary user-facing object
     "CursorUI",
+    "chat",
     "cursor",
-    # Convenience functions (one-liners that forward to `cursor`)
+    "fresh",
     "index",
     "list_conversations",
-    "search",
-    "reply",
-    "fresh",
-    "chat",
-    "summarize",
-    # CLI entry
     "main",
+    "reply",
+    "search",
+    "summarize",
 ]
 
 DEFAULT_PROVIDER = os.getenv("EMBED_PROVIDER", "vertex").strip() or "vertex"
@@ -80,10 +78,10 @@ DEFAULT_REPLY_POLICY = os.getenv("REPLY_POLICY", "reply_all").strip().lower() or
 
 # ------------------------------ Helpers -------------------------------------
 def _iso_now() -> str:
-    return datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+    return datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
 
 
-def _auto_find_export_root(start: Optional[Path] = None, index_dirname: str = INDEX_DIRNAME_DEFAULT) -> Path:
+def _auto_find_export_root(start: Path | None = None, index_dirname: str = INDEX_DIRNAME_DEFAULT) -> Path:
     """
     Walk up from `start` (or CWD) to find a directory containing the index folder.
     Falls back to `start` if none found.
@@ -102,7 +100,7 @@ def _auto_find_export_root(start: Optional[Path] = None, index_dirname: str = IN
     return start
 
 
-def _parse_emails(value: str | Iterable[str]) -> List[str]:
+def _parse_emails(value: str | Iterable[str]) -> list[str]:
     if isinstance(value, str):
         return [x.strip() for x in value.split(",") if x.strip()]
     return [str(x).strip() for x in value if str(x).strip()]
@@ -113,11 +111,11 @@ def _ensure_dir(p: Path) -> None:
 
 
 @contextlib.contextmanager
-def _temporary_argv(argv: Sequence[str]) -> Iterable[None]:
+def _temporary_argv(argv: Sequence[str]):
     """Temporarily swap sys.argv to call a sub-CLI programmatically."""
     old = sys.argv[:]
     try:
-        sys.argv = ["email_indexer"] + list(argv)
+        sys.argv = ["email_indexer", *list(argv)]
         yield
     finally:
         sys.argv = old
@@ -143,7 +141,7 @@ class CursorUI:
     def index_dir(self) -> Path:
         return (self.root / self.index_dirname).resolve()
 
-    def list_conversations(self) -> List[Dict[str, Any]]:
+    def list_conversations(self) -> list[dict[str, Any]]:
         """
         Return newest→oldest conversations with subject, dates, and counts.
         """
@@ -155,9 +153,9 @@ class CursorUI:
         query: str,
         *,
         k: int = DEFAULT_SEARCH_K,
-        conv_id_filter: Optional[Iterable[str]] = None,
-        provider: Optional[str] = None,
-    ) -> List[Dict[str, Any]]:
+        conv_id_filter: Iterable[str] | None = None,
+        provider: str | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Lightweight search to seed chat or manual review.
         """
@@ -178,10 +176,10 @@ class CursorUI:
         query: str,
         *,
         k: int = DEFAULT_SEARCH_K,
-        session_id: Optional[str] = None,
+        session_id: str | None = None,
         reset_session: bool = False,
         temperature: float = DEFAULT_TEMPERATURE,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         One-turn chat over retrieved context. Maintains short session history when session_id is provided.
         """
@@ -208,18 +206,18 @@ class CursorUI:
         self,
         conv_id: str,
         *,
-        query: Optional[str] = None,
+        query: str | None = None,
         sim_threshold: float = DEFAULT_SIM_THRESHOLD,
         target_tokens: int = DEFAULT_REPLY_TOKENS,
         temperature: float = DEFAULT_TEMPERATURE,
         include_attachments: bool = True,
-        sender: Optional[str] = None,
-        reply_to: Optional[str] = None,
+        sender: str | None = None,
+        reply_to: str | None = None,
         reply_policy: str = DEFAULT_REPLY_POLICY,
-        provider: Optional[str] = None,
+        provider: str | None = None,
         save_eml: bool = True,
-        out_dir: Optional[Path] = None,
-    ) -> Dict[str, Any]:
+        out_dir: Path | None = None,
+    ) -> dict[str, Any]:
         """
         Draft a reply .eml for a given conversation ID.
         """
@@ -249,19 +247,19 @@ class CursorUI:
         self,
         to: str | Iterable[str],
         *,
-        subject: Optional[str] = None,
+        subject: str | None = None,
         query: str,
-        cc: Optional[str | Iterable[str]] = None,
+        cc: str | Iterable[str] | None = None,
         sim_threshold: float = DEFAULT_SIM_THRESHOLD,
         target_tokens: int = DEFAULT_FRESH_TOKENS,
         temperature: float = DEFAULT_TEMPERATURE,
         include_attachments: bool = True,
-        sender: Optional[str] = None,
-        reply_to: Optional[str] = None,
-        provider: Optional[str] = None,
+        sender: str | None = None,
+        reply_to: str | None = None,
+        provider: str | None = None,
         save_eml: bool = True,
-        out_dir: Optional[Path] = None,
-    ) -> Dict[str, Any]:
+        out_dir: Path | None = None,
+    ) -> dict[str, Any]:
         """
         Draft a new outbound email, retrieving context across the whole index.
         """
@@ -296,13 +294,13 @@ class CursorUI:
         self,
         thread: str | Path | None = None,
         *,
-        conv_id: Optional[str] = None,
+        conv_id: str | None = None,
         provider: str | None = None,
         temperature: float = DEFAULT_TEMPERATURE,
         output_format: str = "json",
         write_todos_csv: bool = False,
         merge_manifest: bool = True,
-    ) -> Dict[str, Any] | str:
+    ) -> dict[str, Any] | str:
         """
         Summarize a conversation directory as a structured facts ledger.
 
@@ -321,11 +319,11 @@ class CursorUI:
         )
         if write_todos_csv:
             # Reuse CLI helper from summarizer to append todos
-            try:
+            with contextlib.suppress(Exception):
                 # Private helper: safe no-op if schema mismatches
-                from io import StringIO  # noqa: F401  (ensures pandas CSVs behave similarly)
-            except Exception:
-                pass
+                from io import (
+                    StringIO,  # noqa: F401  (ensures pandas CSVs behave similarly)
+                )
         if output_format == "markdown":
             return _summ.format_analysis_as_markdown(data)
         return data
@@ -335,17 +333,17 @@ class CursorUI:
         self,
         *,
         force_reindex: bool = False,
-        limit: Optional[int] = None,
-        model: Optional[str] = None,
+        limit: int | None = None,
+        model: str | None = None,
         batch: int = 64,
-        index_root: Optional[Path] = None,
-        provider: Optional[str] = None,
+        index_root: Path | None = None,
+        provider: str | None = None,
     ) -> None:
         """
         Build or update the email index in-place (programmatic wrapper around the indexer CLI).
         """
         prov = (provider or self.provider)
-        args: List[str] = [
+        args: list[str] = [
             "--root", str(self.root),
             "--provider", prov,
             "--batch", str(int(batch)),
@@ -367,18 +365,18 @@ cursor = CursorUI()
 
 # -------------------------- Convenience one-liners ---------------------------
 def index(**kwargs) -> None: return cursor.index(**kwargs)
-def list_conversations() -> List[Dict[str, Any]]: return cursor.list_conversations()
-def search(query: str, **kwargs) -> List[Dict[str, Any]]: return cursor.search(query, **kwargs)
-def reply(conv_id: str, **kwargs) -> Dict[str, Any]: return cursor.reply(conv_id, **kwargs)
-def fresh(to: str | Iterable[str], **kwargs) -> Dict[str, Any]: return cursor.fresh(to, **kwargs)
-def chat(query: str, **kwargs) -> Dict[str, Any]: return cursor.chat(query, **kwargs)
-def summarize(**kwargs) -> Dict[str, Any] | str: return cursor.summarize(**kwargs)
+def list_conversations() -> list[dict[str, Any]]: return cursor.list_conversations()
+def search(query: str, **kwargs) -> list[dict[str, Any]]: return cursor.search(query, **kwargs)
+def reply(conv_id: str, **kwargs) -> dict[str, Any]: return cursor.reply(conv_id, **kwargs)
+def fresh(to: str | Iterable[str], **kwargs) -> dict[str, Any]: return cursor.fresh(to, **kwargs)
+def chat(query: str, **kwargs) -> dict[str, Any]: return cursor.chat(query, **kwargs)
+def summarize(**kwargs) -> dict[str, Any] | str: return cursor.summarize(**kwargs)
 
 # ----------------------------------- CLI ------------------------------------
 def _build_cli() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="emailops",
-        description="EmailOps – search, draft, chat, summarize, and index your email corpus with one friendly tool.",
+        description="EmailOps - search, draft, chat, summarize, and index your email corpus with one friendly tool.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     p.add_argument("--root", help="Export root (auto-detected if omitted)")

@@ -42,18 +42,28 @@ def _apply_progressive_scaling(total_len: int, size: int, overlap: int, enable: 
     """
     Simple heuristic to scale chunk size for very large texts to reduce chunk counts.
     Maintains the overlap ratio approximately.
+    
+    Scaling based on estimated chunk count:
+    - Up to 50 chunks: size multiplier = 1
+    - 51 to 150 chunks: size multiplier = 1.5
+    - 151 to 500 chunks: size multiplier = 2
+    - 501+ chunks: size multiplier = 3
     """
     if not enable:
         return max(1, size), max(0, min(overlap, max(1, size) - 1))
 
-    # Scale up for long documents.
+    # Estimate the number of chunks that would be created
+    effective_chunk_size = max(1, size - overlap)
+    estimated_chunks = max(1, (total_len + effective_chunk_size - 1) // effective_chunk_size)
+    
+    # Apply scaling factor based on estimated chunk count
     factor = 1.0
-    if total_len >= 300_000:
+    if estimated_chunks > 500:
+        factor = 3.0
+    elif estimated_chunks > 150:
         factor = 2.0
-    elif total_len >= 150_000:
+    elif estimated_chunks > 50:
         factor = 1.5
-    elif total_len >= 80_000:
-        factor = 1.25
 
     new_size = max(1, int(size * factor))
     # Keep overlap proportional, but strictly less than new_size

@@ -143,7 +143,9 @@ def test_qdrant_import():
 
         # Test that the old import path would fail
         try:
-            from emailops.qdrant_client import QdrantVectorStore as OldImport  # noqa: F401
+            from emailops.qdrant_client import (
+                QdrantVectorStore as OldImport,  # noqa: F401
+            )
             print("⚠️  Test 4c: Old import path still works (might have duplicate file)")
         except ImportError:
             print("✅ Test 4c: Old import path correctly fails")

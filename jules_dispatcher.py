@@ -1,8 +1,8 @@
 
-import json
 import os
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 
 # --- Placeholder for Jules API Client ---
 # In a real implementation, this would be a proper API client library.
@@ -22,7 +22,7 @@ class JulesAPIClient:
         # In a real scenario, this would make an API call to provision an agent.
         return {"agent_id": agent_id, "status": "ready"}
 
-    def send_prompt(self, agent_id: str, prompt: str, files: List[str]) -> Dict[str, Any]:
+    def send_prompt(self, agent_id: str, prompt: str, files: list[str]) -> dict[str, Any]:
         """Sends a prompt and a list of files to a specific agent."""
         print(f"Sending prompt to agent {agent_id} for files: {files}")
         # This would be the actual API call to the Jules API.
@@ -36,7 +36,7 @@ class JulesAPIClient:
 
 # --- Core Components ---
 
-def decompose_task(main_prompt: str) -> List[Dict[str, Any]]:
+def decompose_task(main_prompt: str) -> list[dict[str, Any]]:
     """
     Decomposes a high-level task into smaller sub-tasks using an LLM.
     """
@@ -48,7 +48,7 @@ def decompose_task(main_prompt: str) -> List[Dict[str, Any]]:
         {"task_id": "task_2", "description": "Add a unit test for `new_feature` in test_main.py", "dependencies": ["task_1"]},
     ]
 
-def analyze_file_dependencies(task: Dict[str, Any]) -> List[str]:
+def analyze_file_dependencies(task: dict[str, Any]) -> list[str]:
     """
     Analyzes a sub-task to determine which files are relevant.
     """
@@ -60,7 +60,7 @@ def analyze_file_dependencies(task: Dict[str, Any]) -> List[str]:
         return ["test_main.py", "main.py"]
     return []
 
-def verify_result(result: Dict[str, Any]) -> bool:
+def verify_result(result: dict[str, Any]) -> bool:
     """
     Verifies if the result of a sub-task is successful.
     """
@@ -88,12 +88,12 @@ class Orchestrator:
         """
         print("--- Starting Orchestration ---")
         self.state["tasks"] = decompose_task(main_prompt)
-        
+
         iteration = 0
         while self.state["tasks"] and iteration < max_iterations:
             iteration += 1
             print(f"\n--- Iteration {iteration} ---")
-            
+
             task_to_run = self.get_next_task()
             if not task_to_run:
                 print("No runnable tasks. Waiting for dependencies.")
@@ -101,28 +101,28 @@ class Orchestrator:
                 continue
 
             files_for_task = analyze_file_dependencies(task_to_run)
-            
+
             # In a real system, you would manage a pool of agents.
             # For simplicity, we create one for each task.
             agent_id = f"agent_{task_to_run['task_id']}"
             self.jules_client.create_agent(agent_id)
-            
+
             result = self.jules_client.send_prompt(agent_id, task_to_run["description"], files_for_task)
-            
+
             if verify_result(result):
                 print(f"Task {task_to_run['task_id']} completed successfully.")
                 self.mark_task_as_complete(task_to_run)
             else:
                 print(f"Task {task_to_run['task_id']} failed. Re-queuing.")
                 # You might want more sophisticated error handling here.
-        
+
         print("\n--- Orchestration Finished ---")
         if not self.state["tasks"]:
             print("All tasks completed successfully.")
         else:
             print("Orchestration finished due to max iterations.")
 
-    def get_next_task(self) -> Optional[Dict[str, Any]]:
+    def get_next_task(self) -> dict[str, Any] | None:
         """
         Gets the next task that has its dependencies met.
         """
@@ -131,7 +131,7 @@ class Orchestrator:
                 return task
         return None
 
-    def mark_task_as_complete(self, task: Dict[str, Any]):
+    def mark_task_as_complete(self, task: dict[str, Any]):
         """
         Marks a task as complete and removes it from the queue.
         """

@@ -14,7 +14,7 @@ def test_validators_import():
     try:
         from emailops import validators
         print("[OK] validators module imported successfully")
-        
+
         # Test that the key functions exist
         assert hasattr(validators, 'validate_directory_path')
         assert hasattr(validators, 'validate_command_args')
@@ -31,17 +31,17 @@ def test_validators_import():
 def test_default_paths():
     """Test that default paths are set correctly."""
     import os
-    
+
     # Temporarily clear env vars to test defaults
     old_export = os.environ.pop("EMAILOPS_EXPORT_ROOT", None)
     old_index = os.environ.pop("EMAILOPS_INDEX_ROOT", None)
-    
+
     try:
         # Import the UI module to check defaults
         expected_path = r"C:\Users\ASUS\Desktop\OUTLOOK"
         print(f"[OK] Expected default export root configured: {expected_path}")
         print(f"[INFO] Index will be created at: {expected_path}\\_index")
-        
+
         # Note: We can't fully test streamlit session state without running streamlit
         # but we've verified the code changes are in place
         return True
@@ -56,11 +56,11 @@ def test_module_imports():
     """Test that all required modules can be imported."""
     required = [
         "emailops.utils",
-        "emailops.llm_client", 
+        "emailops.llm_client",
         "emailops.env_utils",
         "emailops.validators"
     ]
-    
+
     all_good = True
     for module_name in required:
         try:
@@ -69,7 +69,7 @@ def test_module_imports():
         except ImportError as e:
             print(f"[FAIL] Failed to import {module_name}: {e}")
             all_good = False
-    
+
     return all_good
 
 def test_ui_code_syntax():
@@ -77,31 +77,31 @@ def test_ui_code_syntax():
     try:
         import ast
         ui_path = Path(__file__).parent / "ui" / "emailops_ui.py"
-        
-        with open(ui_path, 'r', encoding='utf-8') as f:
+
+        with open(ui_path, encoding='utf-8') as f:
             code = f.read()
-        
+
         # Try to parse the code
         ast.parse(code)
         print("[OK] UI code has valid Python syntax")
-        
+
         # Check for specific fixes
         if "Hagop Ghazarian <hagop.ghazarian@chalhoub.com>" in code:
             print("[OK] Default sender email is set correctly")
         else:
             print("[WARN] Default sender email not found in code")
-            
+
         if r"C:\Users\ASUS\Desktop\OUTLOOK" in code:
             print("[OK] Default export path is set correctly")
         else:
             print("[WARN] Default export path not found in code")
-            
+
         if '("validators", "emailops.validators")' in code:
             print("[OK] Validators module is included in imports")
         else:
             print("[FAIL] Validators module not found in imports")
             return False
-            
+
         return True
     except SyntaxError as e:
         print(f"[FAIL] UI code has syntax error: {e}")
@@ -114,21 +114,21 @@ def main():
     """Run all tests."""
     print("Testing UI fixes...")
     print("=" * 50)
-    
+
     results = []
-    
+
     print("\n1. Testing validators import:")
     results.append(test_validators_import())
-    
+
     print("\n2. Testing default paths:")
     results.append(test_default_paths())
-    
+
     print("\n3. Testing module imports:")
     results.append(test_module_imports())
-    
+
     print("\n4. Testing UI code syntax and fixes:")
     results.append(test_ui_code_syntax())
-    
+
     print("\n" + "=" * 50)
     if all(results):
         print("[SUCCESS] All tests passed! The UI fixes are working correctly.")
@@ -142,7 +142,7 @@ def main():
     else:
         print("[ERROR] Some tests failed. Please review the output above.")
         return 1
-    
+
     return 0
 
 if __name__ == "__main__":

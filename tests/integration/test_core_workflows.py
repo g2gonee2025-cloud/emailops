@@ -499,8 +499,9 @@ class TestEndToEndWorkflow(TestCase):
 
     def test_complete_pipeline(self):
         """Test complete pipeline from documents to embeddings."""
-        from emailops.config import get_config
         from processor import UnifiedProcessor
+
+        from emailops.config import get_config
 
         with tempfile.TemporaryDirectory() as tmpdir:
             processor1 = None

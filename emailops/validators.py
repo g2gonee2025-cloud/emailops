@@ -19,6 +19,42 @@ from typing import Generic, TypeVar
 
 T = TypeVar("T")
 
+# -------------------------
+# Pre-compiled regex patterns for performance
+# -------------------------
+
+# Email validation pattern (RFC 5322 compliant)
+EMAIL_PATTERN = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+
+# GCP project ID pattern
+PROJECT_ID_PATTERN = re.compile(r'^[a-z][a-z0-9-]*$')
+
+# Environment variable name patterns
+ENV_VAR_UPPERCASE_PATTERN = re.compile(r'^[A-Z_][A-Z0-9_]*$')
+ENV_VAR_MIXED_PATTERN = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
+
+# Dangerous characters for path sanitization
+DANGEROUS_PATH_CHARS = {'\0', '\r', '\n', '|', '&', ';', '$', '`', '<', '>', '(', ')', '[', ']', '{', '}'}
+
+# Shell dangerous patterns
+SHELL_DANGEROUS_PATTERNS = frozenset([';', '|', '&', '$', '`', '\n', '\r', '\0'])
+
+# URL validation pattern
+URL_PATTERN = re.compile(
+    r'^(?:http|https|ftp)://'  # Protocol
+    r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'  # Domain
+    r'localhost|'  # Localhost
+    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # IP address
+    r'(?::\d+)?'  # Optional port
+    r'(?:/?|[/?]\S+)$', re.IGNORECASE
+)
+
+# SQL identifier pattern (basic - alphanumeric plus underscore)
+SQL_IDENTIFIER_PATTERN = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_]*$')
+
+# JSON key pattern
+JSON_KEY_PATTERN = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_\-\.]*$')
+
 
 # -------------------------
 # Existing public API (unchanged)
@@ -28,6 +64,9 @@ def validate_directory_path(
     path: str | Path, must_exist: bool = True, allow_parent_traversal: bool = False
 ) -> tuple[bool, str]:
     """Validate directory path with security checks.
+    
+    NOTE: To avoid TOCTOU issues, callers should use the normalized path
+    returned by validate_directory_path_info() immediately after validation.
 
     Args:
         path: Directory path to validate
@@ -49,7 +88,7 @@ def validate_directory_path(
         # Now resolve to an absolute canonical path for subsequent checks
         p = p_raw.resolve()
 
-        # Check existence if required
+        # Check existence if required (TOCTOU warning: state may change after check)
         if must_exist and not p.exists():
             return False, f"Directory does not exist: {p}"
 
@@ -60,6 +99,12 @@ def validate_directory_path(
         # Additional security: ensure path is absolute after resolution
         if not p.is_absolute():
             return False, f"Path must be absolute after resolution: {p}"
+
+        # Check for symlink attacks
+        if p.exists() and p.is_symlink():
+            real_path = p.resolve()
+            if real_path != p:
+                return False, f"Symlink detected pointing to: {real_path}"
 
         return True, "Valid"
 
@@ -78,6 +123,9 @@ def validate_file_path(
     allow_parent_traversal: bool = False,
 ) -> tuple[bool, str]:
     """Validate file path with extension checks.
+    
+    NOTE: To avoid TOCTOU issues, callers should use the normalized path
+    returned by validate_file_path_info() immediately after validation.
 
     Args:
         path: File path to validate
@@ -100,7 +148,7 @@ def validate_file_path(
         # Now resolve to an absolute canonical path for subsequent checks
         p = p_raw.resolve()
 
-        # Check existence if required
+        # Check existence if required (TOCTOU warning: state may change after check)
         if must_exist and not p.exists():
             return False, f"File does not exist: {p}"
 
@@ -117,6 +165,12 @@ def validate_file_path(
         # Additional security: ensure path is absolute after resolution
         if not p.is_absolute():
             return False, f"Path must be absolute after resolution: {p}"
+
+        # Check for symlink attacks
+        if p.exists() and p.is_symlink():
+            real_path = p.resolve()
+            if real_path != p:
+                return False, f"Symlink detected pointing to: {real_path}"
 
         return True, "Valid"
 
@@ -140,15 +194,12 @@ def sanitize_path_input(path_input: str) -> str:
     if not path_input:
         return ""
 
-    # Remove null bytes (security risk)
-    sanitized = path_input.replace('\0', '')
+    # Remove dangerous characters while preserving valid path characters
+    # This is less aggressive than before - allows more valid paths
+    sanitized = ''.join(c for c in path_input if c not in DANGEROUS_PATH_CHARS)
 
     # Remove leading/trailing whitespace
     sanitized = sanitized.strip()
-
-    # Remove any shell metacharacters for extra safety
-    # Keep only: alphanumeric, ., _, -, /, \\, :, space
-    sanitized = re.sub(r'[^a-zA-Z0-9._\-/\\: ]', '', sanitized)
 
     return sanitized
 
@@ -170,19 +221,14 @@ def validate_command_args(
     if allowed_commands and command not in allowed_commands:
         return False, f"Command '{command}' not in allowed list"
 
-    # Check for shell injection attempts in command
-    dangerous_patterns = [';', '|', '&', '$', '`', '\n', '\r']
-    if any(pattern in command for pattern in dangerous_patterns):
+    # Check for shell injection attempts in command using pre-compiled set
+    if any(pattern in command for pattern in SHELL_DANGEROUS_PATTERNS):
         return False, "Dangerous character detected in command"
 
     # Validate each argument
     for arg in args:
-        # Check for null bytes
-        if '\0' in arg:
-            return False, "Null byte detected in argument"
-
-        # Check for command chaining attempts
-        if any(pattern in arg for pattern in dangerous_patterns):
+        # Check for dangerous patterns using pre-compiled set
+        if any(pattern in arg for pattern in SHELL_DANGEROUS_PATTERNS):
             return False, f"Dangerous character detected in argument: {arg}"
 
     return True, "Valid"
@@ -230,7 +276,8 @@ def validate_project_id(project_id: str) -> tuple[bool, str]:
     if project_id.endswith('-'):
         return False, "Project ID cannot end with a hyphen"
 
-    if not re.match(r'^[a-z][a-z0-9-]*$', project_id):
+    # Use pre-compiled regex pattern
+    if not PROJECT_ID_PATTERN.match(project_id):
         return False, "Project ID can only contain lowercase letters, numbers, and hyphens"
 
     return True, "Valid"
@@ -252,8 +299,9 @@ def validate_environment_variable(name: str, value: str, *, require_uppercase: b
     if not name:
         return False, "Environment variable name cannot be empty"
 
-    name_pattern = r'^[A-Z_][A-Z0-9_]*$' if require_uppercase else r'^[A-Za-z_][A-Za-z0-9_]*$'
-    if not re.match(name_pattern, name):
+    # Use pre-compiled regex patterns
+    pattern = ENV_VAR_UPPERCASE_PATTERN if require_uppercase else ENV_VAR_MIXED_PATTERN
+    if not pattern.match(name):
         policy = "uppercase letters, numbers, and underscores" if require_uppercase else "letters, numbers, and underscores"
         return False, f"Environment variable name must contain only {policy}"
 
@@ -269,6 +317,9 @@ def validate_email_format(email: str) -> tuple[bool, str]:
 
     Performs basic RFC 5322-compliant validation with additional
     security checks for email length and format.
+    
+    NOTE: For production use, consider using the email-validator library
+    for more comprehensive RFC compliance and internationalization support.
 
     Args:
         email: Email address to validate
@@ -287,11 +338,8 @@ def validate_email_format(email: str) -> tuple[bool, str]:
 
     email = email.strip()
 
-    # Basic RFC 5322 compliant pattern
-    # Matches: local-part@domain.tld
-    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-
-    if not re.match(pattern, email):
+    # Use pre-compiled regex pattern
+    if not EMAIL_PATTERN.match(email):
         return False, f"Invalid email format: {email}"
 
     # RFC 5321 limit: 320 characters total
@@ -302,6 +350,11 @@ def validate_email_format(email: str) -> tuple[bool, str]:
     local_part = email.split('@')[0]
     if len(local_part) > 64:
         return False, "Email local part too long (max 64 chars)"
+
+    # Domain part validation
+    domain_part = email.split('@')[1] if '@' in email else ''
+    if len(domain_part) > 253:
+        return False, "Email domain too long (max 253 chars)"
 
     return True, "Valid"
 

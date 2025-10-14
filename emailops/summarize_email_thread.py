@@ -10,12 +10,13 @@ import random
 import re
 import tempfile
 import time
+
 # Python 3.10 compatibility for UTC
 try:
     from datetime import UTC  # py311+
 except ImportError:
-    from datetime import timezone as _tz
-    UTC = _tz.utc
+    from datetime import timezone
+    UTC = timezone.utc
 
 from datetime import datetime
 from pathlib import Path
@@ -268,18 +269,18 @@ def _coerce_enum(val: Any, allowed: set[str], default: str, synonyms: dict[str, 
     """
     if val is None or not isinstance(val, str):
         return default
-    
+
     # Normalize: lowercase, trim, convert - to _
     normalized = val.strip().lower().replace("-", "_")
-    
+
     # Apply synonyms if provided
     if synonyms:
         normalized = synonyms.get(normalized, normalized)
-    
+
     # Check if in allowed set
     if normalized in allowed:
         return normalized
-    
+
     # Fallback to default
     return default
 
@@ -465,23 +466,29 @@ def _normalize_analysis(data: Any, catalog: list[str]) -> dict[str, Any]:
     fl = d.get("facts_ledger")
     if not isinstance(fl, dict):
         fl = {}
-    fl.setdefault("explicit_asks", [])
-    fl.setdefault("commitments_made", [])
-    fl.setdefault("unknowns", [])
-    fl.setdefault("forbidden_promises", [])
+    fl.setdefault("known_facts", [])
     fl.setdefault("key_dates", [])
+    fl.setdefault("commitments_made", [])
+    fl.setdefault("required_for_resolution", [])
+    fl.setdefault("what_we_have", [])
+    fl.setdefault("what_we_need", [])
+    fl.setdefault("materiality_for_company", [])
+    fl.setdefault("materiality_for_me", [])
 
     # Ensure lists and coerce nested enums
     for k in (
-        "explicit_asks",
-        "commitments_made",
-        "unknowns",
-        "forbidden_promises",
+        "known_facts",
         "key_dates",
+        "commitments_made",
+        "required_for_resolution",
+        "what_we_have",
+        "what_we_need",
+        "materiality_for_company",
+        "materiality_for_me",
     ):
         if not isinstance(fl.get(k), list):
             fl[k] = []
-    
+
     # Define enum synonyms
     urgency_synonyms = {
         "asap": "immediate",
@@ -492,7 +499,7 @@ def _normalize_analysis(data: Any, catalog: list[str]) -> dict[str, Any]:
         "low": "low",
         "normal": "medium"
     }
-    
+
     status_synonyms = {
         "pending": "pending",
         "acknowledged": "acknowledged",
@@ -503,7 +510,7 @@ def _normalize_analysis(data: Any, catalog: list[str]) -> dict[str, Any]:
         "done": "completed",
         "blocked": "blocked"
     }
-    
+
     feasibility_synonyms = {
         "achievable": "achievable",
         "challenging": "challenging",
@@ -513,7 +520,7 @@ def _normalize_analysis(data: Any, catalog: list[str]) -> dict[str, Any]:
         "hard": "challenging",
         "difficult": "challenging"
     }
-    
+
     importance_synonyms = {
         "critical": "critical",
         "important": "important",
@@ -521,7 +528,7 @@ def _normalize_analysis(data: Any, catalog: list[str]) -> dict[str, Any]:
         "info": "reference",
         "informational": "reference"
     }
-    
+
     priority_synonyms = {
         "critical": "critical",
         "high": "high",
@@ -530,26 +537,9 @@ def _normalize_analysis(data: Any, catalog: list[str]) -> dict[str, Any]:
         "low": "low",
         "normal": "medium"
     }
-    
-    # Coerce enums in explicit_asks
-    coerced_asks = []
-    for ask in fl.get("explicit_asks", []):
-        if isinstance(ask, dict):
-            ask["urgency"] = _coerce_enum(
-                ask.get("urgency"),
-                {"immediate", "high", "medium", "low"},
-                "medium",
-                urgency_synonyms
-            )
-            ask["status"] = _coerce_enum(
-                ask.get("status"),
-                {"pending", "acknowledged", "in_progress", "completed", "blocked"},
-                "pending",
-                status_synonyms
-            )
-            coerced_asks.append(ask)
-    fl["explicit_asks"] = coerced_asks
-    
+
+    # No enums in the new facts_ledger structure, so this section is removed.
+
     # Coerce enums in commitments_made
     coerced_commits = []
     for commit in fl.get("commitments_made", []):
@@ -562,7 +552,7 @@ def _normalize_analysis(data: Any, catalog: list[str]) -> dict[str, Any]:
             )
             coerced_commits.append(commit)
     fl["commitments_made"] = coerced_commits
-    
+
     # Coerce enums in key_dates
     coerced_dates = []
     for kd in fl.get("key_dates", []):
@@ -575,9 +565,9 @@ def _normalize_analysis(data: Any, catalog: list[str]) -> dict[str, Any]:
             )
             coerced_dates.append(kd)
     fl["key_dates"] = coerced_dates
-    
+
     d["facts_ledger"] = fl
-    
+
     # Coerce enums in next_actions
     coerced_actions = []
     for action in d.get("next_actions", []):
@@ -601,8 +591,8 @@ def _normalize_analysis(data: Any, catalog: list[str]) -> dict[str, Any]:
     d["participants"] = d["participants"][:MAX_PARTICIPANTS] if isinstance(d["participants"], list) else []
     d["summary"] = d["summary"][:MAX_SUMMARY_POINTS] if isinstance(d["summary"], list) else []
     d["next_actions"] = d["next_actions"][:MAX_NEXT_ACTIONS] if isinstance(d["next_actions"], list) else []
-    
-    for k in ("explicit_asks", "commitments_made", "unknowns", "forbidden_promises", "key_dates"):
+
+    for k in ("known_facts", "key_dates", "commitments_made", "required_for_resolution", "what_we_have", "what_we_need", "materiality_for_company", "materiality_for_me"):
         fl[k] = fl.get(k, [])[:MAX_FACT_ITEMS] if isinstance(fl.get(k), list) else []
     d["facts_ledger"] = fl
 
@@ -771,12 +761,12 @@ def _merge_manifest_into_analysis(
     existing_subject = analysis.get("subject", "")
     if not isinstance(existing_subject, str):
         existing_subject = ""
-    
+
     # Build subject candidates, preferring existing
     subj_candidates: list[str] = []
     if existing_subject and existing_subject != "Email thread":
         subj_candidates.append(existing_subject)
-    
+
     # Add manifest candidates
     if isinstance(manifest, dict):
         smart = (manifest.get("smart_subject") or "").strip()
@@ -785,12 +775,12 @@ def _merge_manifest_into_analysis(
         subj = (manifest.get("subject") or "").strip()
         if subj:
             subj_candidates.append(subj)
-    
+
     # Parse from raw headers
     md = extract_email_metadata(raw_thread_text or "")
     if isinstance(md, dict) and md.get("subject"):
         subj_candidates.append(str(md["subject"]).strip())
-    
+
     # Always normalize and cap
     final_subject = subj_candidates[0] if subj_candidates else "Email thread"
     analysis["subject"] = _safe_str(
@@ -801,13 +791,13 @@ def _merge_manifest_into_analysis(
     existing_participants = analysis.get("participants", [])
     if not isinstance(existing_participants, list):
         existing_participants = []
-    
+
     manifest_participants = _participants_from_manifest(manifest) if manifest else []
-    
+
     # Union with de-duplication
     seen_keys: set[str] = set()
     merged_participants: list[dict[str, str]] = []
-    
+
     # Add existing participants first
     for p in existing_participants:
         if isinstance(p, dict):
@@ -819,7 +809,7 @@ def _merge_manifest_into_analysis(
             if key not in seen_keys:
                 seen_keys.add(key)
                 merged_participants.append(p)
-    
+
     # Add new participants from manifest
     for p in manifest_participants:
         if isinstance(p, dict):
@@ -831,18 +821,18 @@ def _merge_manifest_into_analysis(
             if key not in seen_keys:
                 seen_keys.add(key)
                 merged_participants.append(p)
-    
+
     analysis["participants"] = merged_participants[:MAX_PARTICIPANTS]
 
     # Key dates: ALWAYS add start/end from manifest, union with existing
     fl = analysis.get("facts_ledger", {}) or {}
     if not isinstance(fl, dict):
         fl = {}
-    
+
     existing_dates = fl.get("key_dates", [])
     if not isinstance(existing_dates, list):
         existing_dates = []
-    
+
     # Collect manifest dates
     manifest_dates: list[dict[str, str]] = []
     if isinstance(manifest, dict):
@@ -864,11 +854,11 @@ def _merge_manifest_into_analysis(
                 })
         except Exception:
             pass
-    
+
     # Union dates with de-duplication by (date, event) pair
     seen_date_keys: set[tuple[str, str]] = set()
     merged_dates: list[dict[str, str]] = []
-    
+
     # Add existing dates first
     for d in existing_dates:
         if isinstance(d, dict):
@@ -876,14 +866,14 @@ def _merge_manifest_into_analysis(
             if date_key not in seen_date_keys:
                 seen_date_keys.add(date_key)
                 merged_dates.append(d)
-    
+
     # Add manifest dates
     for d in manifest_dates:
         date_key = (str(d.get("date", "")).lower(), str(d.get("event", "")).lower())
         if date_key not in seen_date_keys:
             seen_date_keys.add(date_key)
             merged_dates.append(d)
-    
+
     fl["key_dates"] = merged_dates[:MAX_FACT_ITEMS]
     analysis["facts_ledger"] = fl
 
@@ -897,18 +887,18 @@ def _union_analyses(improved: dict[str, Any], initial: dict[str, Any], catalog: 
     """
     # Start with improved as base
     result = dict(improved)
-    
+
     # Helper to normalize keys for de-duplication
     def _norm_key(s: str) -> str:
         return s.strip().lower() if isinstance(s, str) else ""
-    
+
     # Union participants
     improved_participants = result.get("participants", [])
     initial_participants = initial.get("participants", [])
-    
+
     seen_p_keys: set[str] = set()
     merged_p: list[dict[str, str]] = []
-    
+
     # Add improved participants first
     for p in improved_participants:
         if isinstance(p, dict):
@@ -918,7 +908,7 @@ def _union_analyses(improved: dict[str, Any], initial: dict[str, Any], catalog: 
             if key and key not in seen_p_keys:
                 seen_p_keys.add(key)
                 merged_p.append(p)
-    
+
     # Add unique initial participants
     for p in initial_participants:
         if isinstance(p, dict):
@@ -928,168 +918,140 @@ def _union_analyses(improved: dict[str, Any], initial: dict[str, Any], catalog: 
             if key and key not in seen_p_keys:
                 seen_p_keys.add(key)
                 merged_p.append(p)
-    
+
     result["participants"] = merged_p[:MAX_PARTICIPANTS]
-    
+
     # Union summary points
     improved_summary = result.get("summary", [])
     initial_summary = initial.get("summary", [])
-    
+
     seen_summary: set[str] = set(_norm_key(s) for s in improved_summary if isinstance(s, str))
     merged_summary = list(improved_summary)
-    
+
     for s in initial_summary:
         if isinstance(s, str) and _norm_key(s) not in seen_summary:
             merged_summary.append(s)
             seen_summary.add(_norm_key(s))
-    
+
     result["summary"] = merged_summary[:MAX_SUMMARY_POINTS]
-    
+
     # Union risk_indicators
     improved_risks = result.get("risk_indicators", [])
     initial_risks = initial.get("risk_indicators", [])
-    
+
     seen_risks: set[str] = set(_norm_key(r) for r in improved_risks if isinstance(r, str))
     merged_risks = list(improved_risks)
-    
+
     for r in initial_risks:
         if isinstance(r, str) and _norm_key(r) not in seen_risks:
             merged_risks.append(r)
             seen_risks.add(_norm_key(r))
-    
+
     result["risk_indicators"] = merged_risks
-    
+
     # Union facts_ledger items
     improved_fl = result.get("facts_ledger", {})
     initial_fl = initial.get("facts_ledger", {})
-    
+
     if not isinstance(improved_fl, dict):
         improved_fl = {}
     if not isinstance(initial_fl, dict):
         initial_fl = {}
-    
-    # Union explicit_asks
-    improved_asks = improved_fl.get("explicit_asks", [])
-    initial_asks = initial_fl.get("explicit_asks", [])
-    
-    seen_asks: set[tuple[str, str]] = set()
-    merged_asks: list[dict[str, Any]] = []
-    
-    for ask in improved_asks:
-        if isinstance(ask, dict):
-            key = (_norm_key(ask.get("from", "")), _norm_key(ask.get("request", "")))
-            if key not in seen_asks:
-                seen_asks.add(key)
-                merged_asks.append(ask)
-    
-    for ask in initial_asks:
-        if isinstance(ask, dict):
-            key = (_norm_key(ask.get("from", "")), _norm_key(ask.get("request", "")))
-            if key not in seen_asks:
-                seen_asks.add(key)
-                merged_asks.append(ask)
-    
-    improved_fl["explicit_asks"] = merged_asks[:MAX_FACT_ITEMS]
-    
+
+    # Union known_facts
+    improved_known_facts = improved_fl.get("known_facts", [])
+    initial_known_facts = initial_fl.get("known_facts", [])
+    seen_known_facts: set[str] = set(_norm_key(f) for f in improved_known_facts if isinstance(f, str))
+    merged_known_facts = list(improved_known_facts)
+    for f in initial_known_facts:
+        if isinstance(f, str) and _norm_key(f) not in seen_known_facts:
+            merged_known_facts.append(f)
+            seen_known_facts.add(_norm_key(f))
+    improved_fl["known_facts"] = merged_known_facts[:MAX_FACT_ITEMS]
+
     # Union commitments_made
     improved_commits = improved_fl.get("commitments_made", [])
     initial_commits = initial_fl.get("commitments_made", [])
-    
+
     seen_commits: set[tuple[str, str]] = set()
     merged_commits: list[dict[str, Any]] = []
-    
+
     for commit in improved_commits:
         if isinstance(commit, dict):
             key = (_norm_key(commit.get("by", "")), _norm_key(commit.get("commitment", "")))
             if key not in seen_commits:
                 seen_commits.add(key)
                 merged_commits.append(commit)
-    
+
     for commit in initial_commits:
         if isinstance(commit, dict):
             key = (_norm_key(commit.get("by", "")), _norm_key(commit.get("commitment", "")))
             if key not in seen_commits:
                 seen_commits.add(key)
                 merged_commits.append(commit)
-    
+
     improved_fl["commitments_made"] = merged_commits[:MAX_FACT_ITEMS]
-    
-    # Union unknowns (simple strings)
-    improved_unknowns = improved_fl.get("unknowns", [])
-    initial_unknowns = initial_fl.get("unknowns", [])
-    
-    seen_unknowns: set[str] = set(_norm_key(u) for u in improved_unknowns if isinstance(u, str))
-    merged_unknowns = list(improved_unknowns)
-    
-    for u in initial_unknowns:
-        if isinstance(u, str) and _norm_key(u) not in seen_unknowns:
-            merged_unknowns.append(u)
-            seen_unknowns.add(_norm_key(u))
-    
-    improved_fl["unknowns"] = merged_unknowns[:MAX_FACT_ITEMS]
-    
-    # Union forbidden_promises (simple strings)
-    improved_forbidden = improved_fl.get("forbidden_promises", [])
-    initial_forbidden = initial_fl.get("forbidden_promises", [])
-    
-    seen_forbidden: set[str] = set(_norm_key(f) for f in improved_forbidden if isinstance(f, str))
-    merged_forbidden = list(improved_forbidden)
-    
-    for f in initial_forbidden:
-        if isinstance(f, str) and _norm_key(f) not in seen_forbidden:
-            merged_forbidden.append(f)
-            seen_forbidden.add(_norm_key(f))
-    
-    improved_fl["forbidden_promises"] = merged_forbidden[:MAX_FACT_ITEMS]
-    
+
+    # Union for the new simple string list fields
+    for field_name in ["required_for_resolution", "what_we_have", "what_we_need", "materiality_for_company", "materiality_for_me"]:
+        improved_list = improved_fl.get(field_name, [])
+        initial_list = initial_fl.get(field_name, [])
+        seen_items: set[str] = set(_norm_key(i) for i in improved_list if isinstance(i, str))
+        merged_list = list(improved_list)
+        for item in initial_list:
+            if isinstance(item, str) and _norm_key(item) not in seen_items:
+                merged_list.append(item)
+                seen_items.add(_norm_key(item))
+        improved_fl[field_name] = merged_list[:MAX_FACT_ITEMS]
+
     # Union key_dates
     improved_dates = improved_fl.get("key_dates", [])
     initial_dates = initial_fl.get("key_dates", [])
-    
+
     seen_dates: set[tuple[str, str]] = set()
     merged_dates: list[dict[str, Any]] = []
-    
+
     for d in improved_dates:
         if isinstance(d, dict):
             key = (_norm_key(d.get("date", "")), _norm_key(d.get("event", "")))
             if key not in seen_dates:
                 seen_dates.add(key)
                 merged_dates.append(d)
-    
+
     for d in initial_dates:
         if isinstance(d, dict):
             key = (_norm_key(d.get("date", "")), _norm_key(d.get("event", "")))
             if key not in seen_dates:
                 seen_dates.add(key)
                 merged_dates.append(d)
-    
+
     improved_fl["key_dates"] = merged_dates[:MAX_FACT_ITEMS]
-    
+
     result["facts_ledger"] = improved_fl
-    
+
     # Union next_actions
     improved_actions = result.get("next_actions", [])
     initial_actions = initial.get("next_actions", [])
-    
+
     seen_actions: set[tuple[str, str]] = set()
     merged_actions: list[dict[str, Any]] = []
-    
+
     for action in improved_actions:
         if isinstance(action, dict):
             key = (_norm_key(action.get("owner", "")), _norm_key(action.get("action", "")))
             if key not in seen_actions:
                 seen_actions.add(key)
                 merged_actions.append(action)
-    
+
     for action in initial_actions:
         if isinstance(action, dict):
             key = (_norm_key(action.get("owner", "")), _norm_key(action.get("action", "")))
             if key not in seen_actions:
                 seen_actions.add(key)
                 merged_actions.append(action)
-    
+
     result["next_actions"] = merged_actions[:MAX_NEXT_ACTIONS]
-    
+
     # Re-apply normalization to ensure all caps and coercions are applied
     return _normalize_analysis(result, catalog)
 
@@ -1145,17 +1107,17 @@ def _llm_routing_kwargs(provider: str) -> dict[str, Any]:
     Returns empty dict if routing is not possible.
     """
     kwargs: dict[str, Any] = {}
-    
+
     # Try to add provider
     kwargs["provider"] = provider
-    
+
     # Check for environment-based model configuration
     provider_upper = provider.upper()
     model_env_var = f"SUMMARIZER_MODEL_{provider_upper}"
     model = os.getenv(model_env_var)
     if model:
         kwargs["model"] = model
-    
+
     return kwargs
 
 
@@ -1181,13 +1143,13 @@ def analyze_email_thread_with_ledger(
 
     # Calculate dynamic token budget
     max_tokens = _calc_max_output_tokens()
-    
+
     # Get routing kwargs
     routing_kwargs = _llm_routing_kwargs(provider)
-    
+
     # Import inspect for signature checking
     import inspect
-    
+
     # Check which routing kwargs are accepted by complete_json
     try:
         cj_sig = inspect.signature(complete_json)
@@ -1197,7 +1159,7 @@ def analyze_email_thread_with_ledger(
     except Exception:
         cj_routing = {}
         routing_applied = False
-    
+
     # Add comprehensive debug logging for LLM calls
     if routing_applied:
         logger.info(
@@ -1225,11 +1187,14 @@ def analyze_email_thread_with_ledger(
             "subject": "Email thread",
             "participants": [],
             "facts_ledger": {
-                "explicit_asks": [],
-                "commitments_made": [],
-                "unknowns": ["No thread content provided"],
-                "forbidden_promises": [],
+                "known_facts": [],
                 "key_dates": [],
+                "commitments_made": [],
+                "required_for_resolution": [],
+                "what_we_have": [],
+                "what_we_need": ["No thread content provided"],
+                "materiality_for_company": [],
+                "materiality_for_me": [],
             },
             "summary": [],
             "next_actions": [],
@@ -1295,29 +1260,20 @@ def analyze_email_thread_with_ledger(
             "facts_ledger": {
                 "type": "object",
                 "properties": {
-                    "explicit_asks": {
+                    "known_facts": {"type": "array", "items": {"type": "string"}},
+                    "key_dates": {
                         "type": "array",
                         "items": {
                             "type": "object",
                             "properties": {
-                                "from": {"type": "string"},
-                                "request": {"type": "string"},
-                                "urgency": {
+                                "date": {"type": "string"},
+                                "event": {"type": "string"},
+                                "importance": {
                                     "type": "string",
-                                    "enum": ["immediate", "high", "medium", "low"],
-                                },
-                                "status": {
-                                    "type": "string",
-                                    "enum": [
-                                        "pending",
-                                        "acknowledged",
-                                        "in_progress",
-                                        "completed",
-                                        "blocked",
-                                    ],
+                                    "enum": ["critical", "important", "reference"],
                                 },
                             },
-                            "required": ["from", "request", "urgency", "status"],
+                            "required": ["date", "event", "importance"],
                         },
                     },
                     "commitments_made": {
@@ -1341,33 +1297,21 @@ def analyze_email_thread_with_ledger(
                             "required": ["by", "commitment", "feasibility"],
                         },
                     },
-                    "unknowns": {"type": "array", "items": {"type": "string"}},
-                    "forbidden_promises": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                    },
-                    "key_dates": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "date": {"type": "string"},
-                                "event": {"type": "string"},
-                                "importance": {
-                                    "type": "string",
-                                    "enum": ["critical", "important", "reference"],
-                                },
-                            },
-                            "required": ["date", "event", "importance"],
-                        },
-                    },
+                    "required_for_resolution": {"type": "array", "items": {"type": "string"}},
+                    "what_we_have": {"type": "array", "items": {"type": "string"}},
+                    "what_we_need": {"type": "array", "items": {"type": "string"}},
+                    "materiality_for_company": {"type": "array", "items": {"type": "string"}},
+                    "materiality_for_me": {"type": "array", "items": {"type": "string"}},
                 },
                 "required": [
-                    "explicit_asks",
-                    "commitments_made",
-                    "unknowns",
-                    "forbidden_promises",
+                    "known_facts",
                     "key_dates",
+                    "commitments_made",
+                    "required_for_resolution",
+                    "what_we_have",
+                    "what_we_need",
+                    "materiality_for_company",
+                    "materiality_for_me",
                 ],
             },
             "summary": {"type": "array", "items": {"type": "string"}},
@@ -1414,12 +1358,14 @@ def analyze_email_thread_with_ledger(
     system = """You are a senior insurance account manager analyzing email threads with extreme attention to detail.
 
 Your analysis must capture the COMPLETE FACTS LEDGER including:
-1. TONE & STANCE: How each participant feels and their position
-2. EXPLICIT ASKS: Every request made, by whom, and urgency
-3. COMMITMENTS: What was promised, by whom, and feasibility
-4. UNKNOWNS: Missing information that affects decisions
-5. FORBIDDEN PROMISES: Things we must NOT commit to (e.g., guaranteeing coverage without underwriting)
-6. KEY DATES: Critical deadlines and events
+1. KNOWN FACTS: Key confirmed facts and statements.
+2. KEY DATES: Critical deadlines and events.
+3. COMMITMENTS MADE: What was promised, by whom, and feasibility.
+4. REQUIRED FOR RESOLUTION: The essential next steps or information needed to resolve the thread.
+5. WHAT WE HAVE: Information or documents we possess.
+6. WHAT WE NEED: Information or documents we must obtain.
+7. MATERIALITY FOR COMPANY: Why this thread is important for the company.
+8. MATERIALITY FOR ME: Why this thread is important for me, the user.
 
 CRITICAL RULES:
 - Extract ONLY facts from the email text - no assumptions
@@ -1436,13 +1382,11 @@ Thread:
 {cleaned_thread[:MAX_THREAD_CHARS]}
 
 Create a detailed analysis following the schema. Be thorough in identifying:
-- Each participant's tone and stance
-- All explicit requests and their urgency
-- Any commitments or promises made
-- Information gaps that need to be filled
-- Things we should NOT promise
-- Critical dates and deadlines
-- Risk indicators
+- All known facts and key dates.
+- All commitments made by any party.
+- What is required for resolution.
+- What information we have versus what we need.
+- The materiality of this thread for the company and for me.
 
 Output valid JSON matching the required schema."""
 
@@ -1458,7 +1402,7 @@ Output valid JSON matching the required schema."""
             _cj_kwargs["stop_sequences"] = json_stop_sequences
         # Add routing kwargs if supported
         _cj_kwargs.update(cj_routing)
-        
+
         initial_response = _retry(
             complete_json,
             system,
@@ -1498,7 +1442,7 @@ Output valid JSON matching the required schema."""
             ct_routing = {k: v for k, v in routing_kwargs.items() if k in ct_params}
         except Exception:
             ct_routing = {}
-        
+
         for attempt in range(retry_attempts):
             try:
                 logger.debug(
@@ -1642,7 +1586,7 @@ Check for:
             _crit_kwargs["stop_sequences"] = json_stop_sequences
         # Add routing kwargs if supported
         _crit_kwargs.update(cj_routing)
-        
+
         critic_response = _retry(
             complete_json,
             critic_system,
@@ -1704,7 +1648,7 @@ Generate an improved analysis that addresses all feedback while maintaining the 
                 _imp_kwargs["stop_sequences"] = json_stop_sequences
             # Add routing kwargs if supported
             _imp_kwargs.update(cj_routing)
-            
+
             improved_response = _retry(
                 complete_json,
                 improvement_system,
@@ -1815,37 +1759,10 @@ def format_analysis_as_markdown(analysis: dict[str, Any]) -> str:
     # Facts Ledger
     buffer.write("\n## Facts Ledger\n\n")
 
-    # Explicit Requests
-    buffer.write("### Explicit Requests\n\n")
-    for ask in analysis.get("facts_ledger", {}).get("explicit_asks", []):
-        if isinstance(ask, dict):
-            buffer.write(
-                f"- **From**: {_md_escape(ask.get('from', ''))}\n"
-                f"  - **Request**: {_md_escape(ask.get('request', ''))}\n"
-                f"  - **Urgency**: {_md_escape(ask.get('urgency', ''))}\n"
-                f"  - **Status**: {_md_escape(ask.get('status', ''))}\n\n"
-            )
-
-    # Commitments Made
-    buffer.write("### Commitments Made\n\n")
-    for commit in analysis.get("facts_ledger", {}).get("commitments_made", []):
-        if isinstance(commit, dict):
-            buffer.write(
-                f"- **By**: {_md_escape(commit.get('by', ''))}\n"
-                f"  - **Commitment**: {_md_escape(commit.get('commitment', ''))}\n"
-                f"  - **Deadline**: {_md_escape(commit.get('deadline', ''))}\n"
-                f"  - **Feasibility**: {_md_escape(commit.get('feasibility', ''))}\n\n"
-            )
-
-    # Unknown Information
-    buffer.write("### Unknown Information\n\n")
-    for unknown in analysis.get("facts_ledger", {}).get("unknowns", []):
-        buffer.write(f"- {_md_escape(unknown)}\n")
-
-    # Forbidden Promises
-    buffer.write("\n### Forbidden Promises\n\n")
-    for forbidden in analysis.get("facts_ledger", {}).get("forbidden_promises", []):
-        buffer.write(f"- ⚠️ {_md_escape(forbidden)}\n")
+    # Known Facts
+    buffer.write("### Known Facts\n\n")
+    for fact in analysis.get("facts_ledger", {}).get("known_facts", []):
+        buffer.write(f"- {_md_escape(fact)}\n")
 
     # Key Dates
     buffer.write("\n### Key Dates\n\n")
@@ -1855,6 +1772,41 @@ def format_analysis_as_markdown(analysis: dict[str, Any]) -> str:
                 f"- **{_md_escape(kd.get('date', ''))}**: {_md_escape(kd.get('event', ''))} "
                 f"({_md_escape(kd.get('importance', ''))})\n"
             )
+
+    # Commitments Made
+    buffer.write("\n### Commitments Made\n\n")
+    for commit in analysis.get("facts_ledger", {}).get("commitments_made", []):
+        if isinstance(commit, dict):
+            buffer.write(
+                f"- **By**: {_md_escape(commit.get('by', ''))}\n"
+                f"  - **Commitment**: {_md_escape(commit.get('commitment', ''))}\n"
+                f"  - **Deadline**: {_md_escape(commit.get('deadline', ''))}\n"
+                f"  - **Feasibility**: {_md_escape(commit.get('feasibility', ''))}\n\n"
+            )
+
+    # Resolution
+    buffer.write("### Resolution\n\n")
+    buffer.write("#### Required for Resolution\n")
+    for item in analysis.get("facts_ledger", {}).get("required_for_resolution", []):
+        buffer.write(f"- {_md_escape(item)}\n")
+
+    buffer.write("\n#### What We Have\n")
+    for item in analysis.get("facts_ledger", {}).get("what_we_have", []):
+        buffer.write(f"- {_md_escape(item)}\n")
+
+    buffer.write("\n#### What We Need\n")
+    for item in analysis.get("facts_ledger", {}).get("what_we_need", []):
+        buffer.write(f"- {_md_escape(item)}\n")
+
+    # Materiality
+    buffer.write("\n### Materiality\n\n")
+    buffer.write("#### For Company\n")
+    for item in analysis.get("facts_ledger", {}).get("materiality_for_company", []):
+        buffer.write(f"- {_md_escape(item)}\n")
+
+    buffer.write("\n#### For Me\n")
+    for item in analysis.get("facts_ledger", {}).get("materiality_for_me", []):
+        buffer.write(f"- {_md_escape(item)}\n")
 
     # Next Actions
     buffer.write("\n## Next Actions\n\n")
@@ -1993,7 +1945,7 @@ def main() -> None:
     logging.basicConfig(
         level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
     )
-    
+
     # Ensure the module logger propagates to root logger
     logger.propagate = True
     logger.setLevel(logging.INFO)

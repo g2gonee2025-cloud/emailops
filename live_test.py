@@ -1,8 +1,8 @@
+import json
 import logging
 import sys
-from pathlib import Path
-import json
 import time
+from pathlib import Path
 
 # Add project root to path to allow imports
 project_root = Path(__file__).parent
@@ -10,7 +10,10 @@ if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
 try:
-    from emailops.summarize_email_thread import analyze_conversation_dir, _atomic_write_text
+    from emailops.summarize_email_thread import (
+        _atomic_write_text,
+        analyze_conversation_dir,
+    )
     from emailops.utils import find_conversation_dirs
 except ImportError as e:
     print(f"Error: Failed to import emailops modules. Make sure the project root is in the Python path. {e}")
@@ -88,7 +91,7 @@ def run_test():
             # Step 4: Log success and save result
             logger.info(f"SUCCESS: Analysis complete for {convo_dir.name}")
             logger.debug(f"Analysis for {convo_dir.name}: {json.dumps(analysis_result, indent=2)}")
-            
+
             # Save the analysis to the conversation directory
             output_path = convo_dir / "summary_live_test.json"
             _atomic_write_text(output_path, json.dumps(analysis_result, indent=2, ensure_ascii=False))

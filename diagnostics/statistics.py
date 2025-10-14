@@ -4,6 +4,7 @@ Consolidated analysis and monitoring functionality for file statistics, chunk co
 Consolidates functionality from file_processing_analysis.py, file_stats.py, count_chunks.py, and monitor_indexing.py.
 """
 
+import logging
 import os
 import pickle
 import sys
@@ -11,8 +12,6 @@ from collections import Counter
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
-
-import logging
 
 # Import centralized configuration
 try:

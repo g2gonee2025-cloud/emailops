@@ -2,21 +2,40 @@
 # emailops/llm_runtime.py
 from __future__ import annotations
 
-import contextlib
 import json
-import logging
 import os
 import random
 import re
 import threading
 import time
 from collections import deque
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import numpy as np
-from collections.abc import Iterable
+
+from .config import EmailOpsConfig, get_config
+
+# Import utilities from utils.py
+from .utils import (
+    clean_email_text,
+    logger,
+    monitor_performance,
+    read_text_file,
+)
+
+# Import for control char removal
+_CONTROL_CHARS = re.compile(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]")
+
+def _strip_control_chars(s: str) -> str:
+    """Remove non-printable control characters and normalize newlines."""
+    if not s:
+        return ""
+    # Normalize CRLF/CR -> LF and strip control characters
+    s = s.replace("\r\n", "\n").replace("\r", "\n")
+    return _CONTROL_CHARS.sub("", s)
 
 
 # --------------------------------------------------------------------------------------
@@ -29,16 +48,17 @@ class LLMError(Exception):
 
 
 # --------------------------------------------------------------------------------------
-# Logging (library-safe)
+# Configuration
 # --------------------------------------------------------------------------------------
-logger = logging.getLogger(__name__)
+# Use centralized configuration instead of direct environment variables
+_config = get_config()
 
 
 # --------------------------------------------------------------------------------------
 # HIGH #14: Rate limiting for API calls
 # --------------------------------------------------------------------------------------
 _API_CALL_TIMES = deque(maxlen=1000)
-_RATE_LIMIT_PER_MINUTE = int(os.getenv("API_RATE_LIMIT", "60"))
+_RATE_LIMIT_PER_MINUTE = int(os.getenv("API_RATE_LIMIT", "60"))  # Keep for backward compatibility
 _RATE_LIMIT_LOCK = threading.Lock()
 
 
@@ -521,6 +541,7 @@ def _normalize_model_alias(name: str | None) -> str | None:
 # --------------------------------------------------------------------------------------
 # Text completion (Vertex)
 # --------------------------------------------------------------------------------------
+@monitor_performance
 def complete_text(
     system: str,
     user: str,
@@ -538,14 +559,21 @@ def complete_text(
         try:
             _init_vertex()
             model = _vertex_model(system_instruction=system)
-            from vertexai.generative_models import GenerationConfig
+            from vertexai.generative_models import GenerationConfig, HarmCategory, HarmBlockThreshold
+            # Disable safety filters for business use
+            safety_settings = {
+                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+            }
             cfg = GenerationConfig(
                 max_output_tokens=max_output_tokens,
                 temperature=temperature,
                 stop_sequences=stop_sequences or None,
             )
             _check_rate_limit()
-            resp = model.generate_content(user, generation_config=cfg)
+            resp = model.generate_content(user, generation_config=cfg, safety_settings=safety_settings)
             text = (getattr(resp, "text", None) or "").strip()
             if not text:
                 raise LLMError("Empty completion from model")
@@ -574,6 +602,7 @@ def _extract_json_from_text(s: str) -> str:
     return m.group(1).strip() if m else "{}"
 
 
+@monitor_performance
 def complete_json(
     system: str,
     user: str,
@@ -590,9 +619,16 @@ def complete_json(
     for attempt in range(1, attempts + 1):
         try:
             _init_vertex()
-            from vertexai.generative_models import GenerationConfig
+            from vertexai.generative_models import GenerationConfig, HarmCategory, HarmBlockThreshold
 
             model = _vertex_model(system_instruction=system)
+            # Disable safety filters for business use
+            safety_settings = {
+                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+            }
             cfg: dict[str, Any] = {
                 "max_output_tokens": max_output_tokens,
                 "temperature": temperature,
@@ -603,7 +639,7 @@ def complete_json(
             if stop_sequences:
                 cfg["stop_sequences"] = stop_sequences
             _check_rate_limit()
-            resp = model.generate_content(user, generation_config=GenerationConfig(**cfg))
+            resp = model.generate_content(user, generation_config=GenerationConfig(**cfg), safety_settings=safety_settings)
             return (getattr(resp, "text", None) or "").strip()
         except Exception as e:
             if (attempt == attempts) or (not _is_retryable_error(e)):
@@ -649,6 +685,7 @@ def _normalize(vectors: list[list[float]]) -> np.ndarray:
     return (arr / norms).astype("float32")
 
 
+@monitor_performance
 def embed_texts(
     texts: Iterable[str],
     provider: str | None = None,
@@ -1012,8 +1049,30 @@ def _embed_local(texts: list[str], model: str | None = None) -> np.ndarray:
 
 
 # --------------------------------------------------------------------------------------
-# (Optional) Convenience re-exports from utils so callers can import from one place
+# Convenience re-exports from utils so callers can import from one place
 # --------------------------------------------------------------------------------------
-with contextlib.suppress(Exception):
-    # These are used widely by indexer/search/summarizer; re-export for a single surface.
-    pass
+# Re-export commonly used utilities for single import surface
+__all__ = [
+    # LLM functions
+    'complete_text',
+    'complete_json',
+    'embed_texts',
+    # Error types
+    'LLMError',
+    # Account management
+    'VertexAccount',
+    'load_validated_accounts',
+    'save_validated_accounts',
+    'validate_account',
+    # Utility re-exports from utils.py
+    'logger',
+    'clean_email_text',
+    'read_text_file',
+    'monitor_performance',
+    # Configuration
+    'EmailOpsConfig',
+    'get_config',
+]
+
+# Note: logger, clean_email_text, and read_text_file are already available
+# from the imports at the top of the file

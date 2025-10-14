@@ -24,13 +24,11 @@ import os
 import queue
 import sys
 import threading
-import time
-from dataclasses import dataclass, asdict
-from pathlib import Path
-from typing import Any, Optional
-
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from tkinter import filedialog, messagebox, ttk
+from typing import Any
 
 # ------------------------------- Robust imports -------------------------------
 
@@ -45,7 +43,7 @@ def _try_imports():
         from emailops import processor as _processor  # package
         ns["processor"] = _processor
     except Exception:
-        from . import processor as _processor  # local
+        from emailops import processor as _processor  # local
         ns["processor"] = _processor
 
     # Indexer (CLI-oriented; we'll call main() in a worker thread)
@@ -159,7 +157,7 @@ class AppSettings:
             pass
 
     @staticmethod
-    def load() -> "AppSettings":
+    def load() -> AppSettings:
         try:
             if SETTINGS_FILE.exists():
                 raw = json.loads(SETTINGS_FILE.read_text(encoding="utf-8"))
@@ -405,8 +403,8 @@ class EmailOpsApp(tk.Tk):
         self.txt_reply = tk.Text(frm, wrap="word")
         self.txt_reply.pack(fill=tk.BOTH, expand=True, padx=8, pady=(0,8))
 
-        self._last_reply_bytes: Optional[bytes] = None
-        self._last_reply_meta: Optional[dict[str, Any]] = None
+        self._last_reply_bytes: bytes | None = None
+        self._last_reply_meta: dict[str, Any] | None = None
 
     # ------------- Draft Fresh tab -------------
 
@@ -447,8 +445,8 @@ class EmailOpsApp(tk.Tk):
         self.txt_fresh = tk.Text(frm, wrap="word")
         self.txt_fresh.pack(fill=tk.BOTH, expand=True, padx=8, pady=(0,8))
 
-        self._last_fresh_bytes: Optional[bytes] = None
-        self._last_fresh_meta: Optional[dict[str, Any]] = None
+        self._last_fresh_bytes: bytes | None = None
+        self._last_fresh_meta: dict[str, Any] | None = None
 
     # ------------- Chat tab -------------
 
@@ -498,6 +496,13 @@ class EmailOpsApp(tk.Tk):
         ttk.Label(r1, text="Batch size:").pack(side=tk.LEFT)
         self.var_batch = tk.IntVar(value=int(os.getenv("EMBED_BATCH", "64")))
         ttk.Spinbox(r1, from_=1, to=250, width=8, textvariable=self.var_batch).pack(side=tk.LEFT, padx=4)
+        
+        ttk.Label(r1, text="Workers:").pack(side=tk.LEFT, padx=(20,0))
+        self.var_workers = tk.IntVar(value=self._detect_worker_count())
+        ttk.Spinbox(r1, from_=1, to=16, width=6, textvariable=self.var_workers).pack(side=tk.LEFT, padx=4)
+        detected = self._detect_worker_count()
+        ttk.Label(r1, text=f"(detected: {detected})", font=("Arial", 8), foreground="#666").pack(side=tk.LEFT)
+        
         self.var_force = tk.BooleanVar(value=False)
         ttk.Checkbutton(r1, text="Force full re-index", variable=self.var_force).pack(side=tk.LEFT, padx=12)
         ttk.Label(r1, text="Limit per conversation:").pack(side=tk.LEFT, padx=(20,0))
@@ -508,7 +513,7 @@ class EmailOpsApp(tk.Tk):
         self.pb_index = ttk.Progressbar(r1, mode="indeterminate", length=260)
         self.pb_index.pack(side=tk.LEFT, padx=8)
 
-        hint = ttk.Label(frm, text="Tip: Index builder logs progress here. The progress bar reflects overall activity.")
+        hint = ttk.Label(frm, text="Tip: Parallel indexing uses 1 worker per GCP credential. Logs show progress from all workers.")
         hint.pack(anchor="w", padx=8, pady=(0,8))
 
     # ------------- Analyze tab -------------
@@ -531,7 +536,16 @@ class EmailOpsApp(tk.Tk):
 
     # ------------------------------- Actions ----------------------------------
 
-    def _with_root_and_index(self) -> tuple[Optional[Path], Optional[Path]]:
+    def _detect_worker_count(self) -> int:
+        """Auto-detect optimal workers from verified GCP credentials."""
+        try:
+            from emailops.llm_runtime import load_validated_accounts, DEFAULT_ACCOUNTS
+            accounts = load_validated_accounts(default_accounts=DEFAULT_ACCOUNTS)
+            return len(accounts)  # Returns 6 for verified credentials
+        except Exception:
+            return 1  # Safe fallback to serial processing
+
+    def _with_root_and_index(self) -> tuple[Path | None, Path | None]:
         root = Path(self.var_root.get().strip()).expanduser()
         ok, msg = validate_directory_path(root, must_exist=True, allow_parent_traversal=False)
         if not ok:
@@ -643,7 +657,7 @@ class EmailOpsApp(tk.Tk):
                         self.tree.insert("", tk.END, values=(f"{r.get('score',0):.3f}", r.get("subject",""), r.get("id","")))
                     self.status_var.set(f"Found {len(results)} results (Sim ≥ {sim:.2f}).")
                 self.after(0, update)
-            except Exception as e:
+            except Exception:
                 self.after(0, lambda: messagebox.showerror("Search failed", str(e)))
             finally:
                 self.after(0, lambda: self.pb_search.stop())
@@ -685,7 +699,7 @@ class EmailOpsApp(tk.Tk):
                         self.cmb_conv.set(items[0])
                     self.status_var.set(f"Loaded {len(items)} conversations.")
                 self.after(0, update)
-            except Exception as e:
+            except Exception:
                 self.after(0, lambda: messagebox.showerror("Conversations", str(e)))
             finally:
                 self.after(0, lambda: self.pb_convs.stop())
@@ -720,7 +734,7 @@ class EmailOpsApp(tk.Tk):
                         ))
                     self.status_var.set(f"{len(convs)} conversations.")
                 self.after(0, update)
-            except Exception as e:
+            except Exception:
                 self.after(0, lambda: messagebox.showerror("List Conversations", str(e)))
             finally:
                 self.after(0, lambda: self.pb_convs.stop())
@@ -791,7 +805,7 @@ class EmailOpsApp(tk.Tk):
                     self.txt_reply.insert(tk.END, body or "(no body)")
                     self.status_var.set("Reply draft ready.")
                 self.after(0, update)
-            except Exception as e:
+            except Exception:
                 self.after(0, lambda: messagebox.showerror("Draft Reply failed", str(e)))
             finally:
                 self.after(0, lambda: self.pb_reply.stop())
@@ -871,7 +885,7 @@ class EmailOpsApp(tk.Tk):
                     self.txt_fresh.insert(tk.END, body or "(no body)")
                     self.status_var.set("Fresh email draft ready.")
                 self.after(0, update)
-            except Exception as e:
+            except Exception:
                 self.after(0, lambda: messagebox.showerror("Draft Fresh failed", str(e)))
             finally:
                 self.after(0, lambda: self.pb_fresh.stop())
@@ -941,7 +955,7 @@ class EmailOpsApp(tk.Tk):
                     self.txt_chat.insert(tk.END, "\n".join(out))
                     self.status_var.set("Answer ready.")
                 self.after(0, update)
-            except Exception as e:
+            except Exception:
                 self.after(0, lambda: messagebox.showerror("Chat failed", str(e)))
             finally:
                 self.after(0, lambda: self.pb_chat.stop())
@@ -964,9 +978,11 @@ class EmailOpsApp(tk.Tk):
         batch = int(self.var_batch.get())
         force = bool(self.var_force.get())
         limit = int(self.var_limit.get() or 0)
+        num_workers = int(self.var_workers.get() or 1)
 
         self.pb_index.start(10)
-        self.status_var.set("Building/updating index… (see Logs for detailed progress)")
+        worker_msg = f" with {num_workers} worker{'s' if num_workers > 1 else ''}" if num_workers > 1 else ""
+        self.status_var.set(f"Building/updating index{worker_msg}… (see Logs for detailed progress)")
 
         # email_indexer exposes a CLI-oriented main(). We call it in-process with sys.argv
         def worker():
@@ -981,6 +997,8 @@ class EmailOpsApp(tk.Tk):
                     argv.append("--force-reindex")
                 if limit and limit > 0:
                     argv.extend(["--limit", str(limit)])
+                if num_workers > 1:
+                    argv.extend(["--workers", str(num_workers)])
 
                 old_argv = sys.argv
                 try:
@@ -989,9 +1007,10 @@ class EmailOpsApp(tk.Tk):
                     email_indexer.main()
                 finally:
                     sys.argv = old_argv
-                self.after(0, lambda: self.status_var.set("Index update complete."))
-            except Exception as e:
-                self.after(0, lambda: messagebox.showerror("Index", str(e)))
+                completion_msg = f"Index complete ({num_workers} workers)" if num_workers > 1 else "Index update complete."
+                self.after(0, lambda: self.status_var.set(completion_msg))
+            except Exception as err:
+                self.after(0, lambda: messagebox.showerror("Index", str(err)))
             finally:
                 self.after(0, lambda: self.pb_index.stop())
                 self.task.done()
@@ -1036,7 +1055,7 @@ class EmailOpsApp(tk.Tk):
                     md = json.dumps(data, ensure_ascii=False, indent=2)
                 self.after(0, lambda: self.txt_analyze.insert(tk.END, md))
                 self.after(0, lambda: self.status_var.set("Analysis complete."))
-            except Exception as e:
+            except Exception:
                 self.after(0, lambda: messagebox.showerror("Analyze", str(e)))
             finally:
                 self.after(0, lambda: self.pb_analyze.stop())
