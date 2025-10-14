@@ -15,8 +15,8 @@ import time
 try:
     from datetime import UTC  # py311+
 except ImportError:
-    from datetime import timezone
-    UTC = timezone.utc
+    from datetime import timezone as _timezone
+    UTC = _timezone.utc  # py310 fallback
 
 from datetime import datetime
 from pathlib import Path
@@ -257,13 +257,13 @@ def _safe_str(v: Any, max_len: int) -> str:
 def _coerce_enum(val: Any, allowed: set[str], default: str, synonyms: dict[str, str] | None = None) -> str:
     """
     Coerce a value to an allowed enum with synonym mapping.
-    
+
     Args:
         val: The value to coerce
         allowed: Set of allowed enum values
         default: Default value if coercion fails
         synonyms: Optional mapping of synonyms to canonical values
-    
+
     Returns:
         Coerced enum value or default
     """
@@ -334,29 +334,22 @@ def _normalize_subject_line(s: str) -> str:
         if not subj:
             return ""
 
-        # Normalize multiple prefixes like "Re: RE: FWD: " -> single "Re:" or "Fwd:"
-        lowered = subj.lower()
-        prefix = ""
-        max_iterations = 20  # Prevent infinite loops on malformed input
-        iteration = 0
+        # Collapse prefixes like "Re: Fwd: Re: " down to a single one.
+        # The logic is to find the last prefix (case-insensitive) and take it and everything after.
+        # Regex: find the last occurrence of `re:`, `fwd:`, or `fw:` with optional whitespace and colons.
+        last_prefix_match = None
+        for match in re.finditer(r"(re|fw(d)?):\s*", subj, re.IGNORECASE):
+            last_prefix_match = match
 
-        while lowered.startswith(("re:", "fw:", "fwd:")) and iteration < max_iterations:
-            iteration += 1
-            if lowered.startswith("re:"):
-                prefix = "Re:"
-                subj = subj[3:].lstrip()
-                lowered = subj.lower()
-                continue
-            if lowered.startswith("fwd:") or lowered.startswith("fw:"):
-                prefix = "Fwd:"
-                subj = subj[4:] if lowered.startswith("fwd:") else subj[3:]
-                subj = subj.lstrip()
-                lowered = subj.lower()
-                continue
-            break
+        if last_prefix_match:
+            prefix_end = last_prefix_match.end()
+            prefix_type = last_prefix_match.group(1).lower()
+            # Keep "Fwd:" if present, otherwise default to "Re:"
+            final_prefix = "Fwd:" if "fw" in prefix_type else "Re:"
+            return f"{final_prefix} {subj[prefix_end:].strip()}".strip()
 
-        # If there was a prefix, reattach once
-        return f"{prefix} {subj}".strip() if prefix else subj
+        return subj # Return original if no prefixes are found
+
     except Exception as e:
         logger.error("_normalize_subject_line: Failed to normalize '%s': %s", s[:50], e)
         return s.strip() if isinstance(s, str) else ""
@@ -388,7 +381,7 @@ def _normalize_analysis(data: Any, catalog: list[str]) -> dict[str, Any]:
     else:
         # Ensure catalog has a catch-all
         if "other" not in catalog:
-            catalog = list(catalog) + ["other"]
+            catalog = [*list(catalog), "other"]
 
     # Required top-level keys
     d.setdefault("category", catalog[-1])
@@ -490,15 +483,6 @@ def _normalize_analysis(data: Any, catalog: list[str]) -> dict[str, Any]:
             fl[k] = []
 
     # Define enum synonyms
-    urgency_synonyms = {
-        "asap": "immediate",
-        "urgent": "immediate",
-        "high": "high",
-        "med": "medium",
-        "medium": "medium",
-        "low": "low",
-        "normal": "medium"
-    }
 
     status_synonyms = {
         "pending": "pending",
@@ -893,180 +877,120 @@ def _union_analyses(improved: dict[str, Any], initial: dict[str, Any], catalog: 
         return s.strip().lower() if isinstance(s, str) else ""
 
     # Union participants
-    improved_participants = result.get("participants", [])
     initial_participants = initial.get("participants", [])
-
-    seen_p_keys: set[str] = set()
-    merged_p: list[dict[str, str]] = []
-
-    # Add improved participants first
-    for p in improved_participants:
-        if isinstance(p, dict):
-            email_key = (p.get("email") or "").lower()
-            name_key = _normalize_name(p.get("name", ""))
-            key = email_key or f"name:{name_key}"
-            if key and key not in seen_p_keys:
-                seen_p_keys.add(key)
-                merged_p.append(p)
-
-    # Add unique initial participants
-    for p in initial_participants:
-        if isinstance(p, dict):
-            email_key = (p.get("email") or "").lower()
-            name_key = _normalize_name(p.get("name", ""))
-            key = email_key or f"name:{name_key}"
-            if key and key not in seen_p_keys:
-                seen_p_keys.add(key)
-                merged_p.append(p)
-
-    result["participants"] = merged_p[:MAX_PARTICIPANTS]
+    if isinstance(initial_participants, list):
+        # Use a dict to de-dupe, preserving order and preferring improved items
+        all_participants = {
+            _norm_key(p.get("email")) or f"name:{_normalize_name(p.get('name'))}": p
+            for p in result.get("participants", []) if isinstance(p, dict) and (_norm_key(p.get("email")) or _normalize_name(p.get('name')))
+        }
+        initial_participants_dict = {
+            _norm_key(p.get("email")) or f"name:{_normalize_name(p.get('name'))}": p
+            for p in initial_participants if isinstance(p, dict) and (_norm_key(p.get("email")) or _normalize_name(p.get('name')))
+        }
+        all_participants.update({k: v for k, v in initial_participants_dict.items() if k not in all_participants})
+        result["participants"] = list(all_participants.values())[:MAX_PARTICIPANTS]
 
     # Union summary points
-    improved_summary = result.get("summary", [])
     initial_summary = initial.get("summary", [])
-
-    seen_summary: set[str] = set(_norm_key(s) for s in improved_summary if isinstance(s, str))
-    merged_summary = list(improved_summary)
-
-    for s in initial_summary:
-        if isinstance(s, str) and _norm_key(s) not in seen_summary:
-            merged_summary.append(s)
-            seen_summary.add(_norm_key(s))
-
-    result["summary"] = merged_summary[:MAX_SUMMARY_POINTS]
+    if isinstance(initial_summary, list):
+        improved_summary = result.get("summary", [])
+        seen_summary = {_norm_key(s) for s in improved_summary if isinstance(s, str)}
+        merged_summary = list(improved_summary)
+        merged_summary.extend([s for s in initial_summary if isinstance(s, str) and _norm_key(s) not in seen_summary])
+        result["summary"] = merged_summary[:MAX_SUMMARY_POINTS]
 
     # Union risk_indicators
-    improved_risks = result.get("risk_indicators", [])
     initial_risks = initial.get("risk_indicators", [])
-
-    seen_risks: set[str] = set(_norm_key(r) for r in improved_risks if isinstance(r, str))
-    merged_risks = list(improved_risks)
-
-    for r in initial_risks:
-        if isinstance(r, str) and _norm_key(r) not in seen_risks:
-            merged_risks.append(r)
-            seen_risks.add(_norm_key(r))
-
-    result["risk_indicators"] = merged_risks
+    if isinstance(initial_risks, list):
+        improved_risks = result.get("risk_indicators", [])
+        seen_risks = {_norm_key(r) for r in improved_risks if isinstance(r, str)}
+        merged_risks = list(improved_risks)
+        merged_risks.extend([r for r in initial_risks if isinstance(r, str) and _norm_key(r) not in seen_risks])
+        result["risk_indicators"] = merged_risks
 
     # Union facts_ledger items
     improved_fl = result.get("facts_ledger", {})
     initial_fl = initial.get("facts_ledger", {})
 
-    if not isinstance(improved_fl, dict):
-        improved_fl = {}
-    if not isinstance(initial_fl, dict):
-        initial_fl = {}
+    if isinstance(improved_fl, dict) and isinstance(initial_fl, dict):
+        for field_name in ["known_facts", "required_for_resolution", "what_we_have", "what_we_need", "materiality_for_company", "materiality_for_me"]:
+            initial_list = initial_fl.get(field_name, [])
+            if isinstance(initial_list, list):
+                improved_list = improved_fl.get(field_name, [])
+                seen_items = {_norm_key(i) for i in improved_list if isinstance(i, str)}
+                merged_list = list(improved_list)
+                merged_list.extend([item for item in initial_list if isinstance(item, str) and _norm_key(item) not in seen_items])
+                improved_fl[field_name] = merged_list[:MAX_FACT_ITEMS]
 
-    # Union known_facts
-    improved_known_facts = improved_fl.get("known_facts", [])
-    initial_known_facts = initial_fl.get("known_facts", [])
-    seen_known_facts: set[str] = set(_norm_key(f) for f in improved_known_facts if isinstance(f, str))
-    merged_known_facts = list(improved_known_facts)
-    for f in initial_known_facts:
-        if isinstance(f, str) and _norm_key(f) not in seen_known_facts:
-            merged_known_facts.append(f)
-            seen_known_facts.add(_norm_key(f))
-    improved_fl["known_facts"] = merged_known_facts[:MAX_FACT_ITEMS]
+        # Union commitments_made
+        initial_commits = initial_fl.get("commitments_made", [])
+        if isinstance(initial_commits, list):
+            improved_commits = improved_fl.get("commitments_made", [])
+            # De-dupe based on a tuple of normalized values
+            all_commits = {
+                (_norm_key(c.get("by")), _norm_key(c.get("commitment"))): c
+                for c in improved_commits if isinstance(c, dict)
+            }
+            initial_commits_dict = {
+                (_norm_key(c.get("by")), _norm_key(c.get("commitment"))): c
+                for c in initial_commits if isinstance(c, dict)
+            }
+            all_commits.update({k: v for k, v in initial_commits_dict.items() if k not in all_commits})
+            improved_fl["commitments_made"] = list(all_commits.values())[:MAX_FACT_ITEMS]
 
-    # Union commitments_made
-    improved_commits = improved_fl.get("commitments_made", [])
-    initial_commits = initial_fl.get("commitments_made", [])
+        # Union key_dates
+        initial_dates = initial_fl.get("key_dates", [])
+        if isinstance(initial_dates, list):
+            improved_dates = improved_fl.get("key_dates", [])
+            all_dates = {
+                (_norm_key(d.get("date")), _norm_key(d.get("event"))): d
+                for d in improved_dates if isinstance(d, dict)
+            }
+            initial_dates_dict = {
+                (_norm_key(d.get("date")), _norm_key(d.get("event"))): d
+                for d in initial_dates if isinstance(d, dict)
+            }
+            all_dates.update({k: v for k, v in initial_dates_dict.items() if k not in all_dates})
+            improved_fl["key_dates"] = list(all_dates.values())[:MAX_FACT_ITEMS]
 
-    seen_commits: set[tuple[str, str]] = set()
-    merged_commits: list[dict[str, Any]] = []
-
-    for commit in improved_commits:
-        if isinstance(commit, dict):
-            key = (_norm_key(commit.get("by", "")), _norm_key(commit.get("commitment", "")))
-            if key not in seen_commits:
-                seen_commits.add(key)
-                merged_commits.append(commit)
-
-    for commit in initial_commits:
-        if isinstance(commit, dict):
-            key = (_norm_key(commit.get("by", "")), _norm_key(commit.get("commitment", "")))
-            if key not in seen_commits:
-                seen_commits.add(key)
-                merged_commits.append(commit)
-
-    improved_fl["commitments_made"] = merged_commits[:MAX_FACT_ITEMS]
-
-    # Union for the new simple string list fields
-    for field_name in ["required_for_resolution", "what_we_have", "what_we_need", "materiality_for_company", "materiality_for_me"]:
-        improved_list = improved_fl.get(field_name, [])
-        initial_list = initial_fl.get(field_name, [])
-        seen_items: set[str] = set(_norm_key(i) for i in improved_list if isinstance(i, str))
-        merged_list = list(improved_list)
-        for item in initial_list:
-            if isinstance(item, str) and _norm_key(item) not in seen_items:
-                merged_list.append(item)
-                seen_items.add(_norm_key(item))
-        improved_fl[field_name] = merged_list[:MAX_FACT_ITEMS]
-
-    # Union key_dates
-    improved_dates = improved_fl.get("key_dates", [])
-    initial_dates = initial_fl.get("key_dates", [])
-
-    seen_dates: set[tuple[str, str]] = set()
-    merged_dates: list[dict[str, Any]] = []
-
-    for d in improved_dates:
-        if isinstance(d, dict):
-            key = (_norm_key(d.get("date", "")), _norm_key(d.get("event", "")))
-            if key not in seen_dates:
-                seen_dates.add(key)
-                merged_dates.append(d)
-
-    for d in initial_dates:
-        if isinstance(d, dict):
-            key = (_norm_key(d.get("date", "")), _norm_key(d.get("event", "")))
-            if key not in seen_dates:
-                seen_dates.add(key)
-                merged_dates.append(d)
-
-    improved_fl["key_dates"] = merged_dates[:MAX_FACT_ITEMS]
-
-    result["facts_ledger"] = improved_fl
+        result["facts_ledger"] = improved_fl
 
     # Union next_actions
-    improved_actions = result.get("next_actions", [])
     initial_actions = initial.get("next_actions", [])
-
-    seen_actions: set[tuple[str, str]] = set()
-    merged_actions: list[dict[str, Any]] = []
-
-    for action in improved_actions:
-        if isinstance(action, dict):
-            key = (_norm_key(action.get("owner", "")), _norm_key(action.get("action", "")))
-            if key not in seen_actions:
-                seen_actions.add(key)
-                merged_actions.append(action)
-
-    for action in initial_actions:
-        if isinstance(action, dict):
-            key = (_norm_key(action.get("owner", "")), _norm_key(action.get("action", "")))
-            if key not in seen_actions:
-                seen_actions.add(key)
-                merged_actions.append(action)
-
-    result["next_actions"] = merged_actions[:MAX_NEXT_ACTIONS]
+    if isinstance(initial_actions, list):
+        improved_actions = result.get("next_actions", [])
+        all_actions = {
+            (_norm_key(a.get("owner")), _norm_key(a.get("action"))): a
+            for a in improved_actions if isinstance(a, dict)
+        }
+        initial_actions_dict = {
+            (_norm_key(a.get("owner")), _norm_key(a.get("action"))): a
+            for a in initial_actions if isinstance(a, dict)
+        }
+        all_actions.update({k: v for k, v in initial_actions_dict.items() if k not in all_actions})
+        result["next_actions"] = list(all_actions.values())[:MAX_NEXT_ACTIONS]
 
     # Re-apply normalization to ensure all caps and coercions are applied
     return _normalize_analysis(result, catalog)
 
 
-def _retry(callable_fn, *args, retries: int = 2, delay: float = 0.5, **kwargs):
+async def _retry(callable_fn, *args, retries: int = 2, delay: float = 0.5, **kwargs):
     """
-    Tiny helper to retry transient LLM failures with exponential backoff + jitter.
-    Exceptions are re-raised after the final attempt.
+    Retry helper that supports both synchronous and asynchronous callables.
+    Uses exponential backoff with jitter and asyncio-friendly sleep.
     """
+    import asyncio
+    import inspect
     attempt = 0
-    max_retries = retries if retries is not None else 4
+    max_retries = retries if retries is not None else 2
     base_delay = delay if delay is not None else 0.5
     while True:
         try:
-            return callable_fn(*args, **kwargs)
+            result = callable_fn(*args, **kwargs)
+            if inspect.isawaitable(result):
+                return await result
+            return result
         except Exception as e:
             attempt += 1
             if attempt > max_retries:
@@ -1082,7 +1006,7 @@ def _retry(callable_fn, *args, retries: int = 2, delay: float = 0.5, **kwargs):
                 max_retries,
                 sleep_for,
             )
-            time.sleep(sleep_for)
+            await asyncio.sleep(sleep_for)
 
 
 def _calc_max_output_tokens() -> int:
@@ -1121,7 +1045,7 @@ def _llm_routing_kwargs(provider: str) -> dict[str, Any]:
     return kwargs
 
 
-def analyze_email_thread_with_ledger(
+async def analyze_email_thread_with_ledger(
     thread_text: str,
     catalog: list[str] = DEFAULT_CATALOG,
     provider: str = "vertex",
@@ -1403,7 +1327,7 @@ Output valid JSON matching the required schema."""
         # Add routing kwargs if supported
         _cj_kwargs.update(cj_routing)
 
-        initial_response = _retry(
+        initial_response = await _retry(
             complete_json,
             system,
             user,
@@ -1458,7 +1382,7 @@ Output valid JSON matching the required schema."""
                 # Add routing kwargs if supported
                 _ct_kwargs.update(ct_routing)
 
-                fb = _retry(
+                fb = await _retry(
                     complete_text,
                     system,
                     user
@@ -1493,7 +1417,8 @@ Output valid JSON matching the required schema."""
                     "Text mode attempt %d failed: %s", attempt + 1, retry_error
                 )
                 if attempt < retry_attempts - 1:
-                    time.sleep(1.0 * (attempt + 1))  # Exponential backoff
+                    import asyncio
+                    await asyncio.sleep(1.0 * (attempt + 1))  # Exponential backoff
 
         # Ensure we have initial_analysis even if all attempts failed
         if not initial_analysis:
@@ -1508,12 +1433,12 @@ Output valid JSON matching the required schema."""
             initial_analysis["facts_ledger"] = initial_analysis.get("facts_ledger", {})
             fl = initial_analysis["facts_ledger"]
             if isinstance(fl, dict):
-                unknowns = fl.get("unknowns", [])
-                if isinstance(unknowns, list):
-                    unknowns.append(
+                what_we_need = fl.get("what_we_need", [])
+                if isinstance(what_we_need, list):
+                    what_we_need.append(
                         f"Automated parsing failed: {last_error or 'Unknown error'}"
                     )
-                    fl["unknowns"] = unknowns
+                    fl["what_we_need"] = what_we_need
 
     # --- Pass 2: Critic review for completeness/accuracy ---
     critic_system = """You are a quality control specialist reviewing email thread analyses.
@@ -1587,7 +1512,7 @@ Check for:
         # Add routing kwargs if supported
         _crit_kwargs.update(cj_routing)
 
-        critic_response = _retry(
+        critic_response = await _retry(
             complete_json,
             critic_system,
             critic_user,
@@ -1649,7 +1574,7 @@ Generate an improved analysis that addresses all feedback while maintaining the 
             # Add routing kwargs if supported
             _imp_kwargs.update(cj_routing)
 
-            improved_response = _retry(
+            improved_response = await _retry(
                 complete_json,
                 improvement_system,
                 improvement_user,
@@ -1680,7 +1605,7 @@ Generate an improved analysis that addresses all feedback while maintaining the 
 # =============================================================================
 # Higher-level API: analyze a conversation directory (read, analyze, enrich)
 # =============================================================================
-def analyze_conversation_dir(
+async def analyze_conversation_dir(
     thread_dir: Path,
     catalog: list[str] = DEFAULT_CATALOG,
     provider: str = os.getenv("EMBED_PROVIDER", "vertex"),
@@ -1700,7 +1625,7 @@ def analyze_conversation_dir(
     raw = read_text_file(convo_txt)
     cleaned = clean_email_text(raw)
 
-    data = analyze_email_thread_with_ledger(
+    data = await analyze_email_thread_with_ledger(
         thread_text=cleaned,
         catalog=(catalog or DEFAULT_CATALOG),
         provider=provider,
@@ -1940,7 +1865,7 @@ def _append_todos_csv(
 # =============================================================================
 # CLI
 # =============================================================================
-def main() -> None:
+async def async_main():
     # Configure logging for CLI entry point - ensure module logger propagates
     logging.basicConfig(
         level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -2003,7 +1928,7 @@ def main() -> None:
 
     # Enhanced analysis + (optional) manifest enrichment
     try:
-        data = analyze_conversation_dir(
+        data = await analyze_conversation_dir(
             thread_dir=tdir,
             catalog=args.catalog,
             provider=args.provider,
@@ -2035,6 +1960,19 @@ def main() -> None:
         if todos and isinstance(todos, list):
             root = tdir.parent
             _append_todos_csv(root, tdir.name, todos)
+
+def analyze_conversation_dir_sync(*args, **kwargs):
+    """
+    Synchronous wrapper for analyze_conversation_dir.
+    Runs the async function in an event loop for callers that expect sync API.
+    """
+    import asyncio
+    return asyncio.run(analyze_conversation_dir(*args, **kwargs))
+
+
+def main() -> None:
+    import asyncio
+    asyncio.run(async_main())
 
 
 if __name__ == "__main__":

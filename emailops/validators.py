@@ -64,7 +64,7 @@ def validate_directory_path(
     path: str | Path, must_exist: bool = True, allow_parent_traversal: bool = False
 ) -> tuple[bool, str]:
     """Validate directory path with security checks.
-    
+
     NOTE: To avoid TOCTOU issues, callers should use the normalized path
     returned by validate_directory_path_info() immediately after validation.
 
@@ -123,7 +123,7 @@ def validate_file_path(
     allow_parent_traversal: bool = False,
 ) -> tuple[bool, str]:
     """Validate file path with extension checks.
-    
+
     NOTE: To avoid TOCTOU issues, callers should use the normalized path
     returned by validate_file_path_info() immediately after validation.
 
@@ -317,7 +317,7 @@ def validate_email_format(email: str) -> tuple[bool, str]:
 
     Performs basic RFC 5322-compliant validation with additional
     security checks for email length and format.
-    
+
     NOTE: For production use, consider using the email-validator library
     for more comprehensive RFC compliance and internationalization support.
 

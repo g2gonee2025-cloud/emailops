@@ -18,6 +18,7 @@ The GUI is resilient to both package and local-module import layouts.
 """
 
 import argparse
+import contextlib
 import json
 import logging
 import os
@@ -42,21 +43,21 @@ def _try_imports():
     try:
         from emailops import processor as _processor  # package
         ns["processor"] = _processor
-    except Exception:
+    except Exception as err:
         from emailops import processor as _processor  # local
         ns["processor"] = _processor
 
     # Indexer (CLI-oriented; we'll call main() in a worker thread)
     try:
         from emailops import email_indexer as _indexer
-    except Exception:
+    except Exception as err:
         import email_indexer as _indexer
     ns["indexer"] = _indexer
 
     # Summarizer (optional tab)
     try:
         from emailops import summarize_email_thread as _summarizer
-    except Exception:
+    except Exception as err:
         import summarize_email_thread as _summarizer
     ns["summarizer"] = _summarizer
 
@@ -64,17 +65,17 @@ def _try_imports():
     try:
         from emailops.validators import validate_directory_path  # package
         ns["validate_directory_path"] = validate_directory_path
-    except Exception:
+    except Exception as err:
         from validators import validate_directory_path  # local
         ns["validate_directory_path"] = validate_directory_path
 
     # Utils logger (attach our GUI handler to bubble up module logs)
     try:
         from emailops.utils import logger as _module_logger  # package
-    except Exception:
+    except Exception as err:
         try:
             from utils import logger as _module_logger  # local
-        except Exception:
+        except Exception as err:
             _module_logger = logging.getLogger("emailops")
     ns["module_logger"] = _module_logger
 
@@ -99,7 +100,7 @@ class QueueHandler(logging.Handler):
         try:
             msg = self.format(record)
             self.log_queue.put_nowait(msg)
-        except Exception:
+        except Exception as err:
             # Never crash the app because logging failed
             pass
 
@@ -127,7 +128,7 @@ def configure_logging(log_queue: queue.Queue[str]) -> None:
     try:
         module_logger.propagate = True
         module_logger.setLevel(logging.INFO)
-    except Exception:
+    except Exception as err:
         pass
 
 
@@ -151,10 +152,8 @@ class AppSettings:
     last_subject: str = ""
 
     def save(self) -> None:
-        try:
+        with contextlib.suppress(Exception):
             SETTINGS_FILE.write_text(json.dumps(asdict(self), ensure_ascii=False, indent=2), encoding="utf-8")
-        except Exception:
-            pass
 
     @staticmethod
     def load() -> AppSettings:
@@ -162,7 +161,7 @@ class AppSettings:
             if SETTINGS_FILE.exists():
                 raw = json.loads(SETTINGS_FILE.read_text(encoding="utf-8"))
                 return AppSettings(**raw)
-        except Exception:
+        except Exception as err:
             pass
         return AppSettings()
 
@@ -539,10 +538,10 @@ class EmailOpsApp(tk.Tk):
     def _detect_worker_count(self) -> int:
         """Auto-detect optimal workers from verified GCP credentials."""
         try:
-            from emailops.llm_runtime import load_validated_accounts, DEFAULT_ACCOUNTS
+            from emailops.llm_runtime import DEFAULT_ACCOUNTS, load_validated_accounts
             accounts = load_validated_accounts(default_accounts=DEFAULT_ACCOUNTS)
             return len(accounts)  # Returns 6 for verified credentials
-        except Exception:
+        except Exception as err:
             return 1  # Safe fallback to serial processing
 
     def _with_root_and_index(self) -> tuple[Path | None, Path | None]:
@@ -657,8 +656,8 @@ class EmailOpsApp(tk.Tk):
                         self.tree.insert("", tk.END, values=(f"{r.get('score',0):.3f}", r.get("subject",""), r.get("id","")))
                     self.status_var.set(f"Found {len(results)} results (Sim ≥ {sim:.2f}).")
                 self.after(0, update)
-            except Exception:
-                self.after(0, lambda: messagebox.showerror("Search failed", str(e)))
+            except Exception as e:
+                self.after(0, lambda e=e: messagebox.showerror("Search failed", str(e)))
             finally:
                 self.after(0, lambda: self.pb_search.stop())
                 self.task.done()
@@ -669,7 +668,7 @@ class EmailOpsApp(tk.Tk):
         sel = self.tree.selection()
         if not sel:
             return
-        idx = self.tree.index(sel[0])
+        idx = self.tree.index(sel)
         if 0 <= idx < len(self.search_results):
             snip = self.search_results[idx].get("text", "")
             self.txt_snip.delete("1.0", tk.END)
@@ -696,11 +695,11 @@ class EmailOpsApp(tk.Tk):
                 def update():
                     self.cmb_conv["values"] = items
                     if items:
-                        self.cmb_conv.set(items[0])
+                        self.cmb_conv.set(items)
                     self.status_var.set(f"Loaded {len(items)} conversations.")
                 self.after(0, update)
-            except Exception:
-                self.after(0, lambda: messagebox.showerror("Conversations", str(e)))
+            except Exception as e:
+                self.after(0, lambda e=e: messagebox.showerror("Conversations", str(e)))
             finally:
                 self.after(0, lambda: self.pb_convs.stop())
                 self.task.done()
@@ -734,8 +733,8 @@ class EmailOpsApp(tk.Tk):
                         ))
                     self.status_var.set(f"{len(convs)} conversations.")
                 self.after(0, update)
-            except Exception:
-                self.after(0, lambda: messagebox.showerror("List Conversations", str(e)))
+            except Exception as e:
+                self.after(0, lambda e=e: messagebox.showerror("List Conversations", str(e)))
             finally:
                 self.after(0, lambda: self.pb_convs.stop())
                 self.task.done()
@@ -747,7 +746,7 @@ class EmailOpsApp(tk.Tk):
         if not sel:
             messagebox.showinfo("Conversations", "Select a conversation first.")
             return
-        conv_id = self.tree_convs.item(sel[0])["values"][0]
+        conv_id = self.tree_convs.item(sel)["values"]
         self.nb.select(self.tab_reply)
         self.cmb_conv.set(conv_id)
         self.status_var.set(f"Selected conversation {conv_id} for Draft Reply.")
@@ -758,7 +757,7 @@ class EmailOpsApp(tk.Tk):
         if not self.task.start():
             messagebox.showwarning("Busy", "Another task is running.")
             return
-        root, ix_dir = self._with_root_and_index()
+        root, _ix_dir = self._with_root_and_index()
         if not root:
             self.task.done()
             return
@@ -805,8 +804,8 @@ class EmailOpsApp(tk.Tk):
                     self.txt_reply.insert(tk.END, body or "(no body)")
                     self.status_var.set("Reply draft ready.")
                 self.after(0, update)
-            except Exception:
-                self.after(0, lambda: messagebox.showerror("Draft Reply failed", str(e)))
+            except Exception as e:
+                self.after(0, lambda e=e: messagebox.showerror("Draft Reply failed", str(e)))
             finally:
                 self.after(0, lambda: self.pb_reply.stop())
                 self.task.done()
@@ -833,7 +832,7 @@ class EmailOpsApp(tk.Tk):
         if not self.task.start():
             messagebox.showwarning("Busy", "Another task is running.")
             return
-        root, ix_dir = self._with_root_and_index()
+        root, _ix_dir = self._with_root_and_index()
         if not root:
             self.task.done()
             return
@@ -885,8 +884,8 @@ class EmailOpsApp(tk.Tk):
                     self.txt_fresh.insert(tk.END, body or "(no body)")
                     self.status_var.set("Fresh email draft ready.")
                 self.after(0, update)
-            except Exception:
-                self.after(0, lambda: messagebox.showerror("Draft Fresh failed", str(e)))
+            except Exception as e:
+                self.after(0, lambda e=e: messagebox.showerror("Draft Fresh failed", str(e)))
             finally:
                 self.after(0, lambda: self.pb_fresh.stop())
                 self.task.done()
@@ -955,8 +954,8 @@ class EmailOpsApp(tk.Tk):
                     self.txt_chat.insert(tk.END, "\n".join(out))
                     self.status_var.set("Answer ready.")
                 self.after(0, update)
-            except Exception:
-                self.after(0, lambda: messagebox.showerror("Chat failed", str(e)))
+            except Exception as e:
+                self.after(0, lambda e=e: messagebox.showerror("Chat failed", str(e)))
             finally:
                 self.after(0, lambda: self.pb_chat.stop())
                 self.task.done()
@@ -969,7 +968,7 @@ class EmailOpsApp(tk.Tk):
         if not self.task.start():
             messagebox.showwarning("Busy", "Another task is running.")
             return
-        root, ix_dir = self._with_root_and_index()
+        root, _ix_dir = self._with_root_and_index()
         if not root:
             self.task.done()
             return
@@ -997,8 +996,7 @@ class EmailOpsApp(tk.Tk):
                     argv.append("--force-reindex")
                 if limit and limit > 0:
                     argv.extend(["--limit", str(limit)])
-                if num_workers > 1:
-                    argv.extend(["--workers", str(num_workers)])
+                # Note: email_indexer doesn't support --workers yet, so we don't pass it
 
                 old_argv = sys.argv
                 try:
@@ -1007,10 +1005,10 @@ class EmailOpsApp(tk.Tk):
                     email_indexer.main()
                 finally:
                     sys.argv = old_argv
-                completion_msg = f"Index complete ({num_workers} workers)" if num_workers > 1 else "Index update complete."
+                completion_msg = "Index update complete."
                 self.after(0, lambda: self.status_var.set(completion_msg))
             except Exception as err:
-                self.after(0, lambda: messagebox.showerror("Index", str(err)))
+                self.after(0, lambda err=err: messagebox.showerror("Index", str(err)))
             finally:
                 self.after(0, lambda: self.pb_index.stop())
                 self.task.done()
@@ -1051,12 +1049,12 @@ class EmailOpsApp(tk.Tk):
                 # Pretty-print summary in Markdown-ish text
                 try:
                     md = summarizer.format_analysis_as_markdown(data)  # :contentReference[oaicite:14]{index=14}
-                except Exception:
+                except Exception as err:
                     md = json.dumps(data, ensure_ascii=False, indent=2)
                 self.after(0, lambda: self.txt_analyze.insert(tk.END, md))
                 self.after(0, lambda: self.status_var.set("Analysis complete."))
-            except Exception:
-                self.after(0, lambda: messagebox.showerror("Analyze", str(e)))
+            except Exception as e:
+                self.after(0, lambda e=e: messagebox.showerror("Analyze", str(e)))
             finally:
                 self.after(0, lambda: self.pb_analyze.stop())
                 self.task.done()

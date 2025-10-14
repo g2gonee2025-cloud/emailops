@@ -17,6 +17,7 @@ EmailOps Orchestrator (thin helper)
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import logging
 import multiprocessing as mp
@@ -328,6 +329,20 @@ def cmd_chat(ns: argparse.Namespace) -> None:
         raise ProcessorError(f"Chat command failed: {e}") from e
 
 
+# ----------------------------------- Public API for GUI and external callers -----------------------------------
+
+def _search(*args, **kwargs):
+    """
+    Public wrapper for search functionality (used by GUI).
+    Delegates to internal search implementation.
+    """
+    return _low_level_search(*args, **kwargs)
+
+
+# Re-export for GUI compatibility (already imported above)
+# list_conversations_newest_first is imported from search_and_draft and available
+
+
 # ----------------------- Summarize one / many (multiprocessing) -----------------------
 
 @dataclass(frozen=True)
@@ -342,11 +357,12 @@ def _summarize_worker(job: _SummJob) -> tuple[str, bool, str]:
     Top-level picklable worker (safe under 'spawn').
     Returns: (convo_dir, success, message)
     """
+    import asyncio
     try:
         _ensure_env()
         # Set provider in environment for analyze_conversation_dir
         os.environ["EMBED_PROVIDER"] = job.provider
-        analysis = analyze_conversation_dir(job.convo_dir)
+        analysis = asyncio.run(analyze_conversation_dir(job.convo_dir))
         md = format_analysis_as_markdown(analysis)
         target_dir = job.out_dir or job.convo_dir
         target_dir.mkdir(parents=True, exist_ok=True)
@@ -367,6 +383,7 @@ def _iter_conversation_dirs(root: Path) -> Iterable[Path]:
 
 
 def cmd_summarize(ns: argparse.Namespace) -> None:
+    import asyncio
     convo_dir = Path(ns.conversation).expanduser().resolve()
     if not convo_dir.exists():
         raise IndexNotFoundError(f"Conversation directory not found: {convo_dir}")
@@ -376,7 +393,7 @@ def cmd_summarize(ns: argparse.Namespace) -> None:
         # analyze_conversation_dir doesn't have a provider param - it gets it from env
         # Set the environment variable before calling
         os.environ["EMBED_PROVIDER"] = ns.provider
-        analysis = analyze_conversation_dir(convo_dir)
+        analysis = asyncio.run(analyze_conversation_dir(convo_dir))
         md = format_analysis_as_markdown(analysis)
         out_dir = Path(ns.out).expanduser().resolve() if ns.out else convo_dir
         out_dir.mkdir(parents=True, exist_ok=True)
@@ -504,10 +521,8 @@ def build_cli() -> argparse.ArgumentParser:
 
 def main() -> int:
     # Safety: always use spawn (works on Windows + prevents state leakage)
-    try:
+    with contextlib.suppress(RuntimeError):
         mp.set_start_method("spawn", force=True)
-    except RuntimeError:
-        pass
 
     _ensure_env()
     ap = build_cli()

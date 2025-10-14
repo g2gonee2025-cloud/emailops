@@ -63,20 +63,31 @@ _RATE_LIMIT_LOCK = threading.Lock()
 
 
 def _check_rate_limit() -> None:
-    """Enforce rate limit using token bucket algorithm."""
-    with _RATE_LIMIT_LOCK:
-        now = time.time()
-        # Remove calls older than 1 minute
-        while _API_CALL_TIMES and now - _API_CALL_TIMES[0] > 60:
-            _API_CALL_TIMES.popleft()
+    """Enforce per-minute rate limit without holding the lock while sleeping.
 
-        if len(_API_CALL_TIMES) >= _RATE_LIMIT_PER_MINUTE:
-            sleep_time = 60 - (now - _API_CALL_TIMES[0])
-            if sleep_time > 0:
-                logger.info("Rate limit reached; sleeping %.1f seconds", sleep_time)
-                time.sleep(sleep_time)
+    This avoids blocking other threads for the entire sleep duration and yields
+    throughput that more closely matches a token-bucket.
+    """
+    while True:
+        with _RATE_LIMIT_LOCK:
+            now = time.time()
+            # Remove calls older than 1 minute
+            while _API_CALL_TIMES and now - _API_CALL_TIMES[0] > 60:
+                _API_CALL_TIMES.popleft()
 
-        _API_CALL_TIMES.append(now)
+            if len(_API_CALL_TIMES) < _RATE_LIMIT_PER_MINUTE:
+                _API_CALL_TIMES.append(now)
+                return
+
+            # Compute how long until the oldest timestamp expires
+            sleep_time = max(0.0, 60 - (now - _API_CALL_TIMES[0]))
+
+        if sleep_time > 0:
+            logger.info("Rate limit reached; sleeping %.1f seconds", sleep_time)
+            time.sleep(sleep_time)
+        else:
+            # Yield briefly to avoid busy-waiting if clocks are skewed
+            time.sleep(0.01)
 
 
 # --------------------------------------------------------------------------------------
@@ -559,7 +570,11 @@ def complete_text(
         try:
             _init_vertex()
             model = _vertex_model(system_instruction=system)
-            from vertexai.generative_models import GenerationConfig, HarmCategory, HarmBlockThreshold
+            from vertexai.generative_models import (
+                GenerationConfig,
+                HarmBlockThreshold,
+                HarmCategory,
+            )
             # Disable safety filters for business use
             safety_settings = {
                 HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
@@ -619,7 +634,11 @@ def complete_json(
     for attempt in range(1, attempts + 1):
         try:
             _init_vertex()
-            from vertexai.generative_models import GenerationConfig, HarmCategory, HarmBlockThreshold
+            from vertexai.generative_models import (
+                GenerationConfig,
+                HarmBlockThreshold,
+                HarmCategory,
+            )
 
             model = _vertex_model(system_instruction=system)
             # Disable safety filters for business use
@@ -773,27 +792,46 @@ def _embed_vertex(texts: list[str], model: str | None = None) -> np.ndarray:
                         vertexai=True, project=project, location=location
                     )
                     _check_rate_limit()
-                    resp = client.models.embed_content(
-                        model=embed_name, contents=cast(Any, chunk), config=cfg
-                    )
-                    if resp and resp.embeddings and len(resp.embeddings) == len(chunk):
-                        # Treat any missing values as a failed batch (no silent zeros).
-                        batch_vals: list[list[float]] = []
-                        missing_values = False
-                        for emb in resp.embeddings:
-                            if getattr(emb, "values", None) is None:
-                                missing_values = True
+                    # Robust embedding: prefer batch API when available, otherwise per-item.
+                    embeddings_batch: list[list[float]] = []
+                    # Try batch API if provided by google-genai
+                    batch_fn = getattr(client.models, "batch_embed_contents", None)
+                    if callable(batch_fn):
+                        try:
+                            requests = [{"content": t} for t in chunk]
+                            _check_rate_limit()
+                            resp = batch_fn(model=embed_name, requests=requests, config=cfg)
+                            items = getattr(resp, "embeddings", None) or getattr(resp, "data", None) or []
+                            for item in items:
+                                vals = None
+                                if hasattr(item, "values"):
+                                    vals = item.values
+                                elif hasattr(item, "embedding") and hasattr(item.embedding, "values"):
+                                    vals = item.embedding.values
+                                if vals is None:
+                                    raise RuntimeError("Empty embedding values in batch response")
+                                embeddings_batch.append(vals)  # type: ignore[arg-type]
+                        except Exception:
+                            embeddings_batch = []  # fall through to per-item path
+                    if not embeddings_batch:
+                        # Fallback: per-item embed_content; handle both 'embedding' and 'embeddings'
+                        for _t in chunk:
+                            _check_rate_limit()
+                            res = client.models.embed_content(model=embed_name, content=_t, config=cfg)
+                            vals = None
+                            if hasattr(res, "values"):
+                                vals = res.values
+                            elif hasattr(res, "embedding") and hasattr(res.embedding, "values"):
+                                vals = res.embedding.values
+                            elif hasattr(res, "embeddings") and res.embeddings:
+                                first = res.embeddings[0]
+                                vals = getattr(first, "values", None)
+                            if vals is None:
+                                embeddings_batch = []
                                 break
-                            batch_vals.append(emb.values)  # type: ignore[arg-type]
-                        if missing_values:
-                            logger.warning(
-                                "Empty embedding values returned by %s; rotating project",
-                                project,
-                            )
-                            _rotate_to_next_project()
-                            _init_vertex()
-                            continue
-                        vectors.extend(batch_vals)
+                            embeddings_batch.append(vals)  # type: ignore[arg-type]
+                    if len(embeddings_batch) == len(chunk):
+                        vectors.extend(embeddings_batch)
                         embedded = True
                         with _PROJECT_ROTATION_LOCK:
                             _PROJECT_ROTATION["consecutive_errors"] = 0
@@ -1053,25 +1091,25 @@ def _embed_local(texts: list[str], model: str | None = None) -> np.ndarray:
 # --------------------------------------------------------------------------------------
 # Re-export commonly used utilities for single import surface
 __all__ = [
-    # LLM functions
-    'complete_text',
-    'complete_json',
-    'embed_texts',
+    # Configuration
+    'EmailOpsConfig',
     # Error types
     'LLMError',
     # Account management
     'VertexAccount',
+    'clean_email_text',
+    'complete_json',
+    # LLM functions
+    'complete_text',
+    'embed_texts',
+    'get_config',
     'load_validated_accounts',
-    'save_validated_accounts',
-    'validate_account',
     # Utility re-exports from utils.py
     'logger',
-    'clean_email_text',
-    'read_text_file',
     'monitor_performance',
-    # Configuration
-    'EmailOpsConfig',
-    'get_config',
+    'read_text_file',
+    'save_validated_accounts',
+    'validate_account',
 ]
 
 # Note: logger, clean_email_text, and read_text_file are already available

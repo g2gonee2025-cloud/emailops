@@ -4,13 +4,25 @@ from typing import List, Dict, Any, Optional, Tuple
 import re
 import bisect
 
+__all__ = ["ChunkConfig", "TextChunker", "prepare_index_units"]
+
 # -----------------------------------------------------------------------------
 # Precompiled patterns for boundary-aware chunking
 # -----------------------------------------------------------------------------
-# Paragraph boundary: one or more blank lines
-PARA_RE = re.compile(r'\n\s*\n+')
-# Sentence boundary: ., !, ?, and common CJK equivalents; allow quotes/parens; include end-of-document
-SENT_RE = re.compile(r'[.!?。！？]+[)"\']*(?:\s+|$)')
+# Paragraph boundary: one or more blank lines (support both LF and CRLF)
+PARA_RE = re.compile(r'(?:\r?\n)\s*(?:\r?\n)+')
+
+# Sentence boundary:
+# - Western: . ! ?
+# - East Asian: 。 ！ ？
+# - Ellipsis: …
+# - Arabic/Persian/Urdu: ؟ ۔
+# Allow common closing quotes/brackets after the punctuation, then whitespace or EoD.
+SENT_RE = re.compile(
+    r'[.!?。！？…؟۔]+'
+    r'[)"\'”’»›）】〔〕〉》」』〗〙〞]*'
+    r'(?:\s+|$)'
+)
 
 
 @dataclass
@@ -26,7 +38,7 @@ class ChunkConfig:
         respect_sentences: Prefer cutting at sentence boundaries (default: True).
         respect_paragraphs: Prefer cutting at paragraph boundaries (default: True).
         max_chunks: Optional limit on number of chunks (default: None = unlimited).
-        encoding: Text encoding (default: "utf-8").
+        encoding: Text encoding (default: "utf-8"). (Advisory only; caller handles decoding.)
     """
     chunk_size: int = 1500
     chunk_overlap: int = 100
@@ -40,23 +52,22 @@ class ChunkConfig:
 
 def _apply_progressive_scaling(total_len: int, size: int, overlap: int, enable: bool) -> tuple[int, int]:
     """
-    Simple heuristic to scale chunk size for very large texts to reduce chunk counts.
-    Maintains the overlap ratio approximately.
-    
-    Scaling based on estimated chunk count:
-    - Up to 50 chunks: size multiplier = 1
-    - 51 to 150 chunks: size multiplier = 1.5
-    - 151 to 500 chunks: size multiplier = 2
-    - 501+ chunks: size multiplier = 3
+    Scale chunk size for very large texts to reduce chunk counts while keeping the
+    overlap ratio approximately constant.
+
+    Estimated chunk count bands:
+      ≤50  → ×1
+      51–150 → ×1.5
+      151–500 → ×2
+      500+ → ×3
     """
     if not enable:
-        return max(1, size), max(0, min(overlap, max(1, size) - 1))
+        size = max(1, int(size))
+        return size, max(0, min(int(overlap), size - 1))
 
-    # Estimate the number of chunks that would be created
-    effective_chunk_size = max(1, size - overlap)
-    estimated_chunks = max(1, (total_len + effective_chunk_size - 1) // effective_chunk_size)
-    
-    # Apply scaling factor based on estimated chunk count
+    effective_chunk_size = max(1, int(size) - int(overlap))
+    estimated_chunks = max(1, (int(total_len) + effective_chunk_size - 1) // effective_chunk_size)
+
     factor = 1.0
     if estimated_chunks > 500:
         factor = 3.0
@@ -66,8 +77,7 @@ def _apply_progressive_scaling(total_len: int, size: int, overlap: int, enable: 
         factor = 1.5
 
     new_size = max(1, int(size * factor))
-    # Keep overlap proportional, but strictly less than new_size
-    new_overlap = int(overlap * (new_size / max(1, size)))
+    new_overlap = int(overlap * (new_size / max(1, int(size))))
     new_overlap = max(0, min(new_overlap, new_size - 1))
     return new_size, new_overlap
 
@@ -87,8 +97,7 @@ def _compute_breakpoints(text: str, respect_sentences: bool, respect_paragraphs:
         for m in SENT_RE.finditer(text):
             breaks.add(m.end())
 
-    # Always allow end of document as a breakpoint.
-    breaks.add(len(text))
+    breaks.add(len(text))  # Always allow end-of-document
     return sorted(breaks)
 
 
@@ -105,24 +114,20 @@ def _ranges_with_overlap(
     Produce (start, end) ranges over `text` honoring overlap and optional boundary-aware cutting.
 
     Guarantees forward progress even if chunk_overlap >= chunk_size.
-    Ensures the final chunk is not smaller than `min_chunk_size` (if possible) by merging it into the
-    previous chunk.
-
-    When `max_chunks` is provided, the final produced chunk captures the remainder of the document
-    (capture-tail semantics).
+    Ensures the final chunk is not smaller than `min_chunk_size` (if possible) by merging it.
+    When `max_chunks` is set, the final produced chunk captures the remainder of the document.
     """
     n = len(text)
     if n == 0:
         return []
 
-    # Clamp parameters to safe values.
-    chunk_size = max(1, chunk_size)
-    chunk_overlap = max(0, min(chunk_overlap, chunk_size - 1))
-    min_chunk_size = max(0, min(min_chunk_size, chunk_size))
+    # Clamp parameters to safe values
+    chunk_size = max(1, int(chunk_size))
+    chunk_overlap = max(0, min(int(chunk_overlap), chunk_size - 1))
+    min_chunk_size = max(0, min(int(min_chunk_size), chunk_size))
     if max_chunks is not None and max_chunks < 1:
         max_chunks = 1
 
-    # Fast path: skip boundary work entirely if not requested
     boundary_points: Optional[List[int]] = (
         _compute_breakpoints(text, respect_sentences, respect_paragraphs)
         if (respect_sentences or respect_paragraphs) else None
@@ -130,54 +135,44 @@ def _ranges_with_overlap(
 
     ranges: List[Tuple[int, int]] = []
     start = 0
-
-    # How far we'll search ahead of the target size to find a nicer boundary.
-    lookahead_limit = max(1, int(0.2 * chunk_size))
+    lookahead_limit = max(1, int(0.2 * chunk_size))  # allow slight overshoot to land on a boundary
 
     while start < n and (max_chunks is None or len(ranges) < max_chunks):
         ideal_end = min(n, start + chunk_size)
 
-        # Snap to a nearby boundary if available
         if boundary_points is not None:
             i = bisect.bisect_right(boundary_points, ideal_end)
             candidate_before = boundary_points[i - 1] if i > 0 else None
             candidate_after = boundary_points[i] if i < len(boundary_points) else None
 
             end = ideal_end
-            # Prefer a boundary before the ideal end as long as it doesn't make the chunk too tiny.
             if candidate_before is not None and candidate_before >= start + max(1, min_chunk_size):
                 end = candidate_before
-            # Otherwise, if there's a boundary shortly after ideal_end, use that.
             elif candidate_after is not None and candidate_after - ideal_end <= lookahead_limit:
                 end = candidate_after
         else:
             end = ideal_end
 
-        # Fallback guard to ensure forward motion.
         if end <= start:
             end = min(n, start + chunk_size)
 
-        # Capture-tail semantics for the last allowed chunk
         if max_chunks is not None and len(ranges) + 1 >= max_chunks:
-            end = n
+            end = n  # capture tail
 
         ranges.append((start, end))
 
-        # If we've reached the end of text, stop to avoid redundant trailing windows.
         if end >= n:
             break
 
-        # Advance start by the actual chunk length minus overlap; always at least 1 char.
         actual_len = end - start
         step = max(1, actual_len - chunk_overlap)
         start += step
 
-    # If the very last chunk is smaller than min_chunk_size and there is a previous chunk, merge it.
+    # Merge a tiny tail, if present
     if len(ranges) >= 2:
         last_start, last_end = ranges[-1]
         if (last_end - last_start) < min_chunk_size:
             prev_start, prev_end = ranges[-2]
-            # Merge by extending the previous end; drop the last range.
             ranges[-2] = (prev_start, last_end)
             ranges.pop()
 
@@ -193,16 +188,17 @@ class TextChunker:
         Chunk `text` according to the `ChunkConfig`.
 
         Notes:
-            - Prevents infinite loops if overlap >= size (guaranteed forward progress).
+            - Prevents infinite loops if overlap >= size (forward progress guaranteed).
             - Optionally prefers sentence/paragraph boundaries when cutting.
             - Ensures the final chunk meets `min_chunk_size` by merging the tail, if needed.
             - Each chunk's metadata includes `start_char` and `end_char` (exclusive).
-            - When `max_chunks` is set, the last produced chunk captures the remainder of the document.
+            - When `max_chunks` is set, the last produced chunk captures the remainder.
         """
-        if not text:
+        if not isinstance(text, str):
+            raise TypeError(f"text must be str, got {type(text).__name__}")
+        if not text.strip():
             return []
 
-        # Apply progressive scaling heuristics on very large texts.
         eff_chunk_size, eff_overlap = _apply_progressive_scaling(
             total_len=len(text),
             size=self.config.chunk_size,
@@ -225,7 +221,6 @@ class TextChunker:
             chunk_text = text[start:end]
             chunk_metadata = dict(metadata or {})
             chunk_metadata["chunk_index"] = idx
-            # Include offsets
             chunk_metadata["start_char"] = start
             chunk_metadata["end_char"] = end  # exclusive
             chunks.append({"text": chunk_text, "metadata": chunk_metadata})
@@ -252,46 +247,24 @@ def prepare_index_units(
     """
     Prepare text for indexing by splitting it into chunks with metadata.
 
-    This function is used by indexing pipelines (e.g., email_indexer.py) to create
-    indexable units from conversation text and attachments.
+    Used by the indexing pipeline to create indexable units from conversation text
+    and attachments. Chunk IDs follow the required convention:
+      - first chunk: `doc_id`
+      - subsequent: `doc_id::chunk{N}` (N starts at 1)
 
-    Args:
-        text: The text content to chunk.
-        doc_id: Base document identifier (e.g., "conv_id::conversation" or "conv_id::att1").
-        doc_path: Path to the source document.
-        subject: Email subject or document title.
-        date: Optional date information.
-
-        chunk_size: Maximum size of each chunk in characters. If None, pulls from `config` or default.
-        chunk_overlap: Number of characters to overlap between chunks. If None, pulls from `config` or default.
-        min_chunk_size: Minimum size for the final chunk; if the tail is smaller, it is merged into the previous chunk.
-                        If None, pulls from `config` or default.
-        respect_sentences: Prefer cutting at sentence boundaries. If None, pulls from `config`.
-        respect_paragraphs: Prefer cutting at blank-line paragraph boundaries. If None, pulls from `config`.
-        progressive_scaling: Enable size scaling for very large texts. If None, pulls from `config`.
-        max_chunks: Optional cap on the number of chunks. If None, pulls from `config`. When set, the final produced
-                    chunk captures the remainder of the document (capture-tail semantics).
-        config: Optional ChunkConfig; when provided, supplies defaults for omitted parameters.
-
-    Returns:
-        List of chunk dictionaries, each containing:
-            - id: Unique identifier for the chunk (doc_id::chunk{N}; first chunk uses doc_id).
-            - text: The chunk text content.
-            - path: Path to source document.
-            - subject: Subject/title.
-            - date: Date information (if provided).
-            - start_char: Start character offset (inclusive).
-            - end_char: End character offset (exclusive).
-
-    Notes:
-        - Offsets (`start_char`, `end_char`) are character indices in the original `text`.
-        - When `max_chunks` is set, the last produced chunk captures the rest of the document.
+    Returns a list of dicts containing:
+        - id, text, path, subject, start_char, end_char, optional date
+        - chunk_index (0-based, convenient for debugging)
     """
-    if not text or not text.strip():
+    if not isinstance(text, str):
+        raise TypeError(f"text must be str, got {type(text).__name__}")
+    if not text.strip():
         return []
+    if not isinstance(doc_id, str) or not doc_id:
+        raise ValueError("doc_id must be a non-empty string")
+    if not isinstance(doc_path, str) or not doc_path:
+        raise ValueError("doc_path must be a non-empty string")
 
-    # Resolve configuration values with the following precedence:
-    # explicit arg -> config value -> ChunkConfig() default
     cfg = config or ChunkConfig()
     eff_chunk_size = cfg.chunk_size if chunk_size is None else chunk_size
     eff_chunk_overlap = cfg.chunk_overlap if chunk_overlap is None else chunk_overlap
@@ -301,7 +274,6 @@ def prepare_index_units(
     eff_progressive_scaling = cfg.progressive_scaling if progressive_scaling is None else progressive_scaling
     eff_max_chunks = cfg.max_chunks if max_chunks is None else max_chunks
 
-    # Apply progressive scaling heuristics on very large texts.
     eff_chunk_size, eff_chunk_overlap = _apply_progressive_scaling(
         total_len=len(text),
         size=eff_chunk_size,
@@ -322,18 +294,17 @@ def prepare_index_units(
     chunks: List[Dict[str, Any]] = []
     for idx, (start, end) in enumerate(ranges):
         chunk_text = text[start:end]
-
         chunk: Dict[str, Any] = {
             "id": f"{doc_id}::chunk{idx}" if idx > 0 else doc_id,
             "text": chunk_text,
             "path": doc_path,
             "subject": subject,
+            "chunk_index": idx,
             "start_char": start,
             "end_char": end,  # exclusive
         }
         if date:
             chunk["date"] = date
-
         chunks.append(chunk)
 
     return chunks

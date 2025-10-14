@@ -430,50 +430,45 @@ def _build_doc_entries(
 ) -> List[Dict[str, Any]]:
     """
     Build indexable document entries for a conversation and its attachments.
-    
+
     Processes both the main Conversation.txt and any attachments, chunking
     text content and adding metadata. Enforces per-conversation limit and
     validates file sizes to prevent indexing oversized files.
-    
-    Args:
-        conv: Conversation dict with 'conversation_txt' and 'attachments' keys
-        convo_dir: Path to conversation directory
-        base_id: Base conversation ID (e.g., folder name)
-        limit: Optional max chunks per conversation (across all docs)
-        metadata: Metadata dict with 'subject', 'participants', dates, etc.
-        chunk_size: Character limit per chunk
-        chunk_overlap: Character overlap between chunks
-        
+
     Returns:
-        List of chunk dicts, each with: id, text, path, subject, doc_type, etc.
-        Returns empty list if file is too large or conversation empty.
-        
-    Example:
-        >>> entries = _build_doc_entries(conv, conv_dir, "conv123", limit=50,
-        ...                               metadata={}, chunk_size=1600, chunk_overlap=100)
-        >>> len(entries)  # May be less than 50 if content is small
-        25
+        List of chunk dicts.
     """
     metadata = dict(metadata or {})
     out: List[Dict[str, Any]] = []
 
     # Conversation main text (use robust email cleaner)
     convo_txt_raw = conv.get("conversation_txt", "")
-    
+
     # HIGH #13: Check file size before processing
     conv_file = convo_dir / CONVERSATION_FILENAME
     if conv_file.exists():
         size_mb = conv_file.stat().st_size / (1024 * 1024)
         if size_mb > MAX_FILE_SIZE_MB:
-            logger.warning("Skipping large conversation file: %s (%.1f MB > %.1f MB)",
-                          conv_file.name, size_mb, MAX_FILE_SIZE_MB)
+            logger.warning(
+                "Skipping large conversation file: %s (%.1f MB > %.1f MB)",
+                conv_file.name, size_mb, MAX_FILE_SIZE_MB
+            )
             return out
         if len(convo_txt_raw) > MAX_TEXT_CHARS:
-            logger.warning("Truncating large conversation text: %s (%d chars > %d chars)",
-                          conv_file.name, len(convo_txt_raw), MAX_TEXT_CHARS)
+            logger.warning(
+                "Truncating large conversation text: %s (%d chars > %d chars)",
+                conv_file.name, len(convo_txt_raw), MAX_TEXT_CHARS
+            )
             convo_txt_raw = convo_txt_raw[:MAX_TEXT_CHARS]
-    
+
     convo_txt = clean_email_text(convo_txt_raw)
+
+    # Stamp conversation mtime once (and fall back safely).
+    try:
+        conv_mtime = conv_file.stat().st_mtime if conv_file.exists() else time.time()
+    except Exception:
+        conv_mtime = time.time()
+
     if convo_txt:
         conv_id = f"{base_id}::conversation"
         conv_chunks = prepare_index_units(
@@ -495,6 +490,7 @@ def _build_doc_entries(
                     "participants": metadata.get("participants") or [],
                     "start_date": metadata.get("start_date"),
                     "end_date": metadata.get("end_date"),
+                    "modified_time": conv_mtime,
                 }
             )
             out.append(ch)
@@ -503,37 +499,59 @@ def _build_doc_entries(
     for att in (conv.get("attachments") or []):
         if limit is not None and len(out) >= limit:
             break
+
         ap = Path(att.get("path", ""))
-        
+
         # HIGH #13: Check attachment file size before processing
         if ap.exists():
-            size_mb = ap.stat().st_size / (1024 * 1024)
-            if size_mb > MAX_FILE_SIZE_MB:
-                logger.warning("Skipping large attachment: %s (%.1f MB > %.1f MB)",
-                              ap.name, size_mb, MAX_FILE_SIZE_MB)
+            try:
+                size_mb = ap.stat().st_size / (1024 * 1024)
+            except OSError:
+                # Treat unreadable stat as large: skip to be safe.
+                logger.warning("Skipping unreadable attachment (stat failed): %s", ap)
                 continue
-        
+            if size_mb > MAX_FILE_SIZE_MB:
+                logger.warning(
+                    "Skipping large attachment: %s (%.1f MB > %.1f MB)",
+                    ap.name, size_mb, MAX_FILE_SIZE_MB
+                )
+                continue
+
         text_raw = att.get("text", "") or ""
-        
+
         # HIGH #13: Check text length
         if len(text_raw) > MAX_TEXT_CHARS:
-            logger.warning("Truncating large attachment text: %s (%d chars > %d chars)",
-                          ap.name, len(text_raw), MAX_TEXT_CHARS)
+            logger.warning(
+                "Truncating large attachment text: %s (%d chars > %d chars)",
+                ap.name if ap.name else "<unnamed>", len(text_raw), MAX_TEXT_CHARS
+            )
             text_raw = text_raw[:MAX_TEXT_CHARS]
-        
+
         text = clean_email_text(text_raw)
         if not text.strip():
             continue
+
         att_id = _att_id(base_id, str(ap))
         att_chunks = prepare_index_units(
             text,
             doc_id=att_id,
             doc_path=str(ap),
-            subject=metadata.get("subject") or ap.name,
+            subject=metadata.get("subject") or (ap.name if ap.name else ""),
             date=metadata.get("end_date") or metadata.get("start_date"),
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
         )
+
+        # Snapshot attachment mtime/size with robust fallbacks
+        try:
+            att_mtime = ap.stat().st_mtime if ap.exists() else time.time()
+        except OSError:
+            att_mtime = time.time()
+        try:
+            att_size = ap.stat().st_size if ap.exists() else None
+        except OSError:
+            att_size = None
+
         for ch in att_chunks:
             if limit is not None and len(out) >= limit:
                 break
@@ -541,13 +559,14 @@ def _build_doc_entries(
                 {
                     "conv_id": base_id,
                     "doc_type": "attachment",
-                    "attachment_name": ap.name,
+                    "attachment_name": ap.name if ap.name else "",
                     "attachment_type": ap.suffix.lstrip(".").lower(),
-                    "attachment_size": os.path.getsize(ap) if ap.exists() else None,
+                    "attachment_size": att_size,
                     "subject": metadata.get("subject") or "",
                     "participants": metadata.get("participants") or [],
                     "start_date": metadata.get("start_date"),
                     "end_date": metadata.get("end_date"),
+                    "modified_time": att_mtime,
                 }
             )
             out.append(ch)
@@ -714,7 +733,8 @@ def build_corpus(
         except Exception:
             mt = time.time()
         for d in docs:
-            d["modified_time"] = mt
+            if "modified_time" not in d or d.get("modified_time") is None:
+                d["modified_time"] = mt
         new_or_updated_docs.extend(docs)
 
     return new_or_updated_docs, unchanged_docs
@@ -848,13 +868,17 @@ def build_incremental_corpus(
                 for ch in chunks:
                     if limit is not None and added_for_conv >= limit:
                         break
+                    try:
+                        _att_size = ap.stat().st_size if ap.exists() else None
+                    except OSError:
+                        _att_size = None
                     ch.update(
                         {
                             "conv_id": base_id,
                             "doc_type": "attachment",
                             "attachment_name": ap.name,
                             "attachment_type": ap.suffix.lstrip(".").lower(),
-                            "attachment_size": ap.stat().st_size if ap.exists() else None,
+                            "attachment_size": _att_size,
                             "subject": meta.get("subject") or "",
                             "participants": meta.get("participants") or [],
                             "start_date": meta.get("start_date"),
@@ -1036,10 +1060,10 @@ def main() -> None:
     # Use config-backed chunk parameters (threaded to all prepare_index_units calls)
     try:
         cfg = EmailOpsConfig.load()
-        chunk_size = int(getattr(cfg, "DEFAULT_CHUNK_SIZE", 1500))
-        chunk_overlap = int(getattr(cfg, "DEFAULT_CHUNK_OVERLAP", 100))
+        chunk_size = int(getattr(cfg, "DEFAULT_CHUNK_SIZE", 1600))
+        chunk_overlap = int(getattr(cfg, "DEFAULT_CHUNK_OVERLAP", 200))
     except Exception:
-        chunk_size, chunk_overlap = 1500, 100  # safe defaults
+        chunk_size, chunk_overlap = 1600, 200  # safe defaults matching config.py
 
     # Load previous index bits (if any)
     _, existing_mapping, existing_file_times, existing_embeddings = load_existing_index(out_dir)
@@ -1191,6 +1215,16 @@ def main() -> None:
     for d in final_docs:
         text = str(d.get("text", "") or "")
         snippet = text[:500] if text else str(d.get("snippet", "") or "")[:500]
+        
+        # Compute content hash for deduplication (SHA-256 of cleaned text)
+        # This enables efficient duplicate detection at search time
+        content_hash = ""
+        if text:
+            try:
+                content_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]  # First 64 bits
+            except Exception:
+                content_hash = ""
+        
         rec = {
             "id": d.get("id"),
             "path": d.get("path"),
@@ -1209,6 +1243,7 @@ def main() -> None:
             "attachment_type": d.get("attachment_type"),
             "attachment_size": d.get("attachment_size"),
             "snippet": snippet,
+            "content_hash": content_hash,  # NEW: Enable efficient deduplication
         }
         mapping_out.append(rec)
 

@@ -468,15 +468,24 @@ def load_index_metadata(index_dir: Union[str, Path]) -> Optional[Dict[str, Any]]
     if not p.exists():
         logger.warning(f"No metadata found at {p}")
         return None
-    try:
-        data = json.loads(p.read_text(encoding="utf-8-sig"))
-        if not isinstance(data, dict):
-            logger.error(f"Metadata at {p} must be a JSON object; got {type(data).__name__}")
-            return None
-        return data
-    except Exception as e:
-        logger.error(f"Failed to load metadata from {p}: {e}")
-        return None
+
+    # Best-effort retries to handle transient locks/partial reads on Windows/NFS
+    last_exc: Optional[BaseException] = None
+    for attempt in range(ATOMIC_WRITE_MAX_RETRIES):
+        try:
+            with p.open("r", encoding="utf-8-sig") as f:
+                data = json.load(f)
+            if not isinstance(data, dict):
+                logger.error(f"Metadata at {p} must be a JSON object; got {type(data).__name__}")
+                return None
+            return data
+        except Exception as e:
+            last_exc = e
+            # Exponential backoff, then retry
+            time.sleep(ATOMIC_WRITE_BASE_DELAY * (ATOMIC_WRITE_EXPONENTIAL_BASE ** attempt))
+
+    logger.error(f"Failed to load metadata from {p}: {last_exc}")
+    return None
 
 
 def check_index_consistency(index_dir: Union[str, Path], raise_on_mismatch: bool = True) -> bool:

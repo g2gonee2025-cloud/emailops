@@ -1,9 +1,12 @@
-#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+from __future__ import annotations
+
 """
 Centralized configuration for EmailOps.
 Manages all configuration values, environment variables, and default settings.
 """
 
+import json
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -38,7 +41,7 @@ class EmailOpsConfig:
         default_factory=lambda: os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
     )
 
-    # File patterns
+    # File patterns (allow-list for attachments)
     ALLOWED_FILE_PATTERNS: list[str] = field(
         default_factory=lambda: ["*.txt", "*.pdf", "*.docx", "*.doc", "*.xlsx", "*.xls", "*.md", "*.csv"]
     )
@@ -62,6 +65,11 @@ class EmailOpsConfig:
 
     # Monitoring
     ACTIVE_WINDOW_SECONDS: int = field(default_factory=lambda: int(os.getenv("ACTIVE_WINDOW_SECONDS", "120")))
+
+    # Email settings
+    SENDER_LOCKED_NAME: str = field(default_factory=lambda: os.getenv("SENDER_LOCKED_NAME", ""))
+    SENDER_LOCKED_EMAIL: str = field(default_factory=lambda: os.getenv("SENDER_LOCKED_EMAIL", ""))
+    MESSAGE_ID_DOMAIN: str = field(default_factory=lambda: os.getenv("MESSAGE_ID_DOMAIN", ""))
 
     @classmethod
     def load(cls) -> 'EmailOpsConfig':
@@ -88,52 +96,70 @@ class EmailOpsConfig:
         if cwd_secrets.exists():
             return cwd_secrets.resolve()
 
-        # Try relative to this file's parent (emailops package root)
+        # Try relative to this file's parent (emailops package root or repo root)
         package_secrets = Path(__file__).parent.parent / self.SECRETS_DIR
         if package_secrets.exists():
             return package_secrets.resolve()
 
-        # Return default, even if it doesn't exist
+        # Return default resolution (even if not present)
         return self.SECRETS_DIR.resolve()
+
+    @staticmethod
+    def _is_valid_service_account_json(p: Path) -> bool:
+        """
+        Strictly validate that a JSON file looks like a GCP service-account key.
+        Mirrors downstream expectations in the runtime/Vertex initialization.
+        Required keys: type='service_account', project_id, private_key_id, private_key, client_email
+        """
+        try:
+            with p.open("r", encoding="utf-8") as f:
+                data = json.load(f)
+            if not isinstance(data, dict):
+                return False
+            required = {"type", "project_id", "private_key_id", "private_key", "client_email"}
+            if not required.issubset(set(data.keys())):
+                return False
+            if str(data.get("type", "")).strip() != "service_account":
+                return False
+            # Quick sanity on key contents
+            if not str(data.get("private_key", "")).startswith("-----BEGIN PRIVATE KEY-----"):
+                return False
+            return True
+        except Exception:
+            return False
 
     def get_credential_file(self) -> Path | None:
         """
         Find a valid credential file from the priority list.
 
         Returns:
-            Path to credential file if found, None otherwise
+            Path to credential file if found and validated, None otherwise
         """
-        # Check if already specified in environment
+        # 1) Already specified in environment?
         if self.GOOGLE_APPLICATION_CREDENTIALS:
             creds_path = Path(self.GOOGLE_APPLICATION_CREDENTIALS)
-            if creds_path.exists():
+            if creds_path.exists() and self._is_valid_service_account_json(creds_path):
                 return creds_path
 
-        # Search in secrets directory
+        # 2) Search in secrets directory (strict validation)
         secrets_dir = self.get_secrets_dir()
         if not secrets_dir.exists():
             return None
 
         for cred_file in self.CREDENTIAL_FILES_PRIORITY:
             cred_path = secrets_dir / cred_file
-            if cred_path.exists():
-                try:
-                    # Validate it's a proper JSON file
-                    import json
-                    with cred_path.open() as f:
-                        data = json.load(f)
-                        if "project_id" in data and "client_email" in data:
-                            return cred_path
-                except Exception:
-                    continue
+            if cred_path.exists() and self._is_valid_service_account_json(cred_path):
+                return cred_path
 
         return None
 
     def update_environment(self) -> None:
         """
         Update os.environ with configuration values.
-        Useful for ensuring child processes inherit correct settings.
+        Ensures child processes inherit correct settings.
+        Also derives project from the selected service-account key if env doesn’t already provide one.
         """
+        # Core knobs
         os.environ["INDEX_DIRNAME"] = self.INDEX_DIRNAME
         os.environ["CHUNK_DIRNAME"] = self.CHUNK_DIRNAME
         os.environ["CHUNK_SIZE"] = str(self.DEFAULT_CHUNK_SIZE)
@@ -145,15 +171,30 @@ class EmailOpsConfig:
         os.environ["VERTEX_LOCATION"] = self.VERTEX_LOCATION
         os.environ["LOG_LEVEL"] = self.LOG_LEVEL
 
+        # Project
         if self.GCP_PROJECT:
             os.environ["GCP_PROJECT"] = self.GCP_PROJECT
             os.environ["GOOGLE_CLOUD_PROJECT"] = self.GCP_PROJECT
             os.environ["VERTEX_PROJECT"] = self.GCP_PROJECT
 
-        # Set credentials if found
+        # Credentials (strict)
         cred_file = self.get_credential_file()
         if cred_file:
             os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(cred_file)
+
+            # If project isn’t already set, derive it from the service-account JSON
+            if not self.GCP_PROJECT:
+                try:
+                    with cred_file.open("r", encoding="utf-8") as f:
+                        data = json.load(f)
+                    proj = str(data.get("project_id") or "").strip()
+                    if proj:
+                        os.environ["GCP_PROJECT"] = proj
+                        os.environ["GOOGLE_CLOUD_PROJECT"] = proj
+                        os.environ["VERTEX_PROJECT"] = proj
+                except Exception:
+                    # Silent fallback; Vertex init will still try ADC if needed.
+                    pass
 
     def to_dict(self) -> dict:
         """
@@ -178,6 +219,9 @@ class EmailOpsConfig:
             "log_level": self.LOG_LEVEL,
             "active_window_seconds": self.ACTIVE_WINDOW_SECONDS,
             "command_timeout_seconds": self.COMMAND_TIMEOUT_SECONDS,
+            "sender_locked_name": self.SENDER_LOCKED_NAME,
+            "sender_locked_email": self.SENDER_LOCKED_EMAIL,
+            "message_id_domain": self.MESSAGE_ID_DOMAIN,
         }
 
 

@@ -1,0 +1,757 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmailOps Code Analysis Report</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 32px;
+        }
+        .header p {
+            margin: 5px 0;
+            opacity: 0.9;
+        }
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .summary-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .summary-card .value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #333;
+        }
+        .summary-card.score {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        .summary-card.score h3,
+        .summary-card.score .value {
+            color: white;
+        }
+        .section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            margin: 0 0 20px 0;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .issue {
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #ffa500;
+            background: #fffaf0;
+            border-radius: 4px;
+        }
+        .issue.error {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+        .issue.warning {
+            border-left-color: #ffc107;
+            background: #fffbf0;
+        }
+        .issue.info {
+            border-left-color: #17a2b8;
+            background: #f0f9ff;
+        }
+        .issue-header {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .issue-location {
+            color: #666;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+        }
+        .complexity-high {
+            color: #dc3545;
+        }
+        .complexity-medium {
+            color: #ffc107;
+        }
+        .complexity-low {
+            color: #28a745;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+        .status-success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .status-error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .status-timeout {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .file-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .file-item {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 EmailOps Code Analysis Report</h1>
+        <p><strong>Generated:</strong> 2025-10-14T22:32:47.359005</p>
+        <p><strong>Files Analyzed:</strong> 14</p>
+        <p><strong>Total Lines:</strong> 12,175</p>
+    </div>
+    
+    <div class="summary">
+        <div class="summary-card score">
+            <h3>Pylint Score</h3>
+            <div class="value">None</div>
+        </div>
+        <div class="summary-card">
+            <h3>Issues Found</h3>
+            <div class="value">892</div>
+        </div>
+        <div class="summary-card">
+            <h3>Security Issues</h3>
+            <div class="value">38</div>
+        </div>
+        <div class="summary-card">
+            <h3>High Complexity</h3>
+            <div class="value">0</div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>📁 Files Analyzed</h2>
+        <div class="file-list">
+            <div class="file-item">✓ emailops\config.py</div>
+            <div class="file-item">✓ emailops\doctor.py</div>
+            <div class="file-item">✓ emailops\email_indexer.py</div>
+            <div class="file-item">✓ emailops\env_utils.py</div>
+            <div class="file-item">✓ emailops\index_metadata.py</div>
+            <div class="file-item">✓ emailops\llm_client.py</div>
+            <div class="file-item">✓ emailops\llm_runtime.py</div>
+            <div class="file-item">✓ emailops\processor.py</div>
+            <div class="file-item">✓ emailops\search_and_draft.py</div>
+            <div class="file-item">✓ emailops\summarize_email_thread.py</div>
+            <div class="file-item">✓ emailops\text_chunker.py</div>
+            <div class="file-item">✓ emailops\utils.py</div>
+            <div class="file-item">✓ emailops\validators.py</div>
+            <div class="file-item">✓ emailops_gui.py</div>
+
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🔍 Pylint Analysis</h2>
+        <p><strong>Score:</strong> <span style="font-size: 24px; color: #28a745;">None/10.0</span></p>
+        <p><strong>Issues Found:</strong> 622</p>
+        <div style="margin-top: 20px;">
+
+            <div class="issue error">
+                <div class="issue-header">syntax-error: Parsing failed: 'unexpected indent (utils, line 1395)'</div>
+                <div class="issue-location">emailops\utils.py:1395:4</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">line-too-long: Line too long (128/120)</div>
+                <div class="issue-location">emailops\config.py:57:0</div>
+            </div>
+
+            <div class="issue refactor">
+                <div class="issue-header">too-many-instance-attributes: Too many instance attributes (19/7)</div>
+                <div class="issue-location">emailops\config.py:13:0</div>
+            </div>
+
+            <div class="issue warning">
+                <div class="issue-header">broad-exception-caught: Catching too general exception Exception</div>
+                <div class="issue-location">emailops\config.py:127:23</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">import-outside-toplevel: Import outside toplevel (json)</div>
+                <div class="issue-location">emailops\config.py:122:20</div>
+            </div>
+
+            <div class="issue warning">
+                <div class="issue-header">global-statement: Using the global statement</div>
+                <div class="issue-location">emailops\config.py:195:4</div>
+            </div>
+
+            <div class="issue warning">
+                <div class="issue-header">global-statement: Using the global statement</div>
+                <div class="issue-location">emailops\config.py:203:4</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">line-too-long: Line too long (132/120)</div>
+                <div class="issue-location">emailops\doctor.py:206:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">line-too-long: Line too long (133/120)</div>
+                <div class="issue-location">emailops\doctor.py:287:0</div>
+            </div>
+
+            <div class="issue warning">
+                <div class="issue-header">broad-exception-caught: Catching too general exception Exception</div>
+                <div class="issue-location">emailops\doctor.py:75:11</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">import-outside-toplevel: Import outside toplevel (importlib)</div>
+                <div class="issue-location">emailops\doctor.py:72:8</div>
+            </div>
+
+            <div class="issue warning">
+                <div class="issue-header">broad-exception-caught: Catching too general exception Exception</div>
+                <div class="issue-location">emailops\doctor.py:120:11</div>
+            </div>
+
+            <div class="issue warning">
+                <div class="issue-header">subprocess-run-check: 'subprocess.run' used without explicitly defining the value for 'check'.</div>
+                <div class="issue-location">emailops\doctor.py:110:17</div>
+            </div>
+
+            <div class="issue refactor">
+                <div class="issue-header">no-else-return: Unnecessary "else" after "return", remove the "else" and de-indent the code inside it</div>
+                <div class="issue-location">emailops\doctor.py:111:8</div>
+            </div>
+
+            <div class="issue error">
+                <div class="issue-header">relative-beyond-top-level: Attempted relative import beyond top-level package</div>
+                <div class="issue-location">emailops\doctor.py:215:4</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">import-outside-toplevel: Import outside toplevel (index_metadata.read_mapping)</div>
+                <div class="issue-location">emailops\doctor.py:215:4</div>
+            </div>
+
+            <div class="issue warning">
+                <div class="issue-header">broad-exception-caught: Catching too general exception Exception</div>
+                <div class="issue-location">emailops\doctor.py:226:11</div>
+            </div>
+
+            <div class="issue warning">
+                <div class="issue-header">broad-exception-caught: Catching too general exception Exception</div>
+                <div class="issue-location">emailops\doctor.py:244:11</div>
+            </div>
+
+            <div class="issue error">
+                <div class="issue-header">relative-beyond-top-level: Attempted relative import beyond top-level package</div>
+                <div class="issue-location">emailops\doctor.py:235:8</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">import-outside-toplevel: Import outside toplevel (index_metadata.load_index_metadata)</div>
+                <div class="issue-location">emailops\doctor.py:235:8</div>
+            </div>
+
+            <div class="issue warning">
+                <div class="issue-header">broad-exception-caught: Catching too general exception Exception</div>
+                <div class="issue-location">emailops\doctor.py:258:11</div>
+            </div>
+
+            <div class="issue error">
+                <div class="issue-header">relative-beyond-top-level: Attempted relative import beyond top-level package</div>
+                <div class="issue-location">emailops\doctor.py:251:8</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">import-outside-toplevel: Import outside toplevel (llm_client.embed_texts)</div>
+                <div class="issue-location">emailops\doctor.py:251:8</div>
+            </div>
+
+            <div class="issue refactor">
+                <div class="issue-header">too-many-locals: Too many local variables (22/15)</div>
+                <div class="issue-location">emailops\doctor.py:278:0</div>
+            </div>
+
+            <div class="issue refactor">
+                <div class="issue-header">too-many-branches: Too many branches (26/12)</div>
+                <div class="issue-location">emailops\doctor.py:278:0</div>
+            </div>
+
+            <div class="issue refactor">
+                <div class="issue-header">too-many-statements: Too many statements (89/50)</div>
+                <div class="issue-location">emailops\doctor.py:278:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">trailing-whitespace: Trailing whitespace</div>
+                <div class="issue-location">emailops\email_indexer.py:123:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">trailing-whitespace: Trailing whitespace</div>
+                <div class="issue-location">emailops\email_indexer.py:136:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">trailing-whitespace: Trailing whitespace</div>
+                <div class="issue-location">emailops\email_indexer.py:143:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">trailing-whitespace: Trailing whitespace</div>
+                <div class="issue-location">emailops\email_indexer.py:146:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">trailing-whitespace: Trailing whitespace</div>
+                <div class="issue-location">emailops\email_indexer.py:150:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">trailing-whitespace: Trailing whitespace</div>
+                <div class="issue-location">emailops\email_indexer.py:168:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">trailing-whitespace: Trailing whitespace</div>
+                <div class="issue-location">emailops\email_indexer.py:181:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">trailing-whitespace: Trailing whitespace</div>
+                <div class="issue-location">emailops\email_indexer.py:191:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">trailing-whitespace: Trailing whitespace</div>
+                <div class="issue-location">emailops\email_indexer.py:194:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">trailing-whitespace: Trailing whitespace</div>
+                <div class="issue-location">emailops\email_indexer.py:198:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">trailing-whitespace: Trailing whitespace</div>
+                <div class="issue-location">emailops\email_indexer.py:462:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">trailing-whitespace: Trailing whitespace</div>
+                <div class="issue-location">emailops\email_indexer.py:475:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">trailing-whitespace: Trailing whitespace</div>
+                <div class="issue-location">emailops\email_indexer.py:507:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">trailing-whitespace: Trailing whitespace</div>
+                <div class="issue-location">emailops\email_indexer.py:515:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">trailing-whitespace: Trailing whitespace</div>
+                <div class="issue-location">emailops\email_indexer.py:517:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">trailing-whitespace: Trailing whitespace</div>
+                <div class="issue-location">emailops\email_indexer.py:523:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">line-too-long: Line too long (127/120)</div>
+                <div class="issue-location">emailops\email_indexer.py:781:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">line-too-long: Line too long (121/120)</div>
+                <div class="issue-location">emailops\email_indexer.py:830:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">line-too-long: Line too long (147/120)</div>
+                <div class="issue-location">emailops\email_indexer.py:891:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">line-too-long: Line too long (131/120)</div>
+                <div class="issue-location">emailops\email_indexer.py:950:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">line-too-long: Line too long (137/120)</div>
+                <div class="issue-location">emailops\email_indexer.py:1008:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">line-too-long: Line too long (179/120)</div>
+                <div class="issue-location">emailops\email_indexer.py:1010:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">line-too-long: Line too long (168/120)</div>
+                <div class="issue-location">emailops\email_indexer.py:1012:0</div>
+            </div>
+
+            <div class="issue convention">
+                <div class="issue-header">line-too-long: Line too long (123/120)</div>
+                <div class="issue-location">emailops\email_indexer.py:1096:0</div>
+            </div>
+            <p><em>...and 572 more issues</em></p>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🎯 Flake8 Analysis</h2>
+        <p><strong>Issues Found:</strong> 269</p>
+        <div style="margin-top: 20px;">
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\doctor.py:361:5: E303 too many blank lines (2)</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:61:5: F401 'index_metadata.FAISS_INDEX_FILENAME' imported but unused</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:61:5: F401 'index_metadata.FILE_TIMES_FILENAME' imported but unused</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:61:5: F401 'index_metadata.MAPPING_FILENAME' imported but unused</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:123:1: W293 blank line contains whitespace</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:136:1: W293 blank line contains whitespace</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:143:1: W293 blank line contains whitespace</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:146:1: W293 blank line contains whitespace</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:150:1: W293 blank line contains whitespace</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:168:1: W293 blank line contains whitespace</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:181:1: W293 blank line contains whitespace</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:191:1: W293 blank line contains whitespace</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:194:1: W293 blank line contains whitespace</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:198:1: W293 blank line contains whitespace</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:355:1: W293 blank line contains whitespace</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:360:1: W293 blank line contains whitespace</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:363:1: W293 blank line contains whitespace</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:366:1: W293 blank line contains whitespace</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:394:1: W293 blank line contains whitespace</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:398:1: W293 blank line contains whitespace</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:402:1: W293 blank line contains whitespace</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:405:1: W293 blank line contains whitespace</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:433:1: W293 blank line contains whitespace</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:437:1: W293 blank line contains whitespace</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:446:1: W293 blank line contains whitespace</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:450:1: W293 blank line contains whitespace</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:462:1: W293 blank line contains whitespace</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:469:27: E128 continuation line under-indented for visual indent</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:473:27: E128 continuation line under-indented for visual indent</div>
+            <div class="issue warning">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:475:1: W293 blank line contains whitespace</div>
+            <p><em>...and 239 more issues</em></p>
+
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🔒 Bandit Security Analysis</h2>
+        <p><strong>Security Issues:</strong> 38</p>
+        <div style="margin-top: 20px;">
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Try, Except, Continue detected.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\config.py:127</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Consider possible security implications associated with the subprocess module.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\doctor.py:9</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] subprocess call - check for execution of untrusted input.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\doctor.py:110</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Try, Except, Pass detected.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:305</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Try, Except, Pass detected.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:315</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue error">
+                <div class="issue-header">[HIGH] Use of weak SHA1 hash for security. Consider usedforsecurity=False</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:414</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Try, Except, Continue detected.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:625</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Try, Except, Pass detected.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\index_metadata.py:226</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\index_metadata.py:361</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Try, Except, Pass detected.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\index_metadata.py:367</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\index_metadata.py:655</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Try, Except, Pass detected.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\index_metadata.py:711</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Try, Except, Pass detected.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\index_metadata.py:720</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Try, Except, Pass detected.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\llm_client.py:120</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Try, Except, Pass detected.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\llm_runtime.py:447</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Standard pseudo-random generators are not suitable for security/cryptographic purposes.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\llm_runtime.py:493</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue warning">
+                <div class="issue-header">[MEDIUM] Call to requests without timeout</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\llm_runtime.py:1021</div>
+                <div style="margin-top: 10px; color: #666;">LOW</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Consider possible security implications associated with the subprocess module.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\processor.py:26</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] subprocess call - check for execution of untrusted input.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\processor.py:186</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Try, Except, Pass detected.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:279</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Try, Except, Pass detected.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:456</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Try, Except, Continue detected.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:474</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Try, Except, Pass detected.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:488</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Try, Except, Pass detected.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:503</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Try, Except, Pass detected.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:511</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Try, Except, Continue detected.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:844</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Try, Except, Continue detected.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:875</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Try, Except, Continue detected.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:906</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Try, Except, Continue detected.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:1081</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">[LOW] Try, Except, Pass detected.</div>
+                <div class="issue-location">C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:1946</div>
+                <div style="margin-top: 10px; color: #666;">HIGH</div>
+            </div>
+            <p><em>...and 8 more issues</em></p>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🔤 MyPy Type Checking</h2>
+        <p><strong>Type Issues:</strong> 1</p>
+        <div style="margin-top: 20px;">
+            <div class="issue info">emailops\env_utils.py:3: error: No parent module -- cannot perform relative import</div>
+
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🛠️ Analysis Tools Status</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Tool</th>
+                    <th>Status</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td><strong>PYLINT</strong></td>
+                    <td class="status-success">SUCCESS</td>
+                    <td>Score: None, Issues: 622</td>
+                </tr>
+
+                <tr>
+                    <td><strong>FLAKE8</strong></td>
+                    <td class="status-success">SUCCESS</td>
+                    <td>Issues: 269</td>
+                </tr>
+
+                <tr>
+                    <td><strong>BANDIT</strong></td>
+                    <td class="status-success">SUCCESS</td>
+                    <td>Issues: 38</td>
+                </tr>
+
+                <tr>
+                    <td><strong>RADON</strong></td>
+                    <td class="status-success">SUCCESS</td>
+                    <td>Issues: 0</td>
+                </tr>
+
+                <tr>
+                    <td><strong>MYPY</strong></td>
+                    <td class="status-success">SUCCESS</td>
+                    <td>Issues: 1</td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="section">
+        <h2>📋 Summary</h2>
+        <p>This analysis was performed locally without requiring a SonarQube server.</p>
+        <p>For continuous integration and more features, consider setting up SonarQube server (see SONARQUBE_SETUP_GUIDE.md).</p>
+        <p><strong>JSON Report:</strong> analysis_results.json</p>
+    </div>
+</body>
+</html>

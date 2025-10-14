@@ -4,7 +4,22 @@ from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
 # Eager import of the runtime (unchanged); keep llm_runtime free of imports back here.
-from . import llm_runtime as _rt
+# Robust fallback: if imported outside the package (no parent), synthesize a lightweight
+# 'emailops' package at runtime so llm_runtime's relative imports (e.g., `.config`) work.
+try:
+    from . import llm_runtime as _rt  # package import
+except Exception:  # pragma: no cover - defensive path for "script mode"
+    import importlib
+    import types
+    import sys
+    import os
+    _dir = os.path.dirname(__file__)
+    _pkg_name = "emailops"
+    if _pkg_name not in sys.modules:
+        _pkg = types.ModuleType(_pkg_name)
+        _pkg.__path__ = [_dir]  # mark as namespace over this directory
+        sys.modules[_pkg_name] = _pkg
+    _rt = importlib.import_module(f"{_pkg_name}.llm_runtime")
 
 """
 emailops.llm_client
@@ -19,9 +34,9 @@ Production guarantees:
 Changes vs prior version:
 - Avoid import-time coupling to specific runtime functions (no @wraps on _rt.*).
 - Do not cache forwarded attributes; results always reflect the current runtime.
-- LLMError is resolved dynamically, never pinned at import time.
-- Hardened embed(): rejects bytes-like inputs and validates element types.
-- __all__ / __dir__ are dynamic (reflect latest runtime exports).
+- LLMError is resolved dynamically to avoid stale references if runtime changes.
+- embed(): hardens input validation.
+- __all__ and __dir__ expose an accurate live view of public symbols.
 """
 
 

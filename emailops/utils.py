@@ -1,3 +1,4 @@
+
 # Patched utils.py implementing Objectives A–H (determinism, resource safety, performance, email helpers, minimal API changes).
 # Source (baseline file): :contentReference[oaicite:0]{index=0}
 
@@ -11,6 +12,7 @@ import logging
 import os
 import re
 import sys
+import threading
 import time
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
@@ -21,7 +23,18 @@ from functools import lru_cache, wraps
 from pathlib import Path
 from typing import Any, Literal
 
-from .config import EmailOpsConfig
+try:
+    # Prefer package-relative import when running inside the package
+    from .config import EmailOpsConfig  # type: ignore
+except Exception:
+    # Fallback for script/flat execution context (no package parent)
+    try:
+        from config import EmailOpsConfig  # type: ignore
+    except Exception as e:
+        raise ImportError(
+            "Failed to import EmailOpsConfig from either '.config' or 'config'. "
+            "Ensure config.py is on PYTHONPATH or install the package."
+        ) from e
 
 """
 Utilities for reading conversation exports and attachments.
@@ -178,10 +191,7 @@ def read_text_file(path: Path, *, max_chars: int | None = None) -> str:
 
         # Read with detected encoding
         with open(path, encoding=encoding, errors='ignore') as f:
-            if max_chars is not None:
-                data = f.read(max_chars)
-            else:
-                data = f.read()
+            data = f.read(max_chars) if max_chars is not None else f.read()
 
         return _strip_control_chars(data)
     except Exception as e:
@@ -341,12 +351,14 @@ def _extract_msg(path: Path) -> str:
 
 # Global cache for expensive text extraction operations
 _extraction_cache: dict[tuple[Path, int | None], tuple[float, str]] = {}
+_extraction_cache_lock = threading.Lock()
 _CACHE_TTL = 3600  # 1 hour TTL for cache entries
 
 
-def _is_cache_valid(cache_time: float) -> bool:
+def _is_cache_valid(cache_entry: tuple[float, str]) -> bool:
     """Check if cache entry is still valid based on TTL."""
     import time
+    cache_time, _ = cache_entry
     return (time.time() - cache_time) < _CACHE_TTL
 
 
@@ -373,11 +385,12 @@ def extract_text(path: Path, *, max_chars: int | None = None, use_cache: bool = 
     # Check cache first
     if use_cache:
         cache_key = (path.resolve(), max_chars)
-        if cache_key in _extraction_cache:
-            cache_time, cached_text = _extraction_cache[cache_key]
-            if _is_cache_valid(cache_time):
-                logger.debug("Using cached text extraction for %s", path)
-                return cached_text
+        with _extraction_cache_lock:
+            if cache_key in _extraction_cache:
+                cached_data = _extraction_cache[cache_key]
+                if _is_cache_valid(cached_data):
+                    logger.debug("Using cached text extraction for %s", path)
+                    return cached_data
     # Basic path validation
     try:
         if not path.exists():
@@ -572,8 +585,8 @@ def extract_text(path: Path, *, max_chars: int | None = None, use_cache: bool = 
                 for sheet_name in xl.sheet_names:
                     try:
                         df = pd.read_excel(xl, sheet_name=sheet_name, dtype=str)
-                        if df.size > max_cells and df.shape[1] > 0:
-                            max_rows = max_cells // max(1, df.shape[1])
+                        if df.size > max_cells and len(df.shape) > 1:
+                            max_rows = max_cells // df.shape
                             df = df.head(max_rows)
                         chunk = f"[Sheet: {sheet_name}]\n{df.to_csv(index=False)}"
                         remain = None if budget is None else (budget - acc)
@@ -608,14 +621,15 @@ def extract_text(path: Path, *, max_chars: int | None = None, use_cache: bool = 
     # Cache the result if caching is enabled
     if use_cache and result:
         cache_key = (path.resolve(), max_chars)
-        _extraction_cache[cache_key] = (time.time(), result)
+        with _extraction_cache_lock:
+            _extraction_cache[cache_key] = (time.time(), result)
 
-        # Clean old cache entries periodically
-        if len(_extraction_cache) > 100:  # Clean when cache gets too large
-            _extraction_cache = {
-                k: v for k, v in _extraction_cache.items()
-                if _is_cache_valid(v[0])
-            }
+            # Clean old cache entries periodically
+            if len(_extraction_cache) > 100:  # Clean when cache gets too large
+                _extraction_cache = {
+                    k: v for k, v in _extraction_cache.items()
+                    if _is_cache_valid(v)
+                }
 
     return result
 
@@ -741,7 +755,7 @@ def extract_email_metadata(text: str) -> dict[str, object]:
         return md
 
     # Consider only the header preamble (before the first blank line)
-    header_block = text.split("\n\n", 1)[0]
+    header_block, *_ = text.split("\n\n", 1)
     # Normalize newlines then unfold (RFC 5322): CRLF followed by WSP -> space
     header_block = header_block.replace("\r\n", "\n").replace("\r", "\n")
     header_block = re.sub(r"\n[ \t]+", " ", header_block)
@@ -813,7 +827,7 @@ def split_email_thread(text: str) -> list[str]:
         else:
             undated.append(p)
     if len(dated) >= 2:
-        dated.sort(key=lambda x: x[0])
+        dated.sort(key=lambda x: x)
         ordered = [p for _, p in dated] + undated
     else:
         ordered = parts
@@ -876,8 +890,16 @@ def load_conversation(
     if manifest_json.exists():
         raw_text = ""
         try:
-            raw_text = manifest_json.read_text(encoding="utf-8-sig")
+            raw_bytes = manifest_json.read_bytes()
+            try:
+                raw_text = raw_bytes.decode("utf-8-sig")
+            except UnicodeDecodeError:
+                raw_text = raw_bytes.decode("latin-1", errors="ignore")
+                logger.warning("Manifest at %s was not valid UTF-8; fell back to latin-1.", convo_dir)
+
+            # Aggressive sanitization to catch a wider range of control chars.
             sanitized = _CONTROL_CHARS.sub("", raw_text)
+            
             # 1) Try strict JSON first (no repair)
             try:
                 conv["manifest"] = json.loads(sanitized)

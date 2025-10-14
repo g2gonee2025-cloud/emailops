@@ -10,6 +10,7 @@ import logging
 import mimetypes
 import os
 import re
+import threading
 import time
 import uuid
 from dataclasses import dataclass, field
@@ -51,11 +52,10 @@ try:
         )
     from .utils import (  # type: ignore
         clean_email_text,
-        get_text_preprocessor,
         logger,
         should_skip_retrieval_cleaning,
     )
-    from .validators import validate_file_path  # type: ignore
+
 except Exception:
     # top-level fallbacks for running as a plain script
     from config import EmailOpsConfig
@@ -81,11 +81,34 @@ except Exception:
         )
     from utils import (  # type: ignore
         clean_email_text,
-        get_text_preprocessor,
         logger,
         should_skip_retrieval_cleaning,
     )
-    from validators import validate_file_path  # type: ignore
+
+
+
+# ---------------------------- Robust validators import (with safe fallback) ----------------------------
+try:
+    try:
+        # Package-relative, if running inside a package
+        from .validators import validate_file_path  # type: ignore
+    except Exception:
+        # Script/module path
+        from validators import validate_file_path  # type: ignore
+except Exception:
+    # Local, conservative fallback to avoid a hard import failure if validators.py is unavailable
+    def validate_file_path(path: Path, must_exist: bool = True, allow_parent_traversal: bool = False) -> tuple[bool, str]:
+        try:
+            p = Path(str(path))
+        except Exception:
+            return (False, "invalid path")
+        # Basic parent traversal guard
+        if not allow_parent_traversal and any(part == ".." for part in p.parts):
+            return (False, "parent traversal not allowed")
+        if must_exist and not p.exists():
+            return (False, "file does not exist")
+        return (True, "ok")
+# -------------------------------------------------------------------------------------------------------
 
 # ---------------------------- Public API exports ---------------------------- #
 __all__ = [
@@ -105,14 +128,33 @@ __all__ = [
 
 RUN_ID = os.getenv("RUN_ID") or uuid.uuid4().hex
 
-SENDER_LOCKED_NAME = os.getenv("SENDER_LOCKED_NAME", "Hagop Ghazarian")
-SENDER_LOCKED_EMAIL = os.getenv("SENDER_LOCKED_EMAIL", "Hagop.Ghazarian@chalhoub.com")
+# Load configuration
+cfg = EmailOpsConfig.load()
+
+# Set sender configuration with defaults for testing/development
+SENDER_LOCKED_NAME = cfg.SENDER_LOCKED_NAME or "Default Sender"
+SENDER_LOCKED_EMAIL = cfg.SENDER_LOCKED_EMAIL or "default@example.com"
 SENDER_LOCKED = f"{SENDER_LOCKED_NAME} <{SENDER_LOCKED_EMAIL}>"
+
+# Warn if not configured for production use
+if not cfg.SENDER_LOCKED_NAME or not cfg.SENDER_LOCKED_EMAIL:
+    logger.warning(
+        "SENDER_LOCKED_NAME and SENDER_LOCKED_EMAIL not set. "
+        "Using defaults. Set via environment variables for production use."
+    )
 ALLOWED_SENDERS = {
     s.strip() for s in os.getenv("ALLOWED_SENDERS", "").split(",") if s.strip()
 }
 SENDER_REPLY_TO = os.getenv("SENDER_REPLY_TO", "").strip()
-MESSAGE_ID_DOMAIN = os.getenv("MESSAGE_ID_DOMAIN", "chalhoub.com").strip() or "chalhoub.com"
+
+# Require message ID domain
+if not cfg.MESSAGE_ID_DOMAIN:
+    logger.warning(
+        "MESSAGE_ID_DOMAIN not set. Using default. "
+        "Set via environment variable for production use."
+    )
+
+MESSAGE_ID_DOMAIN = cfg.MESSAGE_ID_DOMAIN or "example.com"
 REPLY_POLICY_DEFAULT = os.getenv("REPLY_POLICY", "reply_all").strip().lower()
 
 INDEX_DIRNAME = os.getenv("INDEX_DIRNAME", INDEX_DIRNAME_DEFAULT)
@@ -143,6 +185,12 @@ PERSONA_DEFAULT = os.getenv("PERSONA", "expert insurance CSR").strip()
 # Retrieval knobs
 RERANK_ALPHA = float(os.getenv("RERANK_ALPHA", "0.35"))  # weight for summary re-rank vs boosted
 MMR_LAMBDA = float(os.getenv("MMR_LAMBDA", "0.70"))      # relevance vs diversity
+
+# Validate ranges
+if not (0.0 <= RERANK_ALPHA <= 1.0):
+    raise ValueError(f"RERANK_ALPHA must be between 0.0 and 1.0, got {RERANK_ALPHA}")
+if not (0.0 <= MMR_LAMBDA <= 1.0):
+    raise ValueError(f"MMR_LAMBDA must be between 0.0 and 1.0, got {MMR_LAMBDA}")
 MMR_K_CAP = int(os.getenv("MMR_K_CAP", "250"))           # safety cap for mmr selection set
 
 
@@ -210,6 +258,76 @@ def log_timing(operation: str, threshold_seconds: float = 1.0, **fields: Any):
 def _log_metric(name: str, **fields: Any) -> None:
     logger.info("[metric] %s run_id=%s %s", name, RUN_ID, " ".join(f"{k}={v}" for k, v in fields.items()))
 
+# ------------------------------ Performance Caches ------------------------------ #
+
+# Cache for query embeddings (thread-safe)
+_query_embedding_cache: dict[tuple[str, str], tuple[float, np.ndarray]] = {}
+_query_cache_lock = threading.Lock()
+_QUERY_CACHE_TTL = 300.0  # 5 minutes
+
+# Cache for mapping.json (thread-safe)
+_mapping_cache: dict[Path, tuple[float, float, list[dict[str, Any]]]] = {}
+_mapping_cache_lock = threading.Lock()
+
+def _get_cached_query_embedding(query: str, provider: str) -> np.ndarray | None:
+    """Get cached query embedding if available and valid."""
+    cache_key = (query, provider)
+    with _query_cache_lock:
+        if cache_key in _query_embedding_cache:
+            timestamp, embedding = _query_embedding_cache[cache_key]
+            if (time.time() - timestamp) < _QUERY_CACHE_TTL:
+                logger.debug("Using cached query embedding")
+                return embedding
+    return None
+
+def _cache_query_embedding(query: str, provider: str, embedding: np.ndarray) -> None:
+    """Cache a query embedding with timestamp."""
+    cache_key = (query, provider)
+    with _query_cache_lock:
+        _query_embedding_cache[cache_key] = (time.time(), embedding)
+        # Cleanup old entries if cache grows too large
+        if len(_query_embedding_cache) > 100:
+            # Cache grew too large; clear entirely
+            _query_embedding_cache.clear()
+            # Could do selective cleanup but full clear is simpler and safe with TTL
+
+def _get_cached_mapping(ix_dir: Path) -> list[dict[str, Any]] | None:
+    """Get cached mapping if file hasn't changed."""
+    mapping_path = ix_dir / MAPPING_NAME
+    if not mapping_path.exists():
+        return None
+
+    try:
+        current_mtime = mapping_path.stat().st_mtime
+    except Exception:
+        return None
+
+    with _mapping_cache_lock:
+        if ix_dir in _mapping_cache:
+            cached_mtime, cache_time, cached_mapping = _mapping_cache[ix_dir]
+            # Check if file hasn't changed and cache is fresh (5 min TTL)
+            if cached_mtime == current_mtime and (time.time() - cache_time) < 300:
+                logger.debug("Using cached mapping.json")
+                return cached_mapping
+    return None
+
+def _cache_mapping(ix_dir: Path, mapping: list[dict[str, Any]]) -> None:
+    """Cache mapping with mtime for invalidation."""
+    mapping_path = ix_dir / MAPPING_NAME
+    try:
+        current_mtime = mapping_path.stat().st_mtime
+        with _mapping_cache_lock:
+            _mapping_cache[ix_dir] = (current_mtime, time.time(), mapping)
+            # Limit cache size
+            if len(_mapping_cache) > 5:
+                # Keep only most recent 3
+                items = sorted(_mapping_cache.items(), key=lambda x: x[1][1], reverse=True)
+                _mapping_cache.clear()
+                for k, v in items[:3]:
+                    _mapping_cache[k] = v
+    except Exception:
+        pass
+
 # ------------------------------ Utilities ------------------------------ #
 
 def _safe_int_env(key: str, default: int) -> int:
@@ -244,9 +362,7 @@ def _line_is_injectionish(l: str) -> bool:
     if any(p in ll for p in INJECTION_PATTERNS):
         return True
     # Drop lines that look like commands/prompts
-    if ll.startswith(("system:", "assistant:", "user:", "instruction:", "### instruction", "```")):
-        return True
-    return False
+    return bool(ll.startswith(("system:", "assistant:", "user:", "instruction:", "### instruction", "```")))
 
 def _hard_strip_injection(text: str) -> str:
     """Heuristic prompt‑injection scrubber over raw file text slices."""
@@ -568,20 +684,28 @@ def _bidirectional_expand_text(text: str, start_pos: int, end_pos: int, max_char
 
 def _deduplicate_chunks(chunks: list[dict[str, Any]], score_threshold: float = 0.0) -> list[dict[str, Any]]:
     """
-    Deduplicate by (doc_id, deterministic content hash) keeping the highest score.
-    Uses blake2b(digest_size=8) for a tiny, stable 64‑bit digest.
+    Deduplicate by content_hash (computed at index time) keeping the highest score.
+    Falls back to runtime hash computation if content_hash missing (backward compat).
     """
-    seen: dict[tuple[Any, int], dict[str, Any]] = {}
+    seen: dict[str, dict[str, Any]] = {}
     for chunk in chunks:
-        doc_id = chunk.get("id") or chunk.get("path") or ""
-        if not doc_id:
-            continue
-        content = chunk.get("text", "") or ""
-        digest = int(hashlib.blake2b(content.encode("utf-8"), digest_size=8).hexdigest(), 16) if content else 0
-        key = (doc_id, digest)
+        # Prefer pre-computed content_hash from index (much faster)
+        content_hash = chunk.get("content_hash")
+        if not content_hash:
+            # Fallback: compute hash at runtime (backward compat with old indices)
+            content = chunk.get("text", "") or ""
+            if content:
+                content_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()[:16]
+            else:
+                content_hash = ""
+
+        if not content_hash:
+            continue  # Skip chunks with no content
+
         current_score = float(chunk.get("score", 0.0))
-        if key not in seen or current_score > float(seen[key].get("score", 0.0)):
-            seen[key] = chunk
+        if content_hash not in seen or current_score > float(seen[content_hash].get("score", 0.0)):
+            seen[content_hash] = chunk
+
     return [chunk for chunk in seen.values() if float(chunk.get("score", 0.0)) >= float(score_threshold)]
 
 def _safe_stat_mb(path: Path) -> float:
@@ -817,7 +941,7 @@ def _select_attachments_from_mentions(context_snippets: list[dict[str, Any]], me
             name = str(c.get("attachment_name") or Path(str(c.get("path") or "")).name).lower()
             if (doc_id and doc_id in wanted) or (name and any(w in name for w in wanted)):
                 p = Path(str(c.get("path") or ""))
-                ok, msg = validate_file_path(p, must_exist=True, allow_parent_traversal=False)
+                ok, _msg = validate_file_path(p, must_exist=True, allow_parent_traversal=False)
                 if not ok:
                     continue
                 if _safe_stat_mb(p) > ATTACH_MAX_MB:
@@ -949,33 +1073,48 @@ def _gather_context_for_conv(ix_dir: Path, conv_id: str, query_text: str, provid
         cand_local = np.where(keep_mask)[0] if np.any(keep_mask) else np.argsort(-boosted)[:TOP_FALLBACK_RESULTS]
         boosted_kept = boosted[cand_local]
 
-        # Summary-aware rerank - optimize cleaning
-        preprocessor = get_text_preprocessor()
-        with log_timing("rerank_summaries_conv", n_cand=len(cand_local)):
+        # EARLY DEDUP: Remove duplicates BEFORE reranking/MMR
+        hash_to_best: dict[str, tuple[int, float]] = {}
+        for pos, li in enumerate(cand_local.tolist()):
+            item = sub_mapping[int(li)]
+            content_hash = item.get("content_hash", "")
+            score = float(boosted_kept[pos])
+
+            if content_hash:
+                if content_hash not in hash_to_best or score > hash_to_best[content_hash][1]:
+                    hash_to_best[content_hash] = (int(li), score)
+            else:
+                hash_to_best[f"no_hash_{li}"] = (int(li), score)
+
+        deduped_items = list(hash_to_best.values())
+        deduped_cand_local = np.array([item[0] for item in deduped_items], dtype=np.int64)
+        deduped_boosted = np.array([item[1] for item in deduped_items], dtype=np.float32)
+
+        if len(deduped_cand_local) < len(cand_local):
+            logger.debug("Early dedup (conv): %d -> %d (-%d duplicates)",
+                        len(cand_local), len(deduped_cand_local),
+                        len(cand_local) - len(deduped_cand_local))
+
+        # Summary-aware rerank on deduplicated candidates
+        with log_timing("rerank_summaries_conv", n_cand=len(deduped_cand_local)):
             summaries = []
-            for li in cand_local.tolist():
+            for li in deduped_cand_local.tolist():
                 item = sub_mapping[int(li)]
-                p = Path(item.get("path",""))
-                ok, _ = validate_file_path(p, must_exist=True, allow_parent_traversal=False)
-                raw = _safe_read_text(p, max_chars=2400) if ok else ""
-                # Check if already pre-cleaned to avoid redundant processing
-                if should_skip_retrieval_cleaning(item):
-                    txt = _hard_strip_injection(raw)  # Just strip injection, skip full clean
-                else:
-                    txt = clean_email_text(_hard_strip_injection(raw))
-                summaries.append(_candidate_summary_text(item, txt))
+                # Use snippet for summary (no file I/O)
+                summaries.append(_candidate_summary_text(item, item.get("snippet") or ""))
             try:
                 summary_embs = embed_texts(summaries, provider=_resolve_effective_provider(ix_dir, provider)).astype("float32", copy=False)
+                deduped_embs = sub_embs[deduped_cand_local]
                 rerank_sim = (summary_embs @ q.T).reshape(-1).astype("float32")
-                blended = _blend_scores(boosted_kept, rerank_sim, RERANK_ALPHA)
+                blended = _blend_scores(deduped_boosted, rerank_sim, RERANK_ALPHA)
             except Exception:
-                summary_embs = sub_embs[cand_local]  # fallback
-                blended = boosted_kept
+                deduped_embs = sub_embs[deduped_cand_local]
+                blended = deduped_boosted
 
-        # MMR diversification over kept candidates
-        mmr_k = min(len(cand_local), MMR_K_CAP)
-        mmr_order_local_positions = _mmr_select(summary_embs, blended, k=mmr_k, lambda_=MMR_LAMBDA)
-        order = cand_local[np.array(mmr_order_local_positions, dtype=np.int64)]
+        # MMR diversification over deduplicated candidates
+        mmr_k = min(len(deduped_cand_local), MMR_K_CAP)
+        mmr_order_local_positions = _mmr_select(deduped_embs, blended, k=mmr_k, lambda_=MMR_LAMBDA)
+        order = deduped_cand_local[np.array(mmr_order_local_positions, dtype=np.int64)]
 
         char_budget = _char_budget_from_tokens(target_tokens)
         per_doc_limit = min(REPLY_PER_DOC_LIMIT, max(REPLY_MIN_DOC_LIMIT, char_budget // 5))
@@ -995,8 +1134,7 @@ def _gather_context_for_conv(ix_dir: Path, conv_id: str, query_text: str, provid
             ok, msg = validate_file_path(path, must_exist=True, allow_parent_traversal=False)
             if not ok:
                 logger.warning("Invalid path in mapping: %s - %s", path, msg)
-                item["text"] = ""
-                continue
+                continue  # Skip this item entirely instead of adding empty entry
 
             remaining = max(0, char_budget - used)
             if remaining <= 0:
@@ -1062,32 +1200,47 @@ def _gather_context_fresh(ix_dir: Path, query_text: str, provider: str, sim_thre
         cand_sorted = cand_idx_local[kept][order_boost]
         boosted_sorted = boosted[keep_mask][order_boost] if np.any(keep_mask) else boosted[order_boost]
 
-        # Summary-aware rerank + MMR - optimize cleaning
-        preprocessor = get_text_preprocessor()
-        with log_timing("rerank_summaries_fresh", n_cand=len(cand_sorted)):
+        # EARLY DEDUP: Remove duplicates BEFORE reranking/MMR
+        hash_to_best: dict[str, tuple[int, float]] = {}
+        for pos, li in enumerate(cand_sorted.tolist()):
+            item = sub_mapping[int(li)]
+            content_hash = item.get("content_hash", "")
+            score = float(boosted_sorted[pos])
+
+            if content_hash:
+                if content_hash not in hash_to_best or score > hash_to_best[content_hash][1]:
+                    hash_to_best[content_hash] = (int(li), score)
+            else:
+                hash_to_best[f"no_hash_{li}"] = (int(li), score)
+
+        deduped_items = list(hash_to_best.values())
+        deduped_cand_sorted = np.array([item[0] for item in deduped_items], dtype=np.int64)
+        deduped_boosted_sorted = np.array([item[1] for item in deduped_items], dtype=np.float32)
+
+        if len(deduped_cand_sorted) < len(cand_sorted):
+            logger.debug("Early dedup (fresh): %d -> %d (-%d duplicates)",
+                        len(cand_sorted), len(deduped_cand_sorted),
+                        len(cand_sorted) - len(deduped_cand_sorted))
+
+        # Summary-aware rerank on deduplicated candidates
+        with log_timing("rerank_summaries_fresh", n_cand=len(deduped_cand_sorted)):
             summaries = []
-            for li in cand_sorted.tolist():
+            for li in deduped_cand_sorted.tolist():
                 item = sub_mapping[int(li)]
-                p = Path(item.get("path",""))
-                ok, _ = validate_file_path(p, must_exist=True, allow_parent_traversal=False)
-                raw = _safe_read_text(p, max_chars=2400) if ok else ""
-                # Check if already pre-cleaned
-                if should_skip_retrieval_cleaning(item):
-                    txt = _hard_strip_injection(raw)  # Just strip injection
-                else:
-                    txt = clean_email_text(_hard_strip_injection(raw))
-                summaries.append(_candidate_summary_text(item, txt))
+                # Use snippet for summary (no file I/O)
+                summaries.append(_candidate_summary_text(item, item.get("snippet") or ""))
             try:
                 summary_embs = embed_texts(summaries, provider=_resolve_effective_provider(ix_dir, provider)).astype("float32", copy=False)
+                deduped_embs = sub_embs[deduped_cand_sorted]
                 rerank_sim = (summary_embs @ q.T).reshape(-1).astype("float32")
-                blended = _blend_scores(boosted_sorted, rerank_sim, RERANK_ALPHA)
+                blended = _blend_scores(deduped_boosted_sorted, rerank_sim, RERANK_ALPHA)
             except Exception:
-                summary_embs = sub_embs[cand_sorted]  # fallback
-                blended = boosted_sorted
+                deduped_embs = sub_embs[deduped_cand_sorted]
+                blended = deduped_boosted_sorted
 
-        mmr_k = min(len(cand_sorted), MMR_K_CAP)
-        mmr_positions = _mmr_select(summary_embs, blended, k=mmr_k, lambda_=MMR_LAMBDA)
-        cand_sorted = cand_sorted[np.array(mmr_positions, dtype=np.int64)]
+        mmr_k = min(len(deduped_cand_sorted), MMR_K_CAP)
+        mmr_positions = _mmr_select(deduped_embs, blended, k=mmr_k, lambda_=MMR_LAMBDA)
+        cand_sorted = deduped_cand_sorted[np.array(mmr_positions, dtype=np.int64)]
         boosted_sorted = blended[np.array(mmr_positions, dtype=np.int64)]
 
         char_budget = _char_budget_from_tokens(target_tokens)
@@ -1101,8 +1254,7 @@ def _gather_context_fresh(ix_dir: Path, query_text: str, provider: str, sim_thre
             ok, msg = validate_file_path(path, must_exist=True, allow_parent_traversal=False)
             if not ok:
                 logger.warning("Skipping invalid path: %s - %s", path, msg)
-                m["text"] = ""
-                continue
+                continue  # Skip this item entirely instead of adding empty entry
 
             remaining = max(0, char_budget - used)
             if remaining <= 0:
@@ -1284,10 +1436,28 @@ def draft_email_structured(
         raise ValueError("Query exceeds maximum length (50000 chars)")
     if not sender or not sender.strip():
         raise ValueError("Sender cannot be empty")
-    if '@' not in sender and '<' not in sender:
-        raise ValueError("Sender must contain valid email address")
+
+    # Proper email validation using regex pattern
+    sender_email = sender
+    if '<' in sender and '>' in sender:
+        # Extract email from "Name <email@domain>" format
+        import re
+        match = re.search(r'<([^>]+)>', sender)
+        if match:
+            sender_email = match.group(1)
+
+    if not EMAIL_PATTERN.match(sender_email.strip()):
+        raise ValueError(f"Invalid email format in sender: {sender_email}")
+
     if not context_snippets or not isinstance(context_snippets, list):
         raise ValueError("Context snippets must be a non-empty list")
+
+    # Validate context snippet structure - ensure required fields exist
+    for idx, snippet in enumerate(context_snippets):
+        if not isinstance(snippet, dict):
+            raise ValueError(f"Context snippet at index {idx} must be a dict, got {type(snippet)}")
+        if 'id' not in snippet and 'path' not in snippet:
+            raise ValueError(f"Context snippet at index {idx} missing both 'id' and 'path' fields")
 
     is_valid, msg = validate_context_quality(context_snippets)
     if not is_valid:
@@ -2062,32 +2232,49 @@ def _search(ix_dir: Path, query: str, k: int = 6, provider: str = "vertex", conv
 
             boosted = _boost_scores_for_indices(sub_mapping, cand_idx_local, cand_scores, now)
 
-            # summary-aware rerank - optimize cleaning
-            preprocessor = get_text_preprocessor()
-            summaries = []
-            for li in cand_idx_local.tolist():
+            # EARLY DEDUP: Remove duplicate content BEFORE reranking/MMR
+            hash_to_best: dict[str, tuple[int, float]] = {}
+            for pos, li in enumerate(cand_idx_local.tolist()):
                 item = sub_mapping[int(li)]
-                p = Path(item.get("path",""))
-                ok, _ = validate_file_path(p, must_exist=True, allow_parent_traversal=False)
-                raw = _safe_read_text(p, max_chars=2400) if ok else ""
-                # Check if already pre-cleaned
-                if should_skip_retrieval_cleaning(item):
-                    txt = _hard_strip_injection(raw)  # Just strip injection
+                content_hash = item.get("content_hash", "")
+                score = float(boosted[pos])
+
+                if content_hash:
+                    if content_hash not in hash_to_best or score > hash_to_best[content_hash][1]:
+                        hash_to_best[content_hash] = (int(li), score)
                 else:
-                    txt = clean_email_text(_hard_strip_injection(raw))
-                summaries.append(_candidate_summary_text(item, txt))
+                    # No hash - keep item (backward compat)
+                    hash_to_best[f"no_hash_{li}"] = (int(li), score)
+
+            deduped_items = list(hash_to_best.values())
+            deduped_local_idx = np.array([item[0] for item in deduped_items], dtype=np.int64)
+            deduped_scores = np.array([item[1] for item in deduped_items], dtype=np.float32)
+
+            if len(deduped_local_idx) < len(cand_idx_local):
+                logger.debug("Early dedup: %d -> %d candidates (removed %d duplicates)",
+                            len(cand_idx_local), len(deduped_local_idx),
+                            len(cand_idx_local) - len(deduped_local_idx))
+
+            # summary-aware rerank on deduplicated candidates
+            summaries = []
+            for li in deduped_local_idx.tolist():
+                item = sub_mapping[int(li)]
+                # Use snippet for summary (no file I/O)
+                summaries.append(_candidate_summary_text(item, item.get("snippet") or ""))
+
             try:
                 summary_embs = embed_texts(summaries, provider=effective_provider).astype("float32", copy=False)
+                deduped_embs = sub_embs[deduped_local_idx]
                 rerank_sim = (summary_embs @ q.T).reshape(-1).astype("float32")
-                blended = _blend_scores(boosted, rerank_sim, rerank_alpha)
+                blended = _blend_scores(deduped_scores, rerank_sim, rerank_alpha)
             except Exception:
-                summary_embs = sub_embs[cand_idx_local]  # fallback to doc embs
-                blended = boosted
+                deduped_embs = sub_embs[deduped_local_idx]
+                blended = deduped_scores
 
-            # MMR over candidates
-            mmr_k = min(k, MMR_K_CAP, len(cand_idx_local))
-            mmr_positions = _mmr_select(summary_embs, blended, k=mmr_k, lambda_=mmr_lambda)
-            top_local_idx = cand_idx_local[np.array(mmr_positions, dtype=np.int64)]
+            # MMR over deduplicated candidates
+            mmr_k = min(k, MMR_K_CAP, len(deduped_local_idx))
+            mmr_positions = _mmr_select(deduped_embs, blended, k=mmr_k, lambda_=mmr_lambda)
+            top_local_idx = deduped_local_idx[np.array(mmr_positions, dtype=np.int64)]
             top_scores = blended[np.array(mmr_positions, dtype=np.int64)]
 
             results = []
@@ -2098,7 +2285,12 @@ def _search(ix_dir: Path, query: str, k: int = 6, provider: str = "vertex", conv
                 except Exception:
                     continue
                 item["score"] = float(top_scores[pos])
-                item["original_score"] = float(cand_scores[np.where(cand_idx_local == local_i)[0]][0])
+                try:
+                    _where = np.where(cand_idx_local == local_i)[0]
+                    _orig = float(cand_scores[_where[0]]) if _where.size else float(scores[int(local_i)])
+                except Exception:
+                    _orig = float(scores[int(local_i)])
+                item["original_score"] = _orig
                 if item["score"] < BOOSTED_SCORE_CUTOFF:
                     continue
                 try:
@@ -2106,11 +2298,11 @@ def _search(ix_dir: Path, query: str, k: int = 6, provider: str = "vertex", conv
                     ok, msg = validate_file_path(path, must_exist=True, allow_parent_traversal=False)
                     if not ok:
                         logger.warning("Skipping invalid path in search: %s - %s", path, msg)
-                        text = ""
-                    else:
-                        text = item.get("snippet") or path.read_text(encoding="utf-8", errors="ignore")
-                except Exception:
-                    text = ""
+                        continue  # Skip this result entirely
+                    text = item.get("snippet") or path.read_text(encoding="utf-8", errors="ignore")
+                except Exception as e:
+                    logger.warning("Failed to read text for %s: %s", item.get("id", "unknown"), e)
+                    continue  # Skip this result if we can't read it
                 if "start_pos" in item and "end_pos" in item:
                     expanded_text = _bidirectional_expand_text(text, item["start_pos"], item["end_pos"], CONTEXT_SNIPPET_CHARS_DEFAULT)
                 else:
