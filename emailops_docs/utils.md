@@ -1,3 +1,17 @@
+## JSON String Scrubbing Utility
+
+### `scrub_json_string(raw: str) -> str`
+
+Removes control characters from a raw JSON string before parsing. Use this before `json.loads` on any user-supplied or external JSON to prevent parse errors and ensure hygiene.
+
+**Example:**
+
+```python
+from emailops.utils import scrub_json_string
+import json
+safe_json = scrub_json_string(raw_json)
+data = json.loads(safe_json)
+```
 # `utils.py` — Text Extraction, Cleaning, and Conversation Loading
 
 > **Purpose:** Foundation utilities: robust file text extraction, email‑aware cleaning, and conversation/attachment loading used by the indexer and downstream tools.

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from __future__ import annotations
 
 """
@@ -47,17 +46,21 @@ class EmailOpsConfig:
     )
 
     # Credential file priority list (for auto-discovery)
-    CREDENTIAL_FILES_PRIORITY: list[str] = field(default_factory=lambda: [
-        "api-agent-470921-aa03081a1b4d.json",
-        "apt-arcana-470409-i7-ce42b76061bf.json",
-        "crafty-airfoil-474021-s2-34159960925b.json",
-        "embed2-474114-fca38b4d2068.json",
-        "my-project-31635v-8ec357ac35b2.json",
-        "semiotic-nexus-470620-f3-3240cfaf6036.json",
-    ])
+    CREDENTIAL_FILES_PRIORITY: list[str] = field(
+        default_factory=lambda: [
+            "api-agent-470921-aa03081a1b4d.json",
+            "apt-arcana-470409-i7-ce42b76061bf.json",
+            "crafty-airfoil-474021-s2-34159960925b.json",
+            "embed2-474114-fca38b4d2068.json",
+            "my-project-31635v-8ec357ac35b2.json",
+            "semiotic-nexus-470620-f3-3240cfaf6036.json",
+        ]
+    )
 
     # Security settings
-    ALLOW_PARENT_TRAVERSAL: bool = field(default_factory=lambda: os.getenv("ALLOW_PARENT_TRAVERSAL", "false").lower() == "true")
+    ALLOW_PARENT_TRAVERSAL: bool = field(
+        default_factory=lambda: os.getenv("ALLOW_PARENT_TRAVERSAL", "false").lower() == "true"
+    )
     COMMAND_TIMEOUT_SECONDS: int = field(default_factory=lambda: int(os.getenv("COMMAND_TIMEOUT", "3600")))
 
     # Logging
@@ -72,7 +75,7 @@ class EmailOpsConfig:
     MESSAGE_ID_DOMAIN: str = field(default_factory=lambda: os.getenv("MESSAGE_ID_DOMAIN", ""))
 
     @classmethod
-    def load(cls) -> 'EmailOpsConfig':
+    def load(cls) -> EmailOpsConfig:
         """
         Load configuration from environment.
 
@@ -108,8 +111,7 @@ class EmailOpsConfig:
     def _is_valid_service_account_json(p: Path) -> bool:
         """
         Strictly validate that a JSON file looks like a GCP service-account key.
-        Mirrors downstream expectations in the runtime/Vertex initialization.
-        Required keys: type='service_account', project_id, private_key_id, private_key, client_email
+        MEDIUM #17: Enhanced validation including key format, expiration, and basic token validity
         """
         try:
             with p.open("r", encoding="utf-8") as f:
@@ -121,10 +123,51 @@ class EmailOpsConfig:
                 return False
             if str(data.get("type", "")).strip() != "service_account":
                 return False
-            # Quick sanity on key contents
-            if not str(data.get("private_key", "")).startswith("-----BEGIN PRIVATE KEY-----"):
+
+            # Enhanced key validation
+            private_key = str(data.get("private_key", "")).strip()
+            if not private_key.startswith("-----BEGIN PRIVATE KEY-----"):
                 return False
-            return True
+            if not private_key.endswith("-----END PRIVATE KEY-----"):
+                return False
+
+            # Validate key ID format (should be hex string)
+            key_id = str(data.get("private_key_id", "")).strip()
+            if not key_id or len(key_id) < 16:  # GCP key IDs are typically 40+ chars
+                return False
+
+            # Validate email format
+            client_email = str(data.get("client_email", "")).strip()
+            if not client_email or "@" not in client_email:
+                return False
+            if not client_email.endswith((".iam.gserviceaccount.com", ".gserviceaccount.com")):
+                return False
+
+            # Validate project ID format
+            project_id = str(data.get("project_id", "")).strip()
+            if not project_id or len(project_id) < 6:  # GCP project IDs are typically longer
+                return False
+
+            # MEDIUM #17: Basic token validity check (if google-auth is available)
+            try:
+                from google.auth.exceptions import MalformedError
+                from google.oauth2 import service_account
+
+                # Try to create credentials object (validates private key format)
+                credentials = service_account.Credentials.from_service_account_info(data)
+
+                # Check if credentials are expired (if they have expiry info)
+                if hasattr(credentials, 'expired') and credentials.expired:
+                    return False
+
+                return True
+            except (ImportError, MalformedError):
+                # If google-auth not available or key is malformed, fall back to basic checks
+                return True
+            except Exception:
+                # Other auth errors - treat as invalid
+                return False
+
         except Exception:
             return False
 

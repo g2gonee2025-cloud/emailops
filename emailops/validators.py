@@ -24,49 +24,52 @@ T = TypeVar("T")
 # -------------------------
 
 # Email validation pattern (RFC 5322 compliant)
-EMAIL_PATTERN = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+EMAIL_PATTERN = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
 
 # GCP project ID pattern
-PROJECT_ID_PATTERN = re.compile(r'^[a-z][a-z0-9-]*$')
+PROJECT_ID_PATTERN = re.compile(r"^[a-z][a-z0-9-]*$")
 
 # Environment variable name patterns
-ENV_VAR_UPPERCASE_PATTERN = re.compile(r'^[A-Z_][A-Z0-9_]*$')
-ENV_VAR_MIXED_PATTERN = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
+ENV_VAR_UPPERCASE_PATTERN = re.compile(r"^[A-Z_][A-Z0-9_]*$")
+ENV_VAR_MIXED_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 # Dangerous characters for path sanitization
-DANGEROUS_PATH_CHARS = {'\0', '\r', '\n', '|', '&', ';', '$', '`', '<', '>', '(', ')', '[', ']', '{', '}'}
+DANGEROUS_PATH_CHARS = {"\0", "\r", "\n", "|", "&", ";", "$", "`", "<", ">", "(", ")", "[", "]", "{", "}"}
 
 # Shell dangerous patterns
-SHELL_DANGEROUS_PATTERNS = frozenset([';', '|', '&', '$', '`', '\n', '\r', '\0'])
+SHELL_DANGEROUS_PATTERNS = frozenset([";", "|", "&", "$", "`", "\n", "\r", "\0"])
 
 # URL validation pattern
 URL_PATTERN = re.compile(
-    r'^(?:http|https|ftp)://'  # Protocol
-    r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'  # Domain
-    r'localhost|'  # Localhost
-    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # IP address
-    r'(?::\d+)?'  # Optional port
-    r'(?:/?|[/?]\S+)$', re.IGNORECASE
+    r"^(?:http|https|ftp)://"  # Protocol
+    r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|"  # Domain
+    r"localhost|"  # Localhost
+    r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"  # IP address
+    r"(?::\d+)?"  # Optional port
+    r"(?:/?|[/?]\S+)$",
+    re.IGNORECASE,
 )
 
 # SQL identifier pattern (basic - alphanumeric plus underscore)
-SQL_IDENTIFIER_PATTERN = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_]*$')
+SQL_IDENTIFIER_PATTERN = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
 
 # JSON key pattern
-JSON_KEY_PATTERN = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_\-\.]*$')
+JSON_KEY_PATTERN = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_\-\.]*$")
 
 
 # -------------------------
 # Existing public API (unchanged)
 # -------------------------
 
+
 def validate_directory_path(
     path: str | Path, must_exist: bool = True, allow_parent_traversal: bool = False
 ) -> tuple[bool, str]:
     """Validate directory path with security checks.
 
-    NOTE: To avoid TOCTOU issues, callers should use the normalized path
-    returned by validate_directory_path_info() immediately after validation.
+    MEDIUM #22: TOCTOU vulnerability note - files can change between validation and use.
+    Callers should handle exceptions during file access as proper mitigation.
+    Validation provides early feedback but doesn't guarantee availability at use time.
 
     Args:
         path: Directory path to validate
@@ -82,7 +85,7 @@ def validate_directory_path(
 
         # Security: Check for explicit parent-directory traversal segments ('..')
         # Use Path.parts so that only real path segments are inspected (not substrings in filenames)
-        if not allow_parent_traversal and any(part == '..' for part in p_raw.parts):
+        if not allow_parent_traversal and any(part == ".." for part in p_raw.parts):
             return False, "Path traversal detected ('..' segments are not allowed)"
 
         # Now resolve to an absolute canonical path for subsequent checks
@@ -142,7 +145,7 @@ def validate_file_path(
 
         # Security: Check for explicit parent-directory traversal segments ('..')
         # Use Path.parts so that only real path segments are inspected (not substrings in filenames)
-        if not allow_parent_traversal and any(part == '..' for part in p_raw.parts):
+        if not allow_parent_traversal and any(part == ".." for part in p_raw.parts):
             return False, "Path traversal detected ('..' segments are not allowed)"
 
         # Now resolve to an absolute canonical path for subsequent checks
@@ -196,7 +199,7 @@ def sanitize_path_input(path_input: str) -> str:
 
     # Remove dangerous characters while preserving valid path characters
     # This is less aggressive than before - allows more valid paths
-    sanitized = ''.join(c for c in path_input if c not in DANGEROUS_PATH_CHARS)
+    sanitized = "".join(c for c in path_input if c not in DANGEROUS_PATH_CHARS)
 
     # Remove leading/trailing whitespace
     sanitized = sanitized.strip()
@@ -204,9 +207,7 @@ def sanitize_path_input(path_input: str) -> str:
     return sanitized
 
 
-def validate_command_args(
-    command: str, args: list[str], allowed_commands: list[str] | None = None
-) -> tuple[bool, str]:
+def validate_command_args(command: str, args: list[str], allowed_commands: list[str] | None = None) -> tuple[bool, str]:
     """Validate command and arguments for safe execution.
 
     Args:
@@ -273,7 +274,7 @@ def validate_project_id(project_id: str) -> tuple[bool, str]:
     if not project_id[0].islower() or not project_id[0].isalpha():
         return False, "Project ID must start with a lowercase letter"
 
-    if project_id.endswith('-'):
+    if project_id.endswith("-"):
         return False, "Project ID cannot end with a hyphen"
 
     # Use pre-compiled regex pattern
@@ -302,11 +303,13 @@ def validate_environment_variable(name: str, value: str, *, require_uppercase: b
     # Use pre-compiled regex patterns
     pattern = ENV_VAR_UPPERCASE_PATTERN if require_uppercase else ENV_VAR_MIXED_PATTERN
     if not pattern.match(name):
-        policy = "uppercase letters, numbers, and underscores" if require_uppercase else "letters, numbers, and underscores"
+        policy = (
+            "uppercase letters, numbers, and underscores" if require_uppercase else "letters, numbers, and underscores"
+        )
         return False, f"Environment variable name must contain only {policy}"
 
     # Check for null bytes in value
-    if '\0' in value:
+    if "\0" in value:
         return False, "Environment variable value contains null byte"
 
     return True, "Valid"
@@ -347,12 +350,12 @@ def validate_email_format(email: str) -> tuple[bool, str]:
         return False, "Email address too long (max 320 chars)"
 
     # Local part (before @) should not exceed 64 characters
-    local_part = email.split('@')[0]
+    local_part = email.split("@")[0]
     if len(local_part) > 64:
         return False, "Email local part too long (max 64 chars)"
 
     # Domain part validation
-    domain_part = email.split('@')[1] if '@' in email else ''
+    domain_part = email.split("@")[1] if "@" in email else ""
     if len(domain_part) > 253:
         return False, "Email domain too long (max 253 chars)"
 
@@ -362,6 +365,7 @@ def validate_email_format(email: str) -> tuple[bool, str]:
 # -------------------------
 # New ergonomic, typed variants (additive)
 # -------------------------
+
 
 @dataclass(frozen=True)
 class ValidationResult(Generic[T]):
@@ -417,7 +421,9 @@ def validate_file_path_info(
     """
     expanded = _maybe_expand_vars(path, expand_vars)
     # Bypass extension checks in the base function to perform union logic here.
-    ok, msg = validate_file_path(expanded, must_exist=must_exist, allowed_extensions=None, allow_parent_traversal=allow_parent_traversal)
+    ok, msg = validate_file_path(
+        expanded, must_exist=must_exist, allowed_extensions=None, allow_parent_traversal=allow_parent_traversal
+    )
     if not ok:
         return ValidationResult(False, msg, None)
 
@@ -431,6 +437,8 @@ def validate_file_path_info(
             combined = "".join(p.suffixes).lower()
             multi_ok = any(combined == s.lower() for s in allowed_multi_suffixes)
         if not (ext_ok or multi_ok):
-            return ValidationResult(False, f"File extension '{p.suffix}' not allowed (combined suffix '{''.join(p.suffixes)}')", None)
+            return ValidationResult(
+                False, f"File extension '{p.suffix}' not allowed (combined suffix '{''.join(p.suffixes)}')", None
+            )
 
     return ValidationResult(True, "Valid", p)

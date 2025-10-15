@@ -473,12 +473,14 @@ def load_index_metadata(index_dir: Union[str, Path]) -> Optional[Dict[str, Any]]
     last_exc: Optional[BaseException] = None
     for attempt in range(ATOMIC_WRITE_MAX_RETRIES):
         try:
+            from .utils import scrub_json, scrub_json_string
             with p.open("r", encoding="utf-8-sig") as f:
-                data = json.load(f)
+                raw = f.read()
+                data = json.loads(scrub_json_string(raw))
             if not isinstance(data, dict):
                 logger.error(f"Metadata at {p} must be a JSON object; got {type(data).__name__}")
                 return None
-            return data
+            return scrub_json(data)
         except Exception as e:
             last_exc = e
             # Exponential backoff, then retry
@@ -605,6 +607,17 @@ def _validate_dimensions(
     dims = _get_all_dimensions(index_dir)
     detected_dims = dims['detected']
     meta_actual = metadata.get("actual_dimensions")
+    
+    # HIGH #11: Catch case where BOTH are None - index may be corrupted
+    if detected_dims is None and meta_actual is None:
+        msg = (
+            "Cannot validate dimensions: both on-disk detection and metadata.actual_dimensions are None. "
+            "Index may be corrupted or incomplete."
+        )
+        if raise_on_mismatch:
+            raise ValueError(msg)
+        logger.error(msg)
+        return False
     
     if is_vertex:
         # Vertex-specific: enforce configured output dimension if both sides are known.
@@ -800,11 +813,13 @@ def read_mapping(index_dir: Union[str, Path], strict: bool = True) -> List[Dict[
     if not p.exists():
         return []
     try:
+        from .utils import scrub_json, scrub_json_string
         with p.open("r", encoding="utf-8-sig") as f:
-            data = json.load(f)
+            raw = f.read()
+            data = json.loads(scrub_json_string(raw))
         if not isinstance(data, list) or (data and not all(isinstance(x, dict) for x in data)):
             raise ValueError("mapping.json must be a list of objects")
-        return data  # type: ignore[return-value]
+        return scrub_json(data)  # type: ignore[return-value]
     except Exception as e:
         if strict:
             raise

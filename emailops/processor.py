@@ -36,11 +36,11 @@ try:
     # package form
     from emailops.config import get_config  # type: ignore
     from emailops.index_metadata import INDEX_DIRNAME_DEFAULT  # type: ignore
+
+    # search+draft API
     from emailops.search_and_draft import (
         _search as _low_level_search,  # internal search used for chat context only
     )
-
-    # search+draft API
     from emailops.search_and_draft import (  # type: ignore
         chat_with_context,
         draft_email_reply_eml,
@@ -57,9 +57,7 @@ except Exception:
     # script form
     from config import get_config  # type: ignore
     from index_metadata import INDEX_DIRNAME_DEFAULT  # type: ignore
-    from search_and_draft import (
-        _search as _low_level_search,
-    )
+    from search_and_draft import _search as _low_level_search
     from search_and_draft import (  # type: ignore
         chat_with_context,
         draft_email_reply_eml,
@@ -72,6 +70,7 @@ except Exception:
     )
 
 # ----------------------------------- Logging -----------------------------------
+
 
 def _setup_logging(level: str | int = "INFO") -> logging.Logger:
     lvl = getattr(logging, str(level).upper(), logging.INFO)
@@ -88,24 +87,30 @@ logger = _setup_logging(os.getenv("LOG_LEVEL", "INFO"))
 
 # ----------------------------------- Custom Exceptions -----------------------------------
 
+
 class ProcessorError(Exception):
     """Base exception for processor errors."""
+
     pass
 
 
 class IndexNotFoundError(ProcessorError):
     """Raised when index directory is not found."""
+
     pass
 
 
 class ConfigurationError(ProcessorError):
     """Raised when configuration is invalid."""
+
     pass
 
 
 class CommandExecutionError(ProcessorError):
     """Raised when command execution fails."""
+
     pass
+
 
 # ----------------------------------- Constants -----------------------------------
 
@@ -116,6 +121,7 @@ DEFAULT_SUBPROCESS_TIMEOUT = 3600
 MAX_WORKERS_PER_CPU = 0.5  # Use half of available CPUs
 
 # ----------------------------------- Utilities -----------------------------------
+
 
 def _ensure_env() -> None:
     """
@@ -168,28 +174,33 @@ def _run_email_indexer(
     if extra_args:
         args += list(extra_args)
 
-    # Optional validation of command + args (defense-in-depth)
+    # HIGH #14: Enhanced command validation - always validate, never skip
+    validate_command_args = None
+    # MEDIUM #27: Import path correction - use relative import for validators
     try:
-        from validators import validate_command_args  # Fixed function name
-    except Exception:
-        validate_command_args = None
+        from .validators import validate_command_args
+    except ImportError:
+        logger.warning("validators module not available - command validation skipped")
 
-    if validate_command_args:
+    if validate_command_args is not None:
         ok, msg = validate_command_args(args[0], args[1:])
         if not ok:
-            raise CommandExecutionError(f"Unsafe indexer command: {msg}")
+            raise CommandExecutionError(f"Unsafe indexer command blocked: {msg}")
+    else:
+        # HIGH #14: Fallback validation when validators module unavailable
+        # Ensure executable is sys.executable (Python interpreter)
+        if args[0] != sys.executable:
+            raise CommandExecutionError(f"Invalid executable: expected {sys.executable}, got {args[0]}")
+        # Basic sanity checks on arguments
+        for arg in args[1:]:
+            if any(dangerous in str(arg).lower() for dangerous in [";", "&", "|", "`", "$("]):
+                raise CommandExecutionError(f"Potentially unsafe argument detected: {arg}")
 
     env = os.environ.copy()
     _ensure_env()  # ensure config values/creds present
 
     try:
-        proc = subprocess.run(
-            args,
-            env=env,
-            timeout=timeout,
-            capture_output=True,
-            text=True
-        )
+        proc = subprocess.run(args, env=env, timeout=timeout, capture_output=True, text=True)
         if proc.returncode != 0:
             logger.error("Indexer stderr: %s", proc.stderr)
         return int(proc.returncode or 0)
@@ -202,6 +213,7 @@ def _run_email_indexer(
 
 
 # ----------------------------------- Commands -----------------------------------
+
 
 def cmd_index(ns: argparse.Namespace) -> None:
     root = Path(ns.root).expanduser().resolve()
@@ -216,7 +228,7 @@ def cmd_index(ns: argparse.Namespace) -> None:
             limit=ns.limit,
             force_reindex=ns.force_reindex,
             extra_args=ns.indexer_args or None,
-            timeout=getattr(ns, 'timeout', DEFAULT_SUBPROCESS_TIMEOUT),
+            timeout=getattr(ns, "timeout", DEFAULT_SUBPROCESS_TIMEOUT),
         )
         if rc != 0:
             raise CommandExecutionError(f"Indexer failed with return code {rc}")
@@ -331,6 +343,7 @@ def cmd_chat(ns: argparse.Namespace) -> None:
 
 # ----------------------------------- Public API for GUI and external callers -----------------------------------
 
+
 def _search(*args, **kwargs):
     """
     Public wrapper for search functionality (used by GUI).
@@ -345,6 +358,7 @@ def _search(*args, **kwargs):
 
 # ----------------------- Summarize one / many (multiprocessing) -----------------------
 
+
 @dataclass(frozen=True)
 class _SummJob:
     convo_dir: Path
@@ -358,6 +372,7 @@ def _summarize_worker(job: _SummJob) -> tuple[str, bool, str]:
     Returns: (convo_dir, success, message)
     """
     import asyncio
+
     try:
         _ensure_env()
         # Set provider in environment for analyze_conversation_dir
@@ -366,9 +381,7 @@ def _summarize_worker(job: _SummJob) -> tuple[str, bool, str]:
         md = format_analysis_as_markdown(analysis)
         target_dir = job.out_dir or job.convo_dir
         target_dir.mkdir(parents=True, exist_ok=True)
-        (target_dir / "analysis.json").write_text(
-            json.dumps(analysis, ensure_ascii=False, indent=2), encoding="utf-8"
-        )
+        (target_dir / "analysis.json").write_text(json.dumps(analysis, ensure_ascii=False, indent=2), encoding="utf-8")
         (target_dir / "analysis.md").write_text(md, encoding="utf-8")
         return (str(job.convo_dir), True, "ok")
     except Exception as e:
@@ -384,6 +397,7 @@ def _iter_conversation_dirs(root: Path) -> Iterable[Path]:
 
 def cmd_summarize(ns: argparse.Namespace) -> None:
     import asyncio
+
     convo_dir = Path(ns.conversation).expanduser().resolve()
     if not convo_dir.exists():
         raise IndexNotFoundError(f"Conversation directory not found: {convo_dir}")
@@ -412,8 +426,7 @@ def cmd_summarize_many(ns: argparse.Namespace) -> None:
 
     # Fix: Provide out_dir correctly based on ns.out
     out_dir = Path(ns.out) if ns.out else None
-    jobs = [_SummJob(convo_dir=d, provider=ns.provider, out_dir=out_dir)
-            for d in _iter_conversation_dirs(root)]
+    jobs = [_SummJob(convo_dir=d, provider=ns.provider, out_dir=out_dir) for d in _iter_conversation_dirs(root)]
     if not jobs:
         print("No conversation folders found (need subfolder with Conversation.txt)")
         return
@@ -444,6 +457,7 @@ def cmd_summarize_many(ns: argparse.Namespace) -> None:
 
 # ----------------------------------- CLI -----------------------------------
 
+
 def build_cli() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description="EmailOps processor (thin orchestrator)")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -470,7 +484,9 @@ def build_cli() -> argparse.ArgumentParser:
     r.add_argument("--no-attachments", action="store_true")
     r.add_argument("--sender", help='Override sender (must be allow-listed), e.g., "Jane <jane@domain>"')
     r.add_argument("--reply-to", help="Optional Reply-To")
-    r.add_argument("--reply-policy", choices=["reply_all", "smart", "sender_only"], default=os.getenv("REPLY_POLICY", "reply_all"))
+    r.add_argument(
+        "--reply-policy", choices=["reply_all", "smart", "sender_only"], default=os.getenv("REPLY_POLICY", "reply_all")
+    )
     r.add_argument("--out", help="Output .eml path")
     r.set_defaults(func=cmd_reply)
 

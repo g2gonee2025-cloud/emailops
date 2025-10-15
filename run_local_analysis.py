@@ -38,7 +38,7 @@ def check_dependencies() -> list[str]:
         "radon": "radon",
         "mypy": "mypy",
     }
-    
+
     missing = []
     for tool_name, package in tools.items():
         try:
@@ -52,7 +52,7 @@ def check_dependencies() -> list[str]:
                 missing.append(package)
         except Exception:
             missing.append(package)
-    
+
     if missing:
         print(f"Installing missing tools: {', '.join(missing)}")
         try:
@@ -65,7 +65,7 @@ def check_dependencies() -> list[str]:
         except Exception as e:
             print(f"⚠ Warning: Failed to install some tools: {e}\n")
             return missing
-    
+
     return []
 
 def run_pylint(files: list[Path]) -> dict[str, Any]:
@@ -77,7 +77,7 @@ def run_pylint(files: list[Path]) -> dict[str, Any]:
         "issues": [],
         "score": None,
     }
-    
+
     try:
         cmd = [
             sys.executable, "-m", "pylint",
@@ -85,9 +85,9 @@ def run_pylint(files: list[Path]) -> dict[str, Any]:
             "--disable=C0103,C0114,C0115,C0116",  # Disable some style checks
             "--max-line-length=120",
         ] + [str(f) for f in files]
-        
+
         proc = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-        
+
         if proc.stdout:
             try:
                 issues = json.loads(proc.stdout)
@@ -95,7 +95,7 @@ def run_pylint(files: list[Path]) -> dict[str, Any]:
                 result["issue_count"] = len(issues)
             except Exception:
                 result["raw_output"] = proc.stdout[:1000]
-        
+
         # Extract score from stderr
         for line in proc.stderr.split("\n"):
             if "Your code has been rated at" in line:
@@ -104,13 +104,13 @@ def run_pylint(files: list[Path]) -> dict[str, Any]:
                     result["score"] = score
                 except Exception:
                     pass
-        
+
     except subprocess.TimeoutExpired:
         result["status"] = "timeout"
     except Exception as e:
         result["status"] = "error"
         result["error"] = str(e)
-    
+
     return result
 
 def run_flake8(files: list[Path]) -> dict[str, Any]:
@@ -121,7 +121,7 @@ def run_flake8(files: list[Path]) -> dict[str, Any]:
         "status": "success",
         "issues": [],
     }
-    
+
     try:
         cmd = [
             sys.executable, "-m", "flake8",
@@ -129,9 +129,9 @@ def run_flake8(files: list[Path]) -> dict[str, Any]:
             "--extend-ignore=E203,W503,E501",
             "--format=%(path)s:%(row)d:%(col)d: %(code)s %(text)s",
         ] + [str(f) for f in files]
-        
+
         proc = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-        
+
         if proc.stdout:
             issues = []
             for line in proc.stdout.strip().split("\n"):
@@ -139,13 +139,13 @@ def run_flake8(files: list[Path]) -> dict[str, Any]:
                     issues.append(line)
             result["issues"] = issues
             result["issue_count"] = len(issues)
-        
+
     except subprocess.TimeoutExpired:
         result["status"] = "timeout"
     except Exception as e:
         result["status"] = "error"
         result["error"] = str(e)
-    
+
     return result
 
 def run_bandit(files: list[Path]) -> dict[str, Any]:
@@ -156,16 +156,16 @@ def run_bandit(files: list[Path]) -> dict[str, Any]:
         "status": "success",
         "issues": [],
     }
-    
+
     try:
         cmd = [
             sys.executable, "-m", "bandit",
             "-r",
             "-f", "json",
         ] + [str(f) for f in files]
-        
+
         proc = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-        
+
         if proc.stdout:
             try:
                 data = json.loads(proc.stdout)
@@ -174,13 +174,13 @@ def run_bandit(files: list[Path]) -> dict[str, Any]:
                 result["metrics"] = data.get("metrics", {})
             except Exception:
                 result["raw_output"] = proc.stdout[:1000]
-        
+
     except subprocess.TimeoutExpired:
         result["status"] = "timeout"
     except Exception as e:
         result["status"] = "error"
         result["error"] = str(e)
-    
+
     return result
 
 def run_radon_complexity(files: list[Path]) -> dict[str, Any]:
@@ -191,21 +191,21 @@ def run_radon_complexity(files: list[Path]) -> dict[str, Any]:
         "status": "success",
         "complexity": {},
     }
-    
+
     try:
         cmd = [
             sys.executable, "-m", "radon",
             "cc",
             "-j",
         ] + [str(f) for f in files]
-        
+
         proc = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
-        
+
         if proc.stdout:
             try:
                 complexity = json.loads(proc.stdout)
                 result["complexity"] = complexity
-                
+
                 # Calculate stats
                 high_complexity = []
                 for file, funcs in complexity.items():
@@ -216,17 +216,17 @@ def run_radon_complexity(files: list[Path]) -> dict[str, Any]:
                                 "function": func.get("name"),
                                 "complexity": func.get("complexity"),
                             })
-                
+
                 result["high_complexity_functions"] = high_complexity
             except Exception:
                 result["raw_output"] = proc.stdout[:1000]
-        
+
     except subprocess.TimeoutExpired:
         result["status"] = "timeout"
     except Exception as e:
         result["status"] = "error"
         result["error"] = str(e)
-    
+
     return result
 
 def run_mypy(files: list[Path]) -> dict[str, Any]:
@@ -237,27 +237,27 @@ def run_mypy(files: list[Path]) -> dict[str, Any]:
         "status": "success",
         "issues": [],
     }
-    
+
     try:
         cmd = [
             sys.executable, "-m", "mypy",
             "--ignore-missing-imports",
             "--no-error-summary",
         ] + [str(f) for f in files]
-        
+
         proc = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-        
+
         if proc.stdout:
             issues = [line for line in proc.stdout.strip().split("\n") if line]
             result["issues"] = issues
             result["issue_count"] = len(issues)
-        
+
     except subprocess.TimeoutExpired:
         result["status"] = "timeout"
     except Exception as e:
         result["status"] = "error"
         result["error"] = str(e)
-    
+
     return result
 
 def generate_html_report(results: dict[str, Any], output_path: Path) -> None:
@@ -453,15 +453,15 @@ def generate_html_report(results: dict[str, Any], output_path: Path) -> None:
         <h2>📁 Files Analyzed</h2>
         <div class="file-list">
 """
-    
+
     for f in results.get("files", []):
         html += f'            <div class="file-item">✓ {f}</div>\n'
-    
+
     html += """
         </div>
     </div>
 """
-    
+
     # Pylint results
     pylint_data = results.get("pylint", {})
     if pylint_data.get("status") == "success":
@@ -471,7 +471,7 @@ def generate_html_report(results: dict[str, Any], output_path: Path) -> None:
         <p><strong>Score:</strong> <span style="font-size: 24px; color: #28a745;">{pylint_data.get('score', 'N/A')}/10.0</span></p>
         <p><strong>Issues Found:</strong> {pylint_data.get('issue_count', 0)}</p>
 """
-        
+
         issues = pylint_data.get("issues", [])
         if issues:
             html += '        <div style="margin-top: 20px;">\n'
@@ -486,9 +486,9 @@ def generate_html_report(results: dict[str, Any], output_path: Path) -> None:
             if len(issues) > 50:
                 html += f'            <p><em>...and {len(issues) - 50} more issues</em></p>\n'
             html += '        </div>\n'
-        
+
         html += "    </div>\n"
-    
+
     # Flake8 results
     flake8_data = results.get("flake8", {})
     if flake8_data.get("status") == "success" and flake8_data.get("issues"):
@@ -500,15 +500,15 @@ def generate_html_report(results: dict[str, Any], output_path: Path) -> None:
 """
         for issue in flake8_data.get("issues", [])[:30]:
             html += f'            <div class="issue warning">{issue}</div>\n'
-        
+
         if len(flake8_data.get("issues", [])) > 30:
             html += f'            <p><em>...and {len(flake8_data.get("issues", [])) - 30} more issues</em></p>\n'
-        
+
         html += """
         </div>
     </div>
 """
-    
+
     # Bandit security results
     bandit_data = results.get("bandit", {})
     if bandit_data.get("status") == "success":
@@ -517,7 +517,7 @@ def generate_html_report(results: dict[str, Any], output_path: Path) -> None:
         <h2>🔒 Bandit Security Analysis</h2>
         <p><strong>Security Issues:</strong> {bandit_data.get('issue_count', 0)}</p>
 """
-        
+
         issues = bandit_data.get("issues", [])
         if issues:
             html += '        <div style="margin-top: 20px;">\n'
@@ -534,9 +534,9 @@ def generate_html_report(results: dict[str, Any], output_path: Path) -> None:
             if len(issues) > 30:
                 html += f'            <p><em>...and {len(issues) - 30} more issues</em></p>\n'
             html += '        </div>\n'
-        
+
         html += "    </div>\n"
-    
+
     # Radon complexity results
     radon_data = results.get("radon", {})
     if radon_data.get("status") == "success" and radon_data.get("high_complexity_functions"):
@@ -554,7 +554,7 @@ def generate_html_report(results: dict[str, Any], output_path: Path) -> None:
             </thead>
             <tbody>
 """
-        
+
         for func in radon_data.get("high_complexity_functions", []):
             complexity = func.get("complexity", 0)
             complexity_class = "complexity-high" if complexity > 20 else ("complexity-medium" if complexity > 15 else "complexity-low")
@@ -565,13 +565,13 @@ def generate_html_report(results: dict[str, Any], output_path: Path) -> None:
                     <td class="{complexity_class}"><strong>{complexity}</strong></td>
                 </tr>
 """
-        
+
         html += """
             </tbody>
         </table>
     </div>
 """
-    
+
     # MyPy results
     mypy_data = results.get("mypy", {})
     if mypy_data.get("status") == "success" and mypy_data.get("issues"):
@@ -583,15 +583,15 @@ def generate_html_report(results: dict[str, Any], output_path: Path) -> None:
 """
         for issue in mypy_data.get("issues", [])[:30]:
             html += f'            <div class="issue info">{issue}</div>\n'
-        
+
         if len(mypy_data.get("issues", [])) > 30:
             html += f'            <p><em>...and {len(mypy_data.get("issues", [])) - 30} more issues</em></p>\n'
-        
+
         html += """
         </div>
     </div>
 """
-    
+
     # Tool status summary
     html += """
     <div class="section">
@@ -606,12 +606,12 @@ def generate_html_report(results: dict[str, Any], output_path: Path) -> None:
             </thead>
             <tbody>
 """
-    
+
     for tool_name in ["pylint", "flake8", "bandit", "radon", "mypy"]:
         tool_data = results.get(tool_name, {})
         status = tool_data.get("status", "not_run")
         status_class = f"status-{status}"
-        
+
         details = ""
         if status == "success":
             if tool_name == "pylint":
@@ -620,7 +620,7 @@ def generate_html_report(results: dict[str, Any], output_path: Path) -> None:
                 details = f"Issues: {tool_data.get('issue_count', 0)}"
         elif status == "error":
             details = tool_data.get("error", "Unknown error")
-        
+
         html += f"""
                 <tr>
                     <td><strong>{tool_name.upper()}</strong></td>
@@ -628,7 +628,7 @@ def generate_html_report(results: dict[str, Any], output_path: Path) -> None:
                     <td>{details}</td>
                 </tr>
 """
-    
+
     html += """
             </tbody>
         </table>
@@ -643,7 +643,7 @@ def generate_html_report(results: dict[str, Any], output_path: Path) -> None:
 </body>
 </html>
 """
-    
+
     output_path.write_text(html, encoding="utf-8")
     print(f"✓ HTML report saved to: {output_path}")
 
@@ -653,33 +653,33 @@ def main() -> int:
     print("EmailOps Local Code Quality Analysis")
     print("="*60)
     print()
-    
+
     project_dir = Path(__file__).parent
-    
+
     # Verify files exist
     files = [project_dir / f for f in TARGET_FILES]
     existing_files = [f for f in files if f.exists()]
     missing_files = [f for f in files if not f.exists()]
-    
+
     if missing_files:
         print(f"⚠ Warning: {len(missing_files)} files not found:")
         for f in missing_files:
             print(f"  - {f}")
         print()
-    
+
     if not existing_files:
         print("✗ No files found to analyze!")
         return 1
-    
+
     print(f"Files to analyze: {len(existing_files)}")
     print()
-    
+
     # Check/install dependencies
     missing_tools = check_dependencies()
     if missing_tools:
         print(f"⚠ Some tools could not be installed: {missing_tools}")
         print("Continuing with available tools...\n")
-    
+
     # Count lines
     total_lines = 0
     for f in existing_files:
@@ -687,7 +687,7 @@ def main() -> int:
             total_lines += len(f.read_text(encoding="utf-8", errors="ignore").splitlines())
         except Exception:
             pass
-    
+
     # Run analyses
     results: dict[str, Any] = {
         "timestamp": datetime.now().isoformat(),
@@ -695,14 +695,14 @@ def main() -> int:
         "files_analyzed": len(existing_files),
         "total_lines": total_lines,
     }
-    
+
     # Run each tool
     results["pylint"] = run_pylint(existing_files)
     results["flake8"] = run_flake8(existing_files)
     results["bandit"] = run_bandit(existing_files)
     results["radon"] = run_radon_complexity(existing_files)
     results["mypy"] = run_mypy(existing_files)
-    
+
     # Calculate totals
     results["total_issues"] = sum([
         results.get("pylint", {}).get("issue_count", 0),
@@ -711,16 +711,16 @@ def main() -> int:
     ])
     results["security_issues"] = results.get("bandit", {}).get("issue_count", 0)
     results["high_complexity_count"] = len(results.get("radon", {}).get("high_complexity_functions", []))
-    
+
     # Save JSON report
     json_output = project_dir / "analysis_results.json"
     json_output.write_text(json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"\n✓ JSON report saved to: {json_output}")
-    
+
     # Generate HTML report
     html_output = project_dir / "analysis_report.html"
     generate_html_report(results, html_output)
-    
+
     # Print summary
     print("\n" + "="*60)
     print("Analysis Summary")
@@ -731,7 +731,7 @@ def main() -> int:
     print(f"High Complexity:     {results.get('high_complexity_count', 0)} functions")
     print("="*60)
     print(f"\n✓ Analysis complete! Open {html_output.name} in your browser.")
-    
+
     return 0
 
 if __name__ == "__main__":

@@ -1,8 +1,9 @@
 from __future__ import annotations
-from dataclasses import dataclass
-from typing import List, Dict, Any, Optional, Tuple
-import re
+
 import bisect
+import re
+from dataclasses import dataclass
+from typing import Any, Optional
 
 __all__ = ["ChunkConfig", "TextChunker", "prepare_index_units"]
 
@@ -18,9 +19,11 @@ PARA_RE = re.compile(r'(?:\r?\n)\s*(?:\r?\n)+')
 # - Ellipsis: …
 # - Arabic/Persian/Urdu: ؟ ۔
 # Allow common closing quotes/brackets after the punctuation, then whitespace or EoD.
+# MEDIUM #19: Known edge cases (Dr. Smith, 3.14159) are trade-offs for performance.
+# Overly complex patterns would significantly slow chunking for minimal accuracy gain.
 SENT_RE = re.compile(
     r'[.!?。！？…؟۔]+'
-    r'[)"\'”’»›）】〔〕〉》」』〗〙〞]*'
+    r'[)"\'\u2018\u2019»›）】〔〕〉》」』〗〙〞]*'
     r'(?:\s+|$)'
 )
 
@@ -82,7 +85,7 @@ def _apply_progressive_scaling(total_len: int, size: int, overlap: int, enable: 
     return new_size, new_overlap
 
 
-def _compute_breakpoints(text: str, respect_sentences: bool, respect_paragraphs: bool) -> List[int]:
+def _compute_breakpoints(text: str, respect_sentences: bool, respect_paragraphs: bool) -> list[int]:
     """
     Pre-compute candidate split positions that align with paragraph or sentence boundaries.
     Positions are indices where a chunk may end (exclusive).
@@ -109,7 +112,7 @@ def _ranges_with_overlap(
     max_chunks: Optional[int],
     respect_sentences: bool,
     respect_paragraphs: bool,
-) -> List[Tuple[int, int]]:
+) -> list[tuple[int, int]]:
     """
     Produce (start, end) ranges over `text` honoring overlap and optional boundary-aware cutting.
 
@@ -128,12 +131,12 @@ def _ranges_with_overlap(
     if max_chunks is not None and max_chunks < 1:
         max_chunks = 1
 
-    boundary_points: Optional[List[int]] = (
+    boundary_points: Optional[list[int]] = (
         _compute_breakpoints(text, respect_sentences, respect_paragraphs)
         if (respect_sentences or respect_paragraphs) else None
     )
 
-    ranges: List[Tuple[int, int]] = []
+    ranges: list[tuple[int, int]] = []
     start = 0
     lookahead_limit = max(1, int(0.2 * chunk_size))  # allow slight overshoot to land on a boundary
 
@@ -183,7 +186,7 @@ class TextChunker:
     def __init__(self, config: ChunkConfig):
         self.config = config
 
-    def chunk_text(self, text: str, metadata: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+    def chunk_text(self, text: str, metadata: Optional[dict[str, Any]] = None) -> list[dict[str, Any]]:
         """
         Chunk `text` according to the `ChunkConfig`.
 
@@ -216,7 +219,7 @@ class TextChunker:
             respect_paragraphs=self.config.respect_paragraphs,
         )
 
-        chunks: List[Dict[str, Any]] = []
+        chunks: list[dict[str, Any]] = []
         for idx, (start, end) in enumerate(ranges):
             chunk_text = text[start:end]
             chunk_metadata = dict(metadata or {})
@@ -243,7 +246,7 @@ def prepare_index_units(
     progressive_scaling: Optional[bool] = None,
     max_chunks: Optional[int] = None,
     config: Optional[ChunkConfig] = None,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Prepare text for indexing by splitting it into chunks with metadata.
 
@@ -291,10 +294,10 @@ def prepare_index_units(
         respect_paragraphs=eff_respect_paragraphs,
     )
 
-    chunks: List[Dict[str, Any]] = []
+    chunks: list[dict[str, Any]] = []
     for idx, (start, end) in enumerate(ranges):
         chunk_text = text[start:end]
-        chunk: Dict[str, Any] = {
+        chunk: dict[str, Any] = {
             "id": f"{doc_id}::chunk{idx}" if idx > 0 else doc_id,
             "text": chunk_text,
             "path": doc_path,

@@ -3,17 +3,18 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+import hashlib
 import io
 import json
 import logging
 import os
 import re
 import time
-import hashlib
 from collections import defaultdict
-from datetime import datetime, timezone
+from collections.abc import Iterable
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, DefaultDict, Dict, Iterable, List, Optional, Set, Tuple
+from typing import Any
 
 import numpy as np
 
@@ -31,26 +32,23 @@ try:
         save_index_metadata,
         write_mapping,
     )
+
     # Try to import the consistency checker (preferred); fall back to a local checker below.
     try:
         from .index_metadata import check_index_consistency  # type: ignore
     except Exception:  # pragma: no cover
         check_index_consistency = None  # type: ignore
-    from .llm_client import (
-        embed_texts,  # shim over runtime (unit-normalized embeddings)
-    )
-    from .text_chunker import (
-        prepare_index_units,  # emits id="doc_id::chunk{N}" when chunking
-    )
-    from .utils import (  # library-safe logger
+    from .config import EmailOpsConfig
+    from .llm_client import embed_texts
+    from .text_chunker import prepare_index_units
+    from .utils import (
+        clean_email_text,
         ensure_dir,
         find_conversation_dirs,
         load_conversation,
         logger,
-        read_text_file,          # robust text reader (BOM/UTF-16/latin-1) + control-char sanitization
-        clean_email_text,        # stronger cleaner for raw email bodies
+        read_text_file,
     )
-    from .config import EmailOpsConfig  # single source of truth for env/secrets + chunk defaults
 except Exception:
     # Fallback for running as a script (no package context)
     import sys as _sys
@@ -59,10 +57,7 @@ except Exception:
     if str(_pkg_dir) not in _sys.path:
         _sys.path.insert(0, str(_pkg_dir))
     from index_metadata import (  # type: ignore
-        FAISS_INDEX_FILENAME,
-        FILE_TIMES_FILENAME,
         INDEX_DIRNAME_DEFAULT,
-        MAPPING_FILENAME,
         TIMESTAMP_FILENAME,
         create_index_metadata,
         index_paths,
@@ -75,13 +70,17 @@ except Exception:
         from index_metadata import check_index_consistency  # type: ignore
     except Exception:
         check_index_consistency = None  # type: ignore
+    from config import EmailOpsConfig  # type: ignore
     from llm_client import embed_texts  # type: ignore
     from text_chunker import prepare_index_units  # type: ignore
     from utils import (  # type: ignore
-        ensure_dir, find_conversation_dirs, load_conversation, logger,
-        read_text_file, clean_email_text
+        clean_email_text,
+        ensure_dir,
+        find_conversation_dirs,
+        load_conversation,
+        logger,
+        read_text_file,
     )
-    from config import EmailOpsConfig
 
 try:
     import faiss  # type: ignore
@@ -123,7 +122,7 @@ def _atomic_write_bytes(dest: Path, data: bytes) -> None:
         
         # Write to temp file with error handling
         try:
-            with open(tmp, "wb") as f:
+            with tmp.open("wb") as f:
                 f.write(data)
                 f.flush()
                 os.fsync(f.fileno())
@@ -132,28 +131,28 @@ def _atomic_write_bytes(dest: Path, data: bytes) -> None:
             if tmp.exists():
                 with contextlib.suppress(Exception):
                     tmp.unlink()
-            raise IOError(f"Failed to write temp file {tmp}: {e}") from e
-        
+            raise OSError(f"Failed to write temp file {tmp}: {e}") from e
+
         # Verify file was written correctly
         if not tmp.exists():
-            raise IOError(f"Temp file {tmp} was not created")
+            raise OSError(f"Temp file {tmp} was not created")
         if tmp.stat().st_size != len(data):
             tmp.unlink()
-            raise IOError(f"Temp file size mismatch: expected {len(data)}, got {tmp.stat().st_size}")
-        
+            raise OSError(f"Temp file size mismatch: expected {len(data)}, got {tmp.stat().st_size}")
+
         # Atomic replace
-        os.replace(tmp, dest)
-        
+        tmp.replace(dest)
+
         # Verify destination exists after replace
         if not dest.exists():
-            raise IOError(f"Destination file {dest} does not exist after replace")
-            
+            raise OSError(f"Destination file {dest} does not exist after replace")
+
     except Exception as e:
         # Clean up temp file on any error
         if tmp.exists():
             with contextlib.suppress(Exception):
                 tmp.unlink()
-        raise IOError(f"Atomic write failed for {dest}: {e}") from e
+        raise OSError(f"Atomic write failed for {dest}: {e}") from e
 
 
 def _atomic_write_text(dest: Path, text: str, *, encoding: str = "utf-8") -> None:
@@ -168,7 +167,7 @@ def _atomic_write_text(dest: Path, text: str, *, encoding: str = "utf-8") -> Non
         
         # Write to temp file with error handling
         try:
-            with open(tmp, "w", encoding=encoding) as f:
+            with tmp.open("w", encoding=encoding) as f:
                 f.write(text)
                 f.flush()
                 os.fsync(f.fileno())
@@ -177,31 +176,32 @@ def _atomic_write_text(dest: Path, text: str, *, encoding: str = "utf-8") -> Non
             if tmp.exists():
                 with contextlib.suppress(Exception):
                     tmp.unlink()
-            raise IOError(f"Failed to write temp file {tmp}: {e}") from e
-        
+            raise OSError(f"Failed to write temp file {tmp}: {e}") from e
+
         # Verify file was written correctly
         if not tmp.exists():
-            raise IOError(f"Temp file {tmp} was not created")
+            raise OSError(f"Temp file {tmp} was not created")
         expected_size = len(text.encode(encoding))
         actual_size = tmp.stat().st_size
         # Allow some tolerance for encoding differences
-        if abs(actual_size - expected_size) > expected_size * 0.1:
+        # MEDIUM #42: Tightened atomic write verification tolerance from 10% to 5%
+        if abs(actual_size - expected_size) > expected_size * 0.05:
             tmp.unlink()
-            raise IOError(f"Temp file size suspicious: expected ~{expected_size}, got {actual_size}")
-        
+            raise OSError(f"Temp file size mismatch: expected ~{expected_size}, got {actual_size}")
+
         # Atomic replace
-        os.replace(tmp, dest)
-        
+        tmp.replace(dest)
+
         # Verify destination exists after replace
         if not dest.exists():
-            raise IOError(f"Destination file {dest} does not exist after replace")
-            
+            raise OSError(f"Destination file {dest} does not exist after replace")
+
     except Exception as e:
         # Clean up temp file on any error
         if tmp.exists():
             with contextlib.suppress(Exception):
                 tmp.unlink()
-        raise IOError(f"Atomic write failed for {dest}: {e}") from e
+        raise OSError(f"Atomic write failed for {dest}: {e}") from e
 
 
 # ============================================================================
@@ -224,7 +224,7 @@ def _initialize_gcp_credentials() -> None:
 # Small helpers
 # ============================================================================
 
-def _apply_model_override(provider: str, model: Optional[str]) -> None:
+def _apply_model_override(provider: str, model: str | None) -> None:
     """
     Map --model to the correct provider env var so llm_client picks it up.
     This only influences embedding calls in this process.
@@ -245,7 +245,7 @@ def _apply_model_override(provider: str, model: Optional[str]) -> None:
         os.environ[key] = str(model)
 
 
-def _get_last_run_time(index_dir: Path) -> Optional[datetime]:
+def _get_last_run_time(index_dir: Path) -> datetime | None:
     p = index_dir / TIMESTAMP_FILENAME
     if not p.exists():
         return None
@@ -258,13 +258,16 @@ def _get_last_run_time(index_dir: Path) -> Optional[datetime]:
 
 def _save_run_time(index_dir: Path) -> None:
     # Atomic timestamp write
-    _atomic_write_text(index_dir / TIMESTAMP_FILENAME, datetime.now(timezone.utc).isoformat(), encoding="utf-8")
+    _atomic_write_text(index_dir / TIMESTAMP_FILENAME, datetime.now(UTC).isoformat(), encoding="utf-8")
 
 
 def _clean_index_text(text: str) -> str:
     """
     Light cleaning to reduce noise for embeddings, without altering meaning.
     (Aggressive email cleanup happens upstream when needed.)
+    
+    LOW #44: Function name is accurate - performs light cleaning optimized for indexing.
+    The "light" qualifier is intentional to distinguish from aggressive email cleaning.
     """
     if not text:
         return ""
@@ -275,13 +278,13 @@ def _clean_index_text(text: str) -> str:
     return s.strip()
 
 
-def _extract_manifest_metadata(conv: Dict[str, Any]) -> Dict[str, Any]:
+def _extract_manifest_metadata(conv: dict[str, Any]) -> dict[str, Any]:
     """Safe fields from manifest for indexing metadata."""
     man = conv.get("manifest") or {}
     subject = (man.get("smart_subject") or man.get("subject") or "").strip()
 
     # Participants (kept conservative; first message)
-    participants: List[str] = []
+    participants: list[str] = []
     try:
         msgs = man.get("messages") or []
         if isinstance(msgs, list) and msgs:
@@ -323,14 +326,14 @@ def _extract_manifest_metadata(conv: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def _materialize_text_for_docs(docs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def _materialize_text_for_docs(docs: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """
     Ensure each doc has a non-empty 'text' field, using:
       1) existing 'text', else
       2) 'snippet' from prior mapping, else
       3) file content at 'path' (robustly read and sanitized)
     """
-    out: List[Dict[str, Any]] = []
+    out: list[dict[str, Any]] = []
     for d in docs:
         t = str(d.get("text") or "")
         if not t.strip():
@@ -352,18 +355,18 @@ def _materialize_text_for_docs(docs: List[Dict[str, Any]]) -> List[Dict[str, Any
 def _prefix_from_id(doc_id: str) -> str:
     """
     Normalize a document ID to its 2-part prefix for grouping purposes.
-    
+
     Extracts the conversation-level identifier from chunk-level IDs:
       - "<conv_id>::conversation" (conversation main text)
       - "<conv_id>::att:{HASH}" (attachment)
       - "<conv_id>::conversation::chunk3" → "<conv_id>::conversation"
-    
+
     Args:
         doc_id: Full document ID (may include ::chunk suffix)
-        
+
     Returns:
         Two-part prefix without chunk suffix, or original ID if no '::' found
-        
+
     Example:
         >>> _prefix_from_id("conv123::conversation::chunk2")
         'conv123::conversation'
@@ -391,18 +394,18 @@ def _iter_attachment_files(convo_dir: Path) -> Iterable[Path]:
 def _att_id(base_id: str, path: str) -> str:
     """
     Generate a stable attachment ID based on file path hash.
-    
+
     Creates a consistent identifier for attachments using SHA-1 hash of
     the absolute POSIX path. This ensures the same attachment always gets
     the same ID across multiple index builds.
-    
+
     Args:
         base_id: Base conversation ID (e.g., "conv123")
         path: File path to attachment (will be resolved to absolute)
-        
+
     Returns:
         Stable attachment ID in format: "<base_id>::att:{sha1_hash[:12]}"
-        
+
     Example:
         >>> _att_id("conv123", "/path/to/attachment.pdf")
         'conv123::att:a1b2c3d4e5f6'
@@ -411,7 +414,7 @@ def _att_id(base_id: str, path: str) -> str:
         ap = Path(path).resolve().as_posix()
     except Exception:
         ap = str(path)
-    h = hashlib.sha1(ap.encode("utf-8")).hexdigest()[:12]
+    h = hashlib.sha256(ap.encode("utf-8"), usedforsecurity=False).hexdigest()[:12]
     return f"{base_id}::att:{h}"
 
 
@@ -419,15 +422,15 @@ def _att_id(base_id: str, path: str) -> str:
 # Chunk-building for a conversation (respects per-conversation limit)
 # ============================================================================
 def _build_doc_entries(
-    conv: Dict[str, Any],
+    conv: dict[str, Any],
     convo_dir: Path,
     base_id: str,
-    limit: Optional[int] = None,
-    metadata: Optional[Dict[str, Any]] = None,
+    limit: int | None = None,
+    metadata: dict[str, Any] | None = None,
     *,
     chunk_size: int,
     chunk_overlap: int,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Build indexable document entries for a conversation and its attachments.
 
@@ -439,7 +442,7 @@ def _build_doc_entries(
         List of chunk dicts.
     """
     metadata = dict(metadata or {})
-    out: List[Dict[str, Any]] = []
+    out: list[dict[str, Any]] = []
 
     # Conversation main text (use robust email cleaner)
     convo_txt_raw = conv.get("conversation_txt", "")
@@ -580,22 +583,22 @@ def build_corpus(
     root: Path,
     index_dir: Path,
     *,
-    last_run_time: Optional[datetime] = None,
-    limit: Optional[int] = None,
+    last_run_time: datetime | None = None,
+    limit: int | None = None,
     chunk_size: int,
     chunk_overlap: int,
-) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """
     Full scan of conversation folders; when last_run_time is provided, reuses prior
     mapping to keep truly unchanged docs (including conversation unchanged + attachments unchanged).
     Returns (new_or_updated_docs, unchanged_docs).
     """
-    new_or_updated_docs: List[Dict[str, Any]] = []
-    unchanged_docs: List[Dict[str, Any]] = []
+    new_or_updated_docs: list[dict[str, Any]] = []
+    unchanged_docs: list[dict[str, Any]] = []
 
     conversation_dirs = find_conversation_dirs(root)  # list of Path to conversation folder
     old_mapping_list = read_mapping(index_dir)
-    old_mapping: Dict[str, Dict[str, Any]] = {
+    old_mapping: dict[str, dict[str, Any]] = {
         str(d.get("id")): d for d in (old_mapping_list or []) if d.get("id") is not None
     }
 
@@ -609,7 +612,7 @@ def build_corpus(
         # if we actually have prior docs for this conversation. Otherwise, treat as new.
         if last_run_time is not None:
             try:
-                modified_time = datetime.fromtimestamp(convo_txt_path.stat().st_mtime, tz=timezone.utc)
+                modified_time = datetime.fromtimestamp(convo_txt_path.stat().st_mtime, tz=UTC)
             except Exception:
                 modified_time = None
 
@@ -622,11 +625,16 @@ def build_corpus(
 
             if modified_time and modified_time < last_run_time and prior_docs_for_conv:
                 # Conversation main text unchanged — check attachments
-                conv = load_conversation(convo_dir)
+                # HIGH #38: Use consistent load_conversation parameters
+                conv = load_conversation(
+                    convo_dir,
+                    include_attachment_text=False,  # Process attachments separately for chunking
+                    max_total_attachment_text=None,  # Use config defaults
+                )
                 meta = _extract_manifest_metadata(conv)
 
                 # Detect changed attachments (>= last run or stat() fails)
-                changed_attachment_paths: Set[Path] = set()
+                changed_attachment_paths: set[Path] = set()
                 last_ts = last_run_time.timestamp()
                 for att_file in _iter_attachment_files(convo_dir):
                     try:
@@ -637,7 +645,7 @@ def build_corpus(
                         changed_attachment_paths.add(att_file.resolve())
 
                 # Build mapping path->stable att_id for changed ones
-                path_to_attid: Dict[Path, str] = {}
+                path_to_attid: dict[Path, str] = {}
                 for att in (conv.get("attachments") or []):
                     try:
                         path_to_attid[Path(att.get("path", "")).resolve()] = _att_id(base_id, str(att.get("path", "")))
@@ -645,19 +653,19 @@ def build_corpus(
                         continue
 
                 # Compute prefixes that changed due to mtime
-                changed_prefixes: Set[str] = set()
+                changed_prefixes: set[str] = set()
                 for p in changed_attachment_paths:
                     aid = path_to_attid.get(p)
                     if aid:
                         changed_prefixes.add(aid)
 
                 # Existing (current) attachment prefixes
-                current_att_prefixes: Set[str] = {
+                current_att_prefixes: set[str] = {
                     _att_id(base_id, str(att.get("path", "")))
                     for att in (conv.get("attachments") or [])
                 }
                 # Previously existing attachment prefixes for this conversation
-                old_att_prefixes: Set[str] = {
+                old_att_prefixes: set[str] = {
                     _prefix_from_id(d.get("id", ""))
                     for d in prior_docs_for_conv
                     if str(d.get("id", "")).startswith(f"{base_id}::att")
@@ -721,10 +729,16 @@ def build_corpus(
                         ch["modified_time"] = mt
                         new_or_updated_docs.append(ch)
                         added_for_conv += 1
-                continue  # next conversation
+                # Skip the full rebuild below - conversation was handled via fast-path
+                continue
 
         # If conversation changed or no last_run_time -> rebuild fully
-        conv = load_conversation(convo_dir)
+        # HIGH #38: Use consistent load_conversation parameters
+        conv = load_conversation(
+            convo_dir,
+            include_attachment_text=False,  # Process attachments separately for chunking
+            max_total_attachment_text=None,  # Use config defaults
+        )
         meta = _extract_manifest_metadata(conv)
         docs = _build_doc_entries(conv, convo_dir, base_id, limit=limit, metadata=meta,
                                   chunk_size=chunk_size, chunk_overlap=chunk_overlap)
@@ -745,13 +759,13 @@ def build_corpus(
 # ============================================================================
 def build_incremental_corpus(
     root: Path,
-    existing_file_times: Dict[str, float],
-    existing_mapping: List[Dict[str, Any]],
-    limit: Optional[int] = None,
+    existing_file_times: dict[str, float],
+    existing_mapping: list[dict[str, Any]],
+    limit: int | None = None,
     *,
     chunk_size: int,
     chunk_overlap: int,
-) -> Tuple[List[Dict[str, Any]], Set[str]]:
+) -> tuple[list[dict[str, Any]], set[str]]:
     """
     True incremental build using stored per-doc file times.
     Returns (new_or_updated_docs, deleted_doc_ids).
@@ -761,19 +775,19 @@ def build_incremental_corpus(
       * Remove old chunks for changed attachments and conversations to avoid duplication.
       * Enforce per-conversation `limit` for newly rebuilt records.
     """
-    new_docs: List[Dict[str, Any]] = []
-    deleted_ids: Set[str] = set()
+    new_docs: list[dict[str, Any]] = []
+    deleted_ids: set[str] = set()
 
     # Group prior mapping rows by conversation and by 2-part prefix
-    by_conv: DefaultDict[str, List[Dict[str, Any]]] = defaultdict(list)
+    by_conv: defaultdict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in existing_mapping or []:
         cid = str(row.get("conv_id") or "")
         if cid:
             by_conv[cid].append(row)
 
-    by_conv_prefix: Dict[str, Dict[str, List[str]]] = {}
+    by_conv_prefix: dict[str, dict[str, list[str]]] = {}
     for cid, rows in by_conv.items():
-        pref_map: DefaultDict[str, List[str]] = defaultdict(list)
+        pref_map: defaultdict[str, list[str]] = defaultdict(list)
         for r in rows:
             rid = str(r.get("id") or "")
             pref_map[_prefix_from_id(rid)].append(rid)
@@ -781,7 +795,7 @@ def build_incremental_corpus(
 
     # Current conversations present on disk
     current_dirs = find_conversation_dirs(root)
-    current_conv_ids: Set[str] = {p.name for p in current_dirs}
+    current_conv_ids: set[str] = {p.name for p in current_dirs}
 
     for convo_dir in current_dirs:
         base_id = convo_dir.name
@@ -837,7 +851,7 @@ def build_incremental_corpus(
 
         # --- Attachments change / deletion detection ---
         # Map current attachments (with stable IDs)
-        current_att_prefixes: Set[str] = set()
+        current_att_prefixes: set[str] = set()
         for att in (conv.get("attachments") or []):
             ap = Path(att.get("path", ""))
             prefix = _att_id(base_id, str(ap))
@@ -912,7 +926,7 @@ def build_incremental_corpus(
 # ============================================================================
 # Index I/O
 # ============================================================================
-def load_existing_index(index_dir: Path) -> Tuple[Optional[Any], Optional[List[Dict[str, Any]]], Optional[Dict[str, float]], Optional[np.ndarray]]:
+def load_existing_index(index_dir: Path) -> tuple[Any | None, list[dict[str, Any]] | None, dict[str, float] | None, np.ndarray | None]:
     """
     Returns (faiss_index_or_None, mapping_list_or_None, file_times_dict_or_None, embeddings_array_or_None)
     All parts are optional; function handles missing files gracefully.
@@ -921,14 +935,14 @@ def load_existing_index(index_dir: Path) -> Tuple[Optional[Any], Optional[List[D
 
     mapping = read_mapping(index_dir)
 
-    file_times: Optional[Dict[str, float]] = None
+    file_times: dict[str, float] | None = None
     if ixp.file_times.exists():
         try:
             file_times = json.loads(ixp.file_times.read_text(encoding="utf-8"))
         except Exception as e:
             logger.warning("Failed to read %s: %s", ixp.file_times.name, e)
 
-    embeddings: Optional[np.ndarray] = None
+    embeddings: np.ndarray | None = None
     if ixp.embeddings.exists():
         try:
             embeddings = np.load(str(ixp.embeddings), mmap_mode="r").astype("float32", copy=False)
@@ -971,7 +985,7 @@ def _local_check_index_consistency(index_dir: Path) -> None:
         raise
 
 
-def save_index(index_dir: Path, embeddings: np.ndarray, mapping: List[Dict[str, Any]], *, provider: str, num_folders: int) -> None:
+def save_index(index_dir: Path, embeddings: np.ndarray, mapping: list[dict[str, Any]], *, provider: str, num_folders: int) -> None:
     """
     Persist embeddings (embeddings.npy), mapping.json, (optional) FAISS index, and meta.json.
     All writes are atomic. A post-save consistency check verifies alignment.
@@ -996,7 +1010,7 @@ def save_index(index_dir: Path, embeddings: np.ndarray, mapping: List[Dict[str, 
             # Write FAISS to a temp path then replace
             faiss_tmp = ixp.faiss.with_suffix(ixp.faiss.suffix + ".tmp")
             faiss.write_index(index, str(faiss_tmp))  # type: ignore
-            os.replace(faiss_tmp, ixp.faiss)
+            faiss_tmp.replace(ixp.faiss)
         except Exception as e:
             logger.warning("FAISS indexing failed, continuing without faiss: %s", e)
 
@@ -1037,6 +1051,12 @@ def main() -> None:
     ap.add_argument("--index-root", help="Directory where the _index folder should be created (defaults to --root)")
     ap.add_argument("--force-reindex", action="store_true", help="Force a full re-index of all conversations")
     ap.add_argument("--limit", type=int, help="Limit number of chunks per conversation (for quick smoke tests)")
+    ap.add_argument(
+        "--workers",
+        type=int,
+        default=1,
+        help="Number of parallel workers for indexing (default: 1 for serial, use 6 for parallel with multiple GCP accounts)",
+    )
     args = ap.parse_args()
 
     # Initialize GCP credentials for Vertex AI via config (single source of truth).
@@ -1083,6 +1103,36 @@ def main() -> None:
             )
         embed_provider = idx_provider
 
+    # ============================================================================
+    # PARALLEL INDEXING PATH (when workers > 1)
+    # ============================================================================
+    if args.workers > 1:
+        logger.info("Using parallel indexing with %d workers", args.workers)
+        try:
+            from .parallel_indexer import parallel_index_conversations
+
+            merged_embeddings, merged_mapping = parallel_index_conversations(
+                root=root,
+                index_dir=out_dir,
+                num_workers=args.workers,
+                provider=embed_provider,
+                chunk_size=chunk_size,
+                chunk_overlap=chunk_overlap,
+                limit=args.limit,
+            )
+
+            # Save merged results
+            num_folders = len({d["id"].split("::")[0] for d in merged_mapping if d.get("id")})
+            save_index(out_dir, merged_embeddings, merged_mapping, provider=embed_provider, num_folders=num_folders)
+            _save_run_time(out_dir)
+            logger.info("Parallel index completed at %s", out_dir)
+            return
+
+        except ImportError as e:
+            logger.warning("Parallel indexing not available (%s), falling back to serial", e)
+        except Exception as e:
+            logger.error("Parallel indexing failed (%s), falling back to serial", e)
+
     # ------------------------------------------------------------------
     # 1) Build doc corpus (new/updated + unchanged)
     # ------------------------------------------------------------------
@@ -1125,8 +1175,8 @@ def main() -> None:
     # ------------------------------------------------------------------
     # 2) Embed texts (reuse unchanged vectors when possible)
     # ------------------------------------------------------------------
-    final_docs: List[Dict[str, Any]] = []
-    all_embeddings: List[np.ndarray] = []
+    final_docs: list[dict[str, Any]] = []
+    all_embeddings: list[np.ndarray] = []
 
     if not (new_docs or unchanged_docs):
         logger.info("No documents to index.")
@@ -1150,8 +1200,8 @@ def main() -> None:
     if existing_embeddings is not None and existing_mapping and not args.force_reindex:
         # Reuse unchanged vectors by id -> row index
         id_to_old_idx = {doc["id"]: i for i, doc in enumerate(existing_mapping)}
-        unchanged_with_vecs: List[Dict[str, Any]] = []
-        unchanged_to_embed: List[Dict[str, Any]] = []
+        unchanged_with_vecs: list[dict[str, Any]] = []
+        unchanged_to_embed: list[dict[str, Any]] = []
 
         for d in unchanged_docs:
             idx = id_to_old_idx.get(d.get("id"))
@@ -1207,24 +1257,24 @@ def main() -> None:
     # ------------------------------------------------------------------
     # 3) Persist index artifacts
     # ------------------------------------------------------------------
-    mapping_out: List[Dict[str, Any]] = []
-    file_times: Dict[str, float] = {}
+    mapping_out: list[dict[str, Any]] = []
+    file_times: dict[str, float] = {}
     # capture prior file_times to preserve unchanged values
     prior_times = existing_file_times or {}
 
     for d in final_docs:
         text = str(d.get("text", "") or "")
         snippet = text[:500] if text else str(d.get("snippet", "") or "")[:500]
-        
+
         # Compute content hash for deduplication (SHA-256 of cleaned text)
         # This enables efficient duplicate detection at search time
         content_hash = ""
         if text:
             try:
-                content_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]  # First 64 bits
+                content_hash = hashlib.sha256(text.encode("utf-8"), usedforsecurity=False).hexdigest()[:16]  # First 64 bits
             except Exception:
                 content_hash = ""
-        
+
         rec = {
             "id": d.get("id"),
             "path": d.get("path"),

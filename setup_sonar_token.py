@@ -1,20 +1,35 @@
 #!/usr/bin/env python3
 """
-Helper script to generate SonarQube authentication token.
+Automated SonarQube token setup and configuration.
 """
 
 import sys
 import requests
-import json
+import re
 
 SONAR_URL = "http://localhost:9099"
 DEFAULT_USER = "admin"
-DEFAULT_PASS = "admin"
+DEFAULT_PASS = "!Sharjah2050"
+TOKEN_NAME = "emailops-analysis"
+PROPERTIES_FILE = "sonar-project.properties"
 
-def generate_token(username: str, password: str, token_name: str = "emailops-analysis") -> tuple[bool, str]:
-    """Generate a new token for SonarQube."""
+def revoke_token(username: str, password: str, token_name: str) -> bool:
+    """Revoke an existing token."""
     try:
-        # Try to generate token
+        url = f"{SONAR_URL}/api/user_tokens/revoke"
+        response = requests.post(
+            url,
+            auth=(username, password),
+            data={"name": token_name},
+            timeout=10
+        )
+        return response.status_code == 204
+    except:
+        return False
+
+def generate_token(username: str, password: str, token_name: str) -> tuple[bool, str]:
+    """Generate a new token."""
+    try:
         url = f"{SONAR_URL}/api/user_tokens/generate"
         response = requests.post(
             url,
@@ -28,93 +43,88 @@ def generate_token(username: str, password: str, token_name: str = "emailops-ana
             token = data.get("token")
             if token:
                 return True, token
-            return False, "No token in response"
-        elif response.status_code == 401:
-            return False, "Invalid credentials"
-        else:
-            return False, f"HTTP {response.status_code}: {response.text[:200]}"
-    
-    except requests.exceptions.ConnectionError:
-        return False, "Cannot connect to SonarQube server"
+        return False, response.text
     except Exception as e:
         return False, str(e)
 
-def check_existing_token() -> str | None:
-    """Check if token is already set in environment."""
-    import os
-    return os.getenv("SONAR_TOKEN")
+def update_properties_file(token: str) -> bool:
+    """Update sonar-project.properties with the token."""
+    try:
+        with open(PROPERTIES_FILE, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # Check if token already exists
+        if re.search(r'^sonar\.token=', content, re.MULTILINE):
+            # Replace existing token
+            content = re.sub(
+                r'^sonar\.token=.*$',
+                f'sonar.token={token}',
+                content,
+                flags=re.MULTILINE
+            )
+        else:
+            # Add token after host.url
+            content = re.sub(
+                r'(sonar\.host\.url=.*\n)',
+                f'\\1sonar.token={token}\n',
+                content
+            )
+        
+        with open(PROPERTIES_FILE, 'w', encoding='utf-8') as f:
+            f.write(content)
+        
+        return True
+    except Exception as e:
+        print(f"Error updating properties file: {e}")
+        return False
 
-def main() -> int:
-    """Main entry point."""
-    print("="*60)
-    print("SonarQube Token Setup")
-    print("="*60)
+def main():
+    username = DEFAULT_USER
+    password = DEFAULT_PASS
+    
+    print("=" * 70)
+    print("SonarQube Token Automated Setup")
+    print("=" * 70)
     print()
     
-    # Check if token already exists
-    existing = check_existing_token()
-    if existing:
-        print(f"✓ SONAR_TOKEN is already set: {existing[:10]}...")
-        print("\nTo use this token, run:")
-        print("  .sonar-tools\\sonar-scanner-5.0.1.3006-windows\\bin\\sonar-scanner.bat")
-        return 0
+    # Step 1: Revoke existing token if it exists
+    print(f"Step 1: Revoking existing '{TOKEN_NAME}' token (if exists)...")
+    revoke_token(username, password, TOKEN_NAME)  # Don't care if it fails
+    print("✓ Done")
     
-    print(f"SonarQube Server: {SONAR_URL}")
-    print()
-    print("Options:")
-    print("  1. Generate new token (requires admin credentials)")
-    print("  2. Enter existing token manually")
-    print("  3. Exit")
-    print()
+    # Step 2: Generate new token
+    print(f"\nStep 2: Generating new '{TOKEN_NAME}' token...")
+    success, token = generate_token(username, password, TOKEN_NAME)
     
-    choice = input("Choose option (1-3): ").strip()
+    if not success:
+        print(f"✗ Failed to generate token: {token}")
+        print("\nPlease check:")
+        print(f"1. SonarQube is running at {SONAR_URL}")
+        print(f"2. Admin credentials are correct")
+        return 1
     
-    if choice == "1":
-        print("\nDefault credentials: admin/admin")
-        username = input(f"Username [{DEFAULT_USER}]: ").strip() or DEFAULT_USER
-        password = input(f"Password [{DEFAULT_PASS}]: ").strip() or DEFAULT_PASS
-        
-        print("\nGenerating token...")
-        success, result = generate_token(username, password)
-        
-        if success:
-            print(f"\n✓ Token generated successfully!")
-            print(f"\nToken: {result}")
-            print("\n" + "="*60)
-            print("Set this token in your environment:")
-            print("="*60)
-            print(f"\nPowerShell:")
-            print(f'  $env:SONAR_TOKEN="{result}"')
-            print(f"\nCmd:")
-            print(f'  set SONAR_TOKEN={result}')
-            print("\nThen run the analysis:")
-            print("  .sonar-tools\\sonar-scanner-5.0.1.3006-windows\\bin\\sonar-scanner.bat")
-            print()
-            return 0
-        else:
-            print(f"\n✗ Failed to generate token: {result}")
-            return 1
+    print(f"✓ Token generated: {token}")
     
-    elif choice == "2":
-        token = input("\nEnter your SonarQube token: ").strip()
-        if token:
-            print("\n" + "="*60)
-            print("Set this token in your environment:")
-            print("="*60)
-            print(f"\nPowerShell:")
-            print(f'  $env:SONAR_TOKEN="{token}"')
-            print(f"\nCmd:")
-            print(f'  set SONAR_TOKEN={token}')
-            print("\nThen run the analysis:")
-            print("  .sonar-tools\\sonar-scanner-5.0.1.3006-windows\\bin\\sonar-scanner.bat")
-            return 0
-        else:
-            print("✗ No token provided")
-            return 1
-    
+    # Step 3: Update properties file
+    print(f"\nStep 3: Updating {PROPERTIES_FILE}...")
+    if update_properties_file(token):
+        print("✓ Properties file updated")
     else:
-        print("Exiting...")
-        return 0
+        print("✗ Failed to update properties file")
+        print("\nManually add this line to sonar-project.properties:")
+        print(f"sonar.token={token}")
+        return 1
+    
+    # Step 4: Instructions
+    print("\n" + "=" * 70)
+    print("✓ Setup Complete!")
+    print("=" * 70)
+    print("\nYou can now run the SonarQube scanner:")
+    print(".sonar-tools\\sonar-scanner-5.0.1.3006-windows\\bin\\sonar-scanner.bat")
+    print("\nOr use the run script:")
+    print("python run_sonar_analysis.py")
+    
+    return 0
 
 if __name__ == "__main__":
     sys.exit(main())

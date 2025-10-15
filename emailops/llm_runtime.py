@@ -12,11 +12,15 @@ from collections import deque
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    pass
 
 import numpy as np
 
 from .config import EmailOpsConfig, get_config
+from .exceptions import LLMError
 
 # Import utilities from utils.py
 from .utils import (
@@ -29,6 +33,7 @@ from .utils import (
 # Import for control char removal
 _CONTROL_CHARS = re.compile(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]")
 
+
 def _strip_control_chars(s: str) -> str:
     """Remove non-printable control characters and normalize newlines."""
     if not s:
@@ -39,12 +44,9 @@ def _strip_control_chars(s: str) -> str:
 
 
 # --------------------------------------------------------------------------------------
-# Public error type (unifies previous split across env_utils/llm_client)
+# Public error type (now imported from centralized exceptions module)
 # --------------------------------------------------------------------------------------
-class LLMError(Exception):
-    """Custom exception for LLM- and embedding-related errors."""
-
-    pass
+# MEDIUM #32: Use centralized exception - LLMError now imported from .exceptions
 
 
 # --------------------------------------------------------------------------------------
@@ -57,7 +59,7 @@ _config = get_config()
 # --------------------------------------------------------------------------------------
 # HIGH #14: Rate limiting for API calls
 # --------------------------------------------------------------------------------------
-_API_CALL_TIMES = deque(maxlen=1000)
+_API_CALL_TIMES: deque = deque(maxlen=1000)
 _RATE_LIMIT_PER_MINUTE = int(os.getenv("API_RATE_LIMIT", "60"))  # Keep for backward compatibility
 _RATE_LIMIT_LOCK = threading.Lock()
 
@@ -200,11 +202,8 @@ def load_validated_accounts(
         if not p.is_absolute():
             # Try multiple possible locations for the credentials
             possible_paths = [
-                Path(__file__).resolve().parent.parent
-                / acc.credentials_path,  # From project root
-                Path(__file__).resolve().parent.parent
-                / "secrets"
-                / Path(acc.credentials_path).name,  # In secrets dir
+                Path(__file__).resolve().parent.parent / acc.credentials_path,  # From project root
+                Path(__file__).resolve().parent.parent / "secrets" / Path(acc.credentials_path).name,  # In secrets dir
                 Path(acc.credentials_path),  # As given
             ]
             found = False
@@ -226,17 +225,16 @@ def load_validated_accounts(
         if p.exists():
             # Validate it's actually a valid service account file
             try:
-                with p.open('r') as f:
+                with p.open("r") as f:
                     cred_data = json.load(f)
                 # Check required fields
-                required_fields = ['type', 'project_id', 'private_key_id', 'private_key', 'client_email']
+                required_fields = ["type", "project_id", "private_key_id", "private_key", "client_email"]
                 missing = [f for f in required_fields if f not in cred_data]
                 if missing:
-                    logger.warning("Invalid credentials file for %s (missing: %s)",
-                                  acc.project_id, missing)
+                    logger.warning("Invalid credentials file for %s (missing: %s)", acc.project_id, missing)
                     acc.is_valid = False
                     continue
-                if cred_data.get('type') != 'service_account':
+                if cred_data.get("type") != "service_account":
                     logger.warning("Not a service account file: %s", p)
                     acc.is_valid = False
                     continue
@@ -249,17 +247,13 @@ def load_validated_accounts(
             logger.warning("Credentials file not found for %s: %s", acc.project_id, p)
             acc.is_valid = False
     if not valid_accounts:
-        raise LLMError(
-            "No valid GCP accounts found. Provide validated_accounts.json or valid files in secrets/."
-        )
+        raise LLMError("No valid GCP accounts found. Provide validated_accounts.json or valid files in secrets/.")
     with _VALIDATED_LOCK:
         _validated_accounts = valid_accounts
         return valid_accounts
 
 
-def save_validated_accounts(
-    accounts: list[VertexAccount], output_file: str = "validated_accounts.json"
-) -> None:
+def save_validated_accounts(accounts: list[VertexAccount], output_file: str = "validated_accounts.json") -> None:
     """Persist validated accounts list (merged)."""
     from datetime import datetime
 
@@ -295,12 +289,7 @@ def _init_vertex(
 
     import vertexai  # google-cloud-aiplatform
 
-    project = (
-        project_id
-        or os.getenv("VERTEX_PROJECT")
-        or os.getenv("GCP_PROJECT")
-        or os.getenv("GOOGLE_CLOUD_PROJECT")
-    )
+    project = project_id or os.getenv("VERTEX_PROJECT") or os.getenv("GCP_PROJECT") or os.getenv("GOOGLE_CLOUD_PROJECT")
     location = (
         location
         or os.getenv("VERTEX_LOCATION")
@@ -309,14 +298,10 @@ def _init_vertex(
         or "global"
     )
     if not project:
-        raise LLMError(
-            "GCP project not specified. Set GCP_PROJECT/GOOGLE_CLOUD_PROJECT or pass project_id."
-        )
+        raise LLMError("GCP project not specified. Set GCP_PROJECT/GOOGLE_CLOUD_PROJECT or pass project_id.")
 
     service_account_path = (
-        credentials_path
-        or os.getenv("VERTEX_SERVICE_ACCOUNT_JSON")
-        or os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+        credentials_path or os.getenv("VERTEX_SERVICE_ACCOUNT_JSON") or os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
     )
     try:
         if service_account_path:
@@ -326,12 +311,8 @@ def _init_vertex(
             if cp.exists():
                 from google.oauth2 import service_account
 
-                credentials = service_account.Credentials.from_service_account_file(
-                    str(cp)
-                )
-                vertexai.init(
-                    project=project, location=location, credentials=credentials
-                )
+                credentials = service_account.Credentials.from_service_account_file(str(cp))
+                vertexai.init(project=project, location=location, credentials=credentials)
                 logger.info("✔ Vertex AI initialized with service account: %s", cp.name)
             else:
                 logger.warning(
@@ -354,9 +335,7 @@ def validate_account(account: VertexAccount) -> tuple[bool, str]:
         return False, f"Credentials file not found: {account.credentials_path}"
     try:
         reset_vertex_init()
-        _init_vertex(
-            project_id=account.project_id, credentials_path=account.credentials_path
-        )
+        _init_vertex(project_id=account.project_id, credentials_path=account.credentials_path)
         return True, "OK"
     except Exception as e:
         return False, str(e)
@@ -383,16 +362,11 @@ def _ensure_projects_loaded() -> None:
         try:
             accounts = load_validated_accounts(default_accounts=DEFAULT_ACCOUNTS)
             _PROJECT_ROTATION["projects"] = [
-                {"project_id": a.project_id, "credentials_path": a.credentials_path}
-                for a in accounts
+                {"project_id": a.project_id, "credentials_path": a.credentials_path} for a in accounts
             ]
-            logger.info(
-                "Loaded %d projects for rotation", len(_PROJECT_ROTATION["projects"])
-            )
+            logger.info("Loaded %d projects for rotation", len(_PROJECT_ROTATION["projects"]))
         except Exception as e:
-            logger.warning(
-                "Failed to load validated accounts; using defaults only: %s", e
-            )
+            logger.warning("Failed to load validated accounts; using defaults only: %s", e)
             _PROJECT_ROTATION["projects"] = list(DEFAULT_ACCOUNTS)
         _PROJECT_ROTATION["_initialized"] = True
 
@@ -401,19 +375,11 @@ def _rotate_to_next_project() -> str:
     _ensure_projects_loaded()
     with _PROJECT_ROTATION_LOCK:
         if not _PROJECT_ROTATION["projects"]:
-            logger.warning(
-                "No projects available for rotation; staying on current env."
-            )
-            return (
-                os.getenv("GCP_PROJECT")
-                or os.getenv("GOOGLE_CLOUD_PROJECT")
-                or "<unknown>"
-            )
+            logger.warning("No projects available for rotation; staying on current env.")
+            return os.getenv("GCP_PROJECT") or os.getenv("GOOGLE_CLOUD_PROJECT") or "<unknown>"
 
         idx = _PROJECT_ROTATION["current_index"]
-        _PROJECT_ROTATION["current_index"] = (idx + 1) % len(
-            _PROJECT_ROTATION["projects"]
-        )
+        _PROJECT_ROTATION["current_index"] = (idx + 1) % len(_PROJECT_ROTATION["projects"])
         conf = _PROJECT_ROTATION["projects"][_PROJECT_ROTATION["current_index"]]
 
         # Validate paths exist and are absolute before exposing
@@ -437,7 +403,7 @@ def _rotate_to_next_project() -> str:
             "Project rotation: %d/%d, consecutive_errors=%d",
             _PROJECT_ROTATION["current_index"] + 1,
             len(_PROJECT_ROTATION["projects"]),
-            _PROJECT_ROTATION.get("consecutive_errors", 0)
+            _PROJECT_ROTATION.get("consecutive_errors", 0),
         )
         logger.warning("🔄 Rotating to project: %s", conf["project_id"])
         return conf["project_id"]
@@ -449,7 +415,7 @@ def _rotate_to_next_project() -> str:
 try:
     from google.api_core import exceptions as gax_exceptions  # type: ignore
 except Exception:  # pragma: no cover
-    gax_exceptions = None
+    gax_exceptions = None  # type: ignore[assignment]
 
 try:
     from dotenv import load_dotenv
@@ -491,12 +457,7 @@ def _is_retryable_error(err: Exception) -> bool:
 
 def _should_rotate_on(err: Exception) -> bool:
     msg = str(err).lower()
-    return (
-        ("429" in msg)
-        or ("resource_exhausted" in msg)
-        or ("quota" in msg)
-        or ("rate limit" in msg)
-    )
+    return ("429" in msg) or ("resource_exhausted" in msg) or ("quota" in msg) or ("rate limit" in msg)
 
 
 def _sleep_with_backoff(attempt: int, base: float, max_delay: float) -> None:
@@ -575,6 +536,7 @@ def complete_text(
                 HarmBlockThreshold,
                 HarmCategory,
             )
+
             # Disable safety filters for business use
             safety_settings = {
                 HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
@@ -658,16 +620,21 @@ def complete_json(
             if stop_sequences:
                 cfg["stop_sequences"] = stop_sequences
             _check_rate_limit()
-            resp = model.generate_content(user, generation_config=GenerationConfig(**cfg), safety_settings=safety_settings)
+            resp = model.generate_content(
+                user, generation_config=GenerationConfig(**cfg), safety_settings=safety_settings
+            )
             return (getattr(resp, "text", None) or "").strip()
         except Exception as e:
             if (attempt == attempts) or (not _is_retryable_error(e)):
-                logger.warning(
-                    "JSON completion failed (%s), falling back to text mode", e
-                )
+                logger.warning("JSON completion failed (%s), falling back to text mode", e)
+                # HIGH #40: Preserve response_schema constraint in fallback by adding to system prompt
+                enhanced_system = system
+                if response_schema:
+                    schema_description = json.dumps(response_schema, indent=2)
+                    enhanced_system += f"\n\nIMPORTANT: Your response must conform to this JSON schema:\n{schema_description}"
                 out = complete_text(
-                    system,
-                    user,
+                    enhanced_system,
+                    user + "\n\nOutput valid JSON matching the required schema.",
                     max_output_tokens=max_output_tokens,
                     temperature=temperature,
                     stop_sequences=stop_sequences,
@@ -716,7 +683,8 @@ def embed_texts(
     Providers: vertex | openai | azure | cohere | huggingface | qwen | local
     """
     seq = list(texts)
-    provider = (provider or os.getenv("EMBED_PROVIDER", "vertex")).lower()
+    provider_str = provider or os.getenv("EMBED_PROVIDER", "vertex")
+    provider = provider_str.lower() if provider_str else "vertex"
     if not seq:
         return np.zeros((0, 0), dtype="float32")
 
@@ -741,9 +709,7 @@ def embed_texts(
     if arr.ndim != 2:
         raise LLMError(f"Embedding array must be 2-D; got shape {arr.shape}")
     if arr.shape[0] != len(seq):
-        raise LLMError(
-            f"Embedding row count mismatch: got {arr.shape[0]}, expected {len(seq)}"
-        )
+        raise LLMError(f"Embedding row count mismatch: got {arr.shape[0]}, expected {len(seq)}")
     if not np.isfinite(arr).all():
         raise LLMError("Non-finite values found in embeddings")
     # Norms should not all be ~0 after normalization; catch broken providers.
@@ -759,11 +725,9 @@ def _embed_vertex(texts: list[str], model: str | None = None) -> np.ndarray:
     _init_vertex()
     _ensure_projects_loaded()
 
-    embed_name = _normalize_model_alias(model) or os.getenv(
-        "VERTEX_EMBED_MODEL", "gemini-embedding-001"
-    )
+    embed_name = _normalize_model_alias(model) or os.getenv("VERTEX_EMBED_MODEL", "gemini-embedding-001")
     # Path 1: google-genai embed API (recommended for gemini-embedding*)
-    if embed_name.startswith(("gemini-embedding", "gemini-embedder")):
+    if embed_name and embed_name.startswith(("gemini-embedding", "gemini-embedder")):
         try:
             from google import genai
             from google.genai.types import EmbedContentConfig
@@ -771,9 +735,7 @@ def _embed_vertex(texts: list[str], model: str | None = None) -> np.ndarray:
             raise LLMError(f"google-genai not installed: {e}") from e
 
         out_dim = os.getenv("VERTEX_EMBED_DIM")
-        cfg = (
-            EmbedContentConfig(output_dimensionality=int(out_dim)) if out_dim else None
-        )
+        cfg = EmbedContentConfig(output_dimensionality=int(out_dim)) if out_dim else None
 
         vectors: list[list[float]] = []
         B = min(int(os.getenv("EMBED_BATCH", "64")), 250)
@@ -788,9 +750,8 @@ def _embed_vertex(texts: list[str], model: str | None = None) -> np.ndarray:
                 try:
                     location = os.getenv("GCP_REGION", "global")
                     from typing import cast
-                    client = genai.Client(
-                        vertexai=True, project=project, location=location
-                    )
+
+                    client = genai.Client(vertexai=True, project=project, location=location)
                     _check_rate_limit()
                     # Robust embedding: prefer batch API when available, otherwise per-item.
                     embeddings_batch: list[list[float]] = []
@@ -817,15 +778,19 @@ def _embed_vertex(texts: list[str], model: str | None = None) -> np.ndarray:
                         # Fallback: per-item embed_content; handle both 'embedding' and 'embeddings'
                         for _t in chunk:
                             _check_rate_limit()
-                            res = client.models.embed_content(model=embed_name, content=_t, config=cfg)
+                            res = client.models.embed_content(model=embed_name or "gemini-embedding-001", contents=_t, config=cfg)
                             vals = None
                             if hasattr(res, "values"):
-                                vals = res.values
-                            elif hasattr(res, "embedding") and hasattr(res.embedding, "values"):
-                                vals = res.embedding.values
-                            elif hasattr(res, "embeddings") and res.embeddings:
-                                first = res.embeddings[0]
-                                vals = getattr(first, "values", None)
+                                vals = getattr(res, "values", None)  # type: ignore[attr-defined]
+                            elif hasattr(res, "embedding"):
+                                embedding = getattr(res, "embedding", None)  # type: ignore[attr-defined]
+                                if embedding and hasattr(embedding, "values"):
+                                    vals = getattr(embedding, "values", None)  # type: ignore[attr-defined]
+                            elif hasattr(res, "embeddings"):
+                                embeddings = getattr(res, "embeddings", None)  # type: ignore[attr-defined]
+                                if embeddings:
+                                    first = embeddings[0]
+                                    vals = getattr(first, "values", None)
                             if vals is None:
                                 embeddings_batch = []
                                 break
@@ -836,9 +801,7 @@ def _embed_vertex(texts: list[str], model: str | None = None) -> np.ndarray:
                         with _PROJECT_ROTATION_LOCK:
                             _PROJECT_ROTATION["consecutive_errors"] = 0
                         break
-                    logger.warning(
-                        "Empty/mismatched embedding batch from %s; rotating", project
-                    )
+                    logger.warning("Empty/mismatched embedding batch from %s; rotating", project)
                     with _PROJECT_ROTATION_LOCK:
                         _PROJECT_ROTATION["consecutive_errors"] = _PROJECT_ROTATION.get("consecutive_errors", 0) + 1
                     _rotate_to_next_project()
@@ -859,13 +822,12 @@ def _embed_vertex(texts: list[str], model: str | None = None) -> np.ndarray:
             if not embedded:
                 # Exhausted rotations (if any). Do not substitute zero vectors.
                 raise LLMError(
-                    f"Vertex (gemini) embedding failed for batch starting at index {i}; "
-                    "exhausted rotation attempts."
+                    f"Vertex (gemini) embedding failed for batch starting at index {i}; " "exhausted rotation attempts."
                 )
         return _normalize(vectors)
 
     # Path 2: legacy vertexai TextEmbeddingModel
-    vectors: list[list[float]] = []
+    vectors_legacy: list[list[float]] = []
     B = min(int(os.getenv("EMBED_BATCH", "64")), 250)
     for i in range(0, len(texts), B):
         chunk = texts[i : i + B]
@@ -877,53 +839,39 @@ def _embed_vertex(texts: list[str], model: str | None = None) -> np.ndarray:
             try:
                 from typing import cast
 
-                from vertexai.language_models import (
+                from vertexai.language_models import (  # legacy path
                     TextEmbeddingInput,
                     TextEmbeddingModel,
-                )  # legacy path
+                )
 
-                model_obj = TextEmbeddingModel.from_pretrained(
-                    os.getenv("VERTEX_EMBED_MODEL", "text-embedding-005")
-                )
-                inputs = [
-                    TextEmbeddingInput(text=t) if isinstance(t, str) else t
-                    for t in chunk
-                ]
+                model_obj = TextEmbeddingModel.from_pretrained(os.getenv("VERTEX_EMBED_MODEL", "text-embedding-005"))
+                inputs = [TextEmbeddingInput(text=t) if isinstance(t, str) else t for t in chunk]
                 _check_rate_limit()
-                embs = model_obj.get_embeddings(
-                    cast(list[str | TextEmbeddingInput], inputs)
-                )
+                embs = model_obj.get_embeddings(cast(list[str | TextEmbeddingInput], inputs))
                 # Fail the batch if any embedding is missing instead of returning zeros.
                 batch_vals: list[list[float]] = []
-                for e in embs:
-                    vals = getattr(e, "values", None)
+                for emb in embs:
+                    vals = getattr(emb, "values", None)
                     if vals is None:
-                        raise RuntimeError(
-                            "Vertex (legacy) returned empty embedding values"
-                        )
+                        raise RuntimeError("Vertex (legacy) returned empty embedding values")
                     batch_vals.append(vals)
-                vectors.extend(batch_vals)
+                vectors_legacy.extend(batch_vals)
                 success = True
                 break
-            except Exception as e:
+            except Exception as err:
                 # CRITICAL FIX #6: Thread-safe access to _PROJECT_ROTATION
                 with _PROJECT_ROTATION_LOCK:
                     has_projects = bool(_PROJECT_ROTATION["projects"])
-                if _should_rotate_on(e) and has_projects:
+                if _should_rotate_on(err) and has_projects:
                     _rotate_to_next_project()
                     _init_vertex()
                     continue
-                logger.exception(
-                    "Vertex (legacy) embedding failed on batch %d:%d: %s", i, i + B, e
-                )
+                logger.exception("Vertex (legacy) embedding failed on batch %d:%d: %s", i, i + B, err)
                 break
         if not success:
             # Exhausted rotations (if any). Do not substitute zero vectors.
-            raise LLMError(
-                f"Vertex (legacy) embedding failed for batch {i}:{i + B}; "
-                "exhausted rotation attempts."
-            )
-    return _normalize(vectors)
+            raise LLMError(f"Vertex (legacy) embedding failed for batch {i}:{i + B}; " "exhausted rotation attempts.")
+    return _normalize(vectors_legacy)
 
 
 def _embed_openai(texts: list[str], model: str | None = None) -> np.ndarray:
@@ -942,7 +890,7 @@ def _embed_openai(texts: list[str], model: str | None = None) -> np.ndarray:
         chunk = texts[i : i + B]
         try:
             _check_rate_limit()
-            resp = client.embeddings.create(input=chunk, model=model_name)
+            resp = client.embeddings.create(input=chunk, model=model_name or "text-embedding-3-small")
             for item in resp.data:
                 vectors.append(item.embedding)
         except Exception as e:
@@ -960,9 +908,7 @@ def _embed_azure_openai(texts: list[str], model: str | None = None) -> np.ndarra
     endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
     deployment = model or os.getenv("AZURE_OPENAI_DEPLOYMENT")
     if not all([api_key, endpoint, deployment]):
-        raise LLMError(
-            "Set AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_DEPLOYMENT"
-        )
+        raise LLMError("Set AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_DEPLOYMENT")
     client = AzureOpenAI(
         api_key=api_key,
         api_version=os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-01"),
@@ -1055,9 +1001,7 @@ def _embed_qwen(texts: list[str], model: str | None = None) -> np.ndarray:
                 timeout=int(os.getenv("QWEN_TIMEOUT", "60")),
             )
             if resp.status_code != 200:
-                raise LLMError(
-                    f"Qwen embedding HTTP {resp.status_code}: {resp.text[:200]}"
-                )
+                raise LLMError(f"Qwen embedding HTTP {resp.status_code}: {resp.text[:200]}")
             data = resp.json()
             items = data.get("data") or []
             if len(items) != len(chunk):
@@ -1078,9 +1022,7 @@ def _embed_local(texts: list[str], model: str | None = None) -> np.ndarray:
         from sentence_transformers import SentenceTransformer
     except Exception as e:
         raise LLMError("Install sentence-transformers to use local embeddings") from e
-    name = model or os.getenv(
-        "LOCAL_EMBED_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
-    )
+    name = model or os.getenv("LOCAL_EMBED_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
     st = SentenceTransformer(name)
     arr = st.encode(texts, normalize_embeddings=True)
     return np.array(arr, dtype="float32")
@@ -1092,24 +1034,24 @@ def _embed_local(texts: list[str], model: str | None = None) -> np.ndarray:
 # Re-export commonly used utilities for single import surface
 __all__ = [
     # Configuration
-    'EmailOpsConfig',
+    "EmailOpsConfig",
     # Error types
-    'LLMError',
+    "LLMError",
     # Account management
-    'VertexAccount',
-    'clean_email_text',
-    'complete_json',
+    "VertexAccount",
+    "clean_email_text",
+    "complete_json",
     # LLM functions
-    'complete_text',
-    'embed_texts',
-    'get_config',
-    'load_validated_accounts',
+    "complete_text",
+    "embed_texts",
+    "get_config",
+    "load_validated_accounts",
     # Utility re-exports from utils.py
-    'logger',
-    'monitor_performance',
-    'read_text_file',
-    'save_validated_accounts',
-    'validate_account',
+    "logger",
+    "monitor_performance",
+    "read_text_file",
+    "save_validated_accounts",
+    "validate_account",
 ]
 
 # Note: logger, clean_email_text, and read_text_file are already available

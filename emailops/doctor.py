@@ -43,8 +43,8 @@ _PKG_IMPORT_MAP: dict[str, str] = {
     # Always
     "numpy": "numpy",
     # Vertex
-    "google-genai": "google.genai",           # used by Vertex embeddings path
-    "google-cloud-aiplatform": "vertexai",    # provides vertexai.init
+    "google-genai": "google.genai",  # used by Vertex embeddings path
+    "google-cloud-aiplatform": "vertexai",  # provides vertexai.init
     # Optional Google libraries
     "google-auth": "google.auth",
     "google-cloud-storage": "google.cloud.storage",
@@ -52,7 +52,7 @@ _PKG_IMPORT_MAP: dict[str, str] = {
     "openai": "openai",
     "cohere": "cohere",
     "huggingface_hub": "huggingface_hub",
-    "requests": "requests",                   # qwen
+    "requests": "requests",  # qwen
     # Local embeddings
     "sentence-transformers": "sentence_transformers",
     # Optional extractors used by indexer (warn-only)
@@ -66,14 +66,29 @@ _PKG_IMPORT_MAP: dict[str, str] = {
 }
 
 
-def _try_import(import_name: str) -> bool:
-    """Check if a module can be imported without side effects."""
+def _try_import(import_name: str) -> tuple[bool, str]:
+    """
+    Check if a module can be imported without side effects.
+    
+    HIGH #12: Returns (success, error_type) to distinguish:
+    - (True, 'ok'): Module imported successfully
+    - (False, 'not_installed'): Module not found (ImportError/ModuleNotFoundError)
+    - (False, 'broken'): Module installed but has runtime errors
+    
+    Returns:
+        Tuple of (success: bool, error_type: str)
+    """
     try:
         import importlib
         importlib.import_module(import_name)
-        return True
-    except Exception:
-        return False
+        return True, 'ok'
+    except (ImportError, ModuleNotFoundError):
+        # Module not installed
+        return False, 'not_installed'
+    except Exception as e:
+        # Module installed but broken (import-time error)
+        logger.warning("Module '%s' is installed but broken: %s", import_name, e)
+        return False, 'broken'
 
 
 def _requirements_file_candidates() -> list[Path]:
@@ -102,7 +117,7 @@ def _install_packages(packages: list[str], *, timeout: int) -> bool:
     try:
         # Validate package names (alphanumeric, hyphens, underscores, dots only)
         for pkg in packages:
-            if not re.match(r'^[a-zA-Z0-9_\-.]+$', pkg):
+            if not re.match(r"^[a-zA-Z0-9_\-.]+$", pkg):
                 logger.error("Invalid package name: %s", pkg)
                 return False
 
@@ -148,9 +163,17 @@ def _packages_for_provider(provider: str) -> tuple[list[str], list[str]]:
         optional = ["torch", "transformers"]
 
     # Common optional packages
-    optional.extend([
-        "numpy", "faiss-cpu", "pypdf", "python-docx", "docx2txt", "pandas", "openpyxl",
-    ])
+    optional.extend(
+        [
+            "numpy",
+            "faiss-cpu",
+            "pypdf",
+            "python-docx",
+            "docx2txt",
+            "pandas",
+            "openpyxl",
+        ]
+    )
 
     return critical, optional
 
@@ -169,10 +192,24 @@ def check_and_install_dependencies(provider: str, auto_install: bool = False, *,
 
     # Determine present/missing using import map
     def present(pkgs: list[str]) -> list[str]:
-        return [pkg for pkg in pkgs if _try_import(_PKG_IMPORT_MAP.get(pkg, pkg))]
+        result = []
+        for pkg in pkgs:
+            success, error_type = _try_import(_PKG_IMPORT_MAP.get(pkg, pkg))
+            if success:
+                result.append(pkg)
+            elif error_type == 'broken':
+                # HIGH #12: Report broken packages separately
+                logger.error("Package '%s' is installed but broken - may need reinstall", pkg)
+        return result
 
     def missing(pkgs: list[str]) -> list[str]:
-        return [pkg for pkg in pkgs if not _try_import(_PKG_IMPORT_MAP.get(pkg, pkg))]
+        result = []
+        for pkg in pkgs:
+            success, error_type = _try_import(_PKG_IMPORT_MAP.get(pkg, pkg))
+            if not success and error_type == 'not_installed':
+                result.append(pkg)
+            # Note: 'broken' packages are NOT in missing (they're installed but broken)
+        return result
 
     missing_critical = missing(critical)
     missing_optional = missing(optional)
@@ -203,7 +240,9 @@ def check_and_install_dependencies(provider: str, auto_install: bool = False, *,
     else:
         logger.info("All optional packages are available")
 
-    return DepReport(provider=provider_n, missing_critical=missing_critical, missing_optional=missing_optional, installed=installed)
+    return DepReport(
+        provider=provider_n, missing_critical=missing_critical, missing_optional=missing_optional, installed=installed
+    )
 
 
 # -------------------------
@@ -213,6 +252,7 @@ def check_and_install_dependencies(provider: str, auto_install: bool = False, *,
 
 def _load_mapping(index_dir: Path) -> list[dict[str, Any]]:
     from .index_metadata import read_mapping
+
     return read_mapping(index_dir)
 
 
@@ -233,6 +273,7 @@ def _summarize_index_compat(index_dir: Path, provider: str) -> tuple[bool, str |
     """Return (compat_ok, indexed_provider)."""
     try:
         from .index_metadata import load_index_metadata
+
         meta = load_index_metadata(index_dir)
         indexed_provider = None
         if meta:
@@ -249,10 +290,11 @@ def _summarize_index_compat(index_dir: Path, provider: str) -> tuple[bool, str |
 def _probe_embeddings(provider: str) -> tuple[bool, int | None]:
     try:
         from .llm_client import embed_texts
+
         # Try a small embedding to test
         result = embed_texts(["test"], provider=_normalize_provider(provider))
         if result is not None and len(result) > 0:
-            dim = result.shape[1] if hasattr(result, 'shape') else len(result[0])
+            dim = result.shape[1] if hasattr(result, "shape") else len(result[0])
             return True, dim
         return False, None
     except Exception as e:
@@ -284,7 +326,9 @@ def main() -> None:
     parser.add_argument("--check-embeddings", action="store_true", help="Test embedding functionality")
     parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON only")
     parser.add_argument("--verbose", action="store_true", help="Verbose logging (DEBUG)")
-    parser.add_argument("--pip-timeout", type=int, default=None, help="pip install timeout in seconds (default 300 or $PIP_TIMEOUT)")
+    parser.add_argument(
+        "--pip-timeout", type=int, default=None, help="pip install timeout in seconds (default 300 or $PIP_TIMEOUT)"
+    )
 
     args = parser.parse_args()
     _configure_logging(args.verbose)
@@ -357,7 +401,6 @@ def main() -> None:
                     else:
                         print("Index compatibility: FAIL")
 
-
     # Embeddings probe
     embeddings_success = None
     embeddings_dim = None
@@ -385,11 +428,15 @@ def main() -> None:
                 "installed": dep_report.installed,
             },
             "index": index_info if args.check_index else None,
-            "embeddings": ({
-                "success": embeddings_success,
-                "dimension": embeddings_dim,
-                "provider": provider,
-            } if args.check_embeddings else None),
+            "embeddings": (
+                {
+                    "success": embeddings_success,
+                    "dimension": embeddings_dim,
+                    "provider": provider,
+                }
+                if args.check_embeddings
+                else None
+            ),
         }
         print(json.dumps(payload, indent=2))
     else:

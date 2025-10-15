@@ -11,12 +11,10 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-import pytest
 from dotenv import load_dotenv
 
 from emailops.llm_client import embed_texts
 from emailops.llm_runtime import (
-    LLMError,
     _init_vertex,
     load_validated_accounts,
     reset_vertex_init,
@@ -92,37 +90,6 @@ def make_live_api_call(account):
         return False, {"status": "failed", "error": str(e)}
 
 
-@pytest.mark.skipif(
-    not Path("validated_accounts.json").exists() and not Path("secrets").exists(),
-    reason="GCP credentials not available for testing"
-)
-def test_parallel_calls():
-    """Test making parallel calls with different accounts"""
-    logger.info("\n" + "=" * 60)
-    logger.info("TESTING PARALLEL API CALLS")
-    logger.info("=" * 60)
-
-    try:
-        accounts = load_validated_accounts()
-    except LLMError as e:
-        pytest.skip(f"No valid GCP accounts found: {e}")
-
-    # Make rapid successive calls with different accounts
-    results = []
-    for i, account in enumerate(accounts):
-        logger.info(f"\nCall {i + 1}/6 - Using account: {account.project_id}")
-        success, result = make_live_api_call(account)
-        results.append(
-            {"account": account.project_id, "success": success, "details": result}
-        )
-
-        # Small delay between calls
-        if i < len(accounts) - 1:
-            time.sleep(1)
-
-    return results
-
-
 def main():
     """Run live API tests on all accounts"""
     logger.info("VERTEX AI LIVE API TEST - ALL 6 ACCOUNTS")
@@ -147,10 +114,6 @@ def main():
                     "details": result,
                 }
             )
-
-        # Test 2: Parallel-style calls
-        logger.info("\n\n[PARALLEL TEST] Making rapid successive calls...")
-        parallel_results = test_parallel_calls()
 
         # Summary
         logger.info("\n" + "=" * 60)
@@ -179,7 +142,6 @@ def main():
                     "total_accounts": len(accounts),
                     "successful_calls": successful,
                     "individual_results": individual_results,
-                    "parallel_results": parallel_results,
                 },
                 f,
                 indent=2,

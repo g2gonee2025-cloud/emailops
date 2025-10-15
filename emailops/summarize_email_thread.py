@@ -15,8 +15,7 @@ import time
 try:
     from datetime import UTC  # py311+
 except ImportError:
-    from datetime import timezone as _timezone
-    UTC = _timezone.utc  # py310 fallback
+    UTC = UTC  # py310 fallback
 
 from datetime import datetime
 from pathlib import Path
@@ -75,7 +74,10 @@ DEFAULT_CATALOG = [
 def _extract_first_balanced_json_object(s: str) -> str | None:
     """
     Finds the first balanced JSON object (from '{' to '}') in a string.
-    Respects nested braces, strings, and escaped characters.
+    Properly handles nested braces, strings with braces, and escaped characters.
+    
+    HIGH #15: Enhanced to correctly handle braces inside string values.
+    
     Returns the object as a string, or None if no balanced object is found.
     """
     # Type and empty validation
@@ -87,48 +89,49 @@ def _extract_first_balanced_json_object(s: str) -> str | None:
         return None
 
     if not s or "{" not in s:
-        logger.debug(
-            "_extract_first_balanced_json_object: No JSON object found in string"
-        )
+        logger.debug("_extract_first_balanced_json_object: No JSON object found in string")
         return None
 
     first_brace = s.find("{")
-    # Note: This check is now redundant due to "{" not in s check above, but kept for safety
     if first_brace == -1:
         return None
 
     balance = 0
     in_string = False
-    is_escaped = False
+    escape_next = False
 
     try:
         for i, char in enumerate(s[first_brace:]):
-            if is_escaped:
-                is_escaped = False
+            # HIGH #15: Improved escape handling
+            if escape_next:
+                # Character is escaped, don't process it
+                escape_next = False
                 continue
 
-            if char == "\\":
-                is_escaped = True
+            if char == "\\" and in_string:
+                # Next character will be escaped
+                escape_next = True
                 continue
 
-            if char == '"':
+            # HIGH #15: Only toggle string state on unescaped quotes
+            if char == '"' and not escape_next:
                 in_string = not in_string
-
-            if in_string:
                 continue
 
-            if char == "{":
-                balance += 1
-            elif char == "}":
-                balance -= 1
+            # HIGH #15: Only count braces when NOT inside a string
+            if not in_string:
+                if char == "{":
+                    balance += 1
+                elif char == "}":
+                    balance -= 1
 
-            if balance == 0:
-                result = s[first_brace : first_brace + i + 1]
-                logger.debug(
-                    "_extract_first_balanced_json_object: Extracted %d char JSON object",
-                    len(result),
-                )
-                return result
+                if balance == 0 and i > 0:  # Ensure we've closed the first brace
+                    result = s[first_brace : first_brace + i + 1]
+                    logger.debug(
+                        "_extract_first_balanced_json_object: Extracted %d char JSON object",
+                        len(result),
+                    )
+                    return result
     except Exception as e:
         logger.error("_extract_first_balanced_json_object: Unexpected error: %s", e)
         return None
@@ -193,16 +196,12 @@ def _try_load_json(data: Any) -> dict[str, Any]:
                     if matching_keys >= 2:
                         logger.debug("JSON parsing: Found valid dict in list with %d matching keys", matching_keys)
                         return item
-        logger.warning(
-            "JSON parsing: Direct parse gave non-dict: %s", type(obj).__name__
-        )
+        logger.warning("JSON parsing: Direct parse gave non-dict: %s", type(obj).__name__)
     except json.JSONDecodeError as e:
         logger.debug("JSON parsing: Direct parse failed: %s", e)
 
     # 2) Look for fenced ```json blocks
-    fenced_matches = list(
-        re.finditer(r"```(?:json)?\s*([\s\S]*?)\s*```", s, flags=re.IGNORECASE)
-    )
+    fenced_matches = list(re.finditer(r"```(?:json)?\s*([\s\S]*?)\s*```", s, flags=re.IGNORECASE))
     logger.debug("JSON parsing: Found %d fenced code blocks", len(fenced_matches))
 
     for i, m in enumerate(fenced_matches):
@@ -214,9 +213,7 @@ def _try_load_json(data: Any) -> dict[str, Any]:
                     logger.debug("JSON parsing: Extracted from fenced block #%d", i + 1)
                     return obj
             except json.JSONDecodeError as e:
-                logger.debug(
-                    "JSON parsing: Failed to parse fenced block #%d: %s", i + 1, e
-                )
+                logger.debug("JSON parsing: Failed to parse fenced block #%d: %s", i + 1, e)
 
     # 3) Fallback to the first balanced object in the whole string
     block = _extract_first_balanced_json_object(s)
@@ -230,9 +227,7 @@ def _try_load_json(data: Any) -> dict[str, Any]:
             logger.debug("JSON parsing: Failed to parse balanced object: %s", e)
 
     # All strategies failed
-    logger.error(
-        "JSON parsing: All parsing strategies failed for %d char string", len(s)
-    )
+    logger.error("JSON parsing: All parsing strategies failed for %d char string", len(s))
     sample = s[:200] + "..." if len(s) > 200 else s
     raise ValueError(f"Failed to parse JSON from any strategy. Sample: {sample}")
 
@@ -324,9 +319,7 @@ def _normalize_subject_line(s: str) -> str:
     - Normalize spacing after the prefix to 'Re: <subject>' or 'Fwd: <subject>'.
     """
     if not isinstance(s, str):
-        logger.debug(
-            "_normalize_subject_line: Non-string input type: %s", type(s).__name__
-        )
+        logger.debug("_normalize_subject_line: Non-string input type: %s", type(s).__name__)
         return ""
 
     try:
@@ -348,7 +341,7 @@ def _normalize_subject_line(s: str) -> str:
             final_prefix = "Fwd:" if "fw" in prefix_type else "Re:"
             return f"{final_prefix} {subj[prefix_end:].strip()}".strip()
 
-        return subj # Return original if no prefixes are found
+        return subj  # Return original if no prefixes are found
 
     except Exception as e:
         logger.error("_normalize_subject_line: Failed to normalize '%s': %s", s[:50], e)
@@ -492,7 +485,7 @@ def _normalize_analysis(data: Any, catalog: list[str]) -> dict[str, Any]:
         "inprogress": "in_progress",
         "completed": "completed",
         "done": "completed",
-        "blocked": "blocked"
+        "blocked": "blocked",
     }
 
     feasibility_synonyms = {
@@ -502,7 +495,7 @@ def _normalize_analysis(data: Any, catalog: list[str]) -> dict[str, Any]:
         "impossible": "impossible",
         "easy": "achievable",
         "hard": "challenging",
-        "difficult": "challenging"
+        "difficult": "challenging",
     }
 
     importance_synonyms = {
@@ -510,7 +503,7 @@ def _normalize_analysis(data: Any, catalog: list[str]) -> dict[str, Any]:
         "important": "important",
         "reference": "reference",
         "info": "reference",
-        "informational": "reference"
+        "informational": "reference",
     }
 
     priority_synonyms = {
@@ -519,7 +512,7 @@ def _normalize_analysis(data: Any, catalog: list[str]) -> dict[str, Any]:
         "med": "medium",
         "medium": "medium",
         "low": "low",
-        "normal": "medium"
+        "normal": "medium",
     }
 
     # No enums in the new facts_ledger structure, so this section is removed.
@@ -532,7 +525,7 @@ def _normalize_analysis(data: Any, catalog: list[str]) -> dict[str, Any]:
                 commit.get("feasibility"),
                 {"achievable", "challenging", "risky", "impossible"},
                 "achievable",
-                feasibility_synonyms
+                feasibility_synonyms,
             )
             coerced_commits.append(commit)
     fl["commitments_made"] = coerced_commits
@@ -542,10 +535,7 @@ def _normalize_analysis(data: Any, catalog: list[str]) -> dict[str, Any]:
     for kd in fl.get("key_dates", []):
         if isinstance(kd, dict):
             kd["importance"] = _coerce_enum(
-                kd.get("importance"),
-                {"critical", "important", "reference"},
-                "reference",
-                importance_synonyms
+                kd.get("importance"), {"critical", "important", "reference"}, "reference", importance_synonyms
             )
             coerced_dates.append(kd)
     fl["key_dates"] = coerced_dates
@@ -557,16 +547,10 @@ def _normalize_analysis(data: Any, catalog: list[str]) -> dict[str, Any]:
     for action in d.get("next_actions", []):
         if isinstance(action, dict):
             action["status"] = _coerce_enum(
-                action.get("status"),
-                {"open", "in_progress", "blocked", "completed"},
-                "open",
-                status_synonyms
+                action.get("status"), {"open", "in_progress", "blocked", "completed"}, "open", status_synonyms
             )
             action["priority"] = _coerce_enum(
-                action.get("priority"),
-                {"critical", "high", "medium", "low"},
-                "medium",
-                priority_synonyms
+                action.get("priority"), {"critical", "high", "medium", "low"}, "medium", priority_synonyms
             )
             coerced_actions.append(action)
     d["next_actions"] = coerced_actions
@@ -576,7 +560,16 @@ def _normalize_analysis(data: Any, catalog: list[str]) -> dict[str, Any]:
     d["summary"] = d["summary"][:MAX_SUMMARY_POINTS] if isinstance(d["summary"], list) else []
     d["next_actions"] = d["next_actions"][:MAX_NEXT_ACTIONS] if isinstance(d["next_actions"], list) else []
 
-    for k in ("known_facts", "key_dates", "commitments_made", "required_for_resolution", "what_we_have", "what_we_need", "materiality_for_company", "materiality_for_me"):
+    for k in (
+        "known_facts",
+        "key_dates",
+        "commitments_made",
+        "required_for_resolution",
+        "what_we_have",
+        "what_we_need",
+        "materiality_for_company",
+        "materiality_for_me",
+    ):
         fl[k] = fl.get(k, [])[:MAX_FACT_ITEMS] if isinstance(fl.get(k), list) else []
     d["facts_ledger"] = fl
 
@@ -589,9 +582,7 @@ def _read_manifest(convo_dir: Path) -> dict[str, Any]:
     Returns {} if unavailable or invalid.
     """
     if not isinstance(convo_dir, Path):
-        logger.error(
-            "_read_manifest: Invalid convo_dir type: %s", type(convo_dir).__name__
-        )
+        logger.error("_read_manifest: Invalid convo_dir type: %s", type(convo_dir).__name__)
         return {}
 
     manifest_path = convo_dir / "manifest.json"
@@ -613,14 +604,10 @@ def _read_manifest(convo_dir: Path) -> dict[str, Any]:
         parsed = json.loads(text)
 
         if not isinstance(parsed, dict):
-            logger.warning(
-                "_read_manifest: Manifest is not a dict at %s", manifest_path
-            )
+            logger.warning("_read_manifest: Manifest is not a dict at %s", manifest_path)
             return {}
 
-        logger.debug(
-            "_read_manifest: Successfully loaded manifest from %s", manifest_path
-        )
+        logger.debug("_read_manifest: Successfully loaded manifest from %s", manifest_path)
         return parsed
 
     except json.JSONDecodeError as e:
@@ -678,23 +665,17 @@ def _participants_from_manifest(manifest: dict[str, Any]) -> list[dict[str, str]
         if isinstance(to_list, list):
             for rec in to_list:
                 if isinstance(rec, dict):
-                    out.append(
-                        _mk(rec.get("name", ""), rec.get("smtp", ""), role="other")
-                    )
+                    out.append(_mk(rec.get("name", ""), rec.get("smtp", ""), role="other"))
 
         # Extract 'cc' participants
         cc_list = first.get("cc")
         if isinstance(cc_list, list):
             for rec in cc_list:
                 if isinstance(rec, dict):
-                    out.append(
-                        _mk(rec.get("name", ""), rec.get("smtp", ""), role="other")
-                    )
+                    out.append(_mk(rec.get("name", ""), rec.get("smtp", ""), role="other"))
 
     except (TypeError, AttributeError, KeyError) as e:
-        logger.warning(
-            "_participants_from_manifest: Error extracting participants: %s", e
-        )
+        logger.warning("_participants_from_manifest: Error extracting participants: %s", e)
         return out
     except Exception as e:
         logger.error("_participants_from_manifest: Unexpected error: %s", e)
@@ -715,18 +696,14 @@ def _participants_from_manifest(manifest: dict[str, Any]) -> list[dict[str, str]
     return deduped[:MAX_PARTICIPANTS] if deduped else []
 
 
-def _merge_manifest_into_analysis(
-    analysis: dict[str, Any], convo_dir: Path, raw_thread_text: str
-) -> dict[str, Any]:
+def _merge_manifest_into_analysis(analysis: dict[str, Any], convo_dir: Path, raw_thread_text: str) -> dict[str, Any]:
     """
     Merge subject/participants/dates from manifest + raw headers when the model
     couldn't infer them reliably. Never overrides non-empty, already-populated fields.
     """
     # Input validation
     if not isinstance(analysis, dict):
-        logger.error(
-            "_merge_manifest_into_analysis: analysis is not a dict, returning as-is"
-        )
+        logger.error("_merge_manifest_into_analysis: analysis is not a dict, returning as-is")
         return analysis if isinstance(analysis, dict) else {}
 
     if not isinstance(convo_dir, Path):
@@ -734,9 +711,7 @@ def _merge_manifest_into_analysis(
         return analysis
 
     if raw_thread_text is None:
-        logger.warning(
-            "_merge_manifest_into_analysis: raw_thread_text is None, using empty string"
-        )
+        logger.warning("_merge_manifest_into_analysis: raw_thread_text is None, using empty string")
         raw_thread_text = ""
 
     manifest = _read_manifest(convo_dir)
@@ -767,9 +742,7 @@ def _merge_manifest_into_analysis(
 
     # Always normalize and cap
     final_subject = subj_candidates[0] if subj_candidates else "Email thread"
-    analysis["subject"] = _safe_str(
-        _normalize_subject_line(final_subject), SUBJECT_MAX_LEN
-    )
+    analysis["subject"] = _safe_str(_normalize_subject_line(final_subject), SUBJECT_MAX_LEN)
 
     # Participants: UNION merge (not just if empty)
     existing_participants = analysis.get("participants", [])
@@ -825,17 +798,21 @@ def _merge_manifest_into_analysis(
             start = time_span.get("start_local") or time_span.get("start")
             end = time_span.get("end_local") or time_span.get("end")
             if start:
-                manifest_dates.append({
-                    "date": str(start),
-                    "event": "Conversation start",
-                    "importance": "reference",
-                })
+                manifest_dates.append(
+                    {
+                        "date": str(start),
+                        "event": "Conversation start",
+                        "importance": "reference",
+                    }
+                )
             if end:
-                manifest_dates.append({
-                    "date": str(end),
-                    "event": "Conversation end",
-                    "importance": "reference",
-                })
+                manifest_dates.append(
+                    {
+                        "date": str(end),
+                        "event": "Conversation end",
+                        "importance": "reference",
+                    }
+                )
         except Exception:
             pass
 
@@ -868,27 +845,46 @@ def _union_analyses(improved: dict[str, Any], initial: dict[str, Any], catalog: 
     """
     Union improved and initial analyses to avoid dropping valid content.
     Improved items come first, then unique items from initial.
+    
+    HIGH #50: Fixed data loss bug - ensure initial data is preserved when improved is empty.
     """
-    # Start with improved as base
-    result = dict(improved)
+    # HIGH #50: Start with a safe base - use initial if improved is empty/invalid
+    if not improved or not isinstance(improved, dict):
+        result = dict(initial) if isinstance(initial, dict) else {}
+    else:
+        result = dict(improved)
 
     # Helper to normalize keys for de-duplication
     def _norm_key(s: str) -> str:
         return s.strip().lower() if isinstance(s, str) else ""
 
-    # Union participants
-    initial_participants = initial.get("participants", [])
+    # HIGH #50: Union participants - handle case where improved has no participants
+    initial_participants = initial.get("participants", []) if isinstance(initial, dict) else []
+    improved_participants = result.get("participants", []) if isinstance(result, dict) else []
+
     if isinstance(initial_participants, list):
-        # Use a dict to de-dupe, preserving order and preferring improved items
-        all_participants = {
-            _norm_key(p.get("email")) or f"name:{_normalize_name(p.get('name'))}": p
-            for p in result.get("participants", []) if isinstance(p, dict) and (_norm_key(p.get("email")) or _normalize_name(p.get('name')))
-        }
-        initial_participants_dict = {
-            _norm_key(p.get("email")) or f"name:{_normalize_name(p.get('name'))}": p
-            for p in initial_participants if isinstance(p, dict) and (_norm_key(p.get("email")) or _normalize_name(p.get('name')))
-        }
-        all_participants.update({k: v for k, v in initial_participants_dict.items() if k not in all_participants})
+        # Build participant mapping starting with improved items
+        all_participants = {}
+
+        # Add improved participants first (if any)
+        for p in improved_participants:
+            if isinstance(p, dict):
+                email_key = _norm_key(p.get("email") or "")
+                name_key = _normalize_name(p.get("name") or "")
+                if email_key or name_key:
+                    key = email_key or f"name:{name_key}"
+                    all_participants[key] = p
+
+        # Add initial participants that aren't already present
+        for p in initial_participants:
+            if isinstance(p, dict):
+                email_key = _norm_key(p.get("email") or "")
+                name_key = _normalize_name(p.get("name") or "")
+                if email_key or name_key:
+                    key = email_key or f"name:{name_key}"
+                    if key not in all_participants:  # Only add if not already present
+                        all_participants[key] = p
+
         result["participants"] = list(all_participants.values())[:MAX_PARTICIPANTS]
 
     # Union summary points
@@ -914,13 +910,22 @@ def _union_analyses(improved: dict[str, Any], initial: dict[str, Any], catalog: 
     initial_fl = initial.get("facts_ledger", {})
 
     if isinstance(improved_fl, dict) and isinstance(initial_fl, dict):
-        for field_name in ["known_facts", "required_for_resolution", "what_we_have", "what_we_need", "materiality_for_company", "materiality_for_me"]:
+        for field_name in [
+            "known_facts",
+            "required_for_resolution",
+            "what_we_have",
+            "what_we_need",
+            "materiality_for_company",
+            "materiality_for_me",
+        ]:
             initial_list = initial_fl.get(field_name, [])
             if isinstance(initial_list, list):
                 improved_list = improved_fl.get(field_name, [])
                 seen_items = {_norm_key(i) for i in improved_list if isinstance(i, str)}
                 merged_list = list(improved_list)
-                merged_list.extend([item for item in initial_list if isinstance(item, str) and _norm_key(item) not in seen_items])
+                merged_list.extend(
+                    [item for item in initial_list if isinstance(item, str) and _norm_key(item) not in seen_items]
+                )
                 improved_fl[field_name] = merged_list[:MAX_FACT_ITEMS]
 
         # Union commitments_made
@@ -929,12 +934,14 @@ def _union_analyses(improved: dict[str, Any], initial: dict[str, Any], catalog: 
             improved_commits = improved_fl.get("commitments_made", [])
             # De-dupe based on a tuple of normalized values
             all_commits = {
-                (_norm_key(c.get("by")), _norm_key(c.get("commitment"))): c
-                for c in improved_commits if isinstance(c, dict)
+                (_norm_key(c.get("by") or ""), _norm_key(c.get("commitment") or "")): c
+                for c in improved_commits
+                if isinstance(c, dict)
             }
             initial_commits_dict = {
-                (_norm_key(c.get("by")), _norm_key(c.get("commitment"))): c
-                for c in initial_commits if isinstance(c, dict)
+                (_norm_key(c.get("by") or ""), _norm_key(c.get("commitment") or "")): c
+                for c in initial_commits
+                if isinstance(c, dict)
             }
             all_commits.update({k: v for k, v in initial_commits_dict.items() if k not in all_commits})
             improved_fl["commitments_made"] = list(all_commits.values())[:MAX_FACT_ITEMS]
@@ -944,12 +951,10 @@ def _union_analyses(improved: dict[str, Any], initial: dict[str, Any], catalog: 
         if isinstance(initial_dates, list):
             improved_dates = improved_fl.get("key_dates", [])
             all_dates = {
-                (_norm_key(d.get("date")), _norm_key(d.get("event"))): d
-                for d in improved_dates if isinstance(d, dict)
+                (_norm_key(d.get("date") or ""), _norm_key(d.get("event") or "")): d for d in improved_dates if isinstance(d, dict)
             }
             initial_dates_dict = {
-                (_norm_key(d.get("date")), _norm_key(d.get("event"))): d
-                for d in initial_dates if isinstance(d, dict)
+                (_norm_key(d.get("date") or ""), _norm_key(d.get("event") or "")): d for d in initial_dates if isinstance(d, dict)
             }
             all_dates.update({k: v for k, v in initial_dates_dict.items() if k not in all_dates})
             improved_fl["key_dates"] = list(all_dates.values())[:MAX_FACT_ITEMS]
@@ -961,12 +966,10 @@ def _union_analyses(improved: dict[str, Any], initial: dict[str, Any], catalog: 
     if isinstance(initial_actions, list):
         improved_actions = result.get("next_actions", [])
         all_actions = {
-            (_norm_key(a.get("owner")), _norm_key(a.get("action"))): a
-            for a in improved_actions if isinstance(a, dict)
+            (_norm_key(a.get("owner") or ""), _norm_key(a.get("action") or "")): a for a in improved_actions if isinstance(a, dict)
         }
         initial_actions_dict = {
-            (_norm_key(a.get("owner")), _norm_key(a.get("action"))): a
-            for a in initial_actions if isinstance(a, dict)
+            (_norm_key(a.get("owner") or ""), _norm_key(a.get("action") or "")): a for a in initial_actions if isinstance(a, dict)
         }
         all_actions.update({k: v for k, v in initial_actions_dict.items() if k not in all_actions})
         result["next_actions"] = list(all_actions.values())[:MAX_NEXT_ACTIONS]
@@ -982,6 +985,7 @@ async def _retry(callable_fn, *args, retries: int = 2, delay: float = 0.5, **kwa
     """
     import asyncio
     import inspect
+
     attempt = 0
     max_retries = retries if retries is not None else 2
     base_delay = delay if delay is not None else 0.5
@@ -1336,9 +1340,7 @@ Output valid JSON matching the required schema."""
         try:
             parsed = _try_load_json(initial_response)
         except ValueError as parse_error:
-            logger.warning(
-                "Initial JSON parse failed: %s. Attempting recovery.", parse_error
-            )
+            logger.warning("Initial JSON parse failed: %s. Attempting recovery.", parse_error)
             raise
 
         initial_analysis = _normalize_analysis(parsed, catalog)
@@ -1351,9 +1353,7 @@ Output valid JSON matching the required schema."""
             len(initial_analysis.get("next_actions", [])),
         )
     except Exception as e:
-        logger.error(
-            "Structured analysis failed: %s. Falling back to text mode with retry.", e
-        )
+        logger.error("Structured analysis failed: %s. Falling back to text mode with retry.", e)
 
         # Retry with text mode (improved error recovery)
         retry_attempts = 3
@@ -1369,13 +1369,10 @@ Output valid JSON matching the required schema."""
 
         for attempt in range(retry_attempts):
             try:
-                logger.debug(
-                    "Text mode recovery attempt %d/%d", attempt + 1, retry_attempts
-                )
+                logger.debug("Text mode recovery attempt %d/%d", attempt + 1, retry_attempts)
                 _ct_kwargs = {
                     "max_output_tokens": max_tokens,
-                    "temperature": temperature
-                    + (0.1 * attempt),  # Increase temp slightly on retries
+                    "temperature": temperature + (0.1 * attempt),  # Increase temp slightly on retries
                 }
                 if text_stop_sequences:
                     _ct_kwargs["stop_sequences"] = text_stop_sequences
@@ -1385,8 +1382,7 @@ Output valid JSON matching the required schema."""
                 fb = await _retry(
                     complete_text,
                     system,
-                    user
-                    + "\n\nIMPORTANT: Output must be valid JSON matching the schema.",
+                    user + "\n\nIMPORTANT: Output must be valid JSON matching the schema.",
                     **_ct_kwargs,
                 )
 
@@ -1395,29 +1391,22 @@ Output valid JSON matching the required schema."""
                     parsed_fb = _try_load_json(fb)
                 except ValueError:
                     # If JSON parsing fails, use the raw text
-                    logger.debug(
-                        "Text mode JSON parse failed on attempt %d", attempt + 1
-                    )
+                    logger.debug("Text mode JSON parse failed on attempt %d", attempt + 1)
                     parsed_fb = {}
 
                 initial_analysis = _normalize_analysis(parsed_fb, catalog)
 
                 # Validate we got something useful
-                if initial_analysis.get("summary") or initial_analysis.get(
-                    "participants"
-                ):
-                    logger.info(
-                        "Text mode recovery successful on attempt %d", attempt + 1
-                    )
+                if initial_analysis.get("summary") or initial_analysis.get("participants"):
+                    logger.info("Text mode recovery successful on attempt %d", attempt + 1)
                     break
 
             except Exception as retry_error:
                 last_error = retry_error
-                logger.warning(
-                    "Text mode attempt %d failed: %s", attempt + 1, retry_error
-                )
+                logger.warning("Text mode attempt %d failed: %s", attempt + 1, retry_error)
                 if attempt < retry_attempts - 1:
                     import asyncio
+
                     await asyncio.sleep(1.0 * (attempt + 1))  # Exponential backoff
 
         # Ensure we have initial_analysis even if all attempts failed
@@ -1435,9 +1424,7 @@ Output valid JSON matching the required schema."""
             if isinstance(fl, dict):
                 what_we_need = fl.get("what_we_need", [])
                 if isinstance(what_we_need, list):
-                    what_we_need.append(
-                        f"Automated parsing failed: {last_error or 'Unknown error'}"
-                    )
+                    what_we_need.append(f"Automated parsing failed: {last_error or 'Unknown error'}")
                     fl["what_we_need"] = what_we_need
 
     # --- Pass 2: Critic review for completeness/accuracy ---
@@ -1585,9 +1572,7 @@ Generate an improved analysis that addresses all feedback while maintaining the 
                 # Union improved with initial to avoid dropping valid content
                 improved_analysis = _normalize_analysis(parsed_imp, catalog)
                 final_analysis = _union_analyses(improved_analysis, initial_analysis, catalog)
-                logger.debug(
-                    "Improved analysis applied with union merge (completeness score: %d)", _score_int
-                )
+                logger.debug("Improved analysis applied with union merge (completeness score: %d)", _score_int)
         except Exception as e:
             logger.warning("Failed to get improved analysis: %s", e)
 
@@ -1758,9 +1743,7 @@ def format_analysis_as_markdown(analysis: dict[str, Any]) -> str:
         buffer.write("## Metadata\n\n")
         buffer.write(f"- **Analyzed at**: {meta.get('analyzed_at', 'N/A')}\n")
         buffer.write(f"- **Provider**: {meta.get('provider', 'N/A')}\n")
-        buffer.write(
-            f"- **Completeness score**: {meta.get('completeness_score', 0)}%\n"
-        )
+        buffer.write(f"- **Completeness score**: {meta.get('completeness_score', 0)}%\n")
         buffer.write(f"- **Version**: {meta.get('version', 'N/A')}\n")
 
     return buffer.getvalue()
@@ -1804,9 +1787,7 @@ def _safe_csv_cell(x: Any) -> str:
     return s
 
 
-def _append_todos_csv(
-    root: Path, thread_name: str, todos: list[dict[str, Any]]
-) -> None:
+def _append_todos_csv(root: Path, thread_name: str, todos: list[dict[str, Any]]) -> None:
     """
     Append next_actions to root todo.csv with basic deduplication (owner+what+thread).
     Uses DictReader/Writer to avoid comma-splitting pitfalls.
@@ -1832,9 +1813,7 @@ def _append_todos_csv(
     # Open in append mode and write header if file didn't exist or was empty
     write_header = not out.exists() or out.stat().st_size == 0
     with out.open("a", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(
-            f, fieldnames=["who", "what", "due", "status", "priority", "thread"]
-        )
+        w = csv.DictWriter(f, fieldnames=["who", "what", "due", "status", "priority", "thread"])
         if write_header:
             w.writeheader()
         for t in todos or []:
@@ -1867,9 +1846,7 @@ def _append_todos_csv(
 # =============================================================================
 async def async_main():
     # Configure logging for CLI entry point - ensure module logger propagates
-    logging.basicConfig(
-        level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-    )
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
     # Ensure the module logger propagates to root logger
     logger.propagate = True
@@ -1883,9 +1860,7 @@ async def async_main():
         required=True,
         help="Path to a conversation directory containing Conversation.txt",
     )
-    ap.add_argument(
-        "--catalog", nargs="*", default=DEFAULT_CATALOG, help="Allowed categories"
-    )
+    ap.add_argument("--catalog", nargs="*", default=DEFAULT_CATALOG, help="Allowed categories")
     ap.add_argument(
         "--write_todos_csv",
         action="store_true",
@@ -1894,11 +1869,9 @@ async def async_main():
     ap.add_argument(
         "--provider",
         default=os.getenv("EMBED_PROVIDER", "vertex"),
-        help="Provider to use for LLM calls. If emailops.llm_client supports provider/model kwargs, this value is routed; otherwise it is stored in metadata. Defaults to $EMBED_PROVIDER or \'vertex\'.",
+        help="Provider to use for LLM calls. If emailops.llm_client supports provider/model kwargs, this value is routed; otherwise it is stored in metadata. Defaults to $EMBED_PROVIDER or 'vertex'.",
     )
-    ap.add_argument(
-        "--temperature", type=float, default=0.2, help="Temperature for generation"
-    )
+    ap.add_argument("--temperature", type=float, default=0.2, help="Temperature for generation")
     ap.add_argument(
         "--output-format",
         choices=["json", "markdown"],
@@ -1961,17 +1934,20 @@ async def async_main():
             root = tdir.parent
             _append_todos_csv(root, tdir.name, todos)
 
+
 def analyze_conversation_dir_sync(*args, **kwargs):
     """
     Synchronous wrapper for analyze_conversation_dir.
     Runs the async function in an event loop for callers that expect sync API.
     """
     import asyncio
+
     return asyncio.run(analyze_conversation_dir(*args, **kwargs))
 
 
 def main() -> None:
     import asyncio
+
     asyncio.run(async_main())
 
 

@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
@@ -10,9 +9,10 @@ try:
     from . import llm_runtime as _rt  # package import
 except Exception:  # pragma: no cover - defensive path for "script mode"
     import importlib
-    import types
-    import sys
     import os
+    import sys
+    import types
+
     _dir = os.path.dirname(__file__)
     _pkg_name = "emailops"
     if _pkg_name not in sys.modules:
@@ -70,6 +70,9 @@ def embed_texts(texts: Iterable[str], **kwargs: Any) -> Any:
     """
     Thin passthrough to runtime; the runtime now realizes non-list iterables once
     at the boundary for provider compatibility and batching efficiency.
+    
+    MEDIUM #18: Type checking for generator inputs happens in runtime layer.
+    Generators are consumed into lists at the runtime boundary for batching.
     """
     return _rt_attr("embed_texts")(texts, **kwargs)
 
@@ -85,9 +88,14 @@ def json_complete(*args: Any, **kwargs: Any) -> Any:
     return complete_json(*args, **kwargs)
 
 
+# MEDIUM #39: embed() function is redundant - use embed_texts() directly
+# Kept for backward compatibility but marked as deprecated
 def embed(texts: Iterable[str], **kwargs: Any) -> Any:
     """
-    Alias for embed_texts(...).
+    DEPRECATED: Use embed_texts() directly instead.
+    
+    Alias for embed_texts(...) with additional validation.
+    This function will be removed in a future version.
 
     Safety:
     - Passing a single string is almost always a bug (str is an iterable of chars).
@@ -95,6 +103,13 @@ def embed(texts: Iterable[str], **kwargs: Any) -> Any:
     - To meet common provider expectations, this realizes non-list iterables into a list.
       For very large streams/generators, chunk externally before calling.
     """
+    import warnings
+    warnings.warn(
+        "embed() is deprecated. Use embed_texts() instead.",
+        DeprecationWarning,
+        stacklevel=2
+    )
+
     if isinstance(texts, (str, bytes, bytearray, memoryview)):
         raise TypeError(
             "embed(texts) expects an iterable of strings, not a single string/bytes; "
@@ -130,6 +145,7 @@ def _runtime_exports() -> list[str]:
         return [n for n in rt_all if isinstance(n, str)]
     try:
         from collections.abc import Iterable as _Iter
+
         if isinstance(rt_all, _Iter):
             return [n for n in rt_all if isinstance(n, str)]
     except Exception:
@@ -168,9 +184,7 @@ def __getattr__(name: str) -> Any:  # PEP 562 - module-level getattr
     try:
         return getattr(_rt, name)
     except AttributeError as exc:
-        raise AttributeError(
-            f"module 'emailops.llm_client' has no attribute '{name}'"
-        ) from exc
+        raise AttributeError(f"module 'emailops.llm_client' has no attribute '{name}'") from exc
 
 
 def __dir__() -> list[str]:
@@ -181,6 +195,4 @@ def __dir__() -> list[str]:
 # ---- Optional: help static type checkers without changing runtime -------------
 if TYPE_CHECKING:
     # Import for type checkers only (no runtime cost), helping IDEs infer signatures.
-    from .llm_runtime import (  # noqa: F401
-        complete_text as _complete_text_t,
-    )
+    from .llm_runtime import complete_text as _complete_text_t  # noqa: F401

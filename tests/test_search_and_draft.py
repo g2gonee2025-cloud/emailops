@@ -2,9 +2,7 @@
 Unit tests for search_and_draft.py functions.
 """
 
-import pytest
-from datetime import datetime, UTC
-from emailops.search_and_draft import parse_filter_grammar, SearchFilters
+from emailops.search_and_draft import SearchFilters, parse_filter_grammar
 
 
 class TestParseFilterGrammar:

@@ -1,18 +1,29 @@
 from __future__ import annotations
 
+"""
+LOW #31: DEPRECATED - Back-compat shim over the merged runtime module.
+
+This module re-exports symbols from `emailops.llm_runtime` for backward compatibility.
+
+DEPRECATION WARNING: This module will be removed in a future version.
+Please update imports to use llm_runtime directly:
+    from emailops.llm_runtime import <function_name>
+instead of:
+    from emailops.env_utils import <function_name>
+"""
+
+import warnings
+
 from . import llm_runtime as _rt
 
-# emailops/env_utils.py
-"""
-Back-compat shim over the merged runtime module.
+# Issue deprecation warning when module is imported
+warnings.warn(
+    "env_utils.py is deprecated. Import from llm_runtime instead.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
-This module re-exports selected symbols from `emailops.llm_runtime`.
-It must not mutate or extend types from `llm_runtime`; avoid monkey-patching
-or import-time side effects here to keep behavior predictable.
-"""
-
-# Import the runtime module once and re-export the required names. This pattern
-# prevents linter "imported but unused" warnings (F401) and keeps the shim pure.
+# Re-export required symbols
 LLMError = _rt.LLMError
 VertexAccount = _rt.VertexAccount
 load_validated_accounts = _rt.load_validated_accounts

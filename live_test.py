@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import sys
@@ -35,13 +36,13 @@ logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler(LOG_FILE),
+        logging.FileHandler(LOG_FILE, encoding='utf-8'),
         logging.StreamHandler(sys.stdout)
     ]
 )
 logger = logging.getLogger("live_test")
 
-def run_test():
+async def run_test():
     """
     Runs a live test on conversation directories, analyzing each one and logging the outcome.
     """
@@ -82,7 +83,7 @@ def run_test():
                 continue
 
             # Step 2: Analyze the conversation
-            analysis_result = analyze_conversation_dir(thread_dir=convo_dir)
+            analysis_result = await analyze_conversation_dir(thread_dir=convo_dir)
 
             # Step 3: Check for errors in the result
             if not analysis_result or "_metadata" not in analysis_result:
@@ -104,7 +105,7 @@ def run_test():
             error_count += 1
 
         logger.info(f"--- Finished Processing {convo_dir.name} ---")
-        time.sleep(1) # Small delay to avoid overwhelming APIs if rate limits are tight
+        await asyncio.sleep(1) # Small delay to avoid overwhelming APIs if rate limits are tight
 
     logger.info("--- Live Test Summary ---")
     logger.info(f"Total Conversations Processed: {total_processed}")
@@ -113,4 +114,4 @@ def run_test():
     logger.info("--- Test Complete ---")
 
 if __name__ == "__main__":
-    run_test()
+    asyncio.run(run_test())
