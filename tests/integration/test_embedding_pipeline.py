@@ -8,7 +8,7 @@ Tests cover:
 import numpy as np
 import pytest
 
-from emailops.llm_client import embed_texts
+from emailops.llm_client_shim import embed_texts
 
 # ============================================================================
 # Embedding Generation Workflow Tests
@@ -33,7 +33,7 @@ class TestEmbeddingGeneration:
         embeddings = embed_texts(texts)
 
         assert embeddings.shape[0] == 3
-        assert embeddings.shape[1] == 768
+        assert embeddings.shape[1] == 3072
 
         # Check normalization
         norms = np.linalg.norm(embeddings, axis=1)

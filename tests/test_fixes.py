@@ -9,7 +9,7 @@ def test_prepare_index_units():
     """Test 1: Verify prepare_index_units import and usage in email_indexer"""
     try:
         # Test import from text_chunker
-        from emailops.text_chunker import prepare_index_units
+        from emailops.llm_text_chunker import prepare_index_units
         print("✅ Test 1a: prepare_index_units imported from text_chunker")
 
         # Test import through email_indexer
@@ -43,7 +43,7 @@ def test_prepare_index_units():
 def test_find_conv_ids_by_subject():
     """Test 2: Verify _find_conv_ids_by_subject function"""
     try:
-        from emailops.search_and_draft import _find_conv_ids_by_subject
+        from emailops.feature_search_draft import _find_conv_ids_by_subject
         print("✅ Test 2a: _find_conv_ids_by_subject imported")
 
         # Test with sample data
@@ -78,7 +78,7 @@ def test_find_conv_ids_by_subject():
 def test_format_analysis_as_markdown():
     """Test 3: Verify format_analysis_as_markdown function"""
     try:
-        from emailops.summarize_email_thread import format_analysis_as_markdown
+        from emailops.feature_summarize import format_analysis_as_markdown
         print("✅ Test 3a: format_analysis_as_markdown imported")
 
         # Test with minimal analysis structure

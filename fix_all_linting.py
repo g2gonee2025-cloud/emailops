@@ -6,7 +6,6 @@ Comprehensive script to fix all linting errors in the emailops project.
 import re
 import sys
 from pathlib import Path
-from typing import List
 
 
 def fix_imports_at_top(content: str) -> str:
@@ -89,7 +88,7 @@ def fix_imports_at_top(content: str) -> str:
 
 
 def fix_open_to_path(content: str) -> str:
-    """Fix PTH123: Replace open() with Path().open()."""
+    """Fix PTH123: Replace Path.open() with Path().open()."""
     # Add Path import if needed
     if 'from pathlib import Path' not in content:
         lines = content.split('\n')
@@ -99,7 +98,7 @@ def fix_open_to_path(content: str) -> str:
                 content = '\n'.join(lines)
                 break
 
-    # Replace open() calls
+    # Replace Path.open() calls
     patterns = [
         (r'with open\(([^,\)]+),', r'with Path(\1).open('),
         (r'= open\(([^,\)]+),', r'= Path(\1).open('),

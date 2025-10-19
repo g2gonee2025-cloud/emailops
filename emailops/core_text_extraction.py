@@ -1,12 +1,5 @@
 from __future__ import annotations
 
-"""
-Text extraction utilities for various file formats.
-Handles PDF, Word, Excel, PowerPoint, RTF, EML, and MSG files.
-
-Note: For any JSON extraction, use `scrub_json_string` from utils before parsing to ensure control characters are removed.
-"""
-
 import asyncio
 import contextlib
 import logging
@@ -17,12 +10,19 @@ import time
 from functools import partial
 from pathlib import Path
 
-from .file_utils import _strip_control_chars, read_text_file
+from .util_files import _strip_control_chars, read_text_file
 
 try:
-    from .config import EmailOpsConfig
+    from .core_config import EmailOpsConfig
 except ImportError:
-    from config import EmailOpsConfig  # type: ignore
+    from core_config import EmailOpsConfig  # type: ignore
+
+"""
+Text extraction utilities for various file formats.
+Handles PDF, Word, Excel, PowerPoint, RTF, EML, and MSG files.
+
+Note: For any JSON extraction, use `scrub_json_string` from utils before parsing to ensure control characters are removed.
+"""
 
 logger = logging.getLogger(__name__)
 
@@ -243,7 +243,7 @@ def extract_text(path: Path, *, max_chars: int | None = None, use_cache: bool = 
         return ""
 
     cfg = EmailOpsConfig.load()
-    if not any(path.match(pattern) for pattern in cfg.ALLOWED_FILE_PATTERNS):
+    if not any(path.match(pattern) for pattern in cfg.allowed_file_patterns):
         logger.debug("Skipping file with disallowed extension: %s", path)
         return ""
 

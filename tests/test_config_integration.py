@@ -35,7 +35,7 @@ def test_config_module():
     print_header("Testing Config Module Import")
 
     try:
-        from emailops.config import get_config
+        from emailops.core_config import get_config
         get_config()
         print(colored("✅ Successfully imported config module", Colors.GREEN))
         return True
@@ -48,7 +48,7 @@ def test_config_singleton():
     print_header("Testing Config Singleton Pattern")
 
     try:
-        from emailops.config import get_config
+        from emailops.core_config import get_config
 
         # Get config instances
         config1 = get_config()
@@ -70,7 +70,7 @@ def test_config_values():
     print_header("Testing Config Values")
 
     try:
-        from emailops.config import get_config
+        from emailops.core_config import get_config
         config = get_config()
 
         # Test expected attributes exist
@@ -107,8 +107,8 @@ def test_config_values():
         print(f"  DEFAULT_CHUNK_OVERLAP: {config.DEFAULT_CHUNK_OVERLAP}")
         print(f"  DEFAULT_NUM_WORKERS: {config.DEFAULT_NUM_WORKERS}")
         print(f"  GCP_PROJECT: {config.GCP_PROJECT}")
-        print(f"  GCP_REGION: {config.GCP_REGION}")
-        print(f"  VERTEX_LOCATION: {config.VERTEX_LOCATION}")
+        print(f"  GCP_REGION: {config.gcp_region}")
+        print(f"  VERTEX_LOCATION: {config.vertex_location}")
         print(f"  SECRETS_DIR: {config.SECRETS_DIR}")
         print(f"  LOG_LEVEL: {config.LOG_LEVEL}")
 
@@ -132,7 +132,7 @@ def test_environment_override():
         from emailops import config as config_module
         importlib.reload(config_module)
 
-        from emailops.config import get_config, reset_config
+        from emailops.core_config import get_config, reset_config
         reset_config()
         config = get_config()
 
@@ -171,7 +171,7 @@ def test_module_integration():
             if module_path.exists():
                 with module_path.open(encoding='utf-8') as f:
                     content = f.read()
-                    if "from emailops.config import" in content or "from emailops import config" in content:
+                    if "from emailops.core_config import" in content or "from emailops import core_config" in content:
                         print(colored(f"✅ {display_name} imports config", Colors.GREEN))
                     else:
                         print(colored(f"⚠️  {display_name} may not use config", Colors.YELLOW))
@@ -189,7 +189,7 @@ def test_credential_discovery():
     print_header("Testing Credential Discovery")
 
     try:
-        from emailops.config import get_config
+        from emailops.core_config import get_config
         config = get_config()
 
         # Test credential discovery

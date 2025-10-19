@@ -5,10 +5,10 @@ Tests import, instantiation, tab creation, and basic functionality
 """
 
 import sys
+import traceback
 
-import traceback
 import emailops_gui
-import traceback
+
 
 def test_imports():
     """Test that all imports work correctly."""

@@ -5,7 +5,7 @@ Script to fix common linting errors in the emailops project.
 
 import re
 from pathlib import Path
-from typing import List, Tuple
+
 
 def fix_exception_handling(content: str) -> str:
     """Fix B904: Add 'from None' to exception raising."""
@@ -40,7 +40,7 @@ def fix_exception_handling(content: str) -> str:
 
 
 def fix_path_open(content: str) -> str:
-    """Fix PTH123: Replace open() with Path.open()."""
+    """Fix PTH123: Replace Path.open() with Path.open()."""
     lines = content.split('\n')
     result_lines = []
 
@@ -50,7 +50,7 @@ def fix_path_open(content: str) -> str:
             result_lines.append(line)
             continue
 
-        # Pattern to match open() calls with path variable
+        # Pattern to match Path.open() calls with path variable
         if re.match(r'^\s*with\s+open\(', line):
             # Extract the path variable
             match = re.match(r'^(\s*)with\s+open\(([^,\)]+)', line)
@@ -58,7 +58,7 @@ def fix_path_open(content: str) -> str:
                 indent, path_var = match.groups()
                 # Check if path_var looks like a simple variable (not a string literal)
                 if not (path_var.startswith('"') or path_var.startswith("'")):
-                    # Replace open(path_var, ...) with Path(path_var).open(...)
+                    # Replace Path.open(path_var, ...) with Path(path_var).open(...)
                     line = re.sub(
                         r'open\(([^,\)]+)(.*)\)',
                         r'Path(\1).open(\2)',

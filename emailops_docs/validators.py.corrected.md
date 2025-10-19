@@ -265,7 +265,7 @@ def safe_read_file(user_input: str) -> str:
         raise ValueError(f"Invalid file path: {message}")
     
     # Now safe to use
-    with open(user_input, 'r') as f:
+    with Path.open(user_input, 'r') as f:
         return f.read()
 ```
 

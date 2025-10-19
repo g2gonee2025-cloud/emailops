@@ -1,6 +1,3 @@
-"""
-Processing utilities including batch processing, performance monitoring, and configuration.
-"""
 from __future__ import annotations
 
 import asyncio
@@ -15,6 +12,12 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from functools import wraps
 from typing import Any
+
+from .core_email_processing import clean_email_text
+
+"""
+Processing utilities including batch processing, performance monitoring, and configuration.
+"""
 
 logger = logging.getLogger(__name__)
 
@@ -219,7 +222,6 @@ class TextPreprocessor:
 
         # Apply cleaning based on text type
         if text_type == "email":
-            from .email_processing import clean_email_text
 
             cleaned = clean_email_text(text)
         elif text_type == "attachment":
@@ -291,7 +293,6 @@ class TextPreprocessor:
     def clear_cache(self):
         """Clear the preprocessing cache."""
         self._cache.clear()
-        self._get_cache_key.cache_clear()
         logger.debug("Preprocessor cache cleared")
 
 

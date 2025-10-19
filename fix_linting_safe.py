@@ -4,17 +4,15 @@ Safe linting fix script that applies fixes incrementally and tests for syntax er
 """
 
 import ast
-import os
 import re
 import subprocess
-import sys
 from pathlib import Path
 
 
 def test_syntax(filepath):
     """Test if a Python file has valid syntax."""
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with Path.open(filepath, encoding='utf-8') as f:
             ast.parse(f.read())
         return True
     except SyntaxError:
@@ -35,7 +33,7 @@ def run_ruff_fix_safe(directory="emailops"):
 
 def fix_blank_whitespace(filepath):
     """Fix W293: blank-line-with-whitespace."""
-    with open(filepath, 'r', encoding='utf-8') as f:
+    with Path.open(filepath, encoding='utf-8') as f:
         lines = f.readlines()
 
     modified = False
@@ -48,7 +46,7 @@ def fix_blank_whitespace(filepath):
             new_lines.append(line)
 
     if modified:
-        with open(filepath, 'w', encoding='utf-8') as f:
+        with Path.open(filepath, 'w', encoding='utf-8') as f:
             f.writelines(new_lines)
         print(f"  Fixed blank whitespace in {filepath}")
 
@@ -56,14 +54,14 @@ def fix_blank_whitespace(filepath):
 
 
 def fix_builtin_open(filepath):
-    """Fix PTH123: builtin-open - convert open() to Path().open()."""
-    with open(filepath, 'r', encoding='utf-8') as f:
+    """Fix PTH123: builtin-open - convert Path.open() to Path().open()."""
+    with Path.open(filepath, encoding='utf-8') as f:
         content = f.read()
 
     # Check if Path is already imported
     has_path_import = 'from pathlib import Path' in content
 
-    # Find all open() calls
+    # Find all Path.open() calls
     pattern = r'\bopen\s*\('
     if re.search(pattern, content):
         # Add Path import if needed
@@ -87,7 +85,7 @@ def fix_builtin_open(filepath):
 
             content = '\n'.join(lines)
 
-        # Replace open() with Path().open()
+        # Replace Path.open() with Path().open()
         # Be careful not to replace if it's already Path().open()
         content = re.sub(
             r'\bopen\s*\((["\'])([^"\']+)\1',
@@ -95,7 +93,7 @@ def fix_builtin_open(filepath):
             content
         )
 
-        with open(filepath, 'w', encoding='utf-8') as f:
+        with Path.open(filepath, 'w', encoding='utf-8') as f:
             f.write(content)
 
         print(f"  Fixed builtin-open in {filepath}")
@@ -116,7 +114,7 @@ def fix_unicode_characters(filepath):
         '…': '...',  # Ellipsis
     }
 
-    with open(filepath, 'r', encoding='utf-8') as f:
+    with Path.open(filepath, encoding='utf-8') as f:
         content = f.read()
 
     modified = False
@@ -126,7 +124,7 @@ def fix_unicode_characters(filepath):
             modified = True
 
     if modified:
-        with open(filepath, 'w', encoding='utf-8') as f:
+        with Path.open(filepath, 'w', encoding='utf-8') as f:
             f.write(content)
         print(f"  Fixed unicode characters in {filepath}")
 
@@ -135,7 +133,7 @@ def fix_unicode_characters(filepath):
 
 def fix_exception_handling(filepath):
     """Fix B904: raise-without-from-inside-except."""
-    with open(filepath, 'r', encoding='utf-8') as f:
+    with Path.open(filepath, encoding='utf-8') as f:
         lines = f.readlines()
 
     modified = False
@@ -164,7 +162,7 @@ def fix_exception_handling(filepath):
         new_lines.append(line)
 
     if modified:
-        with open(filepath, 'w', encoding='utf-8') as f:
+        with Path.open(filepath, 'w', encoding='utf-8') as f:
             f.writelines(new_lines)
         print(f"  Fixed exception handling in {filepath}")
 

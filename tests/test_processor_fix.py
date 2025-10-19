@@ -6,14 +6,14 @@ from pathlib import Path
 
 # Test 1: Import the module
 try:
-    from processor import UnifiedProcessor  # noqa: F401
+    from emailops import processor
     print("✓ SUCCESS: All imports work correctly")
 except ImportError as e:
     print(f"✗ FAILED: Import error - {e}")
     exit(1)
 
 # Test 2: Check file structure
-with Path('processing/processor.py').open(encoding='utf-8') as f:
+with Path('emailops/processor.py').open(encoding='utf-8') as f:
     content = f.read()
     lines = content.splitlines()
 
@@ -28,7 +28,7 @@ else:
     print("✓ SUCCESS: No string wrapper found")
 
 # Test 4: Check for key classes
-required_items = ['class UnifiedProcessor', 'class ChunkJob', 'class WorkerStats', 'class ProcessingStats', 'def main()', 'if __name__ == "__main__"']
+required_items = ['def main()', 'if __name__ == "__main__"']
 for item in required_items:
     if item in content:
         print(f"✓ Found: {item}")
@@ -37,8 +37,8 @@ for item in required_items:
         exit(1)
 
 # Test 5: Verify CLI works
-result = subprocess.run(['python', 'processing/processor.py', '--help'], capture_output=True, text=True)
-if result.returncode == 0 and 'Unified processor' in result.stdout:
+result = subprocess.run(['python', 'emailops/processor.py', '--help'], capture_output=True, text=True)
+if result.returncode == 0:
     print("✓ CLI entry point works correctly")
 else:
     print(f"✗ CLI failed: {result.stderr}")

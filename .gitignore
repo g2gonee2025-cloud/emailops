@@ -290,3 +290,18 @@ yarn-error.log*
 
 # Exclude all directories starting with underscore
 _*/
+code_analysis_export.csv
+code_analysis_export.csv
+COMPREHENSIVE_CODE_ANALYSIS.html
+fix_unused_imports.py
+function_usage_stats.csv
+FUNCTION_USAGE_STATS.html
+plan.md
+safe_error_handling_patch.py
+UNUSED_CODE_REPORT.html
+UNUSED_CODE_REPORT.md
+code_analysis_export.csv
+COMPREHENSIVE_CODE_ANALYSIS.html
+function_usage_stats.csv
+FUNCTION_USAGE_STATS.html
+UNUSED_CODE_REPORT.html

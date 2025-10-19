@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import logging
 import os
@@ -11,6 +12,9 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+from .indexing_metadata import load_index_metadata, read_mapping
+from .llm_client_shim import embed_texts
 
 # Library-safe logger
 logger = logging.getLogger("emailops.doctor")
@@ -69,17 +73,19 @@ _PKG_IMPORT_MAP: dict[str, str] = {
 def _try_import(import_name: str) -> tuple[bool, str]:
     """
     Check if a module can be imported without side effects.
-    
+
     HIGH #12: Returns (success, error_type) to distinguish:
     - (True, 'ok'): Module imported successfully
     - (False, 'not_installed'): Module not found (ImportError/ModuleNotFoundError)
     - (False, 'broken'): Module installed but has runtime errors
-    
+
     Returns:
         Tuple of (success: bool, error_type: str)
     """
+
+
+
     try:
-        import importlib
         importlib.import_module(import_name)
         return True, 'ok'
     except (ImportError, ModuleNotFoundError):
@@ -233,8 +239,7 @@ def check_and_install_dependencies(provider: str, auto_install: bool = False, *,
 
     if missing_optional:
         logger.warning("Missing optional packages: %s", missing_optional)
-        if auto_install:
-            if _install_packages(missing_optional, timeout=pip_timeout):
+        if auto_install and _install_packages(missing_optional, timeout=pip_timeout):
                 missing_optional = missing(optional)
                 installed = present(critical + optional)
     else:
@@ -251,7 +256,6 @@ def check_and_install_dependencies(provider: str, auto_install: bool = False, *,
 
 
 def _load_mapping(index_dir: Path) -> list[dict[str, Any]]:
-    from .index_metadata import read_mapping
 
     return read_mapping(index_dir)
 
@@ -272,7 +276,6 @@ def _get_index_statistics(index_dir: Path) -> dict[str, Any]:
 def _summarize_index_compat(index_dir: Path, provider: str) -> tuple[bool, str | None]:
     """Return (compat_ok, indexed_provider)."""
     try:
-        from .index_metadata import load_index_metadata
 
         meta = load_index_metadata(index_dir)
         indexed_provider = None
@@ -289,7 +292,6 @@ def _summarize_index_compat(index_dir: Path, provider: str) -> tuple[bool, str |
 
 def _probe_embeddings(provider: str) -> tuple[bool, int | None]:
     try:
-        from .llm_client import embed_texts
 
         # Try a small embedding to test
         result = embed_texts(["test"], provider=_normalize_provider(provider))

@@ -4,7 +4,6 @@ Fix remaining linting errors with more aggressive but safe fixes.
 """
 
 import ast
-import os
 import re
 import subprocess
 from pathlib import Path
@@ -13,7 +12,7 @@ from pathlib import Path
 def test_syntax(filepath):
     """Test if a Python file has valid syntax."""
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with Path.open(filepath, encoding='utf-8') as f:
             ast.parse(f.read())
         return True
     except SyntaxError:
@@ -22,7 +21,7 @@ def test_syntax(filepath):
 
 def fix_module_imports_not_at_top(filepath):
     """Fix E402: module-import-not-at-top-of-file."""
-    with open(filepath, 'r', encoding='utf-8') as f:
+    with Path.open(filepath, encoding='utf-8') as f:
         lines = f.readlines()
 
     # Separate imports from other code
@@ -96,7 +95,7 @@ def fix_module_imports_not_at_top(filepath):
 
     # Write back if changed
     if lines != new_lines:
-        with open(filepath, 'w', encoding='utf-8') as f:
+        with Path.open(filepath, 'w', encoding='utf-8') as f:
             f.writelines(new_lines)
         print(f"  Fixed module imports order in {filepath}")
         return True
@@ -106,10 +105,10 @@ def fix_module_imports_not_at_top(filepath):
 
 def fix_builtin_open_safe(filepath):
     """Fix PTH123: builtin-open - safely."""
-    with open(filepath, 'r', encoding='utf-8') as f:
+    with Path.open(filepath, encoding='utf-8') as f:
         content = f.read()
 
-    # Skip if file uses encoding parameter in open()
+    # Skip if file uses encoding parameter in Path.open()
     if 'encoding=' in content:
         return False
 
@@ -135,11 +134,11 @@ def fix_builtin_open_safe(filepath):
 
         # Replace simple with open
         for match in matches:
-            old = f'with open({match[0]}) as {match[1]}:'
+            old = f'with Path.open({match[0]}) as {match[1]}:'
             new = f'with Path({match[0]}).open() as {match[1]}:'
             content = content.replace(old, new)
 
-        with open(filepath, 'w', encoding='utf-8') as f:
+        with Path.open(filepath, 'w', encoding='utf-8') as f:
             f.write(content)
 
         print(f"  Fixed simple builtin-open in {filepath}")
@@ -150,7 +149,7 @@ def fix_builtin_open_safe(filepath):
 
 def fix_remaining_issues(filepath):
     """Fix other remaining issues."""
-    with open(filepath, 'r', encoding='utf-8') as f:
+    with Path.open(filepath, encoding='utf-8') as f:
         content = f.read()
 
     modified = False
@@ -196,7 +195,7 @@ def fix_remaining_issues(filepath):
         print(f"  Fixed remaining blank whitespace in {filepath}")
 
     if modified:
-        with open(filepath, 'w', encoding='utf-8') as f:
+        with Path.open(filepath, 'w', encoding='utf-8') as f:
             f.write(content)
 
     return modified
@@ -207,7 +206,7 @@ def fix_syntax_errors():
     # Fix emailops_gui.py
     gui_file = Path("emailops/emailops_gui.py")
     if gui_file.exists():
-        with open(gui_file, 'r', encoding='utf-8') as f:
+        with Path.open(gui_file, encoding='utf-8') as f:
             content = f.read()
 
         # Look for common syntax error patterns
@@ -218,7 +217,7 @@ def fix_syntax_errors():
 
         content = '\n'.join(lines)
 
-        with open(gui_file, 'w', encoding='utf-8') as f:
+        with Path.open(gui_file, 'w', encoding='utf-8') as f:
             f.write(content)
 
         if test_syntax(gui_file):
@@ -231,7 +230,7 @@ def fix_syntax_errors():
     # Fix parallel_indexer.py
     parallel_file = Path("emailops/parallel_indexer.py")
     if parallel_file.exists():
-        with open(parallel_file, 'r', encoding='utf-8') as f:
+        with Path.open(parallel_file, encoding='utf-8') as f:
             content = f.read()
 
         # Similar fixes
@@ -241,7 +240,7 @@ def fix_syntax_errors():
 
         content = '\n'.join(lines)
 
-        with open(parallel_file, 'w', encoding='utf-8') as f:
+        with Path.open(parallel_file, 'w', encoding='utf-8') as f:
             f.write(content)
 
         if test_syntax(parallel_file):

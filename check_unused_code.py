@@ -4,11 +4,10 @@ Check for unused code and functions in the emailops project.
 Uses multiple tools to find dead code, unused imports, and unused functions.
 """
 
+import json
 import subprocess
 import sys
-import json
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
 
 
 def install_tools():
@@ -22,7 +21,7 @@ def install_tools():
     print("Tools installed.\n")
 
 
-def run_vulture(directory: str = "emailops") -> Dict[str, List[str]]:
+def run_vulture(directory: str = "emailops") -> dict[str, list[str]]:
     """
     Run vulture to find unused code.
     Returns dict with categories of unused items.
@@ -88,7 +87,7 @@ def run_vulture(directory: str = "emailops") -> Dict[str, List[str]]:
     return unused
 
 
-def run_pyflakes(directory: str = "emailops") -> List[str]:
+def run_pyflakes(directory: str = "emailops") -> list[str]:
     """
     Run pyflakes to find unused imports and undefined names.
     """
@@ -129,7 +128,7 @@ def run_pyflakes(directory: str = "emailops") -> List[str]:
     return issues
 
 
-def run_ruff_unused(directory: str = "emailops") -> Dict[str, int]:
+def run_ruff_unused(directory: str = "emailops") -> dict[str, int]:
     """
     Run ruff to check for unused code patterns.
     """
@@ -179,7 +178,7 @@ def run_ruff_unused(directory: str = "emailops") -> Dict[str, int]:
     return counts
 
 
-def analyze_function_usage(directory: str = "emailops") -> Dict[str, List[Dict]]:
+def analyze_function_usage(directory: str = "emailops") -> dict[str, list[dict]]:
     """
     Analyze which functions are defined but never called.
     Returns dict with function names as keys and list of file info as values.
@@ -198,7 +197,7 @@ def analyze_function_usage(directory: str = "emailops") -> Dict[str, List[Dict]]
 
     for filepath in py_files:
         try:
-            with open(filepath, 'r', encoding='utf-8') as f:
+            with Path.open(filepath, encoding='utf-8') as f:
                 content = f.read()
                 tree = ast.parse(content)
 
@@ -248,7 +247,7 @@ def analyze_function_usage(directory: str = "emailops") -> Dict[str, List[Dict]]
     return unused_functions
 
 
-def check_import_usage(directory: str = "emailops") -> Dict[str, List[str]]:
+def check_import_usage(directory: str = "emailops") -> dict[str, list[str]]:
     """
     Check which modules are imported but never used.
     """
@@ -264,7 +263,7 @@ def check_import_usage(directory: str = "emailops") -> Dict[str, List[str]]:
 
     for filepath in py_files:
         try:
-            with open(filepath, 'r', encoding='utf-8') as f:
+            with Path.open(filepath, encoding='utf-8') as f:
                 content = f.read()
                 tree = ast.parse(content)
 
@@ -318,7 +317,6 @@ def generate_report(directory: str = "emailops", format: str = "markdown"):
     print("UNUSED CODE ANALYSIS REPORT")
     print("=" * 60)
 
-    import os
 
     # Save results to file
     report = []
@@ -369,10 +367,10 @@ def generate_report(directory: str = "emailops", format: str = "markdown"):
                     abs_path = Path(loc['path']).resolve()
                     vscode_link = f"vscode://file/{abs_path}:{loc['line']}:1"
                     file_name = Path(loc['path']).name
-                    report.append(f'<div class="function-link">\n')
+                    report.append('<div class="function-link">\n')
                     report.append(f'  <a href="{vscode_link}"><strong>{func_name}()</strong></a>\n')
                     report.append(f'  <span class="file-path">in {file_name}:{loc["line"]}</span>\n')
-                    report.append(f'</div>\n')
+                    report.append('</div>\n')
             report.append("</div>\n")
 
         report.append("</body>\n</html>\n")
@@ -414,7 +412,7 @@ def generate_report(directory: str = "emailops", format: str = "markdown"):
         # Save Markdown report
         report_path = Path("UNUSED_CODE_REPORT.md")
 
-    with open(report_path, 'w', encoding='utf-8') as f:
+    with Path.open(report_path, 'w', encoding='utf-8') as f:
         f.writelines(report)
 
     print(f"\n✅ Report saved to {report_path}")
@@ -422,7 +420,7 @@ def generate_report(directory: str = "emailops", format: str = "markdown"):
     # Also generate HTML report if markdown was requested
     if format == "markdown":
         generate_report(directory, "html")
-        print(f"✅ HTML report with clickable links saved to UNUSED_CODE_REPORT.html")
+        print("✅ HTML report with clickable links saved to UNUSED_CODE_REPORT.html")
 
     # Suggest cleanup commands
     print("\n" + "=" * 60)

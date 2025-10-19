@@ -1,81 +1,22 @@
 # Unused Code Analysis Report
 Directory analyzed: `emailops`
 
-## Summary
-- Unused functions: 106
-- Files with unused imports: 22
-- Unused variables (vulture): 0
-- Unused classes: 0
-- Unreachable code blocks: 0
-
 ## Potentially Unused Functions
 *Click on any link to open in VSCode:*
 
-- **[`_add_selected_to_batch()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1213:1)** in emailops_gui.py:1213
-- **[`_apply_config()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1406:1)** in emailops_gui.py:1406
 - **[`_build_search_query_from_history()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:2345:1)** in search_and_draft.py:2345
 - **[`_cache_mapping()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:331:1)** in search_and_draft.py:331
 - **[`_cache_query_embedding()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:292:1)** in search_and_draft.py:292
-- **[`_change_log_level()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1942:1)** in emailops_gui.py:1942
-- **[`_check_deps()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1521:1)** in emailops_gui.py:1521
-- **[`_check_index()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1556:1)** in emailops_gui.py:1556
-- **[`_choose_root()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2383:1)** in emailops_gui.py:2383
-- **[`_choose_thread_dir()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1141:1)** in emailops_gui.py:1141
 - **[`_clean_index_text()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:264:1)** in email_indexer.py:264
-- **[`_clear_batch_list()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1240:1)** in emailops_gui.py:1240
-- **[`_clear_chunks_dir()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1837:1)** in emailops_gui.py:1837
-- **[`_drain_logs()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1919:1)** in emailops_gui.py:1919
-- **[`_export_batch_results()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1325:1)** in emailops_gui.py:1325
-- **[`_export_chat_history()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2116:1)** in emailops_gui.py:2116
-- **[`_export_conversation_list()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:896:1)** in emailops_gui.py:896
-- **[`_export_search_results()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2081:1)** in emailops_gui.py:2081
 - **[`_find_conv_ids_by_subject()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:524:1)** in search_and_draft.py:524
 - **[`_get_cached_mapping()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:310:1)** in search_and_draft.py:310
 - **[`_get_cached_query_embedding()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:280:1)** in search_and_draft.py:280
-- **[`_list_chunked_convs()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1811:1)** in emailops_gui.py:1811
-- **[`_load_chat_session()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2231:1)** in emailops_gui.py:2231
-- **[`_load_conversations()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2289:1)** in emailops_gui.py:2289
-- **[`_on_analyze_thread()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1863:1)** in emailops_gui.py:1863
-- **[`_on_batch_replies()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1309:1)** in emailops_gui.py:1309
-- **[`_on_batch_summarize()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1297:1)** in emailops_gui.py:1297
-- **[`_on_build_index()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1352:1)** in emailops_gui.py:1352
-- **[`_on_chat()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2174:1)** in emailops_gui.py:2174
-- **[`_on_draft_fresh()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2532:1)** in emailops_gui.py:2532
-- **[`_on_draft_reply()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2482:1)** in emailops_gui.py:2482
-- **[`_on_force_rechunk()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1622:1)** in emailops_gui.py:1622
-- **[`_on_incremental_chunk()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1680:1)** in emailops_gui.py:1680
-- **[`_on_list_convs()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2316:1)** in emailops_gui.py:2316
-- **[`_on_search()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2416:1)** in emailops_gui.py:2416
-- **[`_on_surgical_rechunk()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1760:1)** in emailops_gui.py:1760
-- **[`_open_attachments_folder()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:812:1)** in emailops_gui.py:812
-- **[`_open_conversation_folder()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:839:1)** in emailops_gui.py:839
-- **[`_reset_chat_session()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2270:1)** in emailops_gui.py:2270
-- **[`_reset_config()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:199:1)** in emailops_gui.py:199
-- **[`_run_account_setup()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1612:1)** in emailops_gui.py:1612
-- **[`_run_diagnostics()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1474:1)** in emailops_gui.py:1474
 - **[`_safe_float_env()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:360:1)** in search_and_draft.py:360
 - **[`_safe_int_env()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:352:1)** in search_and_draft.py:352
 - **[`_safe_json_load()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:368:1)** in search_and_draft.py:368
-- **[`_save_analysis_results()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2139:1)** in emailops_gui.py:2139
-- **[`_save_chat_session()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2254:1)** in emailops_gui.py:2254
-- **[`_save_eml_fresh()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2566:1)** in emailops_gui.py:2566
-- **[`_save_eml_reply()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2516:1)** in emailops_gui.py:2516
-- **[`_save_logs()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1953:1)** in emailops_gui.py:1953
-- **[`_show_about()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1970:1)** in emailops_gui.py:1970
-- **[`_show_docs()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2008:1)** in emailops_gui.py:2008
-- **[`_show_snippet()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2465:1)** in emailops_gui.py:2465
 - **[`_summarize_worker()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\processor.py:369:1)** in processor.py:369
-- **[`_test_embeddings()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1581:1)** in emailops_gui.py:1581
-- **[`_toggle_advanced_search()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:532:1)** in emailops_gui.py:532
-- **[`_update_progress_displays()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:295:1)** in emailops_gui.py:295
-- **[`_use_selected_conv()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2355:1)** in emailops_gui.py:2355
-- **[`_view_config()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1451:1)** in emailops_gui.py:1451
-- **[`_view_conversation_txt()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:748:1)** in emailops_gui.py:748
 - **[`age()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\processing_utils.py:74:1)** in processing_utils.py:74
-- **[`analyze_conversation_dir_sync()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\summarize_email_thread.py:1936:1)** in summarize_email_thread.py:1936
-- **[`busy()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:122:1)** in emailops_gui.py:122
-- **[`cancel()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:114:1)** in emailops_gui.py:114
-- **[`chunk_one()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1723:1)** in emailops_gui.py:1723
+- **[`analyze_conversation_dir_sync()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\summarize_email_thread.py:1931:1)** in summarize_email_thread.py:1931
 - **[`chunk_text()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\text_chunker.py:189:1)** in text_chunker.py:189
 - **[`clear_cache()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\processing_utils.py:291:1)** in processing_utils.py:291
 - **[`cmd_chat()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\processor.py:316:1)** in processor.py:316
@@ -85,30 +26,21 @@ Directory analyzed: `emailops`
 - **[`cmd_summarize()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\processor.py:398:1)** in processor.py:398
 - **[`cmd_summarize_many()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\processor.py:422:1)** in processor.py:422
 - **[`complete()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\llm_client.py:80:1)** in llm_client.py:80
-- **[`decorator()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:141:1)** in emailops_gui.py:141
-- **[`emit()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:53:1)** in emailops_gui.py:53
 - **[`file_lock()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\file_utils.py:112:1)** in file_utils.py:112
 - **[`getAge()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\processing_utils.py:88:1)** in processing_utils.py:88
+- **[`get_all_credential_files()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\config.py:412:1)** in config.py:412
 - **[`get_index_info()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\index_metadata.py:748:1)** in index_metadata.py:748
-- **[`get_status()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:132:1)** in emailops_gui.py:132
 - **[`get_text_preprocessor()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\processing_utils.py:326:1)** in processing_utils.py:326
 - **[`json_complete()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\llm_client.py:85:1)** in llm_client.py:85
 - **[`monitor_performance()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\processing_utils.py:93:1)** in processing_utils.py:93
 - **[`prepare_for_indexing()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\processing_utils.py:189:1)** in processing_utils.py:189
-- **[`print_total_chunks()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:271:1)** in emailops_gui.py:271
 - **[`process_items()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\processing_utils.py:125:1)** in processing_utils.py:125
-- **[`process_reply()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1311:1)** in emailops_gui.py:1311
-- **[`process_summarize()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1299:1)** in emailops_gui.py:1299
 - **[`quote_shell_arg()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\validators.py:238:1)** in validators.py:238
-- **[`reset_config()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\config.py:288:1)** in config.py:288
-- **[`run_in_thread()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1373:1)** in emailops_gui.py:1373
-- **[`run_load()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2295:1)** in emailops_gui.py:2295
+- **[`reset_config()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\config.py:526:1)** in config.py:526
 - **[`sanitize_path_input_report()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\validators.py:377:1)** in validators.py:377
 - **[`save_validated_accounts()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\llm_runtime.py:256:1)** in llm_runtime.py:256
 - **[`session_path()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:2265:1)** in search_and_draft.py:2265
-- **[`set_progress()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:126:1)** in emailops_gui.py:126
 - **[`split_email_thread()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_processing.py:160:1)** in email_processing.py:160
-- **[`task_wrapper()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:174:1)** in emailops_gui.py:174
 - **[`temporary_directory()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\file_utils.py:93:1)** in file_utils.py:93
 - **[`validate_account()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\llm_runtime.py:331:1)** in llm_runtime.py:331
 - **[`validate_directory_path_info()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\validators.py:388:1)** in validators.py:388
@@ -116,23 +48,20 @@ Directory analyzed: `emailops`
 - **[`validate_environment_variable()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\validators.py:287:1)** in validators.py:287
 - **[`validate_file_path_info()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\validators.py:407:1)** in validators.py:407
 - **[`validate_project_id()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\validators.py:253:1)** in validators.py:253
-- **[`wrapper()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:142:1)** in emailops_gui.py:142
 - **[`wrapper()`](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\processing_utils.py:97:1)** in processing_utils.py:97
 
 ## Unused Imports by File
-- **[config.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\config.py:1:1)**: annotations
+- **[config.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\config.py:1:1)**: MalformedError, annotations
 - **[conversation_loader.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\conversation_loader.py:1:1)**: annotations
 - **[doctor.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\doctor.py:1:1)**: annotations
-- **[emailops_gui.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1:1)**: email_indexer, DEFAULT_ACCOUNTS, INDEX_DIRNAME_DEFAULT, annotations, processor
-- **[emailops_gui_fixed.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui_fixed.py:1:1)**: argparse, json, datetime, scrub_json_string, tk, Any, load_validated_accounts, _probe_embeddings, platform, _get_index_statistics, annotations, subprocess, _append_todos_csv, check_and_install_dependencies, Callable, threading, messagebox, list_conversations_newest_first, queue, asyncio, format_analysis_as_markdown, time, logging, partial, ChatSession, Path, ttk, _search, os, sys, csv, filedialog
-- **[email_indexer.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:1:1)**: annotations, FAISS_INDEX_FILENAME, FILE_TIMES_FILENAME, MAPPING_FILENAME
+- **[email_indexer.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:1:1)**: FAISS_INDEX_FILENAME, FILE_TIMES_FILENAME, MAPPING_FILENAME, annotations
 - **[email_processing.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_processing.py:1:1)**: annotations
 - **[env_utils.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\env_utils.py:1:1)**: annotations
 - **[exceptions.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\exceptions.py:1:1)**: annotations
 - **[file_utils.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\file_utils.py:1:1)**: annotations
 - **[index_metadata.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\index_metadata.py:1:1)**: annotations
 - **[llm_client.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\llm_client.py:1:1)**: _complete_text_t
-- **[llm_runtime.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\llm_runtime.py:1:1)**: clean_email_text, annotations, EmailOpsConfig, read_text_file
+- **[llm_runtime.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\llm_runtime.py:1:1)**: EmailOpsConfig, read_text_file, clean_email_text, annotations
 - **[processing_utils.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\processing_utils.py:1:1)**: annotations
 - **[processor.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\processor.py:1:1)**: annotations
 - **[search_and_draft.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:1:1)**: annotations
@@ -140,5 +69,5 @@ Directory analyzed: `emailops`
 - **[text_chunker.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\text_chunker.py:1:1)**: annotations
 - **[text_extraction.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\text_extraction.py:1:1)**: annotations
 - **[unified_config.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\unified_config.py:1:1)**: annotations
-- **[utils.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\utils.py:1:1)**: extract_email_metadata, file_lock, split_email_thread, extract_text_async, ensure_dir, get_text_preprocessor, get_processing_config, temporary_directory, Person, clean_email_text, load_conversation, annotations, ProcessingConfig, extract_text, should_skip_retrieval_cleaning, find_conversation_dirs, BatchProcessor, monitor_performance
+- **[utils.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\utils.py:1:1)**: extract_text_async, file_lock, get_text_preprocessor, extract_text, monitor_performance, clean_email_text, extract_email_metadata, ProcessingConfig, annotations, should_skip_retrieval_cleaning, temporary_directory, Person, get_processing_config, ensure_dir, load_conversation, BatchProcessor, find_conversation_dirs, split_email_thread
 - **[validators.py](vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\validators.py:1:1)**: annotations

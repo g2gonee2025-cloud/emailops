@@ -76,17 +76,6 @@ def embed_texts(texts: Iterable[str], **kwargs: Any) -> Any:
     return _rt_attr("embed_texts")(texts, **kwargs)
 
 
-# ---- Backwards-friendly aliases ----------------------------------------------
-def complete(*args: Any, **kwargs: Any) -> Any:
-    """Alias for complete_text(...)."""
-    return complete_text(*args, **kwargs)
-
-
-def json_complete(*args: Any, **kwargs: Any) -> Any:
-    """Alias for complete_json(...)."""
-    return complete_json(*args, **kwargs)
-
-
 # MEDIUM #39: embed() function is redundant - use embed_texts() directly
 # Kept for backward compatibility but marked as deprecated
 def embed(texts: Iterable[str], **kwargs: Any) -> Any:
@@ -126,9 +115,7 @@ _CORE_EXPORTS = [
     "complete_text",
     "complete_json",
     "embed_texts",
-    # Convenience/compat aliases
-    "complete",
-    "json_complete",
+    # Backwards compatibility
     "embed",
     # Error class is resolved dynamically; see __getattr__("__all__").
     "LLMError",
@@ -193,4 +180,4 @@ def __dir__() -> list[str]:
 # ---- Optional: help static type checkers without changing runtime -------------
 if TYPE_CHECKING:
     # Import for type checkers only (no runtime cost), helping IDEs infer signatures.
-    from .llm_runtime import complete_text as _complete_text_t  # noqa: F401
+    pass

@@ -11,7 +11,7 @@ from pathlib import Path
 def fix_config_py():
     """Fix emailops/config.py errors."""
     filepath = Path("emailops/config.py")
-    with open(filepath, 'r', encoding='utf-8') as f:
+    with Path.open(filepath, encoding='utf-8') as f:
         lines = f.readlines()
 
     # Move imports to top (fixing E402)
@@ -42,7 +42,7 @@ def fix_config_py():
         line = line.replace(''', '`')  # LEFT SINGLE QUOTATION MARK
         new_lines.append(line)
 
-    with open(filepath, 'w', encoding='utf-8') as f:
+    with Path.open(filepath, 'w', encoding='utf-8') as f:
         f.writelines(new_lines)
     print(f"Fixed {filepath}")
 
@@ -50,7 +50,7 @@ def fix_config_py():
 def fix_doctor_py():
     """Fix emailops/doctor.py errors."""
     filepath = Path("emailops/doctor.py")
-    with open(filepath, 'r', encoding='utf-8') as f:
+    with Path.open(filepath, encoding='utf-8') as f:
         content = f.read()
 
     # Fix SIM102: collapsible-if (line 236)
@@ -59,7 +59,7 @@ def fix_doctor_py():
     replacement = r'\1if level and level.upper() in log_map:'
     content = re.sub(pattern, replacement, content)
 
-    with open(filepath, 'w', encoding='utf-8') as f:
+    with Path.open(filepath, 'w', encoding='utf-8') as f:
         f.write(content)
     print(f"Fixed {filepath}")
 
@@ -67,7 +67,7 @@ def fix_doctor_py():
 def fix_exceptions_py():
     """Fix emailops/exceptions.py errors."""
     filepath = Path("emailops/exceptions.py")
-    with open(filepath, 'r', encoding='utf-8') as f:
+    with Path.open(filepath, encoding='utf-8') as f:
         lines = f.readlines()
 
     # Fix A001: Variable `IndexError` is shadowing a Python builtin
@@ -79,7 +79,7 @@ def fix_exceptions_py():
             line = line.replace('IndexError(', 'EmailIndexError(')
         new_lines.append(line)
 
-    with open(filepath, 'w', encoding='utf-8') as f:
+    with Path.open(filepath, 'w', encoding='utf-8') as f:
         f.writelines(new_lines)
     print(f"Fixed {filepath}")
 
@@ -87,7 +87,7 @@ def fix_exceptions_py():
 def fix_file_utils_py():
     """Fix emailops/file_utils.py errors."""
     filepath = Path("emailops/file_utils.py")
-    with open(filepath, 'r', encoding='utf-8') as f:
+    with Path.open(filepath, encoding='utf-8') as f:
         content = f.read()
 
     # Add Path import at the top
@@ -99,15 +99,15 @@ def fix_file_utils_py():
                 break
         content = '\n'.join(lines)
 
-    # Fix PTH123: Replace open() with Path.open()
-    # Line 43: with open(filepath, 'r', encoding='utf-8') as f:
+    # Fix PTH123: Replace Path.open() with Path.open()
+    # Line 43: with Path.open(filepath, 'r', encoding='utf-8') as f:
     content = re.sub(
         r"with open\(filepath, 'r', encoding='utf-8'\) as f:",
         r"with Path(filepath).open('r', encoding='utf-8') as f:",
         content
     )
 
-    # Line 71: with open(filepath, 'rb') as f:
+    # Line 71: with Path.open(filepath, 'rb') as f:
     content = re.sub(
         r"with open\(filepath, 'rb'\) as f:",
         r"with Path(filepath).open('rb') as f:",
@@ -115,8 +115,8 @@ def fix_file_utils_py():
     )
 
     # Fix SIM115 + PTH123: Use context manager
-    # Line 125: f = open(filepath, 'r', encoding='utf-8')
-    # Line 145: f = open(filepath, 'rb')
+    # Line 125: f = Path.open(filepath, 'r', encoding='utf-8')
+    # Line 145: f = Path.open(filepath, 'rb')
     # These need to be wrapped in context managers
 
     # Fix B904: raise from
@@ -129,7 +129,7 @@ def fix_file_utils_py():
         new_lines.append(line)
     content = '\n'.join(new_lines)
 
-    with open(filepath, 'w', encoding='utf-8') as f:
+    with Path.open(filepath, 'w', encoding='utf-8') as f:
         f.write(content)
     print(f"Fixed {filepath}")
 
@@ -137,7 +137,7 @@ def fix_file_utils_py():
 def fix_llm_client_py():
     """Fix emailops/llm_client.py errors."""
     filepath = Path("emailops/llm_client.py")
-    with open(filepath, 'r', encoding='utf-8') as f:
+    with Path.open(filepath, encoding='utf-8') as f:
         content = f.read()
 
     # Add Path import
@@ -155,7 +155,7 @@ def fix_llm_client_py():
         'str(Path(__file__).parent)'
     )
 
-    with open(filepath, 'w', encoding='utf-8') as f:
+    with Path.open(filepath, 'w', encoding='utf-8') as f:
         f.write(content)
     print(f"Fixed {filepath}")
 
@@ -163,7 +163,7 @@ def fix_llm_client_py():
 def fix_search_and_draft_py():
     """Fix emailops/search_and_draft.py errors."""
     filepath = Path("emailops/search_and_draft.py")
-    with open(filepath, 'r', encoding='utf-8') as f:
+    with Path.open(filepath, encoding='utf-8') as f:
         content = f.read()
 
     # Fix E741: Ambiguous variable name 'l'
@@ -182,7 +182,7 @@ def fix_search_and_draft_py():
         content
     )
 
-    with open(filepath, 'w', encoding='utf-8') as f:
+    with Path.open(filepath, 'w', encoding='utf-8') as f:
         f.write(content)
     print(f"Fixed {filepath}")
 
@@ -190,7 +190,7 @@ def fix_search_and_draft_py():
 def fix_text_extraction_py():
     """Fix emailops/text_extraction.py errors."""
     filepath = Path("emailops/text_extraction.py")
-    with open(filepath, 'r', encoding='utf-8') as f:
+    with Path.open(filepath, encoding='utf-8') as f:
         lines = f.readlines()
 
     # Move all imports to top (fixing E402)
@@ -236,7 +236,7 @@ def fix_text_extraction_py():
         content
     )
 
-    with open(filepath, 'w', encoding='utf-8') as f:
+    with Path.open(filepath, 'w', encoding='utf-8') as f:
         f.write(content)
     print(f"Fixed {filepath}")
 
@@ -244,7 +244,7 @@ def fix_text_extraction_py():
 def fix_unified_config_py():
     """Fix emailops/unified_config.py errors."""
     filepath = Path("emailops/unified_config.py")
-    with open(filepath, 'r', encoding='utf-8') as f:
+    with Path.open(filepath, encoding='utf-8') as f:
         content = f.read()
 
     # Add Path import
@@ -256,14 +256,14 @@ def fix_unified_config_py():
                 break
         content = '\n'.join(lines)
 
-    # Fix PTH123: open() -> Path.open()
+    # Fix PTH123: Path.open() -> Path.open()
     content = re.sub(
         r"with open\((.+?), 'r'\) as f:",
         r"with Path(\1).open('r') as f:",
         content
     )
 
-    with open(filepath, 'w', encoding='utf-8') as f:
+    with Path.open(filepath, 'w', encoding='utf-8') as f:
         f.write(content)
     print(f"Fixed {filepath}")
 
@@ -271,7 +271,7 @@ def fix_unified_config_py():
 def fix_utils_py():
     """Fix emailops/utils.py errors."""
     filepath = Path("emailops/utils.py")
-    with open(filepath, 'r', encoding='utf-8') as f:
+    with Path.open(filepath, encoding='utf-8') as f:
         lines = f.readlines()
 
     # Move all imports to top (fixing E402)
@@ -291,7 +291,7 @@ def fix_utils_py():
         new_lines.append('\n')
     new_lines.extend(other_lines)
 
-    with open(filepath, 'w', encoding='utf-8') as f:
+    with Path.open(filepath, 'w', encoding='utf-8') as f:
         f.writelines(new_lines)
     print(f"Fixed {filepath}")
 
@@ -299,7 +299,7 @@ def fix_utils_py():
 def fix_env_utils_py():
     """Fix emailops/env_utils.py errors."""
     filepath = Path("emailops/env_utils.py")
-    with open(filepath, 'r', encoding='utf-8') as f:
+    with Path.open(filepath, encoding='utf-8') as f:
         lines = f.readlines()
 
     # Move imports to top (fixing E402)
@@ -336,7 +336,7 @@ def fix_env_utils_py():
         new_lines.append('\n')
     new_lines.extend(other_lines)
 
-    with open(filepath, 'w', encoding='utf-8') as f:
+    with Path.open(filepath, 'w', encoding='utf-8') as f:
         f.writelines(new_lines)
     print(f"Fixed {filepath}")
 
@@ -344,7 +344,7 @@ def fix_env_utils_py():
 def fix_processing_utils_py():
     """Fix emailops/processing_utils.py errors."""
     filepath = Path("emailops/processing_utils.py")
-    with open(filepath, 'r', encoding='utf-8') as f:
+    with Path.open(filepath, encoding='utf-8') as f:
         content = f.read()
 
     # B019: Remove lru_cache from method (can cause memory leaks)
@@ -355,7 +355,7 @@ def fix_processing_utils_py():
         content
     )
 
-    with open(filepath, 'w', encoding='utf-8') as f:
+    with Path.open(filepath, 'w', encoding='utf-8') as f:
         f.write(content)
     print(f"Fixed {filepath}")
 

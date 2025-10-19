@@ -2,7 +2,7 @@
 Unit tests for search_and_draft.py functions.
 """
 
-from emailops.search_and_draft import SearchFilters, parse_filter_grammar
+from emailops.feature_search_draft import SearchFilters, parse_filter_grammar
 
 
 class TestParseFilterGrammar:

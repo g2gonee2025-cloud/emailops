@@ -243,7 +243,7 @@ def _atomic_write_bytes(dest: Path, data: bytes) -> None:
         dest.parent.mkdir(parents=True, exist_ok=True)
         
         # Write + fsync
-        with open(tmp, "wb") as f:
+        with Path.open(tmp, "wb") as f:
             f.write(data)
             f.flush()
             os.fsync(f.fileno())
@@ -681,7 +681,7 @@ def _atomic_write_bytes(dest: Path, data: bytes) -> None:
         dest.parent.mkdir(parents=True, exist_ok=True)
         
         try:
-            with open(tmp, "wb") as f:
+            with Path.open(tmp, "wb") as f:
                 f.write(data)
                 f.flush()
                 os.fsync(f.fileno())

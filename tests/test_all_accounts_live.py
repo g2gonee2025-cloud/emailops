@@ -13,7 +13,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from emailops.llm_client import embed_texts
+from emailops.llm_client_shim import embed_texts
 from emailops.llm_runtime import (
     _init_vertex,
     load_validated_accounts,

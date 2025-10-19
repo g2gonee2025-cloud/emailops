@@ -34,14 +34,13 @@ from pathlib import Path
 
 try:
     # package form
-    from emailops.config import get_config  # type: ignore
-    from emailops.index_metadata import INDEX_DIRNAME_DEFAULT  # type: ignore
+    from emailops.core_config import get_config  # type: ignore
 
     # search+draft API
-    from emailops.search_and_draft import (
+    from emailops.feature_search_draft import (
         _search as _low_level_search,  # internal search used for chat context only
     )
-    from emailops.search_and_draft import (  # type: ignore
+    from emailops.feature_search_draft import (  # type: ignore
         chat_with_context,
         draft_email_reply_eml,
         draft_fresh_email_eml,
@@ -49,25 +48,20 @@ try:
     )
 
     # summarizer API
-    from emailops.summarize_email_thread import (  # type: ignore
+    from emailops.feature_summarize import (  # type: ignore
         analyze_conversation_dir,
         format_analysis_as_markdown,
     )
-except Exception:
-    # script form
-    from config import get_config  # type: ignore
-    from index_metadata import INDEX_DIRNAME_DEFAULT  # type: ignore
-    from search_and_draft import _search as _low_level_search
-    from search_and_draft import (  # type: ignore
-        chat_with_context,
-        draft_email_reply_eml,
-        draft_fresh_email_eml,
-        parse_filter_grammar,
-    )
-    from summarize_email_thread import (  # type: ignore
-        analyze_conversation_dir,
-        format_analysis_as_markdown,
-    )
+    from emailops.indexing_metadata import INDEX_DIRNAME_DEFAULT  # type: ignore
+except Exception as import_err:
+    # Graceful fallback: if this module is being imported by the GUI,
+    # the GUI will handle the error. We don't want to crash on import.
+    import logging
+    import sys
+    logger = logging.getLogger(__name__)
+    logger.error(f"Failed to import emailops modules in processor: {import_err}")
+    # Don't attempt bare imports that will fail - just re-raise
+    raise ImportError(f"emailops modules not available: {import_err}") from import_err
 
 # ----------------------------------- Logging -----------------------------------
 
@@ -84,6 +78,8 @@ def _setup_logging(level: str | int = "INFO") -> logging.Logger:
 
 
 logger = _setup_logging(os.getenv("LOG_LEVEL", "INFO"))
+
+__all__ = ["_search", "build_cli", "cmd_chat", "cmd_fresh", "cmd_index", "cmd_reply", "cmd_summarize", "cmd_summarize_many", "main"]
 
 # ----------------------------------- Custom Exceptions -----------------------------------
 
@@ -120,6 +116,24 @@ DEFAULT_SUBPROCESS_TIMEOUT = 3600
 # Maximum workers for multiprocessing
 MAX_WORKERS_PER_CPU = 0.5  # Use half of available CPUs
 
+
+# ----------------------------------- File IO -----------------------------------
+
+def _atomic_write_bytes(path: Path, data: bytes) -> None:
+    """
+    Atomically write bytes to a file by writing to a temp file first and then renaming.
+    Ensures parent directories exist. Prevents partial writes on crash.
+    """
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    import tempfile
+    with tempfile.NamedTemporaryFile(dir=str(path.parent), delete=False) as tmp:
+        tmp_path = Path(tmp.name)
+        tmp.write(data)
+    # On POSIX, rename is atomic; on Windows, use replace when available
+    Path(tmp_path).replace(path)
+
+
 # ----------------------------------- Utilities -----------------------------------
 
 
@@ -129,24 +143,13 @@ def _ensure_env() -> None:
     child processes. Uses the central config singleton.
     """
     cfg = get_config()
-    cfg.update_environment()  # sets GOOGLE_APPLICATION_CREDENTIALS, provider, batch, etc.
+    # Propagate to environment for child processes (provider, credentials, etc.)
+    cfg.update_environment()
 
 
 def _resolve_index_dir(root: Path) -> Path:
     idx_name = os.getenv("INDEX_DIRNAME", INDEX_DIRNAME_DEFAULT)
     return root / idx_name
-
-
-def _python_module_path(module_name: str) -> Path:
-    """
-    Resolve a module file path to run via subprocess without depending on package layout.
-    """
-    try:
-        mod = __import__(module_name, fromlist=["__file__"])
-        return Path(mod.__file__).resolve()
-    except Exception:
-        # Fallback: same directory as this script
-        return (Path(__file__).parent / f"{module_name.split('.')[-1]}.py").resolve()
 
 
 def _run_email_indexer(
@@ -163,8 +166,7 @@ def _run_email_indexer(
     Run the indexer as a *separate process* to keep argparse/sys.argv isolated.
     Now with timeout and better error handling.
     """
-    indexer_path = _python_module_path("email_indexer")
-    args: list[str] = [sys.executable, str(indexer_path), "--root", str(root), "--provider", provider]
+    args: list[str] = [sys.executable, "-m", "emailops.email_indexer", "--root", str(root), "--provider", provider]
     if batch:
         args += ["--batch", str(batch)]
     if limit:
@@ -178,7 +180,7 @@ def _run_email_indexer(
     validate_command_args = None
     # MEDIUM #27: Import path correction - use relative import for validators
     try:
-        from .validators import validate_command_args
+        from .core_validators import validate_command_args
     except ImportError:
         logger.warning("validators module not available - command validation skipped")
 
@@ -260,8 +262,15 @@ def cmd_reply(ns: argparse.Namespace) -> None:
             reply_to=ns.reply_to or None,
             reply_policy=ns.reply_policy,
         )
+        # Validate downstream result structure and types
+        if not isinstance(result, dict) or "eml_bytes" not in result:
+            raise ProcessorError("Downstream returned unexpected payload (missing 'eml_bytes').")
+        result_eml = result["eml_bytes"]
+        if not isinstance(result_eml, (bytes, bytearray)):
+            raise ProcessorError("Downstream returned invalid 'eml_bytes' (expected bytes).")
+
         out = ns.out or (root / f"{ns.conv_id}_reply.eml")
-        Path(out).write_bytes(result["eml_bytes"])
+        _atomic_write_bytes(Path(out), result_eml)
         print(str(out))
     except Exception as e:
         logger.error("Failed to generate reply: %s", e)
@@ -305,8 +314,15 @@ def cmd_fresh(ns: argparse.Namespace) -> None:
             sender=ns.sender or None,
             reply_to=ns.reply_to or None,
         )
+        # Validate downstream result structure and types
+        if not isinstance(result, dict) or "eml_bytes" not in result:
+            raise ProcessorError("Downstream returned unexpected payload (missing 'eml_bytes').")
+        result_eml = result["eml_bytes"]
+        if not isinstance(result_eml, (bytes, bytearray)):
+            raise ProcessorError("Downstream returned invalid 'eml_bytes' (expected bytes).")
+
         out = ns.out or (root / f"fresh_{Path(ns.subject).stem}.eml")
-        Path(out).write_bytes(result["eml_bytes"])
+        _atomic_write_bytes(Path(out), result_eml)
         print(str(out))
     except Exception as e:
         logger.error("Failed to generate fresh email: %s", e)
@@ -460,6 +476,7 @@ def cmd_summarize_many(ns: argparse.Namespace) -> None:
 
 def build_cli() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description="EmailOps processor (thin orchestrator)")
+    ap.add_argument("--log-level", default=os.getenv("LOG_LEVEL", "INFO"), help="Logging level (DEBUG, INFO, WARNING, ERROR)")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     # index
@@ -470,6 +487,7 @@ def build_cli() -> argparse.ArgumentParser:
     p.add_argument("--limit", type=int, help="Debug: max docs to embed")
     p.add_argument("--force-reindex", action="store_true")
     p.add_argument("--indexer-args", nargs=argparse.REMAINDER, help="Pass-through args to email_indexer")
+    p.add_argument("--timeout", type=int, default=int(os.getenv("INDEX_TIMEOUT", str(DEFAULT_SUBPROCESS_TIMEOUT))), help="Indexer subprocess timeout (seconds)")
     p.set_defaults(func=cmd_index)
 
     # reply
@@ -543,6 +561,10 @@ def main() -> int:
     _ensure_env()
     ap = build_cli()
     ns = ap.parse_args()
+    # Apply dynamic log level if provided
+    lvl = getattr(logging, str(getattr(ns, "log_level", os.getenv("LOG_LEVEL", "INFO"))).upper(), logging.INFO)
+    logger.setLevel(lvl)
+    logging.getLogger().setLevel(lvl)
     # Graceful Ctrl+C
     signal.signal(signal.SIGINT, signal.default_int_handler)
 

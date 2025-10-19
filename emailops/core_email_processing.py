@@ -2,6 +2,7 @@
 Email processing utilities.
 Handles email cleaning, metadata extraction, and thread splitting.
 """
+
 from __future__ import annotations
 
 import logging
@@ -9,6 +10,8 @@ import re
 from datetime import datetime
 from email.utils import parsedate_to_datetime
 from typing import Any
+
+from .util_files import _strip_control_chars
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +63,6 @@ _FORWARDING_PATTERNS = [
 ]
 
 # MEDIUM #24: Import control char pattern from centralized file_utils instead of duplicating
-from .file_utils import _strip_control_chars
 
 
 def clean_email_text(text: str) -> str:
@@ -116,7 +118,8 @@ def extract_email_metadata(text: str) -> dict[str, Any]:
     """
     Extract structured metadata from raw RFC-822 style headers in text.
 
-    Heuristics only; unfolds folded headers and supports Bcc.
+    Heuristics only
+    unfolds folded headers and supports Bcc.
     Returns dict with keys: sender, recipients, date, subject, cc, bcc
     """
     md: dict[str, Any] = {
@@ -164,7 +167,8 @@ def split_email_thread(text: str) -> list[str]:
     Heuristics:
     - Use common "Original/Forwarded Message" separators and "On ... wrote:" lines
     - As a tie-breaker, if multiple message blocks contain a 'Date:' header,
-      sort the blocks chronologically; otherwise preserve input order.
+      sort the blocks chronologically
+      otherwise preserve input order.
 
     Returns:
         List of message bodies in chronological order (oldest -> newest) when possible.
@@ -191,7 +195,9 @@ def split_email_thread(text: str) -> list[str]:
             return None
         try:
             return parsedate_to_datetime(m.group(1))
-        except Exception:
+        except Exception as e:
+            # Log the parsing failure for debugging
+            logger.debug("Failed to parse date from email header: %s", e)
             return None
 
     dated: list[tuple[datetime, str]] = []

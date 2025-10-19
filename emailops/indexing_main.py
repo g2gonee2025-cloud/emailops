@@ -19,11 +19,8 @@ from typing import Any
 import numpy as np
 
 try:
-    from .index_metadata import (  # filenames + helpers (single source of truth)
-        FAISS_INDEX_FILENAME,
-        FILE_TIMES_FILENAME,
+    from .indexing_metadata import (  # filenames + helpers (single source of truth)
         INDEX_DIRNAME_DEFAULT,
-        MAPPING_FILENAME,
         TIMESTAMP_FILENAME,
         create_index_metadata,
         index_paths,
@@ -35,17 +32,17 @@ try:
 
     # Try to import the consistency checker (preferred); fall back to a local checker below.
     try:
-        from .index_metadata import check_index_consistency  # type: ignore
+        from .indexing_metadata import check_index_consistency  # type: ignore
     except Exception:  # pragma: no cover
         check_index_consistency = None  # type: ignore
-    from .config import EmailOpsConfig
-    from .llm_client import embed_texts
-    from .text_chunker import prepare_index_units
-    from .utils import (
+    from .core_config import EmailOpsConfig
+    from .core_conversation_loader import load_conversation
+    from .llm_client_shim import embed_texts
+    from .llm_text_chunker import prepare_index_units
+    from .util_main import (
         clean_email_text,
         ensure_dir,
         find_conversation_dirs,
-        load_conversation,
         logger,
         read_text_file,
     )
@@ -56,7 +53,7 @@ except Exception:
     _pkg_dir = _Path(__file__).resolve().parent
     if str(_pkg_dir) not in _sys.path:
         _sys.path.insert(0, str(_pkg_dir))
-    from index_metadata import (  # type: ignore
+    from indexing_metadata import (  # type: ignore
         INDEX_DIRNAME_DEFAULT,
         TIMESTAMP_FILENAME,
         create_index_metadata,
@@ -67,17 +64,17 @@ except Exception:
         write_mapping,
     )
     try:
-        from index_metadata import check_index_consistency  # type: ignore
+        from indexing_metadata import check_index_consistency  # type: ignore
     except Exception:
         check_index_consistency = None  # type: ignore
-    from config import EmailOpsConfig  # type: ignore
-    from llm_client import embed_texts  # type: ignore
-    from text_chunker import prepare_index_units  # type: ignore
-    from utils import (  # type: ignore
+    from core_config import EmailOpsConfig  # type: ignore
+    from core_conversation_loader import load_conversation  # type: ignore
+    from llm_client_shim import embed_texts  # type: ignore
+    from llm_text_chunker import prepare_index_units  # type: ignore
+    from util_main import (  # type: ignore
         clean_email_text,
         ensure_dir,
         find_conversation_dirs,
-        load_conversation,
         logger,
         read_text_file,
     )
@@ -88,7 +85,6 @@ try:
 except Exception:
     faiss = None  # type: ignore
     HAVE_FAISS = False
-
 
 # ============================================================================
 # Constants
@@ -105,7 +101,6 @@ CONVERSATION_FILENAME = "Conversation.txt"
 MANIFEST_FILENAME = "manifest.json"
 SUMMARY_FILENAME = "summary.json"
 
-
 # ============================================================================
 # Atomic write helpers
 # ============================================================================
@@ -119,7 +114,7 @@ def _atomic_write_bytes(dest: Path, data: bytes) -> None:
     try:
         # Ensure parent directory exists
         dest.parent.mkdir(parents=True, exist_ok=True)
-        
+
         # Write to temp file with error handling
         try:
             with tmp.open("wb") as f:
@@ -135,17 +130,17 @@ def _atomic_write_bytes(dest: Path, data: bytes) -> None:
 
         # Verify file was written correctly
         if not tmp.exists():
-            raise OSError(f"Temp file {tmp} was not created")
+            raise OSError(f"Temp file {tmp} was not created") from None
         if tmp.stat().st_size != len(data):
             tmp.unlink()
-            raise OSError(f"Temp file size mismatch: expected {len(data)}, got {tmp.stat().st_size}")
+            raise OSError(f"Temp file size mismatch: expected {len(data)}, got {tmp.stat().st_size}") from None
 
         # Atomic replace
         tmp.replace(dest)
 
         # Verify destination exists after replace
         if not dest.exists():
-            raise OSError(f"Destination file {dest} does not exist after replace")
+            raise OSError(f"Destination file {dest} does not exist after replace") from None
 
     except Exception as e:
         # Clean up temp file on any error
@@ -153,7 +148,6 @@ def _atomic_write_bytes(dest: Path, data: bytes) -> None:
             with contextlib.suppress(Exception):
                 tmp.unlink()
         raise OSError(f"Atomic write failed for {dest}: {e}") from e
-
 
 def _atomic_write_text(dest: Path, text: str, *, encoding: str = "utf-8") -> None:
     """
@@ -164,7 +158,7 @@ def _atomic_write_text(dest: Path, text: str, *, encoding: str = "utf-8") -> Non
     try:
         # Ensure parent directory exists
         dest.parent.mkdir(parents=True, exist_ok=True)
-        
+
         # Write to temp file with error handling
         try:
             with tmp.open("w", encoding=encoding) as f:
@@ -180,21 +174,21 @@ def _atomic_write_text(dest: Path, text: str, *, encoding: str = "utf-8") -> Non
 
         # Verify file was written correctly
         if not tmp.exists():
-            raise OSError(f"Temp file {tmp} was not created")
+            raise OSError(f"Temp file {tmp} was not created") from None
         expected_size = len(text.encode(encoding))
         actual_size = tmp.stat().st_size
         # Allow some tolerance for encoding differences
         # MEDIUM #42: Tightened atomic write verification tolerance from 10% to 5%
         if abs(actual_size - expected_size) > expected_size * 0.05:
             tmp.unlink()
-            raise OSError(f"Temp file size mismatch: expected ~{expected_size}, got {actual_size}")
+            raise OSError(f"Temp file size mismatch: expected ~{expected_size}, got {actual_size}") from None
 
         # Atomic replace
         tmp.replace(dest)
 
         # Verify destination exists after replace
         if not dest.exists():
-            raise OSError(f"Destination file {dest} does not exist after replace")
+            raise OSError(f"Destination file {dest} does not exist after replace") from None
 
     except Exception as e:
         # Clean up temp file on any error
@@ -203,6 +197,15 @@ def _atomic_write_text(dest: Path, text: str, *, encoding: str = "utf-8") -> Non
                 tmp.unlink()
         raise OSError(f"Atomic write failed for {dest}: {e}") from e
 
+# ----------------------------------------------------------------------------
+# Limits helper (prefer centralized config, fall back to env constants)
+# ----------------------------------------------------------------------------
+def _get_index_limits() -> tuple[float, int]:
+    try:
+        cfg = EmailOpsConfig.load()
+        return float(cfg.max_indexable_file_mb), int(cfg.max_indexable_chars)
+    except Exception:
+        return MAX_FILE_SIZE_MB, MAX_TEXT_CHARS
 
 # ============================================================================
 # GCP Credential Initialization (delegated to EmailOpsConfig)
@@ -218,7 +221,6 @@ def _initialize_gcp_credentials() -> None:
     except Exception as e:
         logger.error("Failed to initialize GCP credentials: %s", e)
         raise
-
 
 # ============================================================================
 # Small helpers
@@ -244,7 +246,6 @@ def _apply_model_override(provider: str, model: str | None) -> None:
     if key:
         os.environ[key] = str(model)
 
-
 def _get_last_run_time(index_dir: Path) -> datetime | None:
     p = index_dir / TIMESTAMP_FILENAME
     if not p.exists():
@@ -252,20 +253,19 @@ def _get_last_run_time(index_dir: Path) -> datetime | None:
     try:
         txt = p.read_text(encoding="utf-8").strip()
         return datetime.fromisoformat(txt)
-    except Exception:
+    except Exception as e:
+        logger.debug("Failed to parse timestamp: %s", e)
         return None
-
 
 def _save_run_time(index_dir: Path) -> None:
     # Atomic timestamp write
     _atomic_write_text(index_dir / TIMESTAMP_FILENAME, datetime.now(UTC).isoformat(), encoding="utf-8")
 
-
 def _clean_index_text(text: str) -> str:
     """
     Light cleaning to reduce noise for embeddings, without altering meaning.
     (Aggressive email cleanup happens upstream when needed.)
-    
+
     LOW #44: Function name is accurate - performs light cleaning optimized for indexing.
     The "light" qualifier is intentional to distinguish from aggressive email cleaning.
     """
@@ -276,7 +276,6 @@ def _clean_index_text(text: str) -> str:
     s = re.sub(r"[=\-_]{10,}", " ", s)
     s = re.sub(r"(?m)^-{20,}\n", "", s)
     return s.strip()
-
 
 def _extract_manifest_metadata(conv: dict[str, Any]) -> dict[str, Any]:
     """Safe fields from manifest for indexing metadata."""
@@ -325,7 +324,6 @@ def _extract_manifest_metadata(conv: dict[str, Any]) -> dict[str, Any]:
         "end_date": end,
     }
 
-
 def _materialize_text_for_docs(docs: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """
     Ensure each doc has a non-empty 'text' field, using:
@@ -350,7 +348,6 @@ def _materialize_text_for_docs(docs: list[dict[str, Any]]) -> list[dict[str, Any
                         d["text"] = ""
         out.append(d)
     return out
-
 
 def _prefix_from_id(doc_id: str) -> str:
     """
@@ -378,7 +375,6 @@ def _prefix_from_id(doc_id: str) -> str:
     parts = doc_id.split("::")
     return "::".join(parts[:2]) if len(parts) >= 2 else doc_id
 
-
 def _iter_attachment_files(convo_dir: Path) -> Iterable[Path]:
     attachments_dir = convo_dir / "Attachments"
     if attachments_dir.exists():
@@ -389,7 +385,6 @@ def _iter_attachment_files(convo_dir: Path) -> Iterable[Path]:
     for child in convo_dir.iterdir():
         if child.is_file() and child.name not in {CONVERSATION_FILENAME, MANIFEST_FILENAME, SUMMARY_FILENAME}:
             yield child
-
 
 def _att_id(base_id: str, path: str) -> str:
     """
@@ -416,7 +411,6 @@ def _att_id(base_id: str, path: str) -> str:
         ap = str(path)
     h = hashlib.sha256(ap.encode("utf-8"), usedforsecurity=False).hexdigest()[:12]
     return f"{base_id}::att:{h}"
-
 
 # ============================================================================
 # Chunk-building for a conversation (respects per-conversation limit)
@@ -469,7 +463,8 @@ def _build_doc_entries(
     # Stamp conversation mtime once (and fall back safely).
     try:
         conv_mtime = conv_file.stat().st_mtime if conv_file.exists() else time.time()
-    except Exception:
+    except Exception as e:
+        logger.debug("Failed to get file mtime, using current time: %s", e)
         conv_mtime = time.time()
 
     if convo_txt:
@@ -512,7 +507,7 @@ def _build_doc_entries(
             except OSError:
                 # Treat unreadable stat as large: skip to be safe.
                 logger.warning("Skipping unreadable attachment (stat failed): %s", ap)
-                continue
+                continue  # Skip this file but continue processing others
             if size_mb > MAX_FILE_SIZE_MB:
                 logger.warning(
                     "Skipping large attachment: %s (%.1f MB > %.1f MB)",
@@ -575,7 +570,6 @@ def _build_doc_entries(
             out.append(ch)
     return out
 
-
 # ============================================================================
 # Corpus building (full or timestamp-based incremental)
 # ============================================================================
@@ -589,7 +583,8 @@ def build_corpus(
     chunk_overlap: int,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """
-    Full scan of conversation folders; when last_run_time is provided, reuses prior
+    Full scan of conversation folders
+    when last_run_time is provided, reuses prior
     mapping to keep truly unchanged docs (including conversation unchanged + attachments unchanged).
     Returns (new_or_updated_docs, unchanged_docs).
     """
@@ -624,7 +619,7 @@ def build_corpus(
             ]
 
             if modified_time and modified_time < last_run_time and prior_docs_for_conv:
-                # Conversation main text unchanged — check attachments
+                # Conversation main text unchanged - check attachments
                 # HIGH #38: Use consistent load_conversation parameters
                 conv = load_conversation(
                     convo_dir,
@@ -753,7 +748,6 @@ def build_corpus(
 
     return new_or_updated_docs, unchanged_docs
 
-
 # ============================================================================
 # File-times incremental (precise; supports deletions correctly)
 # ============================================================================
@@ -777,6 +771,8 @@ def build_incremental_corpus(
     """
     new_docs: list[dict[str, Any]] = []
     deleted_ids: set[str] = set()
+
+    max_mb, max_chars = _get_index_limits()
 
     # Group prior mapping rows by conversation and by 2-part prefix
     by_conv: defaultdict[str, list[dict[str, Any]]] = defaultdict(list)
@@ -804,21 +800,43 @@ def build_incremental_corpus(
 
         # --- Conversation change detection ---
         conv_doc_id = f"{base_id}::conversation"
+        conv_path = convo_dir / CONVERSATION_FILENAME
         try:
-            conv_mtime = (convo_dir / CONVERSATION_FILENAME).stat().st_mtime
+            conv_mtime = conv_path.stat().st_mtime
         except Exception:
             try:
                 conv_mtime = convo_dir.stat().st_mtime
-            except Exception:
+            except Exception as e:
+                logger.debug("Failed to get file mtime, using current time: %s", e)
                 conv_mtime = time.time()
 
         prior_times = [t for did, t in existing_file_times.items() if did == conv_doc_id or did.startswith(conv_doc_id + "::")]
         prior_time = max(prior_times) if prior_times else None
         added_for_conv = 0
 
+        # Enforce size cap for changed conversations: if oversized, drop old chunks and skip re-add
+        conv_oversized = False
+        try:
+            if conv_path.exists():
+                size_mb = conv_path.stat().st_size / (1024 * 1024)
+                if size_mb > max_mb:
+                    conv_oversized = True
+        except Exception:
+            conv_oversized = False
+
         if (prior_time or 0) < conv_mtime:
+            # Delete old conv chunks first (to avoid duplication or stale content)
+            for rid in (by_conv_prefix.get(base_id, {}).get(conv_doc_id, []) or []):
+                deleted_ids.add(rid)
+
+            if conv_oversized:
+                # Skip rebuilding this conversation due to size cap
+                continue
+
             # Rebuild conversation
             txt = clean_email_text(conv.get("conversation_txt", ""))
+            if max_chars and len(txt) > max_chars:
+                txt = txt[:max_chars]
             chunks = prepare_index_units(
                 txt,
                 doc_id=conv_doc_id,
@@ -828,10 +846,6 @@ def build_incremental_corpus(
                 chunk_size=chunk_size,
                 chunk_overlap=chunk_overlap,
             )
-            # Old conv chunks → delete to avoid duplication
-            for rid in (by_conv_prefix.get(base_id, {}).get(conv_doc_id, []) or []):
-                deleted_ids.add(rid)
-
             for ch in chunks:
                 if limit is not None and added_for_conv >= limit:
                     break
@@ -856,8 +870,10 @@ def build_incremental_corpus(
             ap = Path(att.get("path", ""))
             prefix = _att_id(base_id, str(ap))
             current_att_prefixes.add(prefix)
+            att_size_mb = None
             try:
                 mt = ap.stat().st_mtime
+                att_size_mb = ap.stat().st_size / (1024 * 1024)
             except Exception:
                 mt = time.time()
 
@@ -865,11 +881,17 @@ def build_incremental_corpus(
             prior_time = max(prior_times) if prior_times else None
 
             if (prior_time or 0) < mt and (att.get("text") or "").strip():
-                # Delete old chunks for this attachment prefix to avoid duplication
+                # Always delete old chunks first
                 for rid in (by_conv_prefix.get(base_id, {}).get(prefix, []) or []):
                     deleted_ids.add(rid)
 
+                # Enforce size cap: if oversized now, skip re-adding
+                if att_size_mb is not None and att_size_mb > max_mb:
+                    continue
+
                 text = clean_email_text(att["text"])
+                if max_chars and len(text) > max_chars:
+                    text = text[:max_chars]
                 chunks = prepare_index_units(
                     text,
                     doc_id=prefix,
@@ -922,14 +944,14 @@ def build_incremental_corpus(
 
     return new_docs, deleted_ids
 
-
 # ============================================================================
 # Index I/O
 # ============================================================================
 def load_existing_index(index_dir: Path) -> tuple[Any | None, list[dict[str, Any]] | None, dict[str, float] | None, np.ndarray | None]:
     """
     Returns (faiss_index_or_None, mapping_list_or_None, file_times_dict_or_None, embeddings_array_or_None)
-    All parts are optional; function handles missing files gracefully.
+    All parts are optional
+    function handles missing files gracefully.
     """
     ixp = index_paths(index_dir)
 
@@ -958,7 +980,6 @@ def load_existing_index(index_dir: Path) -> tuple[Any | None, list[dict[str, Any
 
     return fidx, mapping, file_times, embeddings
 
-
 def _local_check_index_consistency(index_dir: Path) -> None:
     """Fallback consistency check when package-provided checker is unavailable."""
     try:
@@ -972,18 +993,17 @@ def _local_check_index_consistency(index_dir: Path) -> None:
             except Exception:
                 emb = None
         if emb is not None and emb.shape[0] != len(m):
-            raise RuntimeError(f"Embeddings/document count mismatch: {emb.shape[0]} vs {len(m)}")
+            raise RuntimeError(f"Embeddings/document count mismatch: {emb.shape[0]} vs {len(m)}") from None
         # FAISS ntotal vs embeddings
         if HAVE_FAISS and faiss is not None and ixp.faiss.exists() and emb is not None:
             try:
                 fidx = faiss.read_index(str(ixp.faiss))  # type: ignore
                 if int(getattr(fidx, 'ntotal', 0)) != int(emb.shape[0]):
-                    raise RuntimeError(f"FAISS ntotal {getattr(fidx, 'ntotal', 0)} != embeddings {emb.shape[0]}")
+                    raise RuntimeError(f"FAISS ntotal {getattr(fidx, 'ntotal', 0)} != embeddings {emb.shape[0]}") from None
             except Exception as e:
-                raise RuntimeError(f"FAISS consistency check failed: {e}")
-    except Exception as e:
+                raise RuntimeError(f"FAISS consistency check failed: {e}") from None
+    except Exception:
         raise
-
 
 def save_index(index_dir: Path, embeddings: np.ndarray, mapping: list[dict[str, Any]], *, provider: str, num_folders: int) -> None:
     """
@@ -1035,7 +1055,6 @@ def save_index(index_dir: Path, embeddings: np.ndarray, mapping: list[dict[str, 
         logger.error("Post-save consistency check failed: %s", e)
         raise
 
-
 # ============================================================================
 # CLI
 # ============================================================================
@@ -1067,7 +1086,7 @@ def main() -> None:
     index_base = Path(args.index_root).expanduser().resolve() if args.index_root else root
 
     if not index_base.exists():
-        logger.info("Index base '%s' does not exist yet; creating it", index_base)
+        logger.info("Index base '%s' does not exist yet, creating it", index_base)
         index_base.mkdir(parents=True, exist_ok=True)
 
     out_dir = index_base / INDEX_DIRNAME_DEFAULT
@@ -1079,9 +1098,9 @@ def main() -> None:
 
     # Use config-backed chunk parameters (threaded to all prepare_index_units calls)
     try:
-        cfg = EmailOpsConfig.load()
-        chunk_size = int(getattr(cfg, "DEFAULT_CHUNK_SIZE", 1600))
-        chunk_overlap = int(getattr(cfg, "DEFAULT_CHUNK_OVERLAP", 200))
+        cfg = EmailOpsConfig.load()  # prefer centralized config
+        chunk_size = int(getattr(cfg, "chunk_size", 1600))
+        chunk_overlap = int(getattr(cfg, "chunk_overlap", 200))
     except Exception:
         chunk_size, chunk_overlap = 1600, 200  # safe defaults matching config.py
 
@@ -1109,11 +1128,10 @@ def main() -> None:
     if args.workers > 1:
         logger.info("Using parallel indexing with %d workers", args.workers)
         try:
-            from .parallel_indexer import parallel_index_conversations
+            from .indexing_parallel import parallel_index_conversations
 
             merged_embeddings, merged_mapping = parallel_index_conversations(
                 root=root,
-                index_dir=out_dir,
                 num_workers=args.workers,
                 provider=embed_provider,
                 chunk_size=chunk_size,
@@ -1168,7 +1186,7 @@ def main() -> None:
 
     # Short-circuit: nothing to do
     if not new_docs and existing_embeddings is not None and existing_mapping and unchanged_docs and not args.force_reindex:
-        logger.info("No new content; index remains unchanged.")
+        logger.info("No new content, index remains unchanged.")
         _save_run_time(out_dir)
         return
 
@@ -1188,14 +1206,14 @@ def main() -> None:
 
     def _validate_batch(vecs: np.ndarray, expected_rows: int) -> None:
         if vecs.size == 0:
-            raise RuntimeError("Embedding provider returned empty vectors; check provider credentials and model.")
+            raise RuntimeError("Embedding provider returned empty vectors, check provider credentials and model.")
         if vecs.ndim != 2 or vecs.shape[0] != int(expected_rows):
-            raise RuntimeError(f"Invalid embeddings shape: got {vecs.shape}, expected rows={expected_rows}")
+            raise RuntimeError(f"Invalid embeddings shape: got {vecs.shape}, expected rows={expected_rows}") from None
         if not np.isfinite(vecs).all():
-            raise RuntimeError("Invalid embeddings returned (non-finite values detected)")
+            raise RuntimeError("Invalid embeddings returned (non-finite values detected)") from None
         # At least one row must have a reasonable norm (~1.0 for unit-normalized embeddings)
         if float(np.max(np.linalg.norm(vecs, axis=1))) < 1e-3:
-            raise RuntimeError("Embeddings look degenerate (all ~zero)")
+            raise RuntimeError("Embeddings look degenerate (all ~zero)") from None
 
     if existing_embeddings is not None and existing_mapping and not args.force_reindex:
         # Reuse unchanged vectors by id -> row index
@@ -1246,13 +1264,13 @@ def main() -> None:
         final_docs = docs
 
     if not all_embeddings:
-        logger.info("Nothing to embed after filtering; aborting update.")
+        logger.info("Nothing to embed after filtering, aborting update.")
         _save_run_time(out_dir)
         return
 
     embeddings = np.vstack(all_embeddings)
     if embeddings.shape[0] != len(final_docs):
-        raise RuntimeError(f"Embeddings/document count mismatch: {embeddings.shape[0]} vectors for {len(final_docs)} docs")
+        raise RuntimeError(f"Embeddings/document count mismatch: {embeddings.shape[0]} vectors for {len(final_docs)} docs") from None
 
     # ------------------------------------------------------------------
     # 3) Persist index artifacts
@@ -1315,7 +1333,6 @@ def main() -> None:
 
     _save_run_time(out_dir)
     logger.info("Index updated at %s", out_dir)
-
 
 if __name__ == "__main__":
     main()

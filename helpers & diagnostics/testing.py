@@ -4,19 +4,20 @@ Consolidated testing utilities for EmailOps.
 Combines all testing and verification functionality.
 """
 
-import argparse
+from typing import ClassVar
+from pathlib import Path
+from typing import Any
 import json
 import logging
 import os
 import sys
-from datetime import datetime
-from pathlib import Path
-from typing import Any
 
-import vertexai
+from datetime import datetime
 from dotenv import load_dotenv
 from google import genai
 from google.oauth2 import service_account
+import argparse
+import vertexai
 
 # Setup logging
 logging.basicConfig(
@@ -29,7 +30,6 @@ logger = logging.getLogger(__name__)
 class DependencyVerifier:
     """Verify Python dependencies and imports."""
 
-    from typing import ClassVar
 
     # Critical dependencies to check
     DEPENDENCIES: ClassVar[list[str]] = [

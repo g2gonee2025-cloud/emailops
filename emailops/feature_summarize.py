@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import argparse
+import asyncio
 import csv
+import inspect
 import json
 import logging
 import os
@@ -13,13 +15,14 @@ import time
 
 # Python 3.10 compatibility for UTC
 from datetime import UTC, datetime
+from io import StringIO
 from pathlib import Path
 from typing import Any
 
 # Import strategy: Try package imports first, fail fast with clear error
 try:
-    from emailops.llm_client import complete_json, complete_text
-    from emailops.utils import (
+    from emailops.llm_client_shim import complete_json, complete_text
+    from emailops.util_main import (
         clean_email_text,
         ensure_dir,
         extract_email_metadata,
@@ -73,6 +76,7 @@ def _extract_first_balanced_json_object(s: str) -> str | None:
     HIGH #15: Enhanced to correctly handle braces inside string values.
     Returns the object as a string, or None if no balanced object is found.
     """
+
     # Type and empty validation
     if not isinstance(s, str):
         logger.warning(
@@ -165,12 +169,12 @@ def _try_load_json(data: Any) -> dict[str, Any]:
         logger.debug("JSON parsing: Processing string of %d chars", len(s))
     else:
         logger.error("JSON parsing: Unsupported data type: %s", type(data).__name__)
-        raise ValueError(f"Unsupported data type: {type(data).__name__}")
+        raise ValueError(f"Unsupported data type: {type(data).__name__}") from None
 
     s = s.strip()
     if not s:
         logger.warning("JSON parsing: String is empty after stripping")
-        raise ValueError("Empty string after stripping whitespace")
+        raise ValueError("Empty string after stripping whitespace") from None
 
     # 1) Try direct parsing first
     try:
@@ -617,7 +621,9 @@ def _read_manifest(convo_dir: Path) -> dict[str, Any]:
 def _participants_from_manifest(manifest: dict[str, Any]) -> list[dict[str, str]]:
     """
     Convert first-message participants in manifest to summarizer schema.
-    Roles default to 'other'; tone 'neutral'; stance 'N/A' to avoid assumptions.
+    Roles default to 'other'
+    tone 'neutral'
+    stance 'N/A' to avoid assumptions.
     """
     out: list[dict[str, str]] = []
 
@@ -976,8 +982,6 @@ async def _retry(callable_fn, *args, retries: int = 2, delay: float = 0.5, **kwa
     Retry helper that supports both synchronous and asynchronous callables.
     Uses exponential backoff with jitter and asyncio-friendly sleep.
     """
-    import asyncio
-    import inspect
 
     attempt = 0
     max_retries = retries if retries is not None else 2
@@ -1069,7 +1073,6 @@ async def analyze_email_thread_with_ledger(
     routing_kwargs = _llm_routing_kwargs(provider)
 
     # Import inspect for signature checking
-    import inspect
 
     # Check which routing kwargs are accepted by complete_json
     try:
@@ -1398,7 +1401,6 @@ Output valid JSON matching the required schema."""
                 last_error = retry_error
                 logger.warning("Text mode attempt %d failed: %s", attempt + 1, retry_error)
                 if attempt < retry_attempts - 1:
-                    import asyncio
 
                     await asyncio.sleep(1.0 * (attempt + 1))  # Exponential backoff
 
@@ -1630,7 +1632,6 @@ def format_analysis_as_markdown(analysis: dict[str, Any]) -> str:
     Returns:
         Formatted markdown string
     """
-    from io import StringIO
 
     # Use StringIO for efficient string building
     buffer = StringIO()
@@ -1862,14 +1863,15 @@ async def async_main():
     ap.add_argument(
         "--provider",
         default=os.getenv("EMBED_PROVIDER", "vertex"),
-        help="Provider to use for LLM calls. If emailops.llm_client supports provider/model kwargs, this value is routed; otherwise it is stored in metadata. Defaults to $EMBED_PROVIDER or 'vertex'.",
+        help="Provider to use for LLM calls. If emailops.llm_client supports provider/model kwargs, this value is routed "
+        "otherwise it is stored in metadata. Defaults to $EMBED_PROVIDER or 'vertex'.",
     )
     ap.add_argument("--temperature", type=float, default=0.2, help="Temperature for generation")
     ap.add_argument(
         "--output-format",
         choices=["json", "markdown"],
         default="json",
-        help='Write JSON by default; with "markdown", also write summary.md. Combine with --no-json to skip JSON.',
+        help='Write JSON by default. With "markdown", also write summary.md. Combine with --no-json to skip JSON.',
     )
     ap.add_argument(
         "--no-json",
@@ -1933,13 +1935,11 @@ def analyze_conversation_dir_sync(*args, **kwargs):
     Synchronous wrapper for analyze_conversation_dir.
     Runs the async function in an event loop for callers that expect sync API.
     """
-    import asyncio
 
     return asyncio.run(analyze_conversation_dir(*args, **kwargs))
 
 
 def main() -> None:
-    import asyncio
 
     asyncio.run(async_main())
 

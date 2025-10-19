@@ -4,17 +4,17 @@ Consolidated SonarQube utilities for EmailOps.
 Combines functionality from all SonarQube-related scripts.
 """
 
-from pathlib import Path
+import argparse
 import os
 import re
-import requests
+import subprocess
 import sys
 import time
-
-import argparse
-from urllib.request import urlretrieve
-import subprocess
 import zipfile
+from pathlib import Path
+from urllib.request import urlretrieve
+
+import requests
 
 # Configuration
 SONAR_URL = os.getenv("SONAR_HOST_URL", "http://localhost:9099")

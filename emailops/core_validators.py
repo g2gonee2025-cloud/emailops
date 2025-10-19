@@ -1,4 +1,13 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
+import os
+import re
+import shlex
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Generic, TypeVar
+
 """
 Input validation and sanitization utilities for EmailOps.
 Provides security checks for paths, commands, and user inputs.
@@ -8,14 +17,7 @@ NOTE: This module preserves the existing public API (functions returning
 values. See `validate_directory_path_info` and `validate_file_path_info`.
 """
 
-from __future__ import annotations
 
-import os
-import re
-import shlex
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Generic, TypeVar
 
 T = TypeVar("T")
 
@@ -38,6 +40,9 @@ DANGEROUS_PATH_CHARS = {"\0", "\r", "\n", "|", "&", ";", "$", "`", "<", ">", "("
 
 # Shell dangerous patterns
 SHELL_DANGEROUS_PATTERNS = frozenset([";", "|", "&", "$", "`", "\n", "\r", "\0"])
+
+# Blocklist of dangerous commands
+DANGEROUS_COMMANDS = frozenset(["rm", "mv", "dd", "mkfs", "shutdown", "reboot", "halt"])
 
 # URL validation pattern
 URL_PATTERN = re.compile(
@@ -222,6 +227,10 @@ def validate_command_args(command: str, args: list[str], allowed_commands: list[
     if allowed_commands and command not in allowed_commands:
         return False, f"Command '{command}' not in allowed list"
 
+    # If no allowlist, check against a blocklist of dangerous commands
+    if not allowed_commands and command in DANGEROUS_COMMANDS:
+        return False, f"Command '{command}' is blocked for security reasons"
+
     # Check for shell injection attempts in command using pre-compiled set
     if any(pattern in command for pattern in SHELL_DANGEROUS_PATTERNS):
         return False, "Dangerous character detected in command"
@@ -395,7 +404,8 @@ def validate_directory_path_info(
     """Validate a directory path and return a normalized Path on success.
 
     Returns a :class:`ValidationResult` carrying the resolved absolute :class:`Path`
-    when validation succeeds; otherwise ``value`` is ``None``.
+    when validation succeeds
+    otherwise ``value`` is ``None``.
     """
     expanded = _maybe_expand_vars(path, expand_vars)
     ok, msg = validate_directory_path(expanded, must_exist=must_exist, allow_parent_traversal=allow_parent_traversal)

@@ -16,16 +16,16 @@ import os
 import sys
 import time
 
-from emailops.index_metadata import load_index_metadata
-from emailops.summarize_email_thread import (
-from emailops.utils import find_conversation_dirs
-from emailops.config import get_config
-import psutil
 from datetime import UTC, datetime, timedelta
+from emailops.core_config import get_config
+from emailops.indexing_metadata import load_index_metadata
+from emailops.util_main import find_conversation_dirs
 import argparse
+import psutil
 
 # Try to import optional dependencies
 try:
+    import psutil
 except ImportError:
     psutil = None
 
@@ -496,7 +496,7 @@ class ChunkAnalyzer:
 
         for chunk_file in sample_files:
             try:
-                with open(chunk_file, encoding='utf-8') as f:
+                with Path.open(chunk_file, encoding='utf-8') as f:
                     data = json.load(f)
 
                 if not data or data == []:
@@ -587,7 +587,7 @@ class ChunkAnalyzer:
 
         # Read last few lines
         try:
-            with open(latest_log, encoding='utf-8') as f:
+            with Path.open(latest_log, encoding='utf-8') as f:
                 lines = f.readlines()
 
             print("\nLast 10 log entries:")
@@ -595,7 +595,7 @@ class ChunkAnalyzer:
                 print(f"  {line.strip()}")
 
             # Check for errors
-            error_lines = [l for _l in lines if 'ERROR' in l or 'error' in l.lower()]
+            error_lines = [_l for _l in lines if 'ERROR' in _l or 'error' in _l.lower()]
             if error_lines:
                 print(f"\n⚠️ Found {len(error_lines)} error entries in log")
                 result["errors"] = error_lines[:10]  # Store first 10 errors
@@ -755,9 +755,8 @@ class LiveTester:
             return result
 
         try:
-                _atomic_write_text,
-                analyze_conversation_dir,
-            )
+            from emailops.feature_summarize import analyze_conversation_dir, _atomic_write_text
+            from emailops.util_main import find_conversation_dirs
         except ImportError as e:
             logger.error(f"Failed to import EmailOps modules: {e}")
             result["errors"].append(f"Import error: {e}")

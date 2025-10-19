@@ -22,12 +22,13 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 from typing import Any
 
-from emailops import doctor, text_chunker
-from emailops import summarize_email_thread as summarizer
-from emailops.config import get_config
-from emailops.env_utils import load_validated_accounts
-from emailops.index_metadata import INDEX_DIRNAME_DEFAULT
-from emailops.search_and_draft import (
+from emailops import feature_summarize as summarizer
+from emailops import llm_text_chunker as text_chunker
+from emailops import tool_doctor as doctor
+from emailops.core_config import EmailOpsConfig, get_config
+from emailops.core_env import load_validated_accounts
+from emailops.core_validators import validate_directory_path
+from emailops.feature_search_draft import (
     ChatSession,
     SearchFilters,
     _search,
@@ -35,11 +36,11 @@ from emailops.search_and_draft import (
     draft_fresh_email_eml,
     list_conversations_newest_first,
 )
-from emailops.summarize_email_thread import _append_todos_csv
-from emailops.unified_config import UnifiedConfig
-from emailops.utils import find_conversation_dirs, load_conversation, scrub_json_string
-from emailops.utils import logger as module_logger
-from emailops.validators import validate_directory_path
+from emailops.feature_summarize import _append_todos_csv
+from emailops.indexing_metadata import INDEX_DIRNAME_DEFAULT
+from emailops.util_files import scrub_json_string
+from emailops.util_main import find_conversation_dirs, load_conversation
+from emailops.util_main import logger as module_logger
 
 # Removed redundant "Robust imports" section as per comment; using direct imports above.
 
@@ -239,7 +240,7 @@ class EmailOpsApp(tk.Tk):
         self.geometry("1200x800")
         self.minsize(1000, 600)
 
-        self.settings = UnifiedConfig.load(SETTINGS_FILE)
+        self.settings = EmailOpsConfig.load(SETTINGS_FILE)
         self.task = TaskController()
         self.log_queue: queue.Queue[str] = queue.Queue()
         configure_logging(self.log_queue)
@@ -1449,10 +1450,10 @@ class EmailOpsApp(tk.Tk):
             if subject_val:
                 filters.subject_contains = [subject_val.lower()]
             if after_val:
-                from emailops.search_and_draft import _parse_iso_date
+                from emailops.feature_search_draft import _parse_iso_date
                 filters.date_from = _parse_iso_date(after_val)
             if before_val:
-                from emailops.search_and_draft import _parse_iso_date
+                from emailops.feature_search_draft import _parse_iso_date
                 filters.date_to = _parse_iso_date(before_val)
 
         update_progress(0, 1, "Searching...")
@@ -1650,7 +1651,7 @@ class EmailOpsApp(tk.Tk):
         )
 
         chat_hist = session.recent() if session else []
-        from emailops.search_and_draft import chat_with_context
+        from emailops.feature_search_draft import chat_with_context
         answer = chat_with_context(
             query=query,
             context_snippets=ctx,
@@ -2681,7 +2682,7 @@ For full documentation, see emailops_docs/ directory.
     def _load_settings(self, _event=None) -> None:
         """Load settings from file."""
         try:
-            self.settings = UnifiedConfig.load(SETTINGS_FILE)
+            self.settings = EmailOpsConfig.load(SETTINGS_FILE)
             self.var_root.set(self.settings.export_root)
             self.var_provider.set(self.settings.provider)
             self.var_temp.set(self.settings.temperature)

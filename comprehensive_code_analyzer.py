@@ -9,16 +9,14 @@ and dependency validation. Checks for:
 - Missing imports and broken references
 """
 
+import ast
+import csv
+import json
+import re
 import subprocess
 import sys
-import json
-import ast
-import os
-import re
+from collections import Counter, defaultdict
 from pathlib import Path
-from typing import Dict, List, Set, Tuple, Optional
-from collections import defaultdict, Counter
-import csv
 
 
 def install_tools():
@@ -46,7 +44,7 @@ class DependencyChecker:
             'hardcoded_paths': []
         }
 
-    def check_import_references(self) -> Dict[str, List[str]]:
+    def check_import_references(self) -> dict[str, list[str]]:
         """Check for imports that reference non-existent modules or files."""
         print("\n" + "=" * 60)
         print("Checking Import References")
@@ -56,7 +54,7 @@ class DependencyChecker:
 
         for filepath in py_files:
             try:
-                with open(filepath, 'r', encoding='utf-8') as f:
+                with Path.open(filepath, encoding='utf-8') as f:
                     content = f.read()
                     tree = ast.parse(content)
 
@@ -147,7 +145,7 @@ class DependencyChecker:
         # This is a simplified check - full implementation would need to parse the target module
         pass
 
-    def check_hardcoded_paths(self) -> List[Dict]:
+    def check_hardcoded_paths(self) -> list[dict]:
         """Find hardcoded file paths that don't exist."""
         print("\n" + "=" * 60)
         print("Checking Hardcoded File Paths")
@@ -166,7 +164,7 @@ class DependencyChecker:
 
         for filepath in py_files:
             try:
-                with open(filepath, 'r', encoding='utf-8') as f:
+                with Path.open(filepath, encoding='utf-8') as f:
                     content = f.read()
                     lines = content.split('\n')
 
@@ -205,7 +203,7 @@ class DependencyChecker:
 
         return self.issues['hardcoded_paths']
 
-    def check_circular_dependencies(self) -> List[List[str]]:
+    def check_circular_dependencies(self) -> list[list[str]]:
         """Detect circular import dependencies."""
         print("\n" + "=" * 60)
         print("Checking for Circular Dependencies")
@@ -217,7 +215,7 @@ class DependencyChecker:
 
         for filepath in py_files:
             try:
-                with open(filepath, 'r', encoding='utf-8') as f:
+                with Path.open(filepath, encoding='utf-8') as f:
                     content = f.read()
                     tree = ast.parse(content)
 
@@ -271,7 +269,7 @@ class DependencyChecker:
         parts = list(relative.parts[:-1]) + [relative.stem]
         return '.'.join(parts)
 
-    def check_requirements(self) -> Dict[str, List[str]]:
+    def check_requirements(self) -> dict[str, list[str]]:
         """Check for missing or unused requirements."""
         print("\n" + "=" * 60)
         print("Checking Requirements")
@@ -283,7 +281,7 @@ class DependencyChecker:
 
         for filepath in py_files:
             try:
-                with open(filepath, 'r', encoding='utf-8') as f:
+                with Path.open(filepath, encoding='utf-8') as f:
                     content = f.read()
                     tree = ast.parse(content)
 
@@ -300,7 +298,7 @@ class DependencyChecker:
         # Check requirements.txt
         req_file = self.directory.parent / 'requirements.txt'
         if req_file.exists():
-            with open(req_file, 'r') as f:
+            with Path.open(req_file) as f:
                 requirements = set()
                 for line in f:
                     line = line.strip()
@@ -337,7 +335,7 @@ class ComprehensiveAnalyzer:
         self.dep_checker = DependencyChecker(directory)
         self.results = {}
 
-    def run_vulture(self) -> Dict[str, List[str]]:
+    def run_vulture(self) -> dict[str, list[str]]:
         """Run vulture to find unused code."""
         print("=" * 60)
         print("Running Vulture - Dead Code Detector")
@@ -388,7 +386,7 @@ class ComprehensiveAnalyzer:
 
         return unused
 
-    def run_pyflakes(self) -> List[str]:
+    def run_pyflakes(self) -> list[str]:
         """Run pyflakes to find unused imports and undefined names."""
         print("\n" + "=" * 60)
         print("Running Pyflakes - Unused Imports & Undefined Names")
@@ -421,7 +419,7 @@ class ComprehensiveAnalyzer:
 
         return issues
 
-    def run_ruff_unused(self) -> Dict[str, int]:
+    def run_ruff_unused(self) -> dict[str, int]:
         """Run ruff to check for unused code patterns."""
         print("\n" + "=" * 60)
         print("Running Ruff - Unused Code Analysis")
@@ -459,7 +457,7 @@ class ComprehensiveAnalyzer:
 
         return counts
 
-    def analyze_function_usage_detailed(self) -> Dict:
+    def analyze_function_usage_detailed(self) -> dict:
         """
         Analyze USER-DEFINED function definitions and calls with detailed statistics.
         Filters out built-in/native functions and only tracks project functions.
@@ -481,7 +479,7 @@ class ComprehensiveAnalyzer:
         print("  Scanning for user-defined functions...")
         for filepath in py_files:
             try:
-                with open(filepath, 'r', encoding='utf-8') as f:
+                with Path.open(filepath, encoding='utf-8') as f:
                     content = f.read()
                     tree = ast.parse(content)
 
@@ -501,7 +499,7 @@ class ComprehensiveAnalyzer:
         # Second pass: analyze definitions and calls
         for filepath in py_files:
             try:
-                with open(filepath, 'r', encoding='utf-8') as f:
+                with Path.open(filepath, encoding='utf-8') as f:
                     content = f.read()
                     tree = ast.parse(content)
 
@@ -600,7 +598,7 @@ class ComprehensiveAnalyzer:
                    func in ['main', 'setUp', 'tearDown'])
         }
 
-        print(f"\n📊 User-Defined Function Statistics:")
+        print("\n📊 User-Defined Function Statistics:")
         print(f"  Total user functions defined: {total_functions}")
         print(f"  User functions with calls: {len(called_functions)}")
         print(f"  Potentially unused user functions: {len(unused_functions)}")
@@ -608,7 +606,7 @@ class ComprehensiveAnalyzer:
 
         # Show top unused functions
         if unused_functions:
-            print(f"\n🚫 Top Unused User Functions:")
+            print("\n🚫 Top Unused User Functions:")
             for func_name in sorted(unused_functions)[:10]:
                 if func_name in function_definitions:
                     for defn in function_definitions[func_name]:
@@ -630,7 +628,7 @@ class ComprehensiveAnalyzer:
         # Show most called user functions
         user_call_counts = {func: count for func, count in call_counts.items() if func in function_definitions}
         if user_call_counts:
-            print(f"\n🔥 Most Called User Functions:")
+            print("\n🔥 Most Called User Functions:")
             for func_name, count in sorted(user_call_counts.items(), key=lambda x: x[1], reverse=True)[:10]:
                 print(f"    - {func_name}: {count} calls")
 
@@ -925,7 +923,7 @@ class ComprehensiveAnalyzer:
 
         # Save HTML report
         report_path = Path("COMPREHENSIVE_CODE_ANALYSIS.html")
-        with open(report_path, 'w', encoding='utf-8') as f:
+        with Path.open(report_path, 'w', encoding='utf-8') as f:
             f.writelines(report)
 
         print(f"\n✅ Comprehensive report saved to {report_path}")
@@ -940,7 +938,7 @@ class ComprehensiveAnalyzer:
         """Generate CSV file with analysis data."""
         csv_path = Path("code_analysis_export.csv")
 
-        with open(csv_path, 'w', newline='', encoding='utf-8') as csvfile:
+        with Path.open(csv_path, 'w', newline='', encoding='utf-8') as csvfile:
             fieldnames = ['Type', 'Item', 'File', 'Line', 'Details']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 

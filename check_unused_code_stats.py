@@ -4,13 +4,11 @@ Enhanced code analysis tool that provides detailed statistics on function usage.
 Shows call counts, caller information, and dependency relationships.
 """
 
+import ast
 import subprocess
 import sys
-import json
-import ast
+from collections import Counter, defaultdict
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
-from collections import defaultdict, Counter
 
 
 def install_tools():
@@ -24,7 +22,7 @@ def install_tools():
     print("Tools installed.\n")
 
 
-def analyze_function_usage_detailed(directory: str = "emailops") -> Dict:
+def analyze_function_usage_detailed(directory: str = "emailops") -> dict:
     """
     Analyze function definitions and calls with detailed statistics.
     Returns comprehensive usage data including call counts and caller information.
@@ -44,7 +42,7 @@ def analyze_function_usage_detailed(directory: str = "emailops") -> Dict:
 
     for filepath in py_files:
         try:
-            with open(filepath, 'r', encoding='utf-8') as f:
+            with Path.open(filepath, encoding='utf-8') as f:
                 content = f.read()
                 tree = ast.parse(content)
 
@@ -126,7 +124,7 @@ def analyze_function_usage_detailed(directory: str = "emailops") -> Dict:
                func in ['main', 'setUp', 'tearDown'])
     }
 
-    print(f"\n📊 Overall Statistics:")
+    print("\n📊 Overall Statistics:")
     print(f"  Total functions defined: {total_functions}")
     print(f"  Functions with calls: {len(called_functions)}")
     print(f"  Potentially unused functions: {len(unused_functions)}")
@@ -135,7 +133,7 @@ def analyze_function_usage_detailed(directory: str = "emailops") -> Dict:
     # Most called functions
     most_called = call_counts.most_common(10)
     if most_called:
-        print(f"\n🔥 Top 10 Most Called Functions:")
+        print("\n🔥 Top 10 Most Called Functions:")
         for func_name, count in most_called:
             print(f"  {func_name:30} - {count:5} calls")
 
@@ -157,7 +155,7 @@ def analyze_function_usage_detailed(directory: str = "emailops") -> Dict:
     )[:10]
 
     if most_diverse:
-        print(f"\n🌐 Functions Called from Most Places:")
+        print("\n🌐 Functions Called from Most Places:")
         for func_name, stats in most_diverse:
             print(f"  {func_name:30} - {stats['file_count']} files, {stats['function_count']} functions")
 
@@ -423,7 +421,7 @@ def generate_detailed_report(directory: str = "emailops"):
 
     # Save HTML report
     report_path = Path("FUNCTION_USAGE_STATS.html")
-    with open(report_path, 'w', encoding='utf-8') as f:
+    with Path.open(report_path, 'w', encoding='utf-8') as f:
         f.writelines(report)
 
     print(f"\n✅ Detailed statistics report saved to {report_path}")
@@ -440,7 +438,7 @@ def generate_csv_export(usage_data):
 
     csv_path = Path("function_usage_stats.csv")
 
-    with open(csv_path, 'w', newline='', encoding='utf-8') as csvfile:
+    with Path.open(csv_path, 'w', newline='', encoding='utf-8') as csvfile:
         fieldnames = ['Function', 'File', 'Line', 'Class', 'Call_Count', 'Unique_Callers', 'Unique_Files', 'Status']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 

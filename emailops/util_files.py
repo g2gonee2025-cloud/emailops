@@ -1,18 +1,32 @@
-"""
-File utilities and basic operations.
-Handles file encoding detection, directory operations, and basic file I/O.
-"""
 from __future__ import annotations
 
 import contextlib
 import logging
 import os
 import re
+import shutil
 import sys
 import tempfile
 import time
+import unicodedata
 from functools import lru_cache
 from pathlib import Path
+
+"""
+File utilities and basic operations.
+Handles file encoding detection, directory operations, and basic file I/O.
+"""
+
+# Platform-specific imports
+msvcrt = None
+fcntl = None
+
+if sys.platform == "win32":
+    with contextlib.suppress(ImportError):
+        import msvcrt
+else:
+    with contextlib.suppress(ImportError):
+        import fcntl
 
 logger = logging.getLogger(__name__)
 
@@ -43,9 +57,13 @@ def _get_file_encoding(path: Path) -> str:
             with Path.open(path, encoding=enc) as f:
                 f.read(1024)  # Try reading first 1KB
             return enc
-        except (UnicodeDecodeError, UnicodeError):
+        except (UnicodeDecodeError, UnicodeError) as e:
+            # Log at trace level to avoid spam
+            logger.debug("Encoding %s failed for %s: %s", enc, path.name, e)
             continue
-        except Exception:
+        except Exception as e:
+            # Unexpected error during encoding detection
+            logger.debug("Unexpected error with encoding %s for %s: %s", enc, path.name, e)
             continue
 
     return "latin-1"  # Fallback that won't fail
@@ -74,6 +92,8 @@ def read_text_file(path: Path, *, max_chars: int | None = None) -> str:
         return _strip_control_chars(data)
     except Exception as e:
         logger.warning("Failed to read text file %s: %s", path, e)
+        # Return empty string to maintain backward compatibility
+        # Callers expect empty string on failure, not an exception
         return ""
 
 
@@ -92,7 +112,6 @@ def find_conversation_dirs(root: Path) -> list[Path]:
 @contextlib.contextmanager
 def temporary_directory(prefix: str = "emailops_"):
     """Context manager for temporary directory creation and cleanup."""
-    import shutil
 
     temp_dir = None
     try:
@@ -116,13 +135,11 @@ def file_lock(path: Path, timeout: float = 10.0):
     start_time = time.time()
 
     # Platform-specific locking
-    if sys.platform == "win32":
+    if sys.platform == "win32" and msvcrt:
         # Windows file locking using msvcrt
-        import msvcrt
-
         while time.time() - start_time < timeout:
             try:
-                lock_file = Path.open(lock_path, "wb")
+                lock_file = lock_path.open("wb")
                 msvcrt.locking(lock_file.fileno(), msvcrt.LK_NBLCK, 1)
                 logger.debug("Acquired lock on %s", lock_path)
                 try:
@@ -133,16 +150,15 @@ def file_lock(path: Path, timeout: float = 10.0):
                     lock_path.unlink(missing_ok=True)
                     logger.debug("Released lock on %s", lock_path)
                 return
-            except OSError:
+            except OSError as e:
+                logger.debug("Lock attempt failed: %s", e)
                 if lock_file:
                     lock_file.close()
                 time.sleep(0.1)
-        raise TimeoutError(f"Failed to acquire lock on {lock_path} within {timeout} seconds")
-    else:
+        raise TimeoutError(f"Failed to acquire lock on {lock_path} within {timeout} seconds") from None
+    elif fcntl:
         # Unix/Linux file locking using fcntl
-        import fcntl
-
-        lock_file = Path.open(lock_path, "w", encoding="utf-8")
+        lock_file = lock_path.open("w", encoding="utf-8")
         try:
             fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
             logger.debug("Acquired lock on %s", lock_path)
@@ -160,3 +176,33 @@ def file_lock(path: Path, timeout: float = 10.0):
                     logger.debug("Released lock on %s", lock_path)
                 except Exception as e:
                     logger.warning("Error releasing lock on %s: %s", lock_path, e)
+                # Don't re-raise - this is cleanup code
+    else:
+        # No locking available - just yield path
+        logger.warning("File locking not available on this platform")
+        yield lock_path
+
+
+def scrub_json_string(raw: str) -> str:
+    """
+    Remove control characters from a raw JSON string so it can be safely parsed.
+    """
+    return _CONTROL_CHARS.sub("", raw)
+
+def scrub_json(obj):
+    """
+    Recursively sanitize all string values and keys in a JSON-like object.
+    Removes control characters and normalizes Unicode.
+    """
+    if isinstance(obj, dict):
+        return {
+            scrub_json(_strip_control_chars(unicodedata.normalize("NFC", str(k))) if isinstance(k, str) else k):
+            scrub_json(v)
+            for k, v in obj.items()
+        }
+    elif isinstance(obj, list):
+        return [scrub_json(v) for v in obj]
+    elif isinstance(obj, str):
+        return _strip_control_chars(unicodedata.normalize("NFC", obj))
+    else:
+        return obj

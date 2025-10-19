@@ -1,7 +1,3 @@
-"""
-Conversation loading utilities.
-Handles loading conversation content, manifest/summary JSON, and attachment texts.
-"""
 from __future__ import annotations
 
 import json
@@ -10,9 +6,16 @@ import re
 from pathlib import Path
 from typing import Any
 
-from .file_utils import read_text_file
-from .processing_utils import get_processing_config
-from .text_extraction import extract_text
+import hjson  # type: ignore
+
+from .core_text_extraction import extract_text
+from .util_files import read_text_file, scrub_json
+from .util_processing import get_processing_config
+
+"""
+Conversation loading utilities.
+Handles loading conversation content, manifest/summary JSON, and attachment texts.
+"""
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +69,6 @@ def load_conversation(
 
     # Load manifest.json with strict → repaired → hjson fallback
     if manifest_json.exists():
-        from .utils import scrub_json
         conv["manifest"] = scrub_json(_load_manifest_json(manifest_json, convo_dir))
 
     # Build attachment file list (avoid duplicates)
@@ -112,7 +114,6 @@ def load_conversation(
 
     # Load summary.json (BOM-safe)
     if summary_json.exists():
-        from .utils import scrub_json
         try:
             conv["summary"] = scrub_json(json.loads(summary_json.read_text(encoding="utf-8-sig")))
         except Exception:
@@ -130,7 +131,7 @@ def _load_manifest_json(manifest_json: Path, convo_dir: Path) -> dict[str, Any]:
             raw_text = raw_bytes.decode("utf-8-sig")
         except UnicodeDecodeError:
             raw_text = raw_bytes.decode("latin-1", errors="ignore")
-            logger.warning("Manifest at %s was not valid UTF-8; fell back to latin-1.", convo_dir)
+            logger.warning("Manifest at %s was not valid UTF-8, fell back to latin-1.", convo_dir)
 
         # Aggressive sanitization to catch a wider range of control chars.
         sanitized = _CONTROL_CHARS.sub("", raw_text)
@@ -151,7 +152,6 @@ def _load_manifest_json(manifest_json: Path, convo_dir: Path) -> dict[str, Any]:
                     e2,
                 )
                 try:
-                    import hjson  # type: ignore
 
                     result = hjson.loads(repaired)
                     logger.info("Successfully parsed manifest for %s using hjson.", convo_dir)
@@ -175,7 +175,7 @@ def _load_manifest_json(manifest_json: Path, convo_dir: Path) -> dict[str, Any]:
 def _collect_attachment_files(convo_dir: Path) -> list[Path]:
     """
     Collect attachment files, avoiding duplicates and sorting deterministically.
-    
+
     Note: This has inherent TOCTOU (time-of-check-to-time-of-use) race conditions
     since files could be added/removed between directory listing and actual use.
     We handle this gracefully by catching exceptions during file access.

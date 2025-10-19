@@ -4,6 +4,7 @@ Centralized exception definitions for EmailOps.
 This module provides consistent exception types across the codebase to improve
 error handling and maintainability.
 """
+
 from __future__ import annotations
 
 
@@ -17,7 +18,7 @@ class ConfigurationError(EmailOpsError):
     pass
 
 
-class EmailIndexError(EmailOpsError):
+class EmailEmailIndexError(EmailOpsError):
     """Raised when there are issues with the search index (not found, corrupted, etc.)."""
     pass
 
@@ -54,16 +55,4 @@ CommandExecutionError = ProcessingError  # For existing code
 IndexNotFoundError = IndexError  # For existing code
 
 
-__all__ = [
-    "CommandExecutionError",
-    "ConfigurationError",
-    "EmailOpsError",
-    "EmbeddingError",
-    "FileOperationError",
-    "IndexNotFoundError",
-    "LLMError",
-    "ProcessingError",
-    "ProcessorError",
-    "ProviderError",
-    "ValidationError",
-]
+__all__ = ["CommandExecutionError", "ConfigurationError", "EmailOpsError", "EmbeddingError", "FileOperationError", "IndexNotFoundError", "LLMError", "ProcessingError", "ProcessorError", "ProviderError", "ValidationError"]
