@@ -17,7 +17,7 @@ class ConfigurationError(EmailOpsError):
     pass
 
 
-class IndexError(EmailOpsError):
+class EmailIndexError(EmailOpsError):
     """Raised when there are issues with the search index (not found, corrupted, etc.)."""
     pass
 
@@ -55,17 +55,15 @@ IndexNotFoundError = IndexError  # For existing code
 
 
 __all__ = [
-    "EmailOpsError",
-    "ConfigurationError",
-    "IndexError",
-    "EmbeddingError",
-    "ProcessingError",
-    "ValidationError",
-    "ProviderError",
-    "FileOperationError",
-    # Backward compatibility
-    "LLMError",
-    "ProcessorError",
     "CommandExecutionError",
+    "ConfigurationError",
+    "EmailOpsError",
+    "EmbeddingError",
+    "FileOperationError",
     "IndexNotFoundError",
+    "LLMError",
+    "ProcessingError",
+    "ProcessorError",
+    "ProviderError",
+    "ValidationError",
 ]

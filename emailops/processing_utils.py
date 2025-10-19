@@ -13,7 +13,7 @@ import time
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-from functools import lru_cache, wraps
+from functools import wraps
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -281,7 +281,6 @@ class TextPreprocessor:
         text = text.replace("\x00", "")  # Remove null bytes
         return text
 
-    @lru_cache(maxsize=1000)
     def _get_cache_key(self, text: str, text_type: str) -> str:
         """Generate cache key for text + type combination."""
         # Use first 100 chars + last 100 chars + length for efficiency

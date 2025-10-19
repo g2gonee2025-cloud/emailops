@@ -12,12 +12,7 @@ import tempfile
 import time
 
 # Python 3.10 compatibility for UTC
-try:
-    from datetime import UTC  # py311+
-except ImportError:
-    UTC = UTC  # py310 fallback
-
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -75,9 +70,7 @@ def _extract_first_balanced_json_object(s: str) -> str | None:
     """
     Finds the first balanced JSON object (from '{' to '}') in a string.
     Properly handles nested braces, strings with braces, and escaped characters.
-    
     HIGH #15: Enhanced to correctly handle braces inside string values.
-    
     Returns the object as a string, or None if no balanced object is found.
     """
     # Type and empty validation
@@ -845,7 +838,7 @@ def _union_analyses(improved: dict[str, Any], initial: dict[str, Any], catalog: 
     """
     Union improved and initial analyses to avoid dropping valid content.
     Improved items come first, then unique items from initial.
-    
+
     HIGH #50: Fixed data loss bug - ensure initial data is preserved when improved is empty.
     """
     # HIGH #50: Start with a safe base - use initial if improved is empty/invalid

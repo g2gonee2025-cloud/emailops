@@ -40,7 +40,7 @@ def _get_file_encoding(path: Path) -> str:
 
     for enc in encodings:
         try:
-            with open(path, encoding=enc) as f:
+            with Path.open(path, encoding=enc) as f:
                 f.read(1024)  # Try reading first 1KB
             return enc
         except (UnicodeDecodeError, UnicodeError):
@@ -68,7 +68,7 @@ def read_text_file(path: Path, *, max_chars: int | None = None) -> str:
         encoding = _get_file_encoding(path)
 
         # Read with detected encoding
-        with open(path, encoding=encoding, errors="ignore") as f:
+        with Path.open(path, encoding=encoding, errors="ignore") as f:
             data = f.read(max_chars) if max_chars is not None else f.read()
 
         return _strip_control_chars(data)
@@ -122,7 +122,7 @@ def file_lock(path: Path, timeout: float = 10.0):
 
         while time.time() - start_time < timeout:
             try:
-                lock_file = open(lock_path, "wb")
+                lock_file = Path.open(lock_path, "wb")
                 msvcrt.locking(lock_file.fileno(), msvcrt.LK_NBLCK, 1)
                 logger.debug("Acquired lock on %s", lock_path)
                 try:
@@ -142,14 +142,14 @@ def file_lock(path: Path, timeout: float = 10.0):
         # Unix/Linux file locking using fcntl
         import fcntl
 
-        lock_file = open(lock_path, "w", encoding="utf-8")
+        lock_file = Path.open(lock_path, "w", encoding="utf-8")
         try:
             fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
             logger.debug("Acquired lock on %s", lock_path)
             yield lock_path
         except OSError:
             if time.time() - start_time > timeout:
-                raise TimeoutError(f"Failed to acquire lock on {lock_path} within {timeout} seconds")
+                raise TimeoutError(f"Failed to acquire lock on {lock_path} within {timeout} seconds") from None
             time.sleep(0.1)
         finally:
             if lock_file:

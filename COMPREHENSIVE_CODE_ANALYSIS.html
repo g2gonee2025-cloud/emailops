@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Comprehensive Code Analysis Report</title>
+<style>
+
+            body { font-family: 'Segoe UI', Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+            .container { max-width: 1400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
+            h2 { color: #34495e; margin-top: 30px; border-bottom: 2px solid #ecf0f1; padding-bottom: 8px; }
+            h3 { color: #7f8c8d; }
+            a { color: #3498db; text-decoration: none; }
+            a:hover { text-decoration: underline; color: #2980b9; }
+            .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px 0; }
+            .stat-card { background: #ecf0f1; padding: 15px; border-radius: 5px; text-align: center; }
+            .stat-number { font-size: 2em; font-weight: bold; color: #2c3e50; }
+            .stat-label { color: #7f8c8d; margin-top: 5px; }
+            .issue-card { background: #fff3cd; border-left: 4px solid #ffc107; padding: 10px; margin: 10px 0; }
+            .error-card { background: #f8d7da; border-left: 4px solid #dc3545; padding: 10px; margin: 10px 0; }
+            .success-card { background: #d4edda; border-left: 4px solid #28a745; padding: 10px; margin: 10px 0; }
+            .function-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            .function-table th { background: #3498db; color: white; padding: 10px; text-align: left; }
+            .function-table td { padding: 8px; border-bottom: 1px solid #ecf0f1; }
+            .function-table tr:hover { background: #f8f9fa; }
+            .call-count { background: #3498db; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.9em; display: inline-block; }
+            .unused { background: #e74c3c; }
+            .rarely-used { background: #f39c12; }
+            .frequently-used { background: #27ae60; }
+            .tabs { display: flex; border-bottom: 2px solid #ecf0f1; margin: 20px 0; }
+            .tab { padding: 10px 20px; cursor: pointer; background: #ecf0f1; margin-right: 5px; border-radius: 5px 5px 0 0; }
+            .tab.active { background: #3498db; color: white; }
+            .tab-content { display: none; padding: 20px 0; }
+            .tab-content.active { display: block; }
+            .code-block { background: #2c3e50; color: #ecf0f1; padding: 10px; border-radius: 5px; font-family: 'Courier New', monospace; overflow-x: auto; }
+            .search-box { padding: 10px; width: 100%; border: 1px solid #ddd; border-radius: 5px; margin: 10px 0; }
+        </style>
+        <script>
+            function showTab(tabName) {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(tabName + '-tab').classList.add('active');
+                document.getElementById(tabName + '-content').classList.add('active');
+            }
+            function filterTable(inputId, tableId) {
+                const input = document.getElementById(inputId).value.toLowerCase();
+                const table = document.getElementById(tableId);
+                const rows = table.getElementsByTagName('tr');
+                for (let i = 1; i < rows.length; i++) {
+                    const text = rows[i].textContent.toLowerCase();
+                    rows[i].style.display = text.includes(input) ? '' : 'none';
+                }
+            }
+        </script>
+        </head>
+<body>
+<div class='container'>
+<h1>📊 Comprehensive Code Analysis Report</h1>
+<h2 style='color: #e74c3c; margin-top: 10px;'>Focus: User-Defined Functions Only</h2>
+<p>Analysis of: <code>C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops</code></p>
+<p><em>Native/built-in functions are excluded from this analysis</em></p>
+<div class='stats-grid'>
+
+            <div class='stat-card'>
+                <div class='stat-number'>378</div>
+                <div class='stat-label'>Total Functions</div>
+            </div>
+            <div class='stat-card'>
+                <div class='stat-number'>108</div>
+                <div class='stat-label'>Unused Functions</div>
+            </div>
+            <div class='stat-card'>
+                <div class='stat-number'>2</div>
+                <div class='stat-label'>Broken Imports</div>
+            </div>
+            <div class='stat-card'>
+                <div class='stat-number'>1</div>
+                <div class='stat-label'>Circular Dependencies</div>
+            </div>
+            <div class='stat-card'>
+                <div class='stat-number'>79</div>
+                <div class='stat-label'>Invalid File Paths</div>
+            </div>
+            <div class='stat-card'>
+                <div class='stat-number'>0</div>
+                <div class='stat-label'>Unreachable Code</div>
+            </div>
+        </div>
+
+            <div class='tabs'>
+                <div id='overview-tab' class='tab active' onclick='showTab("overview")'>Overview</div>
+                <div id='functions-tab' class='tab' onclick='showTab("functions")'>Functions</div>
+                <div id='dependencies-tab' class='tab' onclick='showTab("dependencies")'>Dependencies</div>
+                <div id='imports-tab' class='tab' onclick='showTab("imports")'>Import Issues</div>
+                <div id='paths-tab' class='tab' onclick='showTab("paths")'>File Paths</div>
+            </div>
+        <div id='overview-content' class='tab-content active'>
+<h2>Analysis Overview</h2>
+<h3>⚠️ Critical Issues</h3>
+<div class='error-card'>Found 2 broken imports that need fixing</div>
+<div class='error-card'>Found 1 circular dependencies</div>
+<div class='issue-card'>Found 79 hardcoded paths that don't exist</div>
+</div>
+<div id='functions-content' class='tab-content'>
+<h2>User-Defined Function Analysis</h2>
+<p><strong>Note:</strong> This analysis only includes functions defined in your project, excluding all built-in/native Python functions.</p>
+<h3>🚫 Unused User Functions</h3>
+<table class='function-table'>
+<tr><th>Function</th><th>File</th><th>Line</th></tr>
+
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1270:1'>_add_from_convs</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>1270</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1832:1'>_apply_config</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>1832</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:2345:1'>_build_search_query_from_history</a></td>
+                                <td>search_and_draft.py</td>
+                                <td>2345</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:331:1'>_cache_mapping</a></td>
+                                <td>search_and_draft.py</td>
+                                <td>331</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:292:1'>_cache_query_embedding</a></td>
+                                <td>search_and_draft.py</td>
+                                <td>292</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1947:1'>_check_deps</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>1947</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1982:1'>_check_index</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>1982</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2609:1'>_choose_root</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>2609</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1222:1'>_choose_thread_dir</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>1222</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:264:1'>_clean_index_text</a></td>
+                                <td>email_indexer.py</td>
+                                <td>264</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1292:1'>_clear_batch_list</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>1292</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2263:1'>_clear_chunks_dir</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>2263</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2345:1'>_drain_logs</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>2345</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2541:1'>_export_chat_history</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>2541</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:967:1'>_export_conversation_list</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>967</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2506:1'>_export_search_results</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>2506</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:524:1'>_find_conv_ids_by_subject</a></td>
+                                <td>search_and_draft.py</td>
+                                <td>524</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:310:1'>_get_cached_mapping</a></td>
+                                <td>search_and_draft.py</td>
+                                <td>310</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:280:1'>_get_cached_query_embedding</a></td>
+                                <td>search_and_draft.py</td>
+                                <td>280</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2237:1'>_list_chunked_convs</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>2237</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1635:1'>_load_chat_session</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>1635</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1693:1'>_load_conversations</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>1693</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2289:1'>_on_analyze_thread</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>2289</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1777:1'>_on_build_index</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>1777</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1578:1'>_on_chat</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>1578</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1528:1'>_on_draft_fresh</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>1528</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1473:1'>_on_draft_reply</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>1473</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2049:1'>_on_force_rechunk</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>2049</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2107:1'>_on_incremental_chunk</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>2107</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1720:1'>_on_list_convs</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>1720</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1406:1'>_on_search</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>1406</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2182:1'>_on_surgical_rechunk</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>2182</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:883:1'>_open_attachments_folder</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>883</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:910:1'>_open_conversation_folder</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>910</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1286:1'>_remove_batch_item</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>1286</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1674:1'>_reset_chat_session</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>1674</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:199:1'>_reset_config</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>199</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2039:1'>_run_account_setup</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>2039</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1297:1'>_run_batch_operation</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>1297</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1900:1'>_run_diagnostics</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>1900</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:360:1'>_safe_float_env</a></td>
+                                <td>search_and_draft.py</td>
+                                <td>360</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:352:1'>_safe_int_env</a></td>
+                                <td>search_and_draft.py</td>
+                                <td>352</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\search_and_draft.py:368:1'>_safe_json_load</a></td>
+                                <td>search_and_draft.py</td>
+                                <td>368</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2564:1'>_save_analysis_results</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>2564</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1658:1'>_save_chat_session</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>1658</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1562:1'>_save_eml_fresh</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>1562</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1512:1'>_save_eml_reply</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>1512</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2378:1'>_save_logs</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>2378</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2395:1'>_show_about</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>2395</td>
+                            </tr>
+                        
+                            <tr>
+                                <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2433:1'>_show_docs</a></td>
+                                <td>emailops_gui.py</td>
+                                <td>2433</td>
+                            </tr>
+                        </table>
+<h3>🔥 Most Called User Functions</h3>
+<table class='function-table'>
+<tr><th>Function</th><th>Call Count</th><th>Unique Callers</th></tr>
+
+                    <tr>
+                        <td>ui_call</td>
+                        <td><span class='call-count frequently-used'>72</span></td>
+                        <td>12</td>
+                    </tr>
+                
+                    <tr>
+                        <td>update_progress</td>
+                        <td><span class='call-count frequently-used'>35</span></td>
+                        <td>16</td>
+                    </tr>
+                
+                    <tr>
+                        <td>_md_escape</td>
+                        <td><span class='call-count frequently-used'>25</span></td>
+                        <td>1</td>
+                    </tr>
+                
+                    <tr>
+                        <td>load</td>
+                        <td><span class='call-count frequently-used'>23</span></td>
+                        <td>22</td>
+                    </tr>
+                
+                    <tr>
+                        <td>_norm_key</td>
+                        <td><span class='call-count frequently-used'>20</span></td>
+                        <td>1</td>
+                    </tr>
+                
+                    <tr>
+                        <td>run_with_progress</td>
+                        <td><span class='call-count frequently-used'>15</span></td>
+                        <td>15</td>
+                    </tr>
+                
+                    <tr>
+                        <td>_set_status</td>
+                        <td><span class='call-count frequently-used'>15</span></td>
+                        <td>5</td>
+                    </tr>
+                
+                    <tr>
+                        <td>update_ui</td>
+                        <td><span class='call-count frequently-used'>15</span></td>
+                        <td>1</td>
+                    </tr>
+                
+                    <tr>
+                        <td>index_paths</td>
+                        <td><span class='call-count frequently-used'>15</span></td>
+                        <td>15</td>
+                    </tr>
+                
+                    <tr>
+                        <td>_strip_control_chars</td>
+                        <td><span class='call-count frequently-used'>13</span></td>
+                        <td>11</td>
+                    </tr>
+                
+                    <tr>
+                        <td>embed_texts</td>
+                        <td><span class='call-count frequently-used'>12</span></td>
+                        <td>7</td>
+                    </tr>
+                
+                    <tr>
+                        <td>clean_email_text</td>
+                        <td><span class='call-count frequently-used'>11</span></td>
+                        <td>9</td>
+                    </tr>
+                
+                    <tr>
+                        <td>_check_rate_limit</td>
+                        <td><span class='call-count frequently-used'>11</span></td>
+                        <td>8</td>
+                    </tr>
+                
+                    <tr>
+                        <td>save</td>
+                        <td><span class='call-count frequently-used'>10</span></td>
+                        <td>8</td>
+                    </tr>
+                
+                    <tr>
+                        <td>log_timing</td>
+                        <td><span class='call-count frequently-used'>10</span></td>
+                        <td>5</td>
+                    </tr>
+                
+                    <tr>
+                        <td>_index_dirname</td>
+                        <td><span class='call-count frequently-used'>9</span></td>
+                        <td>9</td>
+                    </tr>
+                
+                    <tr>
+                        <td>_normalize_provider</td>
+                        <td><span class='call-count frequently-used'>8</span></td>
+                        <td>8</td>
+                    </tr>
+                
+                    <tr>
+                        <td>prepare_index_units</td>
+                        <td><span class='call-count frequently-used'>8</span></td>
+                        <td>6</td>
+                    </tr>
+                
+                    <tr>
+                        <td>_normalize_email_field</td>
+                        <td><span class='call-count frequently-used'>8</span></td>
+                        <td>4</td>
+                    </tr>
+                
+                    <tr>
+                        <td>scrub_json</td>
+                        <td><span class='call-count frequently-used'>7</span></td>
+                        <td>4</td>
+                    </tr>
+                </table>
+</div>
+<div id='dependencies-content' class='tab-content'>
+<h2>Dependency Analysis</h2>
+<h3>🔄 Circular Dependencies</h3>
+<div class='error-card'>conversation_loader → utils → conversation_loader</div>
+<h3>📦 Missing Requirements</h3>
+<p>These packages are imported but not in requirements.txt:</p>
+<ul>
+<li><code>google</code></li>
+<li><code>vertexai</code></li>
+<li><code>pptx</code></li>
+<li><code>sentence_transformers</code></li>
+<li><code>win32com</code></li>
+<li><code>docx</code></li>
+<li><code>dotenv</code></li>
+<li><code>faiss</code></li>
+<li><code>bs4</code></li>
+<li><code>emailops</code></li>
+<li><code>huggingface_hub</code></li>
+<li><code>extract_msg</code></li>
+<li><code>textract</code></li>
+</ul>
+<h3>📦 Unused Requirements</h3>
+<p>These packages are in requirements.txt but never imported:</p>
+<ul>
+<li><code>google-auth-httplib2</code></li>
+<li><code>h2</code></li>
+<li><code>oauthlib</code></li>
+<li><code>googleapis-common-protos</code></li>
+<li><code>license-expression</code></li>
+<li><code>xlrd</code></li>
+<li><code>mypy</code></li>
+<li><code>opentelemetry-instrumentation</code></li>
+<li><code>sortedcontainers</code></li>
+<li><code>google-cloud-resource-manager</code></li>
+<li><code>pyasn1</code></li>
+<li><code>oletools</code></li>
+<li><code>sse-starlette</code></li>
+<li><code>python-pptx</code></li>
+<li><code>certifi</code></li>
+<li><code>cryptography</code></li>
+<li><code>fsspec</code></li>
+<li><code>mccabe</code></li>
+<li><code>glom</code></li>
+<li><code>ruamel.yaml.clib</code></li>
+<li><code>streamlit</code></li>
+<li><code>opentelemetry-util-http</code></li>
+<li><code>scikit-learn</code></li>
+<li><code>tabulate</code></li>
+<li><code>sympy</code></li>
+<li><code>pyyaml</code></li>
+<li><code>marshmallow</code></li>
+<li><code>pcodedmp</code></li>
+<li><code>mcp</code></li>
+<li><code>mypy_extensions</code></li>
+<li><code>jinja2</code></li>
+<li><code>google-api-python-client</code></li>
+<li><code>narwhals</code></li>
+<li><code>mpmath</code></li>
+<li><code>safetensors</code></li>
+<li><code>threadpoolctl</code></li>
+<li><code>referencing</code></li>
+<li><code>uritemplate</code></li>
+<li><code>docstring_parser</code></li>
+<li><code>pydantic-settings</code></li>
+<li><code>jiter</code></li>
+<li><code>filelock</code></li>
+<li><code>pyflakes</code></li>
+<li><code>httpx</code></li>
+<li><code>compressed-rtf</code></li>
+<li><code>ebcdic</code></li>
+<li><code>shellingham</code></li>
+<li><code>opentelemetry-proto</code></li>
+<li><code>pyparsing</code></li>
+<li><code>idna</code></li>
+<li><code>opentelemetry-exporter-otlp-proto-http</code></li>
+<li><code>docx2txt</code></li>
+<li><code>grpcio-status</code></li>
+<li><code>httplib2</code></li>
+<li><code>py</code></li>
+<li><code>lark</code></li>
+<li><code>boolean.py</code></li>
+<li><code>safety</code></li>
+<li><code>xlsxwriter</code></li>
+<li><code>pathspec</code></li>
+<li><code>hpack</code></li>
+<li><code>shapely</code></li>
+<li><code>smmap</code></li>
+<li><code>distro</code></li>
+<li><code>peewee</code></li>
+<li><code>opentelemetry-api</code></li>
+<li><code>typer</code></li>
+<li><code>sentence-transformers</code></li>
+<li><code>mdurl</code></li>
+<li><code>tqdm</code></li>
+<li><code>urllib3</code></li>
+<li><code>defusedxml</code></li>
+<li><code>qdrant-client</code></li>
+<li><code>ruamel.yaml</code></li>
+<li><code>toml</code></li>
+<li><code>google-auth-oauthlib</code></li>
+<li><code>packageurl-python</code></li>
+<li><code>requests-oauthlib</code></li>
+<li><code>pytest-mock</code></li>
+<li><code>altair</code></li>
+<li><code>boltons</code></li>
+<li><code>pytest</code></li>
+<li><code>safety-schemas</code></li>
+<li><code>pluggy</code></li>
+<li><code>coverage</code></li>
+<li><code>scipy</code></li>
+<li><code>click-option-group</code></li>
+<li><code>platformdirs</code></li>
+<li><code>google-genai</code></li>
+<li><code>google-resumable-media</code></li>
+<li><code>colorclass</code></li>
+<li><code>joblib</code></li>
+<li><code>spark-parser</code></li>
+<li><code>tomlkit</code></li>
+<li><code>transformers</code></li>
+<li><code>msgpack</code></li>
+<li><code>watchdog</code></li>
+<li><code>interrogate</code></li>
+<li><code>easygui</code></li>
+<li><code>google-cloud-storage</code></li>
+<li><code>httpcore</code></li>
+<li><code>opentelemetry-exporter-otlp-proto-common</code></li>
+<li><code>pyarrow</code></li>
+<li><code>pydantic_core</code></li>
+<li><code>protobuf</code></li>
+<li><code>python-docx</code></li>
+<li><code>soupsieve</code></li>
+<li><code>grpc-google-iam-v1</code></li>
+<li><code>types-requests</code></li>
+<li><code>blinker</code></li>
+<li><code>hyperframe</code></li>
+<li><code>pyasn1_modules</code></li>
+<li><code>cyclonedx-python-lib</code></li>
+<li><code>extract-msg</code></li>
+<li><code>pycparser</code></li>
+<li><code>google-cloud-core</code></li>
+<li><code>opentelemetry-sdk</code></li>
+<li><code>execnet</code></li>
+<li><code>python-dateutil</code></li>
+<li><code>packaging</code></li>
+<li><code>radon</code></li>
+<li><code>rtfde</code></li>
+<li><code>zipp</code></li>
+<li><code>markupsafe</code></li>
+<li><code>portalocker</code></li>
+<li><code>sniffio</code></li>
+<li><code>faiss-cpu</code></li>
+<li><code>google-crc32c</code></li>
+<li><code>google-cloud-bigquery</code></li>
+<li><code>opentelemetry-instrumentation-requests</code></li>
+<li><code>iniconfig</code></li>
+<li><code>regex</code></li>
+<li><code>dparse</code></li>
+<li><code>pip-api</code></li>
+<li><code>jsonschema</code></li>
+<li><code>cachetools</code></li>
+<li><code>proto-plus</code></li>
+<li><code>pywin32</code></li>
+<li><code>six</code></li>
+<li><code>pycodestyle</code></li>
+<li><code>tornado</code></li>
+<li><code>tomli</code></li>
+<li><code>pydeck</code></li>
+<li><code>tzdata</code></li>
+<li><code>mando</code></li>
+<li><code>rich</code></li>
+<li><code>et_xmlfile</code></li>
+<li><code>grpcio</code></li>
+<li><code>anyio</code></li>
+<li><code>exceptiongroup</code></li>
+<li><code>attrs</code></li>
+<li><code>pytest-cov</code></li>
+<li><code>uvicorn</code></li>
+<li><code>xdis</code></li>
+<li><code>starlette</code></li>
+<li><code>torch</code></li>
+<li><code>charset-normalizer</code></li>
+<li><code>rpds-py</code></li>
+<li><code>annotated-types</code></li>
+<li><code>face</code></li>
+<li><code>pytest-timeout</code></li>
+<li><code>gitpython</code></li>
+<li><code>openpyxl</code></li>
+<li><code>pytest-xdist</code></li>
+<li><code>ruff</code></li>
+<li><code>google-cloud-aiplatform</code></li>
+<li><code>black</code></li>
+<li><code>psutil</code></li>
+<li><code>tokenizers</code></li>
+<li><code>google-api-core</code></li>
+<li><code>python-multipart</code></li>
+<li><code>colorama</code></li>
+<li><code>msoffcrypto-tool</code></li>
+<li><code>red-black-tree-mod</code></li>
+<li><code>typing_extensions</code></li>
+<li><code>pygments</code></li>
+<li><code>wcmatch</code></li>
+<li><code>importlib_metadata</code></li>
+<li><code>pytokens</code></li>
+<li><code>click</code></li>
+<li><code>google-auth</code></li>
+<li><code>pip-requirements-parser</code></li>
+<li><code>huggingface-hub</code></li>
+<li><code>win_unicode_console</code></li>
+<li><code>pillow</code></li>
+<li><code>beautifulsoup4</code></li>
+<li><code>cachecontrol</code></li>
+<li><code>authlib</code></li>
+<li><code>tenacity</code></li>
+<li><code>networkx</code></li>
+<li><code>wrapt</code></li>
+<li><code>py-serializable</code></li>
+<li><code>semgrep</code></li>
+<li><code>opentelemetry-semantic-conventions</code></li>
+<li><code>rsa</code></li>
+<li><code>decompyle3 @ git+https://github.com/rocky/python-decompile3.git@605180a0000a563be8b66237b65653f8a76fad94</code></li>
+<li><code>uncompyle6 @ git+https://github.com/rocky/python-uncompyle6.git@94ca614af9318e5e7fca11841e8e79425cfbccb2</code></li>
+<li><code>nltk</code></li>
+<li><code>h11</code></li>
+<li><code>cffi</code></li>
+<li><code>tzlocal</code></li>
+<li><code>httpx-sse</code></li>
+<li><code>websockets</code></li>
+<li><code>python-dotenv</code></li>
+<li><code>gitdb</code></li>
+<li><code>fastavro</code></li>
+<li><code>jsonschema-specifications</code></li>
+<li><code>pytz</code></li>
+<li><code>pydantic</code></li>
+<li><code>lxml</code></li>
+<li><code>markdown-it-py</code></li>
+<li><code>typing-inspection</code></li>
+<li><code>olefile</code></li>
+<li><code>bracex</code></li>
+</ul>
+</div>
+<div id='imports-content' class='tab-content'>
+<h2>Import Issues</h2>
+<h3>❌ Broken Imports</h3>
+<table class='function-table'>
+<tr><th>File</th><th>Line</th><th>Module</th><th>Issue Type</th></tr>
+
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\file_utils.py:143:1'>file_utils.py</a></td>
+                        <td>143</td>
+                        <td><code>fcntl</code></td>
+                        <td>Missing Module</td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\text_extraction.py:325:1'>text_extraction.py</a></td>
+                        <td>325</td>
+                        <td><code>textract</code></td>
+                        <td>Missing Module</td>
+                    </tr>
+                </table>
+</div>
+<div id='paths-content' class='tab-content'>
+<h2>File Path Issues</h2>
+<h3>📁 Invalid Hardcoded Paths</h3>
+<table class='function-table'>
+<tr><th>File</th><th>Line</th><th>Path</th></tr>
+
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\config.py:51:1'>config.py</a></td>
+                        <td>51</td>
+                        <td><code>api-agent-470921-aa03081a1b4d.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\config.py:52:1'>config.py</a></td>
+                        <td>52</td>
+                        <td><code>apt-arcana-470409-i7-ce42b76061bf.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\config.py:53:1'>config.py</a></td>
+                        <td>53</td>
+                        <td><code>crafty-airfoil-474021-s2-34159960925b.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\config.py:54:1'>config.py</a></td>
+                        <td>54</td>
+                        <td><code>embed2-474114-fca38b4d2068.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\config.py:55:1'>config.py</a></td>
+                        <td>55</td>
+                        <td><code>my-project-31635v-8ec357ac35b2.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\config.py:56:1'>config.py</a></td>
+                        <td>56</td>
+                        <td><code>semiotic-nexus-470620-f3-3240cfaf6036.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\conversation_loader.py:46:1'>conversation_loader.py</a></td>
+                        <td>46</td>
+                        <td><code>Conversation.txt</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\conversation_loader.py:47:1'>conversation_loader.py</a></td>
+                        <td>47</td>
+                        <td><code>summary.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\conversation_loader.py:48:1'>conversation_loader.py</a></td>
+                        <td>48</td>
+                        <td><code>manifest.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\conversation_loader.py:196:1'>conversation_loader.py</a></td>
+                        <td>196</td>
+                        <td><code>Conversation.txt</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\conversation_loader.py:196:1'>conversation_loader.py</a></td>
+                        <td>196</td>
+                        <td><code>manifest.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\conversation_loader.py:196:1'>conversation_loader.py</a></td>
+                        <td>196</td>
+                        <td><code>summary.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\doctor.py:97:1'>doctor.py</a></td>
+                        <td>97</td>
+                        <td><code>requirements.txt</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\doctor.py:98:1'>doctor.py</a></td>
+                        <td>98</td>
+                        <td><code>requirements.txt</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\doctor.py:99:1'>doctor.py</a></td>
+                        <td>99</td>
+                        <td><code>requirements.txt</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:82:1'>emailops_gui.py</a></td>
+                        <td>82</td>
+                        <td><code>.emailops_gui.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:835:1'>emailops_gui.py</a></td>
+                        <td>835</td>
+                        <td><code>Conversation.txt</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:1729:1'>emailops_gui.py</a></td>
+                        <td>1729</td>
+                        <td><code>mapping.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2090:1'>emailops_gui.py</a></td>
+                        <td>2090</td>
+                        <td><code>Conversation.txt</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2117:1'>emailops_gui.py</a></td>
+                        <td>2117</td>
+                        <td><code>_last_chunk.txt</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2133:1'>emailops_gui.py</a></td>
+                        <td>2133</td>
+                        <td><code>Conversation.txt</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2157:1'>emailops_gui.py</a></td>
+                        <td>2157</td>
+                        <td><code>Conversation.txt</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2221:1'>emailops_gui.py</a></td>
+                        <td>2221</td>
+                        <td><code>Conversation.txt</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2297:1'>emailops_gui.py</a></td>
+                        <td>2297</td>
+                        <td><code>Conversation.txt</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2319:1'>emailops_gui.py</a></td>
+                        <td>2319</td>
+                        <td><code>summary.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\emailops_gui.py:2329:1'>emailops_gui.py</a></td>
+                        <td>2329</td>
+                        <td><code>summary.md</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:104:1'>email_indexer.py</a></td>
+                        <td>104</td>
+                        <td><code>Conversation.txt</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:105:1'>email_indexer.py</a></td>
+                        <td>105</td>
+                        <td><code>manifest.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\email_indexer.py:106:1'>email_indexer.py</a></td>
+                        <td>106</td>
+                        <td><code>summary.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\file_utils.py:87:1'>file_utils.py</a></td>
+                        <td>87</td>
+                        <td><code>Conversation.txt</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\file_utils.py:89:1'>file_utils.py</a></td>
+                        <td>89</td>
+                        <td><code>Conversation.txt</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\index_metadata.py:65:1'>index_metadata.py</a></td>
+                        <td>65</td>
+                        <td><code>meta.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\index_metadata.py:67:1'>index_metadata.py</a></td>
+                        <td>67</td>
+                        <td><code>mapping.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\index_metadata.py:69:1'>index_metadata.py</a></td>
+                        <td>69</td>
+                        <td><code>last_run.txt</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\index_metadata.py:70:1'>index_metadata.py</a></td>
+                        <td>70</td>
+                        <td><code>file_times.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\llm_runtime.py:125:1'>llm_runtime.py</a></td>
+                        <td>125</td>
+                        <td><code>secrets/api-agent-470921-4e2065b2ecf9.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\llm_runtime.py:129:1'>llm_runtime.py</a></td>
+                        <td>129</td>
+                        <td><code>secrets/apt-arcana-470409-i7-ce42b76061bf.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\llm_runtime.py:133:1'>llm_runtime.py</a></td>
+                        <td>133</td>
+                        <td><code>secrets/embed2-474114-fca38b4d2068.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\llm_runtime.py:137:1'>llm_runtime.py</a></td>
+                        <td>137</td>
+                        <td><code>secrets/crafty-airfoil-474021-s2-34159960925b.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\llm_runtime.py:141:1'>llm_runtime.py</a></td>
+                        <td>141</td>
+                        <td><code>secrets/my-project-31635v-8ec357ac35b2.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\llm_runtime.py:145:1'>llm_runtime.py</a></td>
+                        <td>145</td>
+                        <td><code>secrets/semiotic-nexus-470620-f3-3240cfaf6036.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\llm_runtime.py:151:1'>llm_runtime.py</a></td>
+                        <td>151</td>
+                        <td><code>validated_accounts.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\llm_runtime.py:256:1'>llm_runtime.py</a></td>
+                        <td>256</td>
+                        <td><code>validated_accounts.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\parallel_indexer.py:261:1'>parallel_indexer.py</a></td>
+                        <td>261</td>
+                        <td><code>mapping.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\processor.py:384:1'>processor.py</a></td>
+                        <td>384</td>
+                        <td><code>analysis.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\processor.py:385:1'>processor.py</a></td>
+                        <td>385</td>
+                        <td><code>analysis.md</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\processor.py:394:1'>processor.py</a></td>
+                        <td>394</td>
+                        <td><code>Conversation.txt</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\processor.py:414:1'>processor.py</a></td>
+                        <td>414</td>
+                        <td><code>analysis.json</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\processor.py:415:1'>processor.py</a></td>
+                        <td>415</td>
+                        <td><code>analysis.md</code></td>
+                    </tr>
+                
+                    <tr>
+                        <td><a href='vscode://file/C:\Users\ASUS\Downloads\emailops_vertex_ai\emailops\processor.py:416:1'>processor.py</a></td>
+                        <td>416</td>
+                        <td><code>analysis.json</code></td>
+                    </tr>
+                </table>
+</div>
+</div>
+</body>
+</html>

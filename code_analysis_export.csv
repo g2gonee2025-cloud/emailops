@@ -1,0 +1,191 @@
+Type,Item,File,Line,Details
+Unused Function,cmd_fresh,processor.py,271,Class: None
+Unused Function,_open_attachments_folder,emailops_gui.py,883,Class: EmailOpsApp
+Unused Function,_open_conversation_folder,emailops_gui.py,910,Class: EmailOpsApp
+Unused Function,_on_chat,emailops_gui.py,1578,Class: EmailOpsApp
+Unused Function,_choose_root,emailops_gui.py,2609,Class: EmailOpsApp
+Unused Function,runner,emailops_gui.py,289,Class: EmailOpsApp
+Unused Function,_on_draft_reply,emailops_gui.py,1473,Class: EmailOpsApp
+Unused Function,_view_config,emailops_gui.py,1877,Class: EmailOpsApp
+Unused Function,validate_account,llm_runtime.py,331,Class: None
+Unused Function,_test_embeddings,emailops_gui.py,2007,Class: EmailOpsApp
+Unused Function,_show_about,emailops_gui.py,2395,Class: EmailOpsApp
+Unused Function,do_update,emailops_gui.py,317,Class: EmailOpsApp
+Unused Function,_clear_chunks_dir,emailops_gui.py,2263,Class: EmailOpsApp
+Unused Function,busy,emailops_gui.py,123,Class: TaskController
+Unused Function,_build_search_query_from_history,search_and_draft.py,2345,Class: None
+Unused Function,_reset_chat_session,emailops_gui.py,1674,Class: EmailOpsApp
+Unused Function,_save_logs,emailops_gui.py,2378,Class: EmailOpsApp
+Unused Function,_on_list_convs,emailops_gui.py,1720,Class: EmailOpsApp
+Unused Function,_on_search,emailops_gui.py,1406,Class: EmailOpsApp
+Unused Function,wrapper,emailops_gui.py,143,Class: None
+Unused Function,wrapper,processing_utils.py,97,Class: None
+Unused Function,cmd_summarize,processor.py,398,Class: None
+Unused Function,_safe_float_env,search_and_draft.py,360,Class: None
+Unused Function,_add_from_convs,emailops_gui.py,1270,Class: EmailOpsApp
+Unused Function,file_lock,file_utils.py,112,Class: None
+Unused Function,json_complete,llm_client.py,85,Class: None
+Unused Function,_clean_index_text,email_indexer.py,264,Class: None
+Unused Function,getAge,processing_utils.py,88,Class: Person
+Unused Function,decorator,emailops_gui.py,142,Class: None
+Unused Function,_cache_query_embedding,search_and_draft.py,292,Class: None
+Unused Function,age,processing_utils.py,74,Class: Person
+Unused Function,extract_text_async,text_extraction.py,480,Class: None
+Unused Function,_save_chat_session,emailops_gui.py,1658,Class: EmailOpsApp
+Unused Function,chunk_one_threadsafe,emailops_gui.py,2150,Class: EmailOpsApp
+Unused Function,_save_eml_fresh,emailops_gui.py,1562,Class: EmailOpsApp
+Unused Function,quote_shell_arg,validators.py,238,Class: None
+Unused Function,_use_selected_conv,emailops_gui.py,1759,Class: EmailOpsApp
+Unused Function,_find_conv_ids_by_subject,search_and_draft.py,524,Class: None
+Unused Function,process_items_async,processing_utils.py,166,Class: BatchProcessor
+Unused Function,_get_cached_query_embedding,search_and_draft.py,280,Class: None
+Unused Function,analyze_conversation_dir_sync,summarize_email_thread.py,1936,Class: None
+Unused Function,read_conv_id,emailops_gui.py,1304,Class: EmailOpsApp
+Unused Function,set_progress,emailops_gui.py,127,Class: TaskController
+Unused Function,_cache_mapping,search_and_draft.py,331,Class: None
+Unused Function,validate_environment_variable,validators.py,287,Class: None
+Unused Function,prepare_for_indexing,processing_utils.py,189,Class: TextPreprocessor
+Unused Function,cmd_summarize_many,processor.py,422,Class: None
+Unused Function,cmd_reply,processor.py,243,Class: None
+Unused Function,_save_analysis_results,emailops_gui.py,2564,Class: EmailOpsApp
+Unused Function,_safe_int_env,search_and_draft.py,352,Class: None
+Unused Function,cmd_index,processor.py,218,Class: None
+Unused Function,_check_index,emailops_gui.py,1982,Class: EmailOpsApp
+Unused Function,_on_force_rechunk,emailops_gui.py,2049,Class: EmailOpsApp
+Unused Function,chunk_text,text_chunker.py,189,Class: TextChunker
+Unused Function,_on_build_index,emailops_gui.py,1777,Class: EmailOpsApp
+Unused Function,monitor_performance,processing_utils.py,93,Class: None
+Unused Function,reset_config,config.py,288,Class: None
+Unused Function,_clear_batch_list,emailops_gui.py,1292,Class: EmailOpsApp
+Unused Function,save_validated_accounts,llm_runtime.py,256,Class: None
+Unused Function,session_path,search_and_draft.py,2265,Class: ChatSession
+Unused Function,get_status,emailops_gui.py,133,Class: TaskController
+Unused Function,read_text_file_async,utils.py,106,Class: None
+Unused Function,_export_search_results,emailops_gui.py,2506,Class: EmailOpsApp
+Unused Function,_show_docs,emailops_gui.py,2433,Class: EmailOpsApp
+Unused Function,_safe_json_load,search_and_draft.py,368,Class: None
+Unused Function,_run_batch_operation,emailops_gui.py,1297,Class: EmailOpsApp
+Unused Function,_run_diagnostics,emailops_gui.py,1900,Class: EmailOpsApp
+Unused Function,print_total_chunks,emailops_gui.py,271,Class: EmailOpsApp
+Unused Function,_apply_config,emailops_gui.py,1832,Class: EmailOpsApp
+Unused Function,validate_file_path_info,validators.py,407,Class: None
+Unused Function,_remove_batch_item,emailops_gui.py,1286,Class: EmailOpsApp
+Unused Function,process_items,processing_utils.py,125,Class: BatchProcessor
+Unused Function,task_wrapper,emailops_gui.py,174,Class: None
+Unused Function,_run_account_setup,emailops_gui.py,2039,Class: EmailOpsApp
+Unused Function,split_email_thread,email_processing.py,160,Class: None
+Unused Function,_on_draft_fresh,emailops_gui.py,1528,Class: EmailOpsApp
+Unused Function,_save_eml_reply,emailops_gui.py,1512,Class: EmailOpsApp
+Unused Function,get_index_info,index_metadata.py,748,Class: None
+Unused Function,_reset_config,emailops_gui.py,199,Class: EmailOpsApp
+Unused Function,_show_snippet,emailops_gui.py,1456,Class: EmailOpsApp
+Unused Function,_export_chat_history,emailops_gui.py,2541,Class: EmailOpsApp
+Unused Function,temporary_directory,file_utils.py,93,Class: None
+Unused Function,validate_directory_path_info,validators.py,388,Class: None
+Unused Function,complete,llm_client.py,80,Class: None
+Unused Function,emit,emailops_gui.py,54,Class: QueueHandler
+Unused Function,_get_cached_mapping,search_and_draft.py,310,Class: None
+Unused Function,_list_chunked_convs,emailops_gui.py,2237,Class: EmailOpsApp
+Unused Function,_toggle_advanced_search,emailops_gui.py,603,Class: EmailOpsApp
+Unused Function,_view_conversation_txt,emailops_gui.py,819,Class: EmailOpsApp
+Unused Function,_drain_logs,emailops_gui.py,2345,Class: EmailOpsApp
+Unused Function,_load_chat_session,emailops_gui.py,1635,Class: EmailOpsApp
+Unused Function,_export_conversation_list,emailops_gui.py,967,Class: EmailOpsApp
+Unused Function,cmd_chat,processor.py,316,Class: None
+Unused Function,validate_email_format,validators.py,318,Class: None
+Unused Function,validate_project_id,validators.py,253,Class: None
+Unused Function,clear_cache,processing_utils.py,291,Class: TextPreprocessor
+Unused Function,_summarize_worker,processor.py,369,Class: None
+Unused Function,_update_progress_displays,emailops_gui.py,366,Class: EmailOpsApp
+Unused Function,cancel,emailops_gui.py,115,Class: TaskController
+Unused Function,run_load,emailops_gui.py,1699,Class: EmailOpsApp
+Unused Function,_load_conversations,emailops_gui.py,1693,Class: EmailOpsApp
+Unused Function,sanitize_path_input_report,validators.py,377,Class: None
+Unused Function,_on_incremental_chunk,emailops_gui.py,2107,Class: EmailOpsApp
+Unused Function,_choose_thread_dir,emailops_gui.py,1222,Class: EmailOpsApp
+Unused Function,_on_analyze_thread,emailops_gui.py,2289,Class: EmailOpsApp
+Unused Function,_on_surgical_rechunk,emailops_gui.py,2182,Class: EmailOpsApp
+Unused Function,run_in_thread,emailops_gui.py,1787,Class: EmailOpsApp
+Unused Function,_check_deps,emailops_gui.py,1947,Class: EmailOpsApp
+Unused Function,get_text_preprocessor,processing_utils.py,326,Class: None
+Broken Import,fcntl,file_utils.py,143,missing_module
+Broken Import,textract,text_extraction.py,325,missing_module
+Invalid Path,api-agent-470921-aa03081a1b4d.json,config.py,51,File not found
+Invalid Path,apt-arcana-470409-i7-ce42b76061bf.json,config.py,52,File not found
+Invalid Path,crafty-airfoil-474021-s2-34159960925b.json,config.py,53,File not found
+Invalid Path,embed2-474114-fca38b4d2068.json,config.py,54,File not found
+Invalid Path,my-project-31635v-8ec357ac35b2.json,config.py,55,File not found
+Invalid Path,semiotic-nexus-470620-f3-3240cfaf6036.json,config.py,56,File not found
+Invalid Path,Conversation.txt,conversation_loader.py,46,File not found
+Invalid Path,summary.json,conversation_loader.py,47,File not found
+Invalid Path,manifest.json,conversation_loader.py,48,File not found
+Invalid Path,Conversation.txt,conversation_loader.py,196,File not found
+Invalid Path,manifest.json,conversation_loader.py,196,File not found
+Invalid Path,summary.json,conversation_loader.py,196,File not found
+Invalid Path,requirements.txt,doctor.py,97,File not found
+Invalid Path,requirements.txt,doctor.py,98,File not found
+Invalid Path,requirements.txt,doctor.py,99,File not found
+Invalid Path,.emailops_gui.json,emailops_gui.py,82,File not found
+Invalid Path,Conversation.txt,emailops_gui.py,835,File not found
+Invalid Path,mapping.json,emailops_gui.py,1729,File not found
+Invalid Path,Conversation.txt,emailops_gui.py,2090,File not found
+Invalid Path,_last_chunk.txt,emailops_gui.py,2117,File not found
+Invalid Path,Conversation.txt,emailops_gui.py,2133,File not found
+Invalid Path,Conversation.txt,emailops_gui.py,2157,File not found
+Invalid Path,Conversation.txt,emailops_gui.py,2221,File not found
+Invalid Path,Conversation.txt,emailops_gui.py,2297,File not found
+Invalid Path,summary.json,emailops_gui.py,2319,File not found
+Invalid Path,summary.md,emailops_gui.py,2329,File not found
+Invalid Path,Conversation.txt,email_indexer.py,104,File not found
+Invalid Path,manifest.json,email_indexer.py,105,File not found
+Invalid Path,summary.json,email_indexer.py,106,File not found
+Invalid Path,Conversation.txt,file_utils.py,87,File not found
+Invalid Path,Conversation.txt,file_utils.py,89,File not found
+Invalid Path,meta.json,index_metadata.py,65,File not found
+Invalid Path,mapping.json,index_metadata.py,67,File not found
+Invalid Path,last_run.txt,index_metadata.py,69,File not found
+Invalid Path,file_times.json,index_metadata.py,70,File not found
+Invalid Path,secrets/api-agent-470921-4e2065b2ecf9.json,llm_runtime.py,125,File not found
+Invalid Path,secrets/apt-arcana-470409-i7-ce42b76061bf.json,llm_runtime.py,129,File not found
+Invalid Path,secrets/embed2-474114-fca38b4d2068.json,llm_runtime.py,133,File not found
+Invalid Path,secrets/crafty-airfoil-474021-s2-34159960925b.json,llm_runtime.py,137,File not found
+Invalid Path,secrets/my-project-31635v-8ec357ac35b2.json,llm_runtime.py,141,File not found
+Invalid Path,secrets/semiotic-nexus-470620-f3-3240cfaf6036.json,llm_runtime.py,145,File not found
+Invalid Path,validated_accounts.json,llm_runtime.py,151,File not found
+Invalid Path,validated_accounts.json,llm_runtime.py,256,File not found
+Invalid Path,mapping.json,parallel_indexer.py,261,File not found
+Invalid Path,analysis.json,processor.py,384,File not found
+Invalid Path,analysis.md,processor.py,385,File not found
+Invalid Path,Conversation.txt,processor.py,394,File not found
+Invalid Path,analysis.json,processor.py,414,File not found
+Invalid Path,analysis.md,processor.py,415,File not found
+Invalid Path,analysis.json,processor.py,416,File not found
+Invalid Path,mapping.json,search_and_draft.py,161,File not found
+Invalid Path,Conversation.txt,search_and_draft.py,1511,File not found
+Invalid Path,manifest.json,search_and_draft.py,1521,File not found
+Invalid Path,manifest.json,summarize_email_thread.py,586,File not found
+Invalid Path,Conversation.txt,summarize_email_thread.py,1604,File not found
+Invalid Path,# Email Thread Analysis\n\n,summarize_email_thread.py,1644,File not found
+Invalid Path,## Summary\n\n,summarize_email_thread.py,1647,File not found
+Invalid Path,### Overview\n\n,summarize_email_thread.py,1652,File not found
+Invalid Path,\n## Participants\n\n,summarize_email_thread.py,1657,File not found
+Invalid Path,\n## Facts Ledger\n\n,summarize_email_thread.py,1668,File not found
+Invalid Path,### Known Facts\n\n,summarize_email_thread.py,1671,File not found
+Invalid Path,\n### Key Dates\n\n,summarize_email_thread.py,1676,File not found
+Invalid Path,\n### Commitments Made\n\n,summarize_email_thread.py,1685,File not found
+Invalid Path,### Resolution\n\n,summarize_email_thread.py,1696,File not found
+Invalid Path,#### Required for Resolution\n,summarize_email_thread.py,1697,File not found
+Invalid Path,\n#### What We Have\n,summarize_email_thread.py,1701,File not found
+Invalid Path,\n#### What We Need\n,summarize_email_thread.py,1705,File not found
+Invalid Path,\n### Materiality\n\n,summarize_email_thread.py,1710,File not found
+Invalid Path,#### For Company\n,summarize_email_thread.py,1711,File not found
+Invalid Path,\n#### For Me\n,summarize_email_thread.py,1715,File not found
+Invalid Path,\n## Next Actions\n\n,summarize_email_thread.py,1720,File not found
+Invalid Path,\n,summarize_email_thread.py,1730,File not found
+Invalid Path,## Risk Indicators\n\n,summarize_email_thread.py,1733,File not found
+Invalid Path,\n---\n\n,summarize_email_thread.py,1740,File not found
+Invalid Path,## Metadata\n\n,summarize_email_thread.py,1741,File not found
+Invalid Path,todo.csv,summarize_email_thread.py,1793,File not found
+Invalid Path,Conversation.txt,summarize_email_thread.py,1896,File not found
+Invalid Path,summary.json,summarize_email_thread.py,1915,File not found
+Invalid Path,summary.md,summarize_email_thread.py,1924,File not found

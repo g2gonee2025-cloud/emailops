@@ -388,7 +388,7 @@ def _line_is_injectionish(l: str) -> bool:
 
 
 def _hard_strip_injection(text: str) -> str:
-    """Heuristic prompt‑injection scrubber over raw file text slices."""
+    """Heuristic prompt injection scrubber over raw file text slices."""
     if not text:
         return ""
     out = []
@@ -1248,7 +1248,7 @@ def _gather_context_for_conv(
 
         results: list[dict[str, Any]] = []
         used = 0
-        for pos, local_i in enumerate(order.tolist()):
+        for _, local_i in enumerate(order.tolist()):
             try:
                 local_idx = int(local_i)
                 if not (0 <= local_idx < len(sub_mapping)):
@@ -1895,7 +1895,7 @@ Available Context:
 Citations:
 {json.dumps(citations, ensure_ascii=False)}
 
-Rubric (each 1–10):
+Rubric (each 1-10):
 {rubric_lines}
 
 Return JSON: {{ "scores": {{...}}, "comments": [] }}"""

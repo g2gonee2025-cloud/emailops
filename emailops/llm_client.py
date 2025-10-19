@@ -9,15 +9,15 @@ try:
     from . import llm_runtime as _rt  # package import
 except Exception:  # pragma: no cover - defensive path for "script mode"
     import importlib
-    import os
     import sys
     import types
+    from pathlib import Path
 
-    _dir = os.path.dirname(__file__)
+    _dir = Path(__file__).parent
     _pkg_name = "emailops"
     if _pkg_name not in sys.modules:
         _pkg = types.ModuleType(_pkg_name)
-        _pkg.__path__ = [_dir]  # mark as namespace over this directory
+        _pkg.__path__ = [str(_dir)]  # mark as namespace over this directory
         sys.modules[_pkg_name] = _pkg
     _rt = importlib.import_module(f"{_pkg_name}.llm_runtime")
 
@@ -70,7 +70,6 @@ def embed_texts(texts: Iterable[str], **kwargs: Any) -> Any:
     """
     Thin passthrough to runtime; the runtime now realizes non-list iterables once
     at the boundary for provider compatibility and batching efficiency.
-    
     MEDIUM #18: Type checking for generator inputs happens in runtime layer.
     Generators are consumed into lists at the runtime boundary for batching.
     """
@@ -93,7 +92,6 @@ def json_complete(*args: Any, **kwargs: Any) -> Any:
 def embed(texts: Iterable[str], **kwargs: Any) -> Any:
     """
     DEPRECATED: Use embed_texts() directly instead.
-    
     Alias for embed_texts(...) with additional validation.
     This function will be removed in a future version.
 
