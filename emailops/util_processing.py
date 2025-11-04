@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import datetime
 import hashlib
 import logging
 import os
@@ -29,7 +28,9 @@ class ProcessingConfig:
     max_attachment_chars: int = field(
         default_factory=lambda: int(os.getenv("MAX_ATTACHMENT_TEXT_CHARS", "500000"))
     )
-    excel_max_cells: int = field(default_factory=lambda: int(os.getenv("EXCEL_MAX_CELLS", "200000")))
+    excel_max_cells: int = field(
+        default_factory=lambda: int(os.getenv("EXCEL_MAX_CELLS", "200000"))
+    )
     skip_attachment_over_mb: float = field(
         default_factory=lambda: float(os.getenv("SKIP_ATTACHMENT_OVER_MB", "0"))
     )
@@ -55,42 +56,6 @@ def get_processing_config() -> ProcessingConfig:
     if _PROCESSING_CONFIG is None:
         _PROCESSING_CONFIG = ProcessingConfig()
     return _PROCESSING_CONFIG
-
-
-# MEDIUM #23: Person class appears unused in codebase but kept for backward compatibility
-@dataclass
-class Person:
-    """Immutable person object with age calculation. NOTE: Currently unused in codebase."""
-
-    name: str
-    birthdate: str
-
-    def __post_init__(self):
-        """Validate birthdate format."""
-        if self.birthdate:
-            try:
-                datetime.date.fromisoformat(self.birthdate)
-            except ValueError as e:
-                logger.warning("Invalid birthdate format for %s: %s", self.name, e)
-
-    @property
-    def age(self) -> int:
-        """Calculate age based on today's date (timezone-agnostic)."""
-        return self.age_on(datetime.date.today())
-
-    def age_on(self, on_date: datetime.date) -> int:
-        """Calculate age on a specific date using date arithmetic."""
-        if not self.birthdate:
-            return 0
-        try:
-            b = datetime.date.fromisoformat(self.birthdate)
-            return on_date.year - b.year - ((on_date.month, on_date.day) < (b.month, b.day))
-        except Exception:
-            return 0
-
-    def getAge(self) -> int:
-        """Alias for the age property (backward compatibility)."""
-        return self.age
 
 
 def monitor_performance(func: Callable) -> Callable:
@@ -166,7 +131,9 @@ class BatchProcessor:
 
         return results
 
-    async def process_items_async(self, items: list[Any], processor: Callable[[Any], Any]) -> list[Any]:
+    async def process_items_async(
+        self, items: list[Any], processor: Callable[[Any], Any]
+    ) -> list[Any]:
         """Async version of process_items."""
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, self.process_items, items, processor)
@@ -190,24 +157,16 @@ class TextPreprocessor:
 
     @monitor_performance
     def prepare_for_indexing(
-        self, text: str, text_type: str = "email", use_cache: bool = True
+        self, text: str, text_type: str = "email", use_cache: bool = True, redact_pii_enabled: bool = True
     ) -> tuple[str, dict[str, Any]]:
         """
-        Prepare text for indexing with comprehensive cleaning.
-
-        This is the SINGLE point where all text cleaning happens.
-        The cleaned text is what gets chunked and indexed.
-
-        Args:
-            text: Raw text to be cleaned
-            text_type: Type of text ('email', 'document', 'attachment')
-            use_cache: Whether to use cached results for identical inputs
-
-        Returns:
-            Tuple of (cleaned_text, preprocessing_metadata)
+        Prepare text for indexing with comprehensive cleaning and PII redaction.
         """
         if not text:
-            return "", {"pre_cleaned": True, "cleaning_version": self.PREPROCESSING_VERSION}
+            return "", {
+                "pre_cleaned": True,
+                "cleaning_version": self.PREPROCESSING_VERSION,
+            }
 
         # Check cache
         cache_key = None
@@ -222,7 +181,6 @@ class TextPreprocessor:
 
         # Apply cleaning based on text type
         if text_type == "email":
-
             cleaned = clean_email_text(text)
         elif text_type == "attachment":
             cleaned = self._clean_attachment_text(text)
@@ -230,6 +188,10 @@ class TextPreprocessor:
             cleaned = self._clean_document_text(text)
         else:
             cleaned = self._basic_clean(text)
+
+        # Redact PII
+        if redact_pii_enabled:
+            cleaned = redact_pii(cleaned)
 
         # Generate metadata
         metadata = {
@@ -239,6 +201,7 @@ class TextPreprocessor:
             "original_length": original_length,
             "cleaned_length": len(cleaned),
             "reduction_ratio": round(1 - (len(cleaned) / max(1, original_length)), 3),
+            "pii_redacted": redact_pii_enabled
         }
 
         # Cache result for reasonable sized texts
@@ -318,6 +281,20 @@ def should_skip_retrieval_cleaning(chunk_or_doc: dict[str, Any]) -> bool:
 
     # Legacy data - needs cleaning
     return False
+
+
+def redact_pii(text: str) -> str:
+    """Redact common PII like email addresses and phone numbers."""
+    if not text:
+        return ""
+
+    # Redact email addresses
+    text = re.sub(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', '[email redacted]', text)
+
+    # Redact phone numbers (basic North American and international formats)
+    text = re.sub(r'(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?', '[phone redacted]', text)
+
+    return text
 
 
 # Create global preprocessor instance

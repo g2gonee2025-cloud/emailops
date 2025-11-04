@@ -1,27 +1,28 @@
-
 #!/usr/bin/env python3
 """
 Consolidated monitoring and statistics utilities for EmailOps.
 Combines functionality from monitor.py, statistics.py, check_chunks.py, and live_test.py.
 """
 
-from collections import Counter
-from dataclasses import asdict, dataclass
-from pathlib import Path
-from typing import Any
+import argparse
 import asyncio
+import contextlib
 import json
 import logging
 import os
 import sys
 import time
-
+from collections import Counter
+from dataclasses import asdict, dataclass
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
+from typing import Any
+
+import psutil
+from emailops.util_main import find_conversation_dirs
+
 from emailops.core_config import get_config
 from emailops.indexing_metadata import load_index_metadata
-from emailops.util_main import find_conversation_dirs
-import argparse
-import psutil
 
 # Try to import optional dependencies
 try:
@@ -31,8 +32,7 @@ except ImportError:
 
 # Setup logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -57,8 +57,10 @@ ACTIVE_WINDOW_SECONDS = int(os.getenv("ACTIVE_WINDOW_SECONDS", "120"))
 # Terminal Colors
 # -------------------------
 
+
 class Colors:
     """ANSI color codes for terminal output"""
+
     GREEN = "\033[92m"
     RED = "\033[91m"
     YELLOW = "\033[93m"
@@ -86,9 +88,11 @@ def print_section(title: str) -> None:
 # Data Models
 # -------------------------
 
+
 @dataclass
 class IndexStatus:
     """Status information for an index"""
+
     root_dir: str
     index_dir: str
     index_exists: bool
@@ -113,6 +117,7 @@ class IndexStatus:
 @dataclass
 class ProcessInfo:
     """Information about a running process"""
+
     pid: int
     name: str
     command: str
@@ -127,6 +132,7 @@ class ProcessInfo:
 # -------------------------
 # Index Monitor
 # -------------------------
+
 
 class IndexMonitor:
     """Monitor indexing progress and status"""
@@ -162,7 +168,9 @@ class IndexMonitor:
         status.conversations_total = self._count_conversations()
 
         # Estimate conversations indexed
-        status.conversations_indexed = self._estimate_conversations_indexed(mapping_docs)
+        status.conversations_indexed = self._estimate_conversations_indexed(
+            mapping_docs
+        )
 
         # Load metadata
         self._populate_meta_fields(status)
@@ -179,10 +187,10 @@ class IndexMonitor:
             p = self.index_dir / candidate
             if p.exists():
                 status.index_file = candidate
-                try:
-                    status.index_file_size_mb = round(p.stat().st_size / (1024 * 1024), 1)
-                except:
-                    pass
+                with contextlib.suppress(Exception):
+                    status.index_file_size_mb = round(
+                        p.stat().st_size / (1024 * 1024), 1
+                    )
                 break
 
         # Calculate progress
@@ -266,7 +274,10 @@ class IndexMonitor:
                 # Check if this looks like an indexing process
                 if "python" in name:
                     cmd_str = " ".join(cmdline).lower()
-                    if any(keyword in cmd_str for keyword in ["index", "vertex", "embed", "chunk"]):
+                    if any(
+                        keyword in cmd_str
+                        for keyword in ["index", "vertex", "embed", "chunk"]
+                    ):
                         mem = proc.info.get("memory_info")
                         mem_mb = (mem.rss / 1024 / 1024) if mem else 0.0
 
@@ -308,7 +319,7 @@ class IndexMonitor:
         """Count total conversations in root directory"""
         try:
             return len(find_conversation_dirs(self.root_dir))
-        except:
+        except Exception:
             # Fallback: count directories with Conversation.txt
             count = 0
             try:
@@ -319,7 +330,9 @@ class IndexMonitor:
                 pass
             return count
 
-    def _estimate_conversations_indexed(self, mapping_docs: list[dict[str, Any]]) -> int:
+    def _estimate_conversations_indexed(
+        self, mapping_docs: list[dict[str, Any]]
+    ) -> int:
         """Estimate number of conversations in mapping"""
         conv_ids = set()
 
@@ -341,9 +354,11 @@ class IndexMonitor:
             if isinstance(meta, dict):
                 status.provider = meta.get("provider")
                 status.model = meta.get("model")
-                status.actual_dimensions = meta.get("actual_dimensions") or meta.get("dimensions")
+                status.actual_dimensions = meta.get("actual_dimensions") or meta.get(
+                    "dimensions"
+                )
                 status.index_type = meta.get("index_type")
-        except:
+        except Exception:
             pass
 
     def _find_newest_artifact(self) -> tuple:
@@ -424,7 +439,11 @@ class IndexMonitor:
             logger.warning("Conversations indexed: (unknown total)")
 
         if status.index_file:
-            sz = f"{status.index_file_size_mb:.1f} MB" if status.index_file_size_mb else "n/a"
+            sz = (
+                f"{status.index_file_size_mb:.1f} MB"
+                if status.index_file_size_mb
+                else "n/a"
+            )
             logger.info(f"Index artifact:        {status.index_file}  ({sz})")
 
         if status.last_updated:
@@ -448,11 +467,14 @@ class IndexMonitor:
 # Chunk Analysis
 # -------------------------
 
+
 class ChunkAnalyzer:
     """Analyze chunk files and processing status."""
 
     def __init__(self, outlook_dir: Path | None = None):
-        self.outlook_dir = outlook_dir or Path(os.getenv("OUTLOOK_EXPORT_ROOT", "C:/Users/ASUS/Desktop/Outlook"))
+        self.outlook_dir = outlook_dir or Path(
+            os.getenv("OUTLOOK_EXPORT_ROOT", "C:/Users/ASUS/Desktop/Outlook")
+        )
         self.chunks_dir = self.outlook_dir / CHUNK_DIRNAME / "chunks"
         self.log_dir = self.outlook_dir / CHUNK_DIRNAME / "_chunker_state"
 
@@ -468,7 +490,7 @@ class ChunkAnalyzer:
             "empty_files": 0,
             "avg_chunks_per_file": 0,
             "chunk_sizes": {},
-            "errors": []
+            "errors": [],
         }
 
         if not self.chunks_dir.exists():
@@ -496,7 +518,7 @@ class ChunkAnalyzer:
 
         for chunk_file in sample_files:
             try:
-                with Path.open(chunk_file, encoding='utf-8') as f:
+                with Path.open(chunk_file, encoding="utf-8") as f:
                     data = json.load(f)
 
                 if not data or data == []:
@@ -505,7 +527,7 @@ class ChunkAnalyzer:
 
                 # Handle different formats
                 if isinstance(data, dict):
-                    chunks = data.get('chunks', [])
+                    chunks = data.get("chunks", [])
                 elif isinstance(data, list):
                     chunks = data
                 else:
@@ -516,7 +538,7 @@ class ChunkAnalyzer:
                 # Get chunk sizes
                 for chunk in chunks:
                     if isinstance(chunk, dict):
-                        text = chunk.get('text', '')
+                        text = chunk.get("text", "")
                         sizes.append(len(text))
 
             except Exception as e:
@@ -529,13 +551,15 @@ class ChunkAnalyzer:
             result["empty_files"] = int(empty_count * scale_factor)
 
             if result["total_files"] > 0:
-                result["avg_chunks_per_file"] = result["total_chunks"] / result["total_files"]
+                result["avg_chunks_per_file"] = (
+                    result["total_chunks"] / result["total_files"]
+                )
 
         if sizes:
             result["chunk_sizes"] = {
                 "min": min(sizes),
                 "max": max(sizes),
-                "avg": sum(sizes) / len(sizes)
+                "avg": sum(sizes) / len(sizes),
             }
 
             print("\nChunk size statistics:")
@@ -558,7 +582,7 @@ class ChunkAnalyzer:
             "exists": False,
             "total_logs": 0,
             "latest_log": None,
-            "errors": []
+            "errors": [],
         }
 
         if not self.log_dir.exists():
@@ -579,7 +603,7 @@ class ChunkAnalyzer:
         latest_log = max(log_files, key=lambda p: p.stat().st_mtime)
         result["latest_log"] = {
             "name": latest_log.name,
-            "size_kb": latest_log.stat().st_size / 1024
+            "size_kb": latest_log.stat().st_size / 1024,
         }
 
         print(f"\nMost recent log: {latest_log.name}")
@@ -587,7 +611,7 @@ class ChunkAnalyzer:
 
         # Read last few lines
         try:
-            with Path.open(latest_log, encoding='utf-8') as f:
+            with Path.open(latest_log, encoding="utf-8") as f:
                 lines = f.readlines()
 
             print("\nLast 10 log entries:")
@@ -595,7 +619,7 @@ class ChunkAnalyzer:
                 print(f"  {line.strip()}")
 
             # Check for errors
-            error_lines = [_l for _l in lines if 'ERROR' in _l or 'error' in _l.lower()]
+            error_lines = [_l for _l in lines if "ERROR" in _l or "error" in _l.lower()]
             if error_lines:
                 print(f"\n⚠️ Found {len(error_lines)} error entries in log")
                 result["errors"] = error_lines[:10]  # Store first 10 errors
@@ -612,6 +636,7 @@ class ChunkAnalyzer:
 # -------------------------
 # File Statistics
 # -------------------------
+
 
 class FileStatisticsAnalyzer:
     """Analyze file statistics and processing rules."""
@@ -646,7 +671,9 @@ class FileStatisticsAnalyzer:
                 logger.info(f"  {ext:12} {count:5,} files - {desc}")
                 total_chunked += count
 
-        logger.info(f"\n  TOTAL:      {total_chunked:5,} files ({(total_chunked / 25024) * 100:.1f}% of all files)")
+        logger.info(
+            f"\n  TOTAL:      {total_chunked:5,} files ({(total_chunked / 25024) * 100:.1f}% of all files)"
+        )
 
         logger.info("\n❌ FILES THAT GET IGNORED (Not Processed)")
         logger.info("-" * 80)
@@ -667,24 +694,34 @@ class FileStatisticsAnalyzer:
                 logger.info(f"  {ext:12} {count:5,} files - {desc}")
                 total_ignored += count
 
-        logger.info(f"\n  TOTAL:      {total_ignored:5,} files ({(total_ignored / 25024) * 100:.1f}% of all files)")
+        logger.info(
+            f"\n  TOTAL:      {total_ignored:5,} files ({(total_ignored / 25024) * 100:.1f}% of all files)"
+        )
 
         logger.info("\n📈 SUMMARY:")
-        logger.info(f"PROCESSED: {total_chunked:,} files ({(total_chunked / 25024) * 100:.1f}%)")
-        logger.info(f"IGNORED: {total_ignored:,} files ({(total_ignored / 25024) * 100:.1f}%)")
+        logger.info(
+            f"PROCESSED: {total_chunked:,} files ({(total_chunked / 25024) * 100:.1f}%)"
+        )
+        logger.info(
+            f"IGNORED: {total_ignored:,} files ({(total_ignored / 25024) * 100:.1f}%)"
+        )
 
     @staticmethod
     def get_file_statistics(root: Path | None = None) -> dict[str, Any]:
         """Generate comprehensive file statistics for Outlook export directory."""
         if root is None:
-            root = Path(os.getenv("OUTLOOK_EXPORT_ROOT", "C:/Users/ASUS/Desktop/Outlook"))
+            root = Path(
+                os.getenv("OUTLOOK_EXPORT_ROOT", "C:/Users/ASUS/Desktop/Outlook")
+            )
         elif isinstance(root, str):
             root = Path(root)
 
         print_section("FILE STATISTICS ANALYZER")
 
         # Count conversation folders
-        convos = [d for d in root.iterdir() if d.is_dir() and not d.name.startswith("_")]
+        convos = [
+            d for d in root.iterdir() if d.is_dir() and not d.name.startswith("_")
+        ]
         logger.info(f"\n📁 Conversation Folders: {len(convos):,}")
 
         # Count Conversation.txt files
@@ -724,6 +761,7 @@ class FileStatisticsAnalyzer:
 # Live Testing
 # -------------------------
 
+
 class LiveTester:
     """Run live tests on conversation directories."""
 
@@ -746,7 +784,7 @@ class LiveTester:
             "success_count": 0,
             "error_count": 0,
             "total_processed": 0,
-            "errors": []
+            "errors": [],
         }
 
         if not self.outlook_dir.exists() or not self.outlook_dir.is_dir():
@@ -755,8 +793,12 @@ class LiveTester:
             return result
 
         try:
-            from emailops.feature_summarize import analyze_conversation_dir, _atomic_write_text
             from emailops.util_main import find_conversation_dirs
+
+            from emailops.feature_summarize import (
+                _atomic_write_text,
+                analyze_conversation_dir,
+            )
         except ImportError as e:
             logger.error(f"Failed to import EmailOps modules: {e}")
             result["errors"].append(f"Import error: {e}")
@@ -773,16 +815,22 @@ class LiveTester:
             logger.warning("No conversation directories found to process.")
             return result
 
-        logger.info(f"Found {len(conversation_dirs)} total conversations. Processing up to {self.limit}.")
+        logger.info(
+            f"Found {len(conversation_dirs)} total conversations. Processing up to {self.limit}."
+        )
 
-        for i, convo_dir in enumerate(conversation_dirs[:self.limit]):
+        for i, convo_dir in enumerate(conversation_dirs[: self.limit]):
             result["total_processed"] += 1
-            logger.info(f"--- Processing Conversation {i+1}/{self.limit}: {convo_dir.name} ---")
+            logger.info(
+                f"--- Processing Conversation {i + 1}/{self.limit}: {convo_dir.name} ---"
+            )
 
             try:
                 # Check if Conversation.txt exists
                 if not (convo_dir / "Conversation.txt").exists():
-                    logger.error(f"SKIPPING: Conversation.txt not found in {convo_dir.name}")
+                    logger.error(
+                        f"SKIPPING: Conversation.txt not found in {convo_dir.name}"
+                    )
                     result["error_count"] += 1
                     continue
 
@@ -791,14 +839,19 @@ class LiveTester:
 
                 # Check for errors in the result
                 if not analysis_result or "_metadata" not in analysis_result:
-                    raise ValueError("Analysis result is empty or missing metadata.") from None
+                    raise ValueError(
+                        "Analysis result is empty or missing metadata."
+                    ) from None
 
                 # Log success and save result
                 logger.info(f"SUCCESS: Analysis complete for {convo_dir.name}")
 
                 # Save the analysis
                 output_path = convo_dir / "summary_live_test.json"
-                _atomic_write_text(output_path, json.dumps(analysis_result, indent=2, ensure_ascii=False))
+                _atomic_write_text(
+                    output_path,
+                    json.dumps(analysis_result, indent=2, ensure_ascii=False),
+                )
                 logger.info(f"Saved analysis to {output_path}")
 
                 result["success_count"] += 1
@@ -824,9 +877,12 @@ class LiveTester:
 # Main CLI
 # -------------------------
 
+
 def main():
     """Main CLI entry point"""
-    parser = argparse.ArgumentParser(description="Monitor and analyze EmailOps processing")
+    parser = argparse.ArgumentParser(
+        description="Monitor and analyze EmailOps processing"
+    )
 
     parser.add_argument(
         "--root", default=str(Path.cwd()), help="Root directory containing index"
@@ -937,12 +993,17 @@ def main():
             analyzer = ChunkAnalyzer()
             chunks = analyzer.analyze_chunks()
 
-            print(json.dumps({
-                "status": status.to_dict(),
-                "rate": analysis,
-                "processes": [p.to_dict() for p in processes],
-                "chunks": chunks
-            }, indent=2))
+            print(
+                json.dumps(
+                    {
+                        "status": status.to_dict(),
+                        "rate": analysis,
+                        "processes": [p.to_dict() for p in processes],
+                        "chunks": chunks,
+                    },
+                    indent=2,
+                )
+            )
         else:
             monitor = IndexMonitor(root_dir=args.root)
             monitor.check_status(emit_text=True)

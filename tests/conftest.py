@@ -22,6 +22,7 @@ import pytest
 # Fixture Scopes and Cleanup
 # ============================================================================
 
+
 @pytest.fixture(scope="session")
 def test_data_dir() -> Path:
     """
@@ -64,6 +65,7 @@ def mock_index_dir(temp_dir):
 # Mock Data Factories
 # ============================================================================
 
+
 @pytest.fixture
 def sample_vertex_account():
     """
@@ -76,7 +78,7 @@ def sample_vertex_account():
         "project_id": "test-project-123",
         "credentials_path": "secrets/test-credentials.json",
         "account_group": 0,
-        "is_valid": True
+        "is_valid": True,
     }
 
 
@@ -94,8 +96,8 @@ def sample_accounts_list(sample_vertex_account):
             "project_id": "test-project-456",
             "credentials_path": "secrets/test-credentials-2.json",
             "account_group": 1,
-            "is_valid": True
-        }
+            "is_valid": True,
+        },
     ]
 
 
@@ -116,7 +118,7 @@ def sample_mapping_data():
             "subject": "Test Email Subject",
             "snippet": "This is a test email snippet",
             "modified_time": "2024-01-01T12:00:00Z",
-            "chunk_index": 0
+            "chunk_index": 0,
         },
         {
             "id": "conv_001::attachment_1",
@@ -125,8 +127,8 @@ def sample_mapping_data():
             "doc_type": "attachment",
             "subject": "Test Email Subject",
             "snippet": "PDF attachment content",
-            "modified_time": "2024-01-01T12:00:00Z"
-        }
+            "modified_time": "2024-01-01T12:00:00Z",
+        },
     ]
 
 
@@ -160,31 +162,29 @@ def sample_chunk_data():
                 "text": "This is the first chunk of text.",
                 "chunk_index": 0,
                 "start_char": 0,
-                "end_char": 32
+                "end_char": 32,
             },
             {
                 "text": "This is the second chunk of text.",
                 "chunk_index": 1,
                 "start_char": 32,
-                "end_char": 65
+                "end_char": 65,
             },
             {
                 "text": "This is the third chunk of text.",
                 "chunk_index": 2,
                 "start_char": 65,
-                "end_char": 97
-            }
+                "end_char": 97,
+            },
         ],
-        "metadata": {
-            "chunked_at": "2024-01-01T12:00:00",
-            "original_size": 97
-        }
+        "metadata": {"chunked_at": "2024-01-01T12:00:00", "original_size": 97},
     }
 
 
 # ============================================================================
 # File System Mocks
 # ============================================================================
+
 
 @pytest.fixture
 def mock_index_files(mock_index_dir, sample_mapping_data, sample_embeddings):
@@ -215,7 +215,7 @@ def mock_index_files(mock_index_dir, sample_mapping_data, sample_embeddings):
         "model": "gemini-embedding-001",
         "actual_dimensions": sample_embeddings.shape[1],
         "index_type": "flat",
-        "created_at": datetime.now().isoformat()
+        "created_at": datetime.now().isoformat(),
     }
     with meta_path.open("w", encoding="utf-8") as f:
         json.dump(meta_data, f, indent=2)
@@ -224,7 +224,7 @@ def mock_index_files(mock_index_dir, sample_mapping_data, sample_embeddings):
         "mapping": mapping_path,
         "embeddings": embeddings_path,
         "meta": meta_path,
-        "index_dir": mock_index_dir
+        "index_dir": mock_index_dir,
     }
 
 
@@ -264,6 +264,7 @@ def mock_conversation_structure(temp_dir):
 # GCP/Vertex AI Mocks
 # ============================================================================
 
+
 @pytest.fixture
 def mock_vertex_ai():
     """
@@ -285,6 +286,7 @@ def mock_embed_texts():
     Yields:
         Mock function that returns normalized embeddings
     """
+
     def mock_embed(texts, **_):
         """Mock embedding function that returns random normalized vectors."""
         n = len(texts)
@@ -293,7 +295,7 @@ def mock_embed_texts():
         norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
         return embeddings / norms
 
-    with patch("emailops.llm_client.embed_texts", side_effect=mock_embed) as mock:
+    with patch("emailops.llm_client_shim.embed_texts", side_effect=mock_embed) as mock:
         yield mock
 
 
@@ -330,7 +332,7 @@ def mock_credentials_file(temp_dir):
         "client_email": "test@test-project.iam.gserviceaccount.com",
         "client_id": "123456789",
         "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token"
+        "token_uri": "https://oauth2.googleapis.com/token",
     }
 
     with creds_file.open("w") as f:
@@ -342,6 +344,7 @@ def mock_credentials_file(temp_dir):
 # ============================================================================
 # Environment Variable Mocks
 # ============================================================================
+
 
 @pytest.fixture
 def mock_env_vars():
@@ -357,7 +360,7 @@ def mock_env_vars():
         "VERTEX_PROJECT": "test-project",
         "GCP_PROJECT": "test-project",
         "GCP_REGION": "us-central1",
-        "INDEX_DIRNAME": "_index"
+        "INDEX_DIRNAME": "_index",
     }
     os.environ.update(env_updates)
 
@@ -372,6 +375,7 @@ def mock_env_vars():
 # Logging Mocks
 # ============================================================================
 
+
 @pytest.fixture
 def capture_logs(caplog):
     """
@@ -384,6 +388,7 @@ def capture_logs(caplog):
         Caplog fixture with helper methods
     """
     import logging
+
     caplog.set_level(logging.DEBUG)
     return caplog
 
@@ -391,6 +396,7 @@ def capture_logs(caplog):
 # ============================================================================
 # Test Data Generators
 # ============================================================================
+
 
 def generate_random_text(length: int = 100) -> str:
     """
@@ -408,10 +414,10 @@ def generate_random_text(length: int = 100) -> str:
     words = []
     for _ in range(length):
         word_len = random.randint(3, 10)
-        word = ''.join(random.choices(string.ascii_lowercase, k=word_len))
+        word = "".join(random.choices(string.ascii_lowercase, k=word_len))
         words.append(word)
 
-    return ' '.join(words)
+    return " ".join(words)
 
 
 def generate_embedding(dim: int = 768) -> np.ndarray:
@@ -432,6 +438,7 @@ def generate_embedding(dim: int = 768) -> np.ndarray:
 # Assertion Helpers
 # ============================================================================
 
+
 def assert_valid_mapping_entry(entry: dict[str, Any]) -> None:
     """
     Asserts that a mapping entry has all required fields.
@@ -442,19 +449,31 @@ def assert_valid_mapping_entry(entry: dict[str, Any]) -> None:
     Raises:
         AssertionError: If required fields are missing or invalid
     """
-    required_fields = ["id", "path", "conv_id", "doc_type", "subject", "snippet", "modified_time"]
+    required_fields = [
+        "id",
+        "path",
+        "conv_id",
+        "doc_type",
+        "subject",
+        "snippet",
+        "modified_time",
+    ]
 
     for field in required_fields:
         assert field in entry, f"Missing required field: {field}"
         assert entry[field] is not None, f"Field {field} is None"
 
-    assert entry["doc_type"] in ["conversation", "attachment"], \
-        f"Invalid doc_type: {entry['doc_type']}"
+    assert entry["doc_type"] in [
+        "conversation",
+        "attachment",
+    ], f"Invalid doc_type: {entry['doc_type']}"
 
     assert isinstance(entry["snippet"], str), "snippet must be a string"
 
 
-def assert_normalized_embeddings(embeddings: np.ndarray, tolerance: float = 1e-5) -> None:
+def assert_normalized_embeddings(
+    embeddings: np.ndarray, tolerance: float = 1e-5
+) -> None:
     """
     Asserts that embeddings are properly normalized.
 
@@ -471,13 +490,15 @@ def assert_normalized_embeddings(embeddings: np.ndarray, tolerance: float = 1e-5
     assert embeddings.ndim == 2, f"Embeddings must be 2D, got shape {embeddings.shape}"
 
     norms = np.linalg.norm(embeddings, axis=1)
-    assert np.allclose(norms, 1.0, atol=tolerance), \
-        f"Embeddings not normalized: norms range from {norms.min():.4f} to {norms.max():.4f}"
+    assert np.allclose(
+        norms, 1.0, atol=tolerance
+    ), f"Embeddings not normalized: norms range from {norms.min():.4f} to {norms.max():.4f}"
 
 
 # ============================================================================
 # Pytest Hooks
 # ============================================================================
+
 
 def pytest_configure(config):
     """
@@ -487,15 +508,9 @@ def pytest_configure(config):
         config: Pytest config object
     """
     # Add custom markers
-    config.addinivalue_line(
-        "markers", "unit: mark test as a unit test"
-    )
-    config.addinivalue_line(
-        "markers", "integration: mark test as an integration test"
-    )
-    config.addinivalue_line(
-        "markers", "slow: mark test as slow running"
-    )
+    config.addinivalue_line("markers", "unit: mark test as a unit test")
+    config.addinivalue_line("markers", "integration: mark test as an integration test")
+    config.addinivalue_line("markers", "slow: mark test as slow running")
 
 
 def pytest_collection_modifyitems(items):

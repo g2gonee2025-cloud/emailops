@@ -42,33 +42,25 @@ def load_accounts() -> list[dict]:
         except Exception:
             pass
 
-    # Default accounts
-    return [
-        {
-            "project_id": "api-agent-470921",
-            "credentials_path": "secrets/api-agent-470921-4e2065b2ecf9.json",
-        },
-        {
-            "project_id": "apt-arcana-470409-i7",
-            "credentials_path": "secrets/apt-arcana-470409-i7-ce42b76061bf.json",
-        },
-        {
-            "project_id": "crafty-airfoil-474021-s2",
-            "credentials_path": "secrets/crafty-airfoil-474021-s2-34159960925b.json",
-        },
-        {
-            "project_id": "embed2-474114",
-            "credentials_path": "secrets/embed2-474114-fca38b4d2068.json",
-        },
-        {
-            "project_id": "my-project-31635v",
-            "credentials_path": "secrets/my-project-31635v-8ec357ac35b2.json",
-        },
-        {
-            "project_id": "semiotic-nexus-470620-f3",
-            "credentials_path": "secrets/semiotic-nexus-470620-f3-3240cfaf6036.json",
-        },
-    ]
+    # Fallback: discover from secrets directory
+    secrets_dir = Path("secrets")
+    if not secrets_dir.exists():
+        return []
+
+    accounts = []
+    for json_file in secrets_dir.glob("*.json"):
+        try:
+            with json_file.open() as f:
+                cred_data = json.load(f)
+            project_id = cred_data.get("project_id", "")
+            if project_id:
+                accounts.append({
+                    "project_id": project_id,
+                    "credentials_path": str(json_file)
+                })
+        except Exception:
+            continue
+    return accounts
 
 
 def check_gcloud() -> bool:
@@ -85,13 +77,13 @@ def enable_api_for_project(
 
     # Authenticate with service account if provided
     if credentials_path and Path(credentials_path).exists():
-        auth_cmd = f'gcloud auth activate-service-account --key-file="{credentials_path}"'
+        auth_cmd = (
+            f'gcloud auth activate-service-account --key-file="{credentials_path}"'
+        )
         print("  Authenticating with service account...")
         success, _, error = run_command(auth_cmd)
         if not success:
-            print(
-                "  Warning: Could not authenticate with service account"
-            )
+            print("  Warning: Could not authenticate with service account")
 
     # Set the project
     cmd = f"gcloud config set project {project_id}"
@@ -166,9 +158,7 @@ def main():
                 print("\nShowing manual URLs instead...")
         else:
             # Process all projects
-            print(
-                "\nEnabling Vertex AI API for all projects..."
-            )
+            print("\nEnabling Vertex AI API for all projects...")
 
             success_count = 0
             failed_projects = []

@@ -11,7 +11,7 @@ from datetime import datetime
 from email.utils import parsedate_to_datetime
 from typing import Any
 
-from .util_files import _strip_control_chars
+from .utils import strip_control_chars
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +65,7 @@ _FORWARDING_PATTERNS = [
 # MEDIUM #24: Import control char pattern from centralized file_utils instead of duplicating
 
 
-def clean_email_text(text: str) -> str:
+def clean_email_text(text: str, signature_scan_chars: int = 2000) -> str:
     """
     Clean email body text for indexing and retrieval.
 
@@ -91,17 +91,21 @@ def clean_email_text(text: str) -> str:
         text = pattern.sub("", text)
 
     # Remove simple signatures/footers ONLY from the trailing portion
-    tail = text[-2000:]  # examine last ~2k chars
+    tail = text[-signature_scan_chars:]
     for pattern in _SIGNATURE_PATTERNS:
         tail = pattern.sub("", tail)
-    text = text[:-2000] + tail if len(text) > 2000 else tail
+    text = (
+        text[:-signature_scan_chars] + tail
+        if len(text) > signature_scan_chars
+        else tail
+    )
 
     # Remove forwarding separators
     for pattern in _FORWARDING_PATTERNS:
         text = pattern.sub("", text)
 
-    # Remove '>' quoting markers and normalize noise using pre-compiled patterns
-    text = re.sub(r"(?m)^\s*>+\s?", "", text)
+    # Mask '>' quoting markers and normalize noise using pre-compiled patterns
+    text = re.sub(r"(?m)^(\s*>+.*)$", r"<q>\1</q>", text)
     text = _EMAIL_PATTERN.sub(r"[email@\1]", text)
     text = _URL_PATTERN.sub("[URL]", text)
     text = _EXCESSIVE_EQUALS.sub("", text)
@@ -111,7 +115,7 @@ def clean_email_text(text: str) -> str:
     text = _MULTIPLE_SPACES.sub(" ", text)
     text = _MULTIPLE_NEWLINES.sub("\n\n", text)
     text = _BLANK_LINES.sub("", text)  # drop blank-only lines
-    return _strip_control_chars(text).strip()
+    return strip_control_chars(text).strip()
 
 
 def extract_email_metadata(text: str) -> dict[str, Any]:

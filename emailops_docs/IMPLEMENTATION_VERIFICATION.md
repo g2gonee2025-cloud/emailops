@@ -311,7 +311,7 @@ def _norm_vertex_model_name(raw: Optional[str]) -> str:
     """Normalize common Vertex model name variants"""
     model = (raw or "").strip()
     lower = model.lower()
-    if lower == "gemini-embedded-001":
+    if lower == "gemini-embedding-001":
         return "gemini-embedding-001"  # Fix common typo
     return model
 ```

@@ -10,7 +10,7 @@ setup(
     name="emailops",
     version="0.1.0",
     packages=find_packages(include=["emailops", "emailops.*"]),
-    python_requires=">=3.10",
+    python_requires=">=3.11",
     install_requires=[
         "numpy>=1.20.0",
         "google-cloud-aiplatform>=1.35.0",

@@ -10,6 +10,7 @@ def test_prepare_index_units():
     try:
         # Test import from text_chunker
         from emailops.llm_text_chunker import prepare_index_units
+
         print("✅ Test 1a: prepare_index_units imported from text_chunker")
 
         # Test import through email_indexer
@@ -17,19 +18,21 @@ def test_prepare_index_units():
 
         # Test function execution
         chunks = prepare_index_units(
-            'Sample email text for testing purposes',
-            'test_id',
-            '/test/path',
-            'Test Subject',
-            '2024-01-01',
+            "Sample email text for testing purposes",
+            "test_id",
+            "/test/path",
+            "Test Subject",
+            "2024-01-01",
             chunk_size=50,
-            chunk_overlap=10
+            chunk_overlap=10,
         )
         print(f"✅ Test 1c: Function executed, created {len(chunks)} chunks")
 
         # Verify chunk structure
-        if chunks and 'id' in chunks[0] and 'text' in chunks[0]:
-            print(f"✅ Test 1d: Chunk structure correct, first chunk ID: {chunks[0]['id']}")
+        if chunks and "id" in chunks[0] and "text" in chunks[0]:
+            print(
+                f"✅ Test 1d: Chunk structure correct, first chunk ID: {chunks[0]['id']}"
+            )
         else:
             print("❌ Test 1d: Chunk structure incorrect")
             return False
@@ -40,33 +43,39 @@ def test_prepare_index_units():
         traceback.print_exc()
         return False
 
+
 def test_find_conv_ids_by_subject():
     """Test 2: Verify _find_conv_ids_by_subject function"""
     try:
         from emailops.feature_search_draft import _find_conv_ids_by_subject
+
         print("✅ Test 2a: _find_conv_ids_by_subject imported")
 
         # Test with sample data
         test_mapping = [
-            {'conv_id': 'conv1', 'subject': 'Invoice for project'},
-            {'conv_id': 'conv2', 'subject': 'Meeting notes'},
-            {'conv_id': 'conv3', 'subject': 'Another invoice'}
+            {"conv_id": "conv1", "subject": "Invoice for project"},
+            {"conv_id": "conv2", "subject": "Meeting notes"},
+            {"conv_id": "conv3", "subject": "Another invoice"},
         ]
 
         # Test case-insensitive search
-        result = _find_conv_ids_by_subject(test_mapping, 'invoice')
-        if result == {'conv1', 'conv3'}:
-            print(f"✅ Test 2b: Function works correctly, found {len(result)} conversations")
+        result = _find_conv_ids_by_subject(test_mapping, "invoice")
+        if result == {"conv1", "conv3"}:
+            print(
+                f"✅ Test 2b: Function works correctly, found {len(result)} conversations"
+            )
         else:
             print(f"❌ Test 2b: Unexpected result: {result}")
             return False
 
         # Test empty search
-        result_empty = _find_conv_ids_by_subject(test_mapping, '')
+        result_empty = _find_conv_ids_by_subject(test_mapping, "")
         if result_empty == set():
             print("✅ Test 2c: Empty search returns empty set")
         else:
-            print(f"❌ Test 2c: Empty search should return empty set, got: {result_empty}")
+            print(
+                f"❌ Test 2c: Empty search should return empty set, got: {result_empty}"
+            )
             return False
 
         return True
@@ -75,53 +84,61 @@ def test_find_conv_ids_by_subject():
         traceback.print_exc()
         return False
 
+
 def test_format_analysis_as_markdown():
     """Test 3: Verify format_analysis_as_markdown function"""
     try:
         from emailops.feature_summarize import format_analysis_as_markdown
+
         print("✅ Test 3a: format_analysis_as_markdown imported")
 
         # Test with minimal analysis structure
         test_analysis = {
-            'category': 'test',
-            'subject': 'Test Email Thread',
-            'summary': ['Point 1', 'Point 2', 'Point 3'],
-            'participants': [
-                {'name': 'John Doe', 'role': 'sender', 'email': 'john@example.com', 'tone': 'professional', 'stance': 'neutral'}
+            "category": "test",
+            "subject": "Test Email Thread",
+            "summary": ["Point 1", "Point 2", "Point 3"],
+            "participants": [
+                {
+                    "name": "John Doe",
+                    "role": "sender",
+                    "email": "john@example.com",
+                    "tone": "professional",
+                    "stance": "neutral",
+                }
             ],
-            'facts_ledger': {
-                'explicit_asks': [],
-                'commitments_made': [],
-                'unknowns': ['Missing information'],
-                'forbidden_promises': [],
-                'key_dates': []
+            "facts_ledger": {
+                "explicit_asks": [],
+                "commitments_made": [],
+                "unknowns": ["Missing information"],
+                "forbidden_promises": [],
+                "key_dates": [],
             },
-            'next_actions': [],
-            'risk_indicators': ['Risk 1'],
-            '_metadata': {
-                'analyzed_at': '2024-01-01T00:00:00Z',
-                'provider': 'vertex',
-                'completeness_score': 85,
-                'version': '2.0'
-            }
+            "next_actions": [],
+            "risk_indicators": ["Risk 1"],
+            "_metadata": {
+                "analyzed_at": "2024-01-01T00:00:00Z",
+                "provider": "vertex",
+                "completeness_score": 85,
+                "version": "2.0",
+            },
         }
 
         result = format_analysis_as_markdown(test_analysis)
 
         # Verify markdown contains expected sections
-        if '# Email Thread Analysis' in result:
+        if "# Email Thread Analysis" in result:
             print("✅ Test 3b: Markdown contains header")
         else:
             print("❌ Test 3b: Missing header in markdown")
             return False
 
-        if 'Test Email Thread' in result:
+        if "Test Email Thread" in result:
             print("✅ Test 3c: Markdown contains subject")
         else:
             print("❌ Test 3c: Missing subject in markdown")
             return False
 
-        if 'John Doe' in result:
+        if "John Doe" in result:
             print("✅ Test 3d: Markdown contains participant")
         else:
             print("❌ Test 3d: Missing participant in markdown")
@@ -135,6 +152,7 @@ def test_format_analysis_as_markdown():
         traceback.print_exc()
         return False
 
+
 def test_qdrant_import():
     """Test 4: Verify corrected import path for Qdrant client"""
     try:
@@ -146,6 +164,7 @@ def test_qdrant_import():
             from emailops.qdrant_client import (
                 QdrantVectorStore as OldImport,  # noqa: F401
             )
+
             print("⚠️  Test 4c: Old import path still works (might have duplicate file)")
         except ImportError:
             print("✅ Test 4c: Old import path correctly fails")
@@ -155,6 +174,7 @@ def test_qdrant_import():
         print(f"❌ Test 4 failed: {e}")
         traceback.print_exc()
         return False
+
 
 def main():
     """Run all tests and report results"""
@@ -166,7 +186,7 @@ def main():
         ("prepare_index_units function", test_prepare_index_units),
         ("_find_conv_ids_by_subject function", test_find_conv_ids_by_subject),
         ("format_analysis_as_markdown function", test_format_analysis_as_markdown),
-        ("Qdrant import path", test_qdrant_import)
+        ("Qdrant import path", test_qdrant_import),
     ]
 
     results = []
@@ -198,6 +218,7 @@ def main():
         print("❌ SOME FIXES FAILED - Review the output above")
         print("=" * 60)
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

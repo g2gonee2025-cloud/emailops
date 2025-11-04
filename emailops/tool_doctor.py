@@ -83,18 +83,16 @@ def _try_import(import_name: str) -> tuple[bool, str]:
         Tuple of (success: bool, error_type: str)
     """
 
-
-
     try:
         importlib.import_module(import_name)
-        return True, 'ok'
+        return True, "ok"
     except (ImportError, ModuleNotFoundError):
         # Module not installed
-        return False, 'not_installed'
+        return False, "not_installed"
     except Exception as e:
         # Module installed but broken (import-time error)
         logger.warning("Module '%s' is installed but broken: %s", import_name, e)
-        return False, 'broken'
+        return False, "broken"
 
 
 def _requirements_file_candidates() -> list[Path]:
@@ -128,7 +126,9 @@ def _install_packages(packages: list[str], *, timeout: int) -> bool:
                 return False
 
         cmd = [sys.executable, "-m", "pip", "install", *packages]
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, shell=False)
+        result = subprocess.run(
+            cmd, capture_output=True, text=True, timeout=timeout, shell=False
+        )
         if result.returncode == 0:
             logger.info("Successfully installed packages: %s", packages)
             return True
@@ -192,7 +192,9 @@ class DepReport:
     installed: list[str]
 
 
-def check_and_install_dependencies(provider: str, auto_install: bool = False, *, pip_timeout: int = 300) -> DepReport:
+def check_and_install_dependencies(
+    provider: str, auto_install: bool = False, *, pip_timeout: int = 300
+) -> DepReport:
     provider_n = _normalize_provider(provider)
     critical, optional = _packages_for_provider(provider_n)
 
@@ -203,16 +205,18 @@ def check_and_install_dependencies(provider: str, auto_install: bool = False, *,
             success, error_type = _try_import(_PKG_IMPORT_MAP.get(pkg, pkg))
             if success:
                 result.append(pkg)
-            elif error_type == 'broken':
+            elif error_type == "broken":
                 # HIGH #12: Report broken packages separately
-                logger.error("Package '%s' is installed but broken - may need reinstall", pkg)
+                logger.error(
+                    "Package '%s' is installed but broken - may need reinstall", pkg
+                )
         return result
 
     def missing(pkgs: list[str]) -> list[str]:
         result = []
         for pkg in pkgs:
             success, error_type = _try_import(_PKG_IMPORT_MAP.get(pkg, pkg))
-            if not success and error_type == 'not_installed':
+            if not success and error_type == "not_installed":
                 result.append(pkg)
             # Note: 'broken' packages are NOT in missing (they're installed but broken)
         return result
@@ -222,31 +226,44 @@ def check_and_install_dependencies(provider: str, auto_install: bool = False, *,
     installed = present(critical + optional)
 
     if missing_critical:
-        logger.error("Missing critical packages for %s: %s", provider_n, missing_critical)
+        logger.error(
+            "Missing critical packages for %s: %s", provider_n, missing_critical
+        )
         if auto_install:
             if _install_packages(missing_critical, timeout=pip_timeout):
                 # Recompute after install
                 missing_critical = missing(critical)
                 installed = present(critical + optional)
                 if missing_critical:
-                    logger.error("Some critical packages still missing after install: %s", missing_critical)
+                    logger.error(
+                        "Some critical packages still missing after install: %s",
+                        missing_critical,
+                    )
             else:
-                logger.error("Failed to install critical packages: %s", missing_critical)
+                logger.error(
+                    "Failed to install critical packages: %s", missing_critical
+                )
         else:
-            logger.info("Run 'pip install %s' to install missing packages", " ".join(missing_critical))
+            logger.info(
+                "Run 'pip install %s' to install missing packages",
+                " ".join(missing_critical),
+            )
     else:
         logger.info("All critical packages for %s are available", provider_n)
 
     if missing_optional:
         logger.warning("Missing optional packages: %s", missing_optional)
         if auto_install and _install_packages(missing_optional, timeout=pip_timeout):
-                missing_optional = missing(optional)
-                installed = present(critical + optional)
+            missing_optional = missing(optional)
+            installed = present(critical + optional)
     else:
         logger.info("All optional packages are available")
 
     return DepReport(
-        provider=provider_n, missing_critical=missing_critical, missing_optional=missing_optional, installed=installed
+        provider=provider_n,
+        missing_critical=missing_critical,
+        missing_optional=missing_optional,
+        installed=installed,
     )
 
 
@@ -255,17 +272,16 @@ def check_and_install_dependencies(provider: str, auto_install: bool = False, *,
 # -------------------------
 
 
-def _load_mapping(index_dir: Path) -> list[dict[str, Any]]:
-
-    return read_mapping(index_dir)
 
 
 def _get_index_statistics(index_dir: Path) -> dict[str, Any]:
     stats: dict[str, Any] = {}
     try:
-        mapping = _load_mapping(index_dir)
+        mapping = read_mapping(index_dir)
         stats["num_documents"] = len(mapping)
-        stats["num_conversations"] = len({m.get("conv_id") for m in mapping if m.get("conv_id")})
+        stats["num_conversations"] = len(
+            {m.get("conv_id") for m in mapping if m.get("conv_id")}
+        )
         stats["total_chars"] = sum(len(m.get("snippet", "")) for m in mapping)
     except Exception as e:
         logger.warning("Failed to load mapping for statistics: %s", e)
@@ -276,13 +292,14 @@ def _get_index_statistics(index_dir: Path) -> dict[str, Any]:
 def _summarize_index_compat(index_dir: Path, provider: str) -> tuple[bool, str | None]:
     """Return (compat_ok, indexed_provider)."""
     try:
-
         meta = load_index_metadata(index_dir)
         indexed_provider = None
         if meta:
             indexed_provider = str(meta.get("provider", "")).lower() or None
             if indexed_provider and indexed_provider != _normalize_provider(provider):
-                logger.warning("Index built with %s, but using %s", indexed_provider, provider)
+                logger.warning(
+                    "Index built with %s, but using %s", indexed_provider, provider
+                )
                 return False, indexed_provider
         return True, indexed_provider
     except Exception as e:
@@ -292,7 +309,6 @@ def _summarize_index_compat(index_dir: Path, provider: str) -> tuple[bool, str |
 
 def _probe_embeddings(provider: str) -> tuple[bool, int | None]:
     try:
-
         # Try a small embedding to test
         result = embed_texts(["test"], provider=_normalize_provider(provider))
         if result is not None and len(result) > 0:
@@ -320,16 +336,35 @@ def _configure_logging(verbose: bool) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="EmailOps system diagnostics and setup")
+    parser = argparse.ArgumentParser(
+        description="EmailOps system diagnostics and setup"
+    )
     parser.add_argument("--root", default=".", help="Project root directory")
-    parser.add_argument("--provider", default="vertex", help="Embedding provider to check (aliases: gcp, vertexai, hf)")
-    parser.add_argument("--auto-install", action="store_true", help="Automatically install missing packages")
-    parser.add_argument("--check-index", action="store_true", help="Check index health")
-    parser.add_argument("--check-embeddings", action="store_true", help="Test embedding functionality")
-    parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON only")
-    parser.add_argument("--verbose", action="store_true", help="Verbose logging (DEBUG)")
     parser.add_argument(
-        "--pip-timeout", type=int, default=None, help="pip install timeout in seconds (default 300 or $PIP_TIMEOUT)"
+        "--provider",
+        default="vertex",
+        help="Embedding provider to check (aliases: gcp, vertexai, hf)",
+    )
+    parser.add_argument(
+        "--auto-install",
+        action="store_true",
+        help="Automatically install missing packages",
+    )
+    parser.add_argument("--check-index", action="store_true", help="Check index health")
+    parser.add_argument(
+        "--check-embeddings", action="store_true", help="Test embedding functionality"
+    )
+    parser.add_argument(
+        "--json", action="store_true", help="Emit machine-readable JSON only"
+    )
+    parser.add_argument(
+        "--verbose", action="store_true", help="Verbose logging (DEBUG)"
+    )
+    parser.add_argument(
+        "--pip-timeout",
+        type=int,
+        default=None,
+        help="pip install timeout in seconds (default 300 or $PIP_TIMEOUT)",
     )
 
     args = parser.parse_args()
@@ -338,7 +373,11 @@ def main() -> None:
     root = Path(args.root).expanduser().resolve()
     index_dir = root / INDEX_DIRNAME_DEFAULT
     provider = _normalize_provider(args.provider)
-    pip_timeout = args.pip_timeout if args.pip_timeout is not None else int(os.getenv("PIP_TIMEOUT", "300"))
+    pip_timeout = (
+        args.pip_timeout
+        if args.pip_timeout is not None
+        else int(os.getenv("PIP_TIMEOUT", "300"))
+    )
 
     # Detect requirements.txt when present
     req_file = _find_requirements_file()
@@ -350,7 +389,9 @@ def main() -> None:
         print("=" * 50)
 
     # Dependency checks
-    dep_report = check_and_install_dependencies(provider, args.auto_install, pip_timeout=pip_timeout)
+    dep_report = check_and_install_dependencies(
+        provider, args.auto_install, pip_timeout=pip_timeout
+    )
 
     dep_error = bool(dep_report.missing_critical)
 
@@ -378,7 +419,11 @@ def main() -> None:
             if not args.json:
                 print("\nChecking index health...")
             stats = _get_index_statistics(index_dir)
-            index_info["stats"] = stats if "error" not in stats else {k: v for k, v in stats.items() if k != "error"}
+            index_info["stats"] = (
+                stats
+                if "error" not in stats
+                else {k: v for k, v in stats.items() if k != "error"}
+            )
             if "error" in stats:
                 index_error = True
                 index_info["error"] = stats["error"]
@@ -399,7 +444,9 @@ def main() -> None:
                 else:
                     index_error = True
                     if indexed_provider:
-                        print(f"Index compatibility: FAIL (indexed={indexed_provider}, using={provider})")
+                        print(
+                            f"Index compatibility: FAIL (indexed={indexed_provider}, using={provider})"
+                        )
                     else:
                         print("Index compatibility: FAIL")
 

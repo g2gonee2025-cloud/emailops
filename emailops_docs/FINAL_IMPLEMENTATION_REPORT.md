@@ -171,7 +171,7 @@ The current codebase fully implements the Vertex-only architecture as specified:
 
 | Feature | Implementation | Coverage |
 |---------|----------------|----------|
-| Model normalization | `gemini-embedded-001` → `gemini-embedding-001` | Typo correction |
+| Model normalization | `gemini-embedding-001` → `gemini-embedding-001` | Typo correction |
 | Dimension inference | Gemini: 3072, text-embedding: 768, gecko: 768 | 5 model families |
 | Provider aliases | `{vertex, vertexai, google-vertex, googlevertexai}` → `"vertex"` | 4 variants |
 | Fully-qualified names | Extracts last segment: `projects/.../models/gemini-...` | Resource paths |

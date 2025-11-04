@@ -4,25 +4,23 @@ Consolidated testing utilities for EmailOps.
 Combines all testing and verification functionality.
 """
 
-from typing import ClassVar
-from pathlib import Path
-from typing import Any
+import argparse
 import json
 import logging
 import os
 import sys
-
 from datetime import datetime
+from pathlib import Path
+from typing import Any, ClassVar
+
+import vertexai
 from dotenv import load_dotenv
 from google import genai
 from google.oauth2 import service_account
-import argparse
-import vertexai
 
 # Setup logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -30,31 +28,28 @@ logger = logging.getLogger(__name__)
 class DependencyVerifier:
     """Verify Python dependencies and imports."""
 
-
     # Critical dependencies to check
     DEPENDENCIES: ClassVar[list[str]] = [
         # Google Cloud dependencies
-        'google.cloud.aiplatform',
-        'google.auth',
-        'google.api_core',
-        'google.generativeai',
-
+        "google.cloud.aiplatform",
+        "google.auth",
+        "google.api_core",
+        "google.generativeai",
         # Core dependencies
-        'streamlit',
-        'qdrant_client',
-        'pandas',
-        'numpy',
-        'pydantic',
-        'langchain',
-        'openai',
-
+        "streamlit",
+        "qdrant_client",
+        "pandas",
+        "numpy",
+        "pydantic",
+        "langchain",
+        "openai",
         # Other important packages
-        'requests',
-        'pytest',
-        'dotenv',
-        'yaml',
-        'tiktoken',
-        'tqdm',
+        "requests",
+        "pytest",
+        "dotenv",
+        "yaml",
+        "tiktoken",
+        "tqdm",
     ]
 
     @staticmethod
@@ -73,11 +68,11 @@ class DependencyVerifier:
         """Get the version of an installed module."""
         try:
             module = __import__(module_name)
-            if hasattr(module, '__version__'):
+            if hasattr(module, "__version__"):
                 return module.__version__
-            elif hasattr(module, 'version'):
+            elif hasattr(module, "version"):
                 return module.version
-            elif hasattr(module, 'VERSION'):
+            elif hasattr(module, "VERSION"):
                 return module.VERSION
             else:
                 return "Version unknown"
@@ -134,8 +129,8 @@ class DependencyVerifier:
                 "total_checked": len(self.DEPENDENCIES),
                 "successful": len(self.DEPENDENCIES) - len(failed_imports),
                 "failed": len(failed_imports),
-                "failed_list": failed_imports
-            }
+                "failed_list": failed_imports,
+            },
         }
 
 
@@ -144,25 +139,26 @@ class GenAITester:
 
     def __init__(self):
         load_dotenv()
-        self.project = os.getenv('GOOGLE_CLOUD_PROJECT')
-        self.location = os.getenv('GOOGLE_CLOUD_LOCATION', 'global')
-        self.credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+        self.project = os.getenv("GOOGLE_CLOUD_PROJECT")
+        self.location = os.getenv("GOOGLE_CLOUD_LOCATION", "global")
+        self.credentials_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 
     def test_environment(self) -> bool:
         """Check environment variables."""
         print("1. Checking environment variables...")
         required_vars = [
-            'GOOGLE_CLOUD_PROJECT',
-            'GOOGLE_CLOUD_LOCATION',
-            'GOOGLE_APPLICATION_CREDENTIALS',
+            "GOOGLE_CLOUD_PROJECT",
+            "GOOGLE_CLOUD_LOCATION",
+            "GOOGLE_APPLICATION_CREDENTIALS",
         ]
 
         all_set = True
         for var in required_vars:
             value = os.getenv(var)
             if value:
-                if var == 'GOOGLE_APPLICATION_CREDENTIALS':
-                    if os.path.exists(value):
+                if var == "GOOGLE_APPLICATION_CREDENTIALS":
+                    credential_path = Path(value)
+                    if credential_path.exists():
                         print(f"   ✓ {var}: {value} (file exists)")
                     else:
                         print(f"   ✗ {var}: {value} (file NOT found)")
@@ -189,14 +185,11 @@ class GenAITester:
         """Test Vertex AI initialization."""
         print("\n3. Testing Vertex AI initialization...")
         try:
-
             credentials = service_account.Credentials.from_service_account_file(
                 self.credentials_path
             )
             vertexai.init(
-                project=self.project,
-                location=self.location,
-                credentials=credentials
+                project=self.project, location=self.location, credentials=credentials
             )
             print("   ✓ Vertex AI initialized successfully")
             return True
@@ -208,16 +201,12 @@ class GenAITester:
         """Test text generation."""
         print("\n4. Testing text generation...")
         try:
-
             client = genai.Client(
-                vertexai=True,
-                project=self.project,
-                location=self.location
+                vertexai=True, project=self.project, location=self.location
             )
 
             response = client.models.generate_content(
-                model="gemini-2.5-pro",
-                contents="Say 'Hello, authentication works!'"
+                model="gemini-2.5-pro", contents="Say 'Hello, authentication works!'"
             )
 
             if response and response.text:
@@ -235,21 +224,17 @@ class GenAITester:
         """Test embedding generation."""
         print("\n5. Testing embedding generation...")
         try:
-
             client = genai.Client(
-                vertexai=True,
-                project=self.project,
-                location=self.location
+                vertexai=True, project=self.project, location=self.location
             )
 
             response = client.models.embed_content(
-                model="gemini-embedding-001",
-                contents=["test embedding"]
+                model="gemini-embedding-001", contents=["test embedding"]
             )
 
             if response and response.embeddings:
                 embedding = response.embeddings[0]
-                if hasattr(embedding, 'values') and embedding.values:
+                if hasattr(embedding, "values") and embedding.values:
                     dim = len(embedding.values)
                     print(f"   ✓ Embedding successful: dimension {dim}")
                     return True
@@ -271,7 +256,7 @@ class GenAITester:
             self.test_genai_import,
             self.test_vertex_init,
             self.test_generation,
-            self.test_embedding
+            self.test_embedding,
         ]
 
         results = []
@@ -312,61 +297,108 @@ class CredentialTester:
 
         try:
             # Read credential file
-            with cred_path.open('r') as f:
+            with cred_path.open("r") as f:
                 cred_data = json.load(f)
 
-            project_id = cred_data.get('project_id', 'unknown')
-            client_email = cred_data.get('client_email', 'unknown')
+            project_id = cred_data.get("project_id", "unknown")
+            client_email = cred_data.get("client_email", "unknown")
 
             # Validate required fields
-            required_fields = ['type', 'project_id', 'private_key_id', 'private_key', 'client_email']
+            required_fields = [
+                "type",
+                "project_id",
+                "private_key_id",
+                "private_key",
+                "client_email",
+            ]
             missing = [f for f in required_fields if f not in cred_data]
             if missing:
-                return project_id, False, f"Missing fields: {missing}", {'client_email': client_email}
+                return (
+                    project_id,
+                    False,
+                    f"Missing fields: {missing}",
+                    {"client_email": client_email},
+                )
 
-            if cred_data.get('type') != 'service_account':
-                return project_id, False, "Not a service account file", {'client_email': client_email}
+            if cred_data.get("type") != "service_account":
+                return (
+                    project_id,
+                    False,
+                    "Not a service account file",
+                    {"client_email": client_email},
+                )
 
             # Set environment for this test
-            os.environ['GCP_PROJECT'] = project_id
-            os.environ['GOOGLE_CLOUD_PROJECT'] = project_id
-            os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = str(cred_path)
+            os.environ["GCP_PROJECT"] = project_id
+            os.environ["GOOGLE_CLOUD_PROJECT"] = project_id
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(cred_path)
 
             # Try to initialize and make API call
             try:
+                credentials = service_account.Credentials.from_service_account_file(
+                    str(cred_path)
+                )
+                vertexai.init(
+                    project=project_id, location="global", credentials=credentials
+                )
 
-                credentials = service_account.Credentials.from_service_account_file(str(cred_path))
-                vertexai.init(project=project_id, location="global", credentials=credentials)
-
-                client = genai.Client(vertexai=True, project=project_id, location="global")
+                client = genai.Client(
+                    vertexai=True, project=project_id, location="global"
+                )
 
                 # Make test embedding call
                 resp = client.models.embed_content(
-                    model="gemini-embedding-001",
-                    contents=["test embedding call"]
+                    model="gemini-embedding-001", contents=["test embedding call"]
                 )
 
                 if resp and resp.embeddings and len(resp.embeddings) == 1:
                     embedding = resp.embeddings[0]
-                    if hasattr(embedding, 'values') and embedding.values:
+                    if hasattr(embedding, "values") and embedding.values:
                         dim = len(embedding.values)
-                        return project_id, True, f"SUCCESS - Dimension: {dim}", {
-                            'client_email': client_email,
-                            'dimension': dim
-                        }
+                        return (
+                            project_id,
+                            True,
+                            f"SUCCESS - Dimension: {dim}",
+                            {"client_email": client_email, "dimension": dim},
+                        )
 
-                return project_id, False, "Empty/invalid embedding response", {'client_email': client_email}
+                return (
+                    project_id,
+                    False,
+                    "Empty/invalid embedding response",
+                    {"client_email": client_email},
+                )
 
             except Exception as api_error:
                 error_msg = str(api_error)
                 if "403" in error_msg or "permission" in error_msg.lower():
-                    return project_id, False, "PERMISSION DENIED", {'client_email': client_email}
+                    return (
+                        project_id,
+                        False,
+                        "PERMISSION DENIED",
+                        {"client_email": client_email},
+                    )
                 elif "429" in error_msg or "quota" in error_msg.lower():
-                    return project_id, False, "QUOTA EXCEEDED", {'client_email': client_email}
+                    return (
+                        project_id,
+                        False,
+                        "QUOTA EXCEEDED",
+                        {"client_email": client_email},
+                    )
                 elif "not found" in error_msg.lower():
-                    return project_id, False, "PROJECT NOT FOUND", {'client_email': client_email}
+                    return (
+                        project_id,
+                        False,
+                        "PROJECT NOT FOUND",
+                        {"client_email": client_email},
+                    )
                 else:
-                    return project_id, False, f"API ERROR: {error_msg[:100]}", {'client_email': client_email}
+                    return (
+                        project_id,
+                        False,
+                        f"API ERROR: {error_msg[:100]}",
+                        {"client_email": client_email},
+                    )
 
         except json.JSONDecodeError:
             return "", False, "Invalid JSON", {}
@@ -402,7 +434,7 @@ class CredentialTester:
                 failed_count += 1
                 print(f"❌ {project_id or 'UNKNOWN'}")
                 print(f"   └─ {message}")
-                if details.get('client_email'):
+                if details.get("client_email"):
                     print(f"   └─ Client: {details['client_email']}")
 
         print("\n" + "=" * 60)
@@ -410,7 +442,9 @@ class CredentialTester:
 
         if working_count > 0:
             print("✅ SYSTEM STATUS: Ready for production use!")
-            print("🔧 Working credentials found - EmailOps can embed texts and generate responses")
+            print(
+                "🔧 Working credentials found - EmailOps can embed texts and generate responses"
+            )
         else:
             print("❌ SYSTEM STATUS: No working credentials - Setup required")
             print("🔧 Check GCP project permissions and API enablement")
@@ -484,7 +518,7 @@ class LLMRuntimeVerifier:
         print("🔍 Verifying LLM runtime fixes...\n")
         issues = LLMRuntimeVerifier.verify_fixes()
 
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         if issues:
             print("❌ ISSUES FOUND:")
             for issue in issues:
@@ -536,9 +570,8 @@ def main():
         if tester.test_all_credentials() != 0:
             exit_code = 1
 
-    if args.command in ["runtime", "all"]:
-        if LLMRuntimeVerifier.verify_all() != 0:
-            exit_code = 1
+    if args.command in ["runtime", "all"] and LLMRuntimeVerifier.verify_all() != 0:
+        exit_code = 1
 
     return exit_code
 

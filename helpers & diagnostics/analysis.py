@@ -5,24 +5,25 @@ Combines functionality from run_local_analysis.py, create_production_packages.py
 generate_remediation_packages.py, and batch_prompt.py.
 """
 
-from pathlib import Path
-from typing import Any
+import argparse
 import asyncio
 import json
 import os
 import re
-import sys
-
-            from google import genai
-    import argparse
-from datetime import datetime
 import shutil
 import subprocess
+import sys
 import zipfile
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+from google import genai
 
 # -------------------------
 # Batch Analysis with GenAI
 # -------------------------
+
 
 class BatchAnalyzer:
     """Batch analysis using Google GenAI."""
@@ -34,31 +35,32 @@ class BatchAnalyzer:
         self.embed_model = "gemini-embedding-001"
         self.output_dir = Path("analysis_results")
 
-    async def analyze_file(self, file_path: Path, client, prompt_template: str) -> dict[str, Any]:
+    async def analyze_file(
+        self, file_path: Path, client, prompt_template: str
+    ) -> dict[str, Any]:
         """Analyze a single file with GenAI."""
         print(f"[STARTING] Analysis for {file_path}")
         result = {
             "file": str(file_path),
             "success": False,
             "analysis": None,
-            "error": None
+            "error": None,
         }
 
         try:
-            file_content = file_path.read_text(encoding='utf-8')
+            file_content = file_path.read_text(encoding="utf-8")
             prompt = prompt_template.format(file_content=file_content)
 
             # Generate content using Gemini
 
             response = await client.aio.models.generate_content(
-                model=self.model_name,
-                contents=prompt
+                model=self.model_name, contents=prompt
             )
 
             if response and response.text:
                 self.output_dir.mkdir(exist_ok=True)
                 output_filename = self.output_dir / f"{file_path.stem}.md"
-                output_filename.write_text(response.text, encoding='utf-8')
+                output_filename.write_text(response.text, encoding="utf-8")
 
                 result["success"] = True
                 result["analysis"] = response.text
@@ -73,10 +75,14 @@ class BatchAnalyzer:
 
         return result
 
-    async def batch_analyze(self, files: list[Path], prompt_template: str, max_concurrent: int = 3) -> list[dict]:
+    async def batch_analyze(
+        self, files: list[Path], prompt_template: str, max_concurrent: int = 3
+    ) -> list[dict]:
         """Analyze multiple files concurrently."""
         try:
-            client = genai.Client(vertexai=True, project=self.project, location=self.location)
+            client = genai.Client(
+                vertexai=True, project=self.project, location=self.location
+            )
         except ImportError:
             print("Error: google-genai not installed")
             return []
@@ -89,7 +95,7 @@ class BatchAnalyzer:
         # Run with limited concurrency
         results = []
         for i in range(0, len(tasks), max_concurrent):
-            batch = tasks[i:i + max_concurrent]
+            batch = tasks[i : i + max_concurrent]
             batch_results = await asyncio.gather(*batch)
             results.extend(batch_results)
 
@@ -99,6 +105,7 @@ class BatchAnalyzer:
 # -------------------------
 # Local Code Analysis
 # -------------------------
+
 
 class LocalCodeAnalyzer:
     """Run local code quality analysis without SonarQube."""
@@ -128,13 +135,13 @@ class LocalCodeAnalyzer:
         }
 
         missing = []
-        for tool_name, package in tools.items():
+        for _tool_name, package in tools.items():
             try:
                 result = subprocess.run(
                     [sys.executable, "-m", "pip", "show", package],
                     capture_output=True,
                     text=True,
-                    timeout=10
+                    timeout=10,
                 )
                 if result.returncode != 0:
                     missing.append(package)
@@ -145,9 +152,9 @@ class LocalCodeAnalyzer:
             print(f"Installing missing tools: {', '.join(missing)}")
             try:
                 subprocess.run(
-                    [sys.executable, "-m", "pip", "install"] + missing,
+                    [sys.executable, "-m", "pip", "install", *missing],
                     check=True,
-                    timeout=300
+                    timeout=300,
                 )
                 print("✓ Tools installed successfully\n")
             except Exception as e:
@@ -167,7 +174,9 @@ class LocalCodeAnalyzer:
 
         try:
             cmd = [
-                sys.executable, "-m", "pylint",
+                sys.executable,
+                "-m",
+                "pylint",
                 "--output-format=json",
                 "--disable=C0103,C0114,C0115,C0116",
                 "--max-line-length=120",
@@ -211,7 +220,9 @@ class LocalCodeAnalyzer:
 
         try:
             cmd = [
-                sys.executable, "-m", "flake8",
+                sys.executable,
+                "-m",
+                "flake8",
                 "--max-line-length=120",
                 "--extend-ignore=E203,W503,E501",
                 "--format=%(path)s:%(row)d:%(col)d: %(code)s %(text)s",
@@ -246,9 +257,12 @@ class LocalCodeAnalyzer:
 
         try:
             cmd = [
-                sys.executable, "-m", "bandit",
+                sys.executable,
+                "-m",
+                "bandit",
                 "-r",
-                "-f", "json",
+                "-f",
+                "json",
             ] + [str(f) for f in files]
 
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
@@ -272,9 +286,9 @@ class LocalCodeAnalyzer:
 
     def run_analysis(self) -> dict[str, Any]:
         """Run complete analysis."""
-        print("="*60)
+        print("=" * 60)
         print("EmailOps Local Code Quality Analysis")
-        print("="*60)
+        print("=" * 60)
         print()
 
         project_dir = Path.cwd()
@@ -310,25 +324,31 @@ class LocalCodeAnalyzer:
         results["bandit"] = self.run_bandit(existing_files)
 
         # Calculate totals
-        results["total_issues"] = sum([
-            results.get("pylint", {}).get("issue_count", 0),
-            results.get("flake8", {}).get("issue_count", 0),
-        ])
+        results["total_issues"] = sum(
+            [
+                results.get("pylint", {}).get("issue_count", 0),
+                results.get("flake8", {}).get("issue_count", 0),
+            ]
+        )
         results["security_issues"] = results.get("bandit", {}).get("issue_count", 0)
 
         # Save JSON report
         json_output = Path("analysis_results.json")
-        json_output.write_text(json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
+        json_output.write_text(
+            json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
         print(f"\n✓ JSON report saved to: {json_output}")
 
         # Print summary
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("Analysis Summary")
-        print("="*60)
-        print(f"Pylint Score:        {results.get('pylint', {}).get('score', 'N/A')}/10.0")
+        print("=" * 60)
+        print(
+            f"Pylint Score:        {results.get('pylint', {}).get('score', 'N/A')}/10.0"
+        )
         print(f"Total Issues:        {results.get('total_issues', 0)}")
         print(f"Security Issues:     {results.get('security_issues', 0)}")
-        print("="*60)
+        print("=" * 60)
 
         return results
 
@@ -336,6 +356,7 @@ class LocalCodeAnalyzer:
 # -------------------------
 # Remediation Package Generator
 # -------------------------
+
 
 class RemediationPackageGenerator:
     """Generate remediation packages for EmailOps modules."""
@@ -347,15 +368,46 @@ class RemediationPackageGenerator:
         # Module dependencies
         self.module_dependencies = {
             "config.py": ["exceptions.py"],
-            "conversation_loader.py": ["file_utils.py", "processing_utils.py", "text_extraction.py", "utils.py"],
+            "conversation_loader.py": [
+                "file_utils.py",
+                "processing_utils.py",
+                "text_extraction.py",
+                "utils.py",
+            ],
             "doctor.py": ["index_metadata.py", "llm_client.py", "config.py"],
-            "email_indexer.py": ["index_metadata.py", "config.py", "llm_client.py", "text_chunker.py", "utils.py"],
+            "email_indexer.py": [
+                "index_metadata.py",
+                "config.py",
+                "llm_client.py",
+                "text_chunker.py",
+                "utils.py",
+            ],
             "llm_client.py": ["llm_runtime.py"],
-            "llm_runtime.py": ["config.py", "exceptions.py", "file_utils.py", "utils.py"],
-            "processor.py": ["config.py", "index_metadata.py", "search_and_draft.py", "summarize_email_thread.py"],
-            "search_and_draft.py": ["config.py", "index_metadata.py", "llm_client.py", "llm_runtime.py", "utils.py"],
+            "llm_runtime.py": [
+                "config.py",
+                "exceptions.py",
+                "file_utils.py",
+                "utils.py",
+            ],
+            "processor.py": [
+                "config.py",
+                "index_metadata.py",
+                "search_and_draft.py",
+                "summarize_email_thread.py",
+            ],
+            "search_and_draft.py": [
+                "config.py",
+                "index_metadata.py",
+                "llm_client.py",
+                "llm_runtime.py",
+                "utils.py",
+            ],
             "summarize_email_thread.py": ["llm_client.py", "utils.py"],
-            "utils.py": ["conversation_loader.py", "email_processing.py", "file_utils.py"],
+            "utils.py": [
+                "conversation_loader.py",
+                "email_processing.py",
+                "file_utils.py",
+            ],
             "validators.py": [],
         }
 
@@ -367,7 +419,7 @@ class RemediationPackageGenerator:
             if not doc_path.exists():
                 continue
 
-            content = doc_path.read_text(encoding='utf-8')
+            content = doc_path.read_text(encoding="utf-8")
 
             # Look for sections mentioning this module
             pattern1 = rf"(?:^|\n)##+ .*{re.escape(module_name)}.*?\n(.*?)(?=\n##+ |$)"
@@ -381,7 +433,9 @@ class RemediationPackageGenerator:
                     issues.append(f"From {doc_path.name}:\n{match.strip()}\n")
 
             for issue_id, issue_text in matches2:
-                issues.append(f"[{issue_id}] From {doc_path.name}:\n{issue_text.strip()}\n")
+                issues.append(
+                    f"[{issue_id}] From {doc_path.name}:\n{issue_text.strip()}\n"
+                )
 
         if not issues:
             return f"# No specific issues found for {module_name}\n"
@@ -414,7 +468,7 @@ class RemediationPackageGenerator:
 
         issues_content = self.extract_module_issues(module_name, analysis_docs)
         (package_dir / f"ISSUES_{module_name.replace('.py', '.md')}").write_text(
-            issues_content, encoding='utf-8'
+            issues_content, encoding="utf-8"
         )
 
         # Copy dependent modules
@@ -429,8 +483,8 @@ class RemediationPackageGenerator:
 
         # Create ZIP archive
         zip_path = self.output_dir / f"REMEDIATE_{module_name.replace('.py', '')}.zip"
-        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            for root, dirs, files in os.walk(package_dir):
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            for root, _dirs, files in os.walk(package_dir):
                 for file in files:
                     file_path = Path(root) / file
                     arcname = file_path.relative_to(package_dir)
@@ -448,9 +502,9 @@ class RemediationPackageGenerator:
         if modules is None:
             modules = list(self.module_dependencies.keys())
 
-        print("="*80)
+        print("=" * 80)
         print("EMAILOPS REMEDIATION PACKAGE GENERATOR")
-        print("="*80)
+        print("=" * 80)
         print()
         print(f"Generating {len(modules)} remediation packages...")
         print()
@@ -467,9 +521,9 @@ class RemediationPackageGenerator:
                 print(f"❌ Failed to create package for {module}: {e}")
 
         print()
-        print("="*80)
+        print("=" * 80)
         print(f"✅ COMPLETE: Generated {len(created_packages)}/{len(modules)} packages")
-        print("="*80)
+        print("=" * 80)
         print()
         print(f"Output directory: {self.output_dir.absolute()}")
 
@@ -480,16 +534,22 @@ class RemediationPackageGenerator:
 # Main CLI
 # -------------------------
 
+
 def main():
     """Main entry point with command-line interface."""
 
-    parser = argparse.ArgumentParser(description="Code analysis and package generation utilities")
+    parser = argparse.ArgumentParser(
+        description="Code analysis and package generation utilities"
+    )
     subparsers = parser.add_subparsers(dest="command", help="Commands")
 
     # Batch analysis command
     batch_parser = subparsers.add_parser("batch", help="Batch analyze files with GenAI")
     batch_parser.add_argument("--files", nargs="+", help="Files to analyze")
-    batch_parser.add_argument("--prompt", help="Prompt template", default="""
+    batch_parser.add_argument(
+        "--prompt",
+        help="Prompt template",
+        default="""
 As a Senior Software Engineer, please review the following code for quality, potential bugs, and adherence to best practices.
 Provide a detailed analysis and suggest specific improvements.
 
@@ -497,14 +557,19 @@ Here is the code:
 ---
 {file_content}
 ---
-""")
+""",
+    )
 
     # Local analysis command
     subparsers.add_parser("local", help="Run local code analysis")
 
     # Remediation command
-    remediate_parser = subparsers.add_parser("remediate", help="Generate remediation packages")
-    remediate_parser.add_argument("--modules", nargs="+", help="Specific modules to process")
+    remediate_parser = subparsers.add_parser(
+        "remediate", help="Generate remediation packages"
+    )
+    remediate_parser.add_argument(
+        "--modules", nargs="+", help="Specific modules to process"
+    )
 
     args = parser.parse_args()
 

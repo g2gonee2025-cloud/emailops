@@ -201,10 +201,10 @@ except Exception as e:
 ```python
 # emailops/index_metadata.py:132-142
 def _norm_vertex_model_name(raw: Optional[str]) -> str:
-    """Treat 'gemini-embedded-001' as alias of 'gemini-embedding-001'"""
+    """Treat 'gemini-embedding-001' as alias of 'gemini-embedding-001'"""
     model = (raw or "").strip()
     lower = model.lower()
-    if lower == "gemini-embedded-001":
+    if lower == "gemini-embedding-001":
         return "gemini-embedding-001"
     return model
 ```

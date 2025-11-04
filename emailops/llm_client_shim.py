@@ -1,4 +1,3 @@
-
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
@@ -76,36 +75,6 @@ def embed_texts(texts: Iterable[str], **kwargs: Any) -> Any:
     return _rt_attr("embed_texts")(texts, **kwargs)
 
 
-# MEDIUM #39: embed() function is redundant - use embed_texts() directly
-# Kept for backward compatibility but marked as deprecated
-def embed(texts: Iterable[str], **kwargs: Any) -> Any:
-    """
-    DEPRECATED: Use embed_texts() directly instead.
-    Alias for embed_texts(...) with additional validation.
-    This function will be removed in a future version.
-
-    Safety:
-    - Passing a single string is almost always a bug (str is an iterable of chars).
-      This will raise TypeError; wrap it in a list instead: embed([text]).
-    - To meet common provider expectations, this realizes non-list iterables into a list.
-      For very large streams/generators, chunk externally before calling.
-    """
-    import warnings
-    warnings.warn(
-        "embed() is deprecated. Use embed_texts() instead.",
-        DeprecationWarning,
-        stacklevel=2
-    )
-
-    if isinstance(texts, (str, bytes, bytearray, memoryview)):
-        raise TypeError(
-            "embed(texts) expects an iterable of strings, not a single string/bytes; "
-            "wrap the value in a list, e.g., embed([text])."
-        )
-    seq = list(texts)
-    if not all(isinstance(t, str) for t in seq):
-        raise TypeError("embed(texts) expects an iterable of str.")
-    return embed_texts(seq, **kwargs)
 
 
 # ---- Public API surface (dynamic) --------------------------------------------
@@ -115,8 +84,6 @@ _CORE_EXPORTS = [
     "complete_text",
     "complete_json",
     "embed_texts",
-    # Backwards compatibility
-    "embed",
     # Error class is resolved dynamically; see __getattr__("__all__").
     "LLMError",
 ]
@@ -169,7 +136,9 @@ def __getattr__(name: str) -> Any:  # PEP 562 - module-level getattr
     try:
         return getattr(_rt, name)
     except AttributeError as exc:
-        raise AttributeError(f"module 'emailops.llm_client' has no attribute '{name}'") from exc
+        raise AttributeError(
+            f"module 'emailops.llm_client' has no attribute '{name}'"
+        ) from exc
 
 
 def __dir__() -> list[str]:

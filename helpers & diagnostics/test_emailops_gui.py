@@ -26,6 +26,7 @@ def test_imports():
         print(f"✗ Unexpected error during import: {e}")
         return False
 
+
 def test_class_structure():
     """Test that all required classes exist."""
     print("\n" + "=" * 80)
@@ -33,9 +34,8 @@ def test_class_structure():
     print("=" * 80)
 
     try:
-
         # Check main classes
-        classes = ['EmailOpsApp', 'AppSettings', 'TaskController', 'QueueHandler']
+        classes = ["EmailOpsApp", "AppSettings", "TaskController", "QueueHandler"]
         for cls in classes:
             if hasattr(emailops_gui, cls):
                 print(f"✓ Class '{cls}' exists")
@@ -48,6 +48,7 @@ def test_class_structure():
         print(f"✗ Error checking classes: {e}")
         return False
 
+
 def test_app_methods():
     """Test that EmailOpsApp has all required methods."""
     print("\n" + "=" * 80)
@@ -55,25 +56,49 @@ def test_app_methods():
     print("=" * 80)
 
     try:
-
         required_methods = [
             # Menu and structure
-            '_build_menu', '_build_header', '_build_tabs',
+            "_build_menu",
+            "_build_header",
+            "_build_tabs",
             # Tab builders (11 tabs)
-            '_build_search_tab', '_build_reply_tab', '_build_fresh_tab',
-            '_build_chat_tab', '_build_conversations_tab', '_build_index_tab',
-            '_build_config_tab', '_build_diagnostics_tab', '_build_chunking_tab',
-            '_build_analyze_tab', '_build_log_tab',
+            "_build_search_tab",
+            "_build_reply_tab",
+            "_build_fresh_tab",
+            "_build_chat_tab",
+            "_build_conversations_tab",
+            "_build_index_tab",
+            "_build_config_tab",
+            "_build_diagnostics_tab",
+            "_build_chunking_tab",
+            "_build_analyze_tab",
+            "_build_log_tab",
             # Action handlers
-            '_on_search', '_on_draft_reply', '_on_draft_fresh', '_on_chat',
-            '_on_list_convs', '_on_build_index', '_on_chunk_text', '_on_analyze_thread',
+            "_on_search",
+            "_on_draft_reply",
+            "_on_draft_fresh",
+            "_on_chat",
+            "_on_list_convs",
+            "_on_build_index",
+            "_on_chunk_text",
+            "_on_analyze_thread",
             # Utility methods
-            '_save_settings', '_load_settings', '_sync_settings_from_ui',
-            '_set_status', '_drain_logs', '_show_about', '_show_docs',
+            "_save_settings",
+            "_load_settings",
+            "_sync_settings_from_ui",
+            "_set_status",
+            "_drain_logs",
+            "_show_about",
+            "_show_docs",
             # Diagnostic methods
-            '_run_diagnostics', '_check_deps', '_check_index', '_test_embeddings',
+            "_run_diagnostics",
+            "_check_deps",
+            "_check_index",
+            "_test_embeddings",
             # Config methods
-            '_apply_config', '_reset_config', '_view_config',
+            "_apply_config",
+            "_reset_config",
+            "_view_config",
         ]
 
         missing = []
@@ -96,6 +121,7 @@ def test_app_methods():
         traceback.print_exc()
         return False
 
+
 def test_app_instantiation():
     """Test that the app can be instantiated (without mainloop)."""
     print("\n" + "=" * 80)
@@ -103,8 +129,6 @@ def test_app_instantiation():
     print("=" * 80)
 
     try:
-
-
         # Create a root window but don't show it
         print("Creating EmailOpsApp instance...")
         app = emailops_gui.EmailOpsApp()
@@ -113,10 +137,23 @@ def test_app_instantiation():
         print("✓ App instantiated successfully")
 
         # Verify attributes
-        attrs = ['settings', 'task', 'log_queue', 'nb', 'tab_search',
-                'tab_reply', 'tab_fresh', 'tab_chat', 'tab_convs',
-                'tab_index', 'tab_config', 'tab_diagnostics',
-                'tab_chunking', 'tab_analyze', 'tab_logs']
+        attrs = [
+            "settings",
+            "task",
+            "log_queue",
+            "nb",
+            "tab_search",
+            "tab_reply",
+            "tab_fresh",
+            "tab_chat",
+            "tab_convs",
+            "tab_index",
+            "tab_config",
+            "tab_diagnostics",
+            "tab_chunking",
+            "tab_analyze",
+            "tab_logs",
+        ]
 
         for attr in attrs:
             if hasattr(app, attr):
@@ -146,6 +183,7 @@ def test_app_instantiation():
         traceback.print_exc()
         return False
 
+
 def test_settings_persistence():
     """Test that settings can be saved and loaded."""
     print("\n" + "=" * 80)
@@ -153,7 +191,6 @@ def test_settings_persistence():
     print("=" * 80)
 
     try:
-
         # Create settings
         settings = emailops_gui.AppSettings()
         settings.export_root = "/test/path"
@@ -181,6 +218,7 @@ def test_settings_persistence():
         traceback.print_exc()
         return False
 
+
 def test_task_controller():
     """Test TaskController for cancellation management."""
     print("\n" + "=" * 80)
@@ -188,7 +226,6 @@ def test_task_controller():
     print("=" * 80)
 
     try:
-
         tc = emailops_gui.TaskController()
 
         # Test initial state
@@ -230,6 +267,7 @@ def test_task_controller():
         traceback.print_exc()
         return False
 
+
 def main():
     """Run all tests."""
     print("\n")
@@ -270,7 +308,7 @@ def main():
         print(f"{status}: {name}")
 
     print("\n" + "=" * 80)
-    print(f"Results: {passed}/{total} tests passed ({passed/total*100:.1f}%)")
+    print(f"Results: {passed}/{total} tests passed ({passed / total * 100:.1f}%)")
     print("=" * 80)
 
     if passed == total:
@@ -279,6 +317,7 @@ def main():
     else:
         print(f"\n⚠️  {total - passed} test(s) failed. Review output above.")
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

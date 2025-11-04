@@ -16,7 +16,7 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
@@ -162,7 +162,7 @@ class TestEndToEndPathValidation:
         unicode_attacks = [
             "test\u2024file.txt",  # One dot leader
             "test\u2025\u2025etc\u2025passwd",  # Two dot leader
-            "test\uFF0E\uFF0E/etc/passwd",  # Fullwidth full stop
+            "test\uff0e\uff0e/etc/passwd",  # Fullwidth full stop
         ]
 
         for attack in unicode_attacks:
@@ -191,7 +191,7 @@ class TestCommandExecutionSecurity:
             # Step 1: Validate command and arguments
             is_valid, message = validate_command_args(command, args)
             assert is_valid is False
-            assert "Dangerous character" in message
+            assert "invalid characters" in message.lower() or "dangerous character" in message.lower()
 
             # Should not reach execution, but if it did...
             # Step 2: Quote arguments for safety
@@ -221,7 +221,7 @@ class TestCommandExecutionSecurity:
             assert is_valid is False
             assert "not in allowed list" in message
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_safe_command_execution(self, mock_run):
         """Test that validated commands can be executed safely."""
         command = "python"
@@ -280,8 +280,11 @@ class TestConfigurationSecurity:
         """Reset config before each test."""
         reset_config()
 
-    @patch('emailops.config.EmailOpsConfig._is_valid_service_account_json', return_value=True)
-    def test_credential_loading_security(self, mock_is_valid):
+    @patch(
+        "emailops.core_config.EmailOpsConfig._is_valid_service_account_json",
+        return_value=True,
+    )
+    def test_credential_loading_security(self, _mock_is_valid):
         """Test that credential loading doesn't expose secrets."""
         with tempfile.TemporaryDirectory() as tmpdir:
             secrets_dir = Path(tmpdir) / "secrets"
@@ -302,7 +305,11 @@ class TestConfigurationSecurity:
             cred_file.write_text(json.dumps(sensitive_data))
 
             # Configure to use this credential file
-            with patch.dict(os.environ, {**MINIMAL_ENV_VARS, "SECRETS_DIR": str(secrets_dir)}, clear=True):
+            with patch.dict(
+                os.environ,
+                {**MINIMAL_ENV_VARS, "SECRETS_DIR": str(secrets_dir)},
+                clear=True,
+            ):
                 config = EmailOpsConfig()
                 # config.CREDENTIAL_FILES_PRIORITY = ["credentials.json"]
 
@@ -318,7 +325,8 @@ class TestConfigurationSecurity:
     def test_no_sensitive_data_in_logs(self):
         """Test that sensitive configuration data isn't logged."""
         config = EmailOpsConfig()
-        config.google_application_credentials = "/path/to/secret/creds.json"
+        config.sensitive = Mock()
+        config.sensitive.google_application_credentials = "/path/to/secret/creds.json"
 
         # Get string representation (might be logged)
         config_str = str(config)
@@ -335,26 +343,30 @@ class TestConfigurationSecurity:
             config = EmailOpsConfig()
 
             # Parent traversal should be disabled by default
-            assert config.allow_parent_traversal is False
+            assert config.security.allow_parent_traversal is False
 
             # Command timeout should have reasonable default
-            assert config.command_timeout == 60
+            assert config.system.command_timeout == 60
 
             # Should use secure embedding provider by default
-            assert config.provider == "vertex"
+            assert config.core.provider == "vertex"
 
     def test_environment_variable_precedence(self):
         """Test that environment variables properly override defaults."""
-        with patch.dict(os.environ, {
-            **MINIMAL_ENV_VARS,
-            "ALLOW_PARENT_TRAVERSAL": "true",
-            "COMMAND_TIMEOUT": "7200",
-        }, clear=True):
+        with patch.dict(
+            os.environ,
+            {
+                **MINIMAL_ENV_VARS,
+                "ALLOW_PARENT_TRAVERSAL": "true",
+                "COMMAND_TIMEOUT": "7200",
+            },
+            clear=True,
+        ):
             config = EmailOpsConfig()
 
             # Dangerous settings should be explicitly set
-            assert config.allow_parent_traversal is True
-            assert config.command_timeout == 7200
+            assert config.security.allow_parent_traversal is True
+            assert config.system.command_timeout == 7200
 
     def test_project_id_validation_integration(self):
         """Test GCP project ID validation in configuration."""
@@ -373,12 +385,10 @@ class TestConfigurationSecurity:
             assert is_valid == expected_valid
 
             if is_valid:
-                # Should be safe to use in config
-                with patch.dict(os.environ, MINIMAL_ENV_VARS):
+                # Should be safe to use in config - set the env var before loading config
+                with patch.dict(os.environ, {**MINIMAL_ENV_VARS, "GCP_PROJECT": project_id}):
                     config = EmailOpsConfig()
-                    config.gcp_project = project_id
-                    config.update_environment()
-                    assert os.environ.get("GCP_PROJECT") == project_id
+                    assert config.gcp.gcp_project == project_id
 
 
 class TestSecurityWorkflowIntegration:
@@ -416,7 +426,7 @@ class TestSecurityWorkflowIntegration:
                     is_valid_ext, _ext_message = validate_file_path(
                         sanitized,
                         must_exist=False,
-                        allowed_extensions=[".txt", ".pdf", ".doc"]
+                        allowed_extensions=[".txt", ".pdf", ".doc"],
                     )
 
                     if is_valid_ext:
@@ -437,30 +447,32 @@ class TestSecurityWorkflowIntegration:
             # Create multiple credential files (some invalid)
             valid_cred = {
                 "project_id": "test-project",
-                "client_email": "test@test.iam.gserviceaccount.com"
+                "client_email": "test@test.iam.gserviceaccount.com",
             }
-            invalid_cred = {
-                "malformed": "data"
-            }
+            invalid_cred = {"malformed": "data"}
 
             (secrets_dir / "valid.json").write_text(json.dumps(valid_cred))
             (secrets_dir / "invalid.json").write_text(json.dumps(invalid_cred))
             (secrets_dir / "notjson.txt").write_text("not json at all")
 
             # Initialize configuration
-            with patch.dict(os.environ, {
-                **MINIMAL_ENV_VARS,
-                "SECRETS_DIR": str(secrets_dir),
-                "GCP_PROJECT": "'; DROP TABLE users; --",  # SQL injection attempt
-                "LOG_LEVEL": "DEBUG",
-            }, clear=True):
+            with patch.dict(
+                os.environ,
+                {
+                    **MINIMAL_ENV_VARS,
+                    "SECRETS_DIR": str(secrets_dir),
+                    "GCP_PROJECT": "'; DROP TABLE users; --",  # SQL injection attempt
+                    "LOG_LEVEL": "DEBUG",
+                },
+                clear=True,
+            ):
                 config = EmailOpsConfig()
 
                 # Project ID should be stored as-is (validation happens separately)
-                assert config.gcp_project == "'; DROP TABLE users; --"
+                assert config.gcp.gcp_project == "'; DROP TABLE users; --"
 
                 # Validate project ID before use
-                is_valid, _message = validate_project_id(config.gcp_project)
+                is_valid, _message = validate_project_id(config.gcp.gcp_project)
                 assert is_valid is False
 
                 # Should not find invalid credential files
@@ -481,9 +493,7 @@ class TestSecurityWorkflowIntegration:
 
         # 2. Validate file path
         is_valid_file, _file_msg = validate_file_path(
-            sanitized_file,
-            must_exist=False,
-            allowed_extensions=[".pdf", ".txt"]
+            sanitized_file, must_exist=False, allowed_extensions=[".pdf", ".txt"]
         )
 
         # 3. User provides command to run
@@ -492,9 +502,7 @@ class TestSecurityWorkflowIntegration:
 
         # 4. Validate command
         is_valid_cmd, _cmd_msg = validate_command_args(
-            user_command,
-            user_args,
-            allowed_commands=["python", "node", "java"]
+            user_command, user_args, allowed_commands=["python", "node", "java"]
         )
 
         # 5. Set up environment variables
@@ -577,7 +585,10 @@ class TestSecurityMonitoring:
                 # the error doesn't reveal whether the file actually exists
                 if "mysql" not in sensitive_path.lower():
                     assert "mysql" not in message.lower()
-                if "/etc/shadow" not in sensitive_path and "shadow" not in sensitive_path.lower():
+                if (
+                    "/etc/shadow" not in sensitive_path
+                    and "shadow" not in sensitive_path.lower()
+                ):
                     assert "shadow" not in message.lower()
 
 

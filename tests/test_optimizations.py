@@ -103,7 +103,14 @@ def apply_code_analysis_tools(available_packages: dict[str, list[str]]) -> None:
                 elif tool == "isort":
                     # Check import sorting
                     result = subprocess.run(
-                        [sys.executable, "-m", "isort", "--check-only", "--diff", __file__],
+                        [
+                            sys.executable,
+                            "-m",
+                            "isort",
+                            "--check-only",
+                            "--diff",
+                            __file__,
+                        ],
                         capture_output=True,
                         text=True,
                         timeout=30,
@@ -117,7 +124,13 @@ def apply_code_analysis_tools(available_packages: dict[str, list[str]]) -> None:
                 elif tool == "flake8":
                     # Check code quality
                     result = subprocess.run(
-                        [sys.executable, "-m", "flake8", "--max-line-length=88", __file__],
+                        [
+                            sys.executable,
+                            "-m",
+                            "flake8",
+                            "--max-line-length=88",
+                            __file__,
+                        ],
                         capture_output=True,
                         text=True,
                         timeout=30,
@@ -131,7 +144,13 @@ def apply_code_analysis_tools(available_packages: dict[str, list[str]]) -> None:
                 elif tool == "mypy":
                     # Type checking
                     result = subprocess.run(
-                        [sys.executable, "-m", "mypy", "--ignore-missing-imports", __file__],
+                        [
+                            sys.executable,
+                            "-m",
+                            "mypy",
+                            "--ignore-missing-imports",
+                            __file__,
+                        ],
                         capture_output=True,
                         text=True,
                         timeout=30,

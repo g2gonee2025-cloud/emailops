@@ -2,7 +2,7 @@
 EmailOps Helpers & Diagnostics Package
 
 A consolidated set of utilities for monitoring, testing, analyzing, and maintaining
-the EmailOps Vertex AI system.
+EmailOps Vertex AI system.
 
 Modules:
 --------
@@ -35,47 +35,40 @@ analyzer.run_analysis()
 
 from .analysis import BatchAnalyzer, LocalCodeAnalyzer, RemediationPackageGenerator
 from .monitoring import (
-from .sonarqube import SonarQubeManager, SonarScanner
-from .testing import (
-
-__version__ = "2.0.0"
-__author__ = "EmailOps Team"
-
-# Import main classes for easier access
     ChunkAnalyzer,
     FileStatisticsAnalyzer,
     IndexMonitor,
     IndexStatus,
-    LiveTester,
     ProcessInfo,
 )
+from .sonarqube import SonarQubeManager, SonarScanner
+from .testing import (
     CredentialTester,
     DependencyVerifier,
     GenAITester,
     LLMRuntimeVerifier,
 )
 
+__version__ = "2.0.0"
+__author__ = "EmailOps Team"
+
 __all__ = [
+    # Analysis
+    "BatchAnalyzer",
+    # Monitoring
+    "ChunkAnalyzer",
+    # Testing
+    "CredentialTester",
+    "DependencyVerifier",
+    "FileStatisticsAnalyzer",
+    "GenAITester",
+    "IndexMonitor",
+    "IndexStatus",
+    "LLMRuntimeVerifier",
+    "LocalCodeAnalyzer",
+    "ProcessInfo",
+    "RemediationPackageGenerator",
     # SonarQube
     "SonarQubeManager",
     "SonarScanner",
-
-    # Testing
-    "DependencyVerifier",
-    "GenAITester",
-    "CredentialTester",
-    "LLMRuntimeVerifier",
-
-    # Monitoring
-    "IndexMonitor",
-    "ChunkAnalyzer",
-    "FileStatisticsAnalyzer",
-    "LiveTester",
-    "IndexStatus",
-    "ProcessInfo",
-
-    # Analysis
-    "BatchAnalyzer",
-    "LocalCodeAnalyzer",
-    "RemediationPackageGenerator",
 ]

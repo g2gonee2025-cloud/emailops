@@ -6,7 +6,10 @@ import re
 import shlex
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Generic, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeVar
+
+if TYPE_CHECKING:
+    from emailops.common.types import Result
 
 """
 Input validation and sanitization utilities for EmailOps.
@@ -16,7 +19,6 @@ NOTE: This module preserves the existing public API (functions returning
 (tuple[bool, str])) and adds *ergonomic* variants that return normalized
 values. See `validate_directory_path_info` and `validate_file_path_info`.
 """
-
 
 
 T = TypeVar("T")
@@ -36,7 +38,24 @@ ENV_VAR_UPPERCASE_PATTERN = re.compile(r"^[A-Z_][A-Z0-9_]*$")
 ENV_VAR_MIXED_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 # Dangerous characters for path sanitization
-DANGEROUS_PATH_CHARS = {"\0", "\r", "\n", "|", "&", ";", "$", "`", "<", ">", "(", ")", "[", "]", "{", "}"}
+DANGEROUS_PATH_CHARS = {
+    "\0",
+    "\r",
+    "\n",
+    "|",
+    "&",
+    ";",
+    "$",
+    "`",
+    "<",
+    ">",
+    "(",
+    ")",
+    "[",
+    "]",
+    "{",
+    "}",
+}
 
 # Shell dangerous patterns
 SHELL_DANGEROUS_PATTERNS = frozenset([";", "|", "&", "$", "`", "\n", "\r", "\0"])
@@ -168,7 +187,10 @@ def validate_file_path(
         if allowed_extensions:
             ext = p.suffix.lower()
             if ext not in [e.lower() for e in allowed_extensions]:
-                return False, f"File extension '{ext}' not in allowed list: {allowed_extensions}"
+                return (
+                    False,
+                    f"File extension '{ext}' not in allowed list: {allowed_extensions}",
+                )
 
         # Additional security: ensure path is absolute after resolution
         if not p.is_absolute():
@@ -212,7 +234,9 @@ def sanitize_path_input(path_input: str) -> str:
     return sanitized
 
 
-def validate_command_args(command: str, args: list[str], allowed_commands: list[str] | None = None) -> tuple[bool, str]:
+def validate_command_args(
+    command: str, args: list[str], allowed_commands: list[str] | None = None
+) -> tuple[bool, str]:
     """Validate command and arguments for safe execution.
 
     Args:
@@ -223,20 +247,29 @@ def validate_command_args(command: str, args: list[str], allowed_commands: list[
     Returns:
         Tuple of (is_valid: bool, message: str)
     """
+    # P0-7 FIX: Sanitize command and arguments before validation
+    sanitized_command = sanitize_path_input(command)
+    if sanitized_command != command:
+        return False, f"Command '{command}' contains invalid characters"
+
+    sanitized_args = [sanitize_path_input(arg) for arg in args]
+    if any(sa != a for sa, a in zip(sanitized_args, args, strict=False)):
+        return False, "One or more arguments contain invalid characters"
+
     # Check if command is in whitelist (if provided)
-    if allowed_commands and command not in allowed_commands:
-        return False, f"Command '{command}' not in allowed list"
+    if allowed_commands and sanitized_command not in allowed_commands:
+        return False, f"Command '{sanitized_command}' not in allowed list"
 
     # If no allowlist, check against a blocklist of dangerous commands
-    if not allowed_commands and command in DANGEROUS_COMMANDS:
-        return False, f"Command '{command}' is blocked for security reasons"
+    if not allowed_commands and sanitized_command in DANGEROUS_COMMANDS:
+        return False, f"Command '{sanitized_command}' is blocked for security reasons"
 
     # Check for shell injection attempts in command using pre-compiled set
-    if any(pattern in command for pattern in SHELL_DANGEROUS_PATTERNS):
+    if any(pattern in sanitized_command for pattern in SHELL_DANGEROUS_PATTERNS):
         return False, "Dangerous character detected in command"
 
     # Validate each argument
-    for arg in args:
+    for arg in sanitized_args:
         # Check for dangerous patterns using pre-compiled set
         if any(pattern in arg for pattern in SHELL_DANGEROUS_PATTERNS):
             return False, f"Dangerous character detected in argument: {arg}"
@@ -259,11 +292,15 @@ def quote_shell_arg(arg: str) -> str:
     return shlex.quote(str(arg))
 
 
-def validate_project_id(project_id: str) -> tuple[bool, str]:
+def validate_project_id(
+    project_id: str, min_len: int = 6, max_len: int = 30
+) -> tuple[bool, str]:
     """Validate Google Cloud project ID format.
 
     Args:
         project_id: GCP project ID to validate
+        min_len: Minimum length of the project ID
+        max_len: Maximum length of the project ID
 
     Returns:
         Tuple of (is_valid: bool, message: str)
@@ -277,8 +314,8 @@ def validate_project_id(project_id: str) -> tuple[bool, str]:
     # - Start with a lowercase letter
     # - Not end with a hyphen
 
-    if len(project_id) < 6 or len(project_id) > 30:
-        return False, "Project ID must be 6-30 characters long"
+    if len(project_id) < min_len or len(project_id) > max_len:
+        return False, f"Project ID must be {min_len}-{max_len} characters long"
 
     if not project_id[0].islower() or not project_id[0].isalpha():
         return False, "Project ID must start with a lowercase letter"
@@ -288,12 +325,17 @@ def validate_project_id(project_id: str) -> tuple[bool, str]:
 
     # Use pre-compiled regex pattern
     if not PROJECT_ID_PATTERN.match(project_id):
-        return False, "Project ID can only contain lowercase letters, numbers, and hyphens"
+        return (
+            False,
+            "Project ID can only contain lowercase letters, numbers, and hyphens",
+        )
 
     return True, "Valid"
 
 
-def validate_environment_variable(name: str, value: str, *, require_uppercase: bool = True) -> tuple[bool, str]:
+def validate_environment_variable(
+    name: str, value: str, *, require_uppercase: bool = True
+) -> tuple[bool, str]:
     """Validate environment variable name and value for security.
 
     Args:
@@ -313,7 +355,9 @@ def validate_environment_variable(name: str, value: str, *, require_uppercase: b
     pattern = ENV_VAR_UPPERCASE_PATTERN if require_uppercase else ENV_VAR_MIXED_PATTERN
     if not pattern.match(name):
         policy = (
-            "uppercase letters, numbers, and underscores" if require_uppercase else "letters, numbers, and underscores"
+            "uppercase letters, numbers, and underscores"
+            if require_uppercase
+            else "letters, numbers, and underscores"
         )
         return False, f"Environment variable name must contain only {policy}"
 
@@ -408,7 +452,9 @@ def validate_directory_path_info(
     otherwise ``value`` is ``None``.
     """
     expanded = _maybe_expand_vars(path, expand_vars)
-    ok, msg = validate_directory_path(expanded, must_exist=must_exist, allow_parent_traversal=allow_parent_traversal)
+    ok, msg = validate_directory_path(
+        expanded, must_exist=must_exist, allow_parent_traversal=allow_parent_traversal
+    )
     if not ok:
         return ValidationResult(False, msg, None)
     return ValidationResult(True, "Valid", Path(expanded).expanduser().resolve())
@@ -432,7 +478,10 @@ def validate_file_path_info(
     expanded = _maybe_expand_vars(path, expand_vars)
     # Bypass extension checks in the base function to perform union logic here.
     ok, msg = validate_file_path(
-        expanded, must_exist=must_exist, allowed_extensions=None, allow_parent_traversal=allow_parent_traversal
+        expanded,
+        must_exist=must_exist,
+        allowed_extensions=None,
+        allow_parent_traversal=allow_parent_traversal,
     )
     if not ok:
         return ValidationResult(False, msg, None)
@@ -448,7 +497,172 @@ def validate_file_path_info(
             multi_ok = any(combined == s.lower() for s in allowed_multi_suffixes)
         if not (ext_ok or multi_ok):
             return ValidationResult(
-                False, f"File extension '{p.suffix}' not allowed (combined suffix '{''.join(p.suffixes)}')", None
+                False,
+                f"File extension '{p.suffix}' not allowed (combined suffix '{''.join(p.suffixes)}')",
+                None,
             )
 
     return ValidationResult(True, "Valid", p)
+
+
+
+# -------------------------
+# Result[T, E] based validators (Issue #18 migration)
+# -------------------------
+# New type-safe validators using Result pattern for gradual migration.
+# Existing tuple-based APIs preserved for backward compatibility.
+
+# Import Result for runtime use (deferred to avoid circular imports at module level)
+if not TYPE_CHECKING:
+    from emailops.common.types import Result
+
+
+def validate_directory_result(
+    path: str | Path,
+    *,
+    must_exist: bool = True,
+    allow_parent_traversal: bool = False,
+    expand_vars: bool = False,
+) -> Result[Path, str]:
+    """
+    Validate directory path using Result[T, E] pattern.
+
+    Type-safe validator that returns Result[Path, str] instead of tuple[bool, str].
+    Enables compile-time error handling enforcement via mypy.
+
+    Args:
+        path: Directory path to validate
+        must_exist: Whether directory must exist
+        allow_parent_traversal: Allow '..' in paths (default: False)
+        expand_vars: Expand environment variables in path
+
+    Returns:
+        Result[Path, str]: Success with resolved Path or failure with error message
+
+    Example:
+        >>> result = validate_directory_result("/tmp")
+        >>> if result.ok:
+        ...     dir_path = result.unwrap()  # Type-safe: mypy knows this is Path
+        ...     print(f"Valid: {dir_path}")
+        >>> else:
+        ...     print(f"Error: {result.error}")
+    """
+    expanded = _maybe_expand_vars(path, expand_vars)
+    ok, msg = validate_directory_path(
+        expanded, must_exist=must_exist, allow_parent_traversal=allow_parent_traversal
+    )
+    if not ok:
+        return Result.failure(msg)
+    return Result.success(Path(expanded).expanduser().resolve())
+
+
+def validate_file_result(
+    path: str | Path,
+    *,
+    must_exist: bool = True,
+    allowed_extensions: list[str] | None = None,
+    allowed_multi_suffixes: list[str] | None = None,
+    allow_parent_traversal: bool = False,
+    expand_vars: bool = False,
+) -> Result[Path, str]:
+    """
+    Validate file path using Result[T, E] pattern.
+
+    Type-safe validator that returns Result[Path, str] instead of tuple[bool, str].
+
+    Args:
+        path: File path to validate
+        must_exist: Whether file must exist
+        allowed_extensions: List of allowed single suffixes (e.g., ['.txt', '.pdf'])
+        allowed_multi_suffixes: List of allowed multi-suffixes (e.g., ['.tar.gz'])
+        allow_parent_traversal: Allow '..' in paths (default: False)
+        expand_vars: Expand environment variables in path
+
+    Returns:
+        Result[Path, str]: Success with resolved Path or failure with error message
+    """
+    expanded = _maybe_expand_vars(path, expand_vars)
+
+    # Use base validation without extension checks
+    ok, msg = validate_file_path(
+        expanded,
+        must_exist=must_exist,
+        allowed_extensions=None,
+        allow_parent_traversal=allow_parent_traversal,
+    )
+    if not ok:
+        return Result.failure(msg)
+
+    p = Path(expanded).expanduser().resolve()
+
+    # Check extensions if specified (unified logic for single and multi-suffix)
+    if allowed_extensions or allowed_multi_suffixes:
+        ext_match = False
+        if allowed_extensions:
+            ext_match = p.suffix.lower() in [e.lower() for e in allowed_extensions]
+        if allowed_multi_suffixes and not ext_match:
+            combined = "".join(p.suffixes).lower()
+            ext_match = any(combined == s.lower() for s in allowed_multi_suffixes)
+
+        if not ext_match:
+            return Result.failure(
+                f"File extension '{p.suffix}' not allowed "
+                f"(combined: '{''.join(p.suffixes)}')"
+            )
+
+    return Result.success(p)
+
+
+def validate_email_result(email: str) -> Result[str, str]:
+    """
+    Validate email address using Result[T, E] pattern.
+
+    Args:
+        email: Email address to validate
+
+    Returns:
+        Result[str, str]: Success with normalized email or failure with error message
+    """
+    ok, msg = validate_email_format(email)
+    if not ok:
+        return Result.failure(msg)
+    return Result.success(email.strip().lower())
+
+
+def validate_project_id_result(
+    project_id: str, *, min_len: int = 6, max_len: int = 30
+) -> Result[str, str]:
+    """
+    Validate GCP project ID using Result[T, E] pattern.
+
+    Args:
+        project_id: GCP project ID to validate
+        min_len: Minimum length (default: 6)
+        max_len: Maximum length (default: 30)
+
+    Returns:
+        Result[str, str]: Success with validated ID or failure with error message
+    """
+    ok, msg = validate_project_id(project_id, min_len=min_len, max_len=max_len)
+    if not ok:
+        return Result.failure(msg)
+    return Result.success(project_id)
+
+
+__all__ = [
+    "ValidationResult",
+    "quote_shell_arg",
+    "sanitize_path_input",
+    "validate_command_args",
+    "validate_directory_path",
+    "validate_directory_path_info",
+    "validate_directory_result",
+    "validate_email_format",
+    "validate_email_result",
+    "validate_environment_variable",
+    "validate_file_path",
+    "validate_file_path_info",
+    "validate_file_result",
+    "validate_project_id",
+    "validate_project_id_result",
+]

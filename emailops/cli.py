@@ -3,11 +3,11 @@
 EmailOps Orchestrator (thin helper)
 
 - One CLI for:
-  * index: build/update vector index (delegates to email_indexer.py)
-  * reply: draft a reply .eml for a conversation (delegates to search_and_draft.py)
-  * fresh: draft a fresh .eml (delegates to search_and_draft.py)
-  * chat:  chat with retrieved context (delegates to search_and_draft.py)
-  * summarize: summarize one conversation (delegates to summarize_email_thread.py)
+  * index: build/update vector index (delegates to indexing_main.py)
+  * reply: draft a reply .eml for a conversation (delegates to feature_search_draft.py)
+  * fresh: draft a fresh .eml (delegates to feature_search_draft.py)
+  * chat:  chat with retrieved context (delegates to feature_search_draft.py)
+  * summarize: summarize one conversation (delegates to feature_summarize.py)
   * summarize-many: summarize many conversations in parallel (safe multiprocessing)
 
 - Uses 'spawn' start method and avoids bound-method worker targets.
@@ -17,7 +17,7 @@ EmailOps Orchestrator (thin helper)
 from __future__ import annotations
 
 import argparse
-import contextlib
+import asyncio
 import json
 import logging
 import multiprocessing as mp
@@ -25,9 +25,13 @@ import os
 import signal
 import subprocess
 import sys
+from argparse import _SubParsersAction
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
+
+from .core_validators import validate_command_args
+from .services.atomic_file_service import AtomicFileService
 
 # ------------------------------ Imports with robust fallbacks ------------------------------
 # Prefer package-relative imports if running inside package; otherwise fall back to sibling files.
@@ -35,16 +39,16 @@ from pathlib import Path
 try:
     # package form
     from emailops.core_config import get_config  # type: ignore
-
-    # search+draft API
-    from emailops.feature_search_draft import (
-        _search as _low_level_search,  # internal search used for chat context only
-    )
     from emailops.feature_search_draft import (  # type: ignore
         chat_with_context,
         draft_email_reply_eml,
         draft_fresh_email_eml,
         parse_filter_grammar,
+    )
+
+    # search+draft API
+    from emailops.feature_search_draft import (
+        search as _low_level_search,  # internal search used for chat context only
     )
 
     # summarizer API
@@ -53,13 +57,11 @@ try:
         format_analysis_as_markdown,
     )
     from emailops.indexing_metadata import INDEX_DIRNAME_DEFAULT  # type: ignore
-except Exception as import_err:
+except ImportError as import_err:
     # Graceful fallback: if this module is being imported by the GUI,
     # the GUI will handle the error. We don't want to crash on import.
-    import logging
-    import sys
     logger = logging.getLogger(__name__)
-    logger.error(f"Failed to import emailops modules in processor: {import_err}")
+    logger.error("Failed to import emailops modules in processor: %s", import_err)
     # Don't attempt bare imports that will fail - just re-raise
     raise ImportError(f"emailops modules not available: {import_err}") from import_err
 
@@ -79,7 +81,8 @@ def _setup_logging(level: str | int = "INFO") -> logging.Logger:
 
 logger = _setup_logging(os.getenv("LOG_LEVEL", "INFO"))
 
-__all__ = ["_search", "build_cli", "cmd_chat", "cmd_fresh", "cmd_index", "cmd_reply", "cmd_summarize", "cmd_summarize_many", "main"]
+__all__ = [
+]
 
 # ----------------------------------- Custom Exceptions -----------------------------------
 
@@ -87,25 +90,17 @@ __all__ = ["_search", "build_cli", "cmd_chat", "cmd_fresh", "cmd_index", "cmd_re
 class ProcessorError(Exception):
     """Base exception for processor errors."""
 
-    pass
-
 
 class IndexNotFoundError(ProcessorError):
     """Raised when index directory is not found."""
-
-    pass
 
 
 class ConfigurationError(ProcessorError):
     """Raised when configuration is invalid."""
 
-    pass
-
 
 class CommandExecutionError(ProcessorError):
     """Raised when command execution fails."""
-
-    pass
 
 
 # ----------------------------------- Constants -----------------------------------
@@ -115,23 +110,6 @@ DEFAULT_SUBPROCESS_TIMEOUT = 3600
 
 # Maximum workers for multiprocessing
 MAX_WORKERS_PER_CPU = 0.5  # Use half of available CPUs
-
-
-# ----------------------------------- File IO -----------------------------------
-
-def _atomic_write_bytes(path: Path, data: bytes) -> None:
-    """
-    Atomically write bytes to a file by writing to a temp file first and then renaming.
-    Ensures parent directories exist. Prevents partial writes on crash.
-    """
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    import tempfile
-    with tempfile.NamedTemporaryFile(dir=str(path.parent), delete=False) as tmp:
-        tmp_path = Path(tmp.name)
-        tmp.write(data)
-    # On POSIX, rename is atomic; on Windows, use replace when available
-    Path(tmp_path).replace(path)
 
 
 # ----------------------------------- Utilities -----------------------------------
@@ -166,7 +144,15 @@ def _run_email_indexer(
     Run the indexer as a *separate process* to keep argparse/sys.argv isolated.
     Now with timeout and better error handling.
     """
-    args: list[str] = [sys.executable, "-m", "emailops.email_indexer", "--root", str(root), "--provider", provider]
+    args: list[str] = [
+        sys.executable,
+        "-m",
+        "emailops.indexing_main",
+        "--root",
+        str(root),
+        "--provider",
+        provider,
+    ]
     if batch:
         args += ["--batch", str(batch)]
     if limit:
@@ -177,39 +163,25 @@ def _run_email_indexer(
         args += list(extra_args)
 
     # HIGH #14: Enhanced command validation - always validate, never skip
-    validate_command_args = None
     # MEDIUM #27: Import path correction - use relative import for validators
-    try:
-        from .core_validators import validate_command_args
-    except ImportError:
-        logger.warning("validators module not available - command validation skipped")
-
-    if validate_command_args is not None:
-        ok, msg = validate_command_args(args[0], args[1:])
-        if not ok:
-            raise CommandExecutionError(f"Unsafe indexer command blocked: {msg}")
-    else:
-        # HIGH #14: Fallback validation when validators module unavailable
-        # Ensure executable is sys.executable (Python interpreter)
-        if args[0] != sys.executable:
-            raise CommandExecutionError(f"Invalid executable: expected {sys.executable}, got {args[0]}")
-        # Basic sanity checks on arguments
-        for arg in args[1:]:
-            if any(dangerous in str(arg).lower() for dangerous in [";", "&", "|", "`", "$("]):
-                raise CommandExecutionError(f"Potentially unsafe argument detected: {arg}")
+    ok, msg = validate_command_args(args[0], args[1:])
+    if not ok:
+        raise CommandExecutionError(f"Unsafe indexer command blocked: {msg}")
 
     env = os.environ.copy()
     _ensure_env()  # ensure config values/creds present
 
     try:
-        proc = subprocess.run(args, env=env, timeout=timeout, capture_output=True, text=True)
+        proc = subprocess.run(
+            args, env=env, timeout=timeout, capture_output=True, text=True, check=False
+        )
         if proc.returncode != 0:
             logger.error("Indexer stderr: %s", proc.stderr)
         return int(proc.returncode or 0)
     except subprocess.TimeoutExpired as e:
         logger.error("Indexer process timed out after %d seconds", timeout)
         raise CommandExecutionError(f"Indexer timed out after {timeout} seconds") from e
-    except Exception as e:
+    except OSError as e:
         logger.error("Failed to run indexer: %s", e)
         raise CommandExecutionError(f"Failed to run indexer: {e}") from e
 
@@ -218,6 +190,7 @@ def _run_email_indexer(
 
 
 def cmd_index(ns: argparse.Namespace) -> None:
+    """Build or update the vector index."""
     root = Path(ns.root).expanduser().resolve()
     if not root.exists():
         raise IndexNotFoundError(f"--root not found: {root}")
@@ -235,7 +208,8 @@ def cmd_index(ns: argparse.Namespace) -> None:
         if rc != 0:
             raise CommandExecutionError(f"Indexer failed with return code {rc}")
         logger.info("Index build/update complete at %s", _resolve_index_dir(root))
-    except ProcessorError:
+    except (ProcessorError, ConfigurationError, CommandExecutionError) as e:
+        logger.error("Error during indexing: %s", e)
         raise
     except Exception as e:
         logger.error("Unexpected error in cmd_index: %s", e)
@@ -243,10 +217,13 @@ def cmd_index(ns: argparse.Namespace) -> None:
 
 
 def cmd_reply(ns: argparse.Namespace) -> None:
+    """Draft a reply .eml for a conversation."""
     root = Path(ns.root).expanduser().resolve()
     ix_dir = _resolve_index_dir(root)
     if not ix_dir.exists():
-        raise IndexNotFoundError(f"Index not found at {ix_dir}. Build it first (see 'index').")
+        raise IndexNotFoundError(
+            f"Index not found at {ix_dir}. Build it first (see 'index')."
+        )
 
     try:
         result = draft_email_reply_eml(
@@ -263,14 +240,19 @@ def cmd_reply(ns: argparse.Namespace) -> None:
             reply_policy=ns.reply_policy,
         )
         # Validate downstream result structure and types
-        if not isinstance(result, dict) or "eml_bytes" not in result:
-            raise ProcessorError("Downstream returned unexpected payload (missing 'eml_bytes').")
+        if "eml_bytes" not in result:
+            raise ProcessorError(
+                "Downstream returned unexpected payload (missing 'eml_bytes')."
+            )
         result_eml = result["eml_bytes"]
         if not isinstance(result_eml, (bytes, bytearray)):
-            raise ProcessorError("Downstream returned invalid 'eml_bytes' (expected bytes).")
+            raise ProcessorError(
+                "Downstream returned invalid 'eml_bytes' (expected bytes)."
+            )
 
         out = ns.out or (root / f"{ns.conv_id}_reply.eml")
-        _atomic_write_bytes(Path(out), result_eml)
+        file_service = AtomicFileService(export_root=str(root))
+        file_service.save_binary_file(result_eml, Path(out))
         print(str(out))
     except Exception as e:
         logger.error("Failed to generate reply: %s", e)
@@ -278,10 +260,13 @@ def cmd_reply(ns: argparse.Namespace) -> None:
 
 
 def cmd_fresh(ns: argparse.Namespace) -> None:
+    """Draft a fresh .eml addressed to provided recipients."""
     root = Path(ns.root).expanduser().resolve()
     ix_dir = _resolve_index_dir(root)
     if not ix_dir.exists():
-        raise IndexNotFoundError(f"Index not found at {ix_dir}. Build it first (see 'index').")
+        raise IndexNotFoundError(
+            f"Index not found at {ix_dir}. Build it first (see 'index')."
+        )
 
     to_list = [x.strip() for x in (ns.to or "").split(",") if x.strip()]
     if not to_list:
@@ -315,14 +300,19 @@ def cmd_fresh(ns: argparse.Namespace) -> None:
             reply_to=ns.reply_to or None,
         )
         # Validate downstream result structure and types
-        if not isinstance(result, dict) or "eml_bytes" not in result:
-            raise ProcessorError("Downstream returned unexpected payload (missing 'eml_bytes').")
+        if "eml_bytes" not in result:
+            raise ProcessorError(
+                "Downstream returned unexpected payload (missing 'eml_bytes')."
+            )
         result_eml = result["eml_bytes"]
         if not isinstance(result_eml, (bytes, bytearray)):
-            raise ProcessorError("Downstream returned invalid 'eml_bytes' (expected bytes).")
+            raise ProcessorError(
+                "Downstream returned invalid 'eml_bytes' (expected bytes)."
+            )
 
         out = ns.out or (root / f"fresh_{Path(ns.subject).stem}.eml")
-        _atomic_write_bytes(Path(out), result_eml)
+        file_service = AtomicFileService(export_root=str(root))
+        file_service.save_binary_file(result_eml, Path(out))
         print(str(out))
     except Exception as e:
         logger.error("Failed to generate fresh email: %s", e)
@@ -330,16 +320,21 @@ def cmd_fresh(ns: argparse.Namespace) -> None:
 
 
 def cmd_chat(ns: argparse.Namespace) -> None:
+    """Chat grounded in retrieved context."""
     root = Path(ns.root).expanduser().resolve()
     ix_dir = _resolve_index_dir(root)
     if not ix_dir.exists():
-        raise IndexNotFoundError(f"Index not found at {ix_dir}. Build it first (see 'index').")
+        raise IndexNotFoundError(
+            f"Index not found at {ix_dir}. Build it first (see 'index')."
+        )
     if not ns.query:
         raise ConfigurationError("--query is required for chat")
 
     try:
         # Gather context using the same internal search your drafting uses.
-        ctx = _low_level_search(ix_dir=ix_dir, query=ns.query, k=ns.k, provider=ns.provider)
+        ctx = _low_level_search(
+            ix_dir=ix_dir, query=ns.query, k=ns.k, provider=ns.provider
+        )
         # Set provider in environment for chat_with_context
         os.environ["EMBED_PROVIDER"] = ns.provider
         data = chat_with_context(
@@ -357,20 +352,6 @@ def cmd_chat(ns: argparse.Namespace) -> None:
         raise ProcessorError(f"Chat command failed: {e}") from e
 
 
-# ----------------------------------- Public API for GUI and external callers -----------------------------------
-
-
-def _search(*args, **kwargs):
-    """
-    Public wrapper for search functionality (used by GUI).
-    Delegates to internal search implementation.
-    """
-    return _low_level_search(*args, **kwargs)
-
-
-# Re-export for GUI compatibility (already imported above)
-# list_conversations_newest_first is imported from search_and_draft and available
-
 
 # ----------------------- Summarize one / many (multiprocessing) -----------------------
 
@@ -387,8 +368,6 @@ def _summarize_worker(job: _SummJob) -> tuple[str, bool, str]:
     Top-level picklable worker (safe under 'spawn').
     Returns: (convo_dir, success, message)
     """
-    import asyncio
-
     try:
         _ensure_env()
         # Set provider in environment for analyze_conversation_dir
@@ -397,11 +376,13 @@ def _summarize_worker(job: _SummJob) -> tuple[str, bool, str]:
         md = format_analysis_as_markdown(analysis)
         target_dir = job.out_dir or job.convo_dir
         target_dir.mkdir(parents=True, exist_ok=True)
-        (target_dir / "analysis.json").write_text(json.dumps(analysis, ensure_ascii=False, indent=2), encoding="utf-8")
+        (target_dir / "analysis.json").write_text(
+            json.dumps(analysis, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
         (target_dir / "analysis.md").write_text(md, encoding="utf-8")
         return (str(job.convo_dir), True, "ok")
     except Exception as e:
-        return (str(job.convo_dir), False, f"{e}")
+        return (str(job.convo_dir), False, str(e))
 
 
 def _iter_conversation_dirs(root: Path) -> Iterable[Path]:
@@ -412,8 +393,7 @@ def _iter_conversation_dirs(root: Path) -> Iterable[Path]:
 
 
 def cmd_summarize(ns: argparse.Namespace) -> None:
-    import asyncio
-
+    """Summarize a single conversation directory."""
     convo_dir = Path(ns.conversation).expanduser().resolve()
     if not convo_dir.exists():
         raise IndexNotFoundError(f"Conversation directory not found: {convo_dir}")
@@ -427,7 +407,9 @@ def cmd_summarize(ns: argparse.Namespace) -> None:
         md = format_analysis_as_markdown(analysis)
         out_dir = Path(ns.out).expanduser().resolve() if ns.out else convo_dir
         out_dir.mkdir(parents=True, exist_ok=True)
-        (out_dir / "analysis.json").write_text(json.dumps(analysis, ensure_ascii=False, indent=2), encoding="utf-8")
+        (out_dir / "analysis.json").write_text(
+            json.dumps(analysis, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
         (out_dir / "analysis.md").write_text(md, encoding="utf-8")
         print(str(out_dir / "analysis.json"))
     except Exception as e:
@@ -436,13 +418,17 @@ def cmd_summarize(ns: argparse.Namespace) -> None:
 
 
 def cmd_summarize_many(ns: argparse.Namespace) -> None:
+    """Summarize all conversations under a root (parallel)."""
     root = Path(ns.root).expanduser().resolve()
     if not root.exists():
         raise IndexNotFoundError(f"--root not found: {root}")
 
     # Fix: Provide out_dir correctly based on ns.out
     out_dir = Path(ns.out) if ns.out else None
-    jobs = [_SummJob(convo_dir=d, provider=ns.provider, out_dir=out_dir) for d in _iter_conversation_dirs(root)]
+    jobs = [
+        _SummJob(convo_dir=d, provider=ns.provider, out_dir=out_dir)
+        for d in _iter_conversation_dirs(root)
+    ]
     if not jobs:
         print("No conversation folders found (need subfolder with Conversation.txt)")
         return
@@ -474,59 +460,92 @@ def cmd_summarize_many(ns: argparse.Namespace) -> None:
 # ----------------------------------- CLI -----------------------------------
 
 
-def build_cli() -> argparse.ArgumentParser:
-    ap = argparse.ArgumentParser(description="EmailOps processor (thin orchestrator)")
-    ap.add_argument("--log-level", default=os.getenv("LOG_LEVEL", "INFO"), help="Logging level (DEBUG, INFO, WARNING, ERROR)")
-    sub = ap.add_subparsers(dest="cmd", required=True)
-
-    # index
-    p = sub.add_parser("index", help="Build or update the vector index")
+def _add_index_parser(subparsers: _SubParsersAction) -> None:
+    p = subparsers.add_parser("index", help="Build or update the vector index")
     p.add_argument("--root", required=True, help="Export root containing conversations")
     p.add_argument("--provider", default=os.getenv("EMBED_PROVIDER", "vertex"))
     p.add_argument("--batch", type=int, default=int(os.getenv("EMBED_BATCH", "64")))
     p.add_argument("--limit", type=int, help="Debug: max docs to embed")
     p.add_argument("--force-reindex", action="store_true")
-    p.add_argument("--indexer-args", nargs=argparse.REMAINDER, help="Pass-through args to email_indexer")
-    p.add_argument("--timeout", type=int, default=int(os.getenv("INDEX_TIMEOUT", str(DEFAULT_SUBPROCESS_TIMEOUT))), help="Indexer subprocess timeout (seconds)")
+    p.add_argument(
+        "--indexer-args",
+        nargs=argparse.REMAINDER,
+        help="Pass-through args to email_indexer",
+    )
+    p.add_argument(
+        "--timeout",
+        type=int,
+        default=int(os.getenv("INDEX_TIMEOUT", str(DEFAULT_SUBPROCESS_TIMEOUT))),
+        help="Indexer subprocess timeout (seconds)",
+    )
     p.set_defaults(func=cmd_index)
 
-    # reply
-    r = sub.add_parser("reply", help="Draft a reply .eml for a conversation")
+def _add_reply_parser(subparsers: _SubParsersAction) -> None:
+    r = subparsers.add_parser("reply", help="Draft a reply .eml for a conversation")
     r.add_argument("--root", required=True)
     r.add_argument("--conv-id", required=True)
-    r.add_argument("--query", help="Optional query; default is derived from last inbound")
+    r.add_argument(
+        "--query", help="Optional query; default is derived from last inbound"
+    )
     r.add_argument("--provider", default=os.getenv("EMBED_PROVIDER", "vertex"))
-    r.add_argument("--sim-threshold", type=float, default=float(os.getenv("SIM_THRESHOLD_DEFAULT", "0.30")))
-    r.add_argument("--target-tokens", type=int, default=int(os.getenv("REPLY_TOKENS_TARGET_DEFAULT", "20000")))
+    r.add_argument(
+        "--sim-threshold",
+        type=float,
+        default=float(os.getenv("SIM_THRESHOLD_DEFAULT", "0.30")),
+    )
+    r.add_argument(
+        "--target-tokens",
+        type=int,
+        default=int(os.getenv("REPLY_TOKENS_TARGET_DEFAULT", "20000")),
+    )
     r.add_argument("--temperature", type=float, default=0.2)
     r.add_argument("--no-attachments", action="store_true")
-    r.add_argument("--sender", help='Override sender (must be allow-listed), e.g., "Jane <jane@domain>"')
+    r.add_argument(
+        "--sender",
+        help='Override sender (must be allow-listed), e.g., "Jane <jane@domain>"',
+    )
     r.add_argument("--reply-to", help="Optional Reply-To")
     r.add_argument(
-        "--reply-policy", choices=["reply_all", "smart", "sender_only"], default=os.getenv("REPLY_POLICY", "reply_all")
+        "--reply-policy",
+        choices=["reply_all", "smart", "sender_only"],
+        default=os.getenv("REPLY_POLICY", "reply_all"),
     )
     r.add_argument("--out", help="Output .eml path")
     r.set_defaults(func=cmd_reply)
 
-    # fresh
-    f = sub.add_parser("fresh", help="Draft a fresh .eml addressed to provided recipients")
+def _add_fresh_parser(subparsers: _SubParsersAction) -> None:
+    f = subparsers.add_parser(
+        "fresh", help="Draft a fresh .eml addressed to provided recipients"
+    )
     f.add_argument("--root", required=True)
     f.add_argument("--provider", default=os.getenv("EMBED_PROVIDER", "vertex"))
     f.add_argument("--to", required=True, help="Comma-separated To")
     f.add_argument("--cc", help="Comma-separated Cc")
     f.add_argument("--subject", required=True)
-    f.add_argument("--query", required=True, help="Intent/instructions; supports inline filters")
-    f.add_argument("--sim-threshold", type=float, default=float(os.getenv("SIM_THRESHOLD_DEFAULT", "0.30")))
-    f.add_argument("--target-tokens", type=int, default=int(os.getenv("FRESH_TOKENS_TARGET_DEFAULT", "10000")))
+    f.add_argument(
+        "--query", required=True, help="Intent/instructions; supports inline filters"
+    )
+    f.add_argument(
+        "--sim-threshold",
+        type=float,
+        default=float(os.getenv("SIM_THRESHOLD_DEFAULT", "0.30")),
+    )
+    f.add_argument(
+        "--target-tokens",
+        type=int,
+        default=int(os.getenv("FRESH_TOKENS_TARGET_DEFAULT", "10000")),
+    )
     f.add_argument("--temperature", type=float, default=0.2)
     f.add_argument("--no-attachments", action="store_true")
-    f.add_argument("--sender", help="Override sender (allow-list enforced by your downstream)")
+    f.add_argument(
+        "--sender", help="Override sender (allow-list enforced by your downstream)"
+    )
     f.add_argument("--reply-to", help="Optional Reply-To")
     f.add_argument("--out", help="Output .eml path")
     f.set_defaults(func=cmd_fresh)
 
-    # chat
-    c = sub.add_parser("chat", help="Chat grounded in retrieved context")
+def _add_chat_parser(subparsers: _SubParsersAction) -> None:
+    c = subparsers.add_parser("chat", help="Chat grounded in retrieved context")
     c.add_argument("--root", required=True)
     c.add_argument("--query", required=True)
     c.add_argument("--k", type=int, default=12)
@@ -535,34 +554,63 @@ def build_cli() -> argparse.ArgumentParser:
     c.add_argument("--json", action="store_true", help="Emit raw JSON")
     c.set_defaults(func=cmd_chat)
 
-    # summarize one
-    s = sub.add_parser("summarize", help="Summarize a single conversation directory")
-    s.add_argument("--conversation", required=True, help="Path to conversation folder (must contain Conversation.txt)")
+def _add_summarize_parser(subparsers: _SubParsersAction) -> None:
+    s = subparsers.add_parser("summarize", help="Summarize a single conversation directory")
+    s.add_argument(
+        "--conversation",
+        required=True,
+        help="Path to conversation folder (must contain Conversation.txt)",
+    )
     s.add_argument("--provider", default=os.getenv("EMBED_PROVIDER", "vertex"))
-    s.add_argument("--out", help="Optional output directory (defaults to the conversation dir)")
+    s.add_argument(
+        "--out", help="Optional output directory (defaults to the conversation dir)"
+    )
     s.set_defaults(func=cmd_summarize)
 
-    # summarize many
-    m = sub.add_parser("summarize-many", help="Summarize all conversations under a root (parallel)")
+def _add_summarize_many_parser(subparsers: _SubParsersAction) -> None:
+    m = subparsers.add_parser(
+        "summarize-many", help="Summarize all conversations under a root (parallel)"
+    )
     m.add_argument("--root", required=True)
     m.add_argument("--provider", default=os.getenv("EMBED_PROVIDER", "vertex"))
     m.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 2) // 2))
-    m.add_argument("--out", help="Optional directory to write summaries (defaults to each conversation dir)")
+    m.add_argument(
+        "--out",
+        help="Optional directory to write summaries (defaults to each conversation dir)",
+    )
     m.set_defaults(func=cmd_summarize_many)
+
+def build_cli() -> argparse.ArgumentParser:
+    """Build the command-line interface."""
+    ap = argparse.ArgumentParser(description="EmailOps processor (thin orchestrator)")
+    ap.add_argument(
+        "--log-level",
+        default=os.getenv("LOG_LEVEL", "INFO"),
+        help="Logging level (DEBUG, INFO, WARNING, ERROR)",
+    )
+    sub = ap.add_subparsers(dest="cmd", required=True)
+
+    _add_index_parser(sub)
+    _add_reply_parser(sub)
+    _add_fresh_parser(sub)
+    _add_chat_parser(sub)
+    _add_summarize_parser(sub)
+    _add_summarize_many_parser(sub)
 
     return ap
 
 
 def main() -> int:
-    # Safety: always use spawn (works on Windows + prevents state leakage)
-    with contextlib.suppress(RuntimeError):
-        mp.set_start_method("spawn", force=True)
-
+    """Main entry point for the CLI."""
     _ensure_env()
     ap = build_cli()
     ns = ap.parse_args()
     # Apply dynamic log level if provided
-    lvl = getattr(logging, str(getattr(ns, "log_level", os.getenv("LOG_LEVEL", "INFO"))).upper(), logging.INFO)
+    lvl = getattr(
+        logging,
+        str(getattr(ns, "log_level", os.getenv("LOG_LEVEL", "INFO"))).upper(),
+        logging.INFO,
+    )
     logger.setLevel(lvl)
     logging.getLogger().setLevel(lvl)
     # Graceful Ctrl+C
@@ -574,17 +622,14 @@ def main() -> int:
     except KeyboardInterrupt:
         logger.warning("Interrupted by user")
         return 130
-    except IndexNotFoundError as e:
-        logger.error("Index error: %s", e)
-        return 2
-    except ConfigurationError as e:
-        logger.error("Configuration error: %s", e)
-        return 3
-    except CommandExecutionError as e:
-        logger.error("Command execution error: %s", e)
-        return 4
-    except ProcessorError as e:
-        logger.error("Processor error: %s", e)
+    except (IndexNotFoundError, ConfigurationError, CommandExecutionError, ProcessorError) as e:
+        logger.error("%s: %s", type(e).__name__, e)
+        if isinstance(e, IndexNotFoundError):
+            return 2
+        if isinstance(e, ConfigurationError):
+            return 3
+        if isinstance(e, CommandExecutionError):
+            return 4
         return 5
     except SystemExit:
         raise

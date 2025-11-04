@@ -53,17 +53,19 @@ No placeholders are used. All code is complete.
 # ---------------------------------------------------------------------------
 try:  # Package / module context (preferred)
     from .core_config import get_config
+    from .core_conversation_loader import load_conversation
     from .indexing_main import (
         _build_doc_entries,
-        _extract_manifest_metadata,
         _materialize_text_for_docs,
     )
     from .llm_client_shim import embed_texts
     from .llm_runtime import DEFAULT_ACCOUNTS, load_validated_accounts
-    from .util_main import find_conversation_dirs, load_conversation
+    from .services.file_service import FileService
+    from .utils import find_conversation_dirs
 except ImportError:  # pragma: no cover - defensive fallback for script/flat mode
     import importlib
     import sys
+
     here = Path(__file__).resolve().parent
     dep = here / "DEPENDENCIES"
     if str(here) not in sys.path:
@@ -73,27 +75,34 @@ except ImportError:  # pragma: no cover - defensive fallback for script/flat mod
 
     get_config = importlib.import_module("core_config").get_config
     _build_doc_entries = importlib.import_module("indexing_main")._build_doc_entries
-    _extract_manifest_metadata = importlib.import_module("indexing_main")._extract_manifest_metadata
-    _materialize_text_for_docs = importlib.import_module("indexing_main")._materialize_text_for_docs
+    extract_metadata_lightweight = importlib.import_module(
+        "core_manifest"
+    ).extract_metadata_lightweight
+    _materialize_text_for_docs = importlib.import_module(
+        "indexing_main"
+    )._materialize_text_for_docs
     embed_texts = importlib.import_module("llm_client_shim").embed_texts
     DEFAULT_ACCOUNTS = importlib.import_module("llm_runtime").DEFAULT_ACCOUNTS
-    load_validated_accounts = importlib.import_module("llm_runtime").load_validated_accounts
-    find_conversation_dirs = importlib.import_module("util_main").find_conversation_dirs
-    load_conversation = importlib.import_module("util_main").load_conversation
+    load_validated_accounts = importlib.import_module(
+        "llm_runtime"
+    ).load_validated_accounts
+    find_conversation_dirs = importlib.import_module("utils").find_conversation_dirs
+    load_conversation = importlib.import_module("core_conversation_loader").load_conversation
+    FileService = importlib.import_module("services.file_service").FileService
 
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
 
 
 @dataclass(frozen=True, slots=True)
 class WorkerBatch:
     """Immutable configuration for a single worker."""
+
     worker_id: int
     conversations: list[Path]
     account_index: int  # Which GCP account this worker uses
     provider: str
-    chunk_size: int
-    chunk_overlap: int
     limit: int | None
 
 
@@ -112,9 +121,54 @@ def _ensure_float32_stack(arrays: list[NDArray[np.float32]]) -> NDArray[np.float
         if a.size == 0:
             continue
         if a.shape[1] != dim:
-            raise ValueError(f"Inconsistent embedding dimensions: {a.shape[1]} vs {dim}")
+            raise ValueError(
+                f"Inconsistent embedding dimensions: {a.shape[1]} vs {dim}"
+            )
     return np.vstack([np.asarray(a, dtype=dtype) for a in arrays])
 
+
+def _embed_texts_in_batches(texts: list[str], worker_id: int) -> NDArray[np.float32]:
+    """
+    Embed texts in batches with retry logic.
+    """
+    batch_size = max(1, int(os.getenv("EMBED_BATCH", "64")))
+    all_embeddings: list[np.ndarray] = []
+
+    for i in range(0, len(texts), batch_size):
+        chunk_texts = texts[i : i + batch_size]
+        logger.info(
+            "Worker %d: Embedding batch %d/%d (size=%d)",
+            worker_id,
+            i // batch_size + 1,
+            (len(texts) + batch_size - 1) // batch_size,
+            len(chunk_texts),
+        )
+
+        backoff = 1.0
+        for attempt in range(5):
+            try:
+                vecs = embed_texts(chunk_texts)
+                arr = np.asarray(vecs, dtype="float32")
+                if arr.ndim != 2:
+                    raise ValueError(
+                        f"Expected 2D embeddings, got shape {arr.shape}"
+                    )
+                all_embeddings.append(arr)
+                break
+            except Exception as exc:
+                if attempt == 4:
+                    raise
+                logger.warning(
+                    "Worker %d: embed attempt %d failed (%s); retrying in %.1fs",
+                    worker_id,
+                    attempt + 1,
+                    exc,
+                    backoff,
+                )
+                time.sleep(backoff)
+                backoff = min(backoff * 2.0, 30.0)
+
+    return _ensure_float32_stack(all_embeddings)
 
 def _index_worker(batch: WorkerBatch) -> dict[str, Any]:
     """
@@ -135,7 +189,9 @@ def _index_worker(batch: WorkerBatch) -> dict[str, Any]:
         if not accounts:
             raise RuntimeError("No GCP/Vertex accounts available")
         if batch.account_index < 0 or batch.account_index >= len(accounts):
-            raise IndexError(f"account_index {batch.account_index} out of range (n={len(accounts)})")
+            raise IndexError(
+                f"account_index {batch.account_index} out of range (n={len(accounts)})"
+            )
         primary_account = accounts[batch.account_index]
 
         # Set environment for THIS worker's primary GCP project
@@ -150,7 +206,10 @@ def _index_worker(batch: WorkerBatch) -> dict[str, Any]:
 
         logger.info(
             "Worker %d: Processing %d conversations with project %s (provider=%s)",
-            worker_id, len(batch.conversations), primary_account.project_id, batch.provider,
+            worker_id,
+            len(batch.conversations),
+            primary_account.project_id,
+            batch.provider,
         )
 
         # ------------------------------------------------------------------
@@ -161,21 +220,26 @@ def _index_worker(batch: WorkerBatch) -> dict[str, Any]:
             base_id = convo_dir.name
             conv = load_conversation(
                 convo_dir,
-                include_attachment_text=False,           # Attachments chunked via _build_doc_entries
+                include_attachment_text=False,  # Attachments chunked via _build_doc_entries
             )
-            meta = _extract_manifest_metadata(conv)
+            if conv is None:
+                logger.warning("Worker %d: Failed to load conversation %s, skipping", worker_id, base_id)
+                continue
+            meta = extract_metadata_lightweight(conv.get("manifest") or {})
             chunks = _build_doc_entries(
                 conv=conv,
                 convo_dir=convo_dir,
                 base_id=base_id,
                 limit=batch.limit,
                 metadata=meta,
-                chunk_size=batch.chunk_size,
-                chunk_overlap=batch.chunk_overlap,
             )
             all_chunks.extend(chunks)
 
-        logger.info("Worker %d: Completed chunking - %d total chunks", worker_id, len(all_chunks))
+        logger.info(
+            "Worker %d: Completed chunking - %d total chunks",
+            worker_id,
+            len(all_chunks),
+        )
 
         if not all_chunks:
             # Nothing to do; still report success for merge stability
@@ -192,7 +256,8 @@ def _index_worker(batch: WorkerBatch) -> dict[str, Any]:
         # ------------------------------------------------------------------
         # STEP 2: BATCH UNINDEXED CHUNKS
         # ------------------------------------------------------------------
-        chunks_to_embed = _materialize_text_for_docs(all_chunks)
+        file_service = FileService(export_root=str(batch.conversations[0].parent))
+        chunks_to_embed = _materialize_text_for_docs(all_chunks, file_service)
         # Remove empty/whitespace-only texts defensively
         valid_chunks = [c for c in chunks_to_embed if str(c.get("text", "")).strip()]
         texts = [str(c["text"]) for c in valid_chunks]
@@ -202,51 +267,12 @@ def _index_worker(batch: WorkerBatch) -> dict[str, Any]:
         # ------------------------------------------------------------------
         # STEP 3: EMBED ALL BATCHES (using this worker's account/provider)
         # ------------------------------------------------------------------
-        batch_size = max(1, int(os.getenv("EMBED_BATCH", "64")))
-        all_embeddings: list[np.ndarray] = []
-
-        # Simple, conservative retry wrapper for transient provider hiccups
-        def _embed_with_retries(batch_texts: list[str]) -> NDArray[np.float32]:
-            """
-            Embed text batch with exponential backoff retry logic.
-
-            Returns:
-                2D float32 array (n_texts, embedding_dim)
-            """
-            backoff = 1.0
-            for attempt in range(5):
-                try:
-                    vecs = embed_texts(batch_texts)
-                    arr = np.asarray(vecs, dtype="float32")
-                    if arr.ndim != 2:
-                        raise ValueError(f"Expected 2D embeddings, got shape {arr.shape}")
-                    return arr
-                except Exception as exc:
-                    if attempt == 4:
-                        raise
-                    logger.warning(
-                        "Worker %d: embed attempt %d failed (%s); retrying in %.1fs",
-                        worker_id, attempt + 1, exc, backoff,
-                    )
-                    time.sleep(backoff)
-                    backoff = min(backoff * 2.0, 30.0)
-            # This line is added to satisfy the return type hint, though it should be unreachable
-            return np.array([], dtype=np.float32)
-
-        for i in range(0, len(texts), batch_size):
-            chunk_texts = texts[i : i + batch_size]
-            logger.info(
-                "Worker %d: Embedding batch %d/%d (size=%d)",
-                worker_id,
-                i // batch_size + 1,
-                (len(texts) + batch_size - 1) // batch_size,
-                len(chunk_texts),
-            )
-            arr = _embed_with_retries(chunk_texts)
-            all_embeddings.append(arr)
-
-        embeddings = _ensure_float32_stack(all_embeddings)
-        logger.info("Worker %d: Completed embedding - shape %s", worker_id, tuple(embeddings.shape))
+        embeddings = _embed_texts_in_batches(texts, worker_id)
+        logger.info(
+            "Worker %d: Completed embedding - shape %s",
+            worker_id,
+            tuple(embeddings.shape),
+        )
 
         # ------------------------------------------------------------------
         # STEP 4: SAVE PARTIAL RESULTS
@@ -277,7 +303,9 @@ def _index_worker(batch: WorkerBatch) -> dict[str, Any]:
 
         logger.info(
             "Worker %d: Saved partial results - %d embeddings, %d docs",
-            worker_id, embeddings.shape[0], len(mapping_out),
+            worker_id,
+            embeddings.shape[0],
+            len(mapping_out),
         )
 
         return {
@@ -306,8 +334,6 @@ def parallel_index_conversations(
     root: Path,
     provider: str,
     num_workers: int,
-    chunk_size: int,
-    chunk_overlap: int,
     limit: int | None = None,
 ) -> tuple[NDArray[np.float32], list[dict[str, Any]]]:
     """
@@ -331,10 +357,6 @@ def parallel_index_conversations(
     """
     if num_workers < 1:
         raise ValueError("num_workers must be >= 1")
-    if chunk_size <= 0:
-        raise ValueError("chunk_size must be > 0")
-    if chunk_overlap < 0:
-        raise ValueError("chunk_overlap must be >= 0")
 
     # ------------------------------------------------------------------
     # STEP 1: SPLIT CONVERSATIONS EQUALLY ACROSS WORKERS
@@ -358,7 +380,9 @@ def parallel_index_conversations(
 
     logger.info(
         "Starting parallel indexing: %d conversations, %d workers, %d GCP accounts",
-        total, num_workers, len(accounts),
+        total,
+        num_workers,
+        len(accounts),
     )
 
     # Split conversations equally
@@ -378,17 +402,19 @@ def parallel_index_conversations(
                 conversations=convs,
                 account_index=account_index,
                 provider=provider,
-                chunk_size=chunk_size,
-                chunk_overlap=chunk_overlap,
                 limit=limit,
             )
         )
 
-    logger.info("Split %d conversations into %d worker batches", total, len(worker_batches))
+    logger.info(
+        "Split %d conversations into %d worker batches", total, len(worker_batches)
+    )
     for wb in worker_batches:
         logger.info(
             "  Worker %d: %d conversations → GCP account index %d",
-            wb.worker_id, len(wb.conversations), wb.account_index,
+            wb.worker_id,
+            len(wb.conversations),
+            wb.account_index,
         )
 
     # ------------------------------------------------------------------
@@ -411,7 +437,11 @@ def parallel_index_conversations(
     if failed:
         logger.warning("%d workers failed:", len(failed))
         for f in failed:
-            logger.warning("  Worker %d: %s", f.get("worker_id", -1), f.get("error", "Unknown error"))
+            logger.warning(
+                "  Worker %d: %s",
+                f.get("worker_id", -1),
+                f.get("error", "Unknown error"),
+            )
 
     if not successful:
         raise RuntimeError("All workers failed - cannot build index")
@@ -428,9 +458,16 @@ def parallel_index_conversations(
             if p.exists():
                 arr = np.load(p)  # type: NDArray[np.float32]
                 if arr.ndim != 2:
-                    raise ValueError(f"Worker {result['worker_id']} produced non-2D embeddings: shape {arr.shape}")
+                    raise ValueError(
+                        f"Worker {result['worker_id']} produced non-2D embeddings: shape {arr.shape}"
+                    )
                 all_embeddings.append(np.asarray(arr, dtype="float32"))  # type: ignore[arg-type]
-                logger.info("  Worker %d: Loaded %s (shape=%s)", result["worker_id"], p.name, tuple(arr.shape))
+                logger.info(
+                    "  Worker %d: Loaded %s (shape=%s)",
+                    result["worker_id"],
+                    p.name,
+                    tuple(arr.shape),
+                )
 
     merged_embeddings = _ensure_float32_stack(all_embeddings)
     logger.info("Merged embeddings shape: %s", tuple(merged_embeddings.shape))
@@ -445,9 +482,15 @@ def parallel_index_conversations(
                 with Path.open(mp_path, encoding="utf-8") as f:
                     mapping = json.load(f)
                 if not isinstance(mapping, list):
-                    raise ValueError(f"Worker {result['worker_id']} mapping is not a list")
+                    raise ValueError(
+                        f"Worker {result['worker_id']} mapping is not a list"
+                    )
                 all_mappings.extend(mapping)
-                logger.info("  Worker %d: Loaded %d documents", result["worker_id"], len(mapping))
+                logger.info(
+                    "  Worker %d: Loaded %d documents",
+                    result["worker_id"],
+                    len(mapping),
+                )
 
     logger.info("Merged mapping size: %d documents", len(all_mappings))
 
@@ -457,7 +500,11 @@ def parallel_index_conversations(
             f"Merge alignment failed: {merged_embeddings.shape[0]} vectors != {len(all_mappings)} docs"
         )
 
-    logger.info("✅ Parallel indexing complete - %d docs indexed by %d workers", len(all_mappings), len(successful))
+    logger.info(
+        "✅ Parallel indexing complete - %d docs indexed by %d workers",
+        len(all_mappings),
+        len(successful),
+    )
 
     # ------------------------------------------------------------------
     # CLEANUP: remove partial files/directories from all workers
@@ -481,11 +528,14 @@ def parallel_index_conversations(
                     # non-fatal; best effort
                     pass
             except Exception as e:
-                cleanup_errors.append(f"{result.get('worker_id','?')}/{key}: {e}")
+                cleanup_errors.append(f"{result.get('worker_id', '?')}/{key}: {e}")
                 logger.warning("Failed to cleanup temp file %s: %s", path_str, e)
 
     if cleanup_errors:
-        logger.warning("Some temporary files could not be cleaned up: %d errors", len(cleanup_errors))
+        logger.warning(
+            "Some temporary files could not be cleaned up: %d errors",
+            len(cleanup_errors),
+        )
 
     return merged_embeddings, all_mappings
 

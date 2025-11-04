@@ -18,17 +18,20 @@ class Colors:
     ENDC = "\033[0m"
     BOLD = "\033[1m"
 
+
 def colored(text: str, color: str) -> str:
     """Apply color to text if terminal supports it"""
     if sys.stdout.isatty():
         return f"{color}{text}{Colors.ENDC}"
     return text
 
+
 def print_header(title: str):
     """Print a formatted header"""
     print(f"\n{'=' * 70}")
     print(colored(f"  {title}", Colors.BOLD))
-    print('=' * 70)
+    print("=" * 70)
+
 
 def test_config_module():
     """Test that the config module can be imported and used"""
@@ -36,12 +39,14 @@ def test_config_module():
 
     try:
         from emailops.core_config import get_config
+
         get_config()
         print(colored("✅ Successfully imported config module", Colors.GREEN))
         return True
     except ImportError as e:
         print(colored(f"❌ Failed to import config module: {e}", Colors.RED))
         return False
+
 
 def test_config_singleton():
     """Test that config returns singleton instance"""
@@ -65,33 +70,41 @@ def test_config_singleton():
         print(colored(f"❌ Error testing singleton: {e}", Colors.RED))
         return False
 
+
 def test_config_values():
     """Test that config has expected values"""
     print_header("Testing Config Values")
 
     try:
         from emailops.core_config import get_config
+
         config = get_config()
 
-        # Test expected attributes exist
+        # Test expected attributes exist (hierarchical structure)
         required_attrs = [
-            'INDEX_DIRNAME',
-            'CHUNK_DIRNAME',
-            'DEFAULT_BATCH_SIZE',
-            'DEFAULT_CHUNK_SIZE',
-            'DEFAULT_CHUNK_OVERLAP',
-            'DEFAULT_NUM_WORKERS',
-            'GCP_PROJECT',
-            'GCP_REGION',
-            'VERTEX_LOCATION',
-            'SECRETS_DIR',
-            'LOG_LEVEL'
+            ("directories.index_dirname", "INDEX_DIRNAME"),
+            ("directories.chunk_dirname", "CHUNK_DIRNAME"),
+            ("processing.batch_size", "DEFAULT_BATCH_SIZE"),
+            ("processing.chunk_size", "DEFAULT_CHUNK_SIZE"),
+            ("processing.chunk_overlap", "DEFAULT_CHUNK_OVERLAP"),
+            ("processing.num_workers", "DEFAULT_NUM_WORKERS"),
+            ("gcp.gcp_project", "GCP_PROJECT"),
+            ("gcp.gcp_region", "GCP_REGION"),
+            ("gcp.vertex_location", "VERTEX_LOCATION"),
+            ("directories.secrets_dir", "SECRETS_DIR"),
+            ("system.log_level", "LOG_LEVEL"),
         ]
 
         missing = []
-        for attr in required_attrs:
-            if not hasattr(config, attr):
-                missing.append(attr)
+        for attr_path, display_name in required_attrs:
+            parts = attr_path.split('.')
+            obj = config
+            for part in parts:
+                if hasattr(obj, part):
+                    obj = getattr(obj, part)
+                else:
+                    missing.append(display_name)
+                    break
 
         if missing:
             print(colored(f"❌ Missing attributes: {missing}", Colors.RED))
@@ -100,22 +113,23 @@ def test_config_values():
         # Print current values
         print(colored("✅ All required attributes present", Colors.GREEN))
         print("\nCurrent configuration values:")
-        print(f"  INDEX_DIRNAME: {config.INDEX_DIRNAME}")
-        print(f"  CHUNK_DIRNAME: {config.CHUNK_DIRNAME}")
-        print(f"  DEFAULT_BATCH_SIZE: {config.DEFAULT_BATCH_SIZE}")
-        print(f"  DEFAULT_CHUNK_SIZE: {config.DEFAULT_CHUNK_SIZE}")
-        print(f"  DEFAULT_CHUNK_OVERLAP: {config.DEFAULT_CHUNK_OVERLAP}")
-        print(f"  DEFAULT_NUM_WORKERS: {config.DEFAULT_NUM_WORKERS}")
-        print(f"  GCP_PROJECT: {config.GCP_PROJECT}")
-        print(f"  GCP_REGION: {config.gcp_region}")
-        print(f"  VERTEX_LOCATION: {config.vertex_location}")
-        print(f"  SECRETS_DIR: {config.SECRETS_DIR}")
-        print(f"  LOG_LEVEL: {config.LOG_LEVEL}")
+        print(f"  INDEX_DIRNAME: {config.directories.index_dirname}")
+        print(f"  CHUNK_DIRNAME: {config.directories.chunk_dirname}")
+        print(f"  DEFAULT_BATCH_SIZE: {config.processing.batch_size}")
+        print(f"  DEFAULT_CHUNK_SIZE: {config.processing.chunk_size}")
+        print(f"  DEFAULT_CHUNK_OVERLAP: {config.processing.chunk_overlap}")
+        print(f"  DEFAULT_NUM_WORKERS: {config.processing.num_workers}")
+        print(f"  GCP_PROJECT: {config.gcp.gcp_project}")
+        print(f"  GCP_REGION: {config.gcp.gcp_region}")
+        print(f"  VERTEX_LOCATION: {config.gcp.vertex_location}")
+        print(f"  SECRETS_DIR: {config.directories.secrets_dir}")
+        print(f"  LOG_LEVEL: {config.system.log_level}")
 
         return True
     except Exception as e:
         print(colored(f"❌ Error testing config values: {e}", Colors.RED))
         return False
+
 
 def test_environment_override():
     """Test that environment variables override defaults"""
@@ -129,15 +143,22 @@ def test_environment_override():
         # Force reload of config
         import importlib
 
-        from emailops import config as config_module
+        from emailops import core_config as config_module
+
         importlib.reload(config_module)
 
         from emailops.core_config import get_config, reset_config
+
         reset_config()
         config = get_config()
 
-        if test_value == config.INDEX_DIRNAME:
-            print(colored(f"✅ Environment override works: INDEX_DIRNAME = {test_value}", Colors.GREEN))
+        if test_value == config.directories.index_dirname:
+            print(
+                colored(
+                    f"✅ Environment override works: INDEX_DIRNAME = {test_value}",
+                    Colors.GREEN,
+                )
+            )
 
             # Reset to default
             del os.environ["INDEX_DIRNAME"]
@@ -145,11 +166,17 @@ def test_environment_override():
 
             return True
         else:
-            print(colored(f"❌ Environment override failed: got {config.INDEX_DIRNAME}, expected {test_value}", Colors.RED))
+            print(
+                colored(
+                    f"❌ Environment override failed: got {config.directories.index_dirname}, expected {test_value}",
+                    Colors.RED,
+                )
+            )
             return False
     except Exception as e:
         print(colored(f"❌ Error testing environment override: {e}", Colors.RED))
         return False
+
 
 def test_module_integration():
     """Test that other modules are using config"""
@@ -169,20 +196,35 @@ def test_module_integration():
             # Check if module imports config
             module_path = Path(module_name.replace(".", "/") + ".py")
             if module_path.exists():
-                with module_path.open(encoding='utf-8') as f:
+                with module_path.open(encoding="utf-8") as f:
                     content = f.read()
-                    if "from emailops.core_config import" in content or "from emailops import core_config" in content:
-                        print(colored(f"✅ {display_name} imports config", Colors.GREEN))
+                    if (
+                        "from emailops.core_config import" in content
+                        or "from emailops import core_config" in content
+                    ):
+                        print(
+                            colored(f"✅ {display_name} imports config", Colors.GREEN)
+                        )
                     else:
-                        print(colored(f"⚠️  {display_name} may not use config", Colors.YELLOW))
+                        print(
+                            colored(
+                                f"⚠️  {display_name} may not use config", Colors.YELLOW
+                            )
+                        )
                         # Not a failure, just a warning
             else:
-                print(colored(f"⚠️  {display_name} file not found at {module_path}", Colors.YELLOW))
+                print(
+                    colored(
+                        f"⚠️  {display_name} file not found at {module_path}",
+                        Colors.YELLOW,
+                    )
+                )
         except Exception as e:
             print(colored(f"❌ Error checking {display_name}: {e}", Colors.RED))
             all_passed = False
 
     return all_passed
+
 
 def test_credential_discovery():
     """Test credential file discovery"""
@@ -190,50 +232,65 @@ def test_credential_discovery():
 
     try:
         from emailops.core_config import get_config
+
         config = get_config()
 
         # Test credential discovery
         cred_file = config.get_credential_file()
         if cred_file:
-            print(colored(f"✅ Found credential file: {Path(cred_file).name}", Colors.GREEN))
+            print(
+                colored(
+                    f"✅ Found credential file: {Path(cred_file).name}", Colors.GREEN
+                )
+            )
         else:
-            print(colored("i  No credential files found (this is OK if not using GCP)", Colors.YELLOW))
+            print(
+                colored(
+                    "i  No credential files found (this is OK if not using GCP)",
+                    Colors.YELLOW,
+                )
+            )
 
         # Test secrets directory
         secrets_dir = config.get_secrets_dir()
         if secrets_dir and secrets_dir.exists():
             print(colored(f"✅ Secrets directory exists: {secrets_dir}", Colors.GREEN))
         else:
-            print(colored("i  Secrets directory not found (will use defaults)", Colors.YELLOW))
+            print(
+                colored(
+                    "i  Secrets directory not found (will use defaults)", Colors.YELLOW
+                )
+            )
 
         return True
     except Exception as e:
         print(colored(f"❌ Error testing credential discovery: {e}", Colors.RED))
         return False
 
+
 def check_hardcoded_values():
     """Check for remaining hardcoded values that should use config"""
     print_header("Checking for Hardcoded Values")
 
     patterns_to_check = [
-        ('_index', 'Hardcoded index directory name'),
-        ('_chunks', 'Hardcoded chunks directory name'),
-        ('os.getenv("INDEX_DIRNAME"', 'Direct INDEX_DIRNAME env access'),
-        ('os.getenv("CHUNK_DIRNAME"', 'Direct CHUNK_DIRNAME env access'),
-        ('os.getenv("EMBED_BATCH"', 'Direct EMBED_BATCH env access'),
-        ('chunk_size=1600', 'Hardcoded chunk size'),
-        ('chunk_overlap=200', 'Hardcoded chunk overlap'),
+        ("_index", "Hardcoded index directory name"),
+        ("_chunks", "Hardcoded chunks directory name"),
+        ('os.getenv("INDEX_DIRNAME"', "Direct INDEX_DIRNAME env access"),
+        ('os.getenv("CHUNK_DIRNAME"', "Direct CHUNK_DIRNAME env access"),
+        ('os.getenv("EMBED_BATCH"', "Direct EMBED_BATCH env access"),
+        ("chunk_size=1600", "Hardcoded chunk size"),
+        ("chunk_overlap=200", "Hardcoded chunk overlap"),
     ]
 
     # Files to check (excluding config.py itself and test files)
     files_to_check = [
-        'ui/emailops_ui.py',
-        'processing/processor.py',
-        'diagnostics/monitor.py',
-        'diagnostics/statistics.py',
-        'diagnostics/diagnostics.py',
-        'emailops/email_indexer.py',
-        'emailops/text_chunker.py',
+        "ui/emailops_ui.py",
+        "processing/processor.py",
+        "diagnostics/monitor.py",
+        "diagnostics/statistics.py",
+        "diagnostics/diagnostics.py",
+        "emailops/email_indexer.py",
+        "emailops/text_chunker.py",
     ]
 
     found_issues = []
@@ -244,16 +301,18 @@ def check_hardcoded_values():
             continue
 
         try:
-            with path.open(encoding='utf-8') as f:
+            with path.open(encoding="utf-8") as f:
                 content = f.read()
                 for pattern, description in patterns_to_check:
                     # Skip if it's in a comment or string
                     if pattern in content:
                         # Rough check - might have false positives
-                        lines = content.split('\n')
+                        lines = content.split("\n")
                         for line_num, line in enumerate(lines, 1):
-                            if pattern in line and not line.strip().startswith('#'):
-                                found_issues.append(f"{file_path}:{line_num} - {description}")
+                            if pattern in line and not line.strip().startswith("#"):
+                                found_issues.append(
+                                    f"{file_path}:{line_num} - {description}"
+                                )
         except Exception as e:
             print(colored(f"⚠️  Error checking {file_path}: {e}", Colors.YELLOW))
 
@@ -267,6 +326,7 @@ def check_hardcoded_values():
     else:
         print(colored("✅ No obvious hardcoded values found", Colors.GREEN))
         return True
+
 
 def main():
     """Run all tests"""
@@ -301,17 +361,32 @@ def main():
     total_count = len(results)
 
     for test_name, passed in results:
-        status = colored("✅ PASSED", Colors.GREEN) if passed else colored("❌ FAILED", Colors.RED)
+        status = (
+            colored("✅ PASSED", Colors.GREEN)
+            if passed
+            else colored("❌ FAILED", Colors.RED)
+        )
         print(f"  {test_name:30} {status}")
 
     print(f"\n  Total: {passed_count}/{total_count} tests passed")
 
     if passed_count == total_count:
-        print(colored("\n🎉 All tests passed! Config integration is working correctly.", Colors.GREEN))
+        print(
+            colored(
+                "\n🎉 All tests passed! Config integration is working correctly.",
+                Colors.GREEN,
+            )
+        )
         return 0
     else:
-        print(colored(f"\n⚠️  {total_count - passed_count} tests failed. Please review the issues above.", Colors.YELLOW))
+        print(
+            colored(
+                f"\n⚠️  {total_count - passed_count} tests failed. Please review the issues above.",
+                Colors.YELLOW,
+            )
+        )
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

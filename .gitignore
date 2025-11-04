@@ -92,6 +92,11 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 
+# Test files
+test_*.py
+*_test.py
+tests/
+
 # Jupyter Notebook
 .ipynb_checkpoints
 *.ipynb_checkpoints
@@ -189,7 +194,7 @@ $RECYCLE.BIN/
 # PROJECT SPECIFIC
 # ============================================
 
-# Secrets and credentials
+# Secrets and credentials (P0-1 SECURITY FIX)
 secrets/
 *.key
 *.pem
@@ -199,6 +204,15 @@ service-account*.json
 credentials*.json
 *_credentials*
 gcp-key*.json
+
+# CRITICAL: Never commit validated account files
+validated_accounts.json
+**/validated_accounts.json
+.emailops/validated_accounts.json
+~/.emailops/validated_accounts.json
+
+# Keep templates only
+!validated_accounts.json.template
 
 # Sample data and test outputs
 emailops/sample/

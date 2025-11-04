@@ -32,7 +32,12 @@ SCANNER_DIR_NAME = f"sonar-scanner-{SCANNER_VERSION}-windows"
 class SonarQubeManager:
     """Manages SonarQube authentication and analysis."""
 
-    def __init__(self, url: str = SONAR_URL, username: str = DEFAULT_USER, password: str = DEFAULT_PASS):
+    def __init__(
+        self,
+        url: str = SONAR_URL,
+        username: str = DEFAULT_USER,
+        password: str = DEFAULT_PASS,
+    ):
         self.url = url
         self.username = username
         self.password = password
@@ -43,7 +48,7 @@ class SonarQubeManager:
         try:
             response = requests.get(f"{self.url}/api/system/status", timeout=5)
             return response.status_code == 200
-        except:
+        except Exception:
             return False
 
     def wait_for_server(self, max_wait: int = 180) -> bool:
@@ -76,21 +81,23 @@ class SonarQubeManager:
             response = requests.get(
                 f"{self.url}/api/authentication/validate",
                 auth=(self.username, self.password),
-                timeout=10
+                timeout=10,
             )
             return response.status_code == 200 and response.json().get("valid", False)
-        except:
+        except Exception:
             return False
 
     def list_tokens(self) -> list:
         """List all existing tokens."""
         try:
             url = f"{self.url}/api/user_tokens/search"
-            response = requests.get(url, auth=(self.username, self.password), timeout=10)
+            response = requests.get(
+                url, auth=(self.username, self.password), timeout=10
+            )
             if response.status_code == 200:
                 return response.json().get("userTokens", [])
             return []
-        except:
+        except Exception:
             return []
 
     def revoke_token(self, token_name: str) -> bool:
@@ -101,10 +108,10 @@ class SonarQubeManager:
                 url,
                 auth=(self.username, self.password),
                 data={"name": token_name},
-                timeout=10
+                timeout=10,
             )
             return response.status_code == 204
-        except:
+        except Exception:
             return False
 
     def generate_token(self, token_name: str | None = None) -> tuple[bool, str]:
@@ -118,7 +125,7 @@ class SonarQubeManager:
                 url,
                 auth=(self.username, self.password),
                 data={"name": token_name},
-                timeout=10
+                timeout=10,
             )
 
             if response.status_code == 200:
@@ -139,10 +146,9 @@ class SonarQubeManager:
 
         # Check server
         print("Step 1: Checking SonarQube server...")
-        if not self.check_server():
-            if not self.wait_for_server():
-                print("✗ SonarQube server is not accessible")
-                return None
+        if not self.check_server() and not self.wait_for_server():
+            print("✗ SonarQube server is not accessible")
+            return None
         print("✓ Server is running")
 
         # Test authentication
@@ -156,9 +162,9 @@ class SonarQubeManager:
         print("\nStep 3: Cleaning up old tokens...")
         tokens = self.list_tokens()
         for token in tokens:
-            if token['name'] == self.token_name:
+            if token["name"] == self.token_name:
                 print(f"Revoking existing token: {token['name']}")
-                self.revoke_token(token['name'])
+                self.revoke_token(token["name"])
 
         # Generate new token
         print(f"\nStep 4: Generating new token '{self.token_name}'...")
@@ -195,26 +201,24 @@ sonar.python.version=3
 sonar.host.url={self.url}
 sonar.token={token}
 """
-                props_path.write_text(content, encoding='utf-8')
+                props_path.write_text(content, encoding="utf-8")
             else:
-                content = props_path.read_text(encoding='utf-8')
+                content = props_path.read_text(encoding="utf-8")
 
                 # Update or add token
-                if re.search(r'^sonar\.token=', content, re.MULTILINE):
+                if re.search(r"^sonar\.token=", content, re.MULTILINE):
                     content = re.sub(
-                        r'^sonar\.token=.*$',
-                        f'sonar.token={token}',
+                        r"^sonar\.token=.*$",
+                        f"sonar.token={token}",
                         content,
-                        flags=re.MULTILINE
+                        flags=re.MULTILINE,
                     )
                 else:
                     content = re.sub(
-                        r'(sonar\.host\.url=.*\n)',
-                        f'\\1sonar.token={token}\n',
-                        content
+                        r"(sonar\.host\.url=.*\n)", f"\\1sonar.token={token}\n", content
                     )
 
-                props_path.write_text(content, encoding='utf-8')
+                props_path.write_text(content, encoding="utf-8")
 
             return True
         except Exception as e:
@@ -224,20 +228,18 @@ sonar.token={token}
     def update_env_file(self, token: str) -> bool:
         """Update .env file with the token."""
         try:
-            env_path = Path('.env')
+            env_path = Path(".env")
             if env_path.exists():
-                content = env_path.read_text(encoding='utf-8')
+                content = env_path.read_text(encoding="utf-8")
 
-                if 'SONAR_TOKEN=' in content:
+                if "SONAR_TOKEN=" in content:
                     content = re.sub(
-                        r'SONAR_TOKEN=.*',
-                        f'SONAR_TOKEN="{token}"',
-                        content
+                        r"SONAR_TOKEN=.*", f'SONAR_TOKEN="{token}"', content
                     )
                 else:
                     content += f'\nSONAR_TOKEN="{token}"\n'
 
-                env_path.write_text(content, encoding='utf-8')
+                env_path.write_text(content, encoding="utf-8")
                 print("✓ .env file updated")
                 return True
         except Exception as e:
@@ -267,7 +269,7 @@ class SonarScanner:
             print(f"✓ Downloaded to: {scanner_zip}")
 
             print("Extracting scanner...")
-            with zipfile.ZipFile(scanner_zip, 'r') as zip_ref:
+            with zipfile.ZipFile(scanner_zip, "r") as zip_ref:
                 zip_ref.extractall(self.tools_dir)
             print(f"✓ Extracted to: {self.scanner_path}")
 
@@ -279,7 +281,9 @@ class SonarScanner:
             print(f"✗ Failed to download/extract scanner: {e}")
             sys.exit(1)
 
-    def run_analysis(self, project_dir: Path | None = None, token: str | None = None) -> int:
+    def run_analysis(
+        self, project_dir: Path | None = None, token: str | None = None
+    ) -> int:
         """Execute SonarQube analysis."""
         project_dir = project_dir or Path.cwd()
         scanner_bin = self.scanner_path / "bin" / "sonar-scanner.bat"
@@ -294,9 +298,9 @@ class SonarScanner:
             print(f"✗ sonar-project.properties not found at: {props_file}")
             return 1
 
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("Running SonarQube Analysis")
-        print("="*60 + "\n")
+        print("=" * 60 + "\n")
 
         # Build command
         cmd = [
@@ -318,11 +322,7 @@ class SonarScanner:
 
         try:
             result = subprocess.run(
-                cmd,
-                cwd=project_dir,
-                capture_output=False,
-                text=True,
-                check=False
+                cmd, cwd=project_dir, capture_output=False, text=True, check=False
             )
             return result.returncode
         except Exception as e:
@@ -345,21 +345,21 @@ def setup_and_scan():
     scanner.download_scanner()
 
     # Run analysis
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("Starting SonarQube Analysis")
-    print("="*70)
+    print("=" * 70)
 
     exit_code = scanner.run_analysis(token=token)
 
     if exit_code == 0:
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("✓ SonarQube analysis completed successfully!")
-        print("="*60)
+        print("=" * 60)
         print(f"\nView results at: {SONAR_URL}/dashboard?id=emailops_vertex_ai")
     else:
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print(f"✗ SonarQube analysis failed with exit code: {exit_code}")
-        print("="*60)
+        print("=" * 60)
 
     return exit_code
 
