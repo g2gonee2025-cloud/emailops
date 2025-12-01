@@ -1,0 +1,107 @@
+{
+  "timestamp": "2025-12-01T14:36:46.824484",
+  "total_accounts": 10,
+  "successful_calls": 0,
+  "individual_results": [
+    {
+      "account": "api-agent-470921",
+      "credentials": "C:\\Users\\ASUS\\Downloads\\emailops_vertex_ai\\secrets\\api-agent-470921-aa03081a1b4d.json",
+      "account_group": 0,
+      "success": false,
+      "details": {
+        "status": "failed",
+        "error": "RetryError[<Future at 0x2204c9b6990 state=finished raised ProviderError>]"
+      }
+    },
+    {
+      "account": "apt-arcana-470409-i7",
+      "credentials": "C:\\Users\\ASUS\\Downloads\\emailops_vertex_ai\\secrets\\apt-arcana-470409-i7-ce42b76061bf.json",
+      "account_group": 0,
+      "success": false,
+      "details": {
+        "status": "failed",
+        "error": "RetryError[<Future at 0x2204c9bc490 state=finished raised ProviderError>]"
+      }
+    },
+    {
+      "account": "avp1-476017",
+      "credentials": "C:\\Users\\ASUS\\Downloads\\emailops_vertex_ai\\secrets\\avp1-476017-e1ba80203362.json",
+      "account_group": 0,
+      "success": false,
+      "details": {
+        "status": "failed",
+        "error": "RetryError[<Future at 0x2204c9be450 state=finished raised ProviderError>]"
+      }
+    },
+    {
+      "account": "avp2-476017",
+      "credentials": "C:\\Users\\ASUS\\Downloads\\emailops_vertex_ai\\secrets\\avp2-476017-72f9a088c008.json",
+      "account_group": 0,
+      "success": false,
+      "details": {
+        "status": "failed",
+        "error": "RetryError[<Future at 0x2204c9bda10 state=finished raised ProviderError>]"
+      }
+    },
+    {
+      "account": "avp3-476017",
+      "credentials": "C:\\Users\\ASUS\\Downloads\\emailops_vertex_ai\\secrets\\avp3-476017-6046b1067817.json",
+      "account_group": 0,
+      "success": false,
+      "details": {
+        "status": "failed",
+        "error": "RetryError[<Future at 0x2204c9a9410 state=finished raised ProviderError>]"
+      }
+    },
+    {
+      "account": "boxwood-well-475205-d4",
+      "credentials": "C:\\Users\\ASUS\\Downloads\\emailops_vertex_ai\\secrets\\boxwood-well-475205-d4-75dea4e5d7aa.json",
+      "account_group": 0,
+      "success": false,
+      "details": {
+        "status": "failed",
+        "error": "RetryError[<Future at 0x2204c9a9390 state=finished raised ProviderError>]"
+      }
+    },
+    {
+      "account": "email-conv",
+      "credentials": "C:\\Users\\ASUS\\Downloads\\emailops_vertex_ai\\secrets\\email-conv-9dc877a5826c.json",
+      "account_group": 0,
+      "success": false,
+      "details": {
+        "status": "failed",
+        "error": "RetryError[<Future at 0x2204c9ab4d0 state=finished raised ProviderError>]"
+      }
+    },
+    {
+      "account": "embed2-474114",
+      "credentials": "C:\\Users\\ASUS\\Downloads\\emailops_vertex_ai\\secrets\\embed2-474114-fca38b4d2068.json",
+      "account_group": 0,
+      "success": false,
+      "details": {
+        "status": "failed",
+        "error": "RetryError[<Future at 0x2204c9a9e90 state=finished raised ProviderError>]"
+      }
+    },
+    {
+      "account": "even-dream-470408-m1",
+      "credentials": "C:\\Users\\ASUS\\Downloads\\emailops_vertex_ai\\secrets\\even-dream-470408-m1-4ca82ce6c72e.json",
+      "account_group": 0,
+      "success": false,
+      "details": {
+        "status": "failed",
+        "error": "RetryError[<Future at 0x2204c9abe90 state=finished raised ProviderError>]"
+      }
+    },
+    {
+      "account": "inlaid-chiller-475902-g9",
+      "credentials": "C:\\Users\\ASUS\\Downloads\\emailops_vertex_ai\\secrets\\inlaid-chiller-475902-g9-a1c13a423063.json",
+      "account_group": 0,
+      "success": false,
+      "details": {
+        "status": "failed",
+        "error": "RetryError[<Future at 0x2204c9abb50 state=finished raised ProviderError>]"
+      }
+    }
+  ]
+}

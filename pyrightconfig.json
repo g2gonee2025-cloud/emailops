@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/pyright/main/packages/pyright-internal/src/pyright-internal/schema/pyrightconfig.schema.json",
+  "typeCheckingMode": "basic",
+  "reportUnknownArgumentType": "none",
+  "reportUnknownVariableType": "none",
+  "reportUnknownMemberType": "none",
+  "reportUnknownParameterType": "none",
+  "reportUnknownLambdaType": "none",
+  "reportUnknownFunctionReturnType": "none",
+  "reportUnnecessaryIsInstance": "none",
+  "exclude": [
+    "emailops/feature_summarize.py"
+  ],
+  "extraPaths": [
+    "backend/src"
+  ]
+}

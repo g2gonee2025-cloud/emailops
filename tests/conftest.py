@@ -295,7 +295,7 @@ def mock_embed_texts():
         norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
         return embeddings / norms
 
-    with patch("emailops.llm_client_shim.embed_texts", side_effect=mock_embed) as mock:
+    with patch("cortex.llm.client.embed_texts", side_effect=mock_embed) as mock:
         yield mock
 
 
@@ -307,8 +307,9 @@ def mock_vertex_account_validation():
     Yields:
         Mock validation function
     """
-    with patch("emailops.llm_runtime.validate_account") as mock_validate:
-        mock_validate.return_value = (True, "OK")
+    # Updated to patch the new validation method in config loader
+    with patch("cortex.config.loader.EmailOpsConfig._is_valid_service_account_json") as mock_validate:
+        mock_validate.return_value = True
         yield mock_validate
 
 
