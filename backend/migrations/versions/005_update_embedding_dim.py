@@ -5,9 +5,7 @@ Revises: ec7386d2401e
 Create Date: 2025-12-03 12:00:00.000000
 
 """
-import sqlalchemy as sa
 from alembic import op
-from pgvector.sqlalchemy import Vector
 
 revision = "005"
 down_revision = "ec7386d2401e"
@@ -27,14 +25,9 @@ def upgrade():
     # but typically changing vector dimension requires re-embedding anyway.
     op.execute("ALTER TABLE chunks ALTER COLUMN embedding TYPE vector(3072)")
 
-    # Recreate the index with the new dimension
-    op.execute(
-        """
-        CREATE INDEX idx_chunks_embedding_hnsw ON chunks 
-        USING hnsw (embedding vector_cosine_ops)
-        WITH (m = 16, ef_construction = 64)
-    """
-    )
+    # Intentionally leave the HNSW index dropped here.
+    # Migration 006 installs the replacement halfvec-based index
+    # (`chunks_embedding_hnsw_idx`) once the embedding dimension is 3072.
 
 
 def downgrade():

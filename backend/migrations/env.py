@@ -1,16 +1,45 @@
+from __future__ import annotations
 
-from logging.config import fileConfig
 import sys
+from importlib import import_module
+from logging.config import fileConfig
 from pathlib import Path
+from typing import Any, Callable, Dict, cast
+
 from alembic import context
 from sqlalchemy import engine_from_config, pool
-from cortex.db.models import Base
-from cortex.config.loader import get_config
+from sqlalchemy.orm import DeclarativeMeta
 
-# Add backend/src to sys.path so we can import cortex
-backend_src = Path(__file__).resolve().parents[2] / "src"
-if str(backend_src) not in sys.path:
-    sys.path.append(str(backend_src))
+
+def _ensure_backend_src_on_path() -> None:
+    migrations_dir = Path(__file__).resolve().parent
+    backend_dir = migrations_dir.parent
+    backend_src = backend_dir / "src"
+
+    if backend_src.is_dir():
+        backend_src_str = str(backend_src)
+        if backend_src_str not in sys.path:
+            sys.path.append(backend_src_str)
+        return
+
+    # Fallback to repo-level src (agentic tooling, etc.) if present.
+    repo_root = backend_dir.parent
+    alt_src = repo_root / "src"
+    if alt_src.is_dir():
+        alt_src_str = str(alt_src)
+        if alt_src_str not in sys.path:
+            sys.path.append(alt_src_str)
+
+
+_ensure_backend_src_on_path()
+
+
+_models_module = import_module("cortex.db.models")
+Base = cast(DeclarativeMeta, getattr(_models_module, "Base"))
+
+_config_module = import_module("cortex.config.loader")
+GetConfigCallable = Callable[[], Any]
+get_config = cast(GetConfigCallable, getattr(_config_module, "get_config"))
 
 
 # this is the Alembic Config object, which provides
@@ -31,8 +60,21 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-def get_url():
-    return get_config().database.url
+
+def get_url() -> str:
+    config_obj = get_config()
+    database = getattr(config_obj, "database", None)
+    db_url = getattr(database, "url", None)
+    if db_url is None:
+        raise RuntimeError("Database configuration is missing a URL.")
+    return str(db_url)
+
+
+def _build_sqlalchemy_config() -> Dict[str, Any]:
+    configuration = dict(config.get_section(config.config_ini_section) or {})
+    configuration["sqlalchemy.url"] = get_url()
+    return configuration
+
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
@@ -65,9 +107,8 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    configuration = config.get_section(config.config_ini_section)
-    configuration["sqlalchemy.url"] = get_url()
-    
+    configuration = _build_sqlalchemy_config()
+
     connectable = engine_from_config(
         configuration,
         prefix="sqlalchemy.",
@@ -75,9 +116,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()
