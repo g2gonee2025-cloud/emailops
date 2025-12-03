@@ -10,9 +10,9 @@ import re
 from pathlib import Path
 from typing import Any
 
+from cortex.config.loader import get_config
 from cortex.ingestion.core_manifest import load_manifest
 from cortex.text_extraction import extract_text
-from cortex.config.loader import get_config
 from cortex.utils import read_text_file, scrub_json
 
 logger = logging.getLogger(__name__)
@@ -23,14 +23,22 @@ _CONTROL_CHARS = re.compile(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]")
 
 def _load_conversation_text(convo_dir: Path) -> str:
     """Load and sanitize the main conversation text file."""
-    convo_txt_path = convo_dir / "Conversation.txt"
-    if not convo_txt_path.exists():
-        return ""
-    try:
-        return read_text_file(convo_txt_path)
-    except OSError as e:
-        logger.warning("Failed to read Conversation.txt at %s: %s", convo_dir, e)
-        return ""
+    candidate_names = ["Conversation.txt", "conversation.txt"]
+    for name in candidate_names:
+        convo_txt_path = convo_dir / name
+        if not convo_txt_path.exists():
+            continue
+        try:
+            if name != "Conversation.txt":
+                logger.debug(
+                    "Using alternate conversation file name '%s' in %s", name, convo_dir
+                )
+            return read_text_file(convo_txt_path)
+        except OSError as e:
+            logger.warning("Failed to read %s at %s: %s", name, convo_dir, e)
+            return ""
+    return ""
+
 
 def _load_summary(convo_dir: Path) -> dict[str, Any]:
     """Load and parse the summary.json file."""
@@ -41,6 +49,7 @@ def _load_summary(convo_dir: Path) -> dict[str, Any]:
         return scrub_json(json.loads(summary_json_path.read_text(encoding="utf-8-sig")))
     except (json.JSONDecodeError, OSError):
         return {}
+
 
 def _process_single_attachment(
     att_file: Path,
@@ -108,6 +117,7 @@ def _process_attachments(
 
     return attachments, appended_text
 
+
 def load_conversation(
     convo_dir: Path,
     *,
@@ -153,7 +163,9 @@ def load_conversation(
     max_total_attachment_text = (
         max_total_attachment_text
         if max_total_attachment_text is not None
-        else int(config.max_total_attachments_mb * 1024 * 1024) # Approximate char count from MB
+        else int(
+            config.max_total_attachments_mb * 1024 * 1024
+        )  # Approximate char count from MB
     )
     max_attachment_text_chars = (
         max_attachment_text_chars
@@ -182,7 +194,9 @@ def load_conversation(
 
     # Validate that we have some minimal content
     if not conversation_text and not attachments and not manifest:
-        logger.warning("Conversation directory contains no processable content: %s", convo_dir)
+        logger.warning(
+            "Conversation directory contains no processable content: %s", convo_dir
+        )
         return None
 
     return {
@@ -223,6 +237,8 @@ def _collect_attachment_files(convo_dir: Path) -> list[Path]:
             )
 
     # Sort deterministically
-    sorted_files = sorted(all_files, key=lambda p: (p.parent.as_posix(), p.name.lower()))
+    sorted_files = sorted(
+        all_files, key=lambda p: (p.parent.as_posix(), p.name.lower())
+    )
 
     return sorted_files

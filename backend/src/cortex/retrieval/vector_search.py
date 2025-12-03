@@ -2,23 +2,29 @@
 Vector Search retrieval.
 
 Implements §8.3 of the Canonical Blueprint.
+
+Per pgvector official docs:
+- HNSW index for vector type limited to 2000 dims
+- We use halfvec cast for 3072-dim embeddings (supports up to 4000 dims)
+- Query must cast to halfvec to use the HNSW index
 """
 from __future__ import annotations
 
 import logging
 from typing import Any, Dict, List
 
-from pydantic import BaseModel
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-
+from cortex.config.loader import get_config
 from cortex.db.models import Chunk
+from pydantic import BaseModel
+from sqlalchemy import func, select, text
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
 
 class VectorResult(BaseModel):
     """Vector search result."""
+
     chunk_id: str
     score: float
     text: str
@@ -26,43 +32,75 @@ class VectorResult(BaseModel):
 
 
 def search_chunks_vector(
-    session: Session,
-    embedding: List[float],
-    tenant_id: str,
-    limit: int = 50
+    session: Session, embedding: List[float], tenant_id: str, limit: int = 50
 ) -> List[VectorResult]:
     """
-    Perform vector search on chunks.
-    
+    Perform vector search on chunks using HNSW index.
+
     Blueprint §8.3:
     * Vector search (pgvector) over chunks.embedding
+
+    Per pgvector docs:
+    * Uses halfvec cast for 3072-dim vectors to leverage HNSW index
+    * Cosine distance operator (<=>) for normalized embeddings
     """
-    # Blueprint §8.3: Vector search (pgvector) over chunks.embedding
-    # Calculate cosine similarity score (1 - cosine_distance)
-    
-    distance_expr = Chunk.embedding.cosine_distance(embedding)
-    
-    stmt = select(Chunk, distance_expr.label("distance")).filter(
-        Chunk.tenant_id == tenant_id
-    ).order_by(
-        distance_expr
-    ).limit(limit)
-    
-    results = session.execute(stmt).all()
-    
+    config = get_config()
+    output_dim = config.embedding.output_dimensionality
+
+    # Convert embedding to string format for raw SQL
+    embedding_str = "[" + ",".join(str(v) for v in embedding) + "]"
+
+    # Use raw SQL to properly cast to halfvec for HNSW index utilization
+    # Per pgvector docs: query must use same type as index (halfvec)
+    stmt = text(
+        """
+        SELECT 
+            chunk_id,
+            text,
+            metadata,
+            thread_id,
+            message_id,
+            attachment_id,
+            embedding::halfvec(:dim) <=> :query_vec::halfvec(:dim) AS distance
+        FROM chunks
+        WHERE tenant_id = :tenant_id
+        ORDER BY embedding::halfvec(:dim) <=> :query_vec::halfvec(:dim)
+        LIMIT :limit
+    """
+    )
+
+    results = session.execute(
+        stmt,
+        {
+            "tenant_id": tenant_id,
+            "query_vec": embedding_str,
+            "dim": output_dim,
+            "limit": limit,
+        },
+    ).fetchall()
+
     out = []
-    for chunk, distance in results:
+    for row in results:
         # Convert distance to similarity score (0..1)
         # Cosine distance is 1 - cosine similarity
-        score = 1.0 - distance
-        
-        out.append(VectorResult(
-            chunk_id=str(chunk.chunk_id),
-            score=score,
-            text=chunk.text,
-            metadata=chunk.metadata_
-        ))
-        
+        score = 1.0 - row.distance if row.distance is not None else 0.0
+
+        metadata = row.metadata if isinstance(row.metadata, dict) else {}
+        metadata["thread_id"] = str(row.thread_id) if row.thread_id else ""
+        metadata["message_id"] = str(row.message_id) if row.message_id else ""
+        metadata["attachment_id"] = str(row.attachment_id) if row.attachment_id else ""
+
+        out.append(
+            VectorResult(
+                chunk_id=str(row.chunk_id),
+                score=score,
+                text=row.text or "",
+                metadata=metadata,
+            )
+        )
+
+    return out
+
     return out
 
 

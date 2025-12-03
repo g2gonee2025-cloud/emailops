@@ -12,20 +12,20 @@ from typing import Any, List, Literal, Optional, Set
 
 from pydantic import BaseModel, Field, field_validator
 
-
 # -----------------------------------------------------------------------------
 # Environment Variable Helper
 # -----------------------------------------------------------------------------
 
+
 def _env(key: str, default: Any, value_type: type = str) -> Any:
     """
     Get environment variable with OUTLOOKCORTEX_ prefix fallback.
-    
+
     Args:
         key: Environment variable name (without prefix)
         default: Default value if not set
         value_type: Type to convert value to
-        
+
     Returns:
         Environment variable value or default
     """
@@ -49,26 +49,58 @@ def _env(key: str, default: Any, value_type: type = str) -> Any:
 # Directory Configuration
 # -----------------------------------------------------------------------------
 
+
 class DirectoryConfig(BaseModel):
     """Directory paths configuration."""
-    
+
     index_dirname: str = Field(
         default_factory=lambda: _env("INDEX_DIRNAME", "_index"),
-        description="Name of the index directory"
+        description="Name of the index directory",
     )
     chunk_dirname: str = Field(
         default_factory=lambda: _env("CHUNK_DIRNAME", "_chunks"),
-        description="Name of the chunks directory"
+        description="Name of the chunks directory",
     )
     secrets_dir: Path = Field(
         default_factory=lambda: Path(_env("SECRETS_DIR", "secrets")),
-        description="Path to secrets directory"
+        description="Path to secrets directory",
     )
     export_root: str = Field(
         default_factory=lambda: _env("EXPORT_ROOT", ""),
-        description="Root directory for exports"
+        description="Root directory for exports",
     )
-    
+
+    model_config = {"extra": "forbid"}
+
+
+# -----------------------------------------------------------------------------
+# Storage Configuration (DigitalOcean Spaces / S3)
+# -----------------------------------------------------------------------------
+
+
+class StorageConfig(BaseModel):
+    """Object storage configuration (DigitalOcean Spaces / S3)."""
+
+    endpoint_url: str = Field(
+        default_factory=lambda: _env(
+            "S3_ENDPOINT", "https://nyc3.digitaloceanspaces.com"
+        ),
+        description="S3-compatible endpoint URL",
+    )
+    access_key: Optional[str] = Field(
+        default_factory=lambda: _env("S3_ACCESS_KEY", None), description="S3 access key"
+    )
+    secret_key: Optional[str] = Field(
+        default_factory=lambda: _env("S3_SECRET_KEY", None), description="S3 secret key"
+    )
+    bucket_raw: str = Field(
+        default_factory=lambda: _env("S3_BUCKET_RAW", "emailops-raw"),
+        description="Bucket for raw email exports",
+    )
+    region: str = Field(
+        default_factory=lambda: _env("S3_REGION", "nyc3"), description="S3 region"
+    )
+
     model_config = {"extra": "forbid"}
 
 
@@ -76,26 +108,26 @@ class DirectoryConfig(BaseModel):
 # Core Configuration
 # -----------------------------------------------------------------------------
 
+
 class CoreConfig(BaseModel):
     """Core application configuration."""
-    
+
     env: Literal["dev", "staging", "prod"] = Field(
-        default_factory=lambda: _env("ENV", "dev"),
-        description="Environment name"
+        default_factory=lambda: _env("ENV", "dev"), description="Environment name"
     )
     tenant_mode: Literal["single", "multi"] = Field(
         default_factory=lambda: _env("TENANT_MODE", "single"),
-        description="Tenant isolation mode"
+        description="Tenant isolation mode",
     )
     persona: str = Field(
         default_factory=lambda: _env("PERSONA", "expert insurance CSR"),
-        description="Default persona for LLM interactions"
+        description="Default persona for LLM interactions",
     )
     provider: str = Field(
         default_factory=lambda: _env("EMBED_PROVIDER", "vertex"),
-        description="Default LLM/embedding provider"
+        description="Default LLM/embedding provider",
     )
-    
+
     model_config = {"extra": "forbid"}
 
 
@@ -103,26 +135,29 @@ class CoreConfig(BaseModel):
 # Database Configuration
 # -----------------------------------------------------------------------------
 
+
 class DatabaseConfig(BaseModel):
     """Database connection configuration."""
-    
+
     url: str = Field(
-        default_factory=lambda: _env("DB_URL", "postgresql://postgres:postgres@localhost:5432/cortex"),
-        description="Database connection URL"
+        default_factory=lambda: _env(
+            "DB_URL", "postgresql://postgres:postgres@localhost:5432/cortex"
+        ),
+        description="Database connection URL",
     )
     pool_size: int = Field(
         default_factory=lambda: _env("DB_POOL_SIZE", 20, int),
         ge=1,
         le=100,
-        description="Connection pool size"
+        description="Connection pool size",
     )
     max_overflow: int = Field(
         default_factory=lambda: _env("DB_MAX_OVERFLOW", 10, int),
         ge=0,
         le=50,
-        description="Maximum pool overflow"
+        description="Maximum pool overflow",
     )
-    
+
     model_config = {"extra": "forbid"}
 
 
@@ -130,9 +165,10 @@ class DatabaseConfig(BaseModel):
 # Processing Configuration
 # -----------------------------------------------------------------------------
 
+
 class ProcessingConfig(BaseModel):
     """Text processing configuration."""
-    
+
     chunk_size: int = Field(
         default=1600, ge=100, le=10000, description="Target chunk size in tokens"
     )
@@ -145,7 +181,7 @@ class ProcessingConfig(BaseModel):
     num_workers: int = Field(
         default=4, ge=1, le=32, description="Number of parallel workers"
     )
-    
+
     @field_validator("chunk_overlap")
     @classmethod
     def overlap_less_than_size(cls, v: int, info) -> int:
@@ -154,7 +190,7 @@ class ProcessingConfig(BaseModel):
         if v >= chunk_size:
             raise ValueError("chunk_overlap must be less than chunk_size")
         return v
-    
+
     model_config = {"extra": "forbid"}
 
 
@@ -162,32 +198,34 @@ class ProcessingConfig(BaseModel):
 # Embedding Configuration (Blueprint §2.3)
 # -----------------------------------------------------------------------------
 
+
 class EmbeddingConfig(BaseModel):
     """Embedding model configuration."""
-    
+
     model_name: str = Field(
         default_factory=lambda: _env("EMBED_MODEL", "gemini-embedding-001"),
-        description="Embedding model name"
+        description="Embedding model name",
     )
     output_dimensionality: int = Field(
         default_factory=lambda: _env("EMBED_DIM", 3072, int),
         ge=256,
-        le=4096,
-        description="Output embedding dimension (must match DB vector column)"
+        le=4096,  # Increased to support Gemini embeddings (3072)
+        description="Output embedding dimension (must match DB vector column)",
+        validate_default=True,
     )
-    
+
     # Vertex AI specific
     vertex_model: str = Field(
         default_factory=lambda: _env("VERTEX_MODEL", "gemini-2.5-pro"),
-        description="Vertex AI model for completion"
+        description="Vertex AI model for completion",
     )
-    
+
     # Generic option for other embedding models
     generic_embed_model: Optional[str] = Field(
         default_factory=lambda: _env("GENERIC_EMBED_MODEL", None),
-        description="Generic embedding model name for other providers (set via OUTLOOKCORTEX_GENERIC_EMBED_MODEL)"
+        description="Generic embedding model name for other providers (set via OUTLOOKCORTEX_GENERIC_EMBED_MODEL)",
     )
-    
+
     model_config = {"extra": "forbid"}
 
 
@@ -195,22 +233,21 @@ class EmbeddingConfig(BaseModel):
 # GCP Configuration
 # -----------------------------------------------------------------------------
 
+
 class GcpConfig(BaseModel):
     """Google Cloud Platform configuration."""
-    
+
     gcp_region: str = Field(
-        default_factory=lambda: _env("GCP_REGION", "global"),
-        description="GCP region"
+        default_factory=lambda: _env("GCP_REGION", "global"), description="GCP region"
     )
     vertex_location: str = Field(
         default_factory=lambda: _env("VERTEX_LOCATION", "us-central1"),
-        description="Vertex AI location"
+        description="Vertex AI location",
     )
     gcp_project: str = Field(
-        default_factory=lambda: _env("GCP_PROJECT", ""),
-        description="GCP project ID"
+        default_factory=lambda: _env("GCP_PROJECT", ""), description="GCP project ID"
     )
-    
+
     model_config = {"extra": "forbid"}
 
 
@@ -218,13 +255,14 @@ class GcpConfig(BaseModel):
 # Retry Configuration (Blueprint §2.3)
 # -----------------------------------------------------------------------------
 
+
 class RetryConfig(BaseModel):
     """
     Retry and resilience configuration.
-    
+
     Controls llm.runtime retry, backoff, circuit-breaker, and rate-limit behavior.
     """
-    
+
     max_retries: int = Field(
         default=3, ge=0, le=10, description="Maximum retry attempts"
     )
@@ -246,7 +284,7 @@ class RetryConfig(BaseModel):
     circuit_reset_seconds: int = Field(
         default=60, ge=1, le=600, description="Circuit reset timeout"
     )
-    
+
     model_config = {"extra": "forbid"}
 
 
@@ -254,13 +292,14 @@ class RetryConfig(BaseModel):
 # Search Configuration (Blueprint §2.3)
 # -----------------------------------------------------------------------------
 
+
 class SearchConfig(BaseModel):
     """
     Search and retrieval configuration.
-    
+
     Controls hybrid search, fusion, reranking, and recency boost behavior.
     """
-    
+
     fusion_strategy: Literal["rrf", "weighted_sum"] = Field(
         default="rrf", description="Fusion strategy for hybrid search"
     )
@@ -279,7 +318,7 @@ class SearchConfig(BaseModel):
     min_score: float = Field(
         default=0.0, ge=0.0, le=1.0, description="Minimum score threshold"
     )
-    
+
     # Additional tuning parameters
     candidates_multiplier: int = Field(
         default=3, ge=1, le=10, description="Candidate pool multiplier"
@@ -291,7 +330,10 @@ class SearchConfig(BaseModel):
         default=20000, ge=1000, le=100000, description="Target tokens for reply context"
     )
     fresh_tokens: int = Field(
-        default=10000, ge=1000, le=50000, description="Target tokens for fresh email context"
+        default=10000,
+        ge=1000,
+        le=50000,
+        description="Target tokens for fresh email context",
     )
     context_snippet_chars: int = Field(
         default=1600, ge=100, le=10000, description="Max chars per context snippet"
@@ -299,7 +341,7 @@ class SearchConfig(BaseModel):
     rerank_alpha: float = Field(
         default=0.35, ge=0.0, le=1.0, description="Reranking alpha blending factor"
     )
-    
+
     model_config = {"extra": "forbid"}
 
 
@@ -307,36 +349,37 @@ class SearchConfig(BaseModel):
 # Email Configuration
 # -----------------------------------------------------------------------------
 
+
 class EmailConfig(BaseModel):
     """Email drafting and sending configuration."""
-    
+
     reply_policy: str = Field(
         default_factory=lambda: _env("REPLY_POLICY", "reply_all"),
-        description="Default reply policy"
+        description="Default reply policy",
     )
     sender_locked_name: str = Field(
         default_factory=lambda: _env("SENDER_LOCKED_NAME", ""),
-        description="Locked sender display name"
+        description="Locked sender display name",
     )
     sender_locked_email: str = Field(
         default_factory=lambda: _env("SENDER_LOCKED_EMAIL", ""),
-        description="Locked sender email address"
+        description="Locked sender email address",
     )
     message_id_domain: str = Field(
         default_factory=lambda: _env("MESSAGE_ID_DOMAIN", ""),
-        description="Domain for Message-ID generation"
+        description="Domain for Message-ID generation",
     )
     sender_reply_to: str = Field(
         default_factory=lambda: _env("SENDER_REPLY_TO", ""),
-        description="Reply-To address"
+        description="Reply-To address",
     )
     allowed_senders: Set[str] = Field(
         default_factory=lambda: {
             s.strip() for s in (_env("ALLOWED_SENDERS", "")).split(",") if s.strip()
         },
-        description="Set of allowed sender addresses"
+        description="Set of allowed sender addresses",
     )
-    
+
     model_config = {"extra": "forbid"}
 
 
@@ -344,9 +387,10 @@ class EmailConfig(BaseModel):
 # Summarizer Configuration
 # -----------------------------------------------------------------------------
 
+
 class SummarizerConfig(BaseModel):
     """Thread summarization configuration."""
-    
+
     summarizer_version: str = Field(
         default="2.2-facts-ledger", description="Summarizer version"
     )
@@ -377,7 +421,7 @@ class SummarizerConfig(BaseModel):
     audit_target_min_score: int = Field(
         default=8, ge=1, le=10, description="Minimum audit score target"
     )
-    
+
     model_config = {"extra": "forbid"}
 
 
@@ -385,9 +429,10 @@ class SummarizerConfig(BaseModel):
 # Limits Configuration
 # -----------------------------------------------------------------------------
 
+
 class LimitsConfig(BaseModel):
     """Resource limits configuration."""
-    
+
     max_attachment_text_chars: int = Field(
         default=100000, ge=1000, le=10000000, description="Max chars per attachment"
     )
@@ -395,7 +440,10 @@ class LimitsConfig(BaseModel):
         default=200000, ge=1000, le=10000000, description="Max Excel cells to process"
     )
     skip_attachment_over_mb: float = Field(
-        default=25.0, ge=1.0, le=100.0, description="Skip attachments over this size (MB)"
+        default=25.0,
+        ge=1.0,
+        le=100.0,
+        description="Skip attachments over this size (MB)",
     )
     max_total_attachments_mb: float = Field(
         default=500.0, ge=10.0, le=5000.0, description="Max total attachment size (MB)"
@@ -412,7 +460,7 @@ class LimitsConfig(BaseModel):
     max_chat_context_mb: float = Field(
         default=10.0, ge=1.0, le=100.0, description="Max chat context size (MB)"
     )
-    
+
     model_config = {"extra": "forbid"}
 
 
@@ -420,12 +468,12 @@ class LimitsConfig(BaseModel):
 # System Configuration
 # -----------------------------------------------------------------------------
 
+
 class SystemConfig(BaseModel):
     """System-level configuration."""
-    
+
     log_level: str = Field(
-        default_factory=lambda: _env("LOG_LEVEL", "INFO"),
-        description="Logging level"
+        default_factory=lambda: _env("LOG_LEVEL", "INFO"), description="Logging level"
     )
     command_timeout: int = Field(
         default=3600, ge=60, le=86400, description="Command timeout (seconds)"
@@ -439,7 +487,7 @@ class SystemConfig(BaseModel):
     pip_timeout: int = Field(
         default=300, ge=30, le=1800, description="Pip command timeout"
     )
-    
+
     model_config = {"extra": "forbid"}
 
 
@@ -447,12 +495,11 @@ class SystemConfig(BaseModel):
 # Security Configuration
 # -----------------------------------------------------------------------------
 
+
 class SecurityConfig(BaseModel):
     """Security-related configuration."""
-    
-    allow_parent_traversal: bool = Field(
-        default=False, description="Allow .. in paths"
-    )
+
+    allow_parent_traversal: bool = Field(default=False, description="Allow .. in paths")
     allow_provider_override: bool = Field(
         default=False, description="Allow provider override at runtime"
     )
@@ -461,14 +508,15 @@ class SecurityConfig(BaseModel):
     )
     blocked_extensions: Set[str] = Field(
         default_factory=lambda: {
-            s.strip().lower() for s in _env(
-                "BLOCKED_EXTENSIONS",
-                ".exe,.bat,.cmd,.scr,.vbs,.js,.jar,.msi,.dll"
-            ).split(",") if s.strip()
+            s.strip().lower()
+            for s in _env(
+                "BLOCKED_EXTENSIONS", ".exe,.bat,.cmd,.scr,.vbs,.js,.jar,.msi,.dll"
+            ).split(",")
+            if s.strip()
         },
-        description="Blocked file extensions"
+        description="Blocked file extensions",
     )
-    
+
     model_config = {"extra": "forbid"}
 
 
@@ -476,66 +524,66 @@ class SecurityConfig(BaseModel):
 # Sensitive Configuration (Credentials)
 # -----------------------------------------------------------------------------
 
+
 class SensitiveConfig(BaseModel):
     """
     Sensitive configuration (credentials).
-    
+
     WARNING: Never log these values!
     """
-    
+
     google_application_credentials: Optional[str] = Field(
         default_factory=lambda: _env("GOOGLE_APPLICATION_CREDENTIALS", None),
-        description="Path to GCP credentials JSON"
+        description="Path to GCP credentials JSON",
     )
     openai_api_key: Optional[str] = Field(
         default_factory=lambda: _env("OPENAI_API_KEY", None),
-        description="OpenAI API key"
+        description="OpenAI API key",
     )
     azure_openai_api_key: Optional[str] = Field(
         default_factory=lambda: _env("AZURE_OPENAI_API_KEY", None),
-        description="Azure OpenAI API key"
+        description="Azure OpenAI API key",
     )
     azure_openai_endpoint: Optional[str] = Field(
         default_factory=lambda: _env("AZURE_OPENAI_ENDPOINT", None),
-        description="Azure OpenAI endpoint"
+        description="Azure OpenAI endpoint",
     )
     azure_openai_deployment: Optional[str] = Field(
         default_factory=lambda: _env("AZURE_OPENAI_DEPLOYMENT", None),
-        description="Azure OpenAI deployment name"
+        description="Azure OpenAI deployment name",
     )
     azure_openai_api_version: Optional[str] = Field(
         default_factory=lambda: _env("AZURE_OPENAI_API_VERSION", None),
-        description="Azure OpenAI API version"
+        description="Azure OpenAI API version",
     )
     cohere_api_key: Optional[str] = Field(
         default_factory=lambda: _env("COHERE_API_KEY", None),
-        description="Cohere API key"
+        description="Cohere API key",
     )
     hf_api_key: Optional[str] = Field(
         default_factory=lambda: _env("HF_API_KEY", None),
-        description="HuggingFace API key"
+        description="HuggingFace API key",
     )
     huggingface_api_key: Optional[str] = Field(
         default_factory=lambda: _env("HUGGINGFACE_API_KEY", None),
-        description="HuggingFace API key (alias)"
+        description="HuggingFace API key (alias)",
     )
     qwen_api_key: Optional[str] = Field(
-        default_factory=lambda: _env("QWEN_API_KEY", None),
-        description="Qwen API key"
+        default_factory=lambda: _env("QWEN_API_KEY", None), description="Qwen API key"
     )
     qwen_base_url: Optional[str] = Field(
         default_factory=lambda: _env("QWEN_BASE_URL", None),
-        description="Qwen API base URL"
+        description="Qwen API base URL",
     )
     qwen_timeout: Optional[int] = Field(
         default_factory=lambda: _env("QWEN_TIMEOUT", None, int),
-        description="Qwen API timeout"
+        description="Qwen API timeout",
     )
     run_id: Optional[str] = Field(
         default_factory=lambda: _env("RUN_ID", None),
-        description="Unique run identifier"
+        description="Unique run identifier",
     )
-    
+
     model_config = {"extra": "forbid"}
 
 
@@ -543,19 +591,45 @@ class SensitiveConfig(BaseModel):
 # File Patterns Configuration
 # -----------------------------------------------------------------------------
 
+
 class FilePatternsConfig(BaseModel):
     """File pattern matching configuration."""
-    
+
     allowed_file_patterns: List[str] = Field(
         default_factory=lambda: [
-            "*.pdf", "*.docx", "*.doc", "*.xlsx", "*.xls", "*.xlsm", "*.xlsb", "*.csv",
-            "*.pptx", "*.ppt", "*.pptm", "*.txt", "*.md", "*.rtf", "*.png", "*.jpg",
-            "*.jpeg", "*.gif", "*.tif", "*.tiff", "*.webp", "*.heic", "*.heif", "*.eml",
-            "*.msg", "*.html", "*.htm", "*.json", "*.xml",
+            "*.pdf",
+            "*.docx",
+            "*.doc",
+            "*.xlsx",
+            "*.xls",
+            "*.xlsm",
+            "*.xlsb",
+            "*.csv",
+            "*.pptx",
+            "*.ppt",
+            "*.pptm",
+            "*.txt",
+            "*.md",
+            "*.rtf",
+            "*.png",
+            "*.jpg",
+            "*.jpeg",
+            "*.gif",
+            "*.tif",
+            "*.tiff",
+            "*.webp",
+            "*.heic",
+            "*.heif",
+            "*.eml",
+            "*.msg",
+            "*.html",
+            "*.htm",
+            "*.json",
+            "*.xml",
         ],
-        description="Allowed file patterns for processing"
+        description="Allowed file patterns for processing",
     )
-    
+
     model_config = {"extra": "forbid"}
 
 
@@ -563,9 +637,10 @@ class FilePatternsConfig(BaseModel):
 # Unified Configuration
 # -----------------------------------------------------------------------------
 
+
 class UnifiedConfig(BaseModel):
     """Unified runtime configuration for sessions."""
-    
+
     temperature: float = Field(
         default=0.2, ge=0.0, le=2.0, description="LLM temperature"
     )
@@ -575,15 +650,9 @@ class UnifiedConfig(BaseModel):
     max_chat_history: int = Field(
         default=5, ge=0, le=100, description="Max chat history entries"
     )
-    last_to: str = Field(
-        default="", description="Last To recipients"
-    )
-    last_cc: str = Field(
-        default="", description="Last CC recipients"
-    )
-    last_subject: str = Field(
-        default="", description="Last email subject"
-    )
+    last_to: str = Field(default="", description="Last To recipients")
+    last_cc: str = Field(default="", description="Last CC recipients")
+    last_subject: str = Field(default="", description="Last email subject")
     timeout_seconds: float = Field(
         default=30.0, ge=1.0, le=300.0, description="Request timeout"
     )
@@ -593,5 +662,5 @@ class UnifiedConfig(BaseModel):
     cache_max_entries: int = Field(
         default=1024, ge=0, le=100000, description="Max cache entries"
     )
-    
+
     model_config = {"extra": "forbid"}

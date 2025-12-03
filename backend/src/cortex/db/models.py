@@ -25,27 +25,26 @@ except ImportError:
         def bind_processor(self, dialect):
             def process(value):
                 return value
+
             return process
 
         def result_processor(self, dialect, coltype):
             def process(value):
                 return value
+
             return process
-from sqlalchemy import (
-    Boolean,
-    DateTime,
-    ForeignKey,
-    Index,
-    Integer,
-    Text,
-    func,
-)
+
+
+from sqlalchemy import (Boolean, DateTime, ForeignKey, Index, Integer, Text,
+                        func)
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, TSVECTOR, UUID
+
 try:
     from sqlalchemy.orm import DeclarativeBase
 except ImportError:
     # Fallback for older SQLAlchemy versions
     from sqlalchemy.ext.declarative import declarative_base
+
     DeclarativeBase = declarative_base()
 
 try:
@@ -54,7 +53,7 @@ except ImportError:
     # Fallback for older SQLAlchemy versions
     from sqlalchemy import Column
     from sqlalchemy.orm import relationship
-    
+
     # Mock Mapped for type hinting compatibility
     class Mapped:
         def __class_getitem__(cls, item):
@@ -63,9 +62,9 @@ except ImportError:
     def mapped_column(*args, **kwargs):
         return Column(*args, **kwargs)
 
-from sqlalchemy.orm import relationship
 
 from cortex.config.loader import get_config
+from sqlalchemy.orm import relationship
 
 # Load config to get embedding dimension
 _config = get_config()
@@ -73,9 +72,12 @@ EMBEDDING_DIM = _config.embedding.output_dimensionality
 
 
 if isinstance(DeclarativeBase, type):
+
     class Base(DeclarativeBase):
         """Base class for all models."""
+
         __abstract__ = True
+
 else:
     Base = DeclarativeBase
 
@@ -83,7 +85,7 @@ else:
 class Thread(Base):
     """
     Represents an email thread (conversation).
-    
+
     Blueprint §4.1:
     * thread_id (uuid, pk)
     * tenant_id (text, not null)
@@ -93,12 +95,11 @@ class Thread(Base):
     * updated_at (timestamptz, not null, UTC)
     * metadata (jsonb)
     """
+
     __tablename__ = "threads"
 
     thread_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     tenant_id: Mapped[str] = mapped_column(Text, nullable=False, index=True)
     subject_norm: Mapped[Optional[str]] = mapped_column(Text)
@@ -109,9 +110,7 @@ class Thread(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False
     )
-    metadata_: Mapped[dict[str, Any]] = mapped_column(
-        "metadata", JSONB, default=dict
-    )
+    metadata_: Mapped[dict[str, Any]] = mapped_column("metadata", JSONB, default=dict)
 
     # Relationships
     messages: Mapped[List["Message"]] = relationship(
@@ -125,7 +124,7 @@ class Thread(Base):
 class Message(Base):
     """
     Represents an individual email message.
-    
+
     Blueprint §4.1:
     * message_id (text, pk)
     * thread_id (uuid, fk -> threads.thread_id, not null)
@@ -145,13 +144,12 @@ class Message(Base):
     * tsv_subject_body (tsvector, indexed)
     * metadata (jsonb)
     """
+
     __tablename__ = "messages"
 
     message_id: Mapped[str] = mapped_column(Text, primary_key=True)
     thread_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("threads.thread_id", ondelete="RESTRICT"),
-        nullable=False,
-        index=True
+        ForeignKey("threads.thread_id", ondelete="RESTRICT"), nullable=False, index=True
     )
     folder: Mapped[Optional[str]] = mapped_column(Text)
     sent_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
@@ -167,9 +165,7 @@ class Message(Base):
     raw_storage_uri: Mapped[Optional[str]] = mapped_column(Text)
     tenant_id: Mapped[str] = mapped_column(Text, nullable=False, index=True)
     tsv_subject_body: Mapped[Optional[Any]] = mapped_column(TSVECTOR)
-    metadata_: Mapped[dict[str, Any]] = mapped_column(
-        "metadata", JSONB, default=dict
-    )
+    metadata_: Mapped[dict[str, Any]] = mapped_column("metadata", JSONB, default=dict)
 
     # Relationships
     thread: Mapped["Thread"] = relationship("Thread", back_populates="messages")
@@ -181,14 +177,16 @@ class Message(Base):
     )
 
     __table_args__ = (
-        Index("ix_messages_tsv_subject_body", "tsv_subject_body", postgresql_using="gin"),
+        Index(
+            "ix_messages_tsv_subject_body", "tsv_subject_body", postgresql_using="gin"
+        ),
     )
 
 
 class Attachment(Base):
     """
     Represents an email attachment.
-    
+
     Blueprint §4.1:
     * attachment_id (uuid, pk)
     * message_id (text, fk -> messages.message_id, not null)
@@ -201,17 +199,16 @@ class Attachment(Base):
     * tenant_id (text, not null)
     * metadata (jsonb)
     """
+
     __tablename__ = "attachments"
 
     attachment_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     message_id: Mapped[str] = mapped_column(
         ForeignKey("messages.message_id", ondelete="RESTRICT"),
         nullable=False,
-        index=True
+        index=True,
     )
     filename: Mapped[Optional[str]] = mapped_column(Text)
     mime_type: Mapped[Optional[str]] = mapped_column(Text)
@@ -220,9 +217,7 @@ class Attachment(Base):
     status: Mapped[str] = mapped_column(Text, default="pending")
     extracted_chars: Mapped[int] = mapped_column(Integer, default=0)
     tenant_id: Mapped[str] = mapped_column(Text, nullable=False, index=True)
-    metadata_: Mapped[dict[str, Any]] = mapped_column(
-        "metadata", JSONB, default=dict
-    )
+    metadata_: Mapped[dict[str, Any]] = mapped_column("metadata", JSONB, default=dict)
 
     # Relationships
     message: Mapped["Message"] = relationship("Message", back_populates="attachments")
@@ -234,7 +229,7 @@ class Attachment(Base):
 class Chunk(Base):
     """
     Represents a searchable chunk of text.
-    
+
     Blueprint §4.1:
     * chunk_id (uuid, pk)
     * thread_id (uuid, fk -> threads.thread_id, not null)
@@ -253,27 +248,24 @@ class Chunk(Base):
     * tsv_text (tsvector, indexed)
     * metadata (jsonb)
     """
+
     __tablename__ = "chunks"
 
     chunk_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     thread_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("threads.thread_id", ondelete="RESTRICT"),
-        nullable=False,
-        index=True
+        ForeignKey("threads.thread_id", ondelete="RESTRICT"), nullable=False, index=True
     )
     message_id: Mapped[Optional[str]] = mapped_column(
         ForeignKey("messages.message_id", ondelete="RESTRICT"),
         nullable=True,
-        index=True
+        index=True,
     )
     attachment_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         ForeignKey("attachments.attachment_id", ondelete="RESTRICT"),
         nullable=True,
-        index=True
+        index=True,
     )
     chunk_type: Mapped[str] = mapped_column(Text, nullable=False)
     text: Mapped[str] = mapped_column(Text, nullable=False)
@@ -286,65 +278,69 @@ class Chunk(Base):
     embedding_model: Mapped[Optional[str]] = mapped_column(Text)
     tenant_id: Mapped[str] = mapped_column(Text, nullable=False, index=True)
     tsv_text: Mapped[Optional[Any]] = mapped_column(TSVECTOR)
-    metadata_: Mapped[dict[str, Any]] = mapped_column(
-        "metadata", JSONB, default=dict
-    )
+    metadata_: Mapped[dict[str, Any]] = mapped_column("metadata", JSONB, default=dict)
 
     # Relationships
     thread: Mapped["Thread"] = relationship("Thread", back_populates="chunks")
-    message: Mapped[Optional["Message"]] = relationship("Message", back_populates="chunks")
-    attachment: Mapped[Optional["Attachment"]] = relationship("Attachment", back_populates="chunks")
+    message: Mapped[Optional["Message"]] = relationship(
+        "Message", back_populates="chunks"
+    )
+    attachment: Mapped[Optional["Attachment"]] = relationship(
+        "Attachment", back_populates="chunks"
+    )
 
     __table_args__ = (
         Index("ix_chunks_tsv_text", "tsv_text", postgresql_using="gin"),
-        Index("ix_chunks_embedding", "embedding", postgresql_using="hnsw", postgresql_with={"m": 16, "ef_construction": 64}, postgresql_ops={"embedding": "vector_cosine_ops"}),
+        # Note: HNSW index on embedding is managed by migration 006_add_hnsw_index.py
+        # because it requires casting to halfvec(3072) which is not easily expressible
+        # in SQLAlchemy Index construct without raw SQL or custom types.
     )
 
     # -------------------------------------------------------------------------
     # Metadata Property Helpers (Blueprint §4.1)
     # -------------------------------------------------------------------------
-    
+
     @property
     def content_hash(self) -> Optional[str]:
         """Get content_hash from metadata (used for dedup)."""
         return self.metadata_.get("content_hash") if self.metadata_ else None
-    
+
     @content_hash.setter
     def content_hash(self, value: str) -> None:
         """Set content_hash in metadata."""
         if self.metadata_ is None:
             self.metadata_ = {}
         self.metadata_["content_hash"] = value
-    
+
     @property
     def pre_cleaned(self) -> Optional[str]:
         """Get pre_cleaned text from metadata."""
         return self.metadata_.get("pre_cleaned") if self.metadata_ else None
-    
+
     @pre_cleaned.setter
     def pre_cleaned(self, value: str) -> None:
         """Set pre_cleaned in metadata."""
         if self.metadata_ is None:
             self.metadata_ = {}
         self.metadata_["pre_cleaned"] = value
-    
+
     @property
     def cleaning_version(self) -> Optional[str]:
         """Get cleaning_version from metadata."""
         return self.metadata_.get("cleaning_version") if self.metadata_ else None
-    
+
     @cleaning_version.setter
     def cleaning_version(self, value: str) -> None:
         """Set cleaning_version in metadata."""
         if self.metadata_ is None:
             self.metadata_ = {}
         self.metadata_["cleaning_version"] = value
-    
+
     @property
     def source(self) -> Optional[str]:
         """Get source type from metadata (email|attachment|ocr)."""
         return self.metadata_.get("source") if self.metadata_ else None
-    
+
     @source.setter
     def source(self, value: str) -> None:
         """Set source in metadata."""
@@ -356,7 +352,7 @@ class Chunk(Base):
 class AuditLog(Base):
     """
     Audit log for security and compliance.
-    
+
     Blueprint §4.1:
     * audit_id (uuid, pk)
     * ts (timestamptz, not null, UTC)
@@ -369,12 +365,11 @@ class AuditLog(Base):
     * risk_level (enum: low|medium|high)
     * metadata (jsonb)
     """
+
     __tablename__ = "audit_log"
 
     audit_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     ts: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=func.now()
@@ -386,15 +381,13 @@ class AuditLog(Base):
     output_hash: Mapped[Optional[str]] = mapped_column(Text)
     policy_decisions: Mapped[Optional[dict[str, Any]]] = mapped_column(JSONB)
     risk_level: Mapped[str] = mapped_column(Text, default="low")
-    metadata_: Mapped[dict[str, Any]] = mapped_column(
-        "metadata", JSONB, default=dict
-    )
+    metadata_: Mapped[dict[str, Any]] = mapped_column("metadata", JSONB, default=dict)
 
 
 class IngestJob(Base):
     """
     Tracks ingestion jobs.
-    
+
     Blueprint §4.1:
     * job_id (text, pk)
     * tenant_id (text, not null)
@@ -406,6 +399,7 @@ class IngestJob(Base):
     * error_message (text)
     * metadata (jsonb)
     """
+
     __tablename__ = "ingest_jobs"
 
     job_id: Mapped[str] = mapped_column(Text, primary_key=True)
@@ -420,15 +414,13 @@ class IngestJob(Base):
     )
     stats: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
     error_message: Mapped[Optional[str]] = mapped_column(Text)
-    metadata_: Mapped[dict[str, Any]] = mapped_column(
-        "metadata", JSONB, default=dict
-    )
+    metadata_: Mapped[dict[str, Any]] = mapped_column("metadata", JSONB, default=dict)
 
 
 class FactsLedger(Base):
     """
     Persisted facts ledger for thread summarization.
-    
+
     Blueprint §10.4.1:
     * ledger_id (uuid, pk)
     * thread_id (uuid, fk -> threads.thread_id, unique)
@@ -441,24 +433,25 @@ class FactsLedger(Base):
     * updated_at (timestamptz, not null, UTC)
     * tenant_id (text, not null)
     """
+
     __tablename__ = "facts_ledger"
 
     ledger_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     thread_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("threads.thread_id", ondelete="CASCADE"),
         nullable=False,
         unique=True,
-        index=True
+        index=True,
     )
     facts: Mapped[List[dict[str, Any]]] = mapped_column(JSONB, default=list)
     entities: Mapped[List[dict[str, Any]]] = mapped_column(JSONB, default=list)
     decisions: Mapped[List[dict[str, Any]]] = mapped_column(JSONB, default=list)
     action_items: Mapped[List[dict[str, Any]]] = mapped_column(JSONB, default=list)
-    unresolved_questions: Mapped[List[dict[str, Any]]] = mapped_column(JSONB, default=list)
+    unresolved_questions: Mapped[List[dict[str, Any]]] = mapped_column(
+        JSONB, default=list
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=func.now()
     )

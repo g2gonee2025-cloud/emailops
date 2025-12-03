@@ -16,7 +16,8 @@ from cortex.config.loader import get_config
 # Optional OpenTelemetry imports
 try:
     from opentelemetry import metrics, trace
-    from opentelemetry.exporter.cloud_monitoring import CloudMonitoringMetricsExporter
+    from opentelemetry.exporter.cloud_monitoring import \
+        CloudMonitoringMetricsExporter
     from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
     from opentelemetry.instrumentation.requests import RequestsInstrumentor
     from opentelemetry.sdk.metrics import MeterProvider
@@ -25,15 +26,28 @@ try:
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
     from opentelemetry.sdk.trace.sampling import TraceIdRatioBased
+
     OTEL_AVAILABLE = True
 except ImportError:
     trace = None  # type: ignore
     metrics = None  # type: ignore
     OTEL_AVAILABLE = False
 
+# Optional OTLP Exporters (for DigitalOcean/Generic)
+try:
+    from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import \
+        OTLPMetricExporter
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import \
+        OTLPSpanExporter
+
+    OTLP_AVAILABLE = True
+except ImportError:
+    OTLP_AVAILABLE = False
+
 # Optional structlog
 try:
     import structlog
+
     STRUCTLOG_AVAILABLE = True
 except ImportError:
     structlog = None  # type: ignore
@@ -48,7 +62,9 @@ __all__ = [
 ]
 
 # Context variable for trace correlation
-_trace_context: ContextVar[dict[str, str] | None] = ContextVar("trace_context", default=None)
+_trace_context: ContextVar[dict[str, str] | None] = ContextVar(
+    "trace_context", default=None
+)
 
 # Global tracer and meter (initialized lazily)
 _tracer = None
@@ -66,7 +82,7 @@ def init_observability(
 ) -> None:
     """
     Initialize observability stack.
-    
+
     Blueprint §12.3:
     * Initialize OTel tracing/metrics
     * Configure structured logging
@@ -84,11 +100,13 @@ def init_observability(
     # Initialize OpenTelemetry tracing
     if enable_tracing and OTEL_AVAILABLE and trace is not None:
         try:
-            resource = Resource.create({
-                "service.name": service_name,
-                "service.version": "1.0",
-                "deployment.environment": config.core.env,
-            })
+            resource = Resource.create(
+                {
+                    "service.name": service_name,
+                    "service.version": "1.0",
+                    "deployment.environment": config.core.env,
+                }
+            )
 
             provider = TracerProvider(
                 resource=resource,
@@ -100,9 +118,12 @@ def init_observability(
                 cloud_trace_exporter = CloudTraceSpanExporter(
                     project_id=config.gcp.gcp_project
                 )
-                provider.add_span_processor(
-                    BatchSpanProcessor(cloud_trace_exporter)
-                )
+                provider.add_span_processor(BatchSpanProcessor(cloud_trace_exporter))
+            # OTLP Exporter (DigitalOcean / Generic)
+            elif OTLP_AVAILABLE:
+                otlp_exporter = OTLPSpanExporter()
+                provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
+                logging.info("✓ OTLP Trace Exporter configured")
 
             trace.set_tracer_provider(provider)
             _tracer = trace.get_tracer(__name__)
@@ -110,7 +131,9 @@ def init_observability(
             # Auto-instrument requests library
             RequestsInstrumentor().instrument()
 
-            logging.info("✓ OpenTelemetry tracing initialized (sample_rate=%.1f)", sample_rate)
+            logging.info(
+                "✓ OpenTelemetry tracing initialized (sample_rate=%.1f)", sample_rate
+            )
 
         except Exception as e:
             logging.warning("Failed to initialize tracing: %s", e)
@@ -125,12 +148,26 @@ def init_observability(
                 exporter = CloudMonitoringMetricsExporter(
                     project_id=config.gcp.gcp_project
                 )
-                reader = PeriodicExportingMetricReader(exporter, export_interval_millis=60000)
+                reader = PeriodicExportingMetricReader(
+                    exporter, export_interval_millis=60000
+                )
                 provider = MeterProvider(resource=resource, metric_readers=[reader])
                 metrics.set_meter_provider(provider)
                 _meter = metrics.get_meter(__name__)
+                logging.info("✓ Metrics export initialized (Cloud Monitoring)")
 
-                logging.info("✓ Metrics export initialized")
+            # OTLP Metrics Exporter (DigitalOcean / Generic)
+            elif OTLP_AVAILABLE:
+                exporter = OTLPMetricExporter()
+                reader = PeriodicExportingMetricReader(
+                    exporter, export_interval_millis=60000
+                )
+                provider = MeterProvider(resource=resource, metric_readers=[reader])
+                metrics.set_meter_provider(provider)
+                _meter = metrics.get_meter(__name__)
+                logging.info("✓ Metrics export initialized (OTLP)")
+            else:
+                logging.info("OTLP metrics exporter unavailable; metrics disabled")
 
         except Exception as e:
             logging.warning("Failed to initialize metrics: %s", e)
@@ -164,12 +201,13 @@ def init_observability(
 def trace_operation(operation_name: str, **span_attributes):
     """
     Decorator to trace function execution.
-    
+
     Blueprint §12.3:
     * Starts span
     * Binds trace context
     * Records exceptions
     """
+
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -203,6 +241,7 @@ def trace_operation(operation_name: str, **span_attributes):
                     _trace_context.reset(token)
 
         return wrapper
+
     return decorator
 
 
@@ -250,7 +289,7 @@ def record_metric(
 def get_logger(name: str) -> Any:
     """
     Get structured logger with trace correlation.
-    
+
     Blueprint §12.3:
     * Automatically binds trace context
     """
@@ -259,7 +298,9 @@ def get_logger(name: str) -> Any:
         # Bind trace context if available
         ctx = _trace_context.get() or {}
         if ctx:
-            logger = logger.bind(trace_id=ctx.get("trace_id"), span_id=ctx.get("span_id"))
+            logger = logger.bind(
+                trace_id=ctx.get("trace_id"), span_id=ctx.get("span_id")
+            )
         return logger
     else:
         return logging.getLogger(name)

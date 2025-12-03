@@ -1,0 +1,352 @@
+import os
+import re
+import shutil
+import sys
+
+try:
+    # Tkinter is optional; we handle environments without a GUI.
+    import tkinter as tk
+    from tkinter import filedialog
+except Exception:  # ImportError, RuntimeError, etc.
+    tk = None
+    filedialog = None
+
+
+BOILERPLATE_KEYWORDS = [
+    # Common noisy markers / disclaimers / system notes (extend as needed)
+    "Email from external sender",
+    "Email from External Sender",
+    "Classification : Interne",
+    "Classification : Internal",
+    "Classification : Public",
+    "Ce message, et ses éventuelles pièces jointes",
+    "Ce message a été classifié",
+    "L'Internet ne permettant pas d'assurer l'intégrité de ce Message",
+    "Go Green, Avoid Printing",
+    "This message, and its attachments",
+    "This communication is confidential",
+    "DISCLAIMER:",
+    "legal notice",
+    "confidentiality notice",
+    "Please consider the environment before printing",
+    "A member of the Nasco Insurance Group",
+]
+
+# Lines that are usually just web / marketing noise
+DOMAIN_NOISE = [
+    "CHALHOUBGROUP.COM",
+    "CAREERS.CHALHOUBGROUP.COM",
+]
+
+HEADER_PATTERNS = [
+    # Date + From header at top of each email in Conversation.txt
+    re.compile(r"^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\s+\|\s+From:", re.IGNORECASE),
+    re.compile(r"^From:", re.IGNORECASE),
+    re.compile(r"^To:", re.IGNORECASE),
+    re.compile(r"^Cc:", re.IGNORECASE),
+    re.compile(r"^Subject:", re.IGNORECASE),
+    re.compile(r"^主题:", re.IGNORECASE),
+]
+
+SEPARATOR_RE = re.compile(r"^[-_=]{5,}$")
+
+
+def looks_like_header(line: str) -> bool:
+    """Heuristic: is this an email header / metadata line?"""
+    for pat in HEADER_PATTERNS:
+        if pat.search(line):
+            return True
+    return False
+
+
+def is_boilerplate(line: str) -> bool:
+    """Return True if line looks like disclaimer / footer noise."""
+    stripped = line.strip()
+    if not stripped:
+        return False
+
+    # Single-domain / URL lines
+    if re.fullmatch(r"(https?://\S+)", stripped, re.IGNORECASE):
+        return True
+    if stripped.upper() in DOMAIN_NOISE:
+        return True
+    if re.fullmatch(r"www\.[A-Za-z0-9\.-]+", stripped):
+        return True
+
+    # Contains any known boilerplate keyword
+    lower = stripped.lower()
+    for key in BOILERPLATE_KEYWORDS:
+        if key.lower() in lower:
+            return True
+
+    # Very long address-ish lines (lots of commas, no @) – usually postal/signature blocks
+    if len(stripped) > 80 and stripped.count(",") >= 3 and "@" not in stripped:
+        return True
+
+    return False
+
+
+def normalize_whitespace(text: str) -> str:
+    """Basic whitespace normalization:
+    - normalize newlines,
+    - strip spaces on each line,
+    - collapse multiple blank lines to a single blank line,
+    - compress multiple internal spaces to single spaces (body lines).
+    """
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+
+    lines = text.split("\n")
+    cleaned_lines = []
+
+    for line in lines:
+        # Strip leading / trailing whitespace
+        line = line.strip()
+
+        if line and not looks_like_header(line):
+            # For non-header lines, collapse internal whitespace
+            line = re.sub(r"\s+", " ", line)
+
+        # Normalize separators (long ----- lines)
+        if SEPARATOR_RE.match(line):
+            line = "-" * 40
+
+        cleaned_lines.append(line)
+
+    # collapse multiple blank lines -> max 1 blank line
+    final_lines = []
+    blank_count = 0
+    for line in cleaned_lines:
+        if line == "":
+            blank_count += 1
+            if blank_count > 1:
+                continue
+        else:
+            blank_count = 0
+        final_lines.append(line)
+
+    return "\n".join(final_lines).strip() + "\n"
+
+
+def remove_boilerplate(text: str) -> str:
+    """Remove footers / disclaimers / boilerplate lines."""
+    lines = text.split("\n")
+    kept = []
+
+    for line in lines:
+        if is_boilerplate(line):
+            continue
+        kept.append(line)
+
+    return "\n".join(kept)
+
+
+def merge_wrapped_lines(text: str) -> str:
+    """Merge artificially wrapped lines into paragraphs for better RAG chunks.
+
+    Heuristic:
+    - keep header lines and separator lines on their own;
+    - inside body blocks, join consecutive non-empty, non-header, non-bullet lines.
+    """
+    lines = text.split("\n")
+    merged = []
+    buffer = ""
+
+    def flush_buffer():
+        nonlocal buffer
+        if buffer:
+            merged.append(buffer.strip())
+            buffer = ""
+
+    for line in lines:
+        stripped = line.strip()
+
+        # Preserve blank lines as paragraph separators
+        if stripped == "":
+            flush_buffer()
+            merged.append("")  # keep single blank line
+            continue
+
+        if looks_like_header(stripped) or SEPARATOR_RE.match(stripped):
+            flush_buffer()
+            merged.append(stripped)
+            continue
+
+        # Bullet / numbered list / dash lines: start new buffer
+        if re.match(r"^([\-•●*]|\d+[\.\)])\s+", stripped):
+            flush_buffer()
+            merged.append(stripped)
+            continue
+
+        # Otherwise, this is body text: join into current paragraph
+        if buffer:
+            buffer += " " + stripped
+        else:
+            buffer = stripped
+
+    flush_buffer()
+    return "\n".join(merged)
+
+
+def clean_conversation_text(raw: str) -> str:
+    """Full cleaning pipeline for a Conversation.txt file."""
+    # 1) Normalize basic whitespace
+    text = normalize_whitespace(raw)
+
+    # 2) Remove boilerplate / disclaimers / obvious footer noise
+    text = remove_boilerplate(text)
+
+    # 3) Merge wrapped lines inside paragraphs to make embedding-friendly text
+    text = merge_wrapped_lines(text)
+
+    # 4) Final pass to ensure we don't have excessive blank lines
+    lines = text.split("\n")
+    final_lines = []
+    blank_count = 0
+    for line in lines:
+        if line.strip() == "":
+            blank_count += 1
+            if blank_count > 1:
+                continue
+            final_lines.append("")
+        else:
+            blank_count = 0
+            final_lines.append(line.rstrip())
+
+    return "\n".join(final_lines).strip() + "\n"
+
+
+def choose_root_directory() -> str:
+    """Let the user pick the root directory.
+
+    Priority:
+    1) Command-line argument (if provided);
+    2) GUI folder picker via Tkinter (if available);
+    3) Text prompt fallback.
+    """
+    # 1) CLI arg
+    if len(sys.argv) > 1:
+        candidate = sys.argv[1]
+        if os.path.isdir(candidate):
+            print(f"Using root directory from command line: {candidate}")
+            return os.path.abspath(candidate)
+        else:
+            print(f"Path from command line is not a directory: {candidate}")
+
+    # 2) GUI folder picker
+    if tk is not None and filedialog is not None:
+        try:
+            root = tk.Tk()
+            root.withdraw()
+            root.attributes("-topmost", True)
+            selected = filedialog.askdirectory(
+                title="Select ROOT directory (folder that contains conversation subfolders)"
+            )
+            root.destroy()
+            if selected:
+                print(f"Selected root directory: {selected}")
+                return os.path.abspath(selected)
+        except Exception as e:  # TclError or others
+            print(
+                f"GUI directory picker not available ({e}). Falling back to console input."
+            )
+
+    # 3) Console input fallback
+    while True:
+        path = (
+            input(
+                "Enter path to root directory (folder that contains conversation subfolders): "
+            )
+            .strip()
+            .strip('"')
+            .strip("'")
+        )
+        if os.path.isdir(path):
+            return os.path.abspath(path)
+        print("That path does not exist or is not a directory. Please try again.")
+
+
+def find_conversation_files(root_dir: str):
+    """Return list of Conversation.txt files at:
+    - root_dir/Conversation.txt (if present)
+    - root_dir/*/Conversation.txt (1 level of subfolders only)
+    """
+    results = []
+
+    # Root-level Conversation.txt
+    root_file = os.path.join(root_dir, "Conversation.txt")
+    if os.path.isfile(root_file):
+        results.append(root_file)
+
+    # One level down: immediate subdirectories only
+    for entry in os.scandir(root_dir):
+        if entry.is_dir():
+            candidate = os.path.join(entry.path, "Conversation.txt")
+            if os.path.isfile(candidate):
+                results.append(candidate)
+
+    return results
+
+
+def process_file(path: str, dry_run: bool = False):
+    """Clean a single Conversation.txt file in place, with a .bak backup."""
+    print(f"\n--- Processing: {path}")
+    try:
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+            raw = f.read()
+    except Exception as e:
+        print(f"  [ERROR] Failed to read file: {e}")
+        return
+
+    original_size = len(raw)
+
+    cleaned = clean_conversation_text(raw)
+    cleaned_size = len(cleaned)
+
+    print(f"  Original length: {original_size} chars")
+    print(f"  Cleaned  length: {cleaned_size} chars")
+
+    if dry_run:
+        print("  Dry-run mode: NOT writing changes.")
+        return
+
+    # Backup original (Conversation.txt.bak) once
+    backup_path = path + ".bak"
+    if not os.path.exists(backup_path):
+        try:
+            shutil.copy2(path, backup_path)
+            print(f"  Backup created: {backup_path}")
+        except Exception as e:
+            print(f"  [WARN] Could not create backup: {e}")
+
+    try:
+        with open(path, "w", encoding="utf-8", errors="ignore") as f:
+            f.write(cleaned)
+        print("  [OK] File cleaned and overwritten.")
+    except Exception as e:
+        print(f"  [ERROR] Failed to write cleaned file: {e}")
+
+
+def main():
+    root_dir = choose_root_directory()
+    print(f"\nRoot directory: {root_dir}")
+
+    files = find_conversation_files(root_dir)
+    if not files:
+        print("No Conversation.txt files found (1-level deep). Nothing to do.")
+        return
+
+    print(f"Found {len(files)} Conversation.txt file(s):")
+    for p in files:
+        print(" -", p)
+
+    # If you want a dry run first, set dry_run=True below.
+    dry_run = False
+
+    for path in files:
+        process_file(path, dry_run=dry_run)
+
+    print("\nDone. All Conversation.txt files cleaned.")
+
+
+if __name__ == "__main__":
+    main()

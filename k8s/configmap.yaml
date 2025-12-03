@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: emailops-config
+  namespace: emailops
+data:
+  # Environment
+  ENV: "production"
+  LOG_LEVEL: "INFO"
+  
+  # Embedding configuration (gemini-embedding-001 outputs 3072 dims)
+  EMBED_DIM: "3072"
+  EMBED_MODEL: "gemini-embedding-001"
+  
+  # LLM configuration
+  LLM_MODEL: "gemini-2.5-pro"
+  
+  # GCP project for Vertex AI
+  GCP_PROJECT: "pragmatic-cat-479913-n3"
+  GCP_PROJECT_ID: "pragmatic-cat-479913-n3"
+  GCP_REGION: "global"
+  VERTEX_LOCATION: "global"
+  EMBED_PROVIDER: "vertex"
+  
+  # S3/Spaces Configuration (DigitalOcean Spaces - Singapore)
+  S3_ENDPOINT: "https://sgp1.digitaloceanspaces.com"
+  S3_REGION: "sgp1"
+  S3_BUCKET_RAW: "emailops-storage-sgp1"
+  
+  # Server configuration
+  PORT: "8000"
+  WORKERS: "2"
+  
+  # CORS (adjust for your domain)
+  CORS_ORIGINS: "*"

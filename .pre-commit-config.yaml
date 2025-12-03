@@ -3,12 +3,15 @@ repos:
     rev: 23.9.1
     hooks:
       - id: black
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.11.4
+  - repo: local
     hooks:
       - id: isort
-  - repo: https://github.com/charliermarsh/ruff
-    rev: v0.1.0
+        name: isort
+        entry: isort
+        language: system
+        types: [python]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.8
     hooks:
       - id: ruff
   - repo: https://github.com/pre-commit/mirrors-mypy
@@ -16,8 +19,11 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies: ["types-requests"]
-  - repo: https://github.com/pre-commit/mirrors-pytest
-    rev: v6.2.5
+  - repo: local
     hooks:
       - id: pytest
+        name: pytest
+        entry: pytest
+        language: system
+        pass_filenames: false
         stages: [pre-commit]

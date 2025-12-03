@@ -12,28 +12,15 @@ import threading
 from pathlib import Path
 from typing import Any
 
+from cortex.common.exceptions import ConfigurationError
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 
-from cortex.common.exceptions import ConfigurationError
-from .models import (
-    CoreConfig,
-    DatabaseConfig,
-    DirectoryConfig,
-    EmailConfig,
-    EmbeddingConfig,
-    FilePatternsConfig,
-    GcpConfig,
-    LimitsConfig,
-    ProcessingConfig,
-    RetryConfig,
-    SearchConfig,
-    SecurityConfig,
-    SensitiveConfig,
-    SummarizerConfig,
-    SystemConfig,
-    UnifiedConfig,
-)
+from .models import (CoreConfig, DatabaseConfig, DirectoryConfig, EmailConfig,
+                     EmbeddingConfig, FilePatternsConfig, GcpConfig,
+                     LimitsConfig, ProcessingConfig, RetryConfig, SearchConfig,
+                     SecurityConfig, SensitiveConfig, StorageConfig,
+                     SummarizerConfig, SystemConfig, UnifiedConfig)
 
 load_dotenv()
 
@@ -48,10 +35,11 @@ logger = logging.getLogger(__name__)
 class EmailOpsConfig(BaseModel):
     """
     Centralized configuration for EmailOps.
-    
+
     A unified configuration model incorporating all settings per Blueprint §2.3.
     All sub-configs are Pydantic models with validation.
     """
+
     directories: DirectoryConfig = Field(default_factory=DirectoryConfig)
     core: CoreConfig = Field(default_factory=CoreConfig)
     database: DatabaseConfig = Field(default_factory=DatabaseConfig)
@@ -60,6 +48,7 @@ class EmailOpsConfig(BaseModel):
     gcp: GcpConfig = Field(default_factory=GcpConfig)
     retry: RetryConfig = Field(default_factory=RetryConfig)
     search: SearchConfig = Field(default_factory=SearchConfig)
+    storage: StorageConfig = Field(default_factory=StorageConfig)
     email: EmailConfig = Field(default_factory=EmailConfig)
     summarizer: SummarizerConfig = Field(default_factory=SummarizerConfig)
     limits: LimitsConfig = Field(default_factory=LimitsConfig)
@@ -68,11 +57,17 @@ class EmailOpsConfig(BaseModel):
     sensitive: SensitiveConfig = Field(default_factory=SensitiveConfig)
     file_patterns: FilePatternsConfig = Field(default_factory=FilePatternsConfig)
     unified: UnifiedConfig = Field(default_factory=UnifiedConfig)
-    
+
     model_config = {"extra": "forbid"}
+
+    @property
+    def s3(self) -> StorageConfig:
+        """Alias for storage config (S3/Spaces)."""
+        return self.storage
 
     def save(self, path: Path) -> None:
         """Save the configuration to a file."""
+
         def convert_for_json(obj: Any) -> Any:
             """Recursively convert objects for JSON serialization."""
             if isinstance(obj, Path):
@@ -104,17 +99,17 @@ class EmailOpsConfig(BaseModel):
             os.environ["GOOGLE_CLOUD_PROJECT"] = self.gcp.gcp_project
         if self.gcp.vertex_location:
             os.environ["VERTEX_LOCATION"] = self.gcp.vertex_location
-        
+
         # Core settings
         if self.core.provider:
             os.environ["EMBED_PROVIDER"] = self.core.provider
-        
+
         # Processing settings
         os.environ["EMBED_BATCH"] = str(self.processing.batch_size)
         os.environ["NUM_WORKERS"] = str(self.processing.num_workers)
         os.environ["CHUNK_SIZE"] = str(self.processing.chunk_size)
         os.environ["CHUNK_OVERLAP"] = str(self.processing.chunk_overlap)
-        
+
         # Email settings
         os.environ["SENDER_LOCKED_NAME"] = self.email.sender_locked_name
         os.environ["SENDER_LOCKED_EMAIL"] = self.email.sender_locked_email
@@ -123,14 +118,23 @@ class EmailOpsConfig(BaseModel):
         # Directory settings
         os.environ["INDEX_DIRNAME"] = self.directories.index_dirname
         os.environ["CHUNK_DIRNAME"] = self.directories.chunk_dirname
-        
+
         # Embedding settings
         os.environ["VERTEX_EMBED_MODEL"] = self.embedding.model_name
         os.environ["VERTEX_MODEL"] = self.embedding.vertex_model
-        
+
         # GCP region settings
         os.environ["GCP_REGION"] = self.gcp.gcp_region
-        
+
+        # Storage settings
+        os.environ["OUTLOOKCORTEX_S3_ENDPOINT"] = self.storage.endpoint_url
+        os.environ["OUTLOOKCORTEX_S3_BUCKET_RAW"] = self.storage.bucket_raw
+        os.environ["OUTLOOKCORTEX_S3_REGION"] = self.storage.region
+        if self.storage.access_key:
+            os.environ["OUTLOOKCORTEX_S3_ACCESS_KEY"] = self.storage.access_key
+        if self.storage.secret_key:
+            os.environ["OUTLOOKCORTEX_S3_SECRET_KEY"] = self.storage.secret_key
+
         # System settings
         os.environ["LOG_LEVEL"] = self.system.log_level
         os.environ["DB_URL"] = self.database.url
@@ -157,7 +161,7 @@ class EmailOpsConfig(BaseModel):
     def load(cls, path: Path | None = None) -> EmailOpsConfig:
         """
         Load the configuration.
-        
+
         If path is None, creates config from environment variables.
         If path is provided, loads from JSON file with env overrides.
         """
@@ -169,28 +173,29 @@ class EmailOpsConfig(BaseModel):
                     f"Configuration error: {e}\n\n"
                     "Please ensure all required environment variables are set in your .env file."
                 ) from e
-        
+
         if not path.exists():
             return cls()
-        
+
         try:
             with path.open("r") as f:
                 data = json.load(f)
-            
+
             # Override with environment variables (using EMAILOPS_ prefix)
             for key in list(data.keys()):
                 env_var = f"EMAILOPS_{key.upper()}"
                 if env_var in os.environ:
                     data[key] = os.environ[env_var]
-            
+
             return cls.model_validate(data)
-            
+
         except json.JSONDecodeError:
             logger.warning(
                 "Corrupt JSON file at %s. Renaming and recreating with defaults.", path
             )
             try:
                 import time
+
                 ts = int(time.time())
                 backup_path = path.with_suffix(f".corrupt.{ts}.json")
                 path.rename(backup_path)
@@ -213,15 +218,17 @@ class EmailOpsConfig(BaseModel):
         """Get the secrets directory path, resolving relative paths."""
         if self.directories.secrets_dir.is_absolute():
             return self.directories.secrets_dir
-        
+
         cwd_secrets = Path.cwd() / self.directories.secrets_dir
         if cwd_secrets.exists():
             return cwd_secrets.resolve()
-        
-        package_secrets = Path(__file__).parent.parent.parent.parent / self.directories.secrets_dir
+
+        package_secrets = (
+            Path(__file__).parent.parent.parent.parent / self.directories.secrets_dir
+        )
         if package_secrets.exists():
             return package_secrets.resolve()
-        
+
         return self.directories.secrets_dir.resolve()
 
     def discover_credential_files(self) -> list[Path]:
@@ -229,11 +236,11 @@ class EmailOpsConfig(BaseModel):
         secrets_dir = self.get_secrets_dir()
         if not secrets_dir.exists():
             return []
-            
+
         json_files = list(secrets_dir.glob("*.json"))
         if not json_files:
             return []
-            
+
         valid_files = []
         for json_file in sorted(json_files):
             if self._is_valid_service_account_json(json_file):
@@ -246,10 +253,10 @@ class EmailOpsConfig(BaseModel):
         try:
             with p.open("r", encoding="utf-8") as f:
                 data = json.load(f)
-            
+
             if not isinstance(data, dict):
                 return False
-            
+
             required = {
                 "type",
                 "project_id",
@@ -259,36 +266,44 @@ class EmailOpsConfig(BaseModel):
             }
             if not required.issubset(data):
                 return False
-            
+
             if data.get("type") != "service_account":
                 return False
-            
+
             private_key = data.get("private_key", "").strip()
-            if not private_key.startswith("-----BEGIN PRIVATE KEY-----") or \
-               not private_key.endswith("-----END PRIVATE KEY-----"):
+            if not private_key.startswith(
+                "-----BEGIN PRIVATE KEY-----"
+            ) or not private_key.endswith("-----END PRIVATE KEY-----"):
                 return False
-            
+
             key_id = data.get("private_key_id", "").strip()
             if not key_id or len(key_id) < 16:
                 return False
-            
+
             client_email = data.get("client_email", "").strip()
-            if not client_email or "@" not in client_email or \
-               not client_email.endswith((".iam.gserviceaccount.com", ".gserviceaccount.com")):
+            if (
+                not client_email
+                or "@" not in client_email
+                or not client_email.endswith(
+                    (".iam.gserviceaccount.com", ".gserviceaccount.com")
+                )
+            ):
                 return False
-            
+
             project_id = data.get("project_id", "").strip()
             if not project_id or len(project_id) < 6:
                 return False
-            
+
             if service_account is not None:
                 try:
-                    credentials = service_account.Credentials.from_service_account_info(data)
+                    credentials = service_account.Credentials.from_service_account_info(
+                        data
+                    )
                     return not (hasattr(credentials, "expired") and credentials.expired)
                 except Exception as e:
                     logger.warning("Credential validation failed: %s", e)
                     return False
-            
+
             return True
         except Exception:
             return False
@@ -299,14 +314,14 @@ class EmailOpsConfig(BaseModel):
             creds_path = Path(self.sensitive.google_application_credentials)
             if creds_path.exists() and self._is_valid_service_account_json(creds_path):
                 return creds_path
-        
+
         try:
             valid_files = self.discover_credential_files()
             if valid_files:
                 return valid_files[0]
         except ConfigurationError:
             pass
-        
+
         return None
 
     def get_all_credential_files(self) -> list[Path]:
@@ -372,34 +387,34 @@ def set_config(config: EmailOpsConfig) -> None:
 def validate_env_prefix() -> list[str]:
     """
     Validate that all EMAILOPS_ prefixed env vars use OUTLOOKCORTEX_ instead.
-    
+
     Returns list of warnings for deprecated env var usage.
-    
+
     Blueprint §3.3:
     - Prefix all env vars with OUTLOOKCORTEX_
     """
     warnings = []
     deprecated_prefix = "EMAILOPS_"
     canonical_prefix = "OUTLOOKCORTEX_"
-    
+
     for key in os.environ:
         if key.startswith(deprecated_prefix):
             canonical_key = key.replace(deprecated_prefix, canonical_prefix, 1)
             warnings.append(
                 f"Deprecated env var '{key}' found. Use '{canonical_key}' instead."
             )
-    
+
     return warnings
 
 
 def set_rls_tenant(connection, tenant_id: str) -> None:
     """
     Set the Row-Level Security tenant context on a database connection.
-    
+
     Blueprint §11.1:
     - Postgres RLS enforces tenant isolation
     - SET app.current_tenant = :tid
-    
+
     Args:
         connection: SQLAlchemy connection or session
         tenant_id: The tenant ID to set for RLS
@@ -409,15 +424,16 @@ def set_rls_tenant(connection, tenant_id: str) -> None:
             "tenant_id is required for RLS",
             error_code="RLS_TENANT_REQUIRED",
         )
-    
+
     # Sanitize tenant_id to prevent injection
     import re
-    if not re.match(r'^[a-zA-Z0-9_-]+$', tenant_id):
+
+    if not re.match(r"^[a-zA-Z0-9_-]+$", tenant_id):
         raise ConfigurationError(
             f"Invalid tenant_id format: {tenant_id}",
             error_code="RLS_TENANT_INVALID",
         )
-    
+
     # Execute SET command
     connection.execute(f"SET app.current_tenant = '{tenant_id}'")
 
@@ -425,20 +441,20 @@ def set_rls_tenant(connection, tenant_id: str) -> None:
 def validate_directories(config: EmailOpsConfig) -> list[str]:
     """
     Validate that configured directories exist.
-    
+
     Returns list of warnings for missing directories.
     """
     warnings = []
-    
+
     # Check secrets_dir
     secrets_dir = config.get_secrets_dir()
     if not secrets_dir.exists():
         warnings.append(f"Secrets directory does not exist: {secrets_dir}")
-    
+
     # Check export_root if configured
     if config.directories.export_root:
         export_root = Path(config.directories.export_root)
         if not export_root.exists():
             warnings.append(f"Export root directory does not exist: {export_root}")
-    
+
     return warnings

@@ -1,11 +1,18 @@
 # Outlook Cortex (EmailOps Edition)
 
-## Lean Implementation Blueprint v3.1 — **Canonical Source of Truth**
+## Lean Implementation Blueprint v3.2 — **Canonical Source of Truth (Agentic + DigitalOcean Edition)**
 
-> **Status:** Authoritative specification (v3.1).
-> This supersedes **all** prior versions (v2.x and v3.0).
+> **Status:** Authoritative specification (v3.2).
+> This supersedes **all** prior blueprints (v2.x, v3.0, v3.1).
 > If code, infra, or docs disagree with this blueprint, **this blueprint wins**.
-> Optimized for **agentic coding**: every major behavior has a named module, function signature, schema, and graph/state.
+> v3.2 = v3.1 (logical/agentic spec) **+** DigitalOcean reference architecture (§17) **+** explicit rules for agentic coding LLMs (§0.4). 
+
+* This document is designed to be the **single file** an agentic coding LLM needs to read to:
+
+  * Understand the **end‑to‑end system**.
+  * Know **where new code belongs**.
+  * Respect **naming, schemas, and invariants**.
+* When in doubt, **do not invent new modules** or patterns; instead, wire into the ones defined here.
 
 ---
 
@@ -21,12 +28,12 @@
     * raw `.eml`, `.mbox`,
     * optional **conversation folders** with `Conversation.txt` + `attachments/` + `manifest.json`.
   * Attachments: PDF, Word, Excel, PowerPoint, images, `.msg`/`.eml`.
-* **Calendar & contacts:** out of scope for v3.1.
+* **Calendar & contacts:** out of scope for v3.2.
 * **Deployment targets:**
 
-  * DigitalOcean (primary),
-  * any Kubernetes‑compatible environment that matches infra contracts.
-* **Capabilities (v3.1 scope):**
+  * **DigitalOcean (primary)** — see §17 for a concrete reference architecture.
+  * Any Kubernetes‑compatible environment that matches infra contracts (Postgres + S3‑compatible storage + Redis‑compatible queue).
+* **Capabilities (v3.2 scope):**
 
   * Search & answer (RAG).
   * Draft email replies and fresh emails.
@@ -76,7 +83,7 @@
 7. **Centralized validation & observability.**
 
    * Core validators and a `Result[T, E]` type for input validation.
-   * A dedicated **observability module** with tracing/log correlation and metrics.
+   * A dedicated **observability module** with tracing/log correlation and metrics using OpenTelemetry‑style practices. ([OpenTelemetry][1])
 
 ### §0.3 Glossary
 
@@ -89,6 +96,75 @@
 * **CortexError** — base class for all application errors.
 * **Result[T, E]** — typed container for success/failure outcomes.
 * **WAL** — Write‑Ahead Log for crash‑safe index writes.
+
+### §0.4 How agentic coding LLMs must use this blueprint (hard rules)
+
+This section is specifically for **agentic coding LLMs** generating or modifying code/infra.
+
+1. **Do not invent new top‑level modules or directories.**
+
+   * Only use paths explicitly defined in §2.2.
+   * If you must add new functionality, add it as:
+
+     * a function in an existing module, or
+     * a new file under an existing, clearly‑scoped package (e.g. `cortex/retrieval`, `cortex/safety`) and **name it consistently** with existing files.
+2. **Respect existing config & models.**
+
+   * Use `cortex.config.loader.get_config()` to access configuration.
+   * Do **not** introduce new environment variables without:
+
+     * adding them to `config.models`,
+     * validating them,
+     * documenting them in this blueprint.
+3. **Only call external services via the designated shims:**
+
+   * LLMs & embeddings **must** go through `cortex.llm.client` / `cortex.llm.runtime`.
+   * Storage & DB access **must** go through `cortex.db` + repository layer.
+   * Object storage access must respect §6 (ingestion) and §17 (DigitalOcean mapping).
+4. **Tools, not raw calls, from graphs:**
+
+   * LangGraph nodes **MUST NOT** talk directly to Postgres, Redis, Spaces/S3, or external APIs.
+   * All such access must route via explicit tools defined in §10.2 / §16.1.
+5. **Schema first, code second.**
+
+   * When implementing a new behavior, define or extend:
+
+     * Pydantic models in `cortex.models.*`,
+     * tool signatures in the relevant module.
+   * Only then implement logic.
+6. **Strong typing is mandatory.**
+
+   * Use type hints for **all** public functions.
+   * For new models, use Pydantic v2 only.
+7. **Tracing & logging:**
+
+   * Any new node, tool, or integration with external services must use `@trace_operation` and `get_logger` from `cortex.observability`.
+   * Do **not** log secrets or raw email/attachment bodies.
+8. **DigitalOcean specifics:**
+
+   * When adding infra code (Terraform, Helm values, etc.), follow §17:
+
+     * Postgres → DO Managed PostgreSQL,
+     * Object storage → DO Spaces,
+     * Queue → DO Managed Valkey (Redis‑compatible),
+     * Runtime → DOKS, not App Platform, for worker scaling.
+9. **No silent behavior changes.**
+
+   * If your change alters:
+
+     * signatures,
+     * schemas,
+     * invariants,
+     * error semantics,
+   * you **must** update this blueprint section and bump minor version (e.g., v3.2 → v3.3).
+10. **If you're unsure where to put code:**
+
+    * Default to:
+
+      * retrieval logic → `cortex.retrieval`,
+      * ingestion logic → `cortex.ingestion`,
+      * safety & policy → `cortex.safety` / `cortex.security`,
+      * orchestration logic → `cortex.orchestration`.
 
 ---
 
@@ -168,7 +244,7 @@
 
 * **Language:** Python 3.11+
 * **Web / API:** FastAPI
-* **Orchestration:** LangGraph (in‑process)
+* **Orchestration:** LangGraph (in‑process) for multi‑agent, stateful workflows. ([LangChain Docs][2])
 * **Schemas & validation:** Pydantic v2
 * **Database:** PostgreSQL 15+ with:
 
@@ -191,7 +267,7 @@
 outlook-cortex/
 ├── README.md
 ├── docs/
-│   ├── blueprint.md               # this file (canonical v3.1)
+│   ├── blueprint.md               # this file (canonical v3.2)
 │   └── ...
 ├── backend/
 │   ├── pyproject.toml
@@ -271,6 +347,8 @@ outlook-cortex/
 ├── infra/
 └── ...
 ```
+
+> **Agentic rule:** if you add new code, put it under one of the existing trees above. If you think you need a new tree, you must update this layout in §2.2.
 
 ### §2.3 Configuration models (overview)
 
@@ -940,6 +1018,12 @@ alembic upgrade head
 alembic downgrade -1
 ```
 
+> **Agentic rule:**
+> When adding new columns or tables:
+>
+> * Use Alembic migrations in `backend/migrations/versions`.
+> * Do **not** change existing column types or semantics without updating this section & bumping version.
+
 ---
 
 ## §5. Export Validation & Manifest Refresh (B1)
@@ -1056,6 +1140,11 @@ def extract_participants_detailed(manifest: dict) -> list[dict]: ...
 
   * deduplicated list with `(name, email, role, tone, stance)` fields, suitable for summarizer.
 
+**Agentic hints:**
+
+* New validation logic belongs in `cortex.ingestion.conv_manifest.validation`.
+* Any changes to manifest schema **must** increment `manifest_version` and update this section.
+
 ---
 
 ## §6. Ingestion Pipeline (Raw → DB)
@@ -1133,6 +1222,9 @@ class IngestJobSummary(BaseModel):
 
   * abort job; **do not** persist unredacted text.
   * set `IngestJobSummary.aborted_reason = "pii_init_failed"`.
+
+> **Agentic rule:**
+> Never store unredacted text when PII engines fail. If you make changes that could bypass PII, abort the job instead and record `aborted_reason`.
 
 ### §6.5 Attachment extraction (`attachments.py` + `text_extraction.py`)
 
@@ -1857,6 +1949,9 @@ def get_embedding(text: str) -> List[float]:
 ```
 
 * **Read‑only**; no side effects.
+
+> **Agentic rule:**
+> If you modify scoring (new features, new signals), encapsulate them in helper functions (`apply_<something>`) inside `hybrid_search.py`, and keep the pipeline steps explicit and traceable.
 
 ### §8.5 Query classification implementation (`retrieval.query_classifier`)
 
@@ -3096,6 +3191,14 @@ def get_answer_question_graph():
     return _answer_graph
 ```
 
+> **Agentic rule:**
+> When adding a new workflow:
+>
+> * Define a `State` model in `orchestration.states`.
+> * Implement nodes in a dedicated module under `orchestration/nodes/`.
+> * Wire graph in `orchestration.graphs`.
+> * Reuse existing tools where possible; if you create a new tool, add it to §16.1.
+
 ### §10.1.2 Context assembly optimization & safety
 
 Common node: `node_assemble_context`:
@@ -4055,6 +4158,9 @@ def strip_injection_patterns(text: str) -> str:
 
 ### §12.2 Metrics & tracing
 
+* Use OpenTelemetry SDK for Python; use a combination of auto‑instrumentation for HTTP/DB and manual spans for critical operations. ([OpenTelemetry][1])
+* Prometheus for metrics scraping.
+* Export traces via OTel Collector to chosen backend.
 * Prometheus metrics:
 
   * HTTP request counts/latency,
@@ -4080,6 +4186,7 @@ def get_logger(name: str): ...
 Requirements:
 
 * Use `ContextVar` to store current trace context (`trace_id`, `span_id`).
+* Uses context propagation to correlate logs, metrics and traces. ([withcoherence.com][3])
 * `@trace_operation`:
 
   * starts span,
@@ -4091,6 +4198,12 @@ Requirements:
 * Graceful degradation:
 
   * if OTel/structlog missing, functions become no‑ops / standard logging, not crashes.
+
+> **Agentic rule:**
+> Any new external integration (DB, queue, LLM call, HTTP client) **must**:
+>
+> * be wrapped in a `@trace_operation` span, and
+> * emit metrics for latency and error rate.
 
 ---
 
@@ -4220,3 +4333,308 @@ Requirements:
 
 > Any new code, tool, node, or graph must align with this blueprint.
 > If an implementation needs to deviate, **update this document first**; mismatches are treated as bugs, not “just differences.”
+
+---
+
+## §17. DigitalOcean Reference Architecture (Primary Deployment Target)
+
+> **Purpose:** Map the logical architecture (§1–§16) to **concrete DigitalOcean services** so that infra code, Helm charts, and Terraform remain consistent and repeatable.
+
+### §17.1 High-level DOKS architecture
+
+Within a **single DigitalOcean VPC**, we run:
+
+* A **DOKS cluster** (DigitalOcean Kubernetes).
+* **Managed data services**:
+
+  * Managed PostgreSQL (with PgBouncer) for the primary DB + pgvector + FTS.
+  * Managed Valkey (Redis-compatible) as the job queue/broker.
+  * Spaces (S3-compatible object storage) for raw exports and attachments.
+  * Managed OpenSearch for log aggregation.
+
+Conceptual diagram:
+
+```mermaid
+graph TD
+    subgraph DigitalOcean VPC
+        subgraph DOKS Cluster
+            subgraph Node Pool 1: API/System
+                API(FastAPI Backend)
+                Ingress(Ingress Controller)
+                ObsTools(Prometheus/OTel Collector)
+            end
+            subgraph Node Pool 2: Workers (Scalable)
+                Workers(Ingestion/Embedding Workers)
+            end
+        end
+
+        subgraph Managed Data Services
+            PG[(Managed PostgreSQL + pgvector + PgBouncer)]
+            Valkey[(Managed Valkey - Queue)]
+            Spaces[(DO Spaces - Object Storage)]
+            OpenSearch[(Managed OpenSearch - Logs)]
+        end
+    end
+
+    LB(DO Load Balancer) -- HTTPS --> Ingress
+    Ingress --> API
+
+    API -- Trusted Source --> PG
+    API -- Trusted Source --> Valkey
+    Workers -- Trusted Source --> PG
+    Workers -- Trusted Source --> Valkey
+    Workers -- S3 API --> Spaces
+
+    API & Workers -- Metrics/Traces --> ObsTools
+    API & Workers -- Logs via Shipper --> OpenSearch
+
+    External[External LLM APIs]
+    Workers/API -- HTTPS Egress --> External
+```
+
+### §17.2 Data & state layer → DigitalOcean services
+
+| Logical requirement (from §4–§8)                         | DigitalOcean service & config                                                                               |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| **Primary DB** (PG 15+, pgvector, FTS, RLS)              | **Managed PostgreSQL** cluster with HA (primary + standby). Enable `pgvector` + `uuid-ossp`. Use PgBouncer. |
+| Connection pooling for parallel embedding workers (§7.3) | **Built-in PgBouncer** in DO Managed PostgreSQL; tune pool size per worker concurrency.                     |
+| S3-compatible object storage (§5–§6)                     | **Spaces**; private buckets for raw exports & processed artifacts.                                          |
+| Asynchronous job queue (§7.4)                            | **Managed Valkey** (Redis-compatible) for Celery/Redis Streams.                                             |
+| Log aggregation (§12)                                    | **Managed OpenSearch**; receive logs from FluentBit or DOKS log forwarding.                                 |
+
+**Best practices (DigitalOcean-specific):**
+
+* **Networking / security:**
+
+  * Place Managed PostgreSQL, Valkey, OpenSearch, and Spaces in the same **VPC** as the DOKS cluster.
+  * Restrict access to managed DBs using **Trusted Sources** → only the DOKS node pool(s).
+* **PgBouncer:**
+
+  * Enable DO's connection pooler on Managed PostgreSQL.
+  * Size pool for:
+
+    * backend FastAPI pod count,
+    * worker concurrency (embedding jobs can open many concurrent connections).
+* **RLS & app tenant scoping:**
+
+  * Use the same RLS policies from §4.4; application must set `app.current_tenant` (or `cortex.tenant_id`) per request at connection/session level.
+
+### §17.3 Compute & application layer on DOKS
+
+**Why DOKS (vs App Platform):**
+
+* Embedding workers (§7.3) are **burst-heavy**, parallel, and require:
+
+  * custom resource tuning,
+  * horizontal pod autoscaling on queue depth/CPU,
+  * separate node pools.
+* DOKS exposes:
+
+  * Node pools for different workloads (API vs workers).
+  * Kubernetes HPA + Cluster Autoscaler for elastic scale-out.
+  * Native integration with DO load balancers, firewalls, and VPC.
+
+**Cluster configuration:**
+
+* **Control plane:** High Availability (HA) enabled.
+* **Node pools:**
+
+  1. **System/API pool**
+
+     * Runs:
+
+       * FastAPI backend (`backend/`),
+       * Ingress controller (e.g. Nginx or Traefik),
+       * Observability stack (Prometheus, OTel Collector, log shipper).
+     * Node size: balanced compute/memory (e.g., `s-4vcpu-8gb` class).
+     * HPA:
+
+       * scale FastAPI pods on CPU + request latency metrics.
+  2. **Worker pool**
+
+     * Runs:
+
+       * ingestion workers,
+       * embedding/reindex workers (§7.3, `workers/`).
+     * Node size: compute-heavy (e.g., higher vCPU, moderate RAM).
+     * HPA:
+
+       * scale worker deployments on:
+
+         * queue depth (Redis stream length),
+         * or CPU when jobs are CPU-bound.
+
+**Workload mapping:**
+
+* `backend/main.py` → K8s `Deployment` + `Service`.
+* `workers/main.py` → separate `Deployment` (or multiple deployments per job type).
+* `cortex_cli` is for ops/CI image; not a K8s service.
+
+### §17.4 Networking & security on DigitalOcean
+
+**VPC:**
+
+* Single **DO VPC** per environment (dev/stage/prod).
+* All resources (DOKS cluster, Managed PostgreSQL, Valkey, Spaces, OpenSearch) inside the VPC.
+
+**Public ingress:**
+
+* **DigitalOcean Load Balancer**:
+
+  * Provisioned via Kubernetes `Service` type `LoadBalancer` or via Ingress Controller.
+  * Terminates TLS on the LB or on the Ingress (choose one; be consistent).
+* Ingress:
+
+  * Route `/api/v1/*` to FastAPI service.
+  * Enforce HTTPS, HSTS, and sane HTTP limits (body size, timeouts).
+
+**Network security:**
+
+* **Cloud Firewalls**:
+
+  * Attach to DOKS node pools.
+  * Restrict:
+
+    * inbound: only 80/443 from internet; SSH restricted or disabled.
+    * outbound: allow required egress to LLM providers, monitoring endpoints.
+* **Kubernetes NetworkPolicies**:
+
+  * Enforce pod-level least-privilege:
+
+    * API pods can talk to DB + Valkey + Spaces endpoints.
+    * Worker pods can talk to DB + Valkey + Spaces + external LLM APIs.
+    * Observability pods can receive traffic from app pods only.
+
+**Secrets:**
+
+* Use **Kubernetes Secrets** for:
+
+  * DB connection strings,
+  * Valkey URI,
+  * Spaces access keys,
+  * LLM provider keys.
+* Optionally integrate an external secret manager; but from the app's perspective, configuration is read via `get_config()` as defined in §2.3.
+
+### §17.5 Observability stack on DOKS
+
+**Logging:**
+
+* Use **FluentBit** (or similar) as a DaemonSet:
+
+  * Collect stdout/stderr from pods.
+  * Forward to Managed OpenSearch index with:
+
+    * environment tag (dev/stage/prod),
+    * service name (`cortex-api`, `cortex-worker`, etc.),
+    * tenant_id (if safe and non-PII).
+* Alternatively, use DO's **DOKS log forwarding** to OpenSearch.
+
+**Metrics:**
+
+* Use **DigitalOcean Monitoring** for:
+
+  * Node-level metrics,
+  * Basic cluster / load balancer stats.
+* Inside DOKS:
+
+  * Deploy `kube-prometheus-stack`:
+
+    * Scrapes:
+
+      * Kubernetes objects,
+      * app metrics exposed via `/metrics` (Prometheus format),
+      * queue / DB exporters if needed.
+  * Dashboards:
+
+    * RAG latency & error rates,
+    * ingestion throughput,
+    * embedding job latency and failures.
+
+**Tracing:**
+
+* Deploy **OpenTelemetry Collector** within DOKS:
+
+  * Receives OTLP spans from `cortex.observability`.
+  * Exports to:
+
+    * SaaS tracing (e.g., Datadog, Honeycomb, etc.), or
+    * self-hosted Jaeger/Tempo in the cluster.
+
+> **Agentic rule (DigitalOcean):**
+> When wiring new components:
+>
+> * Always export logs to OpenSearch.
+> * Always send traces to OTel Collector.
+> * Always expose Prometheus metrics on `/metrics` when adding long-running services.
+
+### §17.6 Automation & CI/CD on DigitalOcean
+
+**Infrastructure as Code:**
+
+* Use **Terraform** with DigitalOcean provider:
+
+  * Resources:
+
+    * DOKS clusters & node pools,
+    * VPCs,
+    * Managed PostgreSQL, Valkey, OpenSearch,
+    * Spaces buckets,
+    * Load balancers,
+    * Cloud Firewalls.
+  * Tag resources per environment, team, and application.
+
+**Container registry:**
+
+* Use **DigitalOcean Container Registry (DOCR)**:
+
+  * Build images for:
+
+    * `cortex-api` (backend),
+    * `cortex-worker`,
+    * `cortex-cli` (if needed for ops).
+  * Reference DOCR images in K8s manifests via imagePullSecrets.
+
+**CI/CD pipelines:**
+
+* Example: GitHub Actions:
+
+  1. Run tests + linters + `cortex doctor`.
+  2. Build & push images to DOCR.
+  3. Apply Terraform for infra changes.
+  4. Deploy apps via:
+
+     * `kubectl`/`helm` using `doctl` for auth, or
+     * GitOps (Flux/ArgoCD) pointed at a `k8s/` manifests repo.
+
+**Versioning & environments:**
+
+* Use separate DO projects or tagging for dev/stage/prod.
+* Enable per-environment:
+
+  * separate DOKS clusters,
+  * separate Managed PostgreSQL / Valkey / OpenSearch instances,
+  * separate Spaces buckets.
+
+---
+
+## §18. Final Notes for Agentic Coding LLMs
+
+1. **This file is the source of truth.**
+
+   * When generating code, **read the relevant section(s) first**, then adapt.
+2. **Prefer extension over reinvention.**
+
+   * Use existing models, tools, and patterns.
+   * Extend where strictly necessary and update this blueprint.
+3. **DigitalOcean is the canonical infra mapping.**
+
+   * For other K8s environments, mirror the same contracts (Postgres, S3-compatible storage, Redis-compatible queue, OTel, Prometheus).
+4. **Never silently weaken safety.**
+
+   * If in doubt about a change that might affect security, PII, or policy enforcement: keep current behavior and surface a TODO comment + blueprint update.
+
+This v3.2 blueprint is now the **one and only canonical reference** for Outlook Cortex (EmailOps Edition), optimized for use by **agentic coding LLMs** building and maintaining the system.
+
+[1]: https://opentelemetry.io/
+[2]: https://python.langchain.com/docs/langgraph
+[3]: https://withcoherence.com/

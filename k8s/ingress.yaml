@@ -1,0 +1,48 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: emailops-ingress
+  namespace: emailops
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - api.emailops.linkos.me  # Change to your domain
+      secretName: emailops-tls
+  rules:
+    - host: api.emailops.linkos.me  # Change to your domain
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: emailops-backend
+                port:
+                  number: 80
+---
+# Alternative: LoadBalancer service for quick testing without Ingress
+apiVersion: v1
+kind: Service
+metadata:
+  name: emailops-backend-lb
+  namespace: emailops
+  labels:
+    app: emailops
+    component: backend
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 8000
+      protocol: TCP
+      name: http
+  selector:
+    app: emailops
+    component: backend

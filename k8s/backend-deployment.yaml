@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: emailops-backend
+  namespace: emailops
+  labels:
+    app: emailops
+    component: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: emailops
+      component: backend
+  template:
+    metadata:
+      labels:
+        app: emailops
+        component: backend
+    spec:
+      containers:
+        - name: backend
+          image: registry.digitalocean.com/sf-registry/emailops-backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: emailops-config
+            - secretRef:
+                name: emailops-secrets
+          volumeMounts:
+            - name: gcp-credentials
+              mountPath: /secrets/gcp
+              readOnly: true
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+      volumes:
+        - name: gcp-credentials
+          secret:
+            secretName: gcp-credentials
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: emailops-backend
+  namespace: emailops
+  labels:
+    app: emailops
+    component: backend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8000
+      protocol: TCP
+      name: http
+  selector:
+    app: emailops
+    component: backend

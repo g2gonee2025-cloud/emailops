@@ -109,8 +109,11 @@ ipython_config.py
 # ENVIRONMENTS
 # ============================================
 
-# Virtual environments
+# Virtual environments / dotenvs
 .env
+.env.*
+!.env.example
+!.env.*.template
 .venv
 env/
 venv/

@@ -65,11 +65,13 @@ def _print_banner() -> None:
 def _print_usage() -> None:
     """Print user-friendly usage information."""
     _print_banner()
-    
+
     print(f"{_colorize('USAGE:', 'bold')}")
     print(f"    cortex {_colorize('<command>', 'cyan')} [options]\n")
-    
-    print(f"{_colorize('CORE COMMANDS:', 'bold')}  {_colorize('(Email Processing)', 'dim')}")
+
+    print(
+        f"{_colorize('CORE COMMANDS:', 'bold')}  {_colorize('(Email Processing)', 'dim')}"
+    )
     core_commands = [
         ("ingest", "Process and ingest email exports into the system"),
         ("index", "Build/rebuild search index with embeddings"),
@@ -79,7 +81,9 @@ def _print_usage() -> None:
     for cmd, desc in core_commands:
         print(f"    {_colorize(cmd, 'green'):12} {desc}")
 
-    print(f"\n{_colorize('RAG COMMANDS:', 'bold')}   {_colorize('(AI Capabilities)', 'dim')}")
+    print(
+        f"\n{_colorize('RAG COMMANDS:', 'bold')}   {_colorize('(AI Capabilities)', 'dim')}"
+    )
     rag_commands = [
         ("answer", "Ask questions about your emails"),
         ("draft", "Draft email replies based on context"),
@@ -87,7 +91,7 @@ def _print_usage() -> None:
     ]
     for cmd, desc in rag_commands:
         print(f"    {_colorize(cmd, 'green'):12} {desc}")
-    
+
     print(f"\n{_colorize('UTILITY COMMANDS:', 'bold')}")
     utility_commands = [
         ("doctor", "Run system diagnostics and health checks"),
@@ -97,7 +101,7 @@ def _print_usage() -> None:
     ]
     for cmd, desc in utility_commands:
         print(f"    {_colorize(cmd, 'green'):12} {desc}")
-    
+
     print(f"\n{_colorize('COMMON OPTIONS:', 'bold')}")
     options = [
         ("--help, -h", "Show help for a command"),
@@ -106,27 +110,29 @@ def _print_usage() -> None:
     ]
     for opt, desc in options:
         print(f"    {_colorize(opt, 'yellow'):16} {desc}")
-    
+
     print(f"\n{_colorize('EXAMPLES:', 'bold')}")
     examples = [
         ("cortex ingest ./exports/emails", "Ingest emails from a folder"),
         ("cortex ingest ./my_export --tenant acme", "Ingest with tenant ID"),
         ("cortex index --workers 4", "Build index with 4 workers"),
-        ("cortex search \"contract terms\"", "Search for contract terms"),
+        ('cortex search "contract terms"', "Search for contract terms"),
         ("cortex doctor --check-embeddings", "Test embedding connectivity"),
     ]
     for example, desc in examples:
         print(f"    {_colorize(example, 'dim'):44} # {desc}")
-    
+
     print(f"\n{_colorize('WORKFLOW:', 'bold')}")
     print(f"    1. {_colorize('cortex doctor', 'cyan')} → Check system health")
     print(f"    2. {_colorize('cortex ingest <path>', 'cyan')} → Import email exports")
     print(f"    3. {_colorize('cortex index', 'cyan')} → Build search embeddings")
     print(f"    4. {_colorize('cortex search <query>', 'cyan')} → Query your emails")
     print(f"    5. {_colorize('cortex answer <question>', 'cyan')} → Get AI answers")
-    
+
     print(f"\n{_colorize('DOCUMENTATION:', 'bold')}")
-    print(f"    See {_colorize('docs/CANONICAL_BLUEPRINT.md', 'blue')} for full specifications")
+    print(
+        f"    See {_colorize('docs/CANONICAL_BLUEPRINT.md', 'blue')} for full specifications"
+    )
     print()
 
 
@@ -134,10 +140,11 @@ def _print_version() -> None:
     """Print version information."""
     try:
         from importlib.metadata import version as get_version
+
         ver = get_version("cortex-cli")
     except Exception:
         ver = "0.1.0-dev"
-    
+
     print(f"{_colorize('EmailOps Cortex CLI', 'bold')}")
     print(f"  Version:  {_colorize(ver, 'green')}")
     print(f"  Python:   {sys.version.split()[0]}")
@@ -148,25 +155,35 @@ def _show_status() -> None:
     """Show current environment status."""
     import os
     from pathlib import Path
-    
+
     _print_banner()
     print(f"{_colorize('ENVIRONMENT STATUS:', 'bold')}\n")
-    
+
     # Check key environment variables
     env_vars = [
         ("OUTLOOKCORTEX_ENV", os.getenv("OUTLOOKCORTEX_ENV", "not set")),
-        ("OUTLOOKCORTEX_DB_URL", "***" if os.getenv("OUTLOOKCORTEX_DB_URL") else "not set"),
-        ("GOOGLE_APPLICATION_CREDENTIALS", os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "not set")),
+        (
+            "OUTLOOKCORTEX_DB_URL",
+            "***" if os.getenv("OUTLOOKCORTEX_DB_URL") else "not set",
+        ),
+        (
+            "GOOGLE_APPLICATION_CREDENTIALS",
+            os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "not set"),
+        ),
     ]
-    
+
     print(f"  {_colorize('Environment Variables:', 'cyan')}")
     for var, val in env_vars:
-        status = _colorize("✓", "green") if val not in ("not set",) else _colorize("○", "yellow")
+        status = (
+            _colorize("✓", "green")
+            if val not in ("not set",)
+            else _colorize("○", "yellow")
+        )
         if val == "***":
             status = _colorize("✓", "green")
         display_val = val if len(val) < 50 else val[:47] + "..."
         print(f"    {status} {var}: {display_val}")
-    
+
     # Check directories
     print(f"\n  {_colorize('Directory Structure:', 'cyan')}")
     cwd = Path.cwd()
@@ -177,13 +194,13 @@ def _show_status() -> None:
         ("docs", "Documentation"),
         ("secrets", "Secrets directory"),
     ]
-    
+
     for dir_path, desc in dirs_to_check:
         full_path = cwd / dir_path
         exists = full_path.exists()
         status = _colorize("✓", "green") if exists else _colorize("✗", "red")
         print(f"    {status} {desc}: {dir_path}")
-    
+
     # Check config files
     print(f"\n  {_colorize('Configuration Files:', 'cyan')}")
     config_files = [
@@ -192,30 +209,33 @@ def _show_status() -> None:
         ("requirements.txt", "Python dependencies"),
         ("docker-compose.yml", "Docker configuration"),
     ]
-    
+
     for file_path, desc in config_files:
         full_path = cwd / file_path
         exists = full_path.exists()
         status = _colorize("✓", "green") if exists else _colorize("○", "dim")
         print(f"    {status} {desc}: {file_path}")
-    
-    print(f"\n{_colorize('TIP:', 'yellow')} Run {_colorize('cortex doctor', 'cyan')} for detailed diagnostics\n")
+
+    print(
+        f"\n{_colorize('TIP:', 'yellow')} Run {_colorize('cortex doctor', 'cyan')} for detailed diagnostics\n"
+    )
 
 
 def _show_config(validate: bool = False, export_format: str | None = None) -> None:
     """Show or validate configuration."""
     _print_banner()
-    
+
     try:
         from cortex.config.loader import get_config
+
         config = get_config()
-        
+
         if validate:
             print(f"{_colorize('Configuration Validation:', 'bold')}\n")
             print(f"  {_colorize('✓', 'green')} Configuration loaded successfully")
             print(f"  {_colorize('✓', 'green')} All required fields present")
             print(f"  {_colorize('✓', 'green')} Pydantic validation passed\n")
-            
+
             print(f"  {_colorize('Summary:', 'cyan')}")
             print(f"    Environment: {config.core.env}")
             print(f"    Provider:    {config.core.provider}")
@@ -223,42 +243,57 @@ def _show_config(validate: bool = False, export_format: str | None = None) -> No
             print()
         elif export_format == "json":
             import json
+
             print(json.dumps(config.model_dump(), indent=2, default=str))
         else:
             print(f"{_colorize('Current Configuration:', 'bold')}\n")
-            
+
             sections = [
-                ("Core", [
-                    ("Environment", config.core.env),
-                    ("Provider", config.core.provider),
-                    ("Persona", config.core.persona),
-                ]),
-                ("Embeddings", [
-                    ("Model", config.embeddings.model_name),
-                    ("Dimensions", config.embeddings.output_dimensionality),
-                    ("Batch Size", config.embeddings.batch_size),
-                ]),
-                ("Search", [
-                    ("Fusion Strategy", config.search.fusion_strategy),
-                    ("Top K", config.search.top_k),
-                    ("Rerank Enabled", config.search.rerank_enabled),
-                ]),
-                ("Processing", [
-                    ("Chunk Size", config.processing.chunk_size),
-                    ("Chunk Overlap", config.processing.chunk_overlap),
-                ]),
+                (
+                    "Core",
+                    [
+                        ("Environment", config.core.env),
+                        ("Provider", config.core.provider),
+                        ("Persona", config.core.persona),
+                    ],
+                ),
+                (
+                    "Embeddings",
+                    [
+                        ("Model", config.embeddings.model_name),
+                        ("Dimensions", config.embeddings.output_dimensionality),
+                        ("Batch Size", config.embeddings.batch_size),
+                    ],
+                ),
+                (
+                    "Search",
+                    [
+                        ("Fusion Strategy", config.search.fusion_strategy),
+                        ("Top K", config.search.top_k),
+                        ("Rerank Enabled", config.search.rerank_enabled),
+                    ],
+                ),
+                (
+                    "Processing",
+                    [
+                        ("Chunk Size", config.processing.chunk_size),
+                        ("Chunk Overlap", config.processing.chunk_overlap),
+                    ],
+                ),
             ]
-            
+
             for section_name, items in sections:
                 print(f"  {_colorize(section_name + ':', 'cyan')}")
                 for key, value in items:
                     print(f"    {key}: {_colorize(str(value), 'dim')}")
                 print()
-                
+
     except ImportError as e:
         print(f"{_colorize('ERROR:', 'red')} Could not load configuration module")
         print(f"  {e}")
-        print(f"\n  Run {_colorize('cortex doctor --auto-install', 'cyan')} to fix dependencies")
+        print(
+            f"\n  Run {_colorize('cortex doctor --auto-install', 'cyan')} to fix dependencies"
+        )
         sys.exit(1)
     except Exception as e:
         print(f"{_colorize('ERROR:', 'red')} Configuration validation failed")
@@ -270,6 +305,7 @@ def _show_config(validate: bool = False, export_format: str | None = None) -> No
 # CORE COMMANDS: ingest, index, search, validate
 # =============================================================================
 
+
 def _run_validate(
     path: str,
     json_output: bool = False,
@@ -279,15 +315,15 @@ def _run_validate(
     """
     import json
     from pathlib import Path
-    
+
     target_path = Path(path).resolve()
-    
+
     if not json_output:
         _print_banner()
         print(f"{_colorize('▶ EXPORT VALIDATION (B1)', 'bold')}\n")
         print(f"  Target:    {_colorize(str(target_path), 'cyan')}")
         print()
-        
+
     if not target_path.exists():
         msg = f"Path does not exist: {target_path}"
         if json_output:
@@ -298,12 +334,12 @@ def _run_validate(
 
     try:
         from cortex.ingestion.conv_manifest.validation import scan_and_refresh
-        
+
         if not json_output:
             print(f"  {_colorize('⏳', 'yellow')} Scanning and validating...")
-            
+
         report = scan_and_refresh(target_path)
-        
+
         if json_output:
             print(report.model_dump_json())
         else:
@@ -311,7 +347,7 @@ def _run_validate(
             print(f"    Folders Scanned:   {report.folders_scanned}")
             print(f"    Manifests Created: {report.manifests_created}")
             print(f"    Manifests Updated: {report.manifests_updated}")
-            
+
             if report.problems:
                 print(f"\n  {_colorize('Problems Found:', 'red')}")
                 for p in report.problems:
@@ -319,7 +355,7 @@ def _run_validate(
             else:
                 print(f"\n  {_colorize('✓', 'green')} No problems found.")
             print()
-            
+
     except ImportError as e:
         msg = f"Could not load validation module: {e}"
         if json_output:
@@ -344,7 +380,7 @@ def _run_ingest(
 ) -> None:
     """
     Ingest email exports into the system.
-    
+
     Processes conversation folders containing:
     - Conversation.txt (email transcript)
     - manifest.json (metadata)
@@ -353,9 +389,9 @@ def _run_ingest(
     import json
     import uuid
     from pathlib import Path
-    
+
     source = Path(source_path).resolve()
-    
+
     if not json_output:
         _print_banner()
         print(f"{_colorize('▶ EMAIL INGESTION', 'bold')}\n")
@@ -363,7 +399,7 @@ def _run_ingest(
         print(f"  Tenant:    {_colorize(tenant_id, 'cyan')}")
         print(f"  Dry Run:   {_colorize(str(dry_run), 'yellow' if dry_run else 'dim')}")
         print()
-    
+
     if not source.exists():
         msg = f"Source path does not exist: {source}"
         if json_output:
@@ -371,24 +407,30 @@ def _run_ingest(
         else:
             print(f"  {_colorize('✗', 'red')} {msg}")
         sys.exit(1)
-    
+
     # Discover conversation folders
     conversations = []
     if source.is_dir():
         # Check if source IS a conversation folder
-        if (source / "Conversation.txt").exists() or (source / "manifest.json").exists():
+        if (source / "Conversation.txt").exists() or (
+            source / "manifest.json"
+        ).exists():
             conversations = [source]
         else:
             # Scan for conversation subfolders
             for item in source.iterdir():
                 if item.is_dir():
-                    if (item / "Conversation.txt").exists() or (item / "manifest.json").exists():
+                    if (item / "Conversation.txt").exists() or (
+                        item / "manifest.json"
+                    ).exists():
                         conversations.append(item)
-    
+
     if not conversations:
         msg = f"No conversation folders found in: {source}"
         if json_output:
-            print(json.dumps({"error": msg, "success": False, "conversations_found": 0}))
+            print(
+                json.dumps({"error": msg, "success": False, "conversations_found": 0})
+            )
         else:
             print(f"  {_colorize('⚠', 'yellow')} {msg}")
             print(f"\n  {_colorize('Expected structure:', 'dim')}")
@@ -397,10 +439,12 @@ def _run_ingest(
             print(f"      ├── manifest.json")
             print(f"      └── attachments/")
         sys.exit(1)
-    
+
     if not json_output:
-        print(f"  {_colorize('✓', 'green')} Found {len(conversations)} conversation(s)\n")
-    
+        print(
+            f"  {_colorize('✓', 'green')} Found {len(conversations)} conversation(s)\n"
+        )
+
     if dry_run:
         if not json_output:
             print(f"{_colorize('DRY RUN - No changes will be made', 'yellow')}\n")
@@ -410,33 +454,41 @@ def _run_ingest(
                 print(f"    ... and {len(conversations) - 10} more")
             print()
         else:
-            print(json.dumps({
-                "success": True,
-                "dry_run": True,
-                "conversations_found": len(conversations),
-                "conversations": [str(c) for c in conversations[:20]],
-            }))
+            print(
+                json.dumps(
+                    {
+                        "success": True,
+                        "dry_run": True,
+                        "conversations_found": len(conversations),
+                        "conversations": [str(c) for c in conversations[:20]],
+                    }
+                )
+            )
         return
-    
+
     # Actually run ingestion
     try:
         from cortex.ingestion.mailroom import IngestJob, process_job
-        
+
         results = []
         success_count = 0
         fail_count = 0
-        
+
         for i, conv in enumerate(conversations, 1):
             if not json_output:
-                print(f"  [{i}/{len(conversations)}] Processing: {conv.name}...", end=" ", flush=True)
-            
+                print(
+                    f"  [{i}/{len(conversations)}] Processing: {conv.name}...",
+                    end=" ",
+                    flush=True,
+                )
+
             job = IngestJob(
                 job_id=uuid.uuid4(),
                 tenant_id=tenant_id,
                 source_type="local_upload",
                 source_uri=str(conv),
             )
-            
+
             try:
                 summary = process_job(job)
                 if summary.aborted_reason:
@@ -448,46 +500,58 @@ def _run_ingest(
                 else:
                     success_count += 1
                     if not json_output:
-                        print(f"{_colorize('OK', 'green')} ({summary.messages_ingested} msg, {summary.attachments_parsed} att)")
-                
-                results.append({
-                    "path": str(conv),
-                    "success": not summary.aborted_reason,
-                    "messages": summary.messages_ingested,
-                    "attachments": summary.attachments_parsed,
-                    "error": summary.aborted_reason,
-                })
+                        print(
+                            f"{_colorize('OK', 'green')} ({summary.messages_ingested} msg, {summary.attachments_parsed} att)"
+                        )
+
+                results.append(
+                    {
+                        "path": str(conv),
+                        "success": not summary.aborted_reason,
+                        "messages": summary.messages_ingested,
+                        "attachments": summary.attachments_parsed,
+                        "error": summary.aborted_reason,
+                    }
+                )
             except Exception as e:
                 fail_count += 1
                 if not json_output:
                     print(f"{_colorize('ERROR', 'red')}")
                     if verbose:
                         print(f"       {e}")
-                results.append({
-                    "path": str(conv),
-                    "success": False,
-                    "error": str(e),
-                })
-        
+                results.append(
+                    {
+                        "path": str(conv),
+                        "success": False,
+                        "error": str(e),
+                    }
+                )
+
         if json_output:
-            print(json.dumps({
-                "success": fail_count == 0,
-                "total": len(conversations),
-                "succeeded": success_count,
-                "failed": fail_count,
-                "results": results,
-            }))
+            print(
+                json.dumps(
+                    {
+                        "success": fail_count == 0,
+                        "total": len(conversations),
+                        "succeeded": success_count,
+                        "failed": fail_count,
+                        "results": results,
+                    }
+                )
+            )
         else:
             print()
             print(f"{_colorize('═' * 50, 'cyan')}")
             if fail_count == 0:
-                print(f"\n  {_colorize('✓', 'green')} All {success_count} conversation(s) ingested successfully!")
+                print(
+                    f"\n  {_colorize('✓', 'green')} All {success_count} conversation(s) ingested successfully!"
+                )
             else:
                 print(f"\n  {_colorize('⚠', 'yellow')} Completed with errors:")
                 print(f"    Succeeded: {_colorize(str(success_count), 'green')}")
                 print(f"    Failed:    {_colorize(str(fail_count), 'red')}")
             print()
-            
+
     except ImportError as e:
         msg = f"Could not load ingestion module: {e}"
         if json_output:
@@ -511,9 +575,9 @@ def _run_index(
     """
     import json
     from pathlib import Path
-    
+
     root_path = Path(root).resolve()
-    
+
     if not json_output:
         _print_banner()
         print(f"{_colorize('▶ INDEX BUILDER', 'bold')}\n")
@@ -523,31 +587,36 @@ def _run_index(
         if limit:
             print(f"  Limit:     {_colorize(str(limit), 'yellow')}")
         print()
-    
+
     try:
-        from cortex_workers.reindex_jobs.parallel_indexer import parallel_index_conversations
-        
+        from cortex_workers.reindex_jobs.parallel_indexer import \
+            parallel_index_conversations
+
         if not json_output:
             print(f"  {_colorize('⏳', 'yellow')} Starting parallel indexing...")
             print()
-        
+
         embeddings, mappings = parallel_index_conversations(
             root=root_path,
             provider=provider,
             num_workers=workers,
             limit=limit,
         )
-        
+
         num_chunks = len(mappings)
         embedding_dim = embeddings.shape[1] if embeddings.size > 0 else 0
-        
+
         if json_output:
-            print(json.dumps({
-                "success": True,
-                "chunks_indexed": num_chunks,
-                "embedding_dimension": embedding_dim,
-                "provider": provider,
-            }))
+            print(
+                json.dumps(
+                    {
+                        "success": True,
+                        "chunks_indexed": num_chunks,
+                        "embedding_dimension": embedding_dim,
+                        "provider": provider,
+                    }
+                )
+            )
         else:
             print(f"{_colorize('═' * 50, 'cyan')}")
             if num_chunks > 0:
@@ -557,7 +626,7 @@ def _run_index(
             else:
                 print(f"\n  {_colorize('⚠', 'yellow')} No conversations found to index")
             print()
-            
+
     except ImportError as e:
         msg = f"Could not load indexer module: {e}"
         if json_output:
@@ -583,54 +652,60 @@ def _run_search(
     Search indexed emails with natural language queries.
     """
     import json
-    
+
     if not json_output:
         _print_banner()
         print(f"{_colorize('▶ SEARCH', 'bold')}\n")
         print(f"  Query:   {_colorize(query, 'cyan')}")
         print(f"  Top K:   {_colorize(str(top_k), 'dim')}")
         print()
-    
+
     try:
-        from cortex.retrieval.hybrid_search import hybrid_search
         from cortex.models.api import SearchRequest
-        
+        from cortex.retrieval.hybrid_search import hybrid_search
+
         request = SearchRequest(
             query=query,
             top_k=top_k,
             tenant_id=tenant_id,
         )
-        
+
         if not json_output:
             print(f"  {_colorize('⏳', 'yellow')} Searching...\n")
-        
+
         results = hybrid_search(request)
-        
+
         if json_output:
             # Convert results to JSON-serializable format
             output = {
                 "success": True,
                 "query": query,
-                "results": [r.model_dump() for r in results.results] if hasattr(results, 'results') else [],
-                "total": len(results.results) if hasattr(results, 'results') else 0,
+                "results": [r.model_dump() for r in results.results]
+                if hasattr(results, "results")
+                else [],
+                "total": len(results.results) if hasattr(results, "results") else 0,
             }
             print(json.dumps(output, indent=2, default=str))
         else:
-            if hasattr(results, 'results') and results.results:
-                print(f"  {_colorize('✓', 'green')} Found {len(results.results)} result(s):\n")
+            if hasattr(results, "results") and results.results:
+                print(
+                    f"  {_colorize('✓', 'green')} Found {len(results.results)} result(s):\n"
+                )
                 for i, r in enumerate(results.results[:top_k], 1):
-                    score = getattr(r, 'score', 0)
-                    text = getattr(r, 'text', str(r))[:200]
-                    source = getattr(r, 'source', 'unknown')
-                    
-                    print(f"  {_colorize(f'[{i}]', 'bold')} Score: {_colorize(f'{score:.3f}', 'cyan')}")
+                    score = getattr(r, "score", 0)
+                    text = getattr(r, "text", str(r))[:200]
+                    source = getattr(r, "source", "unknown")
+
+                    print(
+                        f"  {_colorize(f'[{i}]', 'bold')} Score: {_colorize(f'{score:.3f}', 'cyan')}"
+                    )
                     print(f"      Source: {_colorize(str(source), 'dim')}")
                     print(f"      {text}...")
                     print()
             else:
                 print(f"  {_colorize('○', 'yellow')} No results found for: {query}")
             print()
-            
+
     except ImportError as e:
         msg = f"Could not load search module: {e}"
         if json_output:
@@ -651,6 +726,7 @@ def _run_search(
 # RAG COMMANDS: answer, draft, summarize
 # =============================================================================
 
+
 def _run_answer(
     query: str,
     tenant_id: str = "default",
@@ -662,19 +738,19 @@ def _run_answer(
     """
     import asyncio
     import json
-    
+
     if not json_output:
         _print_banner()
         print(f"{_colorize('▶ ASK CORTEX', 'bold')}\n")
         print(f"  Query:   {_colorize(query, 'cyan')}")
         print()
-        
+
     try:
         from cortex.orchestration.graphs import build_answer_graph
-        
+
         if not json_output:
             print(f"  {_colorize('⏳', 'yellow')} Thinking...")
-            
+
         async def _execute():
             graph = build_answer_graph().compile()
             initial_state = {
@@ -685,24 +761,26 @@ def _run_answer(
                 "retrieval_results": None,
                 "assembled_context": None,
                 "answer": None,
-                "error": None
+                "error": None,
             }
             return await graph.ainvoke(initial_state)
 
         final_state = asyncio.run(_execute())
-        
+
         if final_state.get("error"):
             raise Exception(final_state["error"])
-            
+
         answer = final_state.get("answer")
-        
+
         if json_output:
-            print(json.dumps(answer.model_dump() if answer else {}, indent=2, default=str))
+            print(
+                json.dumps(answer.model_dump() if answer else {}, indent=2, default=str)
+            )
         else:
             if answer:
                 print(f"\n{_colorize('ANSWER:', 'bold')}")
                 print(f"{answer.content}\n")
-                
+
                 if answer.citations:
                     print(f"{_colorize('SOURCES:', 'dim')}")
                     for i, cit in enumerate(answer.citations, 1):
@@ -738,7 +816,7 @@ def _run_draft(
     """
     import asyncio
     import json
-    
+
     if not json_output:
         _print_banner()
         print(f"{_colorize('▶ DRAFT EMAIL', 'bold')}\n")
@@ -746,13 +824,13 @@ def _run_draft(
         if thread_id:
             print(f"  Thread ID:    {_colorize(thread_id, 'dim')}")
         print()
-        
+
     try:
         from cortex.orchestration.graphs import build_draft_graph
-        
+
         if not json_output:
             print(f"  {_colorize('⏳', 'yellow')} Drafting...")
-            
+
         async def _execute():
             graph = build_draft_graph().compile()
             initial_state = {
@@ -766,19 +844,21 @@ def _run_draft(
                 "draft": None,
                 "critique": None,
                 "iteration_count": 0,
-                "error": None
+                "error": None,
             }
             return await graph.ainvoke(initial_state)
 
         final_state = asyncio.run(_execute())
-        
+
         if final_state.get("error"):
             raise Exception(final_state["error"])
-            
+
         draft = final_state.get("draft")
-        
+
         if json_output:
-            print(json.dumps(draft.model_dump() if draft else {}, indent=2, default=str))
+            print(
+                json.dumps(draft.model_dump() if draft else {}, indent=2, default=str)
+            )
         else:
             if draft:
                 print(f"\n{_colorize('DRAFT:', 'bold')}")
@@ -816,19 +896,19 @@ def _run_summarize(
     """
     import asyncio
     import json
-    
+
     if not json_output:
         _print_banner()
         print(f"{_colorize('▶ SUMMARIZE THREAD', 'bold')}\n")
         print(f"  Thread ID: {_colorize(thread_id, 'cyan')}")
         print()
-        
+
     try:
         from cortex.orchestration.graphs import build_summarize_graph
-        
+
         if not json_output:
             print(f"  {_colorize('⏳', 'yellow')} Summarizing...")
-            
+
         async def _execute():
             graph = build_summarize_graph().compile()
             initial_state = {
@@ -840,24 +920,28 @@ def _run_summarize(
                 "critique": None,
                 "iteration_count": 0,
                 "summary": None,
-                "error": None
+                "error": None,
             }
             return await graph.ainvoke(initial_state)
 
         final_state = asyncio.run(_execute())
-        
+
         if final_state.get("error"):
             raise Exception(final_state["error"])
-            
+
         summary = final_state.get("summary")
-        
+
         if json_output:
-            print(json.dumps(summary.model_dump() if summary else {}, indent=2, default=str))
+            print(
+                json.dumps(
+                    summary.model_dump() if summary else {}, indent=2, default=str
+                )
+            )
         else:
             if summary:
                 print(f"\n{_colorize('SUMMARY:', 'bold')}")
                 print(f"{summary.content}\n")
-                
+
                 if summary.key_facts:
                     print(f"{_colorize('KEY FACTS:', 'dim')}")
                     for fact in summary.key_facts:
@@ -881,75 +965,10 @@ def _run_summarize(
         sys.exit(1)
 
 
-    import json
-    
-    if not json_output:
-        _print_banner()
-        print(f"{_colorize('▶ SEARCH', 'bold')}\n")
-        print(f"  Query:   {_colorize(query, 'cyan')}")
-        print(f"  Top K:   {_colorize(str(top_k), 'dim')}")
-        print()
-    
-    try:
-        from cortex.retrieval.hybrid_search import hybrid_search
-        from cortex.models.api import SearchRequest
-        
-        request = SearchRequest(
-            query=query,
-            top_k=top_k,
-            tenant_id=tenant_id,
-        )
-        
-        if not json_output:
-            print(f"  {_colorize('⏳', 'yellow')} Searching...\n")
-        
-        results = hybrid_search(request)
-        
-        if json_output:
-            # Convert results to JSON-serializable format
-            output = {
-                "success": True,
-                "query": query,
-                "results": [r.model_dump() for r in results.results] if hasattr(results, 'results') else [],
-                "total": len(results.results) if hasattr(results, 'results') else 0,
-            }
-            print(json.dumps(output, indent=2, default=str))
-        else:
-            if hasattr(results, 'results') and results.results:
-                print(f"  {_colorize('✓', 'green')} Found {len(results.results)} result(s):\n")
-                for i, r in enumerate(results.results[:top_k], 1):
-                    score = getattr(r, 'score', 0)
-                    text = getattr(r, 'text', str(r))[:200]
-                    source = getattr(r, 'source', 'unknown')
-                    
-                    print(f"  {_colorize(f'[{i}]', 'bold')} Score: {_colorize(f'{score:.3f}', 'cyan')}")
-                    print(f"      Source: {_colorize(str(source), 'dim')}")
-                    print(f"      {text}...")
-                    print()
-            else:
-                print(f"  {_colorize('○', 'yellow')} No results found for: {query}")
-            print()
-            
-    except ImportError as e:
-        msg = f"Could not load search module: {e}"
-        if json_output:
-            print(json.dumps({"error": msg, "success": False}))
-        else:
-            print(f"\n  {_colorize('ERROR:', 'red')} {msg}")
-            print(f"  Make sure you have run {_colorize('cortex index', 'cyan')} first")
-        sys.exit(1)
-    except Exception as e:
-        if json_output:
-            print(json.dumps({"error": str(e), "success": False}))
-        else:
-            print(f"\n  {_colorize('ERROR:', 'red')} {e}")
-        sys.exit(1)
-
-
 def main(args: list[str] | None = None) -> None:
     """
     Main entry point for the Cortex CLI.
-    
+
     A user-friendly command-line interface for managing EmailOps Cortex.
     """
     if args is None:
@@ -971,18 +990,20 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
         """,
         add_help=False,
     )
-    
+
     parser.add_argument(
-        "-h", "--help",
+        "-h",
+        "--help",
         action="store_true",
         help="Show this help message",
     )
     parser.add_argument(
-        "-v", "--version",
-        action="store_true", 
+        "-v",
+        "--version",
+        action="store_true",
         help="Show version information",
     )
-    
+
     subparsers = parser.add_subparsers(
         dest="command",
         title="Commands",
@@ -993,7 +1014,7 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     # ==========================================================================
     # CORE COMMANDS
     # ==========================================================================
-    
+
     # Ingest command
     ingest_parser = subparsers.add_parser(
         "ingest",
@@ -1022,18 +1043,21 @@ The ingestion pipeline:
         help="Path to email export folder(s)",
     )
     ingest_parser.add_argument(
-        "--tenant", "-t",
+        "--tenant",
+        "-t",
         default="default",
         metavar="ID",
         help="Tenant ID for multi-tenant isolation (default: 'default')",
     )
     ingest_parser.add_argument(
-        "--dry-run", "-n",
+        "--dry-run",
+        "-n",
         action="store_true",
         help="Scan and validate without making changes",
     )
     ingest_parser.add_argument(
-        "--verbose", "-v",
+        "--verbose",
+        "-v",
         action="store_true",
         help="Show detailed progress and errors",
     )
@@ -1061,33 +1085,38 @@ Uses parallel workers for faster processing.
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     index_parser.add_argument(
-        "--root", "-r",
+        "--root",
+        "-r",
         default=".",
         metavar="DIR",
         help="Root directory containing conversations (default: current)",
     )
     index_parser.add_argument(
-        "--provider", "-p",
+        "--provider",
+        "-p",
         default="vertex",
         choices=["vertex", "openai", "local"],
         help="Embedding provider (default: vertex)",
     )
     index_parser.add_argument(
-        "--workers", "-w",
+        "--workers",
+        "-w",
         type=int,
         default=4,
         metavar="N",
         help="Number of parallel workers (default: 4)",
     )
     index_parser.add_argument(
-        "--limit", "-l",
+        "--limit",
+        "-l",
         type=int,
         default=None,
         metavar="N",
         help="Limit number of conversations to index (for testing)",
     )
     index_parser.add_argument(
-        "--force", "-f",
+        "--force",
+        "-f",
         action="store_true",
         help="Force full reindex (ignore existing)",
     )
@@ -1119,14 +1148,16 @@ Uses hybrid search (vector + full-text) for best results.
         help="Natural language search query",
     )
     search_parser.add_argument(
-        "--top-k", "-k",
+        "--top-k",
+        "-k",
         type=int,
         default=10,
         metavar="N",
         help="Number of results to return (default: 10)",
     )
     search_parser.add_argument(
-        "--tenant", "-t",
+        "--tenant",
+        "-t",
         default="default",
         metavar="ID",
         help="Tenant ID (default: 'default')",
@@ -1187,7 +1218,8 @@ The system will:
         help="The question to ask",
     )
     answer_parser.add_argument(
-        "--tenant", "-t",
+        "--tenant",
+        "-t",
         default="default",
         metavar="ID",
         help="Tenant ID (default: 'default')",
@@ -1223,7 +1255,8 @@ The system will:
         help="ID of the thread to reply to",
     )
     draft_parser.add_argument(
-        "--tenant", "-t",
+        "--tenant",
+        "-t",
         default="default",
         metavar="ID",
         help="Tenant ID (default: 'default')",
@@ -1254,7 +1287,8 @@ The system will:
         help="ID of the thread to summarize",
     )
     summarize_parser.add_argument(
-        "--tenant", "-t",
+        "--tenant",
+        "-t",
         default="default",
         metavar="ID",
         help="Tenant ID (default: 'default')",
@@ -1283,8 +1317,8 @@ Run comprehensive system diagnostics including:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     doctor_parser.add_argument(
-        "--root", 
-        default=".", 
+        "--root",
+        default=".",
         metavar="DIR",
         help="Project root directory (default: current directory)",
     )
@@ -1322,7 +1356,8 @@ Run comprehensive system diagnostics including:
         help="Output results as JSON (for CI/CD integration)",
     )
     doctor_parser.add_argument(
-        "--verbose", "-v",
+        "--verbose",
+        "-v",
         action="store_true",
         help="Enable verbose/debug logging",
     )
@@ -1376,7 +1411,7 @@ Run comprehensive system diagnostics including:
     if parsed_args.version:
         _print_version()
         return
-    
+
     if parsed_args.help or parsed_args.command is None:
         _print_usage()
         return
@@ -1390,7 +1425,7 @@ Run comprehensive system diagnostics including:
             verbose=parsed_args.verbose,
             json_output=parsed_args.json,
         )
-        
+
     elif parsed_args.command == "index":
         _run_index(
             root=parsed_args.root,
@@ -1400,7 +1435,7 @@ Run comprehensive system diagnostics including:
             force=parsed_args.force,
             json_output=parsed_args.json,
         )
-        
+
     elif parsed_args.command == "search":
         _run_search(
             query=parsed_args.query,
@@ -1408,16 +1443,16 @@ Run comprehensive system diagnostics including:
             tenant_id=parsed_args.tenant,
             json_output=parsed_args.json,
         )
-        
+
     elif parsed_args.command == "doctor":
         # Lazy import to avoid loading heavy dependencies
         from cortex_cli.cmd_doctor import main as doctor_main
-        
+
         # Handle --all flag
         if parsed_args.check_all:
             parsed_args.check_index = True
             parsed_args.check_embeddings = True
-        
+
         # Forward to doctor command
         doctor_args = list(args)
         if "doctor" in doctor_args:
@@ -1431,10 +1466,10 @@ Run comprehensive system diagnostics including:
                 doctor_args.append("--check-embeddings")
         sys.argv = [sys.argv[0]] + doctor_args
         doctor_main()
-        
+
     elif parsed_args.command == "status":
         _show_status()
-        
+
     elif parsed_args.command == "config":
         export_format = "json" if parsed_args.json else None
         _show_config(validate=parsed_args.validate, export_format=export_format)
@@ -1466,10 +1501,10 @@ Run comprehensive system diagnostics including:
             tenant_id=parsed_args.tenant,
             json_output=parsed_args.json,
         )
-        
+
     elif parsed_args.command == "version":
         _print_version()
-        
+
     else:
         _print_usage()
         sys.exit(1)
