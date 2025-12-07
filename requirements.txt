@@ -187,7 +187,7 @@ sortedcontainers==2.4.0
 soupsieve==2.8
 spark-parser==1.9.0
 sse-starlette==3.0.2
-starlette==0.48.0
+starlette==0.49.1
 streamlit==1.50.0
 striprtf==0.0.29
 sympy==1.14.0
