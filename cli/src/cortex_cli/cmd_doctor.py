@@ -34,6 +34,7 @@ from typing import Any
 
 from cortex.config.loader import get_config
 from cortex.llm.client import embed_texts
+from sqlalchemy import create_engine, text
 
 # Library-safe logger
 logger = logging.getLogger("cortex.doctor")
@@ -303,7 +304,8 @@ def check_and_install_dependencies(
 # Index & Environment Checks
 # -------------------------
 
-def _probe_embeddings(provider: str) -> tuple[bool, int | None]:
+
+def _probe_embeddings(_provider: str) -> tuple[bool, int | None]:
     """Test embedding functionality with the configured provider."""
     try:
         # The runtime uses the configured provider from config, not a parameter
@@ -321,10 +323,12 @@ def _probe_embeddings(provider: str) -> tuple[bool, int | None]:
 # Database & Cache Checks
 # -------------------------
 
+
 def check_postgres(config: Any) -> tuple[bool, str | None]:
     """Check PostgreSQL connectivity."""
     try:
         from sqlalchemy import create_engine, text
+
         engine = create_engine(config.database.url)
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
@@ -333,10 +337,11 @@ def check_postgres(config: Any) -> tuple[bool, str | None]:
         return False, str(e)
 
 
-def check_redis(config: Any) -> tuple[bool, str | None]:
+def check_redis(_config: Any) -> tuple[bool, str | None]:
     """Check Redis connectivity."""
     try:
         import redis
+
         # Assuming Redis URL is in env or default
         redis_url = os.getenv("OUTLOOKCORTEX_REDIS_URL", "redis://localhost:6379")
         r = redis.from_url(redis_url)
@@ -350,12 +355,13 @@ def check_redis(config: Any) -> tuple[bool, str | None]:
 # Export & DB Checks (Blueprint §13.3)
 # -------------------------
 
+
 def check_exports(config: Any, root: Path) -> tuple[bool, list[str], str | None]:
     """
     Check export root and list export folders (B1 validation).
-    
+
     Blueprint §13.3: Verify export root, list export folders.
-    
+
     Returns:
         Tuple of (success, list of export folders, error message if any)
     """
@@ -363,7 +369,7 @@ def check_exports(config: Any, root: Path) -> tuple[bool, list[str], str | None]
         export_root = root / config.directories.export_root
         if not export_root.exists():
             return False, [], f"Export root does not exist: {export_root}"
-        
+
         # List B1 folders (conversation export folders)
         folders = []
         for item in export_root.iterdir():
@@ -373,7 +379,7 @@ def check_exports(config: Any, root: Path) -> tuple[bool, list[str], str | None]
                 messages_dir = item / "messages"
                 if manifest.exists() or messages_dir.exists():
                     folders.append(item.name)
-        
+
         return True, folders, None
     except Exception as e:
         return False, [], str(e)
@@ -382,9 +388,9 @@ def check_exports(config: Any, root: Path) -> tuple[bool, list[str], str | None]
 def check_db(config: Any) -> tuple[bool, dict[str, Any], str | None]:
     """
     Check database connectivity and migrations status.
-    
+
     Blueprint §13.3: Check DB connectivity and migrations.
-    
+
     Returns:
         Tuple of (success, status dict with migration info, error message if any)
     """
@@ -393,21 +399,24 @@ def check_db(config: Any) -> tuple[bool, dict[str, Any], str | None]:
         "migrations_current": None,
         "latest_migration": None,
     }
-    
+
     try:
         from sqlalchemy import create_engine, text
+
         engine = create_engine(config.database.url)
-        
+
         # Test connectivity
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
             status["connected"] = True
-            
+
             # Check alembic_version table for migrations
             try:
-                result = conn.execute(text(
-                    "SELECT version_num FROM alembic_version ORDER BY version_num DESC LIMIT 1"
-                ))
+                result = conn.execute(
+                    text(
+                        "SELECT version_num FROM alembic_version ORDER BY version_num DESC LIMIT 1"
+                    )
+                )
                 row = result.fetchone()
                 if row:
                     status["latest_migration"] = row[0]
@@ -416,7 +425,7 @@ def check_db(config: Any) -> tuple[bool, dict[str, Any], str | None]:
                 # alembic_version table may not exist yet
                 status["migrations_current"] = False
                 status["latest_migration"] = None
-        
+
         return True, status, None
     except Exception as e:
         return False, status, str(e)
@@ -425,9 +434,9 @@ def check_db(config: Any) -> tuple[bool, dict[str, Any], str | None]:
 def check_ingest(config: Any, root: Path) -> tuple[bool, dict[str, Any], str | None]:
     """
     Run a dry-run ingest check on a small sample.
-    
+
     Blueprint §13.3: Run a dry-run ingest of a small sample.
-    
+
     Returns:
         Tuple of (success, check details, error message if any)
     """
@@ -436,12 +445,12 @@ def check_ingest(config: Any, root: Path) -> tuple[bool, dict[str, Any], str | N
         "parser_ok": False,
         "preprocessor_ok": False,
     }
-    
+
     try:
         # Find a sample message file to test parsing
         export_root = root / config.directories.export_root
         sample_file = None
-        
+
         if export_root.exists():
             for folder in export_root.iterdir():
                 if folder.is_dir():
@@ -452,16 +461,16 @@ def check_ingest(config: Any, root: Path) -> tuple[bool, dict[str, Any], str | N
                             break
                 if sample_file:
                     break
-        
+
         if not sample_file:
             return True, details, "No sample messages found (export may be empty)"
-        
+
         details["sample_found"] = True
-        
+
         # Test parser import and execution
         try:
             from cortex.ingestion.parser_email import parse_eml_file
-            
+
             # Actually try to parse the sample file
             parsed = parse_eml_file(sample_file)
             if parsed and parsed.message_id:
@@ -470,17 +479,18 @@ def check_ingest(config: Any, root: Path) -> tuple[bool, dict[str, Any], str | N
             else:
                 details["parser_ok"] = False
                 return False, details, "Parser returned empty result"
-                
+
         except ImportError:
             details["parser_ok"] = False
             return False, details, "Failed to import email parser"
         except Exception as e:
             details["parser_ok"] = False
             return False, details, f"Parser failed on sample: {e}"
-        
+
         # Test preprocessor import
         try:
             from cortex.ingestion.text_preprocessor import TextPreprocessor
+
             # Instantiate to check for model loading issues (spacy etc)
             _ = TextPreprocessor()
             details["preprocessor_ok"] = True
@@ -491,10 +501,56 @@ def check_ingest(config: Any, root: Path) -> tuple[bool, dict[str, Any], str | N
             details["preprocessor_ok"] = False
             # This might fail if spacy model missing, which is a valid check failure
             return False, details, f"Preprocessor init failed: {e}"
-        
+
         return True, details, None
     except Exception as e:
         return False, details, str(e)
+
+
+def check_index_health(
+    config: Any, root: Path
+) -> tuple[bool, dict[str, Any], str | None]:
+    """Validate index directory presence and DB embedding compatibility."""
+    index_dir = root / config.directories.index_dirname
+    status: dict[str, Any] = {
+        "path": str(index_dir),
+        "exists": index_dir.exists(),
+        "file_count": 0,
+        "config_embedding_dim": config.embedding.output_dimensionality,
+        "db_embedding_dim": None,
+    }
+
+    if not index_dir.exists():
+        return False, status, f"Index directory not found: {index_dir}"
+
+    try:
+        status["file_count"] = sum(1 for _ in index_dir.rglob("*"))
+    except Exception:
+        status["file_count"] = 0
+
+    try:
+        engine = create_engine(config.database.url)
+        with engine.connect() as conn:
+            result = conn.execute(
+                text(
+                    "SELECT vector_dims(embedding) AS dim FROM chunks WHERE embedding IS NOT NULL LIMIT 1"
+                )
+            ).fetchone()
+            if result and result.dim:
+                status["db_embedding_dim"] = int(result.dim)
+    except Exception as exc:
+        return False, status, f"Database index check failed: {exc}"
+
+    db_dim = status["db_embedding_dim"]
+    cfg_dim = status["config_embedding_dim"]
+    if db_dim is not None and db_dim != cfg_dim:
+        return (
+            False,
+            status,
+            f"Embedding dimension mismatch (db={db_dim}, config={cfg_dim})",
+        )
+
+    return True, status, None
 
 
 # -------------------------
@@ -543,10 +599,22 @@ Examples:
         help="Automatically install missing packages",
     )
     parser.add_argument("--check-index", action="store_true", help="Check index health")
-    parser.add_argument("--check-db", action="store_true", help="Check database connectivity and migrations")
-    parser.add_argument("--check-redis", action="store_true", help="Check Redis connectivity")
-    parser.add_argument("--check-exports", action="store_true", help="Verify export root and list B1 folders")
-    parser.add_argument("--check-ingest", action="store_true", help="Dry-run ingest of sample data")
+    parser.add_argument(
+        "--check-db",
+        action="store_true",
+        help="Check database connectivity and migrations",
+    )
+    parser.add_argument(
+        "--check-redis", action="store_true", help="Check Redis connectivity"
+    )
+    parser.add_argument(
+        "--check-exports",
+        action="store_true",
+        help="Verify export root and list B1 folders",
+    )
+    parser.add_argument(
+        "--check-ingest", action="store_true", help="Dry-run ingest of sample data"
+    )
     parser.add_argument(
         "--check-embeddings", action="store_true", help="Test embedding functionality"
     )
@@ -568,22 +636,25 @@ Examples:
 
     root = Path(args.root).expanduser().resolve()
     config = get_config()
-    index_dir = root / config.directories.index_dirname
     provider = _normalize_provider(args.provider)
     pip_timeout = (
-        args.pip_timeout
-        if args.pip_timeout is not None
-        else config.system.pip_timeout
+        args.pip_timeout if args.pip_timeout is not None else config.system.pip_timeout
     )
 
     # Detect requirements.txt when present
     req_file = _find_requirements_file()
-    
+
     if not args.json:
         print()
-        print(f"{_c('╔═══════════════════════════════════════════════════════════╗', 'cyan')}")
-        print(f"{_c('║', 'cyan')}  {_c('EmailOps Doctor', 'bold')} - System Diagnostics                    {_c('║', 'cyan')}")
-        print(f"{_c('╚═══════════════════════════════════════════════════════════╝', 'cyan')}")
+        print(
+            f"{_c('╔═══════════════════════════════════════════════════════════╗', 'cyan')}"
+        )
+        print(
+            f"{_c('║', 'cyan')}  {_c('EmailOps Doctor', 'bold')} - System Diagnostics                    {_c('║', 'cyan')}"
+        )
+        print(
+            f"{_c('╚═══════════════════════════════════════════════════════════╝', 'cyan')}"
+        )
         print()
         print(f"  {_c('Provider:', 'dim')} {_c(provider, 'bold')}")
         print(f"  {_c('Root:', 'dim')}     {root}")
@@ -594,13 +665,13 @@ Examples:
     # Dependency checks
     if not args.json:
         print(f"{_c('▶ Checking dependencies...', 'cyan')}")
-        
+
     dep_report = check_and_install_dependencies(
         provider, args.auto_install, pip_timeout=pip_timeout
     )
 
     dep_error = bool(dep_report.missing_critical)
-    
+
     if not args.json:
         # Show installed packages
         if dep_report.installed:
@@ -608,46 +679,48 @@ Examples:
             for pkg in dep_report.installed[:10]:  # Show first 10
                 print(f"    {_c('✓', 'green')} {pkg}")
             if len(dep_report.installed) > 10:
-                print(f"    {_c(f'... and {len(dep_report.installed) - 10} more', 'dim')}")
-        
+                print(
+                    f"    {_c(f'... and {len(dep_report.installed) - 10} more', 'dim')}"
+                )
+
         # Show missing critical
         if dep_report.missing_critical:
             print(f"\n  {_c('Missing (critical):', 'red')}")
             for pkg in dep_report.missing_critical:
                 print(f"    {_c('✗', 'red')} {pkg}")
-            print(f"\n  {_c('TIP:', 'yellow')} Run {_c('cortex doctor --auto-install', 'cyan')} to fix")
-        
+            print(
+                f"\n  {_c('TIP:', 'yellow')} Run {_c('cortex doctor --auto-install', 'cyan')} to fix"
+            )
+
         # Show missing optional
         if dep_report.missing_optional:
             print(f"\n  {_c('Missing (optional):', 'yellow')}")
             for pkg in dep_report.missing_optional[:5]:
                 print(f"    {_c('○', 'yellow')} {pkg}")
             if len(dep_report.missing_optional) > 5:
-                print(f"    {_c(f'... and {len(dep_report.missing_optional) - 5} more', 'dim')}")
+                print(
+                    f"    {_c(f'... and {len(dep_report.missing_optional) - 5} more', 'dim')}"
+                )
 
     # Index checks
-    index_info: dict[str, Any] = {
-        "root": str(index_dir),
-        "exists": index_dir.exists(),
-        "error": None,
-    }
+    index_info: dict[str, Any] = {}
     index_error = False
     if args.check_index:
         if not args.json:
             print(f"\n{_c('▶ Checking index health...', 'cyan')}")
-            
-        if not index_dir.exists():
+
+        success, status, error = check_index_health(config, root)
+        index_info = status
+        if not success:
             index_error = True
-            index_info["exists"] = False
-            msg = f"Index directory not found: {index_dir}"
-            if args.json:
-                index_info["error"] = msg
-            else:
-                print(f"  {_c('✗', 'red')} {msg}")
+            if not args.json:
+                print(f"  {_c('✗', 'red')} {error}")
         else:
             if not args.json:
-                print(f"  {_c('✓', 'green')} Index directory exists: {index_dir}")
-            # TODO: Add deeper index checks (mapping, embeddings, etc.)
+                print(f"  {_c('✓', 'green')} Index directory: {status['path']}")
+                print(
+                    f"    Files: {_c(str(status.get('file_count', 0)), 'dim')} | Embedding dim: {_c(str(status.get('config_embedding_dim')), 'dim')}"
+                )
 
     # Database check
     db_success = None
@@ -656,11 +729,11 @@ Examples:
     if args.check_db:
         if not args.json:
             print(f"\n{_c('▶ Checking database...', 'cyan')}")
-        
+
         success, error = check_postgres(config)
         db_success = success
         db_error_msg = error
-        
+
         if not success:
             db_error = True
             if not args.json:
@@ -676,11 +749,11 @@ Examples:
     if args.check_redis:
         if not args.json:
             print(f"\n{_c('▶ Checking Redis...', 'cyan')}")
-            
+
         success, error = check_redis(config)
         redis_success = success
         redis_error_msg = error
-        
+
         if not success:
             redis_error = True
             if not args.json:
@@ -696,17 +769,21 @@ Examples:
     if args.check_embeddings:
         if not args.json:
             print(f"\n{_c('▶ Testing embeddings...', 'cyan')}")
-            
+
         success, dim = _probe_embeddings(provider)
         embeddings_success, embeddings_dim = success, dim
         if not success:
             embeddings_error = True
             if not args.json:
-                print(f"  {_c('✗', 'red')} Embedding test failed for provider '{provider}'")
+                print(
+                    f"  {_c('✗', 'red')} Embedding test failed for provider '{provider}'"
+                )
                 print(f"\n  {_c('TROUBLESHOOTING:', 'yellow')}")
-                print(f"    • Check GOOGLE_APPLICATION_CREDENTIALS is set")
-                print(f"    • Verify API access with: gcloud auth application-default login")
-                print(f"    • Ensure Vertex AI API is enabled in your GCP project")
+                print("    • Check GOOGLE_APPLICATION_CREDENTIALS is set")
+                print(
+                    "    • Verify API access with: gcloud auth application-default login"
+                )
+                print("    • Ensure Vertex AI API is enabled in your GCP project")
         else:
             if not args.json:
                 print(f"  {_c('✓', 'green')} Embeddings working")
@@ -721,12 +798,12 @@ Examples:
     if args.check_exports:
         if not args.json:
             print(f"\n{_c('▶ Checking exports...', 'cyan')}")
-        
+
         success, folders, error = check_exports(config, root)
         exports_success = success
         exports_folders = folders
         exports_error_msg = error
-        
+
         if not success:
             exports_warning = True  # Warning, not critical failure
             if not args.json:
@@ -741,7 +818,9 @@ Examples:
                     if len(folders) > 5:
                         print(f"      {_c(f'... and {len(folders) - 5} more', 'dim')}")
                 else:
-                    print(f"    {_c('No B1 folders found (export may be empty)', 'dim')}")
+                    print(
+                        f"    {_c('No B1 folders found (export may be empty)', 'dim')}"
+                    )
 
     # Ingest dry-run check (Blueprint §13.3)
     ingest_success = None
@@ -751,12 +830,12 @@ Examples:
     if args.check_ingest:
         if not args.json:
             print(f"\n{_c('▶ Checking ingest capability...', 'cyan')}")
-        
+
         success, details, error = check_ingest(config, root)
         ingest_success = success
         ingest_details = details
         ingest_error_msg = error
-        
+
         if not success:
             ingest_warning = True
             if not args.json:
@@ -769,7 +848,9 @@ Examples:
                 if details.get("parser_ok"):
                     print(f"    Email parser:         {_c('✓', 'green')}")
                     if details.get("parsed_subject"):
-                        print(f"      Subject: {_c(details['parsed_subject'][:40] + '...', 'dim')}")
+                        print(
+                            f"      Subject: {_c(details['parsed_subject'][:40] + '...', 'dim')}"
+                        )
                 if details.get("preprocessor_ok"):
                     print(f"    Text preprocessor:    {_c('✓', 'green')}")
                 if error:
@@ -834,11 +915,15 @@ Examples:
         # Summary
         print()
         print(f"{_c('═' * 60, 'cyan')}")
-        
+
         # Determine if we have failures (exit 2), warnings (exit 1), or all ok (exit 0)
-        has_failures = dep_error or index_error or embeddings_error or db_error or redis_error
-        has_warnings = exports_warning or ingest_warning or bool(dep_report.missing_optional)
-        
+        has_failures = (
+            dep_error or index_error or embeddings_error or db_error or redis_error
+        )
+        has_warnings = (
+            exports_warning or ingest_warning or bool(dep_report.missing_optional)
+        )
+
         if not has_failures and not has_warnings:
             print(f"\n  {_c('✓ All checks passed!', 'green')}")
         elif has_failures:
@@ -853,7 +938,7 @@ Examples:
                 print(f"    {_c('✗', 'red')} Database connectivity failed")
             if redis_error:
                 print(f"    {_c('✗', 'red')} Redis connectivity failed")
-        
+
         if has_warnings:
             print(f"\n  {_c('Warnings:', 'yellow')}")
             if exports_warning:
@@ -862,16 +947,20 @@ Examples:
                 print(f"    {_c('⚠', 'yellow')} Ingest capability issues")
             if dep_report.missing_optional:
                 print(f"    {_c('⚠', 'yellow')} Missing optional packages")
-        
+
         print()
 
     # Canonical exit codes per Blueprint §13.3:
     # 0 = all checks passed
     # 1 = warnings (non-critical)
     # 2 = failures (critical)
-    has_failures = dep_error or index_error or embeddings_error or db_error or redis_error
-    has_warnings = exports_warning or ingest_warning or bool(dep_report.missing_optional)
-    
+    has_failures = (
+        dep_error or index_error or embeddings_error or db_error or redis_error
+    )
+    has_warnings = (
+        exports_warning or ingest_warning or bool(dep_report.missing_optional)
+    )
+
     if has_failures:
         sys.exit(2)
     elif has_warnings:

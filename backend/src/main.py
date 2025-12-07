@@ -17,22 +17,30 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import time
 import uuid
 from contextlib import asynccontextmanager
 from contextvars import ContextVar
 from typing import Any, Optional
 
-from cortex.common.exceptions import (ConfigurationError, CortexError,
-                                      EmbeddingError, ProviderError,
-                                      SecurityError, ValidationError)
+import requests
+from cortex.common.exceptions import (
+    ConfigurationError,
+    CortexError,
+    EmbeddingError,
+    ProviderError,
+    SecurityError,
+    ValidationError,
+)
 from cortex.config.loader import get_config
 from cortex.observability import get_trace_context, init_observability
+from cortex.security.validators import validate_email_format
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from starlette.middleware.base import (BaseHTTPMiddleware,
-                                       RequestResponseEndpoint)
+from jose import JWTError, jwt
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
 # Version info - should match pyproject.toml
 APP_VERSION = "3.1.0"
@@ -42,6 +50,114 @@ APP_NAME = "Outlook Cortex (EmailOps Edition)"
 correlation_id_ctx: ContextVar[str] = ContextVar("correlation_id", default="")
 tenant_id_ctx: ContextVar[str] = ContextVar("tenant_id", default="")
 user_id_ctx: ContextVar[str] = ContextVar("user_id", default="")
+claims_ctx: ContextVar[dict[str, Any]] = ContextVar("claims", default={})
+
+# JWT/JWKS helpers
+_jwt_decoder: Optional[callable] = None
+_jwks_cache: dict[str, Any] = {}
+
+
+def _load_jwks(jwks_url: str) -> dict[str, Any]:
+    if jwks_url in _jwks_cache:
+        return _jwks_cache[jwks_url]
+    response = requests.get(jwks_url, timeout=5)
+    response.raise_for_status()
+    data = response.json()
+    _jwks_cache[jwks_url] = data
+    return data
+
+
+def _configure_jwt_decoder(
+    *, jwks_url: Optional[str], audience: Optional[str], issuer: Optional[str]
+) -> None:
+    global _jwt_decoder
+
+    if jwks_url:
+
+        def decode(token: str) -> dict[str, Any]:
+            try:
+                jwks = _load_jwks(jwks_url)
+                headers = jwt.get_unverified_header(token)
+                kid = headers.get("kid")
+                key = None
+                for candidate in jwks.get("keys", []):
+                    if candidate.get("kid") == kid:
+                        key = candidate
+                        break
+                if key is None:
+                    raise SecurityError(
+                        "JWT key id not found in JWKS", threat_type="auth_invalid"
+                    )
+
+                return jwt.decode(
+                    token,
+                    key,
+                    audience=audience,
+                    issuer=issuer,
+                    options={
+                        "verify_aud": bool(audience),
+                        "verify_iss": bool(issuer),
+                    },
+                )
+            except JWTError as exc:
+                raise SecurityError("Invalid JWT", threat_type="auth_invalid") from exc
+            except Exception as exc:  # HTTP errors, json, etc.
+                raise SecurityError(
+                    "Failed to load JWKS", threat_type="auth_invalid"
+                ) from exc
+
+        _jwt_decoder = decode
+        return
+
+    def decode_unverified(token: str) -> dict[str, Any]:
+        try:
+            return jwt.get_unverified_claims(token)
+        except JWTError as exc:
+            raise SecurityError("Invalid JWT", threat_type="auth_invalid") from exc
+
+    _jwt_decoder = decode_unverified
+
+
+def _extract_identity(request: Request) -> tuple[str, str, dict[str, Any]]:
+    """Resolve tenant/user identity from JWT or headers."""
+    config = get_config()
+    auth_header = request.headers.get("Authorization", "")
+    claims: dict[str, Any] = {}
+
+    if auth_header.lower().startswith("bearer "):
+        token = auth_header.split(" ", 1)[1].strip()
+        if not token:
+            raise SecurityError("Bearer token missing", threat_type="auth_missing")
+        if _jwt_decoder is None:
+            raise SecurityError(
+                "JWT decoder not configured", threat_type="auth_invalid"
+            )
+        claims = _jwt_decoder(token)
+    elif config.core.env == "prod":
+        raise SecurityError("Authorization header required", threat_type="auth_missing")
+
+    tenant_id = (
+        claims.get("tenant_id")
+        or claims.get("tid")
+        or request.headers.get("X-Tenant-ID")
+        or "default"
+    )
+    user_id = (
+        claims.get("sub")
+        or claims.get("email")
+        or request.headers.get("X-User-ID")
+        or "anonymous"
+    )
+
+    if isinstance(user_id, str):
+        result = validate_email_format(user_id)
+        if not result.ok:
+            claims["email_invalid"] = user_id
+        else:
+            user_id = result.value or user_id
+
+    return str(tenant_id), str(user_id), claims
+
 
 logger = logging.getLogger(__name__)
 
@@ -97,13 +213,11 @@ class TenantUserMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
-        # Extract tenant_id from header (or JWT claim in production)
-        tenant_id = request.headers.get("X-Tenant-ID", "default")
-        user_id = request.headers.get("X-User-ID", "anonymous")
+        tenant_id, user_id, claims = _extract_identity(request)
 
-        # Store in context vars
         tenant_token = tenant_id_ctx.set(tenant_id)
         user_token = user_id_ctx.set(user_id)
+        claims_token = claims_ctx.set(claims)
 
         try:
             response = await call_next(request)
@@ -111,6 +225,7 @@ class TenantUserMiddleware(BaseHTTPMiddleware):
         finally:
             tenant_id_ctx.reset(tenant_token)
             user_id_ctx.reset(user_token)
+            claims_ctx.reset(claims_token)
 
 
 # ---------------------------------------------------------------------------
@@ -309,20 +424,25 @@ def setup_security(app: FastAPI) -> None:
     3. Extract claims and populate context vars
     """
     try:
-        # Placeholder for OIDC/JWT configuration
-        # In production, you would configure:
-        # - OIDC discovery URL
-        # - JWT validation
-        # - Role-based access control
-
         config = get_config()
-        if config.core.env == "prod":
+        jwks_url = os.getenv("OUTLOOKCORTEX_OIDC_JWKS_URL") or os.getenv(
+            "OIDC_JWKS_URL"
+        )
+        audience = os.getenv("OUTLOOKCORTEX_OIDC_AUDIENCE") or os.getenv(
+            "OIDC_AUDIENCE"
+        )
+        issuer = os.getenv("OUTLOOKCORTEX_OIDC_ISSUER") or os.getenv("OIDC_ISSUER")
+
+        _configure_jwt_decoder(jwks_url=jwks_url, audience=audience, issuer=issuer)
+
+        if jwks_url:
+            logger.info("Security: JWT validation enabled via JWKS %s", jwks_url)
+        elif config.core.env == "prod":
             logger.warning(
-                "OIDC/JWT security not fully configured. "
-                "Production deployments should implement full OIDC integration."
+                "Security: prod environment without JWKS configuration; JWT validation will be header-only"
             )
         else:
-            logger.info("Security: Running in dev mode, OIDC/JWT validation relaxed")
+            logger.info("Security: dev mode with header-based identity fallback")
     except Exception as e:
         logger.warning(f"Failed to setup security: {e}")
 
@@ -423,8 +543,13 @@ def create_app() -> FastAPI:
     # ---------------------------------------------------------------------------
     # Include API Routers
     # ---------------------------------------------------------------------------
-    from cortex.rag_api import (routes_answer, routes_draft, routes_ingest,
-                                routes_search, routes_summarize)
+    from cortex.rag_api import (
+        routes_answer,
+        routes_draft,
+        routes_ingest,
+        routes_search,
+        routes_summarize,
+    )
 
     app.include_router(routes_search.router, prefix="/api/v1", tags=["search"])
     app.include_router(routes_answer.router, prefix="/api/v1", tags=["answer"])

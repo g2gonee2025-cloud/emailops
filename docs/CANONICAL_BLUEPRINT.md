@@ -1,11 +1,11 @@
 # Outlook Cortex (EmailOps Edition)
 
-## Lean Implementation Blueprint v3.2 — **Canonical Source of Truth (Agentic + DigitalOcean Edition)**
+## Lean Implementation Blueprint v3.3 — **Canonical Source of Truth (Agentic + DigitalOcean Edition)**
 
-> **Status:** Authoritative specification (v3.2).
-> This supersedes **all** prior blueprints (v2.x, v3.0, v3.1).
+> **Status:** Authoritative specification (v3.3).
+> This supersedes **all** prior blueprints (v2.x, v3.0, v3.1, v3.2).
 > If code, infra, or docs disagree with this blueprint, **this blueprint wins**.
-> v3.2 = v3.1 (logical/agentic spec) **+** DigitalOcean reference architecture (§17) **+** explicit rules for agentic coding LLMs (§0.4). 
+> v3.3 = v3.2 **+** DOKS-hosted LLM runtime + scaler (`cortex.llm.doks_scaler`) wired into §7.2 + §2.3 configuration knobs.
 
 * This document is designed to be the **single file** an agentic coding LLM needs to read to:
 
@@ -28,12 +28,12 @@
     * raw `.eml`, `.mbox`,
     * optional **conversation folders** with `Conversation.txt` + `attachments/` + `manifest.json`.
   * Attachments: PDF, Word, Excel, PowerPoint, images, `.msg`/`.eml`.
-* **Calendar & contacts:** out of scope for v3.2.
+* **Calendar & contacts:** out of scope for v3.3.
 * **Deployment targets:**
 
   * **DigitalOcean (primary)** — see §17 for a concrete reference architecture.
   * Any Kubernetes‑compatible environment that matches infra contracts (Postgres + S3‑compatible storage + Redis‑compatible queue).
-* **Capabilities (v3.2 scope):**
+* **Capabilities (v3.3 scope):**
 
   * Search & answer (RAG).
   * Draft email replies and fresh emails.
@@ -156,7 +156,7 @@ This section is specifically for **agentic coding LLMs** generating or modifying
      * schemas,
      * invariants,
      * error semantics,
-   * you **must** update this blueprint section and bump minor version (e.g., v3.2 → v3.3).
+    * you **must** update this blueprint section and bump minor version (e.g., v3.3 → v3.4).
 10. **If you're unsure where to put code:**
 
     * Default to:
@@ -267,7 +267,7 @@ This section is specifically for **agentic coding LLMs** generating or modifying
 outlook-cortex/
 ├── README.md
 ├── docs/
-│   ├── blueprint.md               # this file (canonical v3.2)
+│   ├── CANONICAL_BLUEPRINT.md     # this file (canonical v3.3)
 │   └── ...
 ├── backend/
 │   ├── pyproject.toml
@@ -283,6 +283,8 @@ outlook-cortex/
 │   │   │   ├── llm/
 │   │   │   │   ├── client.py      # shim (dynamic proxy)
 │   │   │   │   └── runtime.py     # provider logic + resilience
+│   │   │   ├── prompts/           # centralized prompt templates (§3.7)
+│   │   │   │   └── __init__.py
 │   │   │   ├── email_processing.py
 │   │   │   ├── text_extraction.py
 │   │   │   ├── ingestion/
@@ -303,7 +305,8 @@ outlook-cortex/
 │   │   │   ├── retrieval/
 │   │   │   │   ├── fts_search.py
 │   │   │   │   ├── vector_search.py
-│   │   │   │   └── hybrid_search.py
+│   │   │   │   └── hybrid_search.py   # fusion + rerank/MMR helpers
+│   │   ├── queue.py           # Redis/Valkey/Celery abstraction (§7.4)
 │   │   │   ├── rag_api/
 │   │   │   │   ├── routes_search.py
 │   │   │   │   ├── routes_answer.py
@@ -358,16 +361,26 @@ In `cortex.config.models`. **All configuration uses Pydantic v2 for validation.*
 
 ```python
 class EmbeddingConfig(BaseModel):
-    model_name: str = Field(default="gemini-embedding-001", description="Embedding model")
-    output_dimensionality: int = Field(default=3072, ge=256, le=4096, description="Embedding dimension")
-    vertex_model: str = Field(default="gemini-2.5-pro", description="Vertex AI completion model")
-    generic_embed_model: Optional[str] = Field(default=None, description="Generic embedding model for other providers")
+    model_name: str = Field(
+        default="tencent/KaLM-Embedding-Gemma3-12B-2511",
+        description="Embedding model id (gateway-hosted; swap as needed)",
+    )
+    output_dimensionality: int = Field(
+        default=3840,
+        ge=64,
+        le=4096,
+        description="Embedding dimension; must match the DB vector column and provider output",
+    )
+    generic_embed_model: Optional[str] = Field(
+        default=None, description="Alternative embedding model for other providers"
+    )
   
     model_config = {"extra": "forbid"}
 ```
 
-* DB column `chunks.embedding` **must** be `vector(output_dimensionality)`.
-* May be tuned to `1536` or `768` (MRL) if storage/latency pressure justifies it.
+* **Provider defaults:** `CoreConfig.provider="digitalocean"` with an OpenAI-compatible gateway (§2.3 `DigitalOceanLLMConfig.endpoint`).
+* **Gateway flexibility:** point `endpoint.base_url` + `endpoint.default_embedding_model` at any hosted model (serverless or your own DOKS/vLLM). KaLM supports MRL dims {3840, 2048, 1024, 512, 256, 128, 64}; choose `output_dimensionality` accordingly.
+* **DB contract:** `chunks.embedding` must be `vector(output_dimensionality)`. If you change dimensions, run a migration to alter the column + re-embed existing chunks before serving traffic.
 
 #### SearchConfig
 
@@ -421,7 +434,11 @@ class ProcessingConfig(BaseModel):
 * **CoreConfig:** `env` (dev/staging/prod), `tenant_mode`, `persona`, `provider`.
 * **DirectoryConfig:** `export_root`, `index_dirname`, `secrets_dir`.
 * **DatabaseConfig:** `url`, `pool_size`, `max_overflow`.
-* **GcpConfig:** `gcp_project`, `gcp_region`, `vertex_location`.
+* **GcpConfig:** `gcp_project`, `gcp_region` (optional; no Vertex-specific knobs).
+* **DigitalOceanLLMConfig:**
+    * `scaling` → `token`, `cluster_id`, `node_pool_id`, `cluster_name`, `region`, `kubernetes_version`, `gpu_node_size`, cluster/node tags, plus GPU sizing knobs (`memory_per_gpu_gb`, `gpus_per_node`, min/max nodes, hysteresis) for the DOKS GPU pool (§17.3).
+    * `model` → Mixtral/Llama MoE attributes (`params_total`, `params_active`, `context_length`, `quantization`, `kv_bytes_per_token`, `tps_per_gpu`, `max_concurrent_requests_per_gpu`).
+    * `endpoint` → OpenAI-compatible gateway settings (`base_url`, `completion_path`, `embedding_path`, `api_key`, `request_timeout_seconds`, `verify_tls`, `extra_headers`).
 * **EmailConfig:** sender defaults, reply policy, allowed senders.
 * **SummarizerConfig:** multi-pass summarizer knobs (thread/critic/improve char limits).
 * **LimitsConfig:** attachment size limits, indexable chars, chat context limits.
@@ -717,7 +734,7 @@ All nodes import prompts from this module. Never hardcode prompts in node implem
 * `char_start` (int)
 * `char_end` (int)
 * `embedding` (vector(EmbeddingConfig.output_dimensionality))
-* `embedding_model` (text) — e.g., `"gemini-embedding-001:3072"`
+* `embedding_model` (text) — e.g., `"bge-m3:1024"`
 * `tenant_id` (text, not null)
 * `tsv_text` (tsvector, indexed)
 * `metadata` (jsonb), including:
@@ -1452,6 +1469,27 @@ def __dir__():
 
 Application imports `cortex.llm.client.embed_texts` / `complete_json` exclusively.
 
+#### §7.2.3 DigitalOcean LLM runtime (`cortex.llm.doks_scaler`)
+
+Purpose: replace proprietary serverless inference with a DOKS-hosted open-source LLM cluster while preserving the §7.2 API surface.
+
+* **Config:** driven by `DigitalOceanLLMConfig` → `scaling`, `model`, `endpoint` blocks (§2.3).
+* **Model sizing:** `ModelProfile` captures MoE params + KV cache bytes/token to map onto GPU memory (uses `QUANT_BYTES`).
+* **Cluster scaler:**
+    * `ClusterScaler` + `DOApiClient` own the GPU node pool (`auto_scale=False`) via DigitalOcean API with retries + pagination.
+    * Implements queue-aware + throughput-aware sizing, surge caps, and 300s billing hysteresis (DigitalOcean GPU droplets bill in 5-minute blocks).
+    * `plan_node_pool()` is idempotent, used during provisioning to set `min_nodes` / `max_nodes`.
+* **Provisioning utility:** `DigitalOceanClusterManager` plans GPU pools, provisions clusters (`create_cluster`) with the correct node_size/region/version, and can destroy/describe clusters via `delete_cluster`/`get_cluster`.
+* **Inference service:** `DigitalOceanLLMService` couples scaler + OpenAI-compatible HTTPS gateway:
+    * Maintains `_tracked_request()` context to observe inflight requests → drives `scale_to_match_load()`.
+    * `embed_texts()` hits `endpoint.embedding_path`; returns `np.ndarray` (float32) ready for L2 normalization.
+    * `generate_text()` / `complete_json()` post to `endpoint.completion_path`, support `response_format={"type": "json_object"}` for schema enforcement.
+    * Session uses `requests.Session` + `HTTPAdapter(Retry)` and honors `request_timeout_seconds`, `verify_tls`, and optional `extra_headers` / `api_key`.
+* **Runtime integration:** `cortex.llm.runtime` selects provider `digitalocean`, instantiates the service lazily (thread-safe), and still wraps calls with `_call_with_resilience`, circuit breaker, and rate limiting. Embeddings continue to be L2-normalized + dimension checked.
+* **Observability:** scaler + service log via `logging.getLogger(__name__)`; no secrets logged.
+
+This section is the canonical reference for any future DigitalOcean-hosted LLM work; changes here require a blueprint bump.
+
 ### §7.3 Embedding jobs & reindexing (`workers.reindex_jobs`)
 
 Design principles:
@@ -1940,7 +1978,7 @@ def get_embedding(text: str) -> List[float]:
     """
     Get embedding for text using configured embedding model.
   
-    Uses Vertex AI text-embedding model.
+    Uses the configured open-source embedding runtime (e.g., bge-m3 served via gateway).
     """
     from cortex.embeddings.client import EmbeddingsClient
   
@@ -4633,7 +4671,7 @@ graph TD
 
    * If in doubt about a change that might affect security, PII, or policy enforcement: keep current behavior and surface a TODO comment + blueprint update.
 
-This v3.2 blueprint is now the **one and only canonical reference** for Outlook Cortex (EmailOps Edition), optimized for use by **agentic coding LLMs** building and maintaining the system.
+This v3.3 blueprint is now the **one and only canonical reference** for Outlook Cortex (EmailOps Edition), optimized for use by **agentic coding LLMs** building and maintaining the system.
 
 [1]: https://opentelemetry.io/
 [2]: https://python.langchain.com/docs/langgraph

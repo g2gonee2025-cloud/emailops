@@ -6,10 +6,10 @@ Implements §6.5 of the Canonical Blueprint.
 """
 from __future__ import annotations
 
+import contextlib
 import logging
 import os
 import re
-import contextlib
 from pathlib import Path
 from typing import Any, Callable, Iterable, Sequence, cast
 
@@ -19,7 +19,16 @@ logger = logging.getLogger(__name__)
 
 # File type support
 TEXT_EXTENSIONS = {
-    ".txt", ".md", ".log", ".json", ".yaml", ".yml", ".csv", ".xml", ".html", ".htm"
+    ".txt",
+    ".md",
+    ".log",
+    ".json",
+    ".yaml",
+    ".yml",
+    ".csv",
+    ".xml",
+    ".html",
+    ".htm",
 }
 DOCX_EXTENSIONS = {".docx", ".doc"}
 PDF_EXTENSIONS = {".pdf"}
@@ -27,9 +36,7 @@ EXCEL_EXTENSIONS = {".xlsx", ".xls"}
 PPT_EXTENSIONS = {".pptx", ".ppt"}
 RTF_EXTENSIONS = {".rtf"}
 EMAIL_EXTENSIONS = {".eml", ".msg"}
-IMAGE_EXTENSIONS = {
-    ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".gif", ".webp"
-}
+IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".gif", ".webp"}
 MBOX_EXTENSIONS = {".mbox"}
 
 
@@ -64,9 +71,7 @@ def _extract_with_tika(path: Path, max_chars: int | None) -> str:
     return ""
 
 
-def _extract_with_unstructured(
-    path: Path, suffix: str, max_chars: int | None
-) -> str:
+def _extract_with_unstructured(path: Path, suffix: str, max_chars: int | None) -> str:
     """Extract text using Unstructured's partitioners when installed."""
     try:
         from unstructured.partition.auto import partition  # type: ignore
@@ -166,7 +171,9 @@ def _extract_pdf_tables(path: Path, max_chars: int | None) -> str:
         import camelot  # type: ignore
 
         camelot_module = cast(Any, camelot)
-        camelot_tables = cast(Sequence[Any], camelot_module.read_pdf(str(path), pages="all"))
+        camelot_tables = cast(
+            Sequence[Any], camelot_module.read_pdf(str(path), pages="all")
+        )
         for index, table in enumerate(camelot_tables):
             df = cast(Any, getattr(table, "df", None))
             csv_data = df.to_csv(index=False, header=True) if df is not None else ""
@@ -180,14 +187,18 @@ def _extract_pdf_tables(path: Path, max_chars: int | None) -> str:
         try:
             import pdfplumber  # type: ignore
         except Exception:
-            logger.info("pdfplumber not installed; skipping table extraction for %s", path)
+            logger.info(
+                "pdfplumber not installed; skipping table extraction for %s", path
+            )
         else:
             with contextlib.suppress(Exception):
                 pdfplumber_module = cast(Any, pdfplumber)
                 with pdfplumber_module.open(str(path)) as pdf:
                     pages = cast(Sequence[Any], getattr(pdf, "pages", []))
                     for page_num, page in enumerate(pages, start=1):
-                        table = cast(Sequence[Sequence[str | None]] | None, page.extract_table())
+                        table = cast(
+                            Sequence[Sequence[str | None]] | None, page.extract_table()
+                        )
                         if not table:
                             continue
                         csv_lines: list[str] = []
@@ -198,7 +209,8 @@ def _extract_pdf_tables(path: Path, max_chars: int | None) -> str:
                             csv_lines.append(",".join(normalized_row))
                         if csv_lines:
                             tables_output.append(
-                                f"[pdfplumber Table {page_num}]\n" + "\n".join(csv_lines)
+                                f"[pdfplumber Table {page_num}]\n"
+                                + "\n".join(csv_lines)
                             )
 
     if not tables_output:
@@ -372,9 +384,7 @@ def _extract_word_document(path: Path, suffix: str, max_chars: int | None) -> st
             docx_module = cast(Any, docx)
             document = docx_module.Document(str(path))
             parts: list[str] = []
-            for paragraph in cast(
-                Iterable[Any], getattr(document, "paragraphs", [])
-            ):
+            for paragraph in cast(Iterable[Any], getattr(document, "paragraphs", [])):
                 paragraph_text = cast(str | None, getattr(paragraph, "text", None))
                 if paragraph_text and paragraph_text.strip():
                     parts.append(paragraph_text)
@@ -565,9 +575,7 @@ def _extract_excel(path: Path, suffix: str, max_chars: int | None) -> str:
         return ""
 
 
-def extract_text(
-    path: Path, *, max_chars: int | None = None
-) -> str:
+def extract_text(path: Path, *, max_chars: int | None = None) -> str:
     """
     Extract text from supported file types with robust error handling.
 
@@ -614,6 +622,7 @@ def extract_text(
 
     if suffix in TEXT_EXTENSIONS:
         from cortex.utils import read_text_file
+
         text = read_text_file(path, max_chars=max_chars)
         if suffix in {".html", ".htm", ".xml"}:
             text = _html_to_text(text)
@@ -626,37 +635,57 @@ def extract_text(
                 pipeline.append((lambda: _extract_eml(path), False))
             else:
                 pipeline.append((lambda: _extract_msg(path), False))
-            pipeline.append((lambda: _extract_with_unstructured(path, suffix, max_chars), True))
+            pipeline.append(
+                (lambda: _extract_with_unstructured(path, suffix, max_chars), True)
+            )
             pipeline.append((lambda: _extract_with_tika(path, max_chars), True))
         elif suffix in DOCX_EXTENSIONS:
-            pipeline.append((lambda: _extract_with_unstructured(path, suffix, max_chars), False))
-            pipeline.append((lambda: _extract_word_document(path, suffix, max_chars), True))
+            pipeline.append(
+                (lambda: _extract_with_unstructured(path, suffix, max_chars), False)
+            )
+            pipeline.append(
+                (lambda: _extract_word_document(path, suffix, max_chars), True)
+            )
             pipeline.append((lambda: _extract_with_tika(path, max_chars), False))
         elif suffix in PDF_EXTENSIONS:
-            pipeline.append((lambda: _extract_with_unstructured(path, suffix, max_chars), False))
+            pipeline.append(
+                (lambda: _extract_with_unstructured(path, suffix, max_chars), False)
+            )
             pipeline.append((lambda: _extract_with_tika(path, max_chars), True))
             pipeline.append((lambda: _extract_pdf(path, max_chars), True))
         elif suffix in EXCEL_EXTENSIONS:
-            pipeline.append((lambda: _extract_with_unstructured(path, suffix, max_chars), False))
+            pipeline.append(
+                (lambda: _extract_with_unstructured(path, suffix, max_chars), False)
+            )
             pipeline.append((lambda: _extract_excel(path, suffix, max_chars), True))
             pipeline.append((lambda: _extract_with_tika(path, max_chars), False))
         elif suffix in PPT_EXTENSIONS:
-            pipeline.append((lambda: _extract_with_unstructured(path, suffix, max_chars), False))
+            pipeline.append(
+                (lambda: _extract_with_unstructured(path, suffix, max_chars), False)
+            )
             pipeline.append((lambda: _extract_powerpoint(path, max_chars), True))
             pipeline.append((lambda: _extract_with_tika(path, max_chars), False))
         elif suffix in RTF_EXTENSIONS:
-            pipeline.append((lambda: _extract_with_unstructured(path, suffix, max_chars), False))
+            pipeline.append(
+                (lambda: _extract_with_unstructured(path, suffix, max_chars), False)
+            )
             pipeline.append((lambda: _extract_rtf(path, max_chars), True))
             pipeline.append((lambda: _extract_with_tika(path, max_chars), False))
         elif suffix in IMAGE_EXTENSIONS:
-            pipeline.append((lambda: _extract_with_unstructured(path, suffix, max_chars), False))
+            pipeline.append(
+                (lambda: _extract_with_unstructured(path, suffix, max_chars), False)
+            )
             pipeline.append((lambda: _extract_with_tika(path, max_chars), False))
             pipeline.append((lambda: _extract_image_ocr(path, max_chars), True))
         elif suffix in MBOX_EXTENSIONS:
             pipeline.append((lambda: _extract_with_tika(path, max_chars), False))
-            pipeline.append((lambda: _extract_with_unstructured(path, suffix, max_chars), True))
+            pipeline.append(
+                (lambda: _extract_with_unstructured(path, suffix, max_chars), True)
+            )
         else:
-            pipeline.append((lambda: _extract_with_unstructured(path, suffix, max_chars), False))
+            pipeline.append(
+                (lambda: _extract_with_unstructured(path, suffix, max_chars), False)
+            )
             pipeline.append((lambda: _extract_with_tika(path, max_chars), False))
 
         for extractor, always_run in pipeline:

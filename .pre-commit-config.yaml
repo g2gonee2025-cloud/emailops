@@ -3,6 +3,7 @@ repos:
     rev: 23.9.1
     hooks:
       - id: black
+
   - repo: local
     hooks:
       - id: isort
@@ -10,20 +11,35 @@ repos:
         entry: isort
         language: system
         types: [python]
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.8
-    hooks:
-      - id: ruff
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.10.0
-    hooks:
-      - id: mypy
-        additional_dependencies: ["types-requests"]
-  - repo: local
-    hooks:
+
+      - id: blueprint
+        name: blueprint
+        entry: python tools/verify_blueprint.py
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+
       - id: pytest
         name: pytest
         entry: pytest
         language: system
         pass_filenames: false
-        stages: [pre-commit]
+        stages: [pre-push]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.8
+    hooks:
+      - id: ruff
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.10.0
+    hooks:
+      - id: mypy
+        pass_filenames: false
+        args:
+          - --config-file=pyproject.toml
+          - backend/src/cortex/ingestion/conv_manifest
+          - tools/verify_blueprint.py
+        additional_dependencies:
+          - types-requests
+          - types-python-dateutil

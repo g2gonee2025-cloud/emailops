@@ -41,7 +41,7 @@ try:
         tenant_id_ctx,
         user_id_ctx,
     )
-    
+
     __all__ = [
         "app",
         "create_app",
@@ -64,4 +64,5 @@ except ImportError:
     # Fallback for when running from old location
     # This maintains compatibility during migration
     import logging
+
     logging.warning("Could not import from canonical main.py location")

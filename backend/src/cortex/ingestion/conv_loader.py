@@ -109,8 +109,9 @@ def _process_attachments(
             try:
                 rel_path = att_file.relative_to(convo_dir)
             except ValueError:
-                rel_path = att_file.name
-            header = f"\n\n--- ATTACHMENT: {rel_path} ---\n\n"
+                rel_path = Path(att_file.name)
+            rel_path_str = rel_path.as_posix()
+            header = f"\n\n--- ATTACHMENT: {rel_path_str} ---\n\n"
             snippet = attachment_data["text"][: max(0, remaining - len(header))]
             appended_text += header + snippet
             total_appended += len(header) + len(snippet)
@@ -224,16 +225,17 @@ def _collect_attachment_files(convo_dir: Path) -> list[Path]:
     except (OSError, PermissionError) as e:
         logger.warning("Failed to iterate conversation dir %s: %s", convo_dir, e)
 
-    # Pass 2: Collect files from Attachments subdirectory
-    attachments_dir = convo_dir / "Attachments"
-    if attachments_dir.is_dir():
+    # Pass 2: Collect files from attachments/ (canonical) with fallback to Attachments/
+    for candidate in (convo_dir / "attachments", convo_dir / "Attachments"):
+        if not candidate.is_dir():
+            continue
         try:
-            for p in attachments_dir.rglob("*"):
+            for p in candidate.rglob("*"):
                 if p.is_file():
                     all_files.add(p)
         except (OSError, PermissionError) as e:
             logger.warning(
-                "Failed to iterate Attachments directory at %s: %s", attachments_dir, e
+                "Failed to iterate attachments directory at %s: %s", candidate, e
             )
 
     # Sort deterministically

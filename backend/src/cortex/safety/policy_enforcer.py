@@ -9,9 +9,8 @@ import logging
 import re
 from typing import Any, Dict, List, Literal, Optional, Set
 
-from pydantic import BaseModel, ConfigDict, Field
-
 from cortex.observability import trace_operation
+from pydantic import BaseModel, ConfigDict, Field
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +18,7 @@ logger = logging.getLogger(__name__)
 class PolicyDecision(BaseModel):
     """
     Policy decision result.
-    
+
     Blueprint §9.1:
     * action: str
     * decision: Literal["allow", "deny", "require_approval"]
@@ -27,8 +26,9 @@ class PolicyDecision(BaseModel):
     * risk_level: Literal["low", "medium", "high"]
     * metadata: Dict[str, Any]
     """
+
     model_config = ConfigDict(extra="forbid")
-    
+
     action: str
     decision: Literal["allow", "deny", "require_approval"]
     reason: str
@@ -86,22 +86,25 @@ SENSITIVE_PATTERNS: List[re.Pattern] = [
 # Policy Checks
 # -----------------------------------------------------------------------------
 
+
 def _check_recipient_policy(metadata: Dict[str, Any]) -> Optional[str]:
     """Check recipient-related policies."""
     recipients = metadata.get("recipients", [])
-    
+
     if not recipients:
         return None
-    
+
     # Check recipient count
     if len(recipients) > MAX_RECIPIENTS_AUTO_APPROVE:
-        return f"Too many recipients ({len(recipients)} > {MAX_RECIPIENTS_AUTO_APPROVE})"
-    
+        return (
+            f"Too many recipients ({len(recipients)} > {MAX_RECIPIENTS_AUTO_APPROVE})"
+        )
+
     # Check for external domains
     external_recipients = [r for r in recipients if EXTERNAL_DOMAIN_PATTERN.search(r)]
     if external_recipients and metadata.get("check_external", True):
         return f"External recipients detected: {', '.join(external_recipients[:3])}"
-    
+
     return None
 
 
@@ -110,37 +113,37 @@ def _check_content_policy(metadata: Dict[str, Any]) -> Optional[str]:
     content = metadata.get("content", "") or ""
     subject = metadata.get("subject", "") or ""
     full_text = f"{subject} {content}"
-    
+
     for pattern in SENSITIVE_PATTERNS:
         if pattern.search(full_text):
             return f"Sensitive content detected (pattern: {pattern.pattern[:30]}...)"
-    
+
     return None
 
 
 def _check_attachment_policy(metadata: Dict[str, Any]) -> Optional[str]:
     """Check attachment-related policies."""
     attachments = metadata.get("attachments", [])
-    
+
     if not attachments:
         return None
-    
+
     # Check for dangerous extensions
     dangerous_extensions = {".exe", ".bat", ".cmd", ".ps1", ".vbs", ".js"}
-    
+
     for attachment in attachments:
         filename = attachment.get("filename", "").lower()
         for ext in dangerous_extensions:
             if filename.endswith(ext):
                 return f"Dangerous attachment type: {ext}"
-    
+
     # Check total size
     total_size = sum(a.get("size", 0) for a in attachments)
     max_size = metadata.get("max_attachment_size", 25 * 1024 * 1024)  # 25MB default
-    
+
     if total_size > max_size:
         return f"Attachment size exceeds limit ({total_size} > {max_size})"
-    
+
     return None
 
 
@@ -162,41 +165,42 @@ def _determine_risk_level(action: str) -> Literal["low", "medium", "high"]:
 # Main Policy Check
 # -----------------------------------------------------------------------------
 
+
 @trace_operation("check_action")
 def check_action(action: str, metadata: Dict[str, Any]) -> PolicyDecision:
     """
     Check if an action is allowed based on policies.
-    
+
     Blueprint §11.2:
     * Map user + context -> PolicyDecision
     * Low risk: auto-allow
     * Medium risk: allow with logging
     * High risk: require approval or deny
-    
+
     Args:
         action: The action being performed
         metadata: Context about the action (recipients, content, etc.)
-        
+
     Returns:
         PolicyDecision with allow/deny/require_approval
     """
     risk_level = _determine_risk_level(action)
     violations: List[str] = []
-    
+
     # Run policy checks
     if recipient_issue := _check_recipient_policy(metadata):
         violations.append(recipient_issue)
-        
+
     if content_issue := _check_content_policy(metadata):
         violations.append(content_issue)
-        
+
     if attachment_issue := _check_attachment_policy(metadata):
         violations.append(attachment_issue)
-    
+
     # Determine decision based on risk level and violations
     decision: Literal["allow", "deny", "require_approval"]
     reason: str
-    
+
     if violations:
         # Any violation on high-risk action = deny
         if risk_level == "high":
@@ -210,7 +214,9 @@ def check_action(action: str, metadata: Dict[str, Any]) -> PolicyDecision:
         else:
             decision = "allow"
             reason = f"Allowed with warnings: {'; '.join(violations)}"
-            logger.warning(f"Low-risk action '{action}' has policy warnings: {violations}")
+            logger.warning(
+                f"Low-risk action '{action}' has policy warnings: {violations}"
+            )
     else:
         # No violations
         if risk_level == "high":
@@ -220,17 +226,17 @@ def check_action(action: str, metadata: Dict[str, Any]) -> PolicyDecision:
         else:
             decision = "allow"
             reason = "No policy violations"
-    
+
     # Check for explicit deny list
     if metadata.get("force_deny"):
         decision = "deny"
         reason = "Explicitly denied by policy"
-    
+
     # Check for bypass (e.g., admin override)
     if metadata.get("admin_bypass") and decision != "deny":
         decision = "allow"
         reason = "Admin bypass enabled"
-    
+
     return PolicyDecision(
         action=action,
         decision=decision,
@@ -239,7 +245,7 @@ def check_action(action: str, metadata: Dict[str, Any]) -> PolicyDecision:
         metadata={
             "violations": violations,
             "original_metadata_keys": list(metadata.keys()),
-        }
+        },
     )
 
 

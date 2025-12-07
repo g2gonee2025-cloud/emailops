@@ -20,7 +20,12 @@ class CortexError(Exception):
         context: Additional context dict for debugging
     """
 
-    def __init__(self, message: str, error_code: str | None = None, context: dict[str, Any] | None = None):
+    def __init__(
+        self,
+        message: str,
+        error_code: str | None = None,
+        context: dict[str, Any] | None = None,
+    ) -> None:
         super().__init__(message)
         self.message = message
         self.error_code = error_code
@@ -38,6 +43,7 @@ class CortexError(Exception):
 
 class ConfigurationError(CortexError):
     """Configuration issues: missing/invalid settings."""
+
     pass
 
 
@@ -45,6 +51,7 @@ class IndexError(CortexError):
     """
     Search index issues: not found, corrupted, incompatible.
     """
+
     pass
 
 
@@ -53,13 +60,14 @@ class EmbeddingError(CortexError):
     Embedding operation failures: provider issues, dimension mismatches.
     """
 
-    def __init__(self, message: str, retryable: bool = False, **kwargs):
+    def __init__(self, message: str, retryable: bool = False, **kwargs: Any) -> None:
         super().__init__(message, **kwargs)
         self.retryable = retryable
 
 
 class ProcessingError(CortexError):
     """Document/text processing operation failures."""
+
     pass
 
 
@@ -68,7 +76,13 @@ class ValidationError(CortexError):
     Input validation failures.
     """
 
-    def __init__(self, message: str, field: str | None = None, rule: str | None = None, **kwargs):
+    def __init__(
+        self,
+        message: str,
+        field: str | None = None,
+        rule: str | None = None,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(message, **kwargs)
         self.field = field
         self.rule = rule
@@ -79,7 +93,13 @@ class ProviderError(CortexError):
     External provider (LLM, embedding) operation failures.
     """
 
-    def __init__(self, message: str, provider: str | None = None, retryable: bool = False, **kwargs):
+    def __init__(
+        self,
+        message: str,
+        provider: str | None = None,
+        retryable: bool = False,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(message, **kwargs)
         self.provider = provider
         self.retryable = retryable
@@ -90,7 +110,13 @@ class FileOperationError(CortexError):
     File I/O operation failures.
     """
 
-    def __init__(self, message: str, file_path: str | None = None, operation: str | None = None, **kwargs):
+    def __init__(
+        self,
+        message: str,
+        file_path: str | None = None,
+        operation: str | None = None,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(message, **kwargs)
         self.file_path = file_path
         self.operation = operation
@@ -101,7 +127,12 @@ class TransactionError(CortexError):
     Transaction operation failures (commit, rollback, recovery).
     """
 
-    def __init__(self, message: str, transaction_id: str | None = None, **kwargs):
+    def __init__(
+        self,
+        message: str,
+        transaction_id: str | None = None,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(message, **kwargs)
         self.transaction_id = transaction_id
 
@@ -111,7 +142,12 @@ class SecurityError(CortexError):
     Security violations (injection attempts, unauthorized access).
     """
 
-    def __init__(self, message: str, threat_type: str | None = None, **kwargs):
+    def __init__(
+        self,
+        message: str,
+        threat_type: str | None = None,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(message, **kwargs)
         self.threat_type = threat_type
 
@@ -119,7 +155,7 @@ class SecurityError(CortexError):
 class LLMOutputSchemaError(CortexError):
     """
     LLM output did not match expected schema after repair attempts.
-    
+
     Raised when complete_json cannot produce valid output matching the schema.
     """
 
@@ -129,8 +165,8 @@ class LLMOutputSchemaError(CortexError):
         schema_name: str | None = None,
         raw_output: str | None = None,
         repair_attempts: int = 0,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         super().__init__(message, **kwargs)
         self.schema_name = schema_name
         self.raw_output = raw_output
@@ -142,7 +178,12 @@ class RetrievalError(CortexError):
     Search/retrieval operation failures.
     """
 
-    def __init__(self, message: str, query: str | None = None, **kwargs):
+    def __init__(
+        self,
+        message: str,
+        query: str | None = None,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(message, **kwargs)
         self.query = query
 
@@ -150,7 +191,7 @@ class RetrievalError(CortexError):
 class RateLimitError(ProviderError):
     """
     Rate limit exceeded for external provider.
-    
+
     Always retryable - includes retry_after hint if available.
     """
 
@@ -159,8 +200,8 @@ class RateLimitError(ProviderError):
         message: str,
         provider: str | None = None,
         retry_after: float | None = None,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         super().__init__(message, provider=provider, retryable=True, **kwargs)
         self.retry_after = retry_after
 
@@ -175,8 +216,8 @@ class CircuitBreakerOpenError(ProviderError):
         message: str,
         provider: str | None = None,
         reset_at: float | None = None,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         super().__init__(message, provider=provider, retryable=False, **kwargs)
         self.reset_at = reset_at
 
@@ -191,8 +232,8 @@ class PolicyViolationError(SecurityError):
         message: str,
         action: str | None = None,
         policy_name: str | None = None,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         super().__init__(message, threat_type="policy_violation", **kwargs)
         self.action = action
         self.policy_name = policy_name

@@ -33,7 +33,7 @@ _COMPILED_PATTERNS = [re.compile(p, re.IGNORECASE) for p in _INJECTION_PATTERNS]
 def strip_injection_patterns(text: str) -> str:
     """
     Proactively strip known prompt injection patterns from text.
-    
+
     Blueprint §11.5:
     * Removes patterns like "ignore your previous instructions"
     * Applied to all retrieved context before LLM calls
@@ -41,12 +41,12 @@ def strip_injection_patterns(text: str) -> str:
     cleaned = text
     for pattern in _COMPILED_PATTERNS:
         cleaned = pattern.sub("", cleaned)
-    
+
     if len(cleaned) < len(text):
         logger.warning(
             "Stripped injection patterns from text (original: %d chars, cleaned: %d chars)",
             len(text),
-            len(cleaned)
+            len(cleaned),
         )
-        
+
     return cleaned

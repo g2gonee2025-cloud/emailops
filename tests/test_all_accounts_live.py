@@ -11,12 +11,10 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from dotenv import load_dotenv
-
-# Updated imports for cortex package
+from cortex.config.loader import get_config, reset_config
 from cortex.llm.client import embed_texts
 from cortex.llm.runtime import reset_vertex_init
-from cortex.config.loader import get_config, reset_config
+from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
@@ -30,10 +28,11 @@ logger = logging.getLogger(__name__)
 
 class Account:
     """Simple wrapper for account details to match previous test structure."""
+
     def __init__(self, path: Path):
         self.credentials_path = str(path)
         try:
-            with open(path, 'r', encoding='utf-8') as f:
+            with path.open(encoding="utf-8") as f:
                 data = json.load(f)
             self.project_id = data.get("project_id")
         except Exception as e:
@@ -52,11 +51,12 @@ def load_validated_accounts():
 def _init_vertex(project_id, credentials_path, location="us-central1"):
     """Helper to initialize vertex (shim for old function)."""
     import vertexai
+
     vertexai.init(project=project_id, location=location, credentials=credentials_path)
 
 
 def make_live_api_call(account):
-    """Make a live Vertex AI embedding API call with the given account"""
+    """Make a live Vertex AI embedding API call with the given account."""
     logger.info(f"\n{'=' * 60}")
     logger.info(f"Testing Account: {account.project_id}")
     logger.info(f"{'=' * 60}")
@@ -70,13 +70,16 @@ def make_live_api_call(account):
         os.environ["GCP_PROJECT"] = account.project_id
         os.environ["GOOGLE_CLOUD_PROJECT"] = account.project_id
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = account.credentials_path
-        
+
         logger.info(f"DEBUG: GCP_PROJECT={os.environ['GCP_PROJECT']}")
-        logger.info(f"DEBUG: GOOGLE_APPLICATION_CREDENTIALS={os.environ['GOOGLE_APPLICATION_CREDENTIALS']}")
-        if os.path.exists(account.credentials_path):
-             logger.info("DEBUG: Credential file exists")
+        logger.info(
+            f"DEBUG: GOOGLE_APPLICATION_CREDENTIALS={os.environ['GOOGLE_APPLICATION_CREDENTIALS']}"
+        )
+        cred_path = Path(account.credentials_path)
+        if cred_path.exists():
+            logger.info("DEBUG: Credential file exists")
         else:
-             logger.info("DEBUG: Credential file DOES NOT EXIST")
+            logger.info("DEBUG: Credential file DOES NOT EXIST")
 
         os.environ["EMBED_PROVIDER"] = "vertex"
         os.environ["VERTEX_EMBED_MODEL"] = "gemini-embedding-001"
@@ -86,7 +89,7 @@ def make_live_api_call(account):
         # Note: cortex.llm.runtime handles init internally, but here we want to force a specific account.
         # We rely on env vars being set above, and reset_vertex_init() clearing the state.
         # The runtime will pick up the new env vars when it re-initializes.
-        
+
         # Make the actual API call
         start_time = time.time()
         test_texts = [
@@ -96,7 +99,9 @@ def make_live_api_call(account):
         ]
 
         logger.info("Making live embedding API call...")
-        embeddings = embed_texts(test_texts) # provider arg is not needed if env var is set, or passed via config
+        embeddings = embed_texts(
+            test_texts
+        )  # provider arg is not needed if env var is set, or passed via config
         api_time = time.time() - start_time
 
         if embeddings is not None and embeddings.shape[0] == len(test_texts):

@@ -1,7 +1,7 @@
-import os
 import re
 import shutil
 import sys
+from pathlib import Path
 
 try:
     # Tkinter is optional; we handle environments without a GUI.
@@ -53,10 +53,7 @@ SEPARATOR_RE = re.compile(r"^[-_=]{5,}$")
 
 def looks_like_header(line: str) -> bool:
     """Heuristic: is this an email header / metadata line?"""
-    for pat in HEADER_PATTERNS:
-        if pat.search(line):
-            return True
-    return False
+    return any(pat.search(line) for pat in HEADER_PATTERNS)
 
 
 def is_boilerplate(line: str) -> bool:
@@ -79,11 +76,8 @@ def is_boilerplate(line: str) -> bool:
         if key.lower() in lower:
             return True
 
-    # Very long address-ish lines (lots of commas, no @) – usually postal/signature blocks
-    if len(stripped) > 80 and stripped.count(",") >= 3 and "@" not in stripped:
-        return True
-
-    return False
+    # Very long address-ish lines (lots of commas, no @) - usually postal/signature blocks
+    return bool(len(stripped) > 80 and stripped.count(",") >= 3 and "@" not in stripped)
 
 
 def normalize_whitespace(text: str) -> str:
@@ -225,10 +219,11 @@ def choose_root_directory() -> str:
     """
     # 1) CLI arg
     if len(sys.argv) > 1:
-        candidate = sys.argv[1]
-        if os.path.isdir(candidate):
-            print(f"Using root directory from command line: {candidate}")
-            return os.path.abspath(candidate)
+        candidate = Path(sys.argv[1]).expanduser()
+        if candidate.is_dir():
+            resolved = candidate.resolve()
+            print(f"Using root directory from command line: {resolved}")
+            return str(resolved)
         else:
             print(f"Path from command line is not a directory: {candidate}")
 
@@ -243,8 +238,11 @@ def choose_root_directory() -> str:
             )
             root.destroy()
             if selected:
-                print(f"Selected root directory: {selected}")
-                return os.path.abspath(selected)
+                selected_path = Path(selected)
+                if selected_path.is_dir():
+                    resolved = selected_path.resolve()
+                    print(f"Selected root directory: {resolved}")
+                    return str(resolved)
         except Exception as e:  # TclError or others
             print(
                 f"GUI directory picker not available ({e}). Falling back to console input."
@@ -260,38 +258,40 @@ def choose_root_directory() -> str:
             .strip('"')
             .strip("'")
         )
-        if os.path.isdir(path):
-            return os.path.abspath(path)
+        candidate = Path(path).expanduser()
+        if candidate.is_dir():
+            return str(candidate.resolve())
         print("That path does not exist or is not a directory. Please try again.")
 
 
-def find_conversation_files(root_dir: str):
+def find_conversation_files(root_dir: str | Path) -> list[Path]:
     """Return list of Conversation.txt files at:
     - root_dir/Conversation.txt (if present)
     - root_dir/*/Conversation.txt (1 level of subfolders only)
     """
-    results = []
+    root_path = Path(root_dir)
+    results: list[Path] = []
 
     # Root-level Conversation.txt
-    root_file = os.path.join(root_dir, "Conversation.txt")
-    if os.path.isfile(root_file):
+    root_file = root_path / "Conversation.txt"
+    if root_file.is_file():
         results.append(root_file)
 
     # One level down: immediate subdirectories only
-    for entry in os.scandir(root_dir):
+    for entry in root_path.iterdir():
         if entry.is_dir():
-            candidate = os.path.join(entry.path, "Conversation.txt")
-            if os.path.isfile(candidate):
+            candidate = entry / "Conversation.txt"
+            if candidate.is_file():
                 results.append(candidate)
 
     return results
 
 
-def process_file(path: str, dry_run: bool = False):
+def process_file(path: Path, dry_run: bool = False) -> None:
     """Clean a single Conversation.txt file in place, with a .bak backup."""
     print(f"\n--- Processing: {path}")
     try:
-        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+        with path.open("r", encoding="utf-8", errors="ignore") as f:
             raw = f.read()
     except Exception as e:
         print(f"  [ERROR] Failed to read file: {e}")
@@ -310,8 +310,8 @@ def process_file(path: str, dry_run: bool = False):
         return
 
     # Backup original (Conversation.txt.bak) once
-    backup_path = path + ".bak"
-    if not os.path.exists(backup_path):
+    backup_path = path.with_suffix(path.suffix + ".bak")
+    if not backup_path.exists():
         try:
             shutil.copy2(path, backup_path)
             print(f"  Backup created: {backup_path}")
@@ -319,7 +319,7 @@ def process_file(path: str, dry_run: bool = False):
             print(f"  [WARN] Could not create backup: {e}")
 
     try:
-        with open(path, "w", encoding="utf-8", errors="ignore") as f:
+        with path.open("w", encoding="utf-8", errors="ignore") as f:
             f.write(cleaned)
         print("  [OK] File cleaned and overwritten.")
     except Exception as e:
@@ -330,7 +330,8 @@ def main():
     root_dir = choose_root_directory()
     print(f"\nRoot directory: {root_dir}")
 
-    files = find_conversation_files(root_dir)
+    root_path = Path(root_dir)
+    files = find_conversation_files(root_path)
     if not files:
         print("No Conversation.txt files found (1-level deep). Nothing to do.")
         return

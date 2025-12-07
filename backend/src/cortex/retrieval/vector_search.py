@@ -11,12 +11,11 @@ Per pgvector official docs:
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from cortex.config.loader import get_config
-from cortex.db.models import Chunk
-from pydantic import BaseModel
-from sqlalchemy import func, select, text
+from pydantic import BaseModel, Field
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
@@ -28,7 +27,8 @@ class VectorResult(BaseModel):
     chunk_id: str
     score: float
     text: str
-    metadata: Dict[str, Any]
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    chunk_type: Optional[str] = None
 
 
 def search_chunks_vector(
@@ -58,6 +58,7 @@ def search_chunks_vector(
             chunk_id,
             text,
             metadata,
+            chunk_type,
             thread_id,
             message_id,
             attachment_id,
@@ -89,6 +90,8 @@ def search_chunks_vector(
         metadata["thread_id"] = str(row.thread_id) if row.thread_id else ""
         metadata["message_id"] = str(row.message_id) if row.message_id else ""
         metadata["attachment_id"] = str(row.attachment_id) if row.attachment_id else ""
+        if row.chunk_type:
+            metadata["chunk_type"] = row.chunk_type
 
         out.append(
             VectorResult(
@@ -96,10 +99,9 @@ def search_chunks_vector(
                 score=score,
                 text=row.text or "",
                 metadata=metadata,
+                chunk_type=row.chunk_type,
             )
         )
-
-    return out
 
     return out
 

@@ -8,9 +8,9 @@ data:
   ENV: "production"
   LOG_LEVEL: "INFO"
   
-  # Embedding configuration (gemini-embedding-001 outputs 3072 dims)
-  EMBED_DIM: "3072"
-  EMBED_MODEL: "gemini-embedding-001"
+  # Embedding configuration (KaLM 3840 dims)
+  EMBED_DIM: "3840"
+  EMBED_MODEL: "tencent/KaLM-Embedding-Gemma3-12B-2511"
   
   # LLM configuration
   LLM_MODEL: "gemini-2.5-pro"
@@ -20,7 +20,7 @@ data:
   GCP_PROJECT_ID: "pragmatic-cat-479913-n3"
   GCP_REGION: "global"
   VERTEX_LOCATION: "global"
-  EMBED_PROVIDER: "vertex"
+  EMBED_PROVIDER: "digitalocean"
   
   # S3/Spaces Configuration (DigitalOcean Spaces - Singapore)
   S3_ENDPOINT: "https://sgp1.digitaloceanspaces.com"

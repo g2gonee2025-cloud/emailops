@@ -22,6 +22,18 @@ logger = logging.getLogger(__name__)
 _CONTROL_CHARS = re.compile(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]")
 
 
+def _load_manifest_json(text: str) -> dict[str, Any]:
+    """Parse a manifest JSON blob and ensure a dict result."""
+    data = json.loads(text)
+    if isinstance(data, dict):
+        return data
+    logger.error(
+        "Manifest root must be a JSON object, got %s. Returning empty manifest.",
+        type(data).__name__,
+    )
+    return {}
+
+
 # ============================================================================
 # Manifest File Loading (Canonical with Robust Fallbacks)
 # ============================================================================
@@ -61,12 +73,12 @@ def load_manifest(convo_dir: Path) -> dict[str, Any]:
         sanitized = _CONTROL_CHARS.sub("", raw_text)
         # 1) Try strict JSON first (no repair)
         try:
-            return json.loads(sanitized)
+            return _load_manifest_json(sanitized)
         except json.JSONDecodeError:
             # 2) Apply backslash repair then try JSON again
             repaired = re.sub(r'(?<!\\)\\(?!["\\/bfnrtu])', r"\\\\", sanitized)
             try:
-                return json.loads(repaired)
+                return _load_manifest_json(repaired)
             except json.JSONDecodeError as e2:
                 logger.error(
                     "Failed to parse manifest for %s: %s. Using empty manifest.",

@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+
 def strip_control_chars(s: str, *, normalize_newlines: bool = False) -> str:
     """
     Remove non-printable control characters from string.
@@ -30,7 +31,10 @@ def strip_control_chars(s: str, *, normalize_newlines: bool = False) -> str:
     # Remove control characters (preserving \n, \r unless normalized above)
     return re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]", "", s)
 
-def read_text_file(path: Path, encoding: str = "utf-8-sig", max_chars: int | None = None) -> str:
+
+def read_text_file(
+    path: Path, encoding: str = "utf-8-sig", max_chars: int | None = None
+) -> str:
     """
     Read a text file with BOM handling and optional character limit.
     """
@@ -42,12 +46,11 @@ def read_text_file(path: Path, encoding: str = "utf-8-sig", max_chars: int | Non
     except Exception:
         return ""
 
+
 def scrub_json(data: Any) -> Any:
     """
     Recursively remove control characters from JSON-compatible structures.
     """
-    from typing import Any
-    
     if isinstance(data, str):
         return strip_control_chars(data)
     if isinstance(data, dict):

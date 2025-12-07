@@ -10,7 +10,7 @@ import os
 from pathlib import Path
 from typing import Any, List, Literal, Optional, Set
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import AnyHttpUrl, BaseModel, Field, field_validator
 
 # -----------------------------------------------------------------------------
 # Environment Variable Helper
@@ -43,6 +43,14 @@ def _env(key: str, default: Any, value_type: type = str) -> Any:
         return value
     except (ValueError, TypeError):
         return default
+
+
+def _env_list(key: str, default: str = "") -> List[str]:
+    """Get a comma-separated env var as a list of trimmed strings."""
+    raw = _env(key, default)
+    if raw is None:
+        return []
+    return [part.strip() for part in str(raw).split(",") if part.strip()]
 
 
 # -----------------------------------------------------------------------------
@@ -124,7 +132,7 @@ class CoreConfig(BaseModel):
         description="Default persona for LLM interactions",
     )
     provider: str = Field(
-        default_factory=lambda: _env("EMBED_PROVIDER", "vertex"),
+        default_factory=lambda: _env("EMBED_PROVIDER", "digitalocean"),
         description="Default LLM/embedding provider",
     )
 
@@ -157,8 +165,6 @@ class DatabaseConfig(BaseModel):
         le=50,
         description="Maximum pool overflow",
     )
-
-    model_config = {"extra": "forbid"}
 
 
 # -----------------------------------------------------------------------------
@@ -203,14 +209,16 @@ class EmbeddingConfig(BaseModel):
     """Embedding model configuration."""
 
     model_name: str = Field(
-        default_factory=lambda: _env("EMBED_MODEL", "gemini-embedding-001"),
-        description="Embedding model name",
+        default_factory=lambda: _env(
+            "EMBED_MODEL", "tencent/KaLM-Embedding-Gemma3-12B-2511"
+        ),
+        description="Embedding model name (gateway-hosted)",
     )
     output_dimensionality: int = Field(
-        default_factory=lambda: _env("EMBED_DIM", 3072, int),
-        ge=256,
-        le=4096,  # Increased to support Gemini embeddings (3072)
-        description="Output embedding dimension (must match DB vector column)",
+        default_factory=lambda: _env("EMBED_DIM", 3840, int),
+        ge=64,
+        le=4096,
+        description="Output embedding dimension (must match DB vector column and gateway config)",
         validate_default=True,
     )
 
@@ -246,6 +254,216 @@ class GcpConfig(BaseModel):
     )
     gcp_project: str = Field(
         default_factory=lambda: _env("GCP_PROJECT", ""), description="GCP project ID"
+    )
+
+    model_config = {"extra": "forbid"}
+
+
+# -----------------------------------------------------------------------------
+# DigitalOcean LLM Configuration (DOKS scaling + inference)
+# -----------------------------------------------------------------------------
+
+
+class DigitalOceanScalerConfig(BaseModel):
+    """Scaling controls for DigitalOcean Kubernetes GPU pools."""
+
+    token: Optional[str] = Field(
+        default_factory=lambda: _env("DO_TOKEN", None),
+        description="DigitalOcean API token (falls back to DIGITALOCEAN_TOKEN)",
+    )
+    cluster_id: Optional[str] = Field(
+        default_factory=lambda: _env("DO_CLUSTER_ID", None),
+        description="Target DOKS cluster id (e.g., c-123)",
+    )
+    cluster_name: Optional[str] = Field(
+        default_factory=lambda: _env("DO_CLUSTER_NAME", None),
+        description="Logical cluster name when provisioning",
+    )
+    node_pool_id: Optional[str] = Field(
+        default_factory=lambda: _env("DO_NODE_POOL_ID", None),
+        description="GPU node pool id controlled by the scaler",
+    )
+    region: Optional[str] = Field(
+        default_factory=lambda: _env("DO_REGION", None),
+        description="DigitalOcean region slug for provisioning",
+    )
+    kubernetes_version: Optional[str] = Field(
+        default_factory=lambda: _env("DO_K8S_VERSION", None),
+        description="Desired DOKS Kubernetes version (e.g., 1.29.1-do.0)",
+    )
+    gpu_node_size: Optional[str] = Field(
+        default_factory=lambda: _env("DO_GPU_NODE_SIZE", None),
+        description="Droplet size slug for GPU nodes (e.g., g-2vcpu-24gb)",
+    )
+    cluster_tags: List[str] = Field(
+        default_factory=lambda: _env_list("DO_CLUSTER_TAGS"),
+        description="Tags applied to the cluster when provisioning",
+    )
+    node_tags: List[str] = Field(
+        default_factory=lambda: _env_list("DO_GPU_NODE_TAGS"),
+        description="Tags applied to the GPU node pool when provisioning",
+    )
+    api_base_url: str = Field(
+        default_factory=lambda: _env(
+            "DO_API_BASE_URL", "https://api.digitalocean.com/v2"
+        ),
+        description="DigitalOcean API base URL",
+    )
+    memory_per_gpu_gb: float = Field(
+        default_factory=lambda: _env("DO_GPU_MEMORY_GB", 48.0, float),
+        gt=0.0,
+        description="Usable GPU memory per accelerator (GB)",
+    )
+    gpus_per_node: int = Field(
+        default_factory=lambda: _env("DO_GPUS_PER_NODE", 1, int),
+        ge=1,
+        description="GPUs available on each node in the pool",
+    )
+    headroom: float = Field(
+        default_factory=lambda: _env("DO_GPU_HEADROOM", 0.2, float),
+        ge=0.0,
+        lt=1.0,
+        description="Fractional VRAM headroom to reserve per GPU",
+    )
+    min_nodes: int = Field(
+        default_factory=lambda: _env("DO_GPU_MIN_NODES", 0, int),
+        ge=0,
+        description="Minimum nodes to keep warm",
+    )
+    max_nodes: int = Field(
+        default_factory=lambda: _env("DO_GPU_MAX_NODES", 4, int),
+        ge=1,
+        description="Maximum nodes allowed for the GPU pool",
+    )
+    max_scale_factor: float = Field(
+        default_factory=lambda: _env("DO_GPU_MAX_SCALE_FACTOR", 2.0, float),
+        gt=0.0,
+        description="Upper bound multiplier when scaling up from warm state",
+    )
+    min_downscale_interval_s: int = Field(
+        default_factory=lambda: _env("DO_GPU_DOWNSCALE_INTERVAL", 300, int),
+        ge=0,
+        description="Billing-aware hysteresis (seconds) before scaling down",
+    )
+    target_gpu_utilization: float = Field(
+        default_factory=lambda: _env("DO_GPU_TARGET_UTIL", 0.7, float),
+        ge=0.1,
+        le=1.0,
+        description="Target utilization used when sizing via tokens/sec",
+    )
+    dry_run: bool = Field(
+        default_factory=lambda: _env("DO_GPU_DRY_RUN", False, bool),
+        description="If true, scaler logs actions without mutating the API",
+    )
+
+    model_config = {"extra": "forbid"}
+
+
+class DigitalOceanLLMModelConfig(BaseModel):
+    """Describes the hosted LLM for sizing + throughput."""
+
+    name: str = Field(
+        default_factory=lambda: _env("DO_LLM_NAME", "kimi-k2-moe"),
+        description="Identifier for the hosted model",
+    )
+    params_total: float = Field(
+        default_factory=lambda: _env("DO_LLM_PARAMS_TOTAL", 47.0, float),
+        gt=0,
+        description="Total parameters in billions (MoE aware)",
+    )
+    params_active: Optional[float] = Field(
+        default_factory=lambda: _env("DO_LLM_PARAMS_ACTIVE", None, float),
+        description="Active parameters per token in billions (MoE)",
+    )
+    context_length: int = Field(
+        default_factory=lambda: _env("DO_LLM_CONTEXT", 200_000, int),
+        ge=1_000,
+        description="Max context window supported",
+    )
+    quantization: str = Field(
+        default_factory=lambda: _env("DO_LLM_QUANT", "int4"),
+        description="Quantization key (fp16, int4, nf4, etc.)",
+    )
+    additional_memory_gb: float = Field(
+        default_factory=lambda: _env("DO_LLM_OVERHEAD_GB", 8.0, float),
+        ge=0.0,
+        description="Fixed runtime VRAM overhead (GB)",
+    )
+    kv_bytes_per_token: float = Field(
+        default_factory=lambda: _env("DO_LLM_KV_BYTES", 131_072.0, float),
+        ge=32_768.0,
+        description="KV cache bytes per token (default ~128KB/token)",
+    )
+    tps_per_gpu: Optional[float] = Field(
+        default_factory=lambda: _env("DO_LLM_TPS_PER_GPU", 60.0, float),
+        ge=0.0,
+        description="Measured tokens/sec per GPU",
+    )
+    max_concurrent_requests_per_gpu: Optional[int] = Field(
+        default_factory=lambda: _env("DO_LLM_CONCURRENCY", 6, int),
+        ge=1,
+        description="Concurrent requests per GPU that meet latency SLOs",
+    )
+
+    model_config = {"extra": "forbid"}
+
+
+class DigitalOceanLLMEndpointConfig(BaseModel):
+    """Inference endpoint exposed from the DOKS-hosted LLM."""
+
+    base_url: AnyHttpUrl | None = Field(
+        default_factory=lambda: _env("DO_LLM_BASE_URL", None),
+        description="Base URL for the OpenAI-compatible gateway running in DOKS",
+    )
+    completion_path: str = Field(
+        default_factory=lambda: _env("DO_LLM_COMPLETIONS_PATH", "/v1/completions"),
+        description="Relative path for completion requests",
+    )
+    embedding_path: str = Field(
+        default_factory=lambda: _env("DO_LLM_EMBEDDINGS_PATH", "/v1/embeddings"),
+        description="Relative path for embedding requests",
+    )
+    api_key: Optional[str] = Field(
+        default_factory=lambda: _env("DO_LLM_API_KEY", None),
+        description="Bearer token forwarded to the gateway",
+    )
+    default_completion_model: str = Field(
+        default_factory=lambda: _env("DO_LLM_COMPLETION_MODEL", "kimi-k2-moe"),
+        description="Model name to send to completion endpoint",
+    )
+    default_embedding_model: str = Field(
+        default_factory=lambda: _env(
+            "DO_LLM_EMBEDDING_MODEL", "tencent/KaLM-Embedding-Gemma3-12B-2511"
+        ),
+        description="Model name to send to embedding endpoint (serverless/gateway hosted)",
+    )
+    request_timeout_seconds: float = Field(
+        default_factory=lambda: _env("DO_LLM_TIMEOUT", 45.0, float),
+        ge=1.0,
+        le=300.0,
+        description="HTTP timeout when calling the inference gateway",
+    )
+    verify_tls: bool = Field(
+        default_factory=lambda: _env("DO_LLM_VERIFY_TLS", True, bool),
+        description="Toggle TLS verification for internal gateways",
+    )
+    extra_headers: dict[str, str] = Field(
+        default_factory=dict,
+        description="Optional static headers injected into every request",
+    )
+
+    model_config = {"extra": "forbid"}
+
+
+class DigitalOceanLLMConfig(BaseModel):
+    """Top-level DigitalOcean LLM configuration block."""
+
+    scaling: DigitalOceanScalerConfig = Field(default_factory=DigitalOceanScalerConfig)
+    model: DigitalOceanLLMModelConfig = Field(
+        default_factory=DigitalOceanLLMModelConfig
+    )
+    endpoint: DigitalOceanLLMEndpointConfig = Field(
+        default_factory=DigitalOceanLLMEndpointConfig
     )
 
     model_config = {"extra": "forbid"}

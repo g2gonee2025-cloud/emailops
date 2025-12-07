@@ -16,7 +16,6 @@ import time
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
@@ -26,9 +25,11 @@ logger = logging.getLogger(__name__)
 # Job Status and Data Classes
 # -----------------------------------------------------------------------------
 
+
 @dataclass
 class JobStatus:
     """Represents the status of a job."""
+
     PENDING = "pending"
     PROCESSING = "processing"
     COMPLETED = "completed"
@@ -39,6 +40,7 @@ class JobStatus:
 @dataclass
 class Job:
     """Represents a job in the queue."""
+
     id: str
     type: str
     payload: Dict[str, Any]
@@ -50,7 +52,7 @@ class Job:
     started_at: Optional[float] = None
     completed_at: Optional[float] = None
     error: Optional[str] = None
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert job to dictionary."""
         return {
@@ -66,7 +68,7 @@ class Job:
             "completed_at": self.completed_at,
             "error": self.error,
         }
-    
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "Job":
         """Create job from dictionary."""
@@ -89,6 +91,7 @@ class Job:
 # Abstract Base Class
 # -----------------------------------------------------------------------------
 
+
 class JobQueue(ABC):
     """Abstract base class for job queues."""
 
@@ -96,26 +99,28 @@ class JobQueue(ABC):
     def enqueue(self, job_type: str, payload: Dict[str, Any], priority: int = 0) -> str:
         """
         Enqueue a job.
-        
+
         Args:
             job_type: Type of job (e.g., 'ingest', 'reindex')
             payload: Job payload data
             priority: Job priority (higher = more urgent)
-            
+
         Returns:
             Job ID
         """
         pass
 
     @abstractmethod
-    def dequeue(self, job_types: List[str], timeout: int = 10) -> Optional[Dict[str, Any]]:
+    def dequeue(
+        self, job_types: List[str], timeout: int = 10
+    ) -> Optional[Dict[str, Any]]:
         """
         Dequeue a job.
-        
+
         Args:
             job_types: List of job types to accept
             timeout: Maximum time to wait in seconds
-            
+
         Returns:
             Job dictionary or None if no job available
         """
@@ -125,7 +130,7 @@ class JobQueue(ABC):
     def ack(self, job_id: str) -> None:
         """
         Acknowledge job completion.
-        
+
         Args:
             job_id: ID of the completed job
         """
@@ -135,7 +140,7 @@ class JobQueue(ABC):
     def nack(self, job_id: str, error: Optional[str] = None) -> None:
         """
         Negative acknowledge (fail/retry).
-        
+
         Args:
             job_id: ID of the failed job
             error: Optional error message
@@ -146,10 +151,10 @@ class JobQueue(ABC):
     def get_job_status(self, job_id: str) -> Optional[Dict[str, Any]]:
         """
         Get job status.
-        
+
         Args:
             job_id: ID of the job
-            
+
         Returns:
             Job status dictionary or None
         """
@@ -159,7 +164,7 @@ class JobQueue(ABC):
     def get_queue_stats(self) -> Dict[str, int]:
         """
         Get queue statistics.
-        
+
         Returns:
             Dictionary with queue stats (pending, processing, etc.)
         """
@@ -170,11 +175,13 @@ class JobQueue(ABC):
 # In-Memory Queue (Development/Testing)
 # -----------------------------------------------------------------------------
 
+
 class InMemoryQueue(JobQueue):
     """Simple in-memory queue for development/testing."""
-    
+
     def __init__(self):
         from queue import PriorityQueue
+
         self._queue = PriorityQueue()
         self._jobs: Dict[str, Job] = {}
         self._lock = threading.Lock()
@@ -194,9 +201,11 @@ class InMemoryQueue(JobQueue):
         logger.debug(f"Enqueued job {job_id} of type {job_type}")
         return job_id
 
-    def dequeue(self, job_types: List[str], timeout: int = 10) -> Optional[Dict[str, Any]]:
+    def dequeue(
+        self, job_types: List[str], timeout: int = 10
+    ) -> Optional[Dict[str, Any]]:
         from queue import Empty
-        
+
         start = time.time()
         while time.time() - start < timeout:
             try:
@@ -230,7 +239,9 @@ class InMemoryQueue(JobQueue):
                 job.error = error
                 if job.attempts >= job.max_attempts:
                     job.status = JobStatus.DEAD_LETTER
-                    logger.warning(f"Job {job_id} moved to dead letter after {job.attempts} attempts")
+                    logger.warning(
+                        f"Job {job_id} moved to dead letter after {job.attempts} attempts"
+                    )
                 else:
                     job.status = JobStatus.PENDING
                     self._queue.put((-job.priority, job.created_at, job_id))
@@ -268,23 +279,24 @@ class InMemoryQueue(JobQueue):
 # Redis Streams Queue (Production)
 # -----------------------------------------------------------------------------
 
+
 class RedisStreamsQueue(JobQueue):
     """
     Redis Streams-based job queue for production use.
-    
+
     Implements Blueprint §7.4:
     * Reliable message delivery with consumer groups
     * Automatic dead-letter handling
     * Job status tracking
     * Priority support via multiple streams
     """
-    
+
     # Stream/key naming
     STREAM_PREFIX = "cortex:jobs:"
     STATUS_PREFIX = "cortex:job_status:"
     CONSUMER_GROUP = "cortex_workers"
     DEAD_LETTER_STREAM = "cortex:dead_letter"
-    
+
     def __init__(
         self,
         redis_url: str = "redis://localhost:6379",
@@ -294,7 +306,7 @@ class RedisStreamsQueue(JobQueue):
     ):
         """
         Initialize Redis Streams queue.
-        
+
         Args:
             redis_url: Redis connection URL
             max_retries: Maximum retry attempts before dead-letter
@@ -308,18 +320,20 @@ class RedisStreamsQueue(JobQueue):
                 "redis package required for RedisStreamsQueue. "
                 "Install with: pip install redis"
             )
-        
+
         self._redis = redis.from_url(redis_url, decode_responses=True)
         self._max_retries = max_retries
         self._visibility_timeout = visibility_timeout
         self._block_timeout = block_timeout
         self._consumer_name = f"{socket.gethostname()}-{os.getpid()}"
         self._lock = threading.Lock()
-        
+
         # Initialize consumer groups for known job types
         self._ensure_consumer_groups(["ingest", "reindex"])
-        
-        logger.info(f"RedisStreamsQueue initialized with consumer: {self._consumer_name}")
+
+        logger.info(
+            f"RedisStreamsQueue initialized with consumer: {self._consumer_name}"
+        )
 
     def _stream_name(self, job_type: str, priority: int = 0) -> str:
         """Get stream name for job type and priority."""
@@ -342,7 +356,9 @@ class RedisStreamsQueue(JobQueue):
                     logger.debug(f"Created consumer group for stream: {stream}")
                 except Exception as e:
                     if "BUSYGROUP" not in str(e):
-                        logger.warning(f"Failed to create consumer group for {stream}: {e}")
+                        logger.warning(
+                            f"Failed to create consumer group for {stream}: {e}"
+                        )
 
     def enqueue(self, job_type: str, payload: Dict[str, Any], priority: int = 0) -> str:
         """Enqueue a job to Redis Streams."""
@@ -353,9 +369,9 @@ class RedisStreamsQueue(JobQueue):
             payload=payload,
             priority=priority,
         )
-        
+
         stream = self._stream_name(job_type, priority)
-        
+
         # Store job data
         job_data = {
             "id": job_id,
@@ -365,10 +381,10 @@ class RedisStreamsQueue(JobQueue):
             "created_at": str(job.created_at),
             "max_attempts": str(job.max_attempts),
         }
-        
+
         # Add to stream
         self._redis.xadd(stream, job_data)
-        
+
         # Store job status
         self._redis.hset(
             f"{self.STATUS_PREFIX}{job_id}",
@@ -377,34 +393,36 @@ class RedisStreamsQueue(JobQueue):
                 "attempts": "0",
                 "created_at": str(job.created_at),
                 "type": job_type,
-            }
+            },
         )
         self._redis.expire(f"{self.STATUS_PREFIX}{job_id}", 86400 * 7)  # 7 day TTL
-        
+
         logger.debug(f"Enqueued job {job_id} to stream {stream}")
         return job_id
 
-    def dequeue(self, job_types: List[str], timeout: int = 10) -> Optional[Dict[str, Any]]:
+    def dequeue(
+        self, job_types: List[str], timeout: int = 10
+    ) -> Optional[Dict[str, Any]]:
         """Dequeue a job from Redis Streams."""
         # Ensure consumer groups exist
         self._ensure_consumer_groups(job_types)
-        
+
         # Build list of streams to read from (in priority order)
         streams = {}
         for job_type in job_types:
             for priority in ["high", "normal", "low"]:
                 stream = f"{self.STREAM_PREFIX}{job_type}:{priority}"
                 streams[stream] = ">"  # Read new messages
-        
+
         if not streams:
             return None
-        
+
         try:
             # First, try to claim stale messages (pending too long)
             reclaimed = self._claim_stale_messages(job_types)
             if reclaimed:
                 return reclaimed
-            
+
             # Read new messages
             result = self._redis.xreadgroup(
                 self.CONSUMER_GROUP,
@@ -413,23 +431,25 @@ class RedisStreamsQueue(JobQueue):
                 count=1,
                 block=self._block_timeout,
             )
-            
+
             if not result:
                 return None
-            
+
             # Parse result: [(stream_name, [(message_id, {data})])]
             stream_name, messages = result[0]
             if not messages:
                 return None
-            
+
             message_id, data = messages[0]
-            
+
             job_id = data["id"]
             job_type = data["type"]
             payload = json.loads(data["payload"])
-            
+
             # Update job status
-            attempts = self._redis.hincrby(f"{self.STATUS_PREFIX}{job_id}", "attempts", 1)
+            attempts = self._redis.hincrby(
+                f"{self.STATUS_PREFIX}{job_id}", "attempts", 1
+            )
             self._redis.hset(
                 f"{self.STATUS_PREFIX}{job_id}",
                 mapping={
@@ -438,9 +458,9 @@ class RedisStreamsQueue(JobQueue):
                     "message_id": message_id,
                     "stream": stream_name,
                     "consumer": self._consumer_name,
-                }
+                },
             )
-            
+
             return {
                 "id": job_id,
                 "type": job_type,
@@ -450,7 +470,7 @@ class RedisStreamsQueue(JobQueue):
                 "_message_id": message_id,
                 "_stream": stream_name,
             }
-            
+
         except Exception as e:
             logger.error(f"Error dequeuing from Redis: {e}")
             return None
@@ -458,46 +478,54 @@ class RedisStreamsQueue(JobQueue):
     def _claim_stale_messages(self, job_types: List[str]) -> Optional[Dict[str, Any]]:
         """Attempt to claim stale (pending too long) messages."""
         min_idle_time = self._visibility_timeout * 1000  # Convert to ms
-        
+
         for job_type in job_types:
             for priority in ["high", "normal", "low"]:
                 stream = f"{self.STREAM_PREFIX}{job_type}:{priority}"
-                
+
                 try:
                     # Get pending messages
                     pending = self._redis.xpending_range(
-                        stream, self.CONSUMER_GROUP,
-                        min="-", max="+", count=10
+                        stream, self.CONSUMER_GROUP, min="-", max="+", count=10
                     )
-                    
+
                     for entry in pending:
                         msg_id = entry["message_id"]
                         idle_time = entry.get("time_since_delivered", 0)
-                        
+
                         if idle_time >= min_idle_time:
                             # Attempt to claim
                             claimed = self._redis.xclaim(
-                                stream, self.CONSUMER_GROUP, self._consumer_name,
+                                stream,
+                                self.CONSUMER_GROUP,
+                                self._consumer_name,
                                 min_idle_time=min_idle_time,
                                 message_ids=[msg_id],
                             )
-                            
+
                             if claimed:
                                 msg_id, data = claimed[0]
                                 job_id = data["id"]
-                                
+
                                 # Check retry count
-                                attempts = int(self._redis.hget(
-                                    f"{self.STATUS_PREFIX}{job_id}", "attempts"
-                                ) or 0)
-                                
+                                attempts = int(
+                                    self._redis.hget(
+                                        f"{self.STATUS_PREFIX}{job_id}", "attempts"
+                                    )
+                                    or 0
+                                )
+
                                 if attempts >= self._max_retries:
                                     # Move to dead letter
-                                    self._move_to_dead_letter(job_id, stream, msg_id, data)
+                                    self._move_to_dead_letter(
+                                        job_id, stream, msg_id, data
+                                    )
                                     continue
-                                
+
                                 # Update status and return
-                                self._redis.hincrby(f"{self.STATUS_PREFIX}{job_id}", "attempts", 1)
+                                self._redis.hincrby(
+                                    f"{self.STATUS_PREFIX}{job_id}", "attempts", 1
+                                )
                                 self._redis.hset(
                                     f"{self.STATUS_PREFIX}{job_id}",
                                     mapping={
@@ -506,9 +534,9 @@ class RedisStreamsQueue(JobQueue):
                                         "message_id": msg_id,
                                         "stream": stream,
                                         "consumer": self._consumer_name,
-                                    }
+                                    },
                                 )
-                                
+
                                 return {
                                     "id": job_id,
                                     "type": data["type"],
@@ -518,10 +546,10 @@ class RedisStreamsQueue(JobQueue):
                                     "_message_id": msg_id,
                                     "_stream": stream,
                                 }
-                                
+
                 except Exception as e:
                     logger.warning(f"Error claiming stale messages from {stream}: {e}")
-        
+
         return None
 
     def _move_to_dead_letter(
@@ -536,60 +564,60 @@ class RedisStreamsQueue(JobQueue):
             "dead_letter_at": str(time.time()),
         }
         self._redis.xadd(self.DEAD_LETTER_STREAM, dead_data)
-        
+
         # Acknowledge original message
         self._redis.xack(stream, self.CONSUMER_GROUP, message_id)
-        
+
         # Update status
         self._redis.hset(
             f"{self.STATUS_PREFIX}{job_id}",
             mapping={
                 "status": JobStatus.DEAD_LETTER,
                 "dead_letter_at": str(time.time()),
-            }
+            },
         )
-        
+
         logger.warning(f"Job {job_id} moved to dead letter queue")
 
     def ack(self, job_id: str) -> None:
         """Acknowledge job completion."""
         status_key = f"{self.STATUS_PREFIX}{job_id}"
         status_data = self._redis.hgetall(status_key)
-        
+
         if not status_data:
             logger.warning(f"Job {job_id} not found for ack")
             return
-        
+
         stream = status_data.get("stream")
         message_id = status_data.get("message_id")
-        
+
         if stream and message_id:
             self._redis.xack(stream, self.CONSUMER_GROUP, message_id)
-        
+
         # Update status
         self._redis.hset(
             status_key,
             mapping={
                 "status": JobStatus.COMPLETED,
                 "completed_at": str(time.time()),
-            }
+            },
         )
-        
+
         logger.debug(f"Acknowledged job {job_id}")
 
     def nack(self, job_id: str, error: Optional[str] = None) -> None:
         """Negative acknowledge (fail/retry)."""
         status_key = f"{self.STATUS_PREFIX}{job_id}"
         status_data = self._redis.hgetall(status_key)
-        
+
         if not status_data:
             logger.warning(f"Job {job_id} not found for nack")
             return
-        
+
         attempts = int(status_data.get("attempts", 0))
         stream = status_data.get("stream")
         message_id = status_data.get("message_id")
-        
+
         if attempts >= self._max_retries:
             # Move to dead letter
             if stream and message_id:
@@ -604,7 +632,7 @@ class RedisStreamsQueue(JobQueue):
                         "status": JobStatus.DEAD_LETTER,
                         "error": error or "Max retries exceeded",
                         "dead_letter_at": str(time.time()),
-                    }
+                    },
                 )
         else:
             # Update status for retry (message remains pending in stream)
@@ -614,9 +642,9 @@ class RedisStreamsQueue(JobQueue):
                     "status": JobStatus.PENDING,
                     "error": error or "",
                     "last_failed_at": str(time.time()),
-                }
+                },
             )
-        
+
         logger.debug(f"Nack job {job_id} (attempt {attempts})")
 
     def get_job_status(self, job_id: str) -> Optional[Dict[str, Any]]:
@@ -624,14 +652,18 @@ class RedisStreamsQueue(JobQueue):
         status_data = self._redis.hgetall(f"{self.STATUS_PREFIX}{job_id}")
         if not status_data:
             return None
-        
+
         return {
             "id": job_id,
             "status": status_data.get("status"),
             "attempts": int(status_data.get("attempts", 0)),
             "created_at": float(status_data.get("created_at", 0)),
-            "started_at": float(status_data.get("started_at", 0)) if status_data.get("started_at") else None,
-            "completed_at": float(status_data.get("completed_at", 0)) if status_data.get("completed_at") else None,
+            "started_at": float(status_data.get("started_at", 0))
+            if status_data.get("started_at")
+            else None,
+            "completed_at": float(status_data.get("completed_at", 0))
+            if status_data.get("completed_at")
+            else None,
             "error": status_data.get("error"),
             "type": status_data.get("type"),
         }
@@ -644,14 +676,14 @@ class RedisStreamsQueue(JobQueue):
             "completed": 0,
             "dead_letter": 0,
         }
-        
+
         # Count dead letter messages
         try:
             dl_info = self._redis.xinfo_stream(self.DEAD_LETTER_STREAM)
             stats["dead_letter"] = dl_info.get("length", 0)
         except Exception:
             pass
-        
+
         # Count messages in job streams
         for job_type in ["ingest", "reindex"]:
             for priority in ["high", "normal", "low"]:
@@ -659,7 +691,7 @@ class RedisStreamsQueue(JobQueue):
                 try:
                     info = self._redis.xinfo_stream(stream)
                     stats["pending"] += info.get("length", 0)
-                    
+
                     # Get consumer group info for processing count
                     groups = self._redis.xinfo_groups(stream)
                     for group in groups:
@@ -667,16 +699,16 @@ class RedisStreamsQueue(JobQueue):
                             stats["processing"] += group.get("pending", 0)
                 except Exception:
                     pass
-        
+
         return stats
 
     def cleanup_completed(self, max_age_seconds: int = 86400) -> int:
         """
         Clean up completed job status records.
-        
+
         Args:
             max_age_seconds: Maximum age of completed jobs to keep
-            
+
         Returns:
             Number of records cleaned up
         """
@@ -684,14 +716,12 @@ class RedisStreamsQueue(JobQueue):
         cleaned = 0
         cursor = "0"
         cutoff = time.time() - max_age_seconds
-        
+
         while True:
             cursor, keys = self._redis.scan(
-                cursor=cursor,
-                match=f"{self.STATUS_PREFIX}*",
-                count=100
+                cursor=cursor, match=f"{self.STATUS_PREFIX}*", count=100
             )
-            
+
             for key in keys:
                 status_data = self._redis.hgetall(key)
                 if status_data.get("status") == JobStatus.COMPLETED:
@@ -699,13 +729,13 @@ class RedisStreamsQueue(JobQueue):
                     if completed_at < cutoff:
                         self._redis.delete(key)
                         cleaned += 1
-            
+
             if cursor == "0":
                 break
-        
+
         if cleaned > 0:
             logger.info(f"Cleaned up {cleaned} completed job records")
-        
+
         return cleaned
 
 
@@ -713,30 +743,30 @@ class RedisStreamsQueue(JobQueue):
 # Celery-Based Queue (Alternative Production Backend)
 # -----------------------------------------------------------------------------
 
+
 class CeleryQueue(JobQueue):
     """
     Celery-based job queue for production use.
-    
-    Provides an alternative to Redis Streams using Celery for 
+
+    Provides an alternative to Redis Streams using Celery for
     task distribution and result tracking.
     """
-    
+
     def __init__(self, broker_url: str = "redis://localhost:6379/0"):
         """
         Initialize Celery queue.
-        
+
         Args:
             broker_url: Celery broker URL (Redis, RabbitMQ, etc.)
         """
         try:
             from celery import Celery
-            from celery.result import AsyncResult
         except ImportError:
             raise ImportError(
                 "celery package required for CeleryQueue. "
                 "Install with: pip install celery[redis]"
             )
-        
+
         self._app = Celery("cortex", broker=broker_url)
         self._app.conf.update(
             task_serializer="json",
@@ -748,48 +778,49 @@ class CeleryQueue(JobQueue):
         )
         self._pending_jobs: Dict[str, Dict[str, Any]] = {}
         self._lock = threading.Lock()
-        
+
         # Register task handlers
         self._register_tasks()
-        
+
         logger.info("CeleryQueue initialized")
 
     def _register_tasks(self) -> None:
         """Register Celery tasks for job types."""
+
         @self._app.task(name="cortex.ingest", bind=True, max_retries=3)
         def ingest_task(self, payload: Dict[str, Any]) -> Dict[str, Any]:
             return {"status": "completed", "payload": payload}
-        
+
         @self._app.task(name="cortex.reindex", bind=True, max_retries=3)
         def reindex_task(self, payload: Dict[str, Any]) -> Dict[str, Any]:
             return {"status": "completed", "payload": payload}
-        
+
         self._ingest_task = ingest_task
         self._reindex_task = reindex_task
 
     def enqueue(self, job_type: str, payload: Dict[str, Any], priority: int = 0) -> str:
         """Enqueue a job via Celery."""
         job_id = str(uuid.uuid4())
-        
+
         # Map job type to task
         task_map = {
             "ingest": self._ingest_task,
             "reindex": self._reindex_task,
         }
-        
+
         task = task_map.get(job_type)
         if not task:
             raise ValueError(f"Unknown job type: {job_type}")
-        
+
         # Calculate Celery priority (0-9, lower = higher priority)
         celery_priority = max(0, min(9, 5 - (priority // 2)))
-        
+
         result = task.apply_async(
             args=[payload],
             task_id=job_id,
             priority=celery_priority,
         )
-        
+
         with self._lock:
             self._pending_jobs[job_id] = {
                 "id": job_id,
@@ -798,11 +829,13 @@ class CeleryQueue(JobQueue):
                 "priority": priority,
                 "result": result,
             }
-        
+
         logger.debug(f"Enqueued Celery task {job_id} of type {job_type}")
         return job_id
 
-    def dequeue(self, job_types: List[str], timeout: int = 10) -> Optional[Dict[str, Any]]:
+    def dequeue(
+        self, job_types: List[str], timeout: int = 10
+    ) -> Optional[Dict[str, Any]]:
         """
         Dequeue is handled by Celery workers automatically.
         This method is for compatibility and returns pending jobs for status checking.
@@ -834,9 +867,9 @@ class CeleryQueue(JobQueue):
     def get_job_status(self, job_id: str) -> Optional[Dict[str, Any]]:
         """Get job status via Celery AsyncResult."""
         from celery.result import AsyncResult
-        
+
         result = AsyncResult(job_id, app=self._app)
-        
+
         status_map = {
             "PENDING": JobStatus.PENDING,
             "STARTED": JobStatus.PROCESSING,
@@ -844,7 +877,7 @@ class CeleryQueue(JobQueue):
             "FAILURE": JobStatus.FAILED,
             "RETRY": JobStatus.PENDING,
         }
-        
+
         return {
             "id": job_id,
             "status": status_map.get(result.status, JobStatus.PENDING),
@@ -860,9 +893,10 @@ class CeleryQueue(JobQueue):
             active = inspector.active() or {}
             reserved = inspector.reserved() or {}
             scheduled = inspector.scheduled() or {}
-            
+
             return {
-                "pending": sum(len(v) for v in reserved.values()) + sum(len(v) for v in scheduled.values()),
+                "pending": sum(len(v) for v in reserved.values())
+                + sum(len(v) for v in scheduled.values()),
                 "processing": sum(len(v) for v in active.values()),
                 "completed": 0,  # Would need result backend query
                 "failed": 0,
@@ -883,49 +917,62 @@ _queue_lock = threading.Lock()
 def get_queue() -> JobQueue:
     """
     Get the configured queue instance.
-    
+
     Uses config to determine queue type:
     - 'memory': InMemoryQueue (default for dev)
     - 'redis': RedisStreamsQueue (production)
     - 'celery': CeleryQueue (alternative production)
     """
     global _queue_instance
-    
+
     with _queue_lock:
         if _queue_instance is None:
             from cortex.config.loader import get_config
+
             config = get_config()
-            
+
             # Check for queue type in config (default to memory)
-            queue_type = getattr(config.system, 'queue_type', 'memory')
-            
-            if queue_type == 'redis':
+            queue_type = getattr(config.system, "queue_type", "memory")
+
+            if queue_type == "redis":
                 try:
-                    redis_url = os.getenv("OUTLOOKCORTEX_REDIS_URL", "redis://localhost:6379")
+                    redis_url = os.getenv(
+                        "OUTLOOKCORTEX_REDIS_URL", "redis://localhost:6379"
+                    )
                     _queue_instance = RedisStreamsQueue(redis_url=redis_url)
                     logger.info("Initialized Redis Streams queue")
                 except ImportError as e:
-                    logger.warning(f"Redis not available: {e}, falling back to InMemory")
+                    logger.warning(
+                        f"Redis not available: {e}, falling back to InMemory"
+                    )
                     _queue_instance = InMemoryQueue()
                 except Exception as e:
-                    logger.warning(f"Failed to initialize Redis queue: {e}, falling back to InMemory")
+                    logger.warning(
+                        f"Failed to initialize Redis queue: {e}, falling back to InMemory"
+                    )
                     _queue_instance = InMemoryQueue()
-                    
-            elif queue_type == 'celery':
+
+            elif queue_type == "celery":
                 try:
-                    broker_url = os.getenv("OUTLOOKCORTEX_CELERY_BROKER", "redis://localhost:6379/0")
+                    broker_url = os.getenv(
+                        "OUTLOOKCORTEX_CELERY_BROKER", "redis://localhost:6379/0"
+                    )
                     _queue_instance = CeleryQueue(broker_url=broker_url)
                     logger.info("Initialized Celery queue")
                 except ImportError as e:
-                    logger.warning(f"Celery not available: {e}, falling back to InMemory")
+                    logger.warning(
+                        f"Celery not available: {e}, falling back to InMemory"
+                    )
                     _queue_instance = InMemoryQueue()
                 except Exception as e:
-                    logger.warning(f"Failed to initialize Celery queue: {e}, falling back to InMemory")
+                    logger.warning(
+                        f"Failed to initialize Celery queue: {e}, falling back to InMemory"
+                    )
                     _queue_instance = InMemoryQueue()
             else:
                 _queue_instance = InMemoryQueue()
                 logger.info("Initialized InMemory queue (development mode)")
-                
+
     return _queue_instance
 
 

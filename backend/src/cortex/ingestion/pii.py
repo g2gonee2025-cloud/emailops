@@ -17,18 +17,9 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 _HAS_PRESIDIO = False
-_AnalyzerEngine: Any = None
-_AnonymizerEngine: Any = None
-_OperatorConfig: Any = None
-_RecognizerResult: Any = None
-_Pattern: Any = None
-_PatternRecognizer: Any = None
 
 try:
     from presidio_analyzer import AnalyzerEngine as _AnalyzerEngine
-    from presidio_analyzer import Pattern as _Pattern
-    from presidio_analyzer import PatternRecognizer as _PatternRecognizer
-    from presidio_analyzer import RecognizerResult as _RecognizerResult
     from presidio_anonymizer import AnonymizerEngine as _AnonymizerEngine
     from presidio_anonymizer.entities import OperatorConfig as _OperatorConfig
 
@@ -37,6 +28,9 @@ except ImportError:
     logger.warning(
         "Microsoft Presidio not found. PII redaction will be limited to regex-based fallback."
     )
+    _AnalyzerEngine = None
+    _AnonymizerEngine = None
+    _OperatorConfig = None
 
 
 # Entity types to detect per §6.4

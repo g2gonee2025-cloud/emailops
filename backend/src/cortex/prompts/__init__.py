@@ -16,54 +16,109 @@ def _with_base(body: str) -> str:
     return SYSTEM_PROMPT_BASE + body
 
 
-PROMPT_ANSWER_QUESTION: str = _with_base("""
+PROMPT_ANSWER_QUESTION: str = _with_base(
+    """
 Given the user's question and retrieved context, provide a clear, accurate answer.
 Always cite which email/attachment your information comes from.
 If the context doesn't contain enough information, say so explicitly.
-""")
+"""
+)
 
-PROMPT_DRAFT_EMAIL_INITIAL: str = _with_base("""
-Draft a professional email based on the context and user instructions.
-Match the tone to the conversation history.
-Be concise but complete. Include all necessary information.
-""")
+PROMPT_DRAFT_EMAIL_INITIAL: str = _with_base(
+    """
+You are drafting an email for mode: {mode}.
 
-PROMPT_DRAFT_EMAIL_IMPROVE: str = _with_base("""You are a senior communications specialist.
-Review the draft and critique, then produce an improved version.
+Thread context (reply chains):
+{thread_context}
+
+User instructions:
+{query}
+
+Retrieved context snippets:
+{context}
+
+Recipients:
+TO: {to}
+CC: {cc}
+Subject hint: {subject}
+
+Draft a professional email grounded in the provided context.
+Match the tone to the conversation history and call out any missing info.
+"""
+)
+
+PROMPT_DRAFT_EMAIL_IMPROVE: str = _with_base(
+    """You are a senior communications specialist.
+Review the previous draft and critique, then produce an improved version.
+
+Original draft:
+{original_draft}
+
+Critique feedback:
+{critique}
+
+Context:
+{context}
+
 Address all issues raised while maintaining professionalism.
-""")
+"""
+)
 
-PROMPT_CRITIQUE_EMAIL: str = _with_base("""Review this email draft for:
+PROMPT_CRITIQUE_EMAIL: str = _with_base(
+    """Review this email draft for:
 1. Tone appropriateness
 2. Clarity and conciseness  
 3. Factual accuracy (based on provided context)
 4. Policy compliance
 5. Formatting issues
 
-Provide specific, actionable feedback.
-""")
+Draft subject: {draft_subject}
+Draft body:
+{draft_body}
 
-PROMPT_SUMMARIZE_ANALYST: str = _with_base("""
+Context:
+{context}
+
+Provide specific, actionable feedback.
+"""
+)
+
+PROMPT_SUMMARIZE_ANALYST: str = _with_base(
+    """
 Analyze this email thread and extract a comprehensive facts ledger.
 Identify: explicit asks, commitments, key dates, unknowns, and any concerning promises.
 Be thorough but precise. Every item must be grounded in the actual emails.
-""")
+"""
+)
 
-PROMPT_SUMMARIZE_CRITIC: str = _with_base("""Review the analyst's facts ledger for completeness.
+PROMPT_SUMMARIZE_CRITIC: str = _with_base(
+    """Review the analyst's facts ledger for completeness.
 Identify any gaps, missed items, or inaccuracies.
 Score completeness 0-100 and flag critical gaps.
-""")
+"""
+)
 
-PROMPT_QUERY_CLASSIFY: str = _with_base("""Classify this query as one of:
+PROMPT_QUERY_CLASSIFY: str = _with_base(
+    """Classify this query as one of:
 - "navigational": looking for specific email/sender/subject
 - "semantic": analytical question requiring understanding
 - "draft": request to compose/reply to email
 
 Also identify any flags: ["followup", "requires_grounding_check", "time_sensitive"]
-""")
+"""
+)
 
 PROMPT_GUARDRAILS_REPAIR: str = """Fix the JSON output to match the schema.
 Original error: {error}
+
+INVALID JSON:
+{invalid_json}
+
+TARGET SCHEMA:
+{target_schema}
+
+VALIDATION ERRORS:
+{validation_errors}
 """
 
 PROMPT_GROUNDING_CHECK: str = """You are a fact-checking specialist. Your task is to verify if an answer is supported by the provided facts.
@@ -75,6 +130,9 @@ For each factual claim in the answer:
 
 ANSWER TO VERIFY:
 {answer}
+
+EXTRACTED CLAIMS:
+{claims}
 
 AVAILABLE FACTS:
 {facts}
@@ -120,22 +178,37 @@ Respond with a JSON object:
 Only include claims that make specific, verifiable assertions.
 """
 
-PROMPT_DRAFT_EMAIL_AUDIT: str = _with_base("""Audit the email draft for policy violations and safety issues.
+PROMPT_DRAFT_EMAIL_AUDIT: str = _with_base(
+    """Audit the email draft for policy violations and safety issues.
 Draft: {draft}
-""")
+"""
+)
 
-PROMPT_DRAFT_EMAIL_NEXT_ACTIONS: str = _with_base("""Identify the next actions required after sending this email.
+PROMPT_DRAFT_EMAIL_NEXT_ACTIONS: str = _with_base(
+    """Identify the next actions required after sending this email.
 Draft: {draft}
-""")
+"""
+)
 
-PROMPT_SUMMARIZE_IMPROVER: str = _with_base("""Improve the facts ledger based on the critic's feedback.
-Ledger: {ledger}
-Critique: {critique}
-""")
+PROMPT_SUMMARIZE_IMPROVER: str = _with_base(
+    """Improve the facts ledger based on the critic's feedback.
+Thread context:
+{thread_context}
 
-PROMPT_SUMMARIZE_FINAL: str = _with_base("""Generate a final concise summary from the facts ledger.
+Ledger:
+{ledger}
+
+Critique:
+{critique}
+"""
+)
+
+PROMPT_SUMMARIZE_FINAL: str = _with_base(
+    """Generate a final concise summary from the facts ledger.
 Ledger: {ledger}
-""")
+"""
+)
+
 
 def get_prompt(name: str, **kwargs) -> str:
     """Get a prompt template with optional variable substitution."""

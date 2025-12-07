@@ -290,10 +290,6 @@ site/
 *.rar
 *.7z
 
-# Specific paths to exclude
-C:/Users/*/Desktop/Outlook/
-emailops.zip
-
 # NPM/Node (if used for any tooling)
 node_modules/
 npm-debug.log*

@@ -16,7 +16,7 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from cortex.config.loader import get_config
 from cortex.db.models import Attachment, Chunk, IngestJob, Message, Thread
@@ -466,7 +466,9 @@ class IngestionProcessor:
         return chunks
 
     def process_batch(
-        self, folders: List[S3ConversationFolder], job_id: Optional[str] = None
+        self,
+        folders: List[S3ConversationFolder],
+        job_id: Optional[Union[str, uuid.UUID]] = None,
     ) -> ProcessingStats:
         """Process a batch of folders."""
         self.stats = ProcessingStats()
@@ -501,12 +503,13 @@ class IngestionProcessor:
         return self.stats
 
     def _update_job_status(
-        self, job_id: str, status: str, stats: Dict[str, Any]
+        self, job_id: Union[str, uuid.UUID], status: str, stats: Dict[str, Any]
     ) -> None:
         """Update ingestion job status in database."""
         try:
             with self.SessionLocal() as session:
-                job = session.get(IngestJob, job_id)
+                normalized_id = self._coerce_job_id(job_id)
+                job = session.get(IngestJob, normalized_id)
                 if job:
                     job.status = status
                     job.stats = stats
@@ -515,11 +518,17 @@ class IngestionProcessor:
         except Exception as e:
             logger.error(f"Failed to update job status: {e}")
 
+    def _coerce_job_id(self, job_id: Union[str, uuid.UUID]) -> uuid.UUID:
+        """Normalize job identifiers to UUID objects."""
+        if isinstance(job_id, uuid.UUID):
+            return job_id
+        return uuid.UUID(str(job_id))
+
     def run_full_ingestion(
         self,
         prefix: str = "raw/outlook/",
         limit: Optional[int] = None,
-        job_id: Optional[str] = None,
+        job_id: Optional[Union[str, uuid.UUID]] = None,
     ) -> ProcessingStats:
         """
         Run full ingestion from S3.
@@ -535,15 +544,20 @@ class IngestionProcessor:
         logger.info(f"Starting full ingestion from {prefix}")
 
         # Create job record if not provided
-        if not job_id:
-            job_id = f"ingest-{uuid.uuid4()}"
+        job_uuid: uuid.UUID
+        if job_id:
+            job_uuid = self._coerce_job_id(job_id)
+        else:
+            job_uuid = uuid.uuid4()
             with self.SessionLocal() as session:
                 job = IngestJob(
-                    job_id=job_id,
+                    job_id=job_uuid,
                     tenant_id=self.tenant_id,
                     source_type="s3",
+                    source_uri=prefix,
                     status="pending",
                     metadata_={"prefix": prefix},
+                    options={"limit": limit} if limit else {},
                 )
                 session.add(job)
                 session.commit()
@@ -559,7 +573,7 @@ class IngestionProcessor:
             logger.info(f"Found {len(folders)} folders to process")
 
             # Process in batches
-            stats = self.process_batch(folders, job_id)
+            stats = self.process_batch(folders, job_uuid)
 
             logger.info(
                 f"Ingestion complete: {stats.folders_processed} folders, "
@@ -570,7 +584,7 @@ class IngestionProcessor:
 
         except Exception as e:
             logger.error(f"Ingestion failed: {e}")
-            self._update_job_status(job_id, "failed", {"error": str(e)})
+            self._update_job_status(job_uuid, "failed", {"error": str(e)})
             raise
 
 

@@ -16,8 +16,7 @@ from cortex.config.loader import get_config
 # Optional OpenTelemetry imports
 try:
     from opentelemetry import metrics, trace
-    from opentelemetry.exporter.cloud_monitoring import \
-        CloudMonitoringMetricsExporter
+    from opentelemetry.exporter.cloud_monitoring import CloudMonitoringMetricsExporter
     from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
     from opentelemetry.instrumentation.requests import RequestsInstrumentor
     from opentelemetry.sdk.metrics import MeterProvider
@@ -35,10 +34,10 @@ except ImportError:
 
 # Optional OTLP Exporters (for DigitalOcean/Generic)
 try:
-    from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import \
-        OTLPMetricExporter
-    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import \
-        OTLPSpanExporter
+    from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import (
+        OTLPMetricExporter,
+    )
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 
     OTLP_AVAILABLE = True
 except ImportError:

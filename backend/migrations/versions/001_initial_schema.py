@@ -3,7 +3,7 @@
 import sqlalchemy as sa
 from alembic import op
 from pgvector.sqlalchemy import Vector
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB, TSVECTOR, UUID
+from sqlalchemy.dialects.postgresql import ARRAY, ENUM, JSONB, TSVECTOR, UUID
 
 revision = "001"
 down_revision = None
@@ -16,15 +16,19 @@ def upgrade():
     op.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"')
     op.execute('CREATE EXTENSION IF NOT EXISTS "vector"')
 
-    # Enums
-    # op.execute("""
-    #     CREATE TYPE chunk_type AS ENUM (
-    #         'message_body', 'attachment_text', 'attachment_table',
-    #         'quoted_history', 'other'
-    #     )
-    # """)
-    # op.execute("CREATE TYPE attachment_status AS ENUM ('pending', 'parsed', 'unparsed_password_protected', 'failed')")
-    # op.execute("CREATE TYPE risk_level AS ENUM ('low', 'medium', 'high')")
+    # Enums defined explicitly to match Blueprint §4.1
+    op.execute(
+        """
+        CREATE TYPE chunk_type AS ENUM (
+            'message_body', 'attachment_text', 'attachment_table',
+            'quoted_history', 'other'
+        )
+        """
+    )
+    op.execute(
+        "CREATE TYPE attachment_status AS ENUM ('pending', 'parsed', 'unparsed_password_protected', 'failed')"
+    )
+    op.execute("CREATE TYPE risk_level AS ENUM ('low', 'medium', 'high')")
 
     # threads table
     op.create_table(
@@ -40,7 +44,7 @@ def upgrade():
         sa.Column("original_subject", sa.Text),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
-        sa.Column("metadata", JSONB, server_default="{}"),
+        sa.Column("metadata", JSONB, server_default=sa.text("'{}'::jsonb")),
     )
 
     # messages table
@@ -65,10 +69,10 @@ def upgrade():
         sa.Column("subject", sa.Text),
         sa.Column("body_plain", sa.Text),
         sa.Column("body_html", sa.Text),
-        sa.Column("has_quoted_mask", sa.Boolean, server_default="false"),
+        sa.Column("has_quoted_mask", sa.Boolean, server_default=sa.text("false")),
         sa.Column("raw_storage_uri", sa.Text),
         sa.Column("tsv_subject_body", TSVECTOR),
-        sa.Column("metadata", JSONB, server_default="{}"),
+        sa.Column("metadata", JSONB, server_default=sa.text("'{}'::jsonb")),
     )
 
     # attachments table
@@ -94,16 +98,17 @@ def upgrade():
         sa.Column("storage_uri_extracted", sa.Text),
         sa.Column(
             "status",
-            sa.Enum(
+            ENUM(
                 "pending",
                 "parsed",
                 "unparsed_password_protected",
                 "failed",
                 name="attachment_status",
+                create_type=False,
             ),
         ),
         sa.Column("extracted_chars", sa.Integer),
-        sa.Column("metadata", JSONB, server_default="{}"),
+        sa.Column("metadata", JSONB, server_default=sa.text("'{}'::jsonb")),
     )
 
     # chunks table (with pgvector)
@@ -137,13 +142,14 @@ def upgrade():
         sa.Column("tenant_id", sa.Text, nullable=False, index=True),
         sa.Column(
             "chunk_type",
-            sa.Enum(
+            ENUM(
                 "message_body",
                 "attachment_text",
                 "attachment_table",
                 "quoted_history",
                 "other",
                 name="chunk_type",
+                create_type=False,
             ),
         ),
         sa.Column("text", sa.Text),
@@ -157,7 +163,7 @@ def upgrade():
         ),  # Initial dim; see 005_update_embedding_dim.py for upgrade to 3072
         sa.Column("embedding_model", sa.Text),
         sa.Column("tsv_text", TSVECTOR),
-        sa.Column("metadata", JSONB, server_default="{}"),
+        sa.Column("metadata", JSONB, server_default=sa.text("'{}'::jsonb")),
     )
 
     # audit_log table
@@ -176,8 +182,11 @@ def upgrade():
         sa.Column("input_hash", sa.Text),
         sa.Column("output_hash", sa.Text),
         sa.Column("policy_decisions", JSONB),
-        sa.Column("risk_level", sa.Enum("low", "medium", "high", name="risk_level")),
-        sa.Column("metadata", JSONB, server_default="{}"),
+        sa.Column(
+            "risk_level",
+            ENUM("low", "medium", "high", name="risk_level", create_type=False),
+        ),
+        sa.Column("metadata", JSONB, server_default=sa.text("'{}'::jsonb")),
     )
 
 

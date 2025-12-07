@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, cast
 
 T = TypeVar("T")
 E = TypeVar("E")
@@ -85,11 +85,6 @@ class Result(Generic[T, E]):
         return cls(ok=True, value=value, error=None)
 
     @classmethod
-    def ok(cls, value: T) -> Result[T, E]:
-        """Alias for success() - canonical API."""
-        return cls.success(value)
-
-    @classmethod
     def failure(cls, error: E) -> Result[T, E]:
         """
         Create a failure Result containing an error.
@@ -127,8 +122,7 @@ class Result(Generic[T, E]):
         """
         if not self.ok:
             raise ValueError(f"Called unwrap() on failure Result: {self.error}")
-        # assert self.value is not None  # Help type checker
-        return self.value  # type: ignore
+        return cast(T, self.value)
 
     def unwrap_err(self) -> E:
         """
@@ -142,7 +136,7 @@ class Result(Generic[T, E]):
         """
         if self.ok:
             raise ValueError(f"Called unwrap_err() on success Result: {self.value}")
-        return self.error  # type: ignore
+        return cast(E, self.error)
 
     def unwrap_or(self, default: T) -> T:
         """
@@ -154,7 +148,9 @@ class Result(Generic[T, E]):
         Returns:
             The success value or default
         """
-        return self.value if self.ok else default  # type: ignore
+        if self.ok:
+            return cast(T, self.value)
+        return default
 
     def unwrap_or_else(self, fn: Callable[[E], T]) -> T:
         """
@@ -167,7 +163,7 @@ class Result(Generic[T, E]):
             The success value or result of fn(error)
         """
         if self.ok:
-            return self.value  # type: ignore
+            return cast(T, self.value)
         assert self.error is not None
         return fn(self.error)
 
@@ -186,7 +182,7 @@ class Result(Generic[T, E]):
         """
         if not self.ok:
             raise ValueError(f"{msg}: {self.error}")
-        return self.value  # type: ignore
+        return cast(T, self.value)
 
     def map(self, fn: Callable[[T], U]) -> Result[U, E]:
         """
@@ -199,8 +195,8 @@ class Result(Generic[T, E]):
             Result with transformed value if success, same error if failure
         """
         if self.ok:
-            return Result.success(fn(self.value))  # type: ignore
-        return Result.failure(self.error)  # type: ignore
+            return Result.success(fn(cast(T, self.value)))
+        return Result.failure(cast(E, self.error))
 
     def map_error(self, fn: Callable[[E], U]) -> Result[T, U]:
         """
@@ -214,8 +210,8 @@ class Result(Generic[T, E]):
         """
         if not self.ok:
             assert self.error is not None
-            return Result.failure(fn(self.error))
-        return Result.success(self.value)  # type: ignore
+            return Result.failure(fn(cast(E, self.error)))
+        return Result.success(cast(T, self.value))
 
     def and_then(self, fn: Callable[[T], Result[U, E]]) -> Result[U, E]:
         """
@@ -236,8 +232,8 @@ class Result(Generic[T, E]):
             Result(ok=False, value=None, error='div by zero')
         """
         if self.ok:
-            return fn(self.value)  # type: ignore
-        return Result.failure(self.error)  # type: ignore
+            return fn(cast(T, self.value))
+        return Result.failure(cast(E, self.error))
 
     def or_else(self, fn: Callable[[E], Result[T, E]]) -> Result[T, E]:
         """
@@ -251,13 +247,14 @@ class Result(Generic[T, E]):
         """
         if not self.ok:
             assert self.error is not None
-            return fn(self.error)
+            return fn(cast(E, self.error))
         return self
 
 
 # -------------------------
 # Result Helper Functions
 # -------------------------
+
 
 def collect_results(results: list[Result[T, E]]) -> Result[list[T], E]:
     """
@@ -286,8 +283,8 @@ def collect_results(results: list[Result[T, E]]) -> Result[list[T], E]:
     values: list[T] = []
     for r in results:
         if not r.ok:
-            return Result.failure(r.error)  # type: ignore
-        values.append(r.value)  # type: ignore
+            return Result.failure(cast(E, r.error))
+        values.append(cast(T, r.value))
     return Result.success(values)
 
 
@@ -346,13 +343,13 @@ def traverse_results(
     for item in items:
         result = fn(item)
         if result.ok:
-            successes.append(result.value)  # type: ignore
+            successes.append(cast(U, result.value))
         else:
             assert result.error is not None
-            failures.append(result.error)
+            failures.append(cast(E, result.error))
 
     if failures:
-        return Result.failure(failures)  # type: ignore
+        return Result.failure(failures)
     return Result.success(successes)
 
 

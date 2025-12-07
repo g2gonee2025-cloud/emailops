@@ -16,18 +16,23 @@ class Span(TypedDict):
 def detect_quoted_spans(text: str) -> List[Span]:
     """
     Identify quotes & signatures (Talon-like logic).
-    
+
     Returns list of {start: int, end: int} spans.
     """
     spans: List[Span] = []
-    
+
     lines = text.splitlines()
     current_span_start = None
-    
+
     for i, line in enumerate(lines):
         line = line.strip()
-        is_quoted = line.startswith(">") or line.startswith("On ") and line.endswith("wrote:") or line == "--"
-        
+        is_quoted = (
+            line.startswith(">")
+            or line.startswith("On ")
+            and line.endswith("wrote:")
+            or line == "--"
+        )
+
         if is_quoted:
             if current_span_start is None:
                 # Start of a new span
@@ -38,30 +43,30 @@ def detect_quoted_spans(text: str) -> List[Span]:
                 # This is slow O(N^2) for large texts, but acceptable for emails.
                 # Optimization: Keep running length.
                 pass
-            
+
     # Re-implementation with character tracking
     char_idx = 0
     in_quote = False
-    
+
     # Common quote headers
     # On [Date], [Name] wrote:
     # -----Original Message-----
     # From: ...
-    
+
     lines_with_endings = text.splitlines(keepends=True)
-    
+
     for line in lines_with_endings:
         stripped = line.strip()
         is_quote_line = (
-            stripped.startswith(">") or
-            (stripped.startswith("On ") and stripped.endswith("wrote:")) or
-            stripped == "--" or
-            stripped.startswith("-----Original Message-----") or
-            stripped.startswith("From: ") # Heuristic, can be risky
+            stripped.startswith(">")
+            or (stripped.startswith("On ") and stripped.endswith("wrote:"))
+            or stripped == "--"
+            or stripped.startswith("-----Original Message-----")
+            or stripped.startswith("From: ")  # Heuristic, can be risky
         )
-        
+
         line_len = len(line)
-        
+
         if is_quote_line:
             if not in_quote:
                 in_quote = True
@@ -74,12 +79,12 @@ def detect_quoted_spans(text: str) -> List[Span]:
                 # Relaxed mode: allow some gaps.
                 # Let's use strict for now.
                 in_quote = False
-                spans.append({"start": current_span_start, "end": char_idx}) # type: ignore
+                spans.append({"start": current_span_start, "end": char_idx})  # type: ignore
                 current_span_start = None
-                
+
         char_idx += line_len
-        
+
     if in_quote and current_span_start is not None:
-        spans.append({"start": current_span_start, "end": char_idx}) # type: ignore
-        
+        spans.append({"start": current_span_start, "end": char_idx})  # type: ignore
+
     return spans

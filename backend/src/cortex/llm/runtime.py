@@ -7,23 +7,31 @@ from __future__ import annotations
 
 import json
 import logging
-import math
 import os
 import random
 import threading
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union, cast
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import openai
 import vertexai
-from cortex.common.exceptions import (CircuitBreakerOpenError,
-                                      ConfigurationError, LLMOutputSchemaError,
-                                      ProviderError, RateLimitError)
+from cortex.common.exceptions import (
+    CircuitBreakerOpenError,
+    ConfigurationError,
+    LLMOutputSchemaError,
+    ProviderError,
+    RateLimitError,
+)
 from cortex.config.loader import get_config
-from tenacity import (retry, retry_if_exception_type, stop_after_attempt,
-                      wait_exponential)
+from cortex.llm.doks_scaler import DigitalOceanLLMService
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 from vertexai.generative_models import GenerationConfig, GenerativeModel
 from vertexai.language_models import TextEmbeddingInput, TextEmbeddingModel
 
@@ -145,7 +153,7 @@ def _ensure_projects_loaded() -> None:
         projects = []
         if accounts_file.exists():
             try:
-                with open(accounts_file) as f:
+                with accounts_file.open() as f:
                     accounts = json.load(f)
                 for acc in accounts:
                     if acc.get("credentials_path") and acc.get("project_id"):
@@ -243,6 +251,8 @@ class LLMRuntime:
         self._rate_limit_tokens = _config.retry.rate_limit_capacity
         self._rate_limit_last_refill = time.time()
         self._rate_limit_lock = threading.Lock()
+        self._doks_service: Optional[DigitalOceanLLMService] = None
+        self._doks_lock = threading.Lock()
         self._init_vertex()
 
     def _init_vertex(self):
@@ -346,6 +356,18 @@ class LLMRuntime:
             retryable=False,
         )
 
+    def _get_doks_service(self) -> DigitalOceanLLMService:
+        if self._doks_service is not None:
+            return self._doks_service
+        with self._doks_lock:
+            if self._doks_service is None:
+                if not hasattr(_config, "digitalocean"):
+                    raise ConfigurationError(
+                        "DigitalOcean configuration block is missing"
+                    )
+                self._doks_service = DigitalOceanLLMService(_config.digitalocean)
+        return self._doks_service
+
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=4, max=10),
@@ -437,6 +459,14 @@ class LLMRuntime:
                 vectors = [d.embedding for d in response.data]
                 return _normalize_vectors(vectors)
 
+            elif provider == "digitalocean":
+                service = self._get_doks_service()
+                vectors = service.embed_texts(
+                    texts,
+                    expected_dim=_config.embedding.output_dimensionality,
+                )
+                return _normalize_vectors(vectors)
+
             else:
                 raise ConfigurationError(f"Unsupported embedding provider: {provider}")
 
@@ -464,7 +494,7 @@ class LLMRuntime:
         except Exception as e:
             logger.error(f"Embedding failed ({provider}): {e}")
             raise ProviderError(
-                f"Embedding failed: {str(e)}", provider=provider, retryable=True
+                f"Embedding failed: {e!s}", provider=provider, retryable=True
             ) from e
 
     @retry(
@@ -534,6 +564,15 @@ class LLMRuntime:
                 )
                 return response.choices[0].message.content or ""
 
+            elif provider == "digitalocean":
+                service = self._get_doks_service()
+                return service.generate_text(
+                    prompt,
+                    temperature=kwargs.get("temperature", 0.2),
+                    max_tokens=kwargs.get("max_tokens", 1024),
+                    model=kwargs.get("model"),
+                )
+
             else:
                 raise ConfigurationError(f"Unsupported completion provider: {provider}")
 
@@ -542,7 +581,7 @@ class LLMRuntime:
         except Exception as e:
             logger.error(f"Completion failed ({provider}): {e}")
             raise ProviderError(
-                f"Completion failed: {str(e)}", provider=provider, retryable=True
+                f"Completion failed: {e!s}", provider=provider, retryable=True
             ) from e
 
     @retry(
@@ -633,6 +672,21 @@ class LLMRuntime:
                     response_format={"type": "json_object"},
                 )
                 return response.choices[0].message.content or "{}"
+
+            elif provider == "digitalocean":
+                service = self._get_doks_service()
+
+                def _call_gateway() -> str:
+                    return service.generate_text(
+                        prompt=json_prompt,
+                        temperature=kwargs.get("temperature", 0.0),
+                        max_tokens=kwargs.get("max_tokens", 2048),
+                        model=kwargs.get("model"),
+                        response_format={"type": "json_object"},
+                        extra_payload=kwargs.get("extra_payload"),
+                    )
+
+                return _call_gateway()
 
             else:
                 raise ConfigurationError(f"Unsupported completion provider: {provider}")

@@ -26,7 +26,6 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
-from typing import NoReturn
 
 # Lazy import for heavy dependencies
 # from cortex_cli.cmd_doctor import main as doctor_main
@@ -154,7 +153,6 @@ def _print_version() -> None:
 def _show_status() -> None:
     """Show current environment status."""
     import os
-    from pathlib import Path
 
     _print_banner()
     print(f"{_colorize('ENVIRONMENT STATUS:', 'bold')}\n")
@@ -314,7 +312,6 @@ def _run_validate(
     Validate export folder structure (B1).
     """
     import json
-    from pathlib import Path
 
     target_path = Path(path).resolve()
 
@@ -388,7 +385,6 @@ def _run_ingest(
     """
     import json
     import uuid
-    from pathlib import Path
 
     source = Path(source_path).resolve()
 
@@ -419,11 +415,11 @@ def _run_ingest(
         else:
             # Scan for conversation subfolders
             for item in source.iterdir():
-                if item.is_dir():
-                    if (item / "Conversation.txt").exists() or (
-                        item / "manifest.json"
-                    ).exists():
-                        conversations.append(item)
+                if item.is_dir() and (
+                    (item / "Conversation.txt").exists()
+                    or (item / "manifest.json").exists()
+                ):
+                    conversations.append(item)
 
     if not conversations:
         msg = f"No conversation folders found in: {source}"
@@ -435,9 +431,9 @@ def _run_ingest(
             print(f"  {_colorize('⚠', 'yellow')} {msg}")
             print(f"\n  {_colorize('Expected structure:', 'dim')}")
             print(f"    {source}/")
-            print(f"      ├── Conversation.txt")
-            print(f"      ├── manifest.json")
-            print(f"      └── attachments/")
+            print("      ├── Conversation.txt")
+            print("      ├── manifest.json")
+            print("      └── attachments/")
         sys.exit(1)
 
     if not json_output:
@@ -574,7 +570,6 @@ def _run_index(
     Build or rebuild the search index with embeddings.
     """
     import json
-    from pathlib import Path
 
     root_path = Path(root).resolve()
 
@@ -586,11 +581,16 @@ def _run_index(
         print(f"  Workers:   {_colorize(str(workers), 'cyan')}")
         if limit:
             print(f"  Limit:     {_colorize(str(limit), 'yellow')}")
+        if force:
+            print(
+                f"  {_colorize('Force: recomputing index regardless of cache state', 'yellow')}"
+            )
         print()
 
     try:
-        from cortex_workers.reindex_jobs.parallel_indexer import \
-            parallel_index_conversations
+        from cortex_workers.reindex_jobs.parallel_indexer import (  # isort: skip
+            parallel_index_conversations,
+        )
 
         if not json_output:
             print(f"  {_colorize('⏳', 'yellow')} Starting parallel indexing...")
@@ -1464,7 +1464,7 @@ Run comprehensive system diagnostics including:
                 doctor_args.append("--check-index")
             if "--check-embeddings" not in doctor_args:
                 doctor_args.append("--check-embeddings")
-        sys.argv = [sys.argv[0]] + doctor_args
+        sys.argv = [sys.argv[0], *doctor_args]
         doctor_main()
 
     elif parsed_args.command == "status":

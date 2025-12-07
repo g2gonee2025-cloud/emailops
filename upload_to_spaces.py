@@ -12,6 +12,7 @@ from pathlib import Path
 
 import boto3
 from botocore.config import Config
+from botocore.exceptions import ClientError
 
 # DigitalOcean Spaces configuration
 S3_ENDPOINT = "https://sgp1.digitaloceanspaces.com"
@@ -55,7 +56,7 @@ def check_file_exists(s3_client, s3_key: str) -> bool:
     try:
         s3_client.head_object(Bucket=S3_BUCKET, Key=s3_key)
         return True
-    except:
+    except ClientError:
         return False
 
 
@@ -74,7 +75,7 @@ def upload_file(
         )
         return True, s3_key, False  # Uploaded
     except Exception as e:
-        return False, f"{s3_key}: {str(e)}", False
+        return False, f"{s3_key}: {e}", False
 
 
 def main():
@@ -83,7 +84,7 @@ def main():
 
     # Collect all files
     files_to_upload = []
-    for root, dirs, files in os.walk(SOURCE_DIR):
+    for root, _dirs, files in os.walk(SOURCE_DIR):
         for file in files:
             local_path = Path(root) / file
             # Create relative path for S3 key
@@ -152,7 +153,7 @@ def main():
     # Summary
     elapsed = time.time() - start_time
     print("-" * 60)
-    print(f"\n✓ Upload complete!")
+    print("\n✓ Upload complete!")
     print(f"  Total files:    {total_files}")
     print(f"  Uploaded (new): {uploaded}")
     print(f"  Skipped (exist):{skipped}")
@@ -161,7 +162,7 @@ def main():
     print(f"  Average rate:   {total_files/elapsed:.1f} files/sec")
 
     if failed_files:
-        print(f"\nFailed files:")
+        print("\nFailed files:")
         for f in failed_files[:10]:
             print(f"  - {f}")
         if len(failed_files) > 10:

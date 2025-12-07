@@ -28,13 +28,13 @@ class TextPreprocessor(Protocol):
     ) -> Tuple[str, Dict[str, Any]]:
         """
         Prepare text for indexing by cleaning and redacting PII.
-        
+
         Args:
             text: Raw text content
             text_type: Source type ("email" or "attachment")
             tenant_id: Tenant identifier
             metadata: Optional metadata to augment
-            
+
         Returns:
             Tuple of (cleaned_text, updated_metadata)
         """
@@ -44,7 +44,7 @@ class TextPreprocessor(Protocol):
 class DefaultTextPreprocessor:
     """
     Default implementation of TextPreprocessor.
-    
+
     Applies:
     1. Type-specific cleaning (email headers, signatures)
     2. Whitespace normalization
@@ -69,10 +69,10 @@ class DefaultTextPreprocessor:
         Clean and prepare text for indexing.
         """
         meta = (metadata or {}).copy()
-        
+
         # 1. Basic sanitization
         cleaned = self._strip_control_chars(text)
-        
+
         # 2. Type-specific cleaning
         if text_type == "email":
             # Use existing email cleaning logic
@@ -80,19 +80,21 @@ class DefaultTextPreprocessor:
         elif text_type == "attachment":
             # Basic whitespace normalization for docs
             cleaned = re.sub(r"\s+", " ", cleaned).strip()
-            
+
         # 3. PII Redaction (§6.4)
         cleaned = self._redact_pii(cleaned)
-        
+
         # 4. Update metadata
-        meta.update({
-            "pre_cleaned": True,
-            "cleaning_version": self.cleaning_version,
-            "source": text_type,
-            "char_count_raw": len(text),
-            "char_count_clean": len(cleaned),
-        })
-        
+        meta.update(
+            {
+                "pre_cleaned": True,
+                "cleaning_version": self.cleaning_version,
+                "source": text_type,
+                "char_count_raw": len(text),
+                "char_count_clean": len(cleaned),
+            }
+        )
+
         return cleaned, meta
 
     def _strip_control_chars(self, text: str) -> str:

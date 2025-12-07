@@ -6,18 +6,18 @@ Implements §8.2 of the Canonical Blueprint.
 from __future__ import annotations
 
 import logging
-from typing import List
+from typing import Any, Dict, List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-
 
 logger = logging.getLogger(__name__)
 
 
 class FTSResult(BaseModel):
     """FTS search result."""
+
     message_id: str
     thread_id: str
     subject: str
@@ -26,22 +26,20 @@ class FTSResult(BaseModel):
 
 
 def search_messages_fts(
-    session: Session,
-    query: str,
-    tenant_id: str,
-    limit: int = 50
+    session: Session, query: str, tenant_id: str, limit: int = 50
 ) -> List[FTSResult]:
     """
     Perform FTS search on messages.
-    
+
     Blueprint §8.2:
     * FTS search on messages.tsv_subject_body
     * Returns message-level hits
     """
     # Blueprint §8.2: FTS search on messages.tsv_subject_body
     # Use websearch_to_tsquery for robust query parsing
-    
-    stmt = text("""
+
+    stmt = text(
+        """
         SELECT
             message_id,
             thread_id,
@@ -54,52 +52,57 @@ def search_messages_fts(
             AND tsv_subject_body @@ websearch_to_tsquery('english', :query)
         ORDER BY score DESC
         LIMIT :limit
-    """)
-    
-    results = session.execute(stmt, {
-        "query": query,
-        "tenant_id": tenant_id,
-        "limit": limit
-    }).fetchall()
-    
+    """
+    )
+
+    results = session.execute(
+        stmt, {"query": query, "tenant_id": tenant_id, "limit": limit}
+    ).fetchall()
+
     return [
         FTSResult(
             message_id=row.message_id,
             thread_id=str(row.thread_id),
             subject=row.subject or "",
             score=row.score,
-            snippet=row.snippet or ""
+            snippet=row.snippet or "",
         )
         for row in results
     ]
 
+
 class ChunkFTSResult(BaseModel):
     """Chunk FTS search result."""
+
     chunk_id: str
     thread_id: str
     message_id: str
+    chunk_type: str
     score: float
     snippet: str
+    text: str
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
 def search_chunks_fts(
-    session: Session,
-    query: str,
-    tenant_id: str,
-    limit: int = 50
+    session: Session, query: str, tenant_id: str, limit: int = 50
 ) -> List[ChunkFTSResult]:
     """
     Perform FTS search on chunks.
-    
+
     Blueprint §8.3:
     * FTS search on chunks.tsv_text
     * Returns chunk-level hits for hybrid fusion
     """
-    stmt = text("""
+    stmt = text(
+        """
         SELECT
             chunk_id,
             thread_id,
             message_id,
+            chunk_type,
+            text,
+            metadata,
             ts_rank(tsv_text, websearch_to_tsquery('english', :query)) as score,
             ts_headline('english', text, websearch_to_tsquery('english', :query)) as snippet
         FROM chunks
@@ -108,21 +111,23 @@ def search_chunks_fts(
             AND tsv_text @@ websearch_to_tsquery('english', :query)
         ORDER BY score DESC
         LIMIT :limit
-    """)
-    
-    results = session.execute(stmt, {
-        "query": query,
-        "tenant_id": tenant_id,
-        "limit": limit
-    }).fetchall()
-    
+    """
+    )
+
+    results = session.execute(
+        stmt, {"query": query, "tenant_id": tenant_id, "limit": limit}
+    ).fetchall()
+
     return [
         ChunkFTSResult(
             chunk_id=str(row.chunk_id),
             thread_id=str(row.thread_id),
             message_id=row.message_id or "",
+            chunk_type=row.chunk_type or "other",
             score=row.score,
-            snippet=row.snippet or ""
+            snippet=row.snippet or "",
+            text=row.text or "",
+            metadata=row.metadata or {},
         )
         for row in results
     ]
@@ -138,4 +143,3 @@ search_fts_chunks = search_chunks_fts
 
 search_fts_messages = search_messages_fts
 """Canonical alias for search_messages_fts per Blueprint §8.2."""
-

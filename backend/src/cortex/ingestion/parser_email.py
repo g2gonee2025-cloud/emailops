@@ -14,17 +14,19 @@ Features:
 """
 from __future__ import annotations
 
-import email
 import hashlib
 import logging
 import mailbox
 import re
 import uuid
 from datetime import datetime, timedelta, timezone
+from email import policy
 from email.header import decode_header, make_header
+from email.message import EmailMessage, Message
+from email.parser import BytesParser
 from email.utils import parseaddr, parsedate_to_datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from pydantic import BaseModel, Field
 
@@ -199,11 +201,9 @@ def parse_eml(content: bytes) -> ParsedEmail:
     Returns:
         ParsedEmail with all extracted fields
     """
-    from email import policy
-    from email.parser import BytesParser
-
     try:
-        msg = BytesParser(policy=policy.default).parsebytes(content)
+        parser = BytesParser(policy=cast(Any, policy.default))
+        msg = cast(EmailMessage, parser.parsebytes(content))
     except Exception as e:
         logger.error(f"Failed to parse email: {e}")
         # Return empty ParsedEmail with generated ID
@@ -269,8 +269,9 @@ def parse_eml(content: bytes) -> ParsedEmail:
         if val:
             headers[hdr] = str(val)
 
-    def _get_charset(part, default="utf-8"):
-        return part.get_content_charset() or default
+    def _get_charset(part: Message, default: str = "utf-8") -> str:
+        charset = part.get_content_charset()
+        return charset or default
 
     if msg.is_multipart():
         for part in msg.walk():
@@ -528,17 +529,17 @@ class EmailThreader:
         """
         # Check if already threaded
         if email.message_id in self.message_to_thread:
-            thread_id = self.message_to_thread[email.message_id]
-            thread = self.threads[thread_id]
+            cached_thread_id = self.message_to_thread[email.message_id]
+            thread = self.threads[cached_thread_id]
             return ThreadInfo(
-                thread_id=thread_id,
+                thread_id=cached_thread_id,
                 position_in_thread=thread.message_ids.index(email.message_id),
                 is_thread_start=thread.message_ids[0] == email.message_id,
                 threading_method="cached",
             )
 
         # Try threading methods in priority order
-        thread_id = None
+        thread_id: str | None = None
         method = "unknown"
         ambiguity = 0.0
 
@@ -568,6 +569,7 @@ class EmailThreader:
         else:
             self._add_to_thread(thread_id, email)
 
+        assert thread_id is not None
         # Register message in lookups
         self.message_to_thread[email.message_id] = thread_id
         self.reference_chains[email.message_id] = thread_id
@@ -619,8 +621,8 @@ class EmailThreader:
 
     def get_thread_problems(self) -> list[dict[str, Any]]:
         """Get list of threading problems/ambiguities for job reporting."""
-        problems = []
-        for msg_id, thread_id in self.message_to_thread.items():
+        problems: list[dict[str, Any]] = []
+        for _msg_id, thread_id in self.message_to_thread.items():
             thread = self.threads.get(thread_id)
             if not thread:
                 continue

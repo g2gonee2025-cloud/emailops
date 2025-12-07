@@ -16,11 +16,26 @@ from cortex.common.exceptions import ConfigurationError
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 
-from .models import (CoreConfig, DatabaseConfig, DirectoryConfig, EmailConfig,
-                     EmbeddingConfig, FilePatternsConfig, GcpConfig,
-                     LimitsConfig, ProcessingConfig, RetryConfig, SearchConfig,
-                     SecurityConfig, SensitiveConfig, StorageConfig,
-                     SummarizerConfig, SystemConfig, UnifiedConfig)
+from .models import (
+    CoreConfig,
+    DatabaseConfig,
+    DigitalOceanLLMConfig,
+    DirectoryConfig,
+    EmailConfig,
+    EmbeddingConfig,
+    FilePatternsConfig,
+    GcpConfig,
+    LimitsConfig,
+    ProcessingConfig,
+    RetryConfig,
+    SearchConfig,
+    SecurityConfig,
+    SensitiveConfig,
+    StorageConfig,
+    SummarizerConfig,
+    SystemConfig,
+    UnifiedConfig,
+)
 
 load_dotenv()
 
@@ -46,6 +61,7 @@ class EmailOpsConfig(BaseModel):
     processing: ProcessingConfig = Field(default_factory=ProcessingConfig)
     embedding: EmbeddingConfig = Field(default_factory=EmbeddingConfig)
     gcp: GcpConfig = Field(default_factory=GcpConfig)
+    digitalocean: DigitalOceanLLMConfig = Field(default_factory=DigitalOceanLLMConfig)
     retry: RetryConfig = Field(default_factory=RetryConfig)
     search: SearchConfig = Field(default_factory=SearchConfig)
     storage: StorageConfig = Field(default_factory=StorageConfig)
@@ -104,6 +120,16 @@ class EmailOpsConfig(BaseModel):
         if self.core.provider:
             os.environ["EMBED_PROVIDER"] = self.core.provider
 
+        # Embedding settings
+        os.environ["EMBED_MODEL"] = self.embedding.model_name
+        os.environ["EMBED_DIM"] = str(self.embedding.output_dimensionality)
+        os.environ["VERTEX_EMBED_MODEL"] = self.embedding.model_name
+        os.environ["VERTEX_MODEL"] = self.embedding.vertex_model
+
+        # DigitalOcean LLM controls
+        if self.digitalocean.scaling.token:
+            os.environ["DIGITALOCEAN_TOKEN"] = self.digitalocean.scaling.token
+
         # Processing settings
         os.environ["EMBED_BATCH"] = str(self.processing.batch_size)
         os.environ["NUM_WORKERS"] = str(self.processing.num_workers)
@@ -118,10 +144,6 @@ class EmailOpsConfig(BaseModel):
         # Directory settings
         os.environ["INDEX_DIRNAME"] = self.directories.index_dirname
         os.environ["CHUNK_DIRNAME"] = self.directories.chunk_dirname
-
-        # Embedding settings
-        os.environ["VERTEX_EMBED_MODEL"] = self.embedding.model_name
-        os.environ["VERTEX_MODEL"] = self.embedding.vertex_model
 
         # GCP region settings
         os.environ["GCP_REGION"] = self.gcp.gcp_region
@@ -181,11 +203,20 @@ class EmailOpsConfig(BaseModel):
             with path.open("r") as f:
                 data = json.load(f)
 
-            # Override with environment variables (using EMAILOPS_ prefix)
+            # Override with environment variables (canonical OUTLOOKCORTEX_ prefix)
             for key in list(data.keys()):
-                env_var = f"EMAILOPS_{key.upper()}"
-                if env_var in os.environ:
-                    data[key] = os.environ[env_var]
+                canonical_env = f"OUTLOOKCORTEX_{key.upper()}"
+                legacy_env = f"EMAILOPS_{key.upper()}"
+
+                if canonical_env in os.environ:
+                    data[key] = os.environ[canonical_env]
+                elif legacy_env in os.environ:
+                    logger.warning(
+                        "Deprecated env var '%s' found. Use '%s' instead.",
+                        legacy_env,
+                        canonical_env,
+                    )
+                    data[key] = os.environ[legacy_env]
 
             return cls.model_validate(data)
 

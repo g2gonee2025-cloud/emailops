@@ -138,6 +138,18 @@ class S3SourceHandler:
 
         return files
 
+    def build_folder(self, prefix: str) -> S3ConversationFolder:
+        """
+        Build an S3ConversationFolder for an explicit prefix.
+
+        This is used by ingestion jobs when a specific folder prefix is
+        provided via IngestJob.source_uri.
+        """
+        normalized_prefix = prefix if prefix.endswith("/") else f"{prefix}/"
+        name = normalized_prefix.rstrip("/").split("/")[-1]
+        files = self._list_folder_files(normalized_prefix)
+        return S3ConversationFolder(prefix=normalized_prefix, name=name, files=files)
+
     def download_conversation_folder(
         self,
         folder: S3ConversationFolder,

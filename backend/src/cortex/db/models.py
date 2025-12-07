@@ -10,76 +10,39 @@ from datetime import datetime
 from typing import Any, List, Optional
 
 try:
-    from pgvector.sqlalchemy import Vector
+    from pgvector.sqlalchemy import Vector  # type: ignore[import]
 except ImportError:
     # Fallback for environments without pgvector installed
     from sqlalchemy.types import UserDefinedType
 
-    class Vector(UserDefinedType):
-        def __init__(self, dim):
+    class Vector(UserDefinedType[Any]):
+        def __init__(self, dim: int) -> None:
             self.dim = dim
 
-        def get_col_spec(self, **kw):
-            return "vector(%d)" % self.dim
+        def get_col_spec(self, **kw: Any) -> str:
+            return f"vector({self.dim})"
 
-        def bind_processor(self, dialect):
-            def process(value):
-                return value
+        def bind_processor(self, dialect: Any) -> None:
+            return None
 
-            return process
-
-        def result_processor(self, dialect, coltype):
-            def process(value):
-                return value
-
-            return process
-
-
-from sqlalchemy import (Boolean, DateTime, ForeignKey, Index, Integer, Text,
-                        func)
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB, TSVECTOR, UUID
-
-try:
-    from sqlalchemy.orm import DeclarativeBase
-except ImportError:
-    # Fallback for older SQLAlchemy versions
-    from sqlalchemy.ext.declarative import declarative_base
-
-    DeclarativeBase = declarative_base()
-
-try:
-    from sqlalchemy.orm import Mapped, mapped_column
-except ImportError:
-    # Fallback for older SQLAlchemy versions
-    from sqlalchemy import Column
-    from sqlalchemy.orm import relationship
-
-    # Mock Mapped for type hinting compatibility
-    class Mapped:
-        def __class_getitem__(cls, item):
-            return item
-
-    def mapped_column(*args, **kwargs):
-        return Column(*args, **kwargs)
+        def result_processor(self, dialect: Any, coltype: Any) -> None:
+            return None
 
 
 from cortex.config.loader import get_config
-from sqlalchemy.orm import relationship
+from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, Text, func
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, TSVECTOR, UUID
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Load config to get embedding dimension
 _config = get_config()
 EMBEDDING_DIM = _config.embedding.output_dimensionality
 
 
-if isinstance(DeclarativeBase, type):
+class Base(DeclarativeBase):
+    """Base class for all models."""
 
-    class Base(DeclarativeBase):
-        """Base class for all models."""
-
-        __abstract__ = True
-
-else:
-    Base = DeclarativeBase
+    __abstract__ = True
 
 
 class Thread(Base):
@@ -110,7 +73,9 @@ class Thread(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False
     )
-    metadata_: Mapped[dict[str, Any]] = mapped_column("metadata", JSONB, default=dict)
+    metadata_: Mapped[dict[str, Any] | None] = mapped_column(
+        "metadata", JSONB, default=dict
+    )
 
     # Relationships
     messages: Mapped[List["Message"]] = relationship(
@@ -165,7 +130,9 @@ class Message(Base):
     raw_storage_uri: Mapped[Optional[str]] = mapped_column(Text)
     tenant_id: Mapped[str] = mapped_column(Text, nullable=False, index=True)
     tsv_subject_body: Mapped[Optional[Any]] = mapped_column(TSVECTOR)
-    metadata_: Mapped[dict[str, Any]] = mapped_column("metadata", JSONB, default=dict)
+    metadata_: Mapped[dict[str, Any] | None] = mapped_column(
+        "metadata", JSONB, default=dict
+    )
 
     # Relationships
     thread: Mapped["Thread"] = relationship("Thread", back_populates="messages")
@@ -217,7 +184,9 @@ class Attachment(Base):
     status: Mapped[str] = mapped_column(Text, default="pending")
     extracted_chars: Mapped[int] = mapped_column(Integer, default=0)
     tenant_id: Mapped[str] = mapped_column(Text, nullable=False, index=True)
-    metadata_: Mapped[dict[str, Any]] = mapped_column("metadata", JSONB, default=dict)
+    metadata_: Mapped[dict[str, Any] | None] = mapped_column(
+        "metadata", JSONB, default=dict
+    )
 
     # Relationships
     message: Mapped["Message"] = relationship("Message", back_populates="attachments")
@@ -278,7 +247,9 @@ class Chunk(Base):
     embedding_model: Mapped[Optional[str]] = mapped_column(Text)
     tenant_id: Mapped[str] = mapped_column(Text, nullable=False, index=True)
     tsv_text: Mapped[Optional[Any]] = mapped_column(TSVECTOR)
-    metadata_: Mapped[dict[str, Any]] = mapped_column("metadata", JSONB, default=dict)
+    metadata_: Mapped[dict[str, Any] | None] = mapped_column(
+        "metadata", JSONB, default=dict
+    )
 
     # Relationships
     thread: Mapped["Thread"] = relationship("Thread", back_populates="chunks")
@@ -381,30 +352,22 @@ class AuditLog(Base):
     output_hash: Mapped[Optional[str]] = mapped_column(Text)
     policy_decisions: Mapped[Optional[dict[str, Any]]] = mapped_column(JSONB)
     risk_level: Mapped[str] = mapped_column(Text, default="low")
-    metadata_: Mapped[dict[str, Any]] = mapped_column("metadata", JSONB, default=dict)
+    metadata_: Mapped[dict[str, Any] | None] = mapped_column(
+        "metadata", JSONB, default=dict
+    )
 
 
 class IngestJob(Base):
-    """
-    Tracks ingestion jobs.
-
-    Blueprint §4.1:
-    * job_id (text, pk)
-    * tenant_id (text, not null)
-    * source_type (text, not null)
-    * status (enum: pending|processing|completed|failed)
-    * created_at (timestamptz, not null, UTC)
-    * updated_at (timestamptz, not null, UTC)
-    * stats (jsonb)
-    * error_message (text)
-    * metadata (jsonb)
-    """
+    """Tracks ingestion jobs (Blueprint §6.1)."""
 
     __tablename__ = "ingest_jobs"
 
-    job_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    job_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
     tenant_id: Mapped[str] = mapped_column(Text, nullable=False, index=True)
     source_type: Mapped[str] = mapped_column(Text, nullable=False)
+    source_uri: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[str] = mapped_column(Text, default="pending", index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=func.now()
@@ -413,25 +376,24 @@ class IngestJob(Base):
         DateTime(timezone=True), nullable=False, default=func.now(), onupdate=func.now()
     )
     stats: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+    options: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
     error_message: Mapped[Optional[str]] = mapped_column(Text)
-    metadata_: Mapped[dict[str, Any]] = mapped_column("metadata", JSONB, default=dict)
+    metadata_: Mapped[dict[str, Any] | None] = mapped_column(
+        "metadata", JSONB, default=dict
+    )
 
 
 class FactsLedger(Base):
     """
-    Persisted facts ledger for thread summarization.
+    Persisted facts ledger for thread summarization (Blueprint §10.4.1).
 
-    Blueprint §10.4.1:
-    * ledger_id (uuid, pk)
-    * thread_id (uuid, fk -> threads.thread_id, unique)
-    * facts (jsonb) - List of Fact objects
-    * entities (jsonb) - List of Entity objects
-    * decisions (jsonb) - List of Decision objects
-    * action_items (jsonb) - List of ActionItem objects
-    * unresolved_questions (jsonb) - List of UnresolvedQuestion objects
-    * created_at (timestamptz, not null, UTC)
-    * updated_at (timestamptz, not null, UTC)
-    * tenant_id (text, not null)
+    Stores the structured outputs generated by the multi-pass summarization
+    workflow, including:
+
+    * Canonical FactsLedger fields (explicit asks, commitments, etc.).
+    * ThreadAnalysis metadata (category, subject, participants, summary, next actions).
+    * Critic review & quality scores.
+    * Final markdown summary for user-facing consumption.
     """
 
     __tablename__ = "facts_ledger"
@@ -445,20 +407,42 @@ class FactsLedger(Base):
         unique=True,
         index=True,
     )
-    facts: Mapped[List[dict[str, Any]]] = mapped_column(JSONB, default=list)
-    entities: Mapped[List[dict[str, Any]]] = mapped_column(JSONB, default=list)
-    decisions: Mapped[List[dict[str, Any]]] = mapped_column(JSONB, default=list)
-    action_items: Mapped[List[dict[str, Any]]] = mapped_column(JSONB, default=list)
-    unresolved_questions: Mapped[List[dict[str, Any]]] = mapped_column(
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False, index=True)
+    analysis_category: Mapped[Optional[str]] = mapped_column(Text)
+    analysis_subject: Mapped[Optional[str]] = mapped_column(Text)
+    participants: Mapped[List[dict[str, Any]]] = mapped_column(JSONB, default=list)
+
+    explicit_asks: Mapped[List[dict[str, Any]]] = mapped_column(JSONB, default=list)
+    commitments_made: Mapped[List[dict[str, Any]]] = mapped_column(JSONB, default=list)
+    key_dates: Mapped[List[dict[str, Any]]] = mapped_column(JSONB, default=list)
+    unknowns: Mapped[List[dict[str, Any]]] = mapped_column(JSONB, default=list)
+    forbidden_promises: Mapped[List[dict[str, Any]]] = mapped_column(
         JSONB, default=list
     )
+    known_facts: Mapped[List[str]] = mapped_column(JSONB, default=list)
+    required_for_resolution: Mapped[List[str]] = mapped_column(JSONB, default=list)
+    what_we_have: Mapped[List[str]] = mapped_column(JSONB, default=list)
+    what_we_need: Mapped[List[str]] = mapped_column(JSONB, default=list)
+    materiality_for_company: Mapped[List[str]] = mapped_column(JSONB, default=list)
+    materiality_for_me: Mapped[List[str]] = mapped_column(JSONB, default=list)
+
+    summary: Mapped[List[str]] = mapped_column(JSONB, default=list)
+    next_actions: Mapped[List[dict[str, Any]]] = mapped_column(JSONB, default=list)
+    risk_indicators: Mapped[List[dict[str, Any]]] = mapped_column(JSONB, default=list)
+    summary_markdown: Mapped[str] = mapped_column(Text, default="")
+
+    quality_scores: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+    critic_review: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+    metadata_: Mapped[dict[str, Any] | None] = mapped_column(
+        "metadata", JSONB, default=dict
+    )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=func.now()
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=func.now(), onupdate=func.now()
     )
-    tenant_id: Mapped[str] = mapped_column(Text, nullable=False, index=True)
 
     # Relationships
     thread: Mapped["Thread"] = relationship("Thread")

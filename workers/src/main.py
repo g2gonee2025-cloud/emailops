@@ -13,12 +13,11 @@ from __future__ import annotations
 
 import logging
 import multiprocessing
-import os
 import signal
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Add backend/src to sys.path so we can import cortex
 try:
@@ -32,7 +31,7 @@ except Exception:
 
 from cortex.config.loader import get_config
 from cortex.observability import init_observability
-from cortex.queue import get_queue, Job, JobStatus
+from cortex.queue import JobStatus, get_queue
 
 logger = logging.getLogger(__name__)
 
@@ -40,119 +39,120 @@ logger = logging.getLogger(__name__)
 # Job Handlers
 # -----------------------------------------------------------------------------
 
-def handle_ingest_job(payload: Dict[str, Any]) -> bool:
+
+def handle_ingest_job(payload: dict[str, Any]) -> bool:
     """
     Handle an ingest job.
-    
+
     Args:
         payload: Job payload with ingest configuration
-        
+
     Returns:
         True if successful
     """
-    from cortex.ingestion.mailroom import process_job as run_ingest
     from cortex.ingestion.mailroom import IngestJob
-    
+    from cortex.ingestion.mailroom import process_job as run_ingest
+
     try:
         ingest_job = IngestJob(**payload)
         summary = run_ingest(ingest_job)
-        
+
         if summary.aborted_reason:
             logger.error(f"Ingest job aborted: {summary.aborted_reason}")
             return False
-            
+
         logger.info(f"Ingest job completed: {summary.messages_ingested} messages")
         return True
-        
+
     except Exception as e:
         logger.error(f"Ingest job failed: {e}", exc_info=True)
         return False
 
 
-def handle_reindex_job(payload: Dict[str, Any]) -> bool:
+def handle_reindex_job(payload: dict[str, Any]) -> bool:
     """
     Handle a reindex job.
-    
+
     Args:
         payload: Job payload with reindex configuration
-        
+
     Returns:
         True if successful
     """
     from cortex_workers.reindex_jobs import process_reindex_job
-    
+
     try:
         result = process_reindex_job(payload)
         return result.get("success", False)
-        
+
     except Exception as e:
         logger.error(f"Reindex job failed: {e}", exc_info=True)
         return False
 
 
-def handle_embed_batch_job(payload: Dict[str, Any]) -> bool:
+def handle_embed_batch_job(payload: dict[str, Any]) -> bool:
     """
     Handle a single embedding batch job (for distributed map-reduce).
-    
+
     Args:
         payload: Job payload with batch data
-        
+
     Returns:
         True if successful
     """
-    from cortex.llm.client import embed_texts
-    from cortex.db.session import SessionLocal
     from cortex.db.models import Chunk
-    
+    from cortex.db.session import SessionLocal
+    from cortex.llm.client import embed_texts
+
     try:
         chunk_ids = payload.get("chunk_ids", [])
         texts = payload.get("texts", [])
         model_name = payload.get("model_name")
-        
+
         if not chunk_ids or not texts:
             logger.warning("Empty batch job")
             return True
-        
+
         # Embed texts
         embeddings = embed_texts(texts)
-        
+
         # Update chunks
         with SessionLocal() as session:
-            for chunk_id, embedding in zip(chunk_ids, embeddings):
+            for chunk_id, embedding in zip(chunk_ids, embeddings, strict=False):
                 chunk = session.query(Chunk).filter(Chunk.id == chunk_id).first()
                 if chunk:
                     chunk.embedding = embedding.tolist()
                     if model_name:
                         chunk.embedding_model = model_name
             session.commit()
-        
+
         logger.info(f"Embedded batch of {len(chunk_ids)} chunks")
         return True
-        
+
     except Exception as e:
         logger.error(f"Embed batch job failed: {e}", exc_info=True)
         return False
 
 
-def handle_check_distributed_completion(payload: Dict[str, Any]) -> bool:
+def handle_check_distributed_completion(payload: dict[str, Any]) -> bool:
     """
     Check if all batches of a distributed job are complete.
-    
+
     Args:
         payload: Job payload with batch job IDs
-        
+
     Returns:
         True if all complete or should stop checking
     """
     queue = get_queue()
-    
+
     parent_job_id = payload.get("parent_job_id")
     batch_job_ids = payload.get("batch_job_ids", [])
-    
+
     completed = 0
     failed = 0
     pending = 0
-    
+
     for job_id in batch_job_ids:
         status = queue.get_job_status(job_id)
         if status:
@@ -162,12 +162,12 @@ def handle_check_distributed_completion(payload: Dict[str, Any]) -> bool:
                 failed += 1
             else:
                 pending += 1
-    
+
     logger.info(
         f"Distributed job {parent_job_id}: "
         f"completed={completed}, failed={failed}, pending={pending}"
     )
-    
+
     if pending > 0:
         # Re-enqueue check with delay
         time.sleep(5)
@@ -177,8 +177,10 @@ def handle_check_distributed_completion(payload: Dict[str, Any]) -> bool:
             priority=-1,
         )
     else:
-        logger.info(f"Distributed job {parent_job_id} complete: {completed} succeeded, {failed} failed")
-    
+        logger.info(
+            f"Distributed job {parent_job_id} complete: {completed} succeeded, {failed} failed"
+        )
+
     return True
 
 
@@ -195,13 +197,14 @@ JOB_HANDLERS = {
 # Job Processing
 # -----------------------------------------------------------------------------
 
-def process_job(job: Dict[str, Any]) -> bool:
+
+def process_job(job: dict[str, Any]) -> bool:
     """
     Dispatch and process a single job.
-    
+
     Args:
         job: Job dictionary with 'type' and 'payload'
-        
+
     Returns:
         True if successful, False otherwise
     """
@@ -210,12 +213,12 @@ def process_job(job: Dict[str, Any]) -> bool:
     payload = job.get("payload", {})
 
     logger.info(f"Processing job {job_id} of type {job_type}")
-    
+
     handler = JOB_HANDLERS.get(job_type)
     if not handler:
         logger.error(f"Unknown job type: {job_type}")
         return False
-    
+
     try:
         return handler(payload)
     except Exception as e:
@@ -227,21 +230,22 @@ def process_job(job: Dict[str, Any]) -> bool:
 # Worker Process
 # -----------------------------------------------------------------------------
 
+
 class WorkerProcess:
     """
     Worker process that polls queue and processes jobs.
-    
+
     Features:
     * Configurable job type filtering
     * Graceful shutdown on signal
     * Error backoff
     * Health reporting
     """
-    
+
     def __init__(
         self,
         worker_id: int,
-        job_types: List[str],
+        job_types: list[str],
         poll_timeout: int = 5,
         error_backoff: int = 5,
     ):
@@ -252,29 +256,29 @@ class WorkerProcess:
         self._running = True
         self._jobs_processed = 0
         self._jobs_failed = 0
-        self._last_job_time: Optional[float] = None
+        self._last_job_time: float | None = None
 
     def run(self) -> None:
         """Main worker loop."""
         queue = get_queue()
         logger.info(f"Worker {self.worker_id} started, listening for: {self.job_types}")
-        
+
         while self._running:
             try:
                 job = queue.dequeue(self.job_types, timeout=self.poll_timeout)
-                
+
                 if job:
                     self._last_job_time = time.time()
                     success = process_job(job)
-                    
+
                     if success:
                         queue.ack(job["id"])
                         self._jobs_processed += 1
                     else:
-                        error_msg = f"Job processing returned False"
+                        error_msg = "Job processing returned False"
                         queue.nack(job["id"], error=error_msg)
                         self._jobs_failed += 1
-                        
+
             except KeyboardInterrupt:
                 logger.info(f"Worker {self.worker_id} received interrupt")
                 break
@@ -291,7 +295,7 @@ class WorkerProcess:
         """Signal worker to stop."""
         self._running = False
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get worker statistics."""
         return {
             "worker_id": self.worker_id,
@@ -302,31 +306,32 @@ class WorkerProcess:
         }
 
 
-def worker_process_main(worker_id: int, job_types: List[str]) -> None:
+def worker_process_main(worker_id: int, job_types: list[str]) -> None:
     """
     Entry point for worker subprocess.
-    
+
     Args:
         worker_id: Unique worker identifier
         job_types: List of job types to process
     """
     # Initialize in worker process
     try:
-        from cortex.config.loader import reset_config, get_config
+        from cortex.config.loader import get_config, reset_config
+
         reset_config()  # Fresh config in worker
         get_config()
     except Exception as e:
         logger.warning(f"Worker {worker_id} config init warning: {e}")
-    
+
     worker = WorkerProcess(worker_id, job_types)
-    
+
     # Handle signals in worker
-    def signal_handler(sig, frame):
+    def signal_handler(_sig, _frame):
         worker.stop()
-    
+
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
-    
+
     worker.run()
 
 
@@ -334,10 +339,11 @@ def worker_process_main(worker_id: int, job_types: List[str]) -> None:
 # Main Entry Point
 # -----------------------------------------------------------------------------
 
-def main(args: List[str] | None = None) -> None:
+
+def main(args: list[str] | None = None) -> None:
     """
     Main entry point for workers.
-    
+
     Args:
         args: Command line arguments (unused for now)
     """
@@ -350,14 +356,14 @@ def main(args: List[str] | None = None) -> None:
     config = get_config()
 
     # Default settings
-    concurrency = config.processing.num_workers if hasattr(config, 'processing') else 2
+    concurrency = config.processing.num_workers if hasattr(config, "processing") else 2
     job_types = list(JOB_HANDLERS.keys())
 
     logger.info(f"Starting Cortex Workers (concurrency={concurrency})")
     logger.info(f"Registered job types: {job_types}")
 
-    processes: List[multiprocessing.Process] = []
-    
+    processes: list[multiprocessing.Process] = []
+
     for i in range(concurrency):
         p = multiprocessing.Process(
             target=worker_process_main,
@@ -371,8 +377,8 @@ def main(args: List[str] | None = None) -> None:
 
     # Handle graceful shutdown
     shutdown_event = multiprocessing.Event()
-    
-    def signal_handler(sig, frame):
+
+    def signal_handler(_sig, _frame):
         logger.info("Shutting down workers...")
         shutdown_event.set()
         for p in processes:
@@ -403,9 +409,9 @@ def main(args: List[str] | None = None) -> None:
                     new_p.start()
                     processes.append(new_p)
                     logger.info(f"Restarted worker {new_id} (PID: {new_p.pid})")
-            
+
             time.sleep(10)  # Health check interval
-            
+
     except KeyboardInterrupt:
         signal_handler(None, None)
 

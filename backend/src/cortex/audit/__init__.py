@@ -35,7 +35,7 @@ def log_audit_event(
 ) -> None:
     """
     Record an audit event to the database.
-    
+
     Blueprint §11.4:
     * ts (UTC)
     * tenant_id
@@ -54,14 +54,14 @@ def log_audit_event(
                 input_hash = hashlib.sha256(input_str.encode("utf-8")).hexdigest()
             except Exception:
                 input_hash = "serialization_failed"
-            
+
         if output_data and not output_hash:
             try:
                 output_str = json.dumps(output_data, sort_keys=True, default=str)
                 output_hash = hashlib.sha256(output_str.encode("utf-8")).hexdigest()
             except Exception:
                 output_hash = "serialization_failed"
-        
+
         # Include correlation_id in metadata
         final_metadata = dict(metadata or {})
         if correlation_id:
@@ -78,14 +78,14 @@ def log_audit_event(
             output_hash=output_hash,
             policy_decisions=policy_decisions,
             risk_level=risk_level,
-            metadata_=final_metadata
+            metadata_=final_metadata,
         )
-        
+
         # Write to DB (new session to avoid transaction coupling)
         with SessionLocal() as session:
             session.add(record)
             session.commit()
-            
+
     except Exception as e:
         # Audit logging failure should not crash the app, but must be logged critically
         logger.critical(f"AUDIT LOGGING FAILED: {e}", exc_info=True)
@@ -104,12 +104,12 @@ def tool_audit_log(
 ) -> AuditEntry:
     """
     Create and persist an audit log entry.
-    
+
     Blueprint §11.4 - tool_audit_log:
     * Creates AuditEntry with all required fields
     * Writes to audit_log table
     * Returns the created entry for confirmation
-    
+
     Args:
         tenant_id: Tenant ID for multi-tenancy
         user_or_agent: User ID or agent name
@@ -119,17 +119,17 @@ def tool_audit_log(
         policy_decision: Policy decision if applicable
         correlation_id: Request correlation ID for tracing
         metadata: Additional metadata
-        
+
     Returns:
         AuditEntry with all recorded fields
     """
     ts = datetime.now(timezone.utc)
-    
+
     # Determine risk level from policy decision or default
     risk_level: Literal["low", "medium", "high"] = "low"
     if policy_decision:
         risk_level = policy_decision.risk_level
-    
+
     # Create entry model
     entry = AuditEntry(
         tenant_id=tenant_id,
@@ -142,18 +142,18 @@ def tool_audit_log(
         correlation_id=correlation_id,
         metadata=metadata or {},
     )
-    
+
     # Compute hashes
     input_hash = hashlib.sha256(
         json.dumps(input_snapshot, sort_keys=True, default=str).encode()
     ).hexdigest()
-    
+
     output_hash = None
     if output_snapshot:
         output_hash = hashlib.sha256(
             json.dumps(output_snapshot, sort_keys=True, default=str).encode()
         ).hexdigest()
-    
+
     # Persist using log_audit_event
     log_audit_event(
         tenant_id=tenant_id,
@@ -170,7 +170,7 @@ def tool_audit_log(
             "output_keys": list(output_snapshot.keys()) if output_snapshot else [],
         },
     )
-    
+
     return entry
 
 
@@ -184,7 +184,7 @@ def get_audit_trail(
 ) -> list[AuditLog]:
     """
     Query audit trail with filters.
-    
+
     Args:
         tenant_id: Required tenant filter
         action: Optional action filter
@@ -192,14 +192,14 @@ def get_audit_trail(
         correlation_id: Optional correlation ID filter
         since: Optional timestamp filter (events after this time)
         limit: Maximum number of results
-        
+
     Returns:
         List of matching AuditLog records
     """
     try:
         with SessionLocal() as session:
             query = session.query(AuditLog).filter(AuditLog.tenant_id == tenant_id)
-            
+
             if action:
                 query = query.filter(AuditLog.action == action)
             if user_or_agent:
@@ -210,11 +210,11 @@ def get_audit_trail(
                 )
             if since:
                 query = query.filter(AuditLog.ts >= since)
-                
+
             query = query.order_by(AuditLog.ts.desc()).limit(limit)
-            
+
             return query.all()
-            
+
     except Exception as e:
         logger.error(f"Failed to query audit trail: {e}", exc_info=True)
         return []

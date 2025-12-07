@@ -1,3 +1,4 @@
+# ruff: noqa: I001
 """
 Reindexing Jobs.
 
@@ -15,7 +16,7 @@ import logging
 import multiprocessing
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 # Add backend/src to sys.path
 try:
@@ -36,45 +37,47 @@ from sqlalchemy import select
 
 logger = logging.getLogger(__name__)
 
-# Re-export main classes
-from .parallel_indexer import ParallelEmbeddingIndexer, parallel_index_conversations
-from .mapreduce_driver import (
-    MapReduceEmbeddingDriver,
+from .mapreduce_driver import DistributedMapReduceDriver  # noqa: E402
+from .mapreduce_driver import JobState  # noqa: E402
+from .mapreduce_driver import MapReduceEmbeddingDriver  # noqa: E402
+from .mapreduce_driver import MapReduceJob  # noqa: E402
+from .mapreduce_driver import (  # noqa: E402
     StreamingMapReduceDriver,
-    DistributedMapReduceDriver,
-    MapReduceJob,
-    JobState,
     get_mapreduce_driver,
 )
 
+# Re-export main classes
+from .parallel_indexer import ParallelEmbeddingIndexer  # noqa: E402
+from .parallel_indexer import parallel_index_conversations  # noqa: E402
+
 __all__ = [
-    "ParallelEmbeddingIndexer",
-    "parallel_index_conversations",
-    "MapReduceEmbeddingDriver",
-    "StreamingMapReduceDriver",
     "DistributedMapReduceDriver",
-    "MapReduceJob",
     "JobState",
+    "MapReduceEmbeddingDriver",
+    "MapReduceJob",
+    "ParallelEmbeddingIndexer",
+    "StreamingMapReduceDriver",
     "get_mapreduce_driver",
+    "parallel_index_conversations",
     "process_reindex_job",
 ]
 
 
-def process_reindex_job(payload: dict[str, Any]) -> Dict[str, Any]:
+def process_reindex_job(payload: dict[str, Any]) -> dict[str, Any]:
     """
     Process a reindexing job.
-    
+
     Blueprint §7.3:
     * Incremental re-embed
     * Map-Reduce style driver
-    
+
     Args:
         payload: Job payload with:
             - tenant_id: Required tenant ID
             - thread_ids: Optional list of specific threads
             - force: Optional force re-embedding
             - streaming: Optional use streaming for large datasets
-            
+
     Returns:
         Job summary dict
     """
@@ -91,7 +94,7 @@ def process_reindex_job(payload: dict[str, Any]) -> Dict[str, Any]:
 
     try:
         config = get_config()
-        
+
         # Choose driver based on payload hints
         if streaming:
             driver = StreamingMapReduceDriver(
@@ -109,7 +112,7 @@ def process_reindex_job(payload: dict[str, Any]) -> Dict[str, Any]:
             for thread_id in thread_ids:
                 res = indexer.reindex_thread(tenant_id, thread_id)
                 results.append(res)
-            
+
             result = {
                 "tenant_id": tenant_id,
                 "threads_processed": len(thread_ids),
@@ -123,7 +126,7 @@ def process_reindex_job(payload: dict[str, Any]) -> Dict[str, Any]:
                 batch_size=config.processing.batch_size,
             )
             result = driver.run_tenant_reindex(tenant_id, force=force)
-        
+
         logger.info(f"Reindex job completed: {result}")
         return {**result, "success": True}
 
