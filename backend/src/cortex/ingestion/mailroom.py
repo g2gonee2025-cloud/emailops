@@ -109,9 +109,6 @@ def process_job(job: IngestJob) -> IngestJobSummary:
             else:
                 raise ValueError(f"Unsupported source type: {job.source_type}")
 
-            if local_convo_dir is None:
-                raise ValueError("Failed to resolve conversation directory")
-
             summary = _ingest_conversation(local_convo_dir, job, summary)
 
         finally:
@@ -189,7 +186,7 @@ def _download_sftp_source(
         raise ValueError("SFTP source requires host and path")
 
     try:
-        import paramiko
+        import paramiko  # type: ignore[import-not-found]
     except ImportError as exc:
         raise ValueError(
             "paramiko is required for sftp ingestion. Install it to use source_type='sftp'."
@@ -313,7 +310,7 @@ def _ingest_conversation(
         except Exception:
             pass
 
-    thread_data = {
+    thread_data: Dict[str, Any] = {
         "thread_id": thread_id,
         "subject_norm": subject_norm,
         "original_subject": subject,
@@ -334,7 +331,7 @@ def _ingest_conversation(
 
     from_addr = _resolve_sender(config)
 
-    message_data = {
+    message_data: Dict[str, Any] = {
         "message_id": message_id,
         "thread_id": thread_id,
         "from_addr": from_addr,
@@ -351,7 +348,7 @@ def _ingest_conversation(
         },
     }
 
-    attachments_data = []
+    attachments_data: List[Dict[str, Any]] = []
     for att in convo_data.get("attachments", []):
         att_id = uuid.uuid4()
 
@@ -373,7 +370,7 @@ def _ingest_conversation(
             }
         )
 
-    chunks_data = []
+    chunks_data: List[Dict[str, Any]] = []
     texts_to_embed: List[str] = []
     chunk_refs: List[Dict[str, Any]] = []
 
@@ -388,7 +385,7 @@ def _ingest_conversation(
             )
         )
         for c in body_chunks:
-            c_dict = c.model_dump()
+            c_dict: Dict[str, Any] = c.model_dump()
             c_dict["chunk_id"] = uuid.uuid4()
             c_dict["thread_id"] = thread_id
             c_dict["message_id"] = message_id
@@ -409,7 +406,7 @@ def _ingest_conversation(
                 )
             )
             for c in att_chunks:
-                c_dict = c.model_dump()
+                c_dict: Dict[str, Any] = c.model_dump()
                 c_dict["chunk_id"] = uuid.uuid4()
                 c_dict["thread_id"] = thread_id
                 c_dict["message_id"] = message_id
@@ -431,7 +428,7 @@ def _ingest_conversation(
                 "embedding_model"
             ] = f"{config.embedding.model_name}:{config.embedding.output_dimensionality}"
 
-    transformed_results = {
+    transformed_results: Dict[str, List[Dict[str, Any]]] = {
         "threads": [thread_data],
         "messages": [message_data],
         "attachments": attachments_data,

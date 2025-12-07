@@ -1,0 +1,21 @@
+{
+  "include": ["backend", "cli", "workers", "tests"],
+  "extraPaths": [
+    "./backend/src",
+    "./cli/src",
+    "./workers/src"
+  ],
+  "executionEnvironments": [
+    {
+      "root": "./",
+      "extraPaths": [
+        "./backend/src",
+        "./cli/src",
+        "./workers/src"
+      ]
+    }
+  ],
+  "typeCheckingMode": "basic",
+  "reportMissingImports": true,
+  "reportMissingTypeStubs": false
+}

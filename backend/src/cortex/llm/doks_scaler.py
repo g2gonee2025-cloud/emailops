@@ -8,7 +8,7 @@ import threading
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, cast
 from urllib.parse import urljoin
 
 import numpy as np
@@ -131,13 +131,13 @@ class DOApiClient:
         self.session.mount("https://", adapter)
         self.session.mount("http://", adapter)
 
-    def request(self, method: str, path: str, **kwargs) -> Any:
+    def request(self, method: str, path: str, **kwargs: Any) -> Any:
         if self.dry_run and method.upper() != "GET":
             logger.info("[DRY RUN] %s %s %s", method, path, kwargs)
             return {"dry_run": True}
 
         url = f"{self.base_url}{path}"
-        timeout = kwargs.pop("timeout", self.timeout_s)
+        timeout: Any = kwargs.pop("timeout", self.timeout_s)
 
         try:
             resp = self.session.request(method, url, timeout=timeout, **kwargs)
@@ -199,7 +199,7 @@ class DOApiClient:
         if not name or not region or not node_size:
             raise ValueError("name, region, and node_size are required")
 
-        node_pool = {
+        node_pool: Dict[str, Any] = {
             "name": f"{name}-gpu-pool",
             "size": node_size,
             "count": count,
@@ -335,17 +335,25 @@ class ClusterScaler:
         else:
             required_nodes = max(1, math.ceil(required_gpus / self.gpus_per_node))
 
+        pool: Dict[str, Any]
         if self.api.dry_run:
-            pool = {"id": node_pool_id, "count": max(min_nodes, 1), "auto_scale": False}
+            pool = {
+                "id": node_pool_id,
+                "count": max(min_nodes, 1),
+                "auto_scale": False,
+            }
         else:
-            pools = self.api.list_node_pools(cluster_id)
-            pool = next((p for p in pools if p.get("id") == node_pool_id), None)
-            if not pool:
+            pools: List[Dict[str, Any]] = self.api.list_node_pools(cluster_id)
+            pool_candidate = next(
+                (p for p in pools if p.get("id") == node_pool_id), None
+            )
+            if not pool_candidate:
                 raise ProviderError(
                     f"Node pool {node_pool_id} not found in cluster {cluster_id}",
                     provider="digitalocean",
                     retryable=False,
                 )
+            pool = pool_candidate
 
         current_count = int(pool.get("count", 0))
         is_autoscale_enabled = pool.get("auto_scale", False)
@@ -485,7 +493,7 @@ class DigitalOceanLLMService:
             dim = expected_dim or 0
             return np.zeros((0, dim), dtype=np.float32)
 
-        payload = {
+        payload: Dict[str, Any] = {
             "model": self.endpoint.default_embedding_model,
             "input": texts,
         }
@@ -625,22 +633,27 @@ class DigitalOceanLLMService:
                 "Empty completion response", provider="digitalocean", retryable=True
             )
 
-        choices = payload.get("choices")
-        if isinstance(choices, list) and choices:
-            choice = choices[0]
-            if isinstance(choice, dict):
-                if choice.get("text"):
-                    return str(choice["text"])
-                message = choice.get("message", {})
-                content = message.get("content") if isinstance(message, dict) else None
-                if isinstance(content, str):
-                    return content
-                if isinstance(content, list):
-                    return "".join(
-                        str(part.get("text", ""))
-                        for part in content
-                        if isinstance(part, dict)
-                    )
+        choices_obj = payload.get("choices")
+        if isinstance(choices_obj, list) and choices_obj:
+            choices = cast(List[Dict[str, Any]], choices_obj)
+            choice: Dict[str, Any] = choices[0]
+            if choice.get("text"):
+                return str(choice["text"])
+            message_obj = choice.get("message", {})
+            if isinstance(message_obj, dict):
+                message = cast(Dict[str, Any], message_obj)
+                content = message.get("content")
+            else:
+                content = None
+            if isinstance(content, str):
+                return content
+            if isinstance(content, list):
+                content_list = cast(List[Any], content)
+                parts: List[Dict[str, Any]] = []
+                for part in content_list:
+                    if isinstance(part, dict):
+                        parts.append(cast(Dict[str, Any], part))
+                return "".join(str(part.get("text", "")) for part in parts)
         if payload.get("output"):
             return str(payload["output"])
         raise ProviderError(
@@ -651,8 +664,8 @@ class DigitalOceanLLMService:
 
     @staticmethod
     def _parse_embeddings(payload: Dict[str, Any]) -> List[List[float]]:
-        data = payload.get("data")
-        if not isinstance(data, list) or not data:
+        data_obj = payload.get("data")
+        if not isinstance(data_obj, list) or not data_obj:
             raise ProviderError(
                 "Embedding payload missing data",
                 provider="digitalocean",
@@ -660,17 +673,21 @@ class DigitalOceanLLMService:
             )
 
         vectors: List[List[float]] = []
-        for row in data:
-            if not isinstance(row, dict):
-                continue
-            vector = row.get("embedding") or row.get("vector")
+        rows: List[Dict[str, Any]] = []
+        data_list = cast(List[Any], data_obj)
+        for row in data_list:
+            if isinstance(row, dict):
+                rows.append(cast(Dict[str, Any], row))
+        for row_dict in rows:
+            vector = row_dict.get("embedding") or row_dict.get("vector")
             if not isinstance(vector, list):
                 raise ProviderError(
                     "Embedding row missing vector",
                     provider="digitalocean",
                     retryable=False,
                 )
-            vectors.append([float(v) for v in vector])
+            vector_list = cast(List[Any], vector)
+            vectors.append([float(v) for v in vector_list])
         return vectors
 
 

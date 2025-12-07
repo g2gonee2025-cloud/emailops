@@ -10,7 +10,7 @@ import logging
 import os
 import threading
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List, cast
 
 from cortex.common.exceptions import ConfigurationError
 from dotenv import load_dotenv
@@ -43,6 +43,8 @@ try:
     from google.oauth2 import service_account
 except ImportError:
     service_account = None
+
+service_account = cast(Any, service_account)
 
 logger = logging.getLogger(__name__)
 
@@ -89,11 +91,14 @@ class EmailOpsConfig(BaseModel):
             if isinstance(obj, Path):
                 return str(obj)
             elif isinstance(obj, set):
-                return sorted(list(obj))  # Convert sets to sorted lists
+                obj_set = cast(set[Any], obj)
+                return [convert_for_json(item) for item in sorted(obj_set)]
             elif isinstance(obj, dict):
-                return {k: convert_for_json(v) for k, v in obj.items()}
+                obj_dict = cast(Dict[Any, Any], obj)
+                return {str(k): convert_for_json(v) for k, v in obj_dict.items()}
             elif isinstance(obj, list):
-                return [convert_for_json(item) for item in obj]
+                obj_list = cast(List[Any], obj)
+                return [convert_for_json(item) for item in obj_list]
             else:
                 return obj
 
@@ -272,7 +277,7 @@ class EmailOpsConfig(BaseModel):
         if not json_files:
             return []
 
-        valid_files = []
+        valid_files: List[Path] = []
         for json_file in sorted(json_files):
             if self._is_valid_service_account_json(json_file):
                 valid_files.append(json_file)
@@ -288,6 +293,8 @@ class EmailOpsConfig(BaseModel):
             if not isinstance(data, dict):
                 return False
 
+            data_dict = cast(Dict[str, Any], data)
+
             required = {
                 "type",
                 "project_id",
@@ -295,23 +302,23 @@ class EmailOpsConfig(BaseModel):
                 "private_key",
                 "client_email",
             }
-            if not required.issubset(data):
+            if not required.issubset(set(data_dict)):
                 return False
 
-            if data.get("type") != "service_account":
+            if data_dict.get("type") != "service_account":
                 return False
 
-            private_key = data.get("private_key", "").strip()
+            private_key: str = str(data_dict.get("private_key", "")).strip()
             if not private_key.startswith(
                 "-----BEGIN PRIVATE KEY-----"
             ) or not private_key.endswith("-----END PRIVATE KEY-----"):
                 return False
 
-            key_id = data.get("private_key_id", "").strip()
+            key_id: str = str(data_dict.get("private_key_id", "")).strip()
             if not key_id or len(key_id) < 16:
                 return False
 
-            client_email = data.get("client_email", "").strip()
+            client_email: str = str(data_dict.get("client_email", "")).strip()
             if (
                 not client_email
                 or "@" not in client_email
@@ -321,15 +328,15 @@ class EmailOpsConfig(BaseModel):
             ):
                 return False
 
-            project_id = data.get("project_id", "").strip()
+            project_id: str = str(data_dict.get("project_id", "")).strip()
             if not project_id or len(project_id) < 6:
                 return False
 
             if service_account is not None:
                 try:
-                    credentials = service_account.Credentials.from_service_account_info(
-                        data
-                    )
+                    credentials = cast(
+                        Any, service_account
+                    ).Credentials.from_service_account_info(data_dict)
                     return not (hasattr(credentials, "expired") and credentials.expired)
                 except Exception as e:
                     logger.warning("Credential validation failed: %s", e)
@@ -424,7 +431,7 @@ def validate_env_prefix() -> list[str]:
     Blueprint §3.3:
     - Prefix all env vars with OUTLOOKCORTEX_
     """
-    warnings = []
+    warnings: List[str] = []
     deprecated_prefix = "EMAILOPS_"
     canonical_prefix = "OUTLOOKCORTEX_"
 
@@ -438,7 +445,7 @@ def validate_env_prefix() -> list[str]:
     return warnings
 
 
-def set_rls_tenant(connection, tenant_id: str) -> None:
+def set_rls_tenant(connection: Any, tenant_id: str) -> None:
     """
     Set the Row-Level Security tenant context on a database connection.
 
@@ -475,7 +482,7 @@ def validate_directories(config: EmailOpsConfig) -> list[str]:
 
     Returns list of warnings for missing directories.
     """
-    warnings = []
+    warnings: List[str] = []
 
     # Check secrets_dir
     secrets_dir = config.get_secrets_dir()

@@ -42,7 +42,16 @@ def _recreate_vector_index() -> None:
         if isinstance(orig, psycopg_errors.ProgramLimitExceeded):
             # Fallback when managed Postgres caps HNSW dimensions
             op.execute("DROP INDEX IF EXISTS chunks_embedding_hnsw_idx")
-            op.execute(IVFFLAT_INDEX_SQL)
+            try:
+                op.execute(IVFFLAT_INDEX_SQL)
+            except Exception as ivf_exc:
+                ivf_orig = getattr(ivf_exc, "orig", ivf_exc)
+                if isinstance(ivf_orig, psycopg_errors.ProgramLimitExceeded):
+                    print(
+                        "WARNING: Vector dimensions exceed limit for both HNSW and IVFFlat. Skipping vector index."
+                    )
+                    return
+                raise
             return
         raise
 

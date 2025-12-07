@@ -25,7 +25,65 @@ from __future__ import annotations
 
 import argparse
 import sys
+from collections.abc import Callable
 from pathlib import Path
+from typing import TYPE_CHECKING, Any, Protocol, cast
+
+# Ensure backend package is importable when running CLI from repo root
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+BACKEND_SRC = PROJECT_ROOT / "backend" / "src"
+if BACKEND_SRC.exists() and str(BACKEND_SRC) not in sys.path:
+    sys.path.append(str(BACKEND_SRC))
+
+
+# Minimal protocol for the config object to satisfy static analysis when imports fail
+class CoreConfig(Protocol):
+    env: str
+    provider: str
+    persona: str
+
+
+class SystemConfig(Protocol):
+    log_level: str
+
+
+class EmbeddingsConfig(Protocol):
+    model_name: str
+    output_dimensionality: int
+    batch_size: int
+
+
+class SearchConfig(Protocol):
+    fusion_strategy: str
+    top_k: int
+    rerank_enabled: bool
+
+
+class ProcessingConfig(Protocol):
+    chunk_size: int
+    chunk_overlap: int
+
+
+class EmailOpsConfigProto(Protocol):
+    core: CoreConfig
+    system: SystemConfig
+    embeddings: EmbeddingsConfig
+    search: SearchConfig
+    processing: ProcessingConfig
+
+    def model_dump(self) -> dict[str, Any]:
+        ...
+
+
+# Import config model for typing if available; otherwise fall back to protocol
+if TYPE_CHECKING:
+    from cortex.config.loader import (  # type: ignore[import]  # ruff: noqa: I001
+        EmailOpsConfig as EmailOpsConfigProto,
+    )
+
+EmailOpsConfig: type[EmailOpsConfigProto] = cast(
+    type[EmailOpsConfigProto], EmailOpsConfigProto
+)
 
 # Lazy import for heavy dependencies
 # from cortex_cli.cmd_doctor import main as doctor_main
@@ -201,7 +259,7 @@ def _show_status() -> None:
 
     # Check config files
     print(f"\n  {_colorize('Configuration Files:', 'cyan')}")
-    config_files = [
+    config_files: list[tuple[str, str]] = [
         ("pyproject.toml", "Project configuration"),
         ("environment.yml", "Conda environment"),
         ("requirements.txt", "Python dependencies"),
@@ -224,9 +282,11 @@ def _show_config(validate: bool = False, export_format: str | None = None) -> No
     _print_banner()
 
     try:
-        from cortex.config.loader import get_config
+        from cortex.config.loader import (  # type: ignore[import]  # ruff: noqa: I001
+            get_config,
+        )
 
-        config = get_config()
+        config = cast(EmailOpsConfigProto, get_config())
 
         if validate:
             print(f"{_colorize('Configuration Validation:', 'bold')}\n")
@@ -246,7 +306,7 @@ def _show_config(validate: bool = False, export_format: str | None = None) -> No
         else:
             print(f"{_colorize('Current Configuration:', 'bold')}\n")
 
-            sections = [
+            sections: list[tuple[str, list[tuple[str, object]]]] = [
                 (
                     "Core",
                     [
@@ -330,12 +390,19 @@ def _run_validate(
         sys.exit(1)
 
     try:
-        from cortex.ingestion.conv_manifest.validation import scan_and_refresh
+        # ruff: noqa: I001
+        from cortex.ingestion.conv_manifest.validation import (
+            scan_and_refresh as _scan_and_refresh,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
+        )
+
+        _scan_and_refresh = cast(Any, _scan_and_refresh)
+        scan_and_refresh: Callable[[Path], Any]
+        scan_and_refresh = cast(Callable[[Path], Any], _scan_and_refresh)
 
         if not json_output:
             print(f"  {_colorize('⏳', 'yellow')} Scanning and validating...")
 
-        report = scan_and_refresh(target_path)
+        report: Any = scan_and_refresh(target_path)
 
         if json_output:
             print(report.model_dump_json())
@@ -405,7 +472,7 @@ def _run_ingest(
         sys.exit(1)
 
     # Discover conversation folders
-    conversations = []
+    conversations: list[Path] = []
     if source.is_dir():
         # Check if source IS a conversation folder
         if (source / "Conversation.txt").exists() or (
@@ -464,9 +531,22 @@ def _run_ingest(
 
     # Actually run ingestion
     try:
-        from cortex.ingestion.mailroom import IngestJob, process_job
+        # ruff: noqa: I001
+        from cortex.ingestion.mailroom import (
+            IngestJob as _IngestJob,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
+        )
+        from cortex.ingestion.mailroom import (
+            process_job as _process_job,  # type: ignore[reportUnknownVariableType]
+        )
 
-        results = []
+        _IngestJob = cast(Any, _IngestJob)
+        _process_job = cast(Any, _process_job)
+        IngestJob: type[Any]
+        process_job: Callable[[Any], Any]
+        IngestJob = cast(type[Any], _IngestJob)
+        process_job = cast(Callable[[Any], Any], _process_job)
+
+        results: list[Any] = []
         success_count = 0
         fail_count = 0
 
@@ -478,7 +558,7 @@ def _run_ingest(
                     flush=True,
                 )
 
-            job = IngestJob(
+            job: Any = IngestJob(
                 job_id=uuid.uuid4(),
                 tenant_id=tenant_id,
                 source_type="local_upload",
@@ -486,7 +566,7 @@ def _run_ingest(
             )
 
             try:
-                summary = process_job(job)
+                summary: Any = process_job(job)
                 if summary.aborted_reason:
                     fail_count += 1
                     if not json_output:
@@ -588,13 +668,23 @@ def _run_index(
         print()
 
     try:
-        from cortex_workers.reindex_jobs.parallel_indexer import (  # isort: skip
-            parallel_index_conversations,
+        # ruff: noqa: I001
+        from cortex_workers.reindex_jobs.parallel_indexer import (
+            parallel_index_conversations as _parallel_index_conversations,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
+        )
+
+        _parallel_index_conversations = cast(Any, _parallel_index_conversations)
+        parallel_index_conversations: Callable[..., tuple[Any, Any]]
+        parallel_index_conversations = cast(
+            Callable[..., tuple[Any, Any]], _parallel_index_conversations
         )
 
         if not json_output:
             print(f"  {_colorize('⏳', 'yellow')} Starting parallel indexing...")
             print()
+
+        embeddings: Any
+        mappings: Any
 
         embeddings, mappings = parallel_index_conversations(
             root=root_path,
@@ -661,10 +751,22 @@ def _run_search(
         print()
 
     try:
-        from cortex.models.api import SearchRequest
-        from cortex.retrieval.hybrid_search import hybrid_search
+        # ruff: noqa: I001
+        from cortex.models.api import (
+            SearchRequest as _SearchRequest,  # type: ignore[import]
+        )
+        from cortex.retrieval.hybrid_search import (
+            hybrid_search as _hybrid_search,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
+        )
 
-        request = SearchRequest(
+        _SearchRequest = cast(Any, _SearchRequest)
+        _hybrid_search = cast(Any, _hybrid_search)
+        SearchRequest: type[Any]
+        hybrid_search: Callable[[Any], Any]
+        SearchRequest = cast(type[Any], _SearchRequest)
+        hybrid_search = cast(Callable[[Any], Any], _hybrid_search)
+
+        request: Any = SearchRequest(
             query=query,
             top_k=top_k,
             tenant_id=tenant_id,
@@ -673,11 +775,11 @@ def _run_search(
         if not json_output:
             print(f"  {_colorize('⏳', 'yellow')} Searching...\n")
 
-        results = hybrid_search(request)
+        results: Any = hybrid_search(request)
 
         if json_output:
             # Convert results to JSON-serializable format
-            output = {
+            output: dict[str, Any] = {
                 "success": True,
                 "query": query,
                 "results": [r.model_dump() for r in results.results]
@@ -746,14 +848,21 @@ def _run_answer(
         print()
 
     try:
-        from cortex.orchestration.graphs import build_answer_graph
+        # ruff: noqa: I001
+        from cortex.orchestration.graphs import (
+            build_answer_graph as _build_answer_graph,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
+        )
+
+        _build_answer_graph = cast(Any, _build_answer_graph)
+        build_answer_graph: Callable[[], Any]
+        build_answer_graph = cast(Callable[[], Any], _build_answer_graph)
 
         if not json_output:
             print(f"  {_colorize('⏳', 'yellow')} Thinking...")
 
-        async def _execute():
+        async def _execute() -> Any:
             graph = build_answer_graph().compile()
-            initial_state = {
+            initial_state: dict[str, Any] = {
                 "query": query,
                 "tenant_id": tenant_id,
                 "user_id": user_id,
@@ -763,14 +872,15 @@ def _run_answer(
                 "answer": None,
                 "error": None,
             }
-            return await graph.ainvoke(initial_state)
+            result = await graph.ainvoke(initial_state)
+            return result
 
-        final_state = asyncio.run(_execute())
+        final_state: Any = asyncio.run(_execute())
 
-        if final_state.get("error"):
-            raise Exception(final_state["error"])
+        if final_state.error:
+            raise Exception(final_state.error)
 
-        answer = final_state.get("answer")
+        answer: Any | None = final_state.answer
 
         if json_output:
             print(
@@ -779,12 +889,13 @@ def _run_answer(
         else:
             if answer:
                 print(f"\n{_colorize('ANSWER:', 'bold')}")
-                print(f"{answer.content}\n")
+                print(f"{answer.answer_markdown}\n")
 
-                if answer.citations:
+                if answer.evidence:
                     print(f"{_colorize('SOURCES:', 'dim')}")
-                    for i, cit in enumerate(answer.citations, 1):
-                        print(f"  {i}. {cit}")
+                    for i, ev in enumerate(answer.evidence, 1):
+                        snippet = ev.snippet or ev.text or ""
+                        print(f"  {i}. {snippet}")
             else:
                 print(f"  {_colorize('⚠', 'yellow')} No answer generated.")
             print()
@@ -826,14 +937,21 @@ def _run_draft(
         print()
 
     try:
-        from cortex.orchestration.graphs import build_draft_graph
+        # ruff: noqa: I001
+        from cortex.orchestration.graphs import (
+            build_draft_graph as _build_draft_graph,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
+        )
+
+        _build_draft_graph = cast(Any, _build_draft_graph)
+        build_draft_graph: Callable[[], Any]
+        build_draft_graph = cast(Callable[[], Any], _build_draft_graph)
 
         if not json_output:
             print(f"  {_colorize('⏳', 'yellow')} Drafting...")
 
-        async def _execute():
+        async def _execute() -> Any:
             graph = build_draft_graph().compile()
-            initial_state = {
+            initial_state: dict[str, Any] = {
                 "tenant_id": tenant_id,
                 "user_id": user_id,
                 "thread_id": thread_id,
@@ -846,14 +964,15 @@ def _run_draft(
                 "iteration_count": 0,
                 "error": None,
             }
-            return await graph.ainvoke(initial_state)
+            result = await graph.ainvoke(initial_state)
+            return result
 
-        final_state = asyncio.run(_execute())
+        final_state: Any = asyncio.run(_execute())
 
-        if final_state.get("error"):
-            raise Exception(final_state["error"])
+        if final_state.error:
+            raise Exception(final_state.error)
 
-        draft = final_state.get("draft")
+        draft: Any | None = final_state.draft
 
         if json_output:
             print(
@@ -865,7 +984,13 @@ def _run_draft(
                 print(f"Subject: {draft.subject}")
                 print(f"To: {', '.join(draft.to)}")
                 print("-" * 40)
-                print(f"{draft.body}\n")
+                print(f"{draft.body_markdown}\n")
+
+                if draft.citations:
+                    print(f"{_colorize('CITATIONS:', 'dim')}")
+                    for i, citation in enumerate(draft.citations, 1):
+                        source = citation.get("source") or citation.get("snippet") or ""
+                        print(f"  {i}. {source}")
             else:
                 print(f"  {_colorize('⚠', 'yellow')} No draft generated.")
             print()
@@ -904,14 +1029,21 @@ def _run_summarize(
         print()
 
     try:
-        from cortex.orchestration.graphs import build_summarize_graph
+        # ruff: noqa: I001
+        from cortex.orchestration.graphs import (
+            build_summarize_graph as _build_summarize_graph,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
+        )
+
+        _build_summarize_graph = cast(Any, _build_summarize_graph)
+        build_summarize_graph: Callable[[], Any]
+        build_summarize_graph = cast(Callable[[], Any], _build_summarize_graph)
 
         if not json_output:
             print(f"  {_colorize('⏳', 'yellow')} Summarizing...")
 
-        async def _execute():
+        async def _execute() -> Any:
             graph = build_summarize_graph().compile()
-            initial_state = {
+            initial_state: dict[str, Any] = {
                 "tenant_id": tenant_id,
                 "user_id": user_id,
                 "thread_id": thread_id,
@@ -922,14 +1054,15 @@ def _run_summarize(
                 "summary": None,
                 "error": None,
             }
-            return await graph.ainvoke(initial_state)
+            result = await graph.ainvoke(initial_state)
+            return result
 
-        final_state = asyncio.run(_execute())
+        final_state: Any = asyncio.run(_execute())
 
-        if final_state.get("error"):
-            raise Exception(final_state["error"])
+        if final_state.error:
+            raise Exception(final_state.error)
 
-        summary = final_state.get("summary")
+        summary: Any | None = final_state.summary
 
         if json_output:
             print(
@@ -940,12 +1073,12 @@ def _run_summarize(
         else:
             if summary:
                 print(f"\n{_colorize('SUMMARY:', 'bold')}")
-                print(f"{summary.content}\n")
+                print(f"{summary.summary_markdown}\n")
 
-                if summary.key_facts:
-                    print(f"{_colorize('KEY FACTS:', 'dim')}")
-                    for fact in summary.key_facts:
-                        print(f"  • {fact}")
+                if summary.facts_ledger:
+                    print(f"{_colorize('FACTS LEDGER:', 'dim')}")
+                    for key, value in summary.facts_ledger.items():
+                        print(f"  • {key}: {value}")
             else:
                 print(f"  {_colorize('⚠', 'yellow')} No summary generated.")
             print()
@@ -1325,9 +1458,23 @@ Run comprehensive system diagnostics including:
     doctor_parser.add_argument(
         "--provider",
         default="vertex",
-        choices=["vertex", "openai", "azure", "cohere", "huggingface", "local"],
+        choices=[
+            "vertex",
+            "gcp",
+            "vertexai",
+            "hf",
+            "openai",
+            "azure",
+            "cohere",
+            "huggingface",
+            "qwen",
+            "local",
+        ],
         metavar="PROVIDER",
-        help="Embedding provider to check (default: vertex). Options: vertex, openai, azure, cohere, huggingface, local",
+        help=(
+            "Embedding provider to check (default: vertex). "
+            "Options: vertex, gcp, vertexai, hf, openai, azure, cohere, huggingface, qwen, local"
+        ),
     )
     doctor_parser.add_argument(
         "--auto-install",
@@ -1343,6 +1490,26 @@ Run comprehensive system diagnostics including:
         "--check-embeddings",
         action="store_true",
         help="Test embedding API connectivity",
+    )
+    doctor_parser.add_argument(
+        "--check-db",
+        action="store_true",
+        help="Check database connectivity and migrations",
+    )
+    doctor_parser.add_argument(
+        "--check-redis",
+        action="store_true",
+        help="Check Redis connectivity",
+    )
+    doctor_parser.add_argument(
+        "--check-exports",
+        action="store_true",
+        help="Verify export root and list B1 folders",
+    )
+    doctor_parser.add_argument(
+        "--check-ingest",
+        action="store_true",
+        help="Dry-run ingest of sample data",
     )
     doctor_parser.add_argument(
         "--all",

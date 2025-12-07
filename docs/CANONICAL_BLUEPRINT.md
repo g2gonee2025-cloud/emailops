@@ -4285,6 +4285,58 @@ Requirements:
   * `0`: OK,
   * non‑zero for specific classes of failures (deps, index, embeddings).
 
+#### §13.3.1 Implemented CLI surface (aligns to code in `cli/src/cortex_cli/cmd_doctor.py`)
+
+* Top-level flags:
+
+    * `--provider` (aliases: vertex, gcp, vertexai, hf, openai, azure, cohere, qwen, local) — drives dependency set.
+    * `--auto-install` — attempt to pip install missing critical/optional deps; safe-name validation enforced.
+    * `--pip-timeout` — seconds for pip installs (default: config.system.pip_timeout or 300).
+    * `--json` — machine-readable output; disables banner printing.
+    * `--verbose` — DEBUG logging for diagnostics.
+
+* Check toggles (additive; any subset may be run):
+
+    * `--check-index` — validates index dir presence, counts files, and compares DB embedding dim vs config.embedding.output_dimensionality.
+    * `--check-db` — tests Postgres connectivity; reports migration presence (`alembic_version`) when available.
+    * `--check-redis` — pings Valkey/Redis at `OUTLOOKCORTEX_REDIS_URL` (default `redis://localhost:6379`).
+    * `--check-exports` — verifies export root (`config.directories.export_root`) exists and lists B1-style folders.
+    * `--check-ingest` — dry-run ingest probe: finds a sample message, runs `parser_email.parse_eml_file`, instantiates `TextPreprocessor`.
+    * `--check-embeddings` — calls `embed_texts(["test"])` via `cortex.llm.client` to verify connectivity and dimensionality.
+
+* Exit code semantics (actual behavior):
+
+    * Failures (exit 2): missing critical deps, index failures/mismatched dims, embedding probe failure, DB failure, Redis failure.
+    * Warnings (exit 1): missing optional deps, export root issues, ingest dry-run issues.
+    * Success (exit 0): no failures or warnings.
+
+> If code or tests evolve, keep this sub-section synchronized with `cmd_doctor.py` to avoid CLI drift.
+
+### §13.4 CLI command surface (`cortex_cli.main`)
+
+* `cortex ingest PATH [--tenant ID] [--dry-run] [--verbose] [--json]`
+    * Ingest conversation folders; `--dry-run` skips writes; tenant defaults to `default`.
+* `cortex index [--root DIR] [--provider {vertex|openai|local}] [--workers N] [--limit N] [--force] [--json]`
+    * Parallel reindex; `--force` recomputes even if cached.
+* `cortex search QUERY [--top-k N] [--tenant ID] [--json]`
+    * Hybrid search entry; default top-k 10.
+* `cortex validate PATH [--json]`
+    * B1 export validation/refresh for a folder or root.
+* `cortex answer QUESTION [--tenant ID] [--json]`
+    * Runs answer graph (retrieval + RAG) for a question.
+* `cortex draft INSTRUCTIONS [--thread-id UUID] [--tenant ID] [--json]`
+    * Draft reply with optional thread context.
+* `cortex summarize THREAD_ID [--tenant ID] [--json]`
+    * Summarize a thread with facts ledger output.
+* `cortex doctor [--provider ...] [--auto-install] [--check-index] [--check-db] [--check-redis] [--check-exports] [--check-ingest] [--check-embeddings] [--json] [--verbose] [--pip-timeout SECONDS]`
+    * See §13.3.1 for detailed semantics and exit codes.
+* `cortex status [--json]`
+    * Displays env variables, directory presence, and config files.
+* `cortex config [--validate] [--json]`
+    * Loads configuration; can validate or emit JSON.
+* `cortex version`
+    * Prints CLI/package version, Python, platform.
+
 ---
 
 ## §14. Edge Cases & Guarantees
