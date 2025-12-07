@@ -72,9 +72,9 @@ class ChunkingInput(BaseModel):
     text: str
     section_path: str
     quoted_spans: list[Span] = Field(default_factory=list)
-    max_tokens: int = 800
+    max_tokens: int = 1600
     min_tokens: int = 300
-    overlap_tokens: int = 80
+    overlap_tokens: int = 200
     # Additional options
     model: str = "cl100k_base"  # tiktoken encoding to use
     chunk_type_hint: str | None = None  # Override chunk_type classification
@@ -361,9 +361,9 @@ def chunk_text(input_data: ChunkingInput) -> list[ChunkModel]:
 def chunk_with_sections(
     sections: list[tuple[str, str]],  # (section_path, text)
     quoted_spans_map: dict[str, list[Span]] | None = None,
-    max_tokens: int = 800,
+    max_tokens: int = 1600,
     min_tokens: int = 300,
-    overlap_tokens: int = 80,
+    overlap_tokens: int = 200,
 ) -> list[ChunkModel]:
     """
     Chunk multiple sections and return unified chunk list.
@@ -402,7 +402,7 @@ def chunk_with_sections(
 
 
 def estimate_chunk_count(
-    text: str, max_tokens: int = 800, overlap_tokens: int = 80
+    text: str, max_tokens: int = 1600, overlap_tokens: int = 200
 ) -> int:
     """
     Estimate number of chunks that will be produced.

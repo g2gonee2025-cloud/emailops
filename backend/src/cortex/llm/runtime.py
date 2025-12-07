@@ -23,6 +23,7 @@ from cortex.common.exceptions import (
     LLMOutputSchemaError,
     ProviderError,
     RateLimitError,
+    ValidationError,
 )
 from cortex.config.loader import get_config
 from cortex.llm.doks_scaler import DigitalOceanLLMService
@@ -390,9 +391,10 @@ class LLMRuntime:
             - Max 2,048 tokens per individual text
         """
         if not texts:
-            return np.zeros(
-                (0, _config.embedding.output_dimensionality), dtype=np.float32
-            )
+            raise ValidationError("texts must be non-empty", field="texts")
+
+        if any(not isinstance(t, str) or not t.strip() for t in texts):
+            raise ValidationError("texts must be non-empty strings", field="texts")
 
         provider = _config.core.provider
         output_dim = _config.embedding.output_dimensionality
@@ -437,28 +439,6 @@ class LLMRuntime:
                 vectors = [d.embedding for d in response.data]
                 return _normalize_vectors(vectors)
 
-            elif provider == "azure_openai":
-                if not _config.sensitive.azure_openai_api_key:
-                    raise ConfigurationError("Azure OpenAI API key not configured")
-                if not _config.sensitive.azure_openai_endpoint:
-                    raise ConfigurationError("Azure OpenAI endpoint not configured")
-
-                from openai import AzureOpenAI
-
-                client = AzureOpenAI(
-                    api_key=_config.sensitive.azure_openai_api_key,
-                    api_version=_config.sensitive.azure_openai_api_version
-                    or "2024-02-15-preview",
-                    azure_endpoint=_config.sensitive.azure_openai_endpoint,
-                )
-                response = client.embeddings.create(
-                    input=texts,
-                    model=_config.sensitive.azure_openai_deployment
-                    or "text-embedding-ada-002",
-                )
-                vectors = [d.embedding for d in response.data]
-                return _normalize_vectors(vectors)
-
             elif provider == "digitalocean":
                 service = self._get_doks_service()
                 vectors = service.embed_texts(
@@ -480,6 +460,11 @@ class LLMRuntime:
                     "Embedding dimension mismatch: got %d, expected %d",
                     result.shape[1],
                     expected_dim,
+                )
+                raise ProviderError(
+                    "Embedding dimension mismatch",
+                    provider=provider,
+                    retryable=False,
                 )
 
             # Validate all values are finite
@@ -513,6 +498,9 @@ class LLMRuntime:
         Returns:
             Generated text
         """
+        if not isinstance(prompt, str) or not prompt.strip():
+            raise ValidationError("prompt must be a non-empty string", field="prompt")
+
         provider = _config.core.provider
 
         def _do_complete():
@@ -542,28 +530,6 @@ class LLMRuntime:
                 )
                 return response.choices[0].message.content or ""
 
-            elif provider == "azure_openai":
-                if not _config.sensitive.azure_openai_api_key:
-                    raise ConfigurationError("Azure OpenAI API key not configured")
-                if not _config.sensitive.azure_openai_endpoint:
-                    raise ConfigurationError("Azure OpenAI endpoint not configured")
-
-                from openai import AzureOpenAI
-
-                client = AzureOpenAI(
-                    api_key=_config.sensitive.azure_openai_api_key,
-                    api_version=_config.sensitive.azure_openai_api_version
-                    or "2024-02-15-preview",
-                    azure_endpoint=_config.sensitive.azure_openai_endpoint,
-                )
-                response = client.chat.completions.create(
-                    model=_config.sensitive.azure_openai_deployment or "gpt-4",
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=kwargs.get("temperature", 0.2),
-                    max_tokens=kwargs.get("max_tokens", 1024),
-                )
-                return response.choices[0].message.content or ""
-
             elif provider == "digitalocean":
                 service = self._get_doks_service()
                 return service.generate_text(
@@ -577,12 +543,21 @@ class LLMRuntime:
                 raise ConfigurationError(f"Unsupported completion provider: {provider}")
 
         try:
-            return self._call_with_resilience(_do_complete)
+            result = self._call_with_resilience(_do_complete)
         except Exception as e:
             logger.error(f"Completion failed ({provider}): {e}")
             raise ProviderError(
                 f"Completion failed: {e!s}", provider=provider, retryable=True
             ) from e
+
+        if not isinstance(result, str) or not result.strip():
+            raise LLMOutputSchemaError(
+                "Completion output empty or invalid",
+                schema_name="text_completion",
+                raw_output=str(result),
+            )
+
+        return result
 
     @retry(
         stop=stop_after_attempt(3),
@@ -643,29 +618,6 @@ class LLMRuntime:
                 client = openai.OpenAI(api_key=_config.sensitive.openai_api_key)
                 response = client.chat.completions.create(
                     model=kwargs.get("model", "gpt-4-turbo-preview"),
-                    messages=[{"role": "user", "content": json_prompt}],
-                    temperature=kwargs.get("temperature", 0.0),
-                    max_tokens=kwargs.get("max_tokens", 2048),
-                    response_format={"type": "json_object"},
-                )
-                return response.choices[0].message.content or "{}"
-
-            elif provider == "azure_openai":
-                if not _config.sensitive.azure_openai_api_key:
-                    raise ConfigurationError("Azure OpenAI API key not configured")
-                if not _config.sensitive.azure_openai_endpoint:
-                    raise ConfigurationError("Azure OpenAI endpoint not configured")
-
-                from openai import AzureOpenAI
-
-                client = AzureOpenAI(
-                    api_key=_config.sensitive.azure_openai_api_key,
-                    api_version=_config.sensitive.azure_openai_api_version
-                    or "2024-02-15-preview",
-                    azure_endpoint=_config.sensitive.azure_openai_endpoint,
-                )
-                response = client.chat.completions.create(
-                    model=_config.sensitive.azure_openai_deployment or "gpt-4",
                     messages=[{"role": "user", "content": json_prompt}],
                     temperature=kwargs.get("temperature", 0.0),
                     max_tokens=kwargs.get("max_tokens", 2048),

@@ -6,8 +6,8 @@ from botocore.config import Config
 S3_ENDPOINT = "https://sgp1.digitaloceanspaces.com"
 S3_REGION = "sgp1"
 S3_BUCKET = "emailops-storage-sgp1"
-S3_ACCESS_KEY = "DO00Z8YMD9NLWRAD78FE"
-S3_SECRET_KEY = "AXwqbJfprO69xy3hWpxVvvJDCace0r8UIgHP5rCQ3Fw"
+S3_ACCESS_KEY = "${S3_ACCESS_KEY}"
+S3_SECRET_KEY = "${SE_SECRET_KEY}"
 
 client = boto3.client(
     "s3",

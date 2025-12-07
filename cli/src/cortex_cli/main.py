@@ -1464,7 +1464,6 @@ Run comprehensive system diagnostics including:
             "vertexai",
             "hf",
             "openai",
-            "azure",
             "cohere",
             "huggingface",
             "qwen",
@@ -1473,7 +1472,7 @@ Run comprehensive system diagnostics including:
         metavar="PROVIDER",
         help=(
             "Embedding provider to check (default: vertex). "
-            "Options: vertex, gcp, vertexai, hf, openai, azure, cohere, huggingface, qwen, local"
+            "Options: vertex, gcp, vertexai, hf, openai, cohere, huggingface, qwen, local"
         ),
     )
     doctor_parser.add_argument(

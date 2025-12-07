@@ -68,7 +68,14 @@ class EmbeddingError(CortexError):
 class ProcessingError(CortexError):
     """Document/text processing operation failures."""
 
-    pass
+    def __init__(
+        self,
+        message: str,
+        retryable: bool = False,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(message, **kwargs)
+        self.retryable = retryable
 
 
 class ValidationError(CortexError):

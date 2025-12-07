@@ -189,9 +189,6 @@ def _packages_for_provider(provider: str) -> tuple[list[str], list[str]]:
     elif provider == "openai":
         critical = ["openai"]
         optional = ["tiktoken"]
-    elif provider == "azure":
-        critical = ["openai"]  # Azure uses OpenAI client
-        optional = ["azure-identity"]
     elif provider == "cohere":
         critical = ["cohere"]
     elif provider == "huggingface":

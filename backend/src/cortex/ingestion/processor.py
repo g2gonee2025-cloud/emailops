@@ -18,6 +18,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
+from cortex.common.exceptions import ProcessingError, ValidationError
 from cortex.config.loader import get_config
 from cortex.db.models import Attachment, Chunk, IngestJob, Message, Thread
 from cortex.embeddings.client import EmbeddingsClient
@@ -29,8 +30,8 @@ from sqlalchemy.orm import Session, sessionmaker
 logger = logging.getLogger(__name__)
 
 # Chunk size limits per Blueprint §7.1
-MAX_CHUNK_CHARS = 2000
-CHUNK_OVERLAP = 200
+MAX_CHUNK_CHARS = 6400  # Approx 1600 tokens
+CHUNK_OVERLAP = 800  # Approx 200 tokens
 
 
 @dataclass
@@ -104,78 +105,85 @@ class IngestionProcessor:
             thread_id if successful, None if failed
         """
         try:
-            # Stream conversation data directly from S3
             data = self.s3_handler.stream_conversation_data(folder)
 
             if not data.get("conversation_txt") and not data.get("manifest"):
-                logger.warning(f"Empty folder: {folder.name}")
                 self.stats.skipped += 1
-                return None
+                raise ValidationError(
+                    "Empty conversation payload",
+                    field="conversation_txt",
+                    context={"folder": folder.name},
+                )
 
-            # Parse conversation data
             conv_data = self._parse_streamed_conversation(folder.name, data)
-            if not conv_data:
-                logger.warning(f"Failed to parse conversation: {folder.name}")
-                self.stats.errors += 1
-                return None
 
-            # Store in database
             thread_id = self._store_conversation(conv_data)
 
             self.stats.folders_processed += 1
             return thread_id
 
-        except Exception as e:
-            logger.error(f"Error processing folder {folder.name}: {e}")
+        except ValidationError as e:
+            logger.warning(f"Validation error in folder {folder.name}: {e}")
             self.stats.errors += 1
             return None
+        except ProcessingError as e:
+            logger.error(f"Processing error for folder {folder.name}: {e}")
+            self.stats.errors += 1
+            return None
+        except Exception as e:
+            logger.error(f"Unexpected error processing folder {folder.name}: {e}")
+            self.stats.errors += 1
+            raise ProcessingError(
+                "Unexpected ingestion failure", retryable=False
+            ) from e
 
     def _parse_streamed_conversation(
         self, folder_name: str, data: Dict[str, Any]
     ) -> Optional[ConversationData]:
         """Parse streamed conversation data from S3."""
-        try:
-            manifest = data.get("manifest", {})
-            body_text = data.get("conversation_txt", "")
+        manifest = data.get("manifest", {})
+        body_text = data.get("conversation_txt", "")
 
-            # Parse metadata from manifest
-            subject = manifest.get("subject", folder_name)
-            from_addr = manifest.get(
-                "from", manifest.get("sender", "unknown@unknown.com")
-            )
-            to_addrs = manifest.get("to", [])
-            if isinstance(to_addrs, str):
-                to_addrs = [to_addrs]
-
-            # Parse sent date
-            sent_at = None
-            if manifest.get("date"):
-                try:
-                    from dateutil.parser import parse as parse_date
-
-                    sent_at = parse_date(manifest["date"])
-                    if sent_at.tzinfo is None:
-                        sent_at = sent_at.replace(tzinfo=timezone.utc)
-                except Exception:
-                    pass
-
-            # Parse attachments
-            attachments = data.get("attachments", [])
-
-            return ConversationData(
-                folder_name=folder_name,
-                manifest=manifest,
-                body_text=body_text,
-                attachments=attachments,
-                subject=subject,
-                from_addr=from_addr,
-                to_addrs=to_addrs,
-                sent_at=sent_at,
+        if not body_text:
+            raise ValidationError(
+                "Conversation body missing",
+                field="conversation_txt",
+                context={"folder": folder_name},
             )
 
-        except Exception as e:
-            logger.error(f"Error parsing conversation {folder_name}: {e}")
-            return None
+        subject = manifest.get("subject", folder_name)
+        from_addr = manifest.get("from", manifest.get("sender", "unknown@unknown.com"))
+        to_addrs = manifest.get("to", [])
+        if isinstance(to_addrs, str):
+            to_addrs = [to_addrs]
+
+        sent_at = None
+        if manifest.get("date"):
+            try:
+                from dateutil.parser import parse as parse_date
+
+                sent_at = parse_date(manifest["date"])
+                if sent_at.tzinfo is None:
+                    sent_at = sent_at.replace(tzinfo=timezone.utc)
+            except Exception as e:
+                raise ValidationError(
+                    "Invalid sent date",
+                    field="date",
+                    context={"folder": folder_name, "error": str(e)},
+                ) from e
+
+        attachments = data.get("attachments", [])
+
+        return ConversationData(
+            folder_name=folder_name,
+            manifest=manifest,
+            body_text=body_text,
+            attachments=attachments,
+            subject=subject,
+            from_addr=from_addr,
+            to_addrs=to_addrs,
+            sent_at=sent_at,
+        )
 
     def _parse_conversation(
         self, folder_name: str, files: Dict[str, bytes]
@@ -490,9 +498,14 @@ class IngestionProcessor:
                         "processing",
                         {"processed": i + 1, "total": len(folders)},
                     )
-
+            except ValidationError as e:
+                logger.warning(f"Validation error in folder {folder.name}: {e}")
+                self.stats.errors += 1
+            except ProcessingError as e:
+                logger.error(f"Processing error for folder {folder.name}: {e}")
+                self.stats.errors += 1
             except Exception as e:
-                logger.error(f"Error processing folder {folder.name}: {e}")
+                logger.error(f"Unexpected error processing folder {folder.name}: {e}")
                 self.stats.errors += 1
 
         # Update job status to completed

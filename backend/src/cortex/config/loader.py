@@ -154,13 +154,13 @@ class EmailOpsConfig(BaseModel):
         os.environ["GCP_REGION"] = self.gcp.gcp_region
 
         # Storage settings
-        os.environ["OUTLOOKCORTEX_S3_ENDPOINT"] = self.storage.endpoint_url
-        os.environ["OUTLOOKCORTEX_S3_BUCKET_RAW"] = self.storage.bucket_raw
-        os.environ["OUTLOOKCORTEX_S3_REGION"] = self.storage.region
+        os.environ["S3_ENDPOINT"] = self.storage.endpoint_url
+        os.environ["S3_BUCKET_RAW"] = self.storage.bucket_raw
+        os.environ["S3_REGION"] = self.storage.region
         if self.storage.access_key:
-            os.environ["OUTLOOKCORTEX_S3_ACCESS_KEY"] = self.storage.access_key
+            os.environ["S3_ACCESS_KEY"] = self.storage.access_key
         if self.storage.secret_key:
-            os.environ["OUTLOOKCORTEX_S3_SECRET_KEY"] = self.storage.secret_key
+            os.environ["S3_SECRET_KEY"] = self.storage.secret_key
 
         # System settings
         os.environ["LOG_LEVEL"] = self.system.log_level

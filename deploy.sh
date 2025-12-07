@@ -87,10 +87,21 @@ deploy() {
     # Apply namespace first
     kubectl apply -f k8s/namespace.yaml
     
-    # Apply secrets and configmap
-    log_warn "Make sure to update k8s/secrets.yaml with your actual credentials before deploying!"
+    # Apply configmap
     kubectl apply -f k8s/configmap.yaml
-    kubectl apply -f k8s/secrets.yaml
+
+    # Apply secrets with env substitution
+    if [ -f .env ]; then
+        log_info "Applying secrets from .env..."
+        # Export variables from .env for envsubst
+        set -a
+        source .env
+        set +a
+        envsubst < k8s/secrets.yaml | kubectl apply -f -
+    else
+        log_warn ".env file not found! Applying secrets.yaml directly..."
+        kubectl apply -f k8s/secrets.yaml
+    fi
     
     # Apply deployment
     kubectl apply -f k8s/backend-deployment.yaml

@@ -758,22 +758,6 @@ class SensitiveConfig(BaseModel):
         default_factory=lambda: _env("OPENAI_API_KEY", None),
         description="OpenAI API key",
     )
-    azure_openai_api_key: Optional[str] = Field(
-        default_factory=lambda: _env("AZURE_OPENAI_API_KEY", None),
-        description="Azure OpenAI API key",
-    )
-    azure_openai_endpoint: Optional[str] = Field(
-        default_factory=lambda: _env("AZURE_OPENAI_ENDPOINT", None),
-        description="Azure OpenAI endpoint",
-    )
-    azure_openai_deployment: Optional[str] = Field(
-        default_factory=lambda: _env("AZURE_OPENAI_DEPLOYMENT", None),
-        description="Azure OpenAI deployment name",
-    )
-    azure_openai_api_version: Optional[str] = Field(
-        default_factory=lambda: _env("AZURE_OPENAI_API_VERSION", None),
-        description="Azure OpenAI API version",
-    )
     cohere_api_key: Optional[str] = Field(
         default_factory=lambda: _env("COHERE_API_KEY", None),
         description="Cohere API key",

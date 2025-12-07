@@ -37,32 +37,29 @@ $K8sDir = Join-Path $RepoRoot "k8s"
 $MigrationsDir = Join-Path $RepoRoot "backend/migrations"
 
 Write-Host "Ensuring cluster $ClusterName exists..."
-$clusterExists = $false
-try {
-    doctl kubernetes cluster get $ClusterName | Out-Null
-    $clusterExists = $true
-} catch {
-    $clusterExists = $false
-}
-if (-not $clusterExists) {
-    doctl kubernetes cluster create $ClusterName --region $Region --node-pool "name=pool1;size=$NodeSize;count=$NodeCount" | Out-Null
+$clusterId = $(doctl kubernetes cluster list --output json | jq -r --arg name "$ClusterName" '.[] | select(.name == $name) | .id')
+
+if (-not $clusterId) {
+    Write-Host "Creating cluster $ClusterName ..."
+    doctl kubernetes cluster create $ClusterName --region $Region --node-pool "name=pool1;size=$NodeSize;count=$NodeCount"
+} else {
+    Write-Host "Cluster found with ID: $clusterId"
 }
 
 Write-Host "Ensuring database $DbName exists..."
-$dbExists = $false
-try {
-    doctl databases get $DbName | Out-Null
-    $dbExists = $true
-} catch {
-    $dbExists = $false
-}
-if (-not $dbExists) {
-    doctl databases create $DbName --engine pg --size $DbSize --region $Region --num-nodes 1 | Out-Null
+$dbId = $(doctl databases list --output json | jq -r --arg name "$DbName" '.[] | select(.name == $name) | .id')
+
+if (-not $dbId) {
+    Write-Host "Creating database..."
+    $createJson = doctl databases create $DbName --engine pg --size $DbSize --region $Region --num-nodes 1 --output json | Out-String
+    $dbId = ($createJson | jq -r '.[0].id')
+} else {
+    Write-Host "Database found with ID: $dbId"
 }
 
 Write-Host "Fetching DB connection URL..."
-$connJson = doctl databases connection $DbName --output json | Out-String
-$DB_URL = ($connJson | jq -r '.[0].uri')
+$connJson = doctl databases connection $dbId --output json | Out-String
+$DB_URL = ($connJson | jq -r '.uri')
 if (-not $DB_URL) { throw "Failed to get DB URL" }
 
 Write-Host "Saving kubeconfig..."
@@ -75,6 +72,7 @@ kubectl apply -f (Join-Path $K8sDir "namespace.yaml")
 kubectl apply -f (Join-Path $K8sDir "configmap.yaml")
 kubectl apply -f (Join-Path $K8sDir "secrets.yaml")
 kubectl apply -f (Join-Path $K8sDir "backend-deployment.yaml")
+kubectl apply -f (Join-Path $K8sDir "embeddings.yaml")
 kubectl apply -f (Join-Path $K8sDir "ingress.yaml")
 kubectl apply -f (Join-Path $K8sDir "hpa.yaml")
 

@@ -93,10 +93,35 @@ function Deploy-ToK8s {
     # Apply namespace first
     kubectl apply -f k8s/namespace.yaml
     
-    # Apply secrets and configmap
-    Write-Warn "Make sure to update k8s/secrets.yaml with your actual credentials before deploying!"
+    # Apply configmap
     kubectl apply -f k8s/configmap.yaml
-    kubectl apply -f k8s/secrets.yaml
+
+    # Apply secrets with env substitution
+    Write-Info "Applying secrets from .env..."
+    if (Test-Path .env) {
+        $envVars = @{}
+        Get-Content .env | ForEach-Object {
+            if ($_ -match "^([^#=]+)=(.*)$") {
+                $name = $matches[1].Trim()
+                $val = $matches[2].Trim()
+                if ($val -match "^['`"](.*)['`"]$") { $val = $matches[1] }
+                $envVars[$name] = $val
+            }
+        }
+        
+        $secretsYaml = Get-Content k8s/secrets.yaml -Raw
+        foreach ($key in $envVars.Keys) {
+            $placeholder = "`$`{$key`}"
+            if ($secretsYaml.Contains($placeholder)) {
+                $secretsYaml = $secretsYaml.Replace($placeholder, $envVars[$key])
+            }
+        }
+        
+        $secretsYaml | kubectl apply -f -
+    } else {
+        Write-Warn ".env file not found! Applying secrets.yaml directly (placeholders may fail)..."
+        kubectl apply -f k8s/secrets.yaml
+    }
     
     # Apply deployment
     kubectl apply -f k8s/backend-deployment.yaml

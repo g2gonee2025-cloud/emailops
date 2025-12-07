@@ -13,6 +13,8 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Optional
 
+import numpy as np
+from cortex.common.exceptions import RetrievalError
 from cortex.config.loader import get_config
 from pydantic import BaseModel, Field
 from sqlalchemy import text
@@ -47,8 +49,29 @@ def search_chunks_vector(
     config = get_config()
     output_dim = config.embedding.output_dimensionality
 
+    if len(embedding) != output_dim:
+        raise RetrievalError(
+            "Embedding dimension mismatch",
+            query="vector_search",
+            context={"expected_dim": output_dim, "got": len(embedding)},
+        )
+
+    try:
+        emb_array = np.asarray(embedding, dtype=float)
+    except Exception:
+        raise RetrievalError(
+            "Embedding must contain numeric values",
+            query="vector_search",
+        )
+
+    if not np.all(np.isfinite(emb_array)):
+        raise RetrievalError(
+            "Embedding contains non-finite values",
+            query="vector_search",
+        )
+
     # Convert embedding to string format for raw SQL
-    embedding_str = "[" + ",".join(str(v) for v in embedding) + "]"
+    embedding_str = "[" + ",".join(str(v) for v in emb_array.tolist()) + "]"
 
     # Use raw SQL to properly cast to halfvec for HNSW index utilization
     # Per pgvector docs: query must use same type as index (halfvec)

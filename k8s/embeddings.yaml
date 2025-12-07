@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: embeddings-api
+  namespace: emailops
+  labels:
+    app: emailops
+    component: embeddings
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: emailops
+      component: embeddings
+  template:
+    metadata:
+      labels:
+        app: emailops
+        component: embeddings
+    spec:
+      containers:
+        - name: tei
+          image: ghcr.io/huggingface/text-embeddings-inference:latest
+          args:
+            - "--model-id"
+            - "tencent/KaLM-Embedding-Gemma3-12B-2511"
+            - "--revision"
+            - "CausalLM"
+            - "--port"
+            - "80"
+            - "--json-output"
+            - "--auto-truncate"
+          env:
+            - name: HF_HUB_ENABLE_HF_TRANSFER
+              value: "1"
+          ports:
+            - containerPort: 80
+              name: http
+          resources:
+            requests:
+              memory: "24Gi"
+              cpu: "4"
+              nvidia.com/gpu: "1"
+            limits:
+              memory: "32Gi"
+              cpu: "6"
+              nvidia.com/gpu: "1"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 120
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: embeddings-api
+  namespace: emailops
+  labels:
+    app: emailops
+    component: embeddings
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+  selector:
+    app: emailops
+    component: embeddings

@@ -30,10 +30,6 @@ spec:
                 name: emailops-config
             - secretRef:
                 name: emailops-secrets
-          volumeMounts:
-            - name: gcp-credentials
-              mountPath: /secrets/gcp
-              readOnly: true
           resources:
             requests:
               memory: "512Mi"
@@ -57,10 +53,6 @@ spec:
             periodSeconds: 5
             timeoutSeconds: 3
             failureThreshold: 3
-      volumes:
-        - name: gcp-credentials
-          secret:
-            secretName: gcp-credentials
 ---
 apiVersion: v1
 kind: Service

@@ -492,7 +492,7 @@ class ProcessingConfig(BaseModel):
 Prefix all env vars with `OUTLOOKCORTEX_`, e.g.:
 
 * `OUTLOOKCORTEX_DB_URL`
-* `OUTLOOKCORTEX_S3_BUCKET_RAW`
+* `S3_BUCKET_RAW`
 * `OUTLOOKCORTEX_LLM_API_KEY`
 * `OUTLOOKCORTEX_ENV=dev|staging|prod`
 
@@ -4289,7 +4289,7 @@ Requirements:
 
 * Top-level flags:
 
-    * `--provider` (aliases: vertex, gcp, vertexai, hf, openai, azure, cohere, qwen, local) — drives dependency set.
+    * `--provider` (aliases: vertex, gcp, vertexai, hf, openai, cohere, qwen, local) — drives dependency set.
     * `--auto-install` — attempt to pip install missing critical/optional deps; safe-name validation enforced.
     * `--pip-timeout` — seconds for pip installs (default: config.system.pip_timeout or 300).
     * `--json` — machine-readable output; disables banner printing.

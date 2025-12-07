@@ -646,7 +646,7 @@ with st.sidebar:
     st.subheader("🔧 Provider Settings")
     provider = st.selectbox(
         "Embedding Provider",
-        ["vertex", "openai", "azure", "cohere", "huggingface", "local", "qwen"],
+        ["vertex", "openai", "cohere", "huggingface", "local", "qwen"],
         index=0,
         help="Provider for embedding operations",
         key="provider_select",
@@ -924,7 +924,6 @@ with tabs[1]:
     provider_options = [
         "vertex",
         "openai",
-        "azure",
         "cohere",
         "huggingface",
         "local",
@@ -1281,7 +1280,6 @@ with tabs[5]:
             "(Use Index Provider)",
             "vertex",
             "openai",
-            "azure",
             "cohere",
             "huggingface",
             "local",
