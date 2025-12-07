@@ -19,7 +19,10 @@ REQUIRED_PATHS: list[tuple[Path, str]] = [
     (REPO_ROOT / "backend" / "migrations", "Alembic migrations directory must exist"),
     (REPO_ROOT / "workers" / "src" / "cortex_workers", "Workers package must exist"),
     (REPO_ROOT / "cli" / "src" / "cortex_cli", "CLI package must exist"),
-    (REPO_ROOT / ".github" / "copilot-instructions.md", "Copilot instructions must exist"),
+    (
+        REPO_ROOT / ".github" / "copilot-instructions.md",
+        "Copilot instructions must exist",
+    ),
 ]
 
 

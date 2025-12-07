@@ -13,12 +13,11 @@ from urllib.parse import urljoin
 
 import numpy as np
 import requests
+from cortex.common.exceptions import ConfigurationError, ProviderError
+from cortex.config.models import DigitalOceanLLMConfig, DigitalOceanLLMModelConfig
 from requests import Session
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-
-from cortex.common.exceptions import ConfigurationError, ProviderError
-from cortex.config.models import DigitalOceanLLMConfig, DigitalOceanLLMModelConfig
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +62,7 @@ class ModelProfile:
         weight_bytes = self.params_total * 1e9 * quant_bytes
         kv_bytes = float(self.context_length) * float(self.kv_bytes_per_token)
         total_bytes = weight_bytes + kv_bytes
-        return total_bytes / (1024 ** 3) + self.additional_memory_gb
+        return total_bytes / (1024**3) + self.additional_memory_gb
 
     def concurrency_per_gpu(self) -> int:
         if (
@@ -351,8 +350,10 @@ class ClusterScaler:
         current_count = int(pool.get("count", 0))
         is_autoscale_enabled = pool.get("auto_scale", False)
 
-        hard_cap = max_nodes if current_count == 0 else int(
-            max(current_count * max_scale_factor, current_count + 1)
+        hard_cap = (
+            max_nodes
+            if current_count == 0
+            else int(max(current_count * max_scale_factor, current_count + 1))
         )
         desired = min(max(required_nodes, min_nodes), hard_cap, max_nodes)
 
@@ -414,11 +415,17 @@ class DigitalOceanClusterManager:
 
     def provision_cluster(self) -> Dict[str, Any]:
         if not self.scaling.cluster_name:
-            raise ConfigurationError("digitalocean.scaling.cluster_name is required to provision")
+            raise ConfigurationError(
+                "digitalocean.scaling.cluster_name is required to provision"
+            )
         if not self.scaling.region:
-            raise ConfigurationError("digitalocean.scaling.region is required to provision")
+            raise ConfigurationError(
+                "digitalocean.scaling.region is required to provision"
+            )
         if not self.scaling.gpu_node_size:
-            raise ConfigurationError("digitalocean.scaling.gpu_node_size is required to provision")
+            raise ConfigurationError(
+                "digitalocean.scaling.gpu_node_size is required to provision"
+            )
 
         initial, _ = self.plan_gpu_pool()
         node_count = max(initial, self.scaling.min_nodes or 0, 1)
@@ -471,7 +478,9 @@ class DigitalOceanLLMService:
         self._inflight_lock = threading.Lock()
         self._http_session = self._build_session()
 
-    def embed_texts(self, texts: List[str], expected_dim: Optional[int] = None) -> np.ndarray:
+    def embed_texts(
+        self, texts: List[str], expected_dim: Optional[int] = None
+    ) -> np.ndarray:
         if not texts:
             dim = expected_dim or 0
             return np.zeros((0, dim), dtype=np.float32)
@@ -628,7 +637,9 @@ class DigitalOceanLLMService:
                     return content
                 if isinstance(content, list):
                     return "".join(
-                        str(part.get("text", "")) for part in content if isinstance(part, dict)
+                        str(part.get("text", ""))
+                        for part in content
+                        if isinstance(part, dict)
                     )
         if payload.get("output"):
             return str(payload["output"])
@@ -663,7 +674,9 @@ class DigitalOceanLLMService:
         return vectors
 
 
-def _model_profile_from_config(model_config: DigitalOceanLLMModelConfig) -> ModelProfile:
+def _model_profile_from_config(
+    model_config: DigitalOceanLLMModelConfig,
+) -> ModelProfile:
     return ModelProfile(
         name=model_config.name,
         params_total=model_config.params_total,
