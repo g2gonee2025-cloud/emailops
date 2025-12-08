@@ -6,7 +6,6 @@ Downloads conversation folders from DigitalOcean Spaces for processing.
 """
 from __future__ import annotations
 
-import json
 import logging
 import mimetypes
 import tempfile
@@ -16,6 +15,8 @@ from typing import Any, Dict, Iterator, List, Optional
 import boto3
 from botocore.config import Config
 from cortex.config.loader import get_config
+from cortex.ingestion.core_manifest import parse_manifest_text
+from cortex.ingestion.text_utils import strip_control_chars
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
@@ -196,13 +197,8 @@ class S3SourceHandler:
     def get_json_object(self, key: str) -> Dict[str, Any]:
         """Get and parse a JSON object from S3."""
         content = self.get_object_content(key)
-        decoded = content.decode("utf-8-sig")
-
-        # Fix malformed JSON from Outlook export (triple quotes issue)
-        # Replace :""" with :"" to fix unescaped quotes in JSON values
-        fixed = decoded.replace(':"""', ':""').replace(': """', ': ""')
-
-        return json.loads(fixed)
+        decoded = strip_control_chars(content.decode("utf-8-sig"))
+        return parse_manifest_text(decoded, source=key)
 
     def get_text_object(self, key: str) -> str:
         """Get text content of an S3 object."""
