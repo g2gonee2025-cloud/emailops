@@ -22,8 +22,19 @@ services:
       retries: 3
       start_period: 20s
     environment:
-      - ENV=production
       - LOG_LEVEL=INFO
+    networks:
+      - emailops_net
+
+  embeddings:
+    image: ghcr.io/huggingface/text-embeddings-inference:latest
+    command: --model-id tencent/KaLM-Embedding-Gemma3-12B-2511 --revision CausalLM --port 80 --json-output --auto-truncate
+    environment:
+      - HF_HUB_ENABLE_HF_TRANSFER=1
+    ports:
+      - "8080:80"
+    volumes:
+      - ./data/huggingface:/data
     networks:
       - emailops_net
 

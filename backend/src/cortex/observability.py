@@ -6,6 +6,7 @@ Implements §12 of the Canonical Blueprint.
 from __future__ import annotations
 
 import functools
+import inspect
 import logging
 from collections.abc import Callable
 from contextvars import ContextVar
@@ -208,38 +209,74 @@ def trace_operation(operation_name: str, **span_attributes):
     """
 
     def decorator(func: Callable) -> Callable:
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            if not OTEL_AVAILABLE or _tracer is None:
-                # Fallback: just execute without tracing
-                return func(*args, **kwargs)
+        if inspect.iscoroutinefunction(func):
 
-            with _tracer.start_as_current_span(operation_name) as span:
-                # Add attributes
-                for key, value in span_attributes.items():
-                    span.set_attribute(key, value)
+            @functools.wraps(func)
+            async def async_wrapper(*args, **kwargs):
+                if not OTEL_AVAILABLE or _tracer is None:
+                    # Fallback: just execute without tracing
+                    return await func(*args, **kwargs)
 
-                # Add trace context to contextvars
-                trace_ctx = {
-                    "trace_id": format(span.get_span_context().trace_id, "032x"),
-                    "span_id": format(span.get_span_context().span_id, "016x"),
-                }
-                token = _trace_context.set(trace_ctx)
+                with _tracer.start_as_current_span(operation_name) as span:
+                    # Add attributes
+                    for key, value in span_attributes.items():
+                        span.set_attribute(key, value)
 
-                try:
-                    result = func(*args, **kwargs)
-                    span.set_attribute("status", "success")
-                    return result
-                except Exception as e:
-                    span.set_attribute("status", "error")
-                    span.set_attribute("error.type", type(e).__name__)
-                    span.set_attribute("error.message", str(e))
-                    span.record_exception(e)
-                    raise
-                finally:
-                    _trace_context.reset(token)
+                    # Add trace context to contextvars
+                    trace_ctx = {
+                        "trace_id": format(span.get_span_context().trace_id, "032x"),
+                        "span_id": format(span.get_span_context().span_id, "016x"),
+                    }
+                    token = _trace_context.set(trace_ctx)
 
-        return wrapper
+                    try:
+                        result = await func(*args, **kwargs)
+                        span.set_attribute("status", "success")
+                        return result
+                    except Exception as e:
+                        span.set_attribute("status", "error")
+                        span.set_attribute("error.type", type(e).__name__)
+                        span.set_attribute("error.message", str(e))
+                        span.record_exception(e)
+                        raise
+                    finally:
+                        _trace_context.reset(token)
+
+            return async_wrapper
+        else:
+
+            @functools.wraps(func)
+            def wrapper(*args, **kwargs):
+                if not OTEL_AVAILABLE or _tracer is None:
+                    # Fallback: just execute without tracing
+                    return func(*args, **kwargs)
+
+                with _tracer.start_as_current_span(operation_name) as span:
+                    # Add attributes
+                    for key, value in span_attributes.items():
+                        span.set_attribute(key, value)
+
+                    # Add trace context to contextvars
+                    trace_ctx = {
+                        "trace_id": format(span.get_span_context().trace_id, "032x"),
+                        "span_id": format(span.get_span_context().span_id, "016x"),
+                    }
+                    token = _trace_context.set(trace_ctx)
+
+                    try:
+                        result = func(*args, **kwargs)
+                        span.set_attribute("status", "success")
+                        return result
+                    except Exception as e:
+                        span.set_attribute("status", "error")
+                        span.set_attribute("error.type", type(e).__name__)
+                        span.set_attribute("error.message", str(e))
+                        span.record_exception(e)
+                        raise
+                    finally:
+                        _trace_context.reset(token)
+
+            return wrapper
 
     return decorator
 

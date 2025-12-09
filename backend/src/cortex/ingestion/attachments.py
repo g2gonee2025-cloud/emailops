@@ -10,6 +10,8 @@ import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from cortex.config.loader import get_config
+from cortex.ingestion.text_preprocessor import get_text_preprocessor
 from cortex.text_extraction import extract_text
 from pydantic import BaseModel
 
@@ -48,17 +50,64 @@ class ExtractedAttachment(BaseModel):
     metadata: Dict[str, Any]
 
 
-def process_attachment(ref: AttachmentRef) -> Optional[ExtractedAttachment]:
-    """
-    Process a single attachment.
+def extract_attachment_text(
+    path: Path,
+    *,
+    max_chars: int,
+    skip_if_attachment_over_mb: float,
+) -> str | None:
+    """Extract text from an attachment with size/char limits."""
 
-    Uses cortex.text_extraction to extract text and metadata.
-    """
     try:
-        text = extract_text(Path(ref.path))
-        return ExtractedAttachment(
-            text=text, tables=[], metadata={"source_path": ref.path}
-        )
-    except Exception as e:
-        logger.error(f"Failed to process attachment {ref.path}: {e}")
+        if skip_if_attachment_over_mb and skip_if_attachment_over_mb > 0:
+            try:
+                mb = path.stat().st_size / (1024 * 1024)
+                if mb > skip_if_attachment_over_mb:
+                    logger.info(
+                        "Skipping large attachment (%.2f MB > %.2f MB): %s",
+                        mb,
+                        skip_if_attachment_over_mb,
+                        path,
+                    )
+                    return None
+            except OSError:
+                pass
+
+        text = extract_text(path, max_chars=max_chars)
+        if text and text.strip():
+            return text
+    except Exception as exc:  # broad but logs for observability
+        logger.error("Failed to extract attachment %s: %s", path, exc)
+    return None
+
+
+def process_attachment(
+    ref: AttachmentRef,
+    *,
+    tenant_id: str,
+    max_chars: int | None = None,
+    skip_if_attachment_over_mb: float | None = None,
+) -> Optional[ExtractedAttachment]:
+    """
+    Process a single attachment with limits and PII-safe cleaning.
+    """
+    config = get_config()
+    limits = config.limits
+    text = extract_attachment_text(
+        Path(ref.path),
+        max_chars=max_chars or limits.max_attachment_text_chars,
+        skip_if_attachment_over_mb=skip_if_attachment_over_mb
+        if skip_if_attachment_over_mb is not None
+        else limits.skip_attachment_over_mb,
+    )
+    if text is None:
         return None
+
+    cleaned_text, meta = get_text_preprocessor().prepare_for_indexing(
+        text,
+        text_type="attachment",
+        tenant_id=tenant_id,
+        metadata={"source_path": ref.path},
+    )
+
+    return ExtractedAttachment(text=cleaned_text, tables=[], metadata=meta)

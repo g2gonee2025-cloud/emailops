@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: embeddings-model-cache
+  namespace: emailops
+  labels:
+    app: emailops
+    component: embeddings
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: do-block-storage

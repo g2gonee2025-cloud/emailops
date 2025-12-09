@@ -75,6 +75,7 @@ def search_chunks_vector(
 
     # Use raw SQL to properly cast to halfvec for HNSW index utilization
     # Per pgvector docs: query must use same type as index (halfvec)
+    # We use CAST(:query_vec AS halfvec(:dim)) to avoid SQLAlchemy parsing issues with ::
     stmt = text(
         """
         SELECT 
@@ -85,10 +86,10 @@ def search_chunks_vector(
             thread_id,
             message_id,
             attachment_id,
-            embedding::halfvec(:dim) <=> :query_vec::halfvec(:dim) AS distance
+            embedding::halfvec(:dim) <=> CAST(:query_vec AS halfvec(:dim)) AS distance
         FROM chunks
         WHERE tenant_id = :tenant_id
-        ORDER BY embedding::halfvec(:dim) <=> :query_vec::halfvec(:dim)
+        ORDER BY embedding::halfvec(:dim) <=> CAST(:query_vec AS halfvec(:dim))
         LIMIT :limit
     """
     )

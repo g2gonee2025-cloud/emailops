@@ -77,13 +77,10 @@ class EmailOpsConfigProto(Protocol):
 
 # Import config model for typing if available; otherwise fall back to protocol
 if TYPE_CHECKING:
-    from cortex.config.loader import (  # type: ignore[import]  # ruff: noqa: I001
-        EmailOpsConfig as EmailOpsConfigProto,
-    )
-
-EmailOpsConfig: type[EmailOpsConfigProto] = cast(
-    type[EmailOpsConfigProto], EmailOpsConfigProto
-)
+    # Use the concrete config class for type checking; fallback to the protocol at runtime.
+    from cortex.config.loader import EmailOpsConfig as EmailOpsConfig
+else:
+    EmailOpsConfig = EmailOpsConfigProto
 
 # Lazy import for heavy dependencies
 # from cortex_cli.cmd_doctor import main as doctor_main
@@ -282,7 +279,7 @@ def _show_config(validate: bool = False, export_format: str | None = None) -> No
     _print_banner()
 
     try:
-        from cortex.config.loader import (  # type: ignore[import]  # ruff: noqa: I001
+        from cortex.config.loader import (  # type: ignore[import]
             get_config,
         )
 
@@ -390,7 +387,6 @@ def _run_validate(
         sys.exit(1)
 
     try:
-        # ruff: noqa: I001
         from cortex.ingestion.conv_manifest.validation import (
             scan_and_refresh as _scan_and_refresh,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
         )
@@ -531,7 +527,6 @@ def _run_ingest(
 
     # Actually run ingestion
     try:
-        # ruff: noqa: I001
         from cortex.ingestion.mailroom import (
             IngestJob as _IngestJob,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
         )
@@ -668,7 +663,6 @@ def _run_index(
         print()
 
     try:
-        # ruff: noqa: I001
         from cortex_workers.reindex_jobs.parallel_indexer import (
             parallel_index_conversations as _parallel_index_conversations,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
         )
@@ -751,7 +745,6 @@ def _run_search(
         print()
 
     try:
-        # ruff: noqa: I001
         from cortex.models.api import (
             SearchRequest as _SearchRequest,  # type: ignore[import]
         )
@@ -848,7 +841,6 @@ def _run_answer(
         print()
 
     try:
-        # ruff: noqa: I001
         from cortex.orchestration.graphs import (
             build_answer_graph as _build_answer_graph,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
         )
@@ -937,7 +929,6 @@ def _run_draft(
         print()
 
     try:
-        # ruff: noqa: I001
         from cortex.orchestration.graphs import (
             build_draft_graph as _build_draft_graph,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
         )
@@ -1029,7 +1020,6 @@ def _run_summarize(
         print()
 
     try:
-        # ruff: noqa: I001
         from cortex.orchestration.graphs import (
             build_summarize_graph as _build_summarize_graph,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
         )

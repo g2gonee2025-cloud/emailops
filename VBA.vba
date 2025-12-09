@@ -32,7 +32,7 @@ Option Explicit
 '====================================================================
 
 '=== CONFIG =====================================================================
-Private Const OUT_ROOT As String = ""                                ' base output folder (fallback is %LOCALAPPDATA%)
+Private Const OUT_ROOT As String = "C:\Users\ASUS\Desktop\Outlook"   ' base output folder (fallback is %LOCALAPPDATA%)
 Private Const FLAG_ADDR As String = "hagop.ghazarian@chalhoub.com"   ' TML flag address
 Private Const MAX_PATH_BUDGET As Long = 240                          ' keep under MAX_PATH (~260)
 
@@ -185,7 +185,7 @@ Private Sub ProcessFolderStreaming(ByVal root As Outlook.MAPIFolder, ByVal inclu
     ' Safely get FolderPath for tracing
     Dim rootPath As String
     On Error Resume Next
-    rootPath = root.FolderPath
+    rootPath = root.folderPath
     If Err.Number <> 0 Then
         rootPath = "(Unavailable Folder)"
         Err.Clear
@@ -194,10 +194,10 @@ Private Sub ProcessFolderStreaming(ByVal root As Outlook.MAPIFolder, ByVal inclu
 
     Trace "Folder: " & rootPath
 
-    Dim itms As Outlook.Items
+    Dim itms As Outlook.items
     ' Localised OERN for potentially failing property access (e.g., offline store)
     On Error Resume Next
-    Set itms = root.Items
+    Set itms = root.items
     If Err.Number <> 0 Then
         Trace "  ERROR accessing items in " & rootPath & ": (" & Err.Number & ") " & Err.Description
         Err.Clear
@@ -209,7 +209,7 @@ Private Sub ProcessFolderStreaming(ByVal root As Outlook.MAPIFolder, ByVal inclu
 
     If Not itms Is Nothing Then
         ' Restrict to mail items for speed
-        Dim mails As Outlook.Items
+        Dim mails As Outlook.items
 
         On Error Resume Next
         Set mails = itms.Restrict("[MessageClass] = 'IPM.Note'")
@@ -264,10 +264,10 @@ Private Sub ProcessFolderStreaming(ByVal root As Outlook.MAPIFolder, ByVal inclu
 ProcessSubfolders:
     If includeSub Then
         Dim subf As Outlook.MAPIFolder
-        Dim rootFolders As Outlook.Folders
+        Dim rootFolders As Outlook.folders
 
         On Error Resume Next
-        Set rootFolders = root.Folders
+        Set rootFolders = root.folders
         If Err.Number <> 0 Then
             Trace "  ERROR accessing subfolders in: " & rootPath & " (" & Err.Number & "): " & Err.Description
             Err.Clear
@@ -286,7 +286,7 @@ ProcessSubfolders:
 EH:
     Dim currentPath As String
     On Error Resume Next
-    currentPath = root.FolderPath
+    currentPath = root.folderPath
     If Err.Number <> 0 Then currentPath = "(Unknown Path)"
     Err.Clear
     On Error GoTo 0
@@ -448,14 +448,14 @@ Private Function GetInternetMessageId(ByVal mi As Outlook.MailItem) As String
         End If
     End If
     s = Trim$(s)
-    If Left$(s, 1) = "<" Then s = Mid$(s, 2)
+    If Left$(s, 1) = "<" Then s = mid$(s, 2)
     If Len(s) > 0 And Right$(s, 1) = ">" Then s = Left$(s, Len(s) - 1)
     GetInternetMessageId = LCase$(s)
 End Function
 
 Private Function BuildStableIdSignature(ByVal msgs As Collection) As String
     On Error Resume Next
-    Dim n As Long: n = msgs.Count
+    Dim n As Long: n = msgs.count
     If n = 0 Then
         BuildStableIdSignature = "sig:00000000"
         Exit Function
@@ -504,7 +504,7 @@ Private Function MessageIdentityKey(ByVal mi As Outlook.MailItem) As String
     End If
 
     ' 2. Entry ID (stable within a store, but can change on move/export)
-    key = LCase$(NullToEmpty(mi.EntryID))
+    key = LCase$(NullToEmpty(mi.entryId))
     If Len(key) > 0 Then
         MessageIdentityKey = "E:" & key
         Exit Function
@@ -512,7 +512,7 @@ Private Function MessageIdentityKey(ByVal mi As Outlook.MailItem) As String
 
     ' 3. Fallback key (Time + Subject + Sender)
     key = Format$(EffectiveLocalTime(mi), "yyyy-mm-dd hh:nn:ss") & "|" & _
-          LCase$(MakeSmartSubject(NullToEmpty(mi.Subject))) & "|" & _
+          LCase$(MakeSmartSubject(NullToEmpty(mi.subject))) & "|" & _
           LCase$(SafeGetSenderSmtp(mi))
 
     If Len(key) > 0 Then
@@ -649,7 +649,7 @@ Private Function ShortHash(ByVal s As String, ByVal n As Long) As String
     Dim i As Long, ch As Long
 
     For i = 1 To Len(s)
-        ch = AscW(Mid$(s, i, 1)) And &HFFFF&
+        ch = AscW(mid$(s, i, 1)) And &HFFFF&
 
         ' DJB2: h = (h * 33) ^ ch
         ' Keep 25 bits before multiplying by 33 to stay within Long bounds
@@ -658,7 +658,7 @@ Private Function ShortHash(ByVal s As String, ByVal n As Long) As String
     Next i
 
     Dim hexv As String
-    hexv = Hex$(h And &H7FFFFFFF)
+    hexv = hex$(h And &H7FFFFFFF)
     If Len(hexv) < n Then hexv = String$(n - Len(hexv), "0") & hexv
     ShortHash = Left$(hexv, n)
 End Function
@@ -713,7 +713,7 @@ Private Function WriteConversationFileRag(ByVal pathTxt As String, ByVal sortedM
     seen.CompareMode = 1
 
     Dim i As Long
-    For i = 1 To sortedMsgs.Count
+    For i = 1 To sortedMsgs.count
         On Error GoTo SKIP_ONE
 
         Dim mi As Outlook.MailItem
@@ -727,7 +727,7 @@ Private Function WriteConversationFileRag(ByVal pathTxt As String, ByVal sortedM
         seen(k) = True
 
         Dim isInitial As Boolean
-        isInitial = (StrComp(NullToEmpty(mi.EntryID), initialEntryID, vbBinaryCompare) = 0)
+        isInitial = (StrComp(NullToEmpty(mi.entryId), initialEntryID, vbBinaryCompare) = 0)
 
         buf = buf & String$(80, "-") & vbCrLf
         buf = buf & Format$(EffectiveLocalTime(mi), "yyyy-mm-dd hh:nn") & " | From: " & SafeGetSenderSmtp(mi)
@@ -778,7 +778,7 @@ NEXT_I:
         ok = SaveUnicodeAtomic(buf, tmpPath, pathTxt)
     End If
 
-    WriteConversationFileRag = ok And fso.FileExists(pathTxt)
+    WriteConversationFileRag = ok And fso.fileExists(pathTxt)
     Exit Function
 
 EH:
@@ -800,7 +800,7 @@ Private Function WriteConversationFileHuman(ByVal pathTxt As String, ByVal sorte
     seen.CompareMode = 1
 
     Dim i As Long
-    For i = 1 To sortedMsgs.Count
+    For i = 1 To sortedMsgs.count
         On Error GoTo SKIP_ONE
 
         Dim mi As Outlook.MailItem
@@ -814,7 +814,7 @@ Private Function WriteConversationFileHuman(ByVal pathTxt As String, ByVal sorte
         seen(k) = True
 
         Dim isInitial As Boolean
-        isInitial = (StrComp(NullToEmpty(mi.EntryID), initialEntryID, vbBinaryCompare) = 0)
+        isInitial = (StrComp(NullToEmpty(mi.entryId), initialEntryID, vbBinaryCompare) = 0)
 
         buf = buf & String$(80, "-") & vbCrLf
         buf = buf & Format$(EffectiveLocalTime(mi), "yyyy-mm-dd hh:nn") & " | From: " & SafeGetSenderSmtp(mi)
@@ -867,7 +867,7 @@ NEXT_I:
         ok = SaveUnicodeAtomic(buf, tmpPath, pathTxt)
     End If
 
-    WriteConversationFileHuman = ok And fso.FileExists(pathTxt)
+    WriteConversationFileHuman = ok And fso.fileExists(pathTxt)
     Exit Function
 
 EH:
@@ -1207,14 +1207,14 @@ Private Function TrimDisclaimers(ByVal s As String) As String
     Dim re As Object
     Set re = CreateObject("VBScript.RegExp")
     re.Global = False
-    re.IgnoreCase = True
+    re.ignoreCase = True
 
-    ' English + Arabic disclaimer markers (تنصل)
-    re.Pattern = "(confidentiality notice|" & _
+    ' English + Arabic disclaimer markers (????)
+    re.pattern = "(confidentiality notice|" & _
                  "if you are not the intended recipient|" & _
                  "this (e-?mail|message).{0,300}confidential|" & _
                  "\bdisclaimer\b|" & _
-                 ChrW$(&H62A) & ChrW$(&H646) & ChrW$(&H635) & ChrW$(&H644) & ")" ' تنصل
+                 ChrW$(&H62A) & ChrW$(&H646) & ChrW$(&H635) & ChrW$(&H644) & ")" ' ????
 
     For i = UBound(lines) To LBound(lines) Step -1
         Dim L As String
@@ -1286,11 +1286,11 @@ Private Function StripExternalMailBanners(ByVal s As String) As String
     s = re.Replace(s, "")
 
     ' Fallback: Simpler patterns using key Arabic words
-    ' Match lines starting with Arabic word for "sent" (تم) followed by email-related text
+    ' Match lines starting with Arabic word for "sent" (??) followed by email-related text
     re.pattern = "^\s*" & ChrW$(&H62A) & ChrW$(&H645) & ".*" & ChrW$(&H625) & ChrW$(&H644) & ChrW$(&H643) & ChrW$(&H62A) & ChrW$(&H631) & ChrW$(&H648) & ChrW$(&H646) & ChrW$(&H64A) & ".*" & ChrW$(&H62E) & ChrW$(&H627) & ChrW$(&H631) & ChrW$(&H62C) & ".*$(\r\n|\n)?"
     s = re.Replace(s, "")
 
-    ' Match lines containing "لا تنقر" (do not click)
+    ' Match lines containing "?? ????" (do not click)
     re.pattern = "^\s*" & ChrW$(&H644) & ChrW$(&H627) & " " & ChrW$(&H62A) & ChrW$(&H646) & ChrW$(&H642) & ChrW$(&H631) & ".*$(\r\n|\n)?"
     s = re.Replace(s, "")
 
@@ -1382,13 +1382,13 @@ Private Function DecodeCommonHtmlEntities(ByVal s As String) As String
     Dim re As Object
     Set re = CreateObject("VBScript.RegExp")
     re.Global = True
-    re.IgnoreCase = True
+    re.ignoreCase = True
 
     Dim m As Object, coll As Object
     Dim v As Long
 
     ' decimal entities (guarded against overflow)
-    re.Pattern = "&#(\d+);"
+    re.pattern = "&#(\d+);"
     Set coll = re.Execute(s)
 
     Dim decVal As String
@@ -1402,7 +1402,7 @@ Private Function DecodeCommonHtmlEntities(ByVal s As String) As String
                 If Err.Number = 0 Then
                     ' Guard 2: Range check (valid Unicode BMP characters)
                     If v >= 0 And v <= &HFFFF& Then
-                        s = Replace$(s, m.Value, ChrW(v))
+                        s = Replace$(s, m.value, ChrW(v))
                     End If
                 Else
                     Err.Clear
@@ -1413,7 +1413,7 @@ Private Function DecodeCommonHtmlEntities(ByVal s As String) As String
     Next m
 
     ' hex entities (guarded against overflow)
-    re.Pattern = "&#x([0-9A-Fa-f]+);"
+    re.pattern = "&#x([0-9A-Fa-f]+);"
     Set coll = re.Execute(s)
 
     Dim hexVal As String
@@ -1425,7 +1425,7 @@ Private Function DecodeCommonHtmlEntities(ByVal s As String) As String
             v = CLng("&H" & hexVal)
             If Err.Number = 0 Then
                 If v >= 0 And v <= &HFFFF& Then
-                    s = Replace$(s, m.Value, ChrW(v))
+                    s = Replace$(s, m.value, ChrW(v))
                 End If
             Else
                 Err.Clear
@@ -2198,7 +2198,7 @@ Private Function WriteConversationFromMail(ByVal seed As Outlook.MailItem, ByVal
     ' Include Sent Items across stores so nested originals are captured too
     Dim convMsgs As Collection
     Set convMsgs = CollectConversationMailsIncludingSent(seed)
-    If convMsgs Is Nothing Or convMsgs.Count = 0 Then Exit Function
+    If convMsgs Is Nothing Or convMsgs.count = 0 Then Exit Function
 
     Dim nAsc As Collection
     Dim nDesc As Collection
@@ -2211,7 +2211,7 @@ Private Function WriteConversationFromMail(ByVal seed As Outlook.MailItem, ByVal
     Set newest = nDesc(1)
 
     Dim smartSub As String
-    smartSub = MakeSmartSubject(NullToEmpty(newest.Subject))
+    smartSub = MakeSmartSubject(NullToEmpty(newest.subject))
     Dim subjFS As String
     subjFS = SanitizeName(smartSub)
     ' Stable conv_ref in nested, too (header only; file name already independent)
@@ -2227,10 +2227,10 @@ Private Function WriteConversationFromMail(ByVal seed As Outlook.MailItem, ByVal
     nestedTxtHuman = AppendPath(convDir, base & "_human.txt")
 
     Dim ok As Boolean
-    ok = WriteConversationFileRag(nestedTxtRag, nDesc, nRefRaw, smartSub, NullToEmpty(init.EntryID))
+    ok = WriteConversationFileRag(nestedTxtRag, nDesc, nRefRaw, smartSub, NullToEmpty(initialMail.entryId))
     If ok Then
         Dim okHuman As Boolean
-        okHuman = WriteConversationFileHuman(nestedTxtHuman, nDesc, nRefRaw, smartSub, NullToEmpty(init.EntryID))
+        okHuman = WriteConversationFileHuman(nestedTxtHuman, nDesc, nRefRaw, smartSub, NullToEmpty(initialMail.entryId))
         If Not okHuman Then
             Trace "  WARN: failed to write nested human conversation file: " & nestedTxtHuman
         End If
@@ -2449,11 +2449,12 @@ Public Function ProcessNestedMessageAttachmentsInFolder(ByVal mainSortedDesc As 
         Dim fld As Object: Set fld = fso.GetFolder(attDir)
         Dim fi As Object
         For Each fi In fld.Files
-            Dim ext As String
-            On Error Resume Next
-            ext = LCase$(fso.GetExtensionName(fi.path))
-            On Error GoTo 0
-            If ext = "msg" Or ext = "eml" Then list.Add fi.path
+            Dim nm As String
+            nm = LCase$(fso.GetFileName(fi.path))
+            ' Treat everything in attachments/ as an attachment, except our CSV log
+            If nm <> "attachments_log.csv" Then
+                list.Add fi.path
+            End If
         Next fi
 
         If list.count = 0 Then Exit For
@@ -2574,7 +2575,7 @@ Private Function InternalProcessConversationIfNew(ByVal seed As Outlook.MailItem
 
     ' 1) Build the conversation from the seed (includes Sent Items across stores)
     Set convMsgs = CollectConversationMailsIncludingSent(seed)
-    If convMsgs Is Nothing Or convMsgs.Count = 0 Then
+    If convMsgs Is Nothing Or convMsgs.count = 0 Then
         InternalProcessConversationIfNew = "SKIP: Could not enumerate the conversation."
         Exit Function
     End If
@@ -2586,7 +2587,7 @@ Private Function InternalProcessConversationIfNew(ByVal seed As Outlook.MailItem
     sig = BuildStableIdSignature(convMsgs)
 
     ' If ANY key was already processed this run, skip entirely (including signature)
-    For Each k In convKeys.Keys
+    For Each k In convKeys.keys
         If processedConvKeys.Exists(CStr(k)) Then
             InternalProcessConversationIfNew = "SKIP: conversation already processed in this run (ConvKey)."
             Exit Function
@@ -2604,7 +2605,7 @@ Private Function InternalProcessConversationIfNew(ByVal seed As Outlook.MailItem
     Set initialMail = sortedAsc(1)
     Set newestMail = sortedDesc(1)
 
-    smartSubj = MakeSmartSubject(NullToEmpty(newestMail.Subject))
+    smartSubj = MakeSmartSubject(NullToEmpty(newestMail.subject))
     ' Stable reference: earliest message date + 6-hex fingerprint of conv key; TML/EML if ANY message includes FLAG_ADDR
     convRefRaw = ComputeStableConvRef(initialMail, convMsgs)
 
@@ -2635,7 +2636,7 @@ Private Function InternalProcessConversationIfNew(ByVal seed As Outlook.MailItem
     pTxtHuman = AppendPath(convDir, "Conversation_human.txt")
 
     Trace "About to write: " & pTxtRag & " | conv_ref=" & convRefRaw
-    okWriteRag = WriteConversationFileRag(pTxtRag, sortedDesc, convRefRaw, smartSubj, NullToEmpty(initialMail.EntryID))
+    okWriteRag = WriteConversationFileRag(pTxtRag, sortedDesc, convRefRaw, smartSubj, NullToEmpty(initialMail.entryId))
     Trace "WriteConversationFileRag returned: " & CStr(okWriteRag)
 
     If Not okWriteRag Then
@@ -2645,7 +2646,7 @@ Private Function InternalProcessConversationIfNew(ByVal seed As Outlook.MailItem
     End If
 
     ' Human version is best-effort – failure shouldn't nuke the RAG export
-    okWriteHuman = WriteConversationFileHuman(pTxtHuman, sortedDesc, convRefRaw, smartSubj, NullToEmpty(initialMail.EntryID))
+    okWriteHuman = WriteConversationFileHuman(pTxtHuman, sortedDesc, convRefRaw, smartSubj, NullToEmpty(initialMail.entryId))
     If Not okWriteHuman Then
         Trace "  WARN: failed to write Conversation_human.txt (non-fatal)."
     End If
@@ -2660,7 +2661,7 @@ Private Function InternalProcessConversationIfNew(ByVal seed As Outlook.MailItem
                              GetRunOutRoot(), pTxtRag
 
     ' 7) Mark ALL keys of this conversation as processed for this run (plus signature)
-    For Each ck In convKeys.Keys
+    For Each ck In convKeys.keys
         processedConvKeys(ck) = True
     Next ck
     processedConvKeys(sig) = True
@@ -2910,7 +2911,10 @@ End Sub
 '========================= JSON helpers ========================================
 
 Private Function JsonQuote(ByVal s As String) As String
-    If Len(s) = 0 Then JsonQuote = """""""": Exit Function
+    If Len(s) = 0 Then
+        JsonQuote = """" & """"   ' results in ""
+        Exit Function
+    End If
     s = Replace$(s, "\", "\\")
     s = Replace$(s, """", "\""")
     s = Replace$(s, vbCrLf, "\n")
@@ -3049,7 +3053,7 @@ Private Function FileSha256HexNormalized(ByVal filePath As String) As String
     On Error GoTo EH
     Dim fso As Object
     Set fso = CreateObject("Scripting.FileSystemObject")
-    If Not fso.FileExists(filePath) Then Exit Function
+    If Not fso.fileExists(filePath) Then Exit Function
 
     ' Read content and normalize line endings to LF
     Dim raw As String
@@ -3083,14 +3087,14 @@ Private Function ComputeSha256Hex(ByVal content As String) As String
     Dim bytes As Variant
 
     ' SHA256 of empty string constant
-    If stm.Size = 0 Then
+    If stm.size = 0 Then
         stm.Close
         ComputeSha256Hex = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         Exit Function
     End If
 
     ' Skip UTF-8 BOM if present (>3 bytes), else read from start
-    If stm.Size > 3 Then
+    If stm.size > 3 Then
         stm.Position = 3
     Else
         stm.Position = 0
@@ -3144,8 +3148,10 @@ Private Function BytesToHex(ByVal bytes As Variant) As String
     If Not IsArray(bytes) Then Exit Function
 
     For i = LBound(bytes) To UBound(bytes)
-        hexStr = hexStr & Right$("0" & Hex$(bytes(i)), 2)
+        hexStr = hexStr & Right$("0" & hex$(bytes(i)), 2)
     Next i
 
     BytesToHex = LCase$(hexStr)
 End Function
+
+

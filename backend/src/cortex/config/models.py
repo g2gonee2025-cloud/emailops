@@ -149,7 +149,8 @@ class DatabaseConfig(BaseModel):
 
     url: str = Field(
         default_factory=lambda: _env(
-            "DB_URL", "postgresql://postgres:postgres@localhost:5432/cortex"
+            "OUTLOOKCORTEX_DB_URL",
+            "postgresql://postgres:postgres@localhost:5432/cortex",
         ),
         description="Database connection URL",
     )
@@ -733,6 +734,22 @@ class SecurityConfig(BaseModel):
             if s.strip()
         },
         description="Blocked file extensions",
+    )
+
+    model_config = {"extra": "forbid"}
+
+
+# -----------------------------------------------------------------------------
+# PII Configuration
+# -----------------------------------------------------------------------------
+
+
+class PiiConfig(BaseModel):
+    """PII processing configuration."""
+
+    strict: bool = Field(
+        default_factory=lambda: _env("PII_STRICT", True, bool),
+        description="If true, require Presidio initialization; else fallback to regex without aborting.",
     )
 
     model_config = {"extra": "forbid"}

@@ -50,11 +50,11 @@ def handle_ingest_job(payload: dict[str, Any]) -> bool:
     Returns:
         True if successful
     """
-    from cortex.ingestion.mailroom import IngestJob
     from cortex.ingestion.mailroom import process_job as run_ingest
+    from cortex.ingestion.models import IngestJobRequest
 
     try:
-        ingest_job = IngestJob(**payload)
+        ingest_job = IngestJobRequest(**payload)
         summary = run_ingest(ingest_job)
 
         if summary.aborted_reason:

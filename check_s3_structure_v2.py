@@ -40,8 +40,6 @@ print(f"Connecting to {ENDPOINT} bucket {BUCKET}...")
 client = boto3.client(
     "s3",
     endpoint_url=ENDPOINT,
-    aws_access_key_id=ACCESS_KEY,
-    aws_secret_access_key=SECRET_KEY,
     region_name=REGION,
     config=Config(signature_version="s3v4"),
 )

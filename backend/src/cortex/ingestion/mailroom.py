@@ -13,66 +13,17 @@ import tempfile
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
-from cortex.ingestion.conv_manifest.validation import Problem
-from cortex.ingestion.parser_email import normalize_subject
+from cortex.ingestion.core_manifest import resolve_subject
+from cortex.ingestion.models import IngestJobRequest, IngestJobSummary, Problem
 from cortex.ingestion.pii import PIIInitError
-from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
 
-class IngestJob(BaseModel):
-    """
-    Ingestion job contract.
-
-    Blueprint §6.1:
-    * job_id: UUID
-    * tenant_id: str
-    * source_type: Literal["s3", "sftp", "local_upload"]
-    * source_uri: str
-    * options: Dict[str, Any]
-    """
-
-    job_id: uuid.UUID
-    tenant_id: str
-    source_type: Literal["s3", "sftp", "local_upload"]
-    source_uri: str
-    options: Dict[str, Any] = Field(default_factory=dict)
-
-
-class IngestJobSummary(BaseModel):
-    """
-    Ingestion job summary.
-
-    Blueprint §6.1:
-    * job_id: UUID
-    * tenant_id: str
-    * messages_total: int
-    * messages_ingested: int
-    * messages_failed: int
-    * attachments_total: int
-    * attachments_parsed: int
-    * attachments_failed: int
-    * problems: List[Problem]
-    * aborted_reason: Optional[str]
-    """
-
-    job_id: uuid.UUID
-    tenant_id: str
-    messages_total: int = 0
-    messages_ingested: int = 0
-    messages_failed: int = 0
-    attachments_total: int = 0
-    attachments_parsed: int = 0
-    attachments_failed: int = 0
-    problems: List[Problem] = Field(default_factory=lambda: [])
-    aborted_reason: Optional[str] = None
-
-
-def process_job(job: IngestJob) -> IngestJobSummary:
+def process_job(job: IngestJobRequest) -> IngestJobSummary:
     """
     Process an ingestion job.
 
@@ -259,7 +210,7 @@ def _resolve_sender(config: Any) -> str:
 
 
 def _ingest_conversation(
-    convo_dir: Path, job: IngestJob, summary: IngestJobSummary
+    convo_dir: Path, job: IngestJobRequest, summary: IngestJobSummary
 ) -> IngestJobSummary:
     from cortex.chunking.chunker import ChunkingInput, Span, chunk_text
     from cortex.config.loader import get_config
@@ -286,10 +237,7 @@ def _ingest_conversation(
     manifest = convo_data.get("manifest", {})
     summary_json = convo_data.get("summary", {})
 
-    subject = (
-        manifest.get("subject_label") or summary_json.get("subject") or convo_dir.name
-    )
-    subject_norm = normalize_subject(subject)
+    subject, subject_norm = resolve_subject(manifest, summary_json, convo_dir.name)
 
     created_at = now
     updated_at = now

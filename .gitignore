@@ -207,6 +207,11 @@ service-account*.json
 credentials*.json
 *_credentials*
 gcp-key*.json
+k8s/*secrets*.yaml
+k8s/*kubeconfig*.yaml
+k8s/secrets*.yaml
+k8s/*-kubeconfig.yaml
+emailops_vertex_ai.und/
 
 # CRITICAL: Never commit validated account files
 validated_accounts.json

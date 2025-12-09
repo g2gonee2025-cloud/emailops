@@ -64,10 +64,10 @@ target_metadata = Base.metadata
 def get_url() -> str:
     config_obj = get_config()
     database = getattr(config_obj, "database", None)
-    db_url = getattr(database, "url", None)
-    if db_url is None:
+    OUTLOOKCORTEX_DB_URL = getattr(database, "url", None)
+    if OUTLOOKCORTEX_DB_URL is None:
         raise RuntimeError("Database configuration is missing a URL.")
-    return str(db_url)
+    return str(OUTLOOKCORTEX_DB_URL)
 
 
 def _build_sqlalchemy_config() -> Dict[str, Any]:

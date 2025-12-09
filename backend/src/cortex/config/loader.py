@@ -26,6 +26,7 @@ from .models import (
     FilePatternsConfig,
     GcpConfig,
     LimitsConfig,
+    PiiConfig,
     ProcessingConfig,
     RetryConfig,
     SearchConfig,
@@ -75,6 +76,7 @@ class EmailOpsConfig(BaseModel):
     sensitive: SensitiveConfig = Field(default_factory=SensitiveConfig)
     file_patterns: FilePatternsConfig = Field(default_factory=FilePatternsConfig)
     unified: UnifiedConfig = Field(default_factory=UnifiedConfig)
+    pii: PiiConfig = Field(default_factory=PiiConfig)
 
     model_config = {"extra": "forbid"}
 
@@ -164,7 +166,7 @@ class EmailOpsConfig(BaseModel):
 
         # System settings
         os.environ["LOG_LEVEL"] = self.system.log_level
-        os.environ["DB_URL"] = self.database.url
+        os.environ["OUTLOOKCORTEX_DB_URL"] = self.database.url
 
         # Credential file discovery
         cred_file = self.get_credential_file()

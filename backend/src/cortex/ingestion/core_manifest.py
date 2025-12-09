@@ -6,6 +6,9 @@ import re
 from pathlib import Path
 from typing import Any
 
+from cortex.ingestion.parser_email import normalize_subject
+from cortex.ingestion.text_utils import strip_control_chars
+
 """
 core_manifest.py - Centralized manifest.json parsing and metadata extraction.
 
@@ -18,8 +21,6 @@ All other modules should import from here instead of duplicating logic.
 """
 
 logger = logging.getLogger(__name__)
-# Control character pattern
-_CONTROL_CHARS = re.compile(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]")
 
 
 def _load_manifest_json(text: str) -> dict[str, Any]:
@@ -32,6 +33,27 @@ def _load_manifest_json(text: str) -> dict[str, Any]:
         type(data).__name__,
     )
     return {}
+
+
+def parse_manifest_text(text: str, *, source: str = "<string>") -> dict[str, Any]:
+    """Canonical manifest parser from raw text with repairs and control-char stripping."""
+
+    sanitized = strip_control_chars(text)
+    sanitized = sanitized.replace(':"""', ':""').replace(': """', ': ""')
+
+    try:
+        return _load_manifest_json(sanitized)
+    except json.JSONDecodeError:
+        repaired = re.sub(r"(?<!\\)\\(?![\"\\/bfnrtu])", r"\\\\", sanitized)
+        try:
+            return _load_manifest_json(repaired)
+        except json.JSONDecodeError as e2:
+            logger.error(
+                "Failed to parse manifest for %s: %s. Using empty manifest.",
+                source,
+                e2,
+            )
+            return {}
 
 
 # ============================================================================
@@ -69,23 +91,7 @@ def load_manifest(convo_dir: Path) -> dict[str, Any]:
             logger.warning(
                 "Manifest at %s was not valid UTF-8, fell back to latin-1.", convo_dir
             )
-        # Aggressive sanitization to catch a wider range of control chars.
-        sanitized = _CONTROL_CHARS.sub("", raw_text)
-        # 1) Try strict JSON first (no repair)
-        try:
-            return _load_manifest_json(sanitized)
-        except json.JSONDecodeError:
-            # 2) Apply backslash repair then try JSON again
-            repaired = re.sub(r'(?<!\\)\\(?!["\\/bfnrtu])', r"\\\\", sanitized)
-            try:
-                return _load_manifest_json(repaired)
-            except json.JSONDecodeError as e2:
-                logger.error(
-                    "Failed to parse manifest for %s: %s. Using empty manifest.",
-                    convo_dir,
-                    e2,
-                )
-                return {}
+        return parse_manifest_text(raw_text, source=str(convo_dir))
     except Exception as e:
         logger.warning(
             "Unexpected error while loading manifest from %s: %s. Skipping.",
@@ -170,6 +176,25 @@ def extract_metadata_lightweight(manifest: dict[str, Any]) -> dict[str, Any]:
         "start_date": start_date,
         "end_date": end_date,
     }
+
+
+# ============================================================================
+# Subject Resolution (Canonical)
+# ============================================================================
+def resolve_subject(
+    manifest: dict[str, Any], summary: dict[str, Any] | None, folder_name: str
+) -> tuple[str, str]:
+    """Resolve display and normalized subject from manifest/summary/folder."""
+
+    subject_display = (
+        (manifest or {}).get("smart_subject")
+        or (manifest or {}).get("subject_label")
+        or (manifest or {}).get("subject")
+        or (summary or {}).get("subject")
+        or folder_name
+    )
+    subject_norm = normalize_subject(subject_display)
+    return subject_display, subject_norm
 
 
 # ============================================================================
@@ -327,4 +352,6 @@ __all__ = [
     "extract_participants_detailed",
     "get_conversation_metadata",
     "load_manifest",
+    "parse_manifest_text",
+    "resolve_subject",
 ]

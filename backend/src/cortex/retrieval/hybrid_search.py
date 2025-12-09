@@ -512,7 +512,7 @@ def _get_thread_timestamps(
         """
         SELECT thread_id, updated_at
         FROM threads
-        WHERE thread_id = ANY(:thread_ids)
+        WHERE thread_id = ANY(CAST(:thread_ids AS UUID[]))
         AND tenant_id = :tenant_id
     """
     )

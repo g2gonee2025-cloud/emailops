@@ -6,19 +6,16 @@ from __future__ import annotations
 
 import json
 import logging
-import re
 from pathlib import Path
 from typing import Any
 
 from cortex.config.loader import get_config
+from cortex.ingestion.attachments import extract_attachment_text
 from cortex.ingestion.core_manifest import load_manifest
-from cortex.text_extraction import extract_text
+from cortex.ingestion.text_utils import strip_control_chars
 from cortex.utils import read_text_file, scrub_json
 
 logger = logging.getLogger(__name__)
-
-# Control character pattern
-_CONTROL_CHARS = re.compile(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]")
 
 
 def _load_conversation_text(convo_dir: Path) -> str:
@@ -40,13 +37,14 @@ def _load_conversation_text(convo_dir: Path) -> str:
     return ""
 
 
-def _load_summary(convo_dir: Path) -> dict[str, Any]:
-    """Load and parse the summary.json file."""
+def load_summary(convo_dir: Path) -> dict[str, Any]:
+    """Load and parse the summary.json file with scrubbing."""
     summary_json_path = convo_dir / "summary.json"
     if not summary_json_path.exists():
         return {}
     try:
-        return scrub_json(json.loads(summary_json_path.read_text(encoding="utf-8-sig")))
+        content = summary_json_path.read_text(encoding="utf-8-sig")
+        return scrub_json(json.loads(strip_control_chars(content)))
     except (json.JSONDecodeError, OSError):
         return {}
 
@@ -57,26 +55,13 @@ def _process_single_attachment(
     skip_if_attachment_over_mb: float,
 ) -> dict[str, Any] | None:
     """Helper to process a single attachment file."""
-    try:
-        if skip_if_attachment_over_mb and skip_if_attachment_over_mb > 0:
-            try:
-                mb = att_file.stat().st_size / (1024 * 1024)
-                if mb > skip_if_attachment_over_mb:
-                    logger.info(
-                        "Skipping large attachment (%.2f MB > %.2f MB): %s",
-                        mb,
-                        skip_if_attachment_over_mb,
-                        att_file,
-                    )
-                    return None
-            except OSError:
-                pass
-
-        txt = extract_text(att_file, max_chars=max_attachment_text_chars)
-        if txt.strip():
-            return {"path": str(att_file), "text": txt}
-    except OSError as e:
-        logger.warning("Failed to process attachment %s: %s", att_file, e)
+    text = extract_attachment_text(
+        att_file,
+        max_chars=max_attachment_text_chars,
+        skip_if_attachment_over_mb=skip_if_attachment_over_mb,
+    )
+    if text:
+        return {"path": str(att_file), "text": text}
     return None
 
 
@@ -204,7 +189,7 @@ def load_conversation(
         "path": str(convo_dir),
         "conversation_txt": conversation_text,
         "attachments": attachments,
-        "summary": _load_summary(convo_dir),
+        "summary": load_summary(convo_dir),
         "manifest": manifest,
     }
 
@@ -215,7 +200,7 @@ def _collect_attachment_files(convo_dir: Path) -> list[Path]:
     Refactored for performance and reduced I/O.
     """
     all_files: set[Path] = set()
-    excluded = {"Conversation.txt", "manifest.json", "summary.json"}
+    excluded = {"Conversation.txt", "conversation.txt", "manifest.json", "summary.json"}
 
     # Pass 1: Collect files from conversation directory
     try:

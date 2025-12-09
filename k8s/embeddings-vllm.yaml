@@ -20,41 +20,42 @@ spec:
         app: emailops
         component: embeddings
     spec:
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
       containers:
         - name: vllm
           image: vllm/vllm-openai:latest
           args:
             - "--model"
             - "tencent/KaLM-Embedding-Gemma3-12B-2511"
-            - "--revision"
-            - "CausalLM"
             - "--task"
             - "embed"
+            - "--revision"
+            - "CausalLM"
+            - "--enforce-eager"
+            - "--trust-remote-code"
             - "--port"
             - "80"
-            - "--enforce-eager"
-            - "--dtype"
-            - "bfloat16"
             - "--max-model-len"
             - "8192"
           env:
             - name: HF_HUB_ENABLE_HF_TRANSFER
               value: "1"
-            - name: HF_HOME
-              value: "/data"
-          volumeMounts:
-            - name: model-cache
-              mountPath: /data
           ports:
             - containerPort: 80
               name: http
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: dshm
           resources:
             requests:
               memory: "32Gi"
-              cpu: "6"
+              cpu: "4"
               nvidia.com/gpu: "1"
             limits:
-              memory: "48Gi"
+              memory: "40Gi"
               cpu: "8"
               nvidia.com/gpu: "1"
           startupProbe:
@@ -67,12 +68,8 @@ spec:
             httpGet:
               path: /health
               port: 80
-            initialDelaySeconds: 10
+            initialDelaySeconds: 60
             periodSeconds: 20
-      volumes:
-        - name: model-cache
-          persistentVolumeClaim:
-            claimName: embeddings-model-cache
       tolerations:
         - key: "nvidia.com/gpu"
           operator: "Exists"

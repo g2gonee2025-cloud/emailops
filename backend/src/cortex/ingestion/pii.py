@@ -7,12 +7,15 @@ Implements §6.4 of the Canonical Blueprint:
 - Supports multiple entity types for comprehensive PII coverage
 - Provides statistics on detected entities for auditing
 """
+# pyright: reportMissingImports=false, reportOptionalCall=false
 from __future__ import annotations
 
 import logging
 import re
 from dataclasses import dataclass, field
 from typing import Any
+
+from cortex.config.loader import get_config
 
 logger = logging.getLogger(__name__)
 
@@ -167,12 +170,12 @@ class PIIEngine:
         self.entities = entities or SUPPORTED_ENTITIES
         self.language = language
         self.score_threshold = score_threshold
-        self.analyzer: Any = None
-        self.anonymizer: Any = None
+        self.analyzer: Any | None = None
+        self.anonymizer: Any | None = None
         self._fallback = RegexPIIFallback()
         self._operators: dict[str, Any] = {}
 
-        if _HAS_PRESIDIO:
+        if _HAS_PRESIDIO and callable(_AnalyzerEngine) and callable(_AnonymizerEngine):
             try:
                 self.analyzer = _AnalyzerEngine()
                 self.anonymizer = _AnonymizerEngine()
@@ -197,7 +200,7 @@ class PIIEngine:
 
     def _build_operators(self) -> None:
         """Build anonymization operators for each entity type."""
-        if not _HAS_PRESIDIO or _OperatorConfig is None:
+        if not _HAS_PRESIDIO or not callable(_OperatorConfig):
             return
 
         for entity_type in self.entities:
@@ -375,8 +378,10 @@ def get_pii_engine() -> PIIEngine:
     """Get the singleton PII engine instance."""
     global _engine
     if _engine is None:
-        # Strict mode enabled by default per Blueprint §6.4
-        _engine = PIIEngine(strict=True)
+        config = get_config()
+        strict_cfg = getattr(config, "pii", None)
+        strict_mode = strict_cfg.strict if strict_cfg is not None else True
+        _engine = PIIEngine(strict=strict_mode)
     return _engine
 
 

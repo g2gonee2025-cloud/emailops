@@ -1,14 +1,14 @@
 <#
 Purpose: Back up DB to a local dump (optional upload), then destroy DOKS cluster, managed PG, and any listed droplets.
-Prereqs: doctl, pg_dump, optional aws/s3cmd for upload; DIGITALOCEAN_ACCESS_TOKEN set.
+Prereqs: doctl, pg_dump, optional s3cmd for upload; DIGITALOCEAN_ACCESS_TOKEN set.
 Safety: Will delete resources by name; confirm via -Force to skip prompts.
 #>
 param(
-    [string]$ClusterName = "do-sgp1-emailops-k8s",
-    [string]$DbName = "emailops-db",
+    [string]$ClusterName = "do-tor1-emailops-k8s",
+    [string]$DbName = "emailops-db-tor1",
     [string]$BackupDir = "./backups",
     [string]$SpacesBucket = "emailops-backups",
-    [string]$Region = "sgp1",
+    [string]$Region = "tor1",
     [switch]$UploadToSpaces,
     [switch]$Force,
     [switch]$SkipBackup,
@@ -16,13 +16,13 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-function Require-Cmd($name) {
+function Test-Command($name) {
     if (-not (Get-Command $name -ErrorAction SilentlyContinue)) {
         throw "Missing required command: $name"
     }
 }
 
-Require-Cmd doctl
+Test-Command doctl
 
 $pgDumpAvailable = $true
 if (-not (Get-Command pg_dump -ErrorAction SilentlyContinue)) {
@@ -37,18 +37,18 @@ if (-not $env:DIGITALOCEAN_ACCESS_TOKEN) {
 $BackupPath = Resolve-Path (New-Item -ItemType Directory -Force -Path $BackupDir)
 
 Write-Host "Fetching DB connection URL..."
-$DB_URL = $null
+$OUTLOOKCORTEX_DB_URL = $null
 try {
     $connJson = doctl databases connection $DbName --output json | Out-String
     $connObj = $connJson | ConvertFrom-Json
     if ($connObj -and $connObj[0].uri) {
-        $DB_URL = $connObj[0].uri
+        $OUTLOOKCORTEX_DB_URL = $connObj[0].uri
     }
 } catch {
     Write-Warning "Could not fetch DB URL (db may already be deleted): $_"
 }
 
-if (-not $DB_URL) {
+if (-not $OUTLOOKCORTEX_DB_URL) {
     Write-Warning "DB URL unavailable; skipping backup"
     $SkipBackup = $true
 }
@@ -61,7 +61,7 @@ if ($SkipBackup) {
     $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
     $dumpFile = Join-Path $BackupPath "${DbName}_${timestamp}.dump"
     Write-Host "Dumping DB to $dumpFile ..."
-    pg_dump --format=custom --file="$dumpFile" "$DB_URL"
+    pg_dump --format=custom --file="$dumpFile" "$OUTLOOKCORTEX_DB_URL"
 
     if ($UploadToSpaces) {
         if (Get-Command aws -ErrorAction SilentlyContinue) {

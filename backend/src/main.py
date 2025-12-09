@@ -22,7 +22,7 @@ import time
 import uuid
 from contextlib import asynccontextmanager
 from contextvars import ContextVar
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 import requests
 from cortex.common.exceptions import (
@@ -53,7 +53,7 @@ user_id_ctx: ContextVar[str] = ContextVar("user_id", default="")
 claims_ctx: ContextVar[dict[str, Any]] = ContextVar("claims", default={})
 
 # JWT/JWKS helpers
-_jwt_decoder: Optional[callable] = None
+_jwt_decoder: Optional[Callable[[str], dict[str, Any]]] = None
 _jwks_cache: dict[str, Any] = {}
 
 

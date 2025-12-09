@@ -6,11 +6,12 @@ Implements §6.8 of the Canonical Blueprint.
 from __future__ import annotations
 
 import logging
-import re
 from typing import Any, Dict, Literal, Optional, Protocol, Tuple
 
 from cortex.email_processing import clean_email_text
+from cortex.ingestion.constants import CLEANING_VERSION
 from cortex.ingestion.pii import redact_pii
+from cortex.ingestion.text_utils import strip_control_chars
 
 logger = logging.getLogger(__name__)
 
@@ -53,9 +54,7 @@ class DefaultTextPreprocessor:
     """
 
     def __init__(self):
-        self.cleaning_version = "v1"
-        # Control chars: keep tab, newline, carriage return
-        self._control_chars = re.compile(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]")
+        self.cleaning_version = CLEANING_VERSION
 
     def prepare_for_indexing(
         self,
@@ -71,7 +70,7 @@ class DefaultTextPreprocessor:
         meta = (metadata or {}).copy()
 
         # 1. Basic sanitization
-        cleaned = self._strip_control_chars(text)
+        cleaned = strip_control_chars(text)
 
         # 2. Type-specific cleaning
         if text_type == "email":
@@ -79,7 +78,7 @@ class DefaultTextPreprocessor:
             cleaned = clean_email_text(cleaned)
         elif text_type == "attachment":
             # Basic whitespace normalization for docs
-            cleaned = re.sub(r"\s+", " ", cleaned).strip()
+            cleaned = " ".join(cleaned.split())
 
         # 3. PII Redaction (§6.4)
         cleaned = self._redact_pii(cleaned)
@@ -96,10 +95,6 @@ class DefaultTextPreprocessor:
         )
 
         return cleaned, meta
-
-    def _strip_control_chars(self, text: str) -> str:
-        """Remove non-printable control characters."""
-        return self._control_chars.sub("", text)
 
     def _redact_pii(self, text: str) -> str:
         """

@@ -10,7 +10,8 @@ import logging
 
 from cortex.audit import log_audit_event
 from cortex.models.api import AnswerRequest, AnswerResponse
-from cortex.observability import trace_operation
+
+# from cortex.observability import trace_operation
 from cortex.orchestration.graphs import build_answer_graph
 from fastapi import APIRouter, HTTPException, Request
 
@@ -22,7 +23,7 @@ _answer_graph = build_answer_graph().compile()
 
 
 @router.post("/answer", response_model=AnswerResponse)
-@trace_operation("api_answer")
+# @trace_operation("api_answer")
 async def answer_api(request: AnswerRequest, http_request: Request):
     """
     Generate an answer for the user query using RAG.

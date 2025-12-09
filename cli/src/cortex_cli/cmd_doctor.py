@@ -488,16 +488,16 @@ def check_ingest(config: Any, root: Path) -> tuple[bool, dict[str, Any], str | N
         try:
             from cortex.ingestion.text_preprocessor import TextPreprocessor
 
-            # Instantiate to check for model loading issues (spacy etc)
-            _ = TextPreprocessor()
-            details["preprocessor_ok"] = True
+            # Check if the module can be imported (it's a Protocol, so don't instantiate)
+            if TextPreprocessor:
+                details["preprocessor_ok"] = True
         except ImportError:
             details["preprocessor_ok"] = False
             return False, details, "Failed to import text preprocessor"
         except Exception as e:
             details["preprocessor_ok"] = False
             # This might fail if spacy model missing, which is a valid check failure
-            return False, details, f"Preprocessor init failed: {e}"
+            return False, details, f"Preprocessor import failed: {e}"
 
         return True, details, None
     except Exception as e:
@@ -726,6 +726,10 @@ Examples:
     if args.check_db:
         if not args.json:
             print(f"\n{_c('▶ Checking database...', 'cyan')}")
+            print(
+                f"  DEBUG: OUTLOOKCORTEX_DB_URL env: {os.environ.get('OUTLOOKCORTEX_DB_URL')}"
+            )
+            print(f"  DEBUG: Config DB URL: {config.database.url}")
 
         success, error = check_postgres(config)
         db_success = success

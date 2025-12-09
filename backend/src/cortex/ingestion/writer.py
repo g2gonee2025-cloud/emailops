@@ -10,22 +10,21 @@ Ensures all chunks have:
 """
 from __future__ import annotations
 
-import hashlib
 import logging
 from typing import Any, Dict
 
 from cortex.db.models import Attachment, Chunk, Message, Thread
-from cortex.ingestion.mailroom import IngestJob
+from cortex.ingestion.constants import CLEANING_VERSION
+from cortex.ingestion.models import IngestJobRequest
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
-# Current cleaning algorithm version - bump when cleaner logic changes
-CLEANING_VERSION = "1.0.0"
-
 
 def compute_content_hash(text: str) -> str:
     """Compute SHA-256 hash of content for deduplication."""
+    import hashlib
+
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
@@ -78,7 +77,7 @@ class DBWriter:
     def __init__(self, session: Session):
         self.session = session
 
-    def write_job_results(self, job: IngestJob, results: Dict[str, Any]) -> None:
+    def write_job_results(self, job: IngestJobRequest, results: Dict[str, Any]) -> None:
         """
         Write ingestion results to DB.
 
@@ -145,7 +144,7 @@ class DBWriter:
                 chunk_type = chunk_data.get("chunk_type", "unknown")
                 if chunk_data.get("attachment_id"):
                     source = "attachment"
-                elif chunk_type == "quoted":
+                elif chunk_type in {"quoted", "quoted_history"}:
                     source = "quoted_block"
                 else:
                     source = "email_body"
