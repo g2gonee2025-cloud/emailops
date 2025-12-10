@@ -23,9 +23,9 @@ else:
     print(".env file not found!")
 
 # Configuration from .env
-ENDPOINT = os.getenv("S3_ENDPOINT", "https://sgp1.digitaloceanspaces.com")
-REGION = os.getenv("S3_REGION", "sgp1")
-BUCKET = os.getenv("S3_BUCKET_RAW", "emailops-storage-sgp1")
+ENDPOINT = os.getenv("S3_ENDPOINT")
+REGION = os.getenv("S3_REGION")
+BUCKET = os.getenv("S3_BUCKET_RAW")
 ACCESS_KEY = os.getenv("S3_ACCESS_KEY")
 SECRET_KEY = os.getenv("S3_SECRET_KEY")
 PREFIX = "raw/outlook/"
