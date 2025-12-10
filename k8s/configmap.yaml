@@ -20,9 +20,9 @@ data:
   DO_LLM_BASE_URL: "http://embeddings-api.emailops.svc.cluster.local"
   
   # S3/Spaces Configuration (DigitalOcean Spaces - Singapore)
-  S3_ENDPOINT: "https://sgp1.digitaloceanspaces.com"
-  S3_REGION: "sgp1"
-  S3_BUCKET_RAW: "emailops-storage-sgp1"
+  S3_ENDPOINT: "https://tor1.digitaloceanspaces.com"
+  S3_REGION: "tor1"
+  S3_BUCKET_RAW: "emailops-storage-tor1"
   
   # Server configuration
   PORT: "8000"

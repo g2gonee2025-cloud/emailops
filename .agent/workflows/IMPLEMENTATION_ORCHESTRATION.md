@@ -1,3 +1,7 @@
+---
+description: Outlook Cortex Implementation QS
+---
+
 # 🚀 Outlook Cortex Implementation Orchestration
 
 > **Status:** Active

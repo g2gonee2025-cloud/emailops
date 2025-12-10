@@ -110,8 +110,8 @@ ipython_config.py
 # ============================================
 
 # Virtual environments / dotenvs
-.env
-.env.*
+!.env
+!.env.example
 !.env.example
 !.env.*.template
 .venv
@@ -207,10 +207,6 @@ service-account*.json
 credentials*.json
 *_credentials*
 gcp-key*.json
-k8s/*secrets*.yaml
-k8s/*kubeconfig*.yaml
-k8s/secrets*.yaml
-k8s/*-kubeconfig.yaml
 emailops_vertex_ai.und/
 
 # CRITICAL: Never commit validated account files
@@ -305,6 +301,7 @@ yarn-error.log*
 .*/
 !.streamlit/
 !.streamlit/config.toml
+!.agent/
 
 # Exclude all directories starting with underscore
 _*/
@@ -323,3 +320,10 @@ COMPREHENSIVE_CODE_ANALYSIS.html
 function_usage_stats.csv
 FUNCTION_USAGE_STATS.html
 UNUSED_CODE_REPORT.html
+.env
+.gitignore
+k8s/secrets_live.yaml
+ASUS
+ASUS.pub
+k8s/secrets.yaml
+k8s/do-tor1-emailops-k8s-kubeconfig.yaml

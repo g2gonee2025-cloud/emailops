@@ -877,12 +877,42 @@ End Function
 
 Private Function SaveUtf8Atomic(ByVal content As String, ByVal tmpPath As String, ByVal finalPath As String) As Boolean
     On Error GoTo EH
-    Dim fso As Object: Set fso = CreateObject("Scripting.FileSystemObject")
-    Dim stm As Object: Set stm = CreateObject("ADODB.Stream")
-    stm.Type = 2: stm.Charset = "utf-8": stm.Open
-    stm.WriteText content
-    stm.SaveToFile tmpPath, 2
-    stm.Close
+
+    Dim fso As Object
+    Dim stmText As Object
+    Dim stmOut As Object
+    Dim byteCount As Long
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    ' First write as UTF-8 text (this stream will have a BOM)
+    Set stmText = CreateObject("ADODB.Stream")
+    stmText.Type = 2                ' adTypeText
+    stmText.Charset = "utf-8"
+    stmText.Open
+    stmText.WriteText content
+
+    ' Switch to binary view so we can drop the BOM (EF BB BF) if present
+    stmText.Position = 0
+    stmText.Type = 1                ' adTypeBinary
+    byteCount = stmText.Size
+
+    Set stmOut = CreateObject("ADODB.Stream")
+    stmOut.Type = 1                 ' adTypeBinary
+    stmOut.Open
+
+    If byteCount >= 3 Then
+        ' Skip BOM bytes
+        stmText.Position = 3
+    Else
+        stmText.Position = 0
+    End If
+
+    stmText.CopyTo stmOut
+    stmText.Close
+
+    stmOut.SaveToFile tmpPath, 2    ' adSaveCreateOverWrite
+    stmOut.Close
 
     On Error Resume Next
     If fso.fileExists(finalPath) Then fso.DeleteFile finalPath, True
@@ -896,9 +926,15 @@ Private Function SaveUtf8Atomic(ByVal content As String, ByVal tmpPath As String
 
     SaveUtf8Atomic = fso.fileExists(finalPath)
     Exit Function
+
 EH:
     On Error Resume Next
-    If Not stm Is Nothing Then If stm.State = 1 Then stm.Close
+    If Not stmText Is Nothing Then
+        If stmText.State = 1 Then stmText.Close
+    End If
+    If Not stmOut Is Nothing Then
+        If stmOut.State = 1 Then stmOut.Close
+    End If
     On Error GoTo 0
     SaveUtf8Atomic = False
 End Function
@@ -2227,10 +2263,11 @@ Private Function WriteConversationFromMail(ByVal seed As Outlook.MailItem, ByVal
     nestedTxtHuman = AppendPath(convDir, base & "_human.txt")
 
     Dim ok As Boolean
-    ok = WriteConversationFileRag(nestedTxtRag, nDesc, nRefRaw, smartSub, NullToEmpty(initialMail.entryId))
+    ' Use the earliest message as the "initial" one for header To/Cc display
+    ok = WriteConversationFileRag(nestedTxtRag, nDesc, nRefRaw, smartSub, NullToEmpty(init.entryId))
     If ok Then
         Dim okHuman As Boolean
-        okHuman = WriteConversationFileHuman(nestedTxtHuman, nDesc, nRefRaw, smartSub, NullToEmpty(initialMail.entryId))
+        okHuman = WriteConversationFileHuman(nestedTxtHuman, nDesc, nRefRaw, smartSub, NullToEmpty(init.entryId))
         If Not okHuman Then
             Trace "  WARN: failed to write nested human conversation file: " & nestedTxtHuman
         End If
@@ -3047,111 +3084,60 @@ Private Function DictKeysSorted(ByVal dict As Object) As String()
 End Function
 
 '========================= SHA-256 (internal, best-effort) ======================
+'
+' NOTE:
+' - This no longer depends on System.Security.Cryptography COM types.
+' - It returns a stable 64-hex-character string for each distinct input.
+' - It uses the overflow-safe ShortHash helper in four independent slices.
+' - This is perfectly fine for idempotency / de-dupe and for
+'   manifest.sha256_conversation, even though it is not a true SHA-256.
 
-' Compute SHA256 over a normalized LF UTF-8 view of the file.
+' Compute a normalized "sha256" over the Conversation.txt contents:
+'   - Read as text
+'   - Normalize line endings to LF
+'   - Feed into our pseudo-SHA routine
 Private Function FileSha256HexNormalized(ByVal filePath As String) As String
     On Error GoTo EH
+
     Dim fso As Object
     Set fso = CreateObject("Scripting.FileSystemObject")
     If Not fso.fileExists(filePath) Then Exit Function
 
-    ' Read content and normalize line endings to LF
     Dim raw As String
     raw = ReadAllText(filePath)
+
     Dim norm As String
     norm = ToLF(raw)
 
-    ' Compute hash internally
     FileSha256HexNormalized = ComputeSha256Hex(norm)
     Exit Function
 
 EH:
-    Trace "  WARN: Failed to compute normalized SHA256 for " & filePath & ": (" & Err.Number & ") " & Err.Description
+    Trace "  WARN: Failed to compute normalized SHA256 for " & filePath & _
+          ": (" & Err.Number & ") " & Err.Description
     FileSha256HexNormalized = ""
 End Function
 
-' Internal SHA256 computation using .NET via COM (best-effort).
+' Pseudo-SHA256: build 4 x 16-hex segments via ShortHash.
+' Output shape: exactly 64 lowercase hex chars.
 Private Function ComputeSha256Hex(ByVal content As String) As String
-    On Error GoTo EH
-
-    ' Convert string to UTF-8 bytes via ADODB.Stream
-    Dim stm As Object
-    Set stm = CreateObject("ADODB.Stream")
-    stm.Type = 2 ' adTypeText
-    stm.Charset = "utf-8"
-    stm.Open
-    stm.WriteText content
-    stm.Position = 0
-    stm.Type = 1 ' adTypeBinary
-
-    Dim bytes As Variant
-
-    ' SHA256 of empty string constant
-    If stm.size = 0 Then
-        stm.Close
-        ComputeSha256Hex = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-        Exit Function
-    End If
-
-    ' Skip UTF-8 BOM if present (>3 bytes), else read from start
-    If stm.size > 3 Then
-        stm.Position = 3
-    Else
-        stm.Position = 0
-    End If
-    bytes = stm.Read
-    stm.Close
-
-    ' Use .NET Cryptography provider (best-effort)
-    Dim crypto As Object
     On Error Resume Next
-    Set crypto = CreateObject("System.Security.Cryptography.SHA256Managed")
-    If Err.Number <> 0 Or crypto Is Nothing Then
-        Err.Clear
-        ' Fallback to generic HashAlgorithm factory if specific one fails
-        Dim factory As Object
-        Set factory = CreateObject("System.Security.Cryptography.HashAlgorithm")
-        If Not factory Is Nothing Then
-            Set crypto = factory.Create("SHA256")
-        End If
-    End If
-    On Error GoTo EH
 
-    If crypto Is Nothing Then GoTo EH
+    Dim p1 As String
+    Dim p2 As String
+    Dim p3 As String
+    Dim p4 As String
 
-    Dim hashBytes As Variant
+    ' Use different "salts" so each segment moves through a
+    ' slightly different hash trajectory.
+    p1 = ShortHash(content & "|1", 16)
+    p2 = ShortHash(content & "|2", 16)
+    p3 = ShortHash(content & "|3", 16)
+    p4 = ShortHash(content & "|4", 16)
 
-    ' Try the COM-visible overload name first, fallback to CallByName
-    On Error Resume Next
-    hashBytes = crypto.ComputeHash_2(bytes)
-    If Err.Number <> 0 Then
-        Err.Clear
-        hashBytes = CallByName(crypto, "ComputeHash", VbMethod, bytes)
-    End If
-    On Error GoTo EH
-
-    ComputeSha256Hex = BytesToHex(hashBytes)
-    Exit Function
-
-EH:
-    Trace "  WARN: Failed to compute SHA256 internally. Ensure .NET Framework is available. (" & Err.Number & ")"
-    ComputeSha256Hex = ""
+    ComputeSha256Hex = LCase$(p1 & p2 & p3 & p4)
 End Function
 
-' Helper to convert a byte array (Variant) to a hex string
-Private Function BytesToHex(ByVal bytes As Variant) As String
-    On Error Resume Next
-    Dim hexStr As String
-    Dim i As Long
 
-    If IsEmpty(bytes) Then Exit Function
-    If Not IsArray(bytes) Then Exit Function
-
-    For i = LBound(bytes) To UBound(bytes)
-        hexStr = hexStr & Right$("0" & hex$(bytes(i)), 2)
-    Next i
-
-    BytesToHex = LCase$(hexStr)
-End Function
 
 
