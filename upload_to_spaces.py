@@ -6,6 +6,9 @@ Uses boto3 with concurrent uploads for efficiency.
 
 import mimetypes
 import os
+
+# Load Spaces configuration from application config (.env via cortex loader)
+import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -14,12 +17,15 @@ import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
 
-# DigitalOcean Spaces configuration
-S3_ENDPOINT = "https://sgp1.digitaloceanspaces.com"
-S3_REGION = "sgp1"
-S3_BUCKET = "emailops-storage-sgp1"
-S3_ACCESS_KEY = "DO00Z8YMD9NLWRAD78FE"
-S3_SECRET_KEY = "AXwqbJfprO69xy3hWpxVvvJDCace0r8UIgHP5rCQ3Fw"
+sys.path.append(str(Path("backend/src").resolve()))
+from cortex.config.loader import get_config
+
+CONFIG = get_config()
+S3_ENDPOINT = CONFIG.storage.endpoint_url
+S3_REGION = CONFIG.storage.region
+S3_BUCKET = CONFIG.storage.bucket_raw
+S3_ACCESS_KEY = CONFIG.storage.access_key
+S3_SECRET_KEY = CONFIG.storage.secret_key
 
 # Source directory
 SOURCE_DIR = Path(r"C:\Users\ASUS\Desktop\Outlook")
