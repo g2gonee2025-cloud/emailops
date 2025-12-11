@@ -659,8 +659,12 @@ This ledger tracks the **exact state of implementation** for each checklist step
 ### Implementation summary
 
 - Brought auxiliary verification scripts (`check_db.py`, `check_s3.py`, `check_tools_script.py`, `verify_*`, `move_tests.py`, `generate_secrets.py`) in line with path-handling lint rules (pathlib over `os.path`), removed unused imports, and cleaned YAML generation whitespace to satisfy pre-commit hooks.
-- Confirmed repository hygiene by running pre-commit hooks end-to-end.
-- Ran a lightweight smoke test for the config loader to validate baseline configuration loading behavior under the current environment.
+- Executed repo hygiene and baseline verification:
+  - pre-commit hooks passed end-to-end.
+  - Config loader smoke test verified.
+  - Security/text/PII unit tests passed via `verify_ingestion_basic.py`.
+- Attempted full pytest run; collection failed due to missing environment dependencies in the active interpreter (e.g., `psycopg2`, `fastapi`) and SQLAlchemy version mismatch (missing `DeclarativeBase` suggests SQLAlchemy < 2.0). This indicates environment/tooling drift rather than code drift.
+- Verified configuration runtime outputs (masked): env=production, DB host present, Spaces bucket set, embedding dimensionality=3840.
 
 ### Observable invariants
 
@@ -670,7 +674,10 @@ This ledger tracks the **exact state of implementation** for each checklist step
 ### Tests & commands run
 
 - `pre-commit run --all-files` – PASSED
-- `pytest tests/test_config_loader_verification.py` – PASSED (Coverage warnings: modules `diagnostics`, `processing`, `emailops`, `setup` not imported; no data collected for coverage outside the tested module.)
+- `python verify_config.py` – PASSED (env=production; DB host masked; embedding_dim=3840)
+- `python verify_ingestion_basic.py` – PASSED
+- `pytest -q` – FAILED during collection
+  - Errors: ModuleNotFoundError for `psycopg2`, `fastapi`; ImportError for `sqlalchemy.orm.DeclarativeBase` (environment has SQLAlchemy < 2.0)
 
 ### Edge cases considered
 
@@ -679,10 +686,16 @@ This ledger tracks the **exact state of implementation** for each checklist step
 ### Concerns & open issues
 
 - Post-deployment validation (live SLO checks, observability review, load/burst scenarios) not executed in this run; requires access to deployed environment.
-- Coverage warnings observed during targeted pytest run due to limited module import scope; full-suite run may be needed to populate coverage data.
+- Full pytest suite is blocked by environment drift (missing `psycopg2`, `fastapi`, and SQLAlchemy<2 in active interpreter) despite `backend/pyproject.toml` declaring correct dependencies.
+- Coverage warnings observed during targeted pytest run due to limited module import scope; full-suite run may be needed to populate coverage data once env is fixed.
 
 ### Items still needed for airtight robustness
 
+- Standardize runtime env before test execution:
+  - Create/activate venv and install backend deps: `pip install -e backend[dev]` (or `pip install "sqlalchemy>=2.0" "fastapi>=0.100" "psycopg2-binary>=2.9" "pgvector>=0.2" "alembic>=1.13"`).
+  - Verify: `python -c "import fastapi, sqlalchemy; import psycopg2; print(sqlalchemy.__version__)"` shows ≥2.0.
+- Re-run `pytest -q`; if DB not reachable, mark DB-live tests xfail/skipped via env gate, but do not mock core paths.
+- Run `python verify_api.py` once FastAPI is available to validate route contracts locally (schema-only path).
 - Run full post-deployment E2E flows against staging/production, including latency/error-rate SLO measurement and dependency failure drills.
 - Capture observability dashboards/metrics snapshots and document outcomes.
 - Resolve coverage configuration to avoid no-data warnings when running targeted subsets.
