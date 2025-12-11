@@ -301,7 +301,7 @@ yarn-error.log*
 .*/
 !.streamlit/
 !.streamlit/config.toml
-!.agent/
+.agent/rules/*
 
 # Exclude all directories starting with underscore
 _*/

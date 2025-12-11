@@ -15,8 +15,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import numpy as np
-import openai
-import vertexai
 from cortex.common.exceptions import (
     CircuitBreakerOpenError,
     ConfigurationError,
@@ -33,8 +31,11 @@ from tenacity import (
     stop_after_attempt,
     wait_exponential,
 )
-from vertexai.generative_models import GenerationConfig, GenerativeModel
-from vertexai.language_models import TextEmbeddingInput, TextEmbeddingModel
+
+# NOTE:
+# Avoid importing heavyweight provider SDKs (e.g., vertexai, openai) at module import time.
+# Import them lazily inside provider-specific branches to prevent unnecessary dependencies
+# and speed up import of modules that reference this runtime when a different provider is used.
 
 logger = logging.getLogger(__name__)
 _config = get_config()
@@ -265,9 +266,13 @@ class LLMRuntime:
         if _config.core.provider == "vertex":
             try:
                 _ensure_projects_loaded()
+                # Lazy import to avoid heavy dependency unless needed
+                import vertexai  # type: ignore
+
+                _ensure_projects_loaded()
                 vertexai.init(
                     project=_config.gcp.gcp_project,
-                    location=_config.gcp.vertex_location,
+                    location=getattr(_config.gcp, "vertex_location", None),
                 )
                 _vertex_initialized = True
             except Exception as e:
@@ -405,6 +410,12 @@ class LLMRuntime:
         def _do_embed():
             if provider == "vertex":
                 self._init_vertex()
+                # Lazy import Vertex models
+                from vertexai.language_models import (  # type: ignore
+                    TextEmbeddingInput,
+                    TextEmbeddingModel,
+                )
+
                 model = TextEmbeddingModel.from_pretrained(_config.embedding.model_name)
 
                 # Process in batches to respect API limits
@@ -419,7 +430,9 @@ class LLMRuntime:
                     # Pass output_dimensionality to control embedding size (per official GCP docs)
                     embeddings = model.get_embeddings(
                         inputs,
-                        output_dimensionality=output_dim if output_dim < 3072 else None,
+                        output_dimensionality=(
+                            output_dim if output_dim < 3072 else None
+                        ),
                         auto_truncate=True,
                     )
                     all_vectors.extend([e.values for e in embeddings])
@@ -428,6 +441,9 @@ class LLMRuntime:
             elif provider == "openai":
                 if not _config.sensitive.openai_api_key:
                     raise ConfigurationError("OpenAI API key not configured")
+
+                # Lazy import OpenAI SDK
+                import openai  # type: ignore
 
                 # Use generic_embed_model if set, otherwise default to text-embedding-3-small
                 embed_model = (
@@ -488,16 +504,7 @@ class LLMRuntime:
         retry=retry_if_exception_type(ProviderError),
     )
     def complete_text(self, prompt: str, **kwargs) -> str:
-        """
-        Generate text completion.
-
-        Args:
-            prompt: Input prompt
-            **kwargs: Additional provider args
-
-        Returns:
-            Generated text
-        """
+        """Generate text completion."""
         if not isinstance(prompt, str) or not prompt.strip():
             raise ValidationError("prompt must be a non-empty string", field="prompt")
 
@@ -506,6 +513,12 @@ class LLMRuntime:
         def _do_complete():
             if provider == "vertex":
                 self._init_vertex()
+                # Lazy import Vertex classes
+                from vertexai.generative_models import (  # type: ignore
+                    GenerationConfig,
+                    GenerativeModel,
+                )
+
                 model_name = _config.embedding.vertex_model
                 model = GenerativeModel(model_name)
 
@@ -520,6 +533,8 @@ class LLMRuntime:
             elif provider == "openai":
                 if not _config.sensitive.openai_api_key:
                     raise ConfigurationError("OpenAI API key not configured")
+
+                import openai  # type: ignore
 
                 client = openai.OpenAI(api_key=_config.sensitive.openai_api_key)
                 response = client.chat.completions.create(
@@ -571,25 +586,7 @@ class LLMRuntime:
         max_repair_attempts: int = 2,
         **kwargs,
     ) -> Dict[str, Any]:
-        """
-        Generate JSON completion conforming to schema with repair fallback.
-
-        Blueprint §7.2.1:
-        - complete_json with schema + repair fallback
-        - Raises LLMOutputSchemaError if validation fails after repair attempts
-
-        Args:
-            prompt: Input prompt
-            schema: JSON schema for validation
-            max_repair_attempts: Max attempts to repair invalid JSON
-            **kwargs: Additional provider args
-
-        Returns:
-            Parsed and validated JSON dict
-
-        Raises:
-            LLMOutputSchemaError: If output doesn't match schema after repairs
-        """
+        """Generate JSON completion conforming to schema with repair fallback."""
         provider = _config.core.provider
 
         # Append schema instruction to prompt if not implicit in provider
@@ -598,6 +595,11 @@ class LLMRuntime:
         def _do_complete_json():
             if provider == "vertex":
                 self._init_vertex()
+                from vertexai.generative_models import (  # type: ignore
+                    GenerationConfig,
+                    GenerativeModel,
+                )
+
                 model_name = _config.embedding.vertex_model
                 model = GenerativeModel(model_name)
 
@@ -614,6 +616,8 @@ class LLMRuntime:
             elif provider == "openai":
                 if not _config.sensitive.openai_api_key:
                     raise ConfigurationError("OpenAI API key not configured")
+
+                import openai  # type: ignore
 
                 client = openai.OpenAI(api_key=_config.sensitive.openai_api_key)
                 response = client.chat.completions.create(
