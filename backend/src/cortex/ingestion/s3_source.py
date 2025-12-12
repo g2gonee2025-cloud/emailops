@@ -111,9 +111,9 @@ class S3SourceHandler:
                 folder_prefix = common_prefix["Prefix"]
                 folder_name = folder_prefix.rstrip("/").split("/")[-1]
 
-                if folder_name in seen_folders:
+                if folder_prefix in seen_folders:
                     continue
-                seen_folders.add(folder_name)
+                seen_folders.add(folder_prefix)
 
                 # List files in this folder
                 files = self._list_folder_files(folder_prefix)

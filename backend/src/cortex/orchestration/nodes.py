@@ -193,6 +193,10 @@ def tool_email_get_thread(
 
     try:
         with SessionLocal() as session:
+            from cortex.db.session import set_session_tenant
+
+            set_session_tenant(session, tenant_id)
+
             # Fetch thread
             thread = (
                 session.query(Thread)

@@ -5,6 +5,7 @@ Implements the schema defined in §4.1 of the Canonical Blueprint.
 """
 from __future__ import annotations
 
+import enum
 import uuid
 from datetime import datetime
 from typing import Any, List, Optional
@@ -29,6 +30,7 @@ except ImportError:
             return None
 
 
+import sqlalchemy as sa
 from cortex.config.loader import get_config
 from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, Text, func
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, TSVECTOR, UUID
@@ -43,6 +45,27 @@ class Base(DeclarativeBase):
     """Base class for all models."""
 
     __abstract__ = True
+
+
+class ChunkType(str, enum.Enum):
+    MESSAGE_BODY = "message_body"
+    ATTACHMENT_TEXT = "attachment_text"
+    ATTACHMENT_TABLE = "attachment_table"
+    QUOTED_HISTORY = "quoted_history"
+    OTHER = "other"
+
+
+class AttachmentStatus(str, enum.Enum):
+    PENDING = "pending"
+    PARSED = "parsed"
+    UNPARSED_PASSWORD_PROTECTED = "unparsed_password_protected"
+    FAILED = "failed"
+
+
+class RiskLevel(str, enum.Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
 
 
 class Thread(Base):
@@ -181,7 +204,10 @@ class Attachment(Base):
     mime_type: Mapped[Optional[str]] = mapped_column(Text)
     storage_uri_raw: Mapped[Optional[str]] = mapped_column(Text)
     storage_uri_extracted: Mapped[Optional[str]] = mapped_column(Text)
-    status: Mapped[str] = mapped_column(Text, default="pending")
+    status: Mapped[AttachmentStatus] = mapped_column(
+        sa.Enum(AttachmentStatus, name="attachment_status", create_type=False),
+        default=AttachmentStatus.PENDING,
+    )
     extracted_chars: Mapped[int] = mapped_column(Integer, default=0)
     tenant_id: Mapped[str] = mapped_column(Text, nullable=False, index=True)
     metadata_: Mapped[dict[str, Any] | None] = mapped_column(
@@ -236,7 +262,9 @@ class Chunk(Base):
         nullable=True,
         index=True,
     )
-    chunk_type: Mapped[str] = mapped_column(Text, nullable=False)
+    chunk_type: Mapped[ChunkType] = mapped_column(
+        sa.Enum(ChunkType, name="chunk_type", create_type=False), nullable=False
+    )
     text: Mapped[str] = mapped_column(Text, nullable=False)
     summary: Mapped[Optional[str]] = mapped_column(Text)
     section_path: Mapped[str] = mapped_column(Text, nullable=False)
@@ -351,7 +379,9 @@ class AuditLog(Base):
     input_hash: Mapped[Optional[str]] = mapped_column(Text)
     output_hash: Mapped[Optional[str]] = mapped_column(Text)
     policy_decisions: Mapped[Optional[dict[str, Any]]] = mapped_column(JSONB)
-    risk_level: Mapped[str] = mapped_column(Text, default="low")
+    risk_level: Mapped[RiskLevel] = mapped_column(
+        sa.Enum(RiskLevel, name="risk_level", create_type=False), default=RiskLevel.LOW
+    )
     metadata_: Mapped[dict[str, Any] | None] = mapped_column(
         "metadata", JSONB, default=dict
     )

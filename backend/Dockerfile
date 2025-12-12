@@ -12,12 +12,10 @@ WORKDIR /build
 
 # Copy requirements
 COPY backend/pyproject.toml ./
-COPY requirements.txt ./requirements-root.txt
 
 # Install Python dependencies
 RUN pip install --no-cache-dir pip wheel setuptools
 RUN pip wheel --no-cache-dir --wheel-dir /wheels -e .
-RUN pip wheel --no-cache-dir --wheel-dir /wheels -r requirements-root.txt || true
 
 # Production image
 FROM python:3.11-slim
@@ -33,7 +31,7 @@ WORKDIR /app
 
 # Copy wheels from builder and install
 COPY --from=builder /wheels /wheels
-RUN pip install --no-cache-dir /wheels/*.whl || pip install --no-cache-dir psycopg2-binary redis httpx pydantic fastapi uvicorn google-cloud-aiplatform opentelemetry-api opentelemetry-sdk opentelemetry-instrumentation-fastapi python-dotenv
+RUN pip install --no-cache-dir /wheels/*.whl
 
 # Copy application code
 COPY backend/src/ ./

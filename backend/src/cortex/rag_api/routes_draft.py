@@ -10,6 +10,7 @@ import logging
 
 from cortex.audit import log_audit_event
 from cortex.common.exceptions import CortexError
+from cortex.context import tenant_id_ctx, user_id_ctx
 from cortex.models.api import DraftEmailRequest, DraftEmailResponse
 from cortex.orchestration.graphs import build_draft_graph
 from fastapi import APIRouter, HTTPException, Request
@@ -39,8 +40,8 @@ async def draft_endpoint(
     try:
         # Initialize state
         initial_state = {
-            "tenant_id": request.tenant_id,
-            "user_id": request.user_id,
+            "tenant_id": tenant_id_ctx.get(),
+            "user_id": user_id_ctx.get(),
             "thread_id": str(request.thread_id) if request.thread_id else None,
             "explicit_query": request.query,
             "draft_query": None,

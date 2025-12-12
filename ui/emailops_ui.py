@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: I001
 """
 EmailOps UI — Enhanced Streamlit Dashboard for Email Operations
 

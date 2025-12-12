@@ -54,8 +54,9 @@ class QueryClassificationInput(BaseModel):
 # Patterns indicating navigational queries (specific lookup)
 NAVIGATIONAL_PATTERNS = [
     # Sender/recipient lookups
-    r"\b(?:from|sent by|email from)\s+[\w\.\-]+@[\w\.\-]+",
-    r"\b(?:to|sent to|email to)\s+[\w\.\-]+@[\w\.\-]+",
+    # Allow common email variants like "+tag" and underscores
+    r"\b(?:from|sent by|email from)\s+[\w\.\-\+]+@[\w\.\-]+",
+    r"\b(?:to|sent to|email to)\s+[\w\.\-\+]+@[\w\.\-]+",
     r"\b(?:from|by)\s+[A-Z][a-z]+\s+[A-Z][a-z]+",  # "from John Smith"
     # Subject lookups
     r"\b(?:subject|titled|called|named)\s*[:\"\']\s*.+[\"\']?",
@@ -77,7 +78,6 @@ DRAFTING_PATTERNS = [
     r"\b(?:draft|write|compose|create|prepare)\s+(?:a|an)?\s*(?:email|reply|response|message)",
     r"\breply to\b",
     r"\brespond to\b",
-    r"\bfollow up\b",
     r"\bsend\s+(?:a|an)\s+(?:email|message)",
     r"\b(?:help me|can you)\s+(?:write|draft|reply)",
 ]

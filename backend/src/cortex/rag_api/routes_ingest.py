@@ -11,6 +11,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from cortex.context import tenant_id_ctx
 from cortex.ingestion.s3_source import S3ConversationFolder, S3SourceHandler
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
 from pydantic import BaseModel, Field
@@ -27,7 +28,6 @@ router = APIRouter(prefix="/ingest", tags=["ingestion"])
 class IngestFromS3Request(BaseModel):
     """Request to ingest conversations from S3/Spaces."""
 
-    tenant_id: str = Field(default="default", description="Tenant identifier")
     prefix: str = Field(default="raw/outlook/", description="S3 prefix to scan")
     limit: Optional[int] = Field(default=None, description="Max folders to process")
     dry_run: bool = Field(
@@ -169,11 +169,13 @@ async def start_s3_ingestion(
             "skipped": 0,
         }
 
+        tenant_id = tenant_id_ctx.get()
+
         # Process in background
         background_tasks.add_task(
             _process_s3_folders_with_embeddings,
             job_id=job_id,
-            tenant_id=request.tenant_id,
+            tenant_id=tenant_id,
             folders=folders,
         )
 

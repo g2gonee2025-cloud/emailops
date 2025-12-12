@@ -11,6 +11,7 @@ import time
 
 from cortex.audit import log_audit_event
 from cortex.common.exceptions import CortexError
+from cortex.context import tenant_id_ctx, user_id_ctx
 from cortex.models.api import SearchRequest, SearchResponse
 from cortex.retrieval.hybrid_search import KBSearchInput, tool_kb_search_hybrid
 from fastapi import APIRouter, HTTPException, Request
@@ -39,15 +40,17 @@ async def search_endpoint(
 
         # Map API request to tool input
         tool_input = KBSearchInput(
-            tenant_id=request.tenant_id,
-            user_id=request.user_id,
+            tenant_id=tenant_id_ctx.get(),
+            user_id=user_id_ctx.get(),
             query=request.query,
             k=request.k,
             filters=request.filters,
         )
 
         # Call retrieval tool
-        results = tool_kb_search_hybrid(tool_input)
+        from fastapi.concurrency import run_in_threadpool
+
+        results = await run_in_threadpool(tool_kb_search_hybrid, tool_input)
 
         query_time_ms = (time.perf_counter() - start_time) * 1000
 

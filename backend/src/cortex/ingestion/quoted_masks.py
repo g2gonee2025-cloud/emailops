@@ -62,7 +62,7 @@ def detect_quoted_spans(text: str) -> List[Span]:
             or (stripped.startswith("On ") and stripped.endswith("wrote:"))
             or stripped == "--"
             or stripped.startswith("-----Original Message-----")
-            or stripped.startswith("From: ")  # Heuristic, can be risky
+            or (stripped.startswith("From: ") and "@" in stripped)  # Stricter heuristic
         )
 
         line_len = len(line)

@@ -133,26 +133,23 @@ def deduplicate_by_hash(results: List[SearchResultItem]) -> List[SearchResultIte
 
     Blueprint §8.8: Deduplication by content_hash
     """
-    seen_hashes: Dict[str, SearchResultItem] = {}
-    deduped: List[SearchResultItem] = []
+    # Keep the best-scoring item per hash.
+    # Avoid O(n^2) list removals when many near-duplicates are present.
+    best_by_hash: Dict[str, SearchResultItem] = {}
+    passthrough: List[SearchResultItem] = []
 
     for item in results:
         content_hash = item.content_hash or item.metadata.get("content_hash")
-        if content_hash:
-            if content_hash in seen_hashes:
-                # Keep the one with higher score
-                if item.score > seen_hashes[content_hash].score:
-                    # Replace in the list
-                    deduped.remove(seen_hashes[content_hash])
-                    seen_hashes[content_hash] = item
-                    deduped.append(item)
-            else:
-                seen_hashes[content_hash] = item
-                deduped.append(item)
-        else:
-            deduped.append(item)
+        if not content_hash:
+            passthrough.append(item)
+            continue
 
-    return deduped
+        existing = best_by_hash.get(content_hash)
+        if existing is None or item.score > existing.score:
+            best_by_hash[content_hash] = item
+
+    # Order isn't critical here since later steps re-sort, but keep stable-ish output.
+    return passthrough + list(best_by_hash.values())
 
 
 def downweight_quoted_history(
@@ -167,8 +164,51 @@ def downweight_quoted_history(
         chunk_type = item.metadata.get("chunk_type")
         if chunk_type == "quoted_history":
             item.score *= factor
+    return results
 
-    return sorted(results, key=lambda x: x.score, reverse=True)
+
+def _merge_result_fields(
+    into: SearchResultItem, other: SearchResultItem
+) -> SearchResultItem:
+    """Merge fields from another SearchResultItem into an existing one."""
+
+    # Prefer already-populated structured identifiers, but fill blanks.
+    if not into.thread_id and other.thread_id:
+        into.thread_id = other.thread_id
+    if not into.message_id and other.message_id:
+        into.message_id = other.message_id
+    if not into.attachment_id and other.attachment_id:
+        into.attachment_id = other.attachment_id
+
+    # Preserve the richer text/snippet if one side is missing.
+    if not into.content and other.content:
+        into.content = other.content
+    if not into.snippet and other.snippet:
+        into.snippet = other.snippet
+
+    # Merge highlight fragments.
+    if other.highlights:
+        seen = set(into.highlights or [])
+        for h in other.highlights:
+            if h and h not in seen:
+                into.highlights.append(h)
+                seen.add(h)
+
+    # Merge score components.
+    if (into.lexical_score or 0.0) == 0.0 and (other.lexical_score or 0.0) > 0.0:
+        into.lexical_score = other.lexical_score
+    if (into.vector_score or 0.0) == 0.0 and (other.vector_score or 0.0) > 0.0:
+        into.vector_score = other.vector_score
+
+    # Merge metadata (keep existing keys unless missing)
+    for k, v in (other.metadata or {}).items():
+        into.metadata.setdefault(k, v)
+
+    # Prefer explicit content_hash if present
+    if not into.content_hash and other.content_hash:
+        into.content_hash = other.content_hash
+
+    return into
 
 
 def fuse_rrf(
@@ -189,13 +229,18 @@ def fuse_rrf(
     for rank, item in enumerate(fts_results, start=1):
         key = item.chunk_id or item.message_id
         scores[key] = scores.get(key, 0) + 1 / (k + rank)
-        items[key] = item
+        if key in items:
+            items[key] = _merge_result_fields(items[key], item)
+        else:
+            items[key] = item
 
     # Score from vector ranking
     for rank, item in enumerate(vector_results, start=1):
         key = item.chunk_id or item.message_id
         scores[key] = scores.get(key, 0) + 1 / (k + rank)
-        if key not in items:
+        if key in items:
+            items[key] = _merge_result_fields(items[key], item)
+        else:
             items[key] = item
 
     # Sort by fused score
@@ -214,47 +259,36 @@ def fuse_weighted_sum(
     vector_results: List[SearchResultItem],
     alpha: float = 0.5,
 ) -> List[SearchResultItem]:
-    """Fuse rankings via weighted sum of normalized lexical/vector scores."""
+    """Fuse rankings via weighted sum.
 
-    def _normalize(scores: List[float]) -> List[float]:
-        if not scores:
-            return []
-        max_score = max(scores)
-        if max_score <= 0:
-            return [0.0 for _ in scores]
-        return [s / max_score for s in scores]
-
-    normalized_lex = _normalize(
-        [item.lexical_score or item.score for item in fts_results]
-    )
-    normalized_vec = _normalize(
-        [item.vector_score or item.score for item in vector_results]
-    )
+    We assume lexical and vector signals are already scaled to roughly [0, 1]
+    (ts_rank_cd(..., 32) and cosine-similarity-to-[0,1] mapping). That makes
+    fusion stable without ad-hoc max-normalization.
+    """
 
     combined: Dict[str, SearchResultItem] = {}
 
-    for idx, item in enumerate(fts_results):
+    for item in fts_results:
         key = item.chunk_id or item.message_id
-        score = normalized_lex[idx] if idx < len(normalized_lex) else 0.0
-        item.fusion_score = score
-        combined[key] = item
-
-    for idx, item in enumerate(vector_results):
-        key = item.chunk_id or item.message_id
-        score = normalized_vec[idx] if idx < len(normalized_vec) else 0.0
         if key in combined:
-            combined[key].fusion_score = alpha * score + (1 - alpha) * (
-                combined[key].fusion_score or 0.0
-            )
-            combined[key].score = combined[key].fusion_score or combined[key].score
+            combined[key] = _merge_result_fields(combined[key], item)
         else:
-            item.fusion_score = score
-            item.score = score
             combined[key] = item
 
-    return sorted(
-        combined.values(), key=lambda i: i.fusion_score or i.score, reverse=True
-    )
+    for item in vector_results:
+        key = item.chunk_id or item.message_id
+        if key in combined:
+            combined[key] = _merge_result_fields(combined[key], item)
+        else:
+            combined[key] = item
+
+    for item in combined.values():
+        lex = float(item.lexical_score or 0.0)
+        vec = float(item.vector_score or 0.0)
+        item.fusion_score = alpha * vec + (1 - alpha) * lex
+        item.score = item.fusion_score
+
+    return sorted(combined.values(), key=lambda i: i.fusion_score or 0.0, reverse=True)
 
 
 def rerank_results(
@@ -360,56 +394,59 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
     k = args.k or config.search.k
     fusion_method = args.fusion_method or config.search.fusion_strategy
 
+    candidates_multiplier = config.search.candidates_multiplier
+
     # 1. Embed query for vector search
+    # Best-effort: if the embedding service is temporarily unavailable, we still
+    # want FTS to keep the product functional.
+    query_embedding: Optional[List[float]] = None
     try:
         query_embedding = _embedding_client.embed(args.query)
     except Exception as e:
-        logger.error(f"Failed to embed query: {e}")
-        raise
+        logger.error(f"Failed to embed query (falling back to FTS only): {e}")
 
     with SessionLocal() as session:
-        # 2. Lexical search (FTS)
-        # If navigational, search messages. If semantic, search chunks.
+        from cortex.db.session import set_session_tenant
 
+        set_session_tenant(session, args.tenant_id)
+
+        # 2. Optional navigational narrowing
+        # When users are clearly looking for a specific email/thread, message-level
+        # FTS is a great cheap filter. Since you always have embedded chunks, we
+        # then run chunk retrieval inside those threads.
+        nav_thread_ids: Optional[List[str]] = None
         if args.classification and args.classification.type == "navigational":
-            # Navigational: FTS on messages only
-            fts_results = search_messages_fts(
-                session, args.query, args.tenant_id, limit=k
+            nav_hits = search_messages_fts(
+                session,
+                args.query,
+                args.tenant_id,
+                limit=min(k * candidates_multiplier, 200),
             )
-            # Convert to SearchResultItem
-            final_results = [
-                SearchResultItem(
-                    chunk_id=None,
-                    score=r.score,
-                    thread_id=r.thread_id,
-                    message_id=r.message_id,
-                    attachment_id=None,
-                    highlights=[r.snippet],
-                    snippet=r.snippet,
-                    metadata={"chunk_type": "message"},
-                    lexical_score=r.score,
-                    vector_score=0.0,
-                    content_hash=None,
-                )
-                for r in fts_results
-            ]
-            return SearchResults(
-                query=args.query,
-                reranker="navigational_fts",
-                results=final_results,
+            nav_thread_ids = (
+                list({h.thread_id for h in nav_hits if h.thread_id}) or None
             )
 
-        # Semantic/Hybrid: FTS on chunks + Vector on chunks
-        candidates_multiplier = config.search.candidates_multiplier
-
+        # 3. Lexical search (FTS) on chunks
         fts_chunk_results = search_chunks_fts(
-            session, args.query, args.tenant_id, limit=k * candidates_multiplier
+            session,
+            args.query,
+            args.tenant_id,
+            limit=k * candidates_multiplier,
+            thread_ids=nav_thread_ids,
         )
 
-        # 3. Vector search
-        vector_results = search_chunks_vector(
-            session, query_embedding, args.tenant_id, limit=k * candidates_multiplier
-        )
+        # 4. Vector search (if we have an embedding)
+        vector_results = []
+        if query_embedding is not None:
+            hnsw_ef_search = getattr(config.search, "hnsw_ef_search", None)
+            vector_results = search_chunks_vector(
+                session,
+                query_embedding,
+                args.tenant_id,
+                limit=k * candidates_multiplier,
+                ef_search=hnsw_ef_search,
+                thread_ids=nav_thread_ids,
+            )
 
         # Convert to SearchResultItem format
         fts_items = []
@@ -437,15 +474,15 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
         vector_items = []
         for res in vector_results:
             metadata = dict(res.metadata or {})
+            if res.chunk_type:
+                metadata.setdefault("chunk_type", res.chunk_type)
             vector_items.append(
                 SearchResultItem(
                     chunk_id=res.chunk_id,
                     score=res.score,
-                    thread_id=str(metadata.get("thread_id", "")),
-                    message_id=str(metadata.get("message_id", "")),
-                    attachment_id=str(metadata.get("attachment_id"))
-                    if metadata.get("attachment_id")
-                    else None,
+                    thread_id=res.thread_id,
+                    message_id=res.message_id,
+                    attachment_id=res.attachment_id or None,
                     highlights=[res.text[:200]] if res.text else [],
                     snippet=res.text[:200] if res.text else "",
                     content=res.text,
@@ -456,11 +493,11 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
                 )
             )
 
-        # 4. Deduplication by content_hash
+        # 5. Deduplication by content_hash
         fts_deduped = deduplicate_by_hash(fts_items)
         vector_deduped = deduplicate_by_hash(vector_items)
 
-        # 5. Fusion (configurable)
+        # 6. Fusion (configurable)
         if fusion_method == "weighted_sum":
             fused_results = fuse_weighted_sum(
                 fts_deduped, vector_deduped, alpha=config.search.rerank_alpha
@@ -468,14 +505,14 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
         else:
             fused_results = fuse_rrf(fts_deduped, vector_deduped, k=60)
 
-        # 6. Lightweight rerank blending lexical/vector signals
+        # 7. Lightweight rerank blending lexical/vector signals
         fused_results = rerank_results(fused_results, alpha=config.search.rerank_alpha)
 
-        # 7. Get thread timestamps for recency boost
+        # 8. Get thread timestamps for recency boost
         thread_ids = list({r.thread_id for r in fused_results if r.thread_id})
         thread_updated_at = _get_thread_timestamps(session, thread_ids, args.tenant_id)
 
-        # 8. Apply recency boost
+        # 9. Apply recency boost
         fused_results = apply_recency_boost(
             fused_results,
             thread_updated_at,
@@ -483,15 +520,16 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
             boost_strength=config.search.recency_boost_strength,
         )
 
-        # 9. MMR diversity
+        # 10. Down-weight quoted_history (do this before diversification)
+        fused_results = downweight_quoted_history(fused_results, factor=0.7)
+        fused_results = sorted(fused_results, key=lambda r: r.score, reverse=True)
+
+        # 11. MMR diversity for the final top-k list
         fused_results = apply_mmr(
             fused_results,
             lambda_param=config.search.mmr_lambda,
-            limit=min(len(fused_results), k * candidates_multiplier),
+            limit=min(len(fused_results), k),
         )
-
-        # 10. Down-weight quoted_history
-        fused_results = downweight_quoted_history(fused_results, factor=0.7)
 
         reranker_label = f"{fusion_method}|alpha={config.search.rerank_alpha:.2f}|mmr={config.search.mmr_lambda:.2f}"
         return SearchResults(

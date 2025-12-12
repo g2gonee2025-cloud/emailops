@@ -102,7 +102,7 @@ PROMPT_QUERY_CLASSIFY: str = _with_base(
     """Classify this query as one of:
 - "navigational": looking for specific email/sender/subject
 - "semantic": analytical question requiring understanding
-- "draft": request to compose/reply to email
+- "drafting": request to compose/reply to email
 
 Also identify any flags: ["followup", "requires_grounding_check", "time_sensitive"]
 """

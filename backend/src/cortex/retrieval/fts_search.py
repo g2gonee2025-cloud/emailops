@@ -15,6 +15,24 @@ from sqlalchemy.orm import Session
 logger = logging.getLogger(__name__)
 
 
+# -----------------------------------------------------------------------------
+# FTS configuration
+# -----------------------------------------------------------------------------
+
+# Keep config centralized so it's easy to swap (for non-English tenants, etc.)
+_FTS_CONFIG = "english"
+
+# ts_headline defaults to HTML (<b>...</b>). PostgreSQL docs warn the output is
+# not guaranteed to be safe for direct inclusion in web pages, so we use
+# non-HTML markers here and still recommend HTML-escaping at render time.
+#
+# See: PostgreSQL docs §12.3.4 (Highlighting Results).
+_HEADLINE_OPTIONS = (
+    "MaxFragments=2, MaxWords=15, MinWords=5, ShortWord=3, "
+    'StartSel=[[, StopSel=]], FragmentDelimiter=" ... "'
+)
+
+
 class FTSResult(BaseModel):
     """FTS search result."""
 
@@ -35,28 +53,43 @@ def search_messages_fts(
     * FTS search on messages.tsv_subject_body
     * Returns message-level hits
     """
+    query = (query or "").strip()
+    if not query:
+        return []
+
     # Blueprint §8.2: FTS search on messages.tsv_subject_body
-    # Use websearch_to_tsquery for robust query parsing
+    # Use websearch_to_tsquery for robust query parsing.
+    # Use ts_rank_cd for cover density ranking and normalization=32 to scale to 0..1.
 
     stmt = text(
         """
+        WITH q AS (
+            SELECT websearch_to_tsquery(:cfg, :query) AS tsq
+        )
         SELECT
-            message_id,
-            thread_id,
-            subject,
-            ts_rank(tsv_subject_body, websearch_to_tsquery('english', :query)) as score,
-            ts_headline('english', body_plain, websearch_to_tsquery('english', :query)) as snippet
-        FROM messages
+            m.message_id,
+            m.thread_id,
+            m.subject,
+            ts_rank_cd(m.tsv_subject_body, q.tsq, 32) AS score,
+            ts_headline(:cfg, m.body_plain, q.tsq, :headline_opts) AS snippet
+        FROM messages m, q
         WHERE
-            tenant_id = :tenant_id
-            AND tsv_subject_body @@ websearch_to_tsquery('english', :query)
+            m.tenant_id = :tenant_id
+            AND m.tsv_subject_body @@ q.tsq
         ORDER BY score DESC
         LIMIT :limit
     """
     )
 
     results = session.execute(
-        stmt, {"query": query, "tenant_id": tenant_id, "limit": limit}
+        stmt,
+        {
+            "query": query,
+            "tenant_id": tenant_id,
+            "limit": limit,
+            "cfg": _FTS_CONFIG,
+            "headline_opts": _HEADLINE_OPTIONS,
+        },
     ).fetchall()
 
     return [
@@ -85,7 +118,11 @@ class ChunkFTSResult(BaseModel):
 
 
 def search_chunks_fts(
-    session: Session, query: str, tenant_id: str, limit: int = 50
+    session: Session,
+    query: str,
+    tenant_id: str,
+    limit: int = 50,
+    thread_ids: List[str] | None = None,
 ) -> List[ChunkFTSResult]:
     """
     Perform FTS search on chunks.
@@ -94,29 +131,48 @@ def search_chunks_fts(
     * FTS search on chunks.tsv_text
     * Returns chunk-level hits for hybrid fusion
     """
+    query = (query or "").strip()
+    if not query:
+        return []
+
+    thread_filter_sql = ""
+    params: Dict[str, Any] = {
+        "query": query,
+        "tenant_id": tenant_id,
+        "limit": limit,
+        "cfg": _FTS_CONFIG,
+        "headline_opts": _HEADLINE_OPTIONS,
+    }
+
+    if thread_ids:
+        thread_filter_sql = "AND c.thread_id = ANY(CAST(:thread_ids AS UUID[]))"
+        params["thread_ids"] = thread_ids
+
     stmt = text(
-        """
+        f"""
+        WITH q AS (
+            SELECT websearch_to_tsquery(:cfg, :query) AS tsq
+        )
         SELECT
-            chunk_id,
-            thread_id,
-            message_id,
-            chunk_type,
-            text,
-            metadata,
-            ts_rank(tsv_text, websearch_to_tsquery('english', :query)) as score,
-            ts_headline('english', text, websearch_to_tsquery('english', :query)) as snippet
-        FROM chunks
+            c.chunk_id,
+            c.thread_id,
+            c.message_id,
+            c.chunk_type,
+            c.text,
+            c.metadata,
+            ts_rank_cd(c.tsv_text, q.tsq, 32) AS score,
+            ts_headline(:cfg, c.text, q.tsq, :headline_opts) AS snippet
+        FROM chunks c, q
         WHERE
-            tenant_id = :tenant_id
-            AND tsv_text @@ websearch_to_tsquery('english', :query)
+            c.tenant_id = :tenant_id
+            AND c.tsv_text @@ q.tsq
+            {thread_filter_sql}
         ORDER BY score DESC
         LIMIT :limit
     """
     )
 
-    results = session.execute(
-        stmt, {"query": query, "tenant_id": tenant_id, "limit": limit}
-    ).fetchall()
+    results = session.execute(stmt, params).fetchall()
 
     return [
         ChunkFTSResult(

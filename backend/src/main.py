@@ -21,7 +21,6 @@ import os
 import time
 import uuid
 from contextlib import asynccontextmanager
-from contextvars import ContextVar
 from typing import Any, Callable, Optional
 
 import requests
@@ -34,6 +33,12 @@ from cortex.common.exceptions import (
     ValidationError,
 )
 from cortex.config.loader import get_config
+from cortex.context import (
+    claims_ctx,
+    correlation_id_ctx,
+    tenant_id_ctx,
+    user_id_ctx,
+)
 from cortex.observability import get_trace_context, init_observability
 from cortex.security.validators import validate_email_format
 from fastapi import FastAPI, Request, Response
@@ -46,14 +51,9 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 APP_VERSION = "3.1.0"
 APP_NAME = "Outlook Cortex (EmailOps Edition)"
 
-# Context variables for request-scoped data
-correlation_id_ctx: ContextVar[str] = ContextVar("correlation_id", default="")
-tenant_id_ctx: ContextVar[str] = ContextVar("tenant_id", default="")
-user_id_ctx: ContextVar[str] = ContextVar("user_id", default="")
-claims_ctx: ContextVar[dict[str, Any]] = ContextVar("claims", default={})
 
 # JWT/JWKS helpers
-_jwt_decoder: Optional[Callable[[str], dict[str, Any]]] = None
+_jwt_decoder: Optional[Callable[[str], Any]] = None  # Returns Awaitable[dict] or dict
 _jwks_cache: dict[str, Any] = {}
 
 
@@ -72,11 +72,16 @@ def _configure_jwt_decoder(
 ) -> None:
     global _jwt_decoder
 
-    if jwks_url:
+    config = get_config()
 
-        def decode(token: str) -> dict[str, Any]:
+    if jwks_url:
+        from fastapi.concurrency import run_in_threadpool
+
+        async def decode(token: str) -> dict[str, Any]:
             try:
-                jwks = _load_jwks(jwks_url)
+                # Run blocking IO in threadpool
+                jwks = await run_in_threadpool(_load_jwks, jwks_url)
+
                 headers = jwt.get_unverified_header(token)
                 kid = headers.get("kid")
                 key = None
@@ -92,6 +97,7 @@ def _configure_jwt_decoder(
                 return jwt.decode(
                     token,
                     key,
+                    algorithms=["RS256"],  # Pin algorithm
                     audience=audience,
                     issuer=issuer,
                     options={
@@ -109,7 +115,20 @@ def _configure_jwt_decoder(
         _jwt_decoder = decode
         return
 
-    def decode_unverified(token: str) -> dict[str, Any]:
+    # Fallback logic
+    if config.core.env == "prod":
+
+        async def reject(_: str) -> dict[str, Any]:
+            raise SecurityError(
+                "JWKS configuration required in production",
+                threat_type="auth_configuration",
+            )
+
+        _jwt_decoder = reject
+        return
+
+    # Dev mode: Allow unverified claims
+    async def decode_unverified(token: str) -> dict[str, Any]:
         try:
             return jwt.get_unverified_claims(token)
         except JWTError as exc:
@@ -118,7 +137,7 @@ def _configure_jwt_decoder(
     _jwt_decoder = decode_unverified
 
 
-def _extract_identity(request: Request) -> tuple[str, str, dict[str, Any]]:
+async def _extract_identity(request: Request) -> tuple[str, str, dict[str, Any]]:
     """Resolve tenant/user identity from JWT or headers."""
     config = get_config()
     auth_header = request.headers.get("Authorization", "")
@@ -132,7 +151,14 @@ def _extract_identity(request: Request) -> tuple[str, str, dict[str, Any]]:
             raise SecurityError(
                 "JWT decoder not configured", threat_type="auth_invalid"
             )
-        claims = _jwt_decoder(token)
+        # Ensure we await the decoder result
+        try:
+            claims = await _jwt_decoder(token)
+        except TypeError:
+            # Handle case where decoder is synchronous (legacy/fallback fallback)
+            # though we redefined it to be async above.
+            claims = await _jwt_decoder(token)  # type: ignore
+
     elif config.core.env == "prod":
         raise SecurityError("Authorization header required", threat_type="auth_missing")
 
@@ -213,7 +239,7 @@ class TenantUserMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
-        tenant_id, user_id, claims = _extract_identity(request)
+        tenant_id, user_id, claims = await _extract_identity(request)
 
         tenant_token = tenant_id_ctx.set(tenant_id)
         user_token = user_id_ctx.set(user_id)
@@ -499,7 +525,12 @@ def create_app() -> FastAPI:
 
     # 1. CORS - restrict in production
     allowed_origins = (
-        ["*"]
+        [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:8000",
+            "http://127.0.0.1:8000",
+        ]
         if config.core.env == "dev"
         else [
             "https://app.emailops.io",

@@ -143,8 +143,17 @@ def _download_sftp_source(
             "paramiko is required for sftp ingestion. Install it to use source_type='sftp'."
         ) from exc
 
+    from cortex.config.loader import get_config
+
+    config = get_config()
+
     client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+    if config.core.env == "prod":
+        client.load_system_host_keys()
+        client.set_missing_host_key_policy(paramiko.RejectPolicy())
+    else:
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
     pkey = None
     if pkey_path:
@@ -351,6 +360,7 @@ def _ingest_conversation(
                     section_path=f"attachment:{att['filename']}",
                     max_tokens=config.processing.chunk_size,
                     overlap_tokens=config.processing.chunk_overlap,
+                    chunk_type_hint="attachment_text",
                 )
             )
             for c in att_chunks:

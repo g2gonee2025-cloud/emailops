@@ -83,6 +83,9 @@ def log_audit_event(
 
         # Write to DB (new session to avoid transaction coupling)
         with SessionLocal() as session:
+            from cortex.db.session import set_session_tenant
+
+            set_session_tenant(session, tenant_id)
             session.add(record)
             session.commit()
 

@@ -1,28 +1,39 @@
-"""Resize embedding vector to 3840 dims.
+"""Consolidated embedding dimension migration.
 
-Revision ID: 007_resize_embedding_dim_3840
-Revises: 006
-Create Date: 2025-12-07
+This migration replaces the following chained migrations:
+- 005_update_embedding_dim.py (1536 → 3072)
+- 007_resize_embedding_dim_3840.py (3072 → 3840)
+- 008_resize_embedding_dim_1024.py (3840 → 1024)
+- 009_resize_embedding_dim_3840.py (1024 → 3840)
+
+Net effect: Sets embedding dimension to 3840 (for KaLM embeddings).
+
+Revision ID: 005_consolidated_embedding_dim
+Revises: ec7386d2401e
+Create Date: 2025-12-12
 """
 from alembic import op
 from psycopg2 import errors as psycopg_errors
 
-revision = "007_resize_embedding_dim_3840"
-down_revision = "006"
+revision = "005_consolidated_embedding_dim"
+down_revision = "ec7386d2401e"
 branch_labels = None
 depends_on = None
 
+# Target embedding dimension
+TARGET_DIM = 3840
+ORIGINAL_DIM = 1536
 
 HNSW_INDEX_SQL = """
-    CREATE INDEX CONCURRENTLY IF NOT EXISTS chunks_embedding_hnsw_idx 
-    ON chunks 
+    CREATE INDEX CONCURRENTLY IF NOT EXISTS chunks_embedding_hnsw_idx
+    ON chunks
     USING hnsw (embedding vector_cosine_ops)
     WITH (m = 16, ef_construction = 64)
 """
 
 IVFFLAT_INDEX_SQL = """
-    CREATE INDEX CONCURRENTLY IF NOT EXISTS chunks_embedding_hnsw_idx 
-    ON chunks 
+    CREATE INDEX CONCURRENTLY IF NOT EXISTS chunks_embedding_hnsw_idx
+    ON chunks
     USING ivfflat (embedding vector_cosine_ops)
     WITH (lists = 200)
 """
@@ -35,9 +46,10 @@ LEGACY_INDEXES = [
 
 
 def _recreate_vector_index() -> None:
+    """Create vector index with HNSW, falling back to IVFFlat if dimension limit exceeded."""
     try:
         op.execute(HNSW_INDEX_SQL)
-    except Exception as exc:  # pragma: no cover - migration-time only
+    except Exception as exc:
         orig = getattr(exc, "orig", exc)
         if isinstance(orig, psycopg_errors.ProgramLimitExceeded):
             # Fallback when managed Postgres caps HNSW dimensions
@@ -57,12 +69,13 @@ def _recreate_vector_index() -> None:
 
 
 def upgrade() -> None:
+    """Upgrade embedding column to target dimension."""
     # Drop indexes that depend on embedding dimension
     for stmt in LEGACY_INDEXES:
         op.execute(stmt)
 
-    # Resize the vector column to 3840 dims
-    op.execute("ALTER TABLE chunks ALTER COLUMN embedding TYPE vector(3840)")
+    # Resize the vector column to target dimension
+    op.execute(f"ALTER TABLE chunks ALTER COLUMN embedding TYPE vector({TARGET_DIM})")
 
     # Recreate vector + FTS indexes
     ctx = op.get_context()
@@ -84,30 +97,31 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    """Revert to original embedding dimension."""
     # Drop new indexes
     op.execute("DROP INDEX IF EXISTS chunks_embedding_hnsw_idx")
     op.execute("DROP INDEX IF EXISTS chunks_tsv_text_gin_idx")
     op.execute("DROP INDEX IF EXISTS chunks_tenant_id_idx")
 
-    # Revert to 3072 to match prior migration 005/006 defaults
-    op.execute("ALTER TABLE chunks ALTER COLUMN embedding TYPE vector(3072)")
+    # Revert to original dimension
+    op.execute(f"ALTER TABLE chunks ALTER COLUMN embedding TYPE vector({ORIGINAL_DIM})")
 
-    # Restore legacy index if needed
+    # Restore legacy HNSW index
     try:
         op.execute(
-            """
-            CREATE INDEX IF NOT EXISTS idx_chunks_embedding_hnsw ON chunks 
+            f"""
+            CREATE INDEX IF NOT EXISTS idx_chunks_embedding_hnsw ON chunks
             USING hnsw (embedding vector_cosine_ops)
             WITH (m = 16, ef_construction = 64)
         """
         )
-    except Exception as exc:  # pragma: no cover - migration-time only
+    except Exception as exc:
         orig = getattr(exc, "orig", exc)
         if isinstance(orig, psycopg_errors.ProgramLimitExceeded):
             op.execute("DROP INDEX IF EXISTS idx_chunks_embedding_hnsw")
             op.execute(
-                """
-                CREATE INDEX IF NOT EXISTS idx_chunks_embedding_hnsw ON chunks 
+                f"""
+                CREATE INDEX IF NOT EXISTS idx_chunks_embedding_hnsw ON chunks
                 USING ivfflat (embedding vector_cosine_ops)
                 WITH (lists = 200)
             """

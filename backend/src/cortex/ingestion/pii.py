@@ -23,6 +23,7 @@ _HAS_PRESIDIO = False
 
 try:
     from presidio_analyzer import AnalyzerEngine as _AnalyzerEngine
+    from presidio_analyzer import RecognizerResult as _RecognizerResult
     from presidio_anonymizer import AnonymizerEngine as _AnonymizerEngine
     from presidio_anonymizer.entities import OperatorConfig as _OperatorConfig
 
@@ -34,6 +35,7 @@ except ImportError:
     _AnalyzerEngine = None
     _AnonymizerEngine = None
     _OperatorConfig = None
+    _RecognizerResult = None
 
 
 # Entity types to detect per §6.4
@@ -245,7 +247,7 @@ class PIIEngine:
                         score=r.score,
                     )
                     for r in results
-                ]
+                ] + self._fallback.detect(text)
             except Exception as e:
                 logger.warning(f"Presidio detection failed: {e}. Using fallback.")
 
@@ -306,7 +308,28 @@ class PIIEngine:
                         was_modified=False,
                     )
 
+                # Merge with regex fallback
+                regex_entities = self._fallback.detect(text)
+                for ent in regex_entities:
+                    # Check for overlap with existing results
+                    overlap = False
+                    for r in results:
+                        if (ent.start < r.end) and (ent.end > r.start):
+                            overlap = True
+                            break
+
+                    if not overlap and _RecognizerResult:
+                        results.append(
+                            _RecognizerResult(
+                                entity_type=ent.entity_type,
+                                start=ent.start,
+                                end=ent.end,
+                                score=ent.score,
+                            )
+                        )
+
                 # Count entities
+                entities_count = {}
                 for r in results:
                     entities_count[r.entity_type] = (
                         entities_count.get(r.entity_type, 0) + 1

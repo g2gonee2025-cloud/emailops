@@ -1,4 +1,3 @@
-# ruff: noqa: I001
 """
 Map-Reduce Driver for Parallel Embedding Jobs.
 

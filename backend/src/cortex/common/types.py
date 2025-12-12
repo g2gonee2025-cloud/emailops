@@ -1,254 +1,189 @@
 """
 Core type definitions for Cortex error handling.
 
-Implements Result[T, E] pattern for type-safe error handling across the codebase.
-This replaces mixed error signaling patterns (tuple, Optional, exceptions).
+This module implements a typed Result[T, E] pattern using a *discriminated union*
+(two variants: Ok and Err) so that static type checkers can correctly narrow types
+based on the `.ok` tag.
+
+Why this shape?
+- `Ok` has:  ok == True  and a `value: T`
+- `Err` has: ok == False and an `error: E`
+- `Result[T, E]` is an alias: `Ok[T, E] | Err[T, E]`
+
+With this structure, a type checker can understand:
+
+    r: Result[int, str] = ...
+    if r.ok:
+        # r is Ok[int, str] here; r.value is int
+        print(r.value)
+    else:
+        # r is Err[int, str] here; r.error is str
+        print(r.error)
+
+This avoids the common pitfall of `value: T | None` / `error: E | None` on a
+single class where the checker cannot reliably correlate `ok` with the presence
+of `value` or `error`.
 """
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-from typing import Generic, TypeVar, cast
+from typing import Generic, Literal, TypeAlias, TypeGuard, TypeVar, cast
 
 T = TypeVar("T")
 E = TypeVar("E")
 U = TypeVar("U")
+F = TypeVar("F")
 
 
-@dataclass(frozen=True)
-class Result(Generic[T, E]):
+class ResultUnwrapError(RuntimeError):
+    """Raised when unwrap/expect operations are used on the wrong variant."""
+
+
+class _ResultOps(Generic[T, E]):
     """
-    Type-safe result container for operations that may fail.
+    Mixin implementing Result operations.
 
-    Replaces mixed error patterns (tuple[bool, str], T | None, exceptions)
-    with a single, composable, type-safe error handling mechanism.
-
-    Attributes:
-        ok: True if operation succeeded, False otherwise
-        value: Result value (only present if ok=True)
-        error: Error information (only present if ok=False)
-
-    Examples:
-        >>> # Success case
-        >>> result = Result.success(42)
-        >>> if result.ok:
-        ...     print(result.value)  # Type-safe: mypy knows this is int
-        32
-
-        >>> # Failure case
-        >>> result = Result.failure("File not found")
-        >>> if not result.ok:
-        ...     print(result.error)
-        File not found
-
-        >>> # Unwrap with default
-        >>> value = result.unwrap_or(0)
-        0
-
-        >>> # Transform success values
-        >>> result = Result.success(5)
-        >>> doubled = result.map(lambda x: x * 2)
-        >>> doubled.value
-        10
+    Both Ok and Err inherit these methods. Users typically interact with the
+    discriminated union `Result[T, E] = Ok[T, E] | Err[T, E]`.
     """
 
+    # Subclasses provide a Literal[True]/Literal[False] field named `ok`.
     ok: bool
-    value: T | None = None
-    error: E | None = None
-
-    def __post_init__(self) -> None:
-        """Validate Result invariants."""
-        if self.ok and self.value is None:
-            # Allow None as a valid value if T is Optional, but typically value is present.
-            # However, for void success, value might be None.
-            # Let's relax this check or ensure we pass None explicitly.
-            pass
-        if not self.ok and self.error is None:
-            raise ValueError("Failure Result must have an error")
-        if self.ok and self.error is not None:
-            raise ValueError("Success Result cannot have an error")
-        if not self.ok and self.value is not None:
-            raise ValueError("Failure Result cannot have a value")
-
-    @classmethod
-    def success(cls, value: T) -> Result[T, E]:
-        """
-        Create a success Result containing a value.
-
-        Args:
-            value: The success value
-
-        Returns:
-            Result with ok=True and the provided value
-        """
-        return cls(ok=True, value=value, error=None)
-
-    @classmethod
-    def failure(cls, error: E) -> Result[T, E]:
-        """
-        Create a failure Result containing an error.
-
-        Args:
-            error: The error information
-
-        Returns:
-            Result with ok=False and the provided error
-        """
-        return cls(ok=False, value=None, error=error)
-
-    @classmethod
-    def err(cls, error: E) -> Result[T, E]:
-        """Alias for failure() - canonical API."""
-        return cls.failure(error)
 
     def is_ok(self) -> bool:
-        """Check if Result is success."""
+        """Return True if this is Ok."""
         return self.ok
 
     def is_err(self) -> bool:
-        """Check if Result is failure."""
+        """Return True if this is Err."""
         return not self.ok
 
     def unwrap(self) -> T:
         """
-        Get the value or raise if error.
-
-        Returns:
-            The success value
-
-        Raises:
-            ValueError: If Result is a failure
+        Return the success value or raise ResultUnwrapError if this is Err.
         """
-        if not self.ok:
-            raise ValueError(f"Called unwrap() on failure Result: {self.error}")
-        return cast(T, self.value)
+        if self.ok:
+            return cast(Ok[T, E], self).value
+        err = cast(Err[T, E], self).error
+        raise ResultUnwrapError(f"Called unwrap() on Err: {err!r}")
 
     def unwrap_err(self) -> E:
         """
-        Get the error or raise if success.
-
-        Returns:
-            The error value
-
-        Raises:
-            ValueError: If Result is a success
+        Return the error value or raise ResultUnwrapError if this is Ok.
         """
-        if self.ok:
-            raise ValueError(f"Called unwrap_err() on success Result: {self.value}")
-        return cast(E, self.error)
+        if not self.ok:
+            return cast(Err[T, E], self).error
+        val = cast(Ok[T, E], self).value
+        raise ResultUnwrapError(f"Called unwrap_err() on Ok: {val!r}")
 
     def unwrap_or(self, default: T) -> T:
         """
-        Get the value or return default if error.
-
-        Args:
-            default: Default value to return on failure
-
-        Returns:
-            The success value or default
+        Return the success value, or `default` if this is Err.
         """
         if self.ok:
-            return cast(T, self.value)
+            return cast(Ok[T, E], self).value
         return default
 
     def unwrap_or_else(self, fn: Callable[[E], T]) -> T:
         """
-        Get the value or compute from error.
-
-        Args:
-            fn: Function to compute default from error
-
-        Returns:
-            The success value or result of fn(error)
+        Return the success value, or compute a fallback from the error.
         """
         if self.ok:
-            return cast(T, self.value)
-        assert self.error is not None
-        return fn(self.error)
+            return cast(Ok[T, E], self).value
+        return fn(cast(Err[T, E], self).error)
 
     def expect(self, msg: str) -> T:
         """
-        Get the value or raise with custom message.
-
-        Args:
-            msg: Error message to use if failure
-
-        Returns:
-            The success value
-
-        Raises:
-            ValueError: If Result is a failure, with custom message
-        """
-        if not self.ok:
-            raise ValueError(f"{msg}: {self.error}")
-        return cast(T, self.value)
-
-    def map(self, fn: Callable[[T], U]) -> Result[U, E]:
-        """
-        Transform success value, preserve failure.
-
-        Args:
-            fn: Function to transform the value
-
-        Returns:
-            Result with transformed value if success, same error if failure
+        Return the success value, or raise ResultUnwrapError with a custom message.
         """
         if self.ok:
-            return Result.success(fn(cast(T, self.value)))
-        return Result.failure(cast(E, self.error))
+            return cast(Ok[T, E], self).value
+        err = cast(Err[T, E], self).error
+        raise ResultUnwrapError(f"{msg}: {err!r}")
 
-    def map_error(self, fn: Callable[[E], U]) -> Result[T, U]:
+    def map(self, fn: Callable[[T], U]) -> "Result[U, E]":
         """
-        Transform error, preserve success.
-
-        Args:
-            fn: Function to transform the error
-
-        Returns:
-            Same value if success, Result with transformed error if failure
-        """
-        if not self.ok:
-            assert self.error is not None
-            return Result.failure(fn(cast(E, self.error)))
-        return Result.success(cast(T, self.value))
-
-    def and_then(self, fn: Callable[[T], Result[U, E]]) -> Result[U, E]:
-        """
-        Chain operations that return Result (flatMap/bind).
-
-        Args:
-            fn: Function that takes the value and returns a new Result
-
-        Returns:
-            Result of fn(value) if success, same error if failure
-
-        Example:
-            >>> def divide(x: int) -> Result[int, str]:
-            ...     return Result.success(100 // x) if x != 0 else Result.failure("div by zero")
-            >>> Result.success(10).and_then(divide)
-            Result(ok=True, value=10, error=None)
-            >>> Result.success(0).and_then(divide)
-            Result(ok=False, value=None, error='div by zero')
+        Transform the Ok value, preserving Err.
         """
         if self.ok:
-            return fn(cast(T, self.value))
-        return Result.failure(cast(E, self.error))
+            return Ok(fn(cast(Ok[T, E], self).value))
+        return cast(Err[U, E], self)
 
-    def or_else(self, fn: Callable[[E], Result[T, E]]) -> Result[T, E]:
+    def map_error(self, fn: Callable[[E], F]) -> "Result[T, F]":
         """
-        Provide alternative Result on failure.
+        Transform the Err error, preserving Ok.
+        """
+        if self.ok:
+            return cast(Ok[T, F], self)
+        return Err(fn(cast(Err[T, E], self).error))
 
-        Args:
-            fn: Function that takes the error and returns alternative Result
+    def and_then(self, fn: Callable[[T], "Result[U, E]"]) -> "Result[U, E]":
+        """
+        Chain computations that themselves return Result (flatMap / bind).
+        """
+        if self.ok:
+            return fn(cast(Ok[T, E], self).value)
+        return cast(Err[U, E], self)
 
-        Returns:
-            Same Result if success, result of fn(error) if failure
+    def or_else(self, fn: Callable[[E], "Result[T, E]"]) -> "Result[T, E]":
+        """
+        Provide an alternative Result if this is Err.
         """
         if not self.ok:
-            assert self.error is not None
-            return fn(cast(E, self.error))
-        return self
+            return fn(cast(Err[T, E], self).error)
+        return cast(Ok[T, E], self)
+
+
+@dataclass(frozen=True, slots=True)
+class Ok(_ResultOps[T, E]):
+    """
+    Success variant of Result[T, E].
+
+    Attributes:
+        value: The success value.
+        ok: Literal True tag used for type narrowing.
+    """
+
+    value: T
+    ok: Literal[True] = True
+
+
+@dataclass(frozen=True, slots=True)
+class Err(_ResultOps[T, E]):
+    """
+    Failure variant of Result[T, E].
+
+    Attributes:
+        error: The error value.
+        ok: Literal False tag used for type narrowing.
+    """
+
+    error: E
+    ok: Literal[False] = False
+
+
+# The discriminated union users should type against.
+Result: TypeAlias = Ok[T, E] | Err[T, E]
+
+
+def is_ok(r: Result[T, E]) -> TypeGuard[Ok[T, E]]:
+    """
+    Type guard for Ok.
+
+    Useful when a checker doesn't narrow as expected on `if r.ok:` in a given context.
+    """
+    return r.ok is True
+
+
+def is_err(r: Result[T, E]) -> TypeGuard[Err[T, E]]:
+    """
+    Type guard for Err.
+
+    Useful when a checker doesn't narrow as expected on `if not r.ok:` in a given context.
+    """
+    return r.ok is False
 
 
 # -------------------------
@@ -256,101 +191,70 @@ class Result(Generic[T, E]):
 # -------------------------
 
 
-def collect_results(results: list[Result[T, E]]) -> Result[list[T], E]:
+def collect_results(results: Iterable[Result[T, E]]) -> Result[list[T], E]:
     """
-    Collect multiple Results into single Result[list[T], E].
+    Collect multiple Results into a single Result[list[T], E].
 
-    Fails fast on first error - if any Result is failure, returns that failure.
-    Otherwise returns success with list of all values.
-
-    Args:
-        results: List of Result objects to collect
-
-    Returns:
-        Result[list[T], E]: Success with all values or first failure
-
-    Example:
-        >>> results = [Result.success(1), Result.success(2), Result.success(3)]
-        >>> collected = collect_results(results)
-        >>> collected.unwrap()
-        [1, 2, 3]
-
-        >>> results = [Result.success(1), Result.failure("error"), Result.success(3)]
-        >>> collected = collect_results(results)
-        >>> collected.ok
-        False
+    Fails fast on the first Err.
     """
     values: list[T] = []
     for r in results:
         if not r.ok:
-            return Result.failure(cast(E, r.error))
-        values.append(cast(T, r.value))
-    return Result.success(values)
+            return Err(cast(Err[T, E], r).error)
+        values.append(cast(Ok[T, E], r).value)
+    return Ok(values)
 
 
 def sequence_results(
-    items: list[T], fn: Callable[[T], Result[U, E]]
+    items: Iterable[T], fn: Callable[[T], Result[U, E]]
 ) -> Result[list[U], E]:
     """
-    Apply function returning Result to each item, collect results.
+    Apply `fn` to each item and collect results (fail-fast).
 
-    Fails fast on first error. Equivalent to collect(map(fn, items)).
-
-    Args:
-        items: List of items to process
-        fn: Function that takes item and returns Result
-
-    Returns:
-        Result[list[U], E]: Success with all results or first failure
-
-    Example:
-        >>> def validate_positive(x: int) -> Result[int, str]:
-        ...     return Result.success(x) if x > 0 else Result.failure(f"{x} not positive")
-        >>> sequence_results([1, 2, 3], validate_positive).unwrap()
-        [1, 2, 3]
-        >>> sequence_results([1, -2, 3], validate_positive).ok
-        False
+    Unlike a list comprehension + collect, this truly stops at the first Err.
     """
-    results = [fn(item) for item in items]
-    return collect_results(results)
+    out: list[U] = []
+    for item in items:
+        r = fn(item)
+        if not r.ok:
+            return Err(cast(Err[U, E], r).error)
+        out.append(cast(Ok[U, E], r).value)
+    return Ok(out)
 
 
 def traverse_results(
-    items: list[T], fn: Callable[[T], Result[U, E]]
+    items: Iterable[T], fn: Callable[[T], Result[U, E]]
 ) -> Result[list[U], list[E]]:
     """
-    Apply function to all items, collecting all errors (not fail-fast).
-
-    Unlike sequence_results which fails on first error, this processes all items
-    and returns either success with all values or failure with all errors.
-
-    Args:
-        items: List of items to process
-        fn: Function that takes item and returns Result
+    Apply `fn` to every item, collecting *all* errors (not fail-fast).
 
     Returns:
-        Result[list[U], list[E]]: Success with all values or list of all errors
-
-    Example:
-        >>> def validate(x: int) -> Result[int, str]:
-        ...     return Result.success(x) if x > 0 else Result.failure(f"{x} invalid")
-        >>> traverse_results([1, -2, 3, -4], validate)
-        Result(ok=False, value=None, error=['-2 invalid', '-4 invalid'])
+        Ok(list_of_values) if there are no errors
+        Err(list_of_errors) otherwise
     """
     successes: list[U] = []
     failures: list[E] = []
 
     for item in items:
-        result = fn(item)
-        if result.ok:
-            successes.append(cast(U, result.value))
+        r = fn(item)
+        if r.ok:
+            successes.append(cast(Ok[U, E], r).value)
         else:
-            assert result.error is not None
-            failures.append(cast(E, result.error))
+            failures.append(cast(Err[U, E], r).error)
 
     if failures:
-        return Result.failure(failures)
-    return Result.success(successes)
+        return Err(failures)
+    return Ok(successes)
 
 
-__all__ = ["Result", "collect_results", "sequence_results", "traverse_results"]
+__all__ = [
+    "Result",
+    "Ok",
+    "Err",
+    "ResultUnwrapError",
+    "is_ok",
+    "is_err",
+    "collect_results",
+    "sequence_results",
+    "traverse_results",
+]

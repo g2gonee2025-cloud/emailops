@@ -9,6 +9,7 @@ import hashlib
 import logging
 
 from cortex.audit import log_audit_event
+from cortex.context import tenant_id_ctx, user_id_ctx
 from cortex.models.api import AnswerRequest, AnswerResponse
 
 # from cortex.observability import trace_operation
@@ -18,8 +19,16 @@ from fastapi import APIRouter, HTTPException, Request
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# Compile graph once at module level
-_answer_graph = build_answer_graph().compile()
+# Lazy load graph
+_answer_graph = None
+
+
+def get_answer_graph():
+    global _answer_graph
+    if _answer_graph is None:
+        logger.info("Initializing Answer Graph...")
+        _answer_graph = build_answer_graph().compile()
+    return _answer_graph
 
 
 @router.post("/answer", response_model=AnswerResponse)
@@ -40,8 +49,8 @@ async def answer_api(request: AnswerRequest, http_request: Request):
         # Initialize state
         initial_state = {
             "query": request.query,
-            "tenant_id": request.tenant_id,
-            "user_id": request.user_id,
+            "tenant_id": tenant_id_ctx.get(),
+            "user_id": user_id_ctx.get(),
             "classification": None,
             "retrieval_results": None,
             "assembled_context": None,
@@ -51,7 +60,7 @@ async def answer_api(request: AnswerRequest, http_request: Request):
         }
 
         # Invoke graph
-        final_state = await _answer_graph.ainvoke(initial_state)
+        final_state = await get_answer_graph().ainvoke(initial_state)
 
         # Check for errors
         if final_state.get("error"):
