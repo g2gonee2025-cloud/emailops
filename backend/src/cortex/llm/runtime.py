@@ -3,7 +3,7 @@ LLM Runtime.
 
 Implements §7.2.1 of the Canonical Blueprint with 2025-standard practices:
 
-- LLM: nvidia/Kimi-K2-Thinking-NVFP4 via vLLM / NVIDIA NIM
+- LLM: MiniMaxAI/MiniMax-M2 via vLLM / NVIDIA NIM
   using the OpenAI-compatible Chat Completions API.
 
 - Embedding: tencent/KaLM-Embedding-Gemma3-12B-2511 via SentenceTransformers
@@ -75,19 +75,32 @@ except ImportError:
 
     class RuntimeConfig:
         def __init__(self) -> None:
-            # LLM: Kimi-K2 (served via vLLM OpenAI-compatible server)
-            self.llm_model = os.getenv("KIMI_MODEL", "nvidia/Kimi-K2-Thinking-NVFP4")
-            self.llm_base_url = os.getenv("KIMI_ENDPOINT", "http://localhost:8000/v1")
-            self.llm_api_key = os.getenv("KIMI_API_KEY", "EMPTY")
+            # LLM: MiniMax-M2 (served via vLLM OpenAI-compatible server)
+            self.llm_model = os.getenv(
+                "LLM_MODEL", os.getenv("KIMI_MODEL", "MiniMaxAI/MiniMax-M2")
+            )
+            self.llm_base_url = os.getenv(
+                "LLM_ENDPOINT", os.getenv("KIMI_ENDPOINT", "http://localhost:8000/v1")
+            )
+            self.llm_api_key = os.getenv(
+                "LLM_API_KEY",
+                os.getenv("LLM_API_KEY", os.getenv("KIMI_API_KEY", "EMPTY")),
+            )
 
             # Embedding: KaLM-Embedding-Gemma3-12B-2511 (dim=3840)
             self.embed_model = os.getenv(
-                "KALM_EMBED_MODEL", "tencent/KaLM-Embedding-Gemma3-12B-2511"
+                "EMBED_MODEL",
+                os.getenv("KALM_EMBED_MODEL", "tencent/KaLM-Embedding-Gemma3-12B-2511"),
             )
-            self.embed_dim = int(os.getenv("KALM_EMBED_DIM", "3840"))
+            self.embed_dim = int(
+                os.getenv("EMBED_DIM", os.getenv("KALM_EMBED_DIM", "3840"))
+            )
             self.embed_device = os.getenv(
-                "KALM_EMBED_DEVICE",
-                "cuda" if os.getenv("CUDA_VISIBLE_DEVICES") else "cpu",
+                "EMBED_DEVICE",
+                os.getenv(
+                    "KALM_EMBED_DEVICE",
+                    "cuda" if os.getenv("CUDA_VISIBLE_DEVICES") else "cpu",
+                ),
             )
             self.embed_batch_size = int(os.getenv("KALM_EMBED_BATCH_SIZE", "32"))
 
@@ -271,11 +284,17 @@ class BaseProvider(ABC):
         return vectors / norms
 
 
-class KimiKaLMProvider(BaseProvider):
+class VLLMProvider(BaseProvider):
+    """
+    OpenAI-compatible vLLM provider.
+
+    Defaults to MiniMaxAI/MiniMax-M2 when LLM_MODEL is not set.
+    """
+
     """
     Primary provider (ONLY provider in this file):
 
-    - LLM: nvidia/Kimi-K2-Thinking-NVFP4 served via vLLM / NIM
+    - LLM: MiniMaxAI/MiniMax-M2 served via vLLM / NIM
       exposing the OpenAI-compatible ChatCompletions API.
 
     - Embedding: tencent/KaLM-Embedding-Gemma3-12B-2511 via SentenceTransformers.
@@ -290,7 +309,7 @@ class KimiKaLMProvider(BaseProvider):
         self._embed_model: Any | None = None
         self._lock = threading.RLock()
 
-    # ------------- LLM client (Kimi-K2 via OpenAI-compatible server) -------------
+    # ------------- LLM client (MiniMax-M2 via OpenAI-compatible server) -------------
     @property
     def llm_client(self):
         if self._llm_client is not None:
@@ -306,13 +325,13 @@ class KimiKaLMProvider(BaseProvider):
                 ) from e
 
             base_url = getattr(_config, "llm_base_url", None) or os.getenv(
-                "KIMI_ENDPOINT", "http://localhost:8000/v1"
+                "LLM_ENDPOINT", os.getenv("KIMI_ENDPOINT", "http://localhost:8000/v1")
             )
             api_key = getattr(_config, "llm_api_key", None) or os.getenv(
                 "KIMI_API_KEY", "EMPTY"
             )
 
-            logger.info("Initializing OpenAI client for Kimi-K2 at %s", base_url)
+            logger.info("Initializing OpenAI client for MiniMax-M2 at %s", base_url)
             self._llm_client = OpenAI(base_url=base_url, api_key=api_key)
             return self._llm_client
 
@@ -407,7 +426,7 @@ class KimiKaLMProvider(BaseProvider):
 
     def complete(self, prompt: str, **kwargs: Any) -> str:
         """
-        Chat completion via Kimi-K2 (OpenAI Chat Completions API).
+        Chat completion via MiniMax-M2 (OpenAI Chat Completions API).
 
         Supports vLLM extension params via extra_body (e.g. extra_body={"top_k": 50}).
         """
@@ -416,49 +435,152 @@ class KimiKaLMProvider(BaseProvider):
             model_name = (
                 kwargs.get("model")
                 or getattr(_config, "llm_model", None)
-                or os.getenv("KIMI_MODEL", "nvidia/Kimi-K2-Thinking-NVFP4")
+                or os.getenv("KIMI_MODEL", "MiniMaxAI/MiniMax-M2")
             )
 
             messages = kwargs.get("messages") or [{"role": "user", "content": prompt}]
             response_format = kwargs.get("response_format")
             extra_body = kwargs.get("extra_body")
 
+            # NOTE: Keep this request object small. For long-context models,
+            # client-side overhead can become noticeable if you do heavy post-processing here.
             req: Dict[str, Any] = {
                 "model": model_name,
                 "messages": messages,
                 "temperature": kwargs.get("temperature", 0.3),
-                "max_tokens": kwargs.get("max_tokens", 2048),
+                # Prefer max_completion_tokens when supplied (newer OpenAI-compatible servers),
+                # but keep max_tokens for broad compatibility.
+                "max_tokens": int(kwargs.get("max_tokens", 2048)),
                 "response_format": response_format,
                 "extra_body": extra_body,
             }
 
-            # Pass-through optional common OpenAI params when provided
-            for k in ("top_p", "stop", "presence_penalty", "frequency_penalty", "seed"):
+            # Common OpenAI Chat Completions params (pass-through if provided)
+            for k in (
+                "top_p",
+                "stop",
+                "presence_penalty",
+                "frequency_penalty",
+                "seed",
+                "n",
+                "logprobs",
+                "top_logprobs",
+                "tools",
+                "tool_choice",
+                "parallel_tool_calls",
+            ):
                 if k in kwargs and kwargs[k] is not None:
                     req[k] = kwargs[k]
+
+            # max_completion_tokens is preferred by some OpenAI-compatible servers; include if set.
+            if (
+                "max_completion_tokens" in kwargs
+                and kwargs["max_completion_tokens"] is not None
+            ):
+                req["max_completion_tokens"] = int(kwargs["max_completion_tokens"])
 
             resp = client.chat.completions.create(**req)
             if not resp.choices:
                 raise ProviderError("No choices in completion response")
-            return resp.choices[0].message.content or ""
+
+            msg = resp.choices[0].message
+
+            # vLLM reasoning parsers may surface reasoning in additional fields.
+            # For MiniMax-M2, the recommended setup is to keep <think> blocks in the
+            # conversation history, so we try to preserve them when present.
+            content = getattr(msg, "content", None) or ""
+            reasoning = (
+                getattr(msg, "reasoning", None)
+                or getattr(msg, "reasoning_content", None)
+                or ""
+            )
+
+            if reasoning and "<think>" not in content:
+                content = f"<think>{reasoning}</think>\n{content}".strip()
+            return content
         except Exception as e:
-            raise ProviderError(f"Kimi LLM failed: {e}") from e
+            raise ProviderError(f"LLM failed: {e}") from e
+
+
+# Backward-compat alias (older code may import KimiKaLMProvider)
+KimiKaLMProvider = VLLMProvider
 
 
 # =============================================================================
-# Runtime orchestrator (Kimi+KaLM only)
+# Runtime orchestrator (MiniMax+KaLM only)
 # =============================================================================
 class LLMRuntime:
     """
-    Orchestrates provider + resilience (Kimi+KaLM only).
+    Orchestrates provider + resilience (MiniMax+KaLM only).
 
-    - primary: KimiKaLMProvider
+    - primary: VLLMProvider (MiniMax-M2 by default)
+    - scaler: DigitalOceanLLMService (optional, for GPU pool autoscaling)
     """
 
     def __init__(self) -> None:
         self.resilience = ResilienceManager()
-        self.primary = KimiKaLMProvider()
+        self.primary = VLLMProvider()
         self._max_retries = cast(RetryLike, _retry_cfg).max_retries
+        self._scaler = self._init_scaler()
+        self._inflight = 0
+        self._inflight_lock = threading.Lock()
+
+    def _init_scaler(self):
+        """Initialize the DigitalOcean GPU scaler if configured."""
+        try:
+            from cortex.config.loader import get_config
+            from cortex.llm.doks_scaler import DigitalOceanLLMService
+
+            config = get_config()
+            do_config = getattr(config, "digitalocean", None)
+            if do_config is None:
+                logger.debug("DigitalOcean config not found; GPU scaler disabled")
+                return None
+
+            # Check if cluster/pool IDs are configured
+            scaling = getattr(do_config, "scaling", None)
+            if not scaling or not scaling.cluster_id or not scaling.node_pool_id:
+                logger.debug(
+                    "DO_CLUSTER_ID or DO_NODE_POOL_ID not set; GPU scaler disabled"
+                )
+                return None
+
+            scaler = DigitalOceanLLMService(do_config)
+            logger.info(
+                "DigitalOcean GPU scaler initialized (cluster=%s, pool=%s)",
+                scaling.cluster_id[:8],
+                scaling.node_pool_id[:8],
+            )
+            return scaler
+        except ImportError:
+            logger.debug("doks_scaler module not available; GPU scaler disabled")
+            return None
+        except Exception as e:
+            logger.warning("Failed to initialize GPU scaler: %s", e)
+            return None
+
+    def _maybe_scale(self) -> None:
+        """Trigger GPU scaling based on current request load."""
+        if self._scaler is None:
+            return
+        try:
+            with self._inflight_lock:
+                inflight = self._inflight
+            # The scaler's _maybe_scale method handles the actual scaling logic
+            self._scaler._maybe_scale(inflight)
+        except Exception as e:
+            logger.warning("GPU scaling check failed: %s", e)
+
+    def _track_request_start(self) -> None:
+        """Track start of a request for scaling decisions."""
+        with self._inflight_lock:
+            self._inflight += 1
+        self._maybe_scale()
+
+    def _track_request_end(self) -> None:
+        """Track end of a request for scaling decisions."""
+        with self._inflight_lock:
+            self._inflight = max(0, self._inflight - 1)
 
     # ------------- Core execution wrapper with resilience -------------
     def _execute(self, operation: str, func, *args, **kwargs):
@@ -468,7 +590,10 @@ class LLMRuntime:
         - Token bucket rate limiting
         - Circuit breaker
         - Tenacity retries on ProviderError / RateLimitError / TimeoutError / ConnectionError
+        - GPU autoscaling trigger (if configured)
         """
+        # Track request for GPU scaling
+        self._track_request_start()
 
         @retry(
             retry=retry_if_exception_type(
@@ -499,7 +624,10 @@ class LLMRuntime:
                     self.resilience.record_outcome(success=False)
                 raise
 
-        return _attempt()
+        try:
+            return _attempt()
+        finally:
+            self._track_request_end()
 
     # ---------------- Public API: embeddings (document/query) ----------------
     def embed_documents(self, documents: List[str]) -> np.ndarray:

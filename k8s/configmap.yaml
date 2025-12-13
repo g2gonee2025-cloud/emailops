@@ -7,26 +7,47 @@ data:
   # Environment
   ENV: "production"
   LOG_LEVEL: "INFO"
-  
+
   # Embedding configuration (KaLM 12B, 3840 dims)
   EMBED_DIM: "3840"
   EMBED_MODEL: "tencent/KaLM-Embedding-Gemma3-12B-2511"
-  
-  # LLM configuration
-  LLM_MODEL: "gemini-2.5-pro"
-  
-  # Embedding provider (DigitalOcean TEI endpoint)
+
+  # LLM configuration (MiniMax M2 via in-cluster vLLM)
+  LLM_MODEL: "MiniMaxAI/MiniMax-M2"
+  LLM_ENDPOINT: "http://llm-api.emailops.svc.cluster.local:8000/v1"
+
+  # Embedding provider (in-cluster vLLM embeddings)
   EMBED_PROVIDER: "digitalocean"
   DO_LLM_BASE_URL: "http://embeddings-api.emailops.svc.cluster.local"
-  
-  # S3/Spaces Configuration (DigitalOcean Spaces - Singapore)
-  S3_ENDPOINT: "https://tor1.digitaloceanspaces.com"
-  S3_REGION: "tor1"
-  S3_BUCKET_RAW: "emailops-storage-tor1"
-  
+
+  # DigitalOcean Custom Scaler Configuration (NYC2)
+  DO_CLUSTER_ID: "23c013d9-4d8d-4d3d-a813-7e5cbc3d0af1"
+  DO_NODE_POOL_ID: "e359afb3-1891-4bba-94b4-c7ab1d2e1736"
+  DO_GPU_MIN_NODES: "0"
+  DO_GPU_MAX_NODES: "4"
+  DO_GPU_MEMORY_GB: "141"   # H200 GPU
+  DO_GPUS_PER_NODE: "1"
+  DO_GPU_HEADROOM: "0.1"    # 10% headroom
+  DO_GPU_DOWNSCALE_INTERVAL: "300"  # 5 min before scale down
+  DO_GPU_TARGET_UTIL: "0.7"
+  DO_GPU_DRY_RUN: "false"
+
+  # Database (DigitalOcean Managed PostgreSQL 18 - NYC2)
+  # Using private network connection for lower latency
+  DB_URL: "postgresql://doadmin:AVNS_ZCS7WkuhGi2WhkCxOM7@private-emailops-db-nyc2-do-user-26332415-0.m.db.ondigitalocean.com:25060/cortex?sslmode=require"
+
+  # Redis (in-cluster)
+  REDIS_URL: "redis://redis.emailops.svc.cluster.local:6379"
+
+  # S3/Spaces Configuration (DigitalOcean Spaces - NYC2 region, same as cluster)
+  # Note: Spaces may only be available in nyc3, adjust if needed
+  S3_ENDPOINT: "https://nyc3.digitaloceanspaces.com"
+  S3_REGION: "nyc3"
+  S3_BUCKET_RAW: "emailops-storage-nyc2"
+
   # Server configuration
   PORT: "8000"
   WORKERS: "2"
-  
+
   # CORS (adjust for your domain)
   CORS_ORIGINS: "*"

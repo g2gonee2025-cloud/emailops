@@ -1,10 +1,9 @@
-import os
 import sys
 import unittest
-from datetime import datetime
+from pathlib import Path
 
 # Add src to path
-sys.path.append(os.path.join(os.getcwd(), "backend", "src"))
+sys.path.append(str(Path.cwd() / "backend" / "src"))
 
 from cortex.chunking.chunker import ChunkingInput, chunk_text
 from cortex.ingestion.quoted_masks import detect_quoted_spans
@@ -48,7 +47,6 @@ class TestCorrectness(unittest.TestCase):
 
     def test_chunk_type_hint(self):
         """Verify chunk_type_hint is propagated."""
-        from cortex.db.models import ChunkType  # Verify import works
 
         text = "Attachment content here."
         chunks = chunk_text(

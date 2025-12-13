@@ -2,11 +2,11 @@
 Manual Verification Script for Security Modules.
 """
 import logging
-import os
 import sys
+from pathlib import Path
 
 # Add backend/src to path
-sys.path.append(os.path.abspath("backend/src"))
+sys.path.append(str(Path("backend/src").resolve()))
 
 from cortex.security.injection_defense import InjectionDefense
 from cortex.security.policy_enforcer import PolicyEnforcer

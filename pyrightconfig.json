@@ -1,5 +1,5 @@
 {
-  "include": ["backend", "cli", "workers", "tests"],
+  "include": ["backend", "cli", "workers", "tests","scripts"],
   "extraPaths": [
     "./backend/src",
     "./cli/src",

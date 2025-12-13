@@ -1,0 +1,115 @@
+commit 73bcae2245467725880653db714b936d58ea4f13
+Author: Nick Craig-Wood <nick@craig-wood.com>
+Date:   Wed Dec 10 12:54:18 2025 +0000
+
+    Version v1.72.1
+
+commit e8d6de09c677601213c1f4772780b30d1ff656cf
+Author: Nick Craig-Wood <nick@craig-wood.com>
+Date:   Wed Dec 10 12:14:08 2025 +0000
+
+    s3: add more regions for Selectel
+
+commit bc3305efd1e0c512c70219609e1b7a685764d3f1
+Author: Nick Craig-Wood <nick@craig-wood.com>
+Date:   Tue Dec 9 16:35:07 2025 +0000
+
+    log: fix backtrace not going to the --log-file #9014
+    
+    Before the log re-organisation in:
+    
+    8d353039a694fb27 log: add log rotation to --log-file
+    
+    rclone would write any backtraces to the --log-file which was very
+    convenient for users.
+    
+    This got accidentally disabled due to a typo which meant backtraces
+    started going to stderr even if --log-file was supplied.
+    
+    This fixes the problem.
+
+commit 3dd0232a26eb453e5d94339c42e2112f5d5f7f8a
+Author: Nick Craig-Wood <nick@craig-wood.com>
+Date:   Tue Dec 9 16:14:26 2025 +0000
+
+    build: fix lint warning after linter upgrade
+
+commit e6ce9d4a9867e9e85578e86f2ec412f96bfa5b0c
+Author: Jonas Tingeborn <134889+jojje@users.noreply.github.com>
+Date:   Sat Dec 6 07:31:20 2025 +0100
+
+    configfile: add piped config support - fixes #9012
+
+commit c37c6248fc187db5c0fab42a7095c8e743401ba5
+Author: Tingsong Xu <tingsong.xu@rightcapital.com>
+Date:   Mon Dec 8 14:05:19 2025 +0800
+
+    fs/log: fix PID not included in JSON log output
+    
+      When using `--log-format pid,json`, the PID was not being added to the JSON log output. This fix adds PID support to JSON logging.
+
+commit a8bece6585d8d313e89f8428d33d8f7347cab3b4
+Author: Nick Craig-Wood <nick@craig-wood.com>
+Date:   Mon Dec 8 14:43:49 2025 +0000
+
+    build: adjust lint rules to exclude new errors from linter update
+
+commit 9bc877ad442587fa2bf5344a01a3450c3340fefc
+Author: Nick Craig-Wood <nick@craig-wood.com>
+Date:   Mon Dec 8 12:32:04 2025 +0000
+
+    proxy: fix error handling in tests spotted by the linter
+
+commit 26313927407eb61afa443edb5b52ae9e68aa089e
+Author: Johannes Rothe <mail@johannes-rothe.de>
+Date:   Thu Nov 27 22:07:26 2025 +0100
+
+    googlecloudstorage: improve endpoint parameter docs
+    
+    When specifying a custom endpoint with a subpath, there is a limitation
+    in the Google cloud storage integration that the subpath is ignored
+    during upload operations. For example with the custom endpoint
+    "example.org/custom/endpoint" on upload the /custom/endpoint is not
+    reflected.
+    
+    As this is most likely an issue with the underlying API client, there is
+    no way to fix this in rclone. By extending the documentation at least
+    rclone users are made aware of this limitation.
+    
+    Related forum thread: https://forum.rclone.org/t/googlecloudstorage-custom-endpoint-subpath-removed-for-upload/53059
+
+commit 1b3a5fe1fa4c8529b6008e81da4faa07e2f10e63
+Author: Nick Craig-Wood <nick@craig-wood.com>
+Date:   Wed Nov 26 12:18:38 2025 +0000
+
+    docs: note where a provider has an S3 compatible alternative
+
+commit 615d5876a702e11f49af868ae9b019b51f17fb2f
+Author: Nick Craig-Wood <nick@craig-wood.com>
+Date:   Wed Nov 26 12:00:00 2025 +0000
+
+    Add Shade as sponsor
+
+commit ed36d2330f35cabc19ad6043019dc25ec0be0a49
+Author: Duncan Smart <duncan.smart@gmail.com>
+Date:   Sun Nov 23 15:08:40 2025 +0000
+
+    docs: Clarify OAuth scopes for readonly Google Drive access
+
+commit 532c16c1e958fd5760ef6b1a363913d257ce8ab5
+Author: Nick Craig-Wood <nick@craig-wood.com>
+Date:   Sun Nov 23 11:30:29 2025 +0000
+
+    docs: update sponsor logos
+
+commit a08d66793b4d31368656b894cb43fec1474394e6
+Author: Nick Craig-Wood <nick@craig-wood.com>
+Date:   Fri Nov 21 18:23:16 2025 +0000
+
+    docs: fix lint error in changelog
+
+commit c4a2440492a421e2d342124c44023c7044667784
+Author: Nick Craig-Wood <nick@craig-wood.com>
+Date:   Wed Dec 10 12:30:26 2025 +0000
+
+    Start v1.72.1-DEV development

@@ -1,29 +1,35 @@
 <#
 DigitalOcean deploy helper (PowerShell)
-Actions: provision | build | deploy | status | all
+Actions: provision | build | deploy | status | gpu-up | gpu-down | all
 
 provision: ensure DOKS cluster + managed Postgres, apply manifests, optional migrations
 build:     build + push backend image to DO registry
 deploy:    apply manifests (configmap, secrets with .env templating, backend, embeddings, hpa, ingress)
 status:    show cluster status / rollout
+gpu-up:    scale GPU node pool to 1 (for embeddings/LLM)
+gpu-down:  scale GPU node pool to 0 (save costs)
 all:       provision -> build -> deploy
 #>
 
 param(
     [Parameter(Position=0)]
-    [ValidateSet("provision", "build", "deploy", "status", "all")]
+    [ValidateSet("provision", "build", "deploy", "status", "gpu-up", "gpu-down", "all")]
     [string]$Action = "all",
 
-    # Infra
-    [string]$ClusterName = "do-tor1-emailops-k8s",
-    [string]$DbName = "emailops-db-tor1",
-    [string]$Region = "tor1",
-    [string]$NodeSize = "s-1vcpu-2gb",
+    # Infra - NYC2 cluster (existing)
+    [string]$ClusterId = "23c013d9-4d8d-4d3d-a813-7e5cbc3d0af1",
+    [string]$ClusterName = "k8s-1-34-1-do-1-nyc2-1765360390845",
+    [string]$GpuPoolId = "e359afb3-1891-4bba-94b4-c7ab1d2e1736",
+    [string]$CpuPoolId = "c949fea3-5d57-4c30-9fd4-35acdf6973af",
+    [string]$Region = "nyc2",
+    [string]$NodeSize = "s-2vcpu-8gb-amd",
     [int]$NodeCount = 1,
-    [string]$DbSize = "db-s-1vcpu-1gb",
     [switch]$KubeSetCurrent,
     [switch]$SkipMigrations,
     [string]$Namespace = "emailops",
+
+    # Database (in-cluster PostgreSQL, not managed DB)
+    [switch]$UseInClusterDb,
 
     # Image / registry
     [string]$Registry = "registry.digitalocean.com/sf-registry",
@@ -42,8 +48,6 @@ function Test-CommandRequired($name) {
 # Basic prereqs
 Test-CommandRequired doctl
 Test-CommandRequired kubectl
-Test-CommandRequired jq
-Test-CommandRequired alembic
 if ($Action -in @("build", "deploy", "all")) {
     Test-CommandRequired docker
 }
@@ -96,41 +100,45 @@ function Build-And-Push {
     }
 }
 
-function Update-ClusterAndDb {
-    Write-Host "Ensuring cluster $ClusterName exists..."
-    $clusterId = $(doctl kubernetes cluster list --output json | jq -r --arg name "$ClusterName" '.[] | select(.name == $name) | .id')
-    if (-not $clusterId) {
-        Write-Host "Creating cluster $ClusterName ..."
-        doctl kubernetes cluster create $ClusterName --region $Region --node-pool "name=pool1;size=$NodeSize;count=$NodeCount"
-    } else {
-        Write-Host "Cluster found with ID: $clusterId"
+function Update-Cluster {
+    Write-Host "Checking cluster $ClusterName (NYC2)..."
+    
+    # Check if cluster exists
+    $clusterInfo = doctl kubernetes cluster get $ClusterId --output json 2>$null | ConvertFrom-Json
+    if (-not $clusterInfo) {
+        throw "Cluster $ClusterId not found. Please create it first or update ClusterId."
     }
-
-    Write-Host "Ensuring database $DbName exists..."
-    $dbId = $(doctl databases list --output json | jq -r --arg name "$DbName" '.[] | select(.name == $name) | .id')
-    if (-not $dbId) {
-        Write-Host "Creating database..."
-        $createJson = doctl databases create $DbName --engine pg --size $DbSize --region $Region --num-nodes 1 --output json | Out-String
-        $dbId = ($createJson | jq -r '.[0].id')
-    } else {
-        Write-Host "Database found with ID: $dbId"
-    }
-
-    Write-Host "Fetching DB connection URL..."
-    $connJson = doctl databases connection $dbId --output json | Out-String
-    $script:OUTLOOKCORTEX_DB_URL = ($connJson | jq -r '.uri')
-    if (-not $script:OUTLOOKCORTEX_DB_URL) { throw "Failed to get DB URL" }
-
+    
+    Write-Host "Cluster found: $($clusterInfo.name) in $($clusterInfo.region)"
+    Write-Host "  Status: $($clusterInfo.status.state)"
+    Write-Host "  Node Pools: $($clusterInfo.node_pools.Count)"
+    
     Write-Host "Saving kubeconfig..."
-    $kubeArgs = @("kubernetes", "cluster", "kubeconfig", "save", $ClusterName)
-    if ($KubeSetCurrent) { $kubeArgs += "--set-current" }
+    $kubeArgs = @("kubernetes", "cluster", "kubeconfig", "save", $ClusterId)
+    if ($KubeSetCurrent) { $kubeArgs += "--set-current-context" }
     doctl @kubeArgs | Out-Null
+}
+
+function Scale-GpuPool {
+    param([int]$Count)
+    Write-Host "Scaling GPU pool to $Count nodes..."
+    doctl kubernetes cluster node-pool update $ClusterId $GpuPoolId --count $Count
+    
+    if ($Count -gt 0) {
+        Write-Host "GPU pool scaling up. This may take 2-5 minutes."
+        Write-Host "Cost: ~`$3.81/hour for H200 GPU"
+    } else {
+        Write-Host "GPU pool scaled to 0. No GPU costs will be incurred."
+    }
 }
 
 function Set-Secrets {
     $dotenv = Get-DotenvVars
     $secretsPath = Join-Path $K8sDir "secrets.yaml"
-    if (-not (Test-Path $secretsPath)) { throw "secrets.yaml not found" }
+    if (-not (Test-Path $secretsPath)) { 
+        Write-Warning "secrets.yaml not found. Copy secrets-template.yaml and fill in values."
+        throw "secrets.yaml not found" 
+    }
     $content = Get-Content $secretsPath -Raw
     foreach ($k in $dotenv.Keys) {
         $placeholder = "$" + "{" + $k + "}"
@@ -144,18 +152,38 @@ function Install-Manifests {
     kubectl apply -f (Join-Path $K8sDir "namespace.yaml")
     kubectl apply -f (Join-Path $K8sDir "configmap.yaml")
     Set-Secrets
+    
+    # Deploy in-cluster PostgreSQL and Redis
+    if ($UseInClusterDb -or (Test-Path (Join-Path $K8sDir "postgres.yaml"))) {
+        Write-Host "Deploying in-cluster PostgreSQL..."
+        kubectl apply -f (Join-Path $K8sDir "postgres.yaml")
+    }
+    kubectl apply -f (Join-Path $K8sDir "redis.yaml")
+    
+    # Deploy backend
     kubectl apply -f (Join-Path $K8sDir "backend-deployment.yaml")
-    kubectl apply -f (Join-Path $K8sDir "embeddings.yaml")
-    kubectl apply -f (Join-Path $K8sDir "ingress.yaml")
-    kubectl apply -f (Join-Path $K8sDir "hpa.yaml")
+    
+    # Deploy embeddings (requires GPU)
+    kubectl apply -f (Join-Path $K8sDir "embeddings-pvc.yaml") 2>$null
+    kubectl apply -f (Join-Path $K8sDir "embeddings-vllm.yaml")
+    
+    # Optional resources
+    kubectl apply -f (Join-Path $K8sDir "ingress.yaml") 2>$null
+    kubectl apply -f (Join-Path $K8sDir "hpa.yaml") 2>$null
 }
 
 function Invoke-Migrations {
-    if ($SkipMigrations) { return }
+    if ($SkipMigrations) { 
+        Write-Host "Skipping migrations (use -SkipMigrations:$false to run)"
+        return 
+    }
+    if (-not (Get-Command alembic -ErrorAction SilentlyContinue)) {
+        Write-Warning "alembic not found; skipping migrations"
+        return
+    }
     Write-Host "Running migrations..."
     Push-Location $MigrationsDir
     try {
-        $env:OUTLOOKCORTEX_DB_URL = $script:OUTLOOKCORTEX_DB_URL
         alembic -c alembic.ini upgrade head
     }
     finally {
@@ -164,13 +192,25 @@ function Invoke-Migrations {
 }
 
 function Show-Status {
-    kubectl -n $Namespace get all
-    Write-Host "\nRollout status:"; kubectl -n $Namespace rollout status deployment/emailops-backend --timeout=120s
+    Write-Host "`n=== Cluster Info ===" -ForegroundColor Cyan
+    kubectl cluster-info
+    
+    Write-Host "`n=== Node Pools ===" -ForegroundColor Cyan
+    doctl kubernetes cluster node-pool list $ClusterId
+    
+    Write-Host "`n=== Pods ===" -ForegroundColor Cyan
+    kubectl -n $Namespace get pods -o wide
+    
+    Write-Host "`n=== Services ===" -ForegroundColor Cyan
+    kubectl -n $Namespace get svc
+    
+    Write-Host "`n=== Rollout Status ===" -ForegroundColor Cyan
+    kubectl -n $Namespace rollout status deployment/emailops-backend --timeout=60s 2>$null
 }
 
 switch ($Action) {
     "provision" {
-        Update-ClusterAndDb
+        Update-Cluster
         Install-Manifests
         Invoke-Migrations
     }
@@ -184,8 +224,14 @@ switch ($Action) {
     "status" {
         Show-Status
     }
+    "gpu-up" {
+        Scale-GpuPool -Count 1
+    }
+    "gpu-down" {
+        Scale-GpuPool -Count 0
+    }
     "all" {
-        Update-ClusterAndDb
+        Update-Cluster
         Update-Registry
         Build-And-Push
         Install-Manifests
@@ -194,4 +240,4 @@ switch ($Action) {
     }
 }
 
-Write-Host "Done."
+Write-Host "`nDone." -ForegroundColor Green

@@ -1,0 +1,127 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minimax-m2-llm
+  namespace: emailops
+  labels:
+    app: emailops
+    component: llm
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: emailops
+      component: llm
+  template:
+    metadata:
+      labels:
+        app: emailops
+        component: llm
+    spec:
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 32Gi
+        - name: model-cache
+          persistentVolumeClaim:
+            claimName: llm-model-cache
+      containers:
+        - name: vllm
+          image: vllm/vllm-openai:latest
+          args:
+            - "--model"
+            - "MiniMaxAI/MiniMax-M2"
+            - "--tensor-parallel-size"
+            - "1"
+            - "--trust-remote-code"
+            - "--port"
+            - "8000"
+            - "--max-model-len"
+            - "32768"
+            - "--quantization"
+            - "fp8"
+            - "--gpu-memory-utilization"
+            - "0.90"
+            - "--enable-chunked-prefill"
+          env:
+            - name: HF_HUB_ENABLE_HF_TRANSFER
+              value: "1"
+            - name: HF_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: emailops-secrets
+                  key: HF_API_KEY
+                  optional: true
+            - name: VLLM_ATTENTION_BACKEND
+              value: "FLASH_ATTN"
+          ports:
+            - containerPort: 8000
+              name: http
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: dshm
+            - mountPath: /root/.cache/huggingface
+              name: model-cache
+          resources:
+            requests:
+              memory: "100Gi"
+              cpu: "8"
+              nvidia.com/gpu: "1"
+            limits:
+              memory: "140Gi"
+              cpu: "16"
+              nvidia.com/gpu: "1"
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            failureThreshold: 120
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+      tolerations:
+        - key: "nvidia.com/gpu"
+          operator: "Exists"
+          effect: "NoSchedule"
+      nodeSelector:
+        doks.digitalocean.com/gpu-pool: "true"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-api
+  namespace: emailops
+  labels:
+    app: emailops
+    component: llm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8000
+      targetPort: 8000
+      protocol: TCP
+      name: http
+  selector:
+    app: emailops
+    component: llm
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: llm-model-cache
+  namespace: emailops
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: do-block-storage
+  resources:
+    requests:
+      storage: 500Gi

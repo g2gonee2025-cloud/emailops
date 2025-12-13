@@ -364,25 +364,25 @@ class DigitalOceanLLMModelConfig(BaseModel):
     """Describes the hosted LLM for sizing + throughput."""
 
     name: str = Field(
-        default_factory=lambda: _env("DO_LLM_NAME", "kimi-k2-moe"),
+        default_factory=lambda: _env("DO_LLM_NAME", "minimax-m2"),
         description="Identifier for the hosted model",
     )
     params_total: float = Field(
-        default_factory=lambda: _env("DO_LLM_PARAMS_TOTAL", 47.0, float),
+        default_factory=lambda: _env("DO_LLM_PARAMS_TOTAL", 230.0, float),
         gt=0,
         description="Total parameters in billions (MoE aware)",
     )
     params_active: Optional[float] = Field(
-        default_factory=lambda: _env("DO_LLM_PARAMS_ACTIVE", None, float),
+        default_factory=lambda: _env("DO_LLM_PARAMS_ACTIVE", 10.0, float),
         description="Active parameters per token in billions (MoE)",
     )
     context_length: int = Field(
-        default_factory=lambda: _env("DO_LLM_CONTEXT", 200_000, int),
+        default_factory=lambda: _env("DO_LLM_CONTEXT", 204_800, int),
         ge=1_000,
         description="Max context window supported",
     )
     quantization: str = Field(
-        default_factory=lambda: _env("DO_LLM_QUANT", "int4"),
+        default_factory=lambda: _env("DO_LLM_QUANT", "fp8"),
         description="Quantization key (fp16, int4, nf4, etc.)",
     )
     additional_memory_gb: float = Field(

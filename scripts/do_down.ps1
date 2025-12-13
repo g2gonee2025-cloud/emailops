@@ -1,17 +1,24 @@
 <#
-Purpose: Back up DB to a local dump (optional upload), then destroy DOKS cluster, managed PG, and any listed droplets.
-Prereqs: doctl, pg_dump, optional s3cmd for upload; DIGITALOCEAN_ACCESS_TOKEN set.
-Safety: Will delete resources by name; confirm via -Force to skip prompts.
+Purpose: Scale down GPU pool (to save costs), optionally back up DB and destroy resources.
+Prereqs: doctl, pg_dump (optional), DIGITALOCEAN_ACCESS_TOKEN set.
+Safety: GPU scaling is safe. Cluster/DB deletion requires -Force or confirmation.
 #>
 param(
-    [string]$ClusterName = "do-tor1-emailops-k8s",
-    [string]$DbName = "emailops-db-tor1",
+    # NYC2 Cluster (existing)
+    [string]$ClusterId = "23c013d9-4d8d-4d3d-a813-7e5cbc3d0af1",
+    [string]$ClusterName = "k8s-1-34-1-do-1-nyc2-1765360390845",
+    [string]$GpuPoolId = "e359afb3-1891-4bba-94b4-c7ab1d2e1736",
+    [string]$Region = "nyc2",
+    
+    # Backup options
     [string]$BackupDir = "./backups",
     [string]$SpacesBucket = "emailops-backups",
-    [string]$Region = "tor1",
     [switch]$UploadToSpaces,
-    [switch]$Force,
     [switch]$SkipBackup,
+    
+    # Destruction options (USE WITH CAUTION)
+    [switch]$DeleteCluster,
+    [switch]$Force,
     [string[]]$DropletIdsToDelete = @()
 )
 
@@ -24,78 +31,60 @@ function Test-Command($name) {
 
 Test-Command doctl
 
-$pgDumpAvailable = $true
-if (-not (Get-Command pg_dump -ErrorAction SilentlyContinue)) {
-    $pgDumpAvailable = $false
-}
-
 if (-not $env:DIGITALOCEAN_ACCESS_TOKEN) {
     throw "DIGITALOCEAN_ACCESS_TOKEN is not set"
 }
 
-# Ensure backup dir
-$BackupPath = Resolve-Path (New-Item -ItemType Directory -Force -Path $BackupDir)
+# =============================================================================
+# PRIMARY ACTION: Scale down GPU pool to save costs
+# =============================================================================
+Write-Host "=============================================="
+Write-Host "EmailOps Scale Down (NYC2)" -ForegroundColor Yellow
+Write-Host "Cluster: $ClusterName"
+Write-Host "=============================================="
 
-Write-Host "Fetching DB connection URL..."
-$OUTLOOKCORTEX_DB_URL = $null
+Write-Host "`nScaling GPU pool to 0 nodes..." -ForegroundColor Cyan
 try {
-    $connJson = doctl databases connection $DbName --output json | Out-String
-    $connObj = $connJson | ConvertFrom-Json
-    if ($connObj -and $connObj[0].uri) {
-        $OUTLOOKCORTEX_DB_URL = $connObj[0].uri
-    }
+    doctl kubernetes cluster node-pool update $ClusterId $GpuPoolId --count 0
+    Write-Host "GPU pool scaled to 0. No GPU costs will be incurred." -ForegroundColor Green
+    Write-Host "  H200 GPU: ~`$3.81/hour saved"
 } catch {
-    Write-Warning "Could not fetch DB URL (db may already be deleted): $_"
+    Write-Warning "GPU pool scaling failed: $_"
 }
 
-if (-not $OUTLOOKCORTEX_DB_URL) {
-    Write-Warning "DB URL unavailable; skipping backup"
-    $SkipBackup = $true
-}
+# Show current state
+Write-Host "`n=== Current Node Pools ===" -ForegroundColor Cyan
+doctl kubernetes cluster node-pool list $ClusterId
 
-if ($SkipBackup) {
-    Write-Warning "SkipBackup set; skipping pg_dump"
-} elseif (-not $pgDumpAvailable) {
-    Write-Warning "pg_dump not found; skipping backup. Install PostgreSQL client tools to enable backups."
-} else {
-    $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
-    $dumpFile = Join-Path $BackupPath "${DbName}_${timestamp}.dump"
-    Write-Host "Dumping DB to $dumpFile ..."
-    pg_dump --format=custom --file="$dumpFile" "$OUTLOOKCORTEX_DB_URL"
-
-    if ($UploadToSpaces) {
-        if (Get-Command aws -ErrorAction SilentlyContinue) {
-            aws s3 cp "$dumpFile" "s3://$SpacesBucket/"
-        } elseif (Get-Command s3cmd -ErrorAction SilentlyContinue) {
-            s3cmd put "$dumpFile" "s3://$SpacesBucket/"
-        } else {
-            Write-Warning "Upload requested but aws/s3cmd not found; skipping upload."
+# =============================================================================
+# OPTIONAL: Delete cluster entirely (requires -DeleteCluster flag)
+# =============================================================================
+if ($DeleteCluster) {
+    Write-Host "`n" -ForegroundColor Red
+    Write-Host "!!! DANGER ZONE !!!" -ForegroundColor Red
+    Write-Host "You requested to DELETE the entire cluster." -ForegroundColor Red
+    
+    if (-not $Force) {
+        $resp = Read-Host "About to DELETE cluster $ClusterName. Type 'DELETE' to continue"
+        if ($resp -ne "DELETE") { 
+            Write-Host "Aborted by user." -ForegroundColor Yellow
+            exit 0 
         }
     }
+    
+    Write-Host "Deleting k8s cluster $ClusterName ..."
+    try {
+        doctl kubernetes cluster delete $ClusterId --force --dangerous
+    } catch {
+        Write-Warning "Cluster delete failed: $_"
+    }
 }
 
-if (-not $Force) {
-    $resp = Read-Host "About to DELETE cluster $ClusterName and DB $DbName. Type 'yes' to continue"
-    if ($resp -ne "yes") { throw "Aborted by user" }
-}
-
-Write-Host "Deleting k8s cluster $ClusterName ..."
-try {
-    doctl kubernetes cluster delete $ClusterName --force
-} catch {
-    Write-Warning "Cluster delete failed or not found: $_"
-}
-
-Write-Host "Deleting database $DbName ..."
-try {
-    doctl databases delete $DbName --force
-} catch {
-    Write-Warning "Database delete failed or not found: $_"
-}
-
+# Optional: Delete specific droplets
 foreach ($id in $DropletIdsToDelete) {
     Write-Host "Deleting droplet $id ..."
     doctl compute droplet delete $id --force
 }
 
-Write-Host "Done. Remaining cost should be Spaces + any snapshots." 
+Write-Host "`nDone." -ForegroundColor Green
+Write-Host "Remaining costs: Spaces storage + any snapshots/volumes" 

@@ -226,31 +226,32 @@ def upgrade():
     )
 
     # Enforce multi-tenant isolation per Blueprint §4.2
-    op.execute("ALTER TABLE ingest_jobs ENABLE ROW LEVEL SECURITY")
-    op.execute(
-        """
-        CREATE POLICY tenant_isolation_ingest_jobs ON ingest_jobs
-        USING (tenant_id = current_setting('app.current_tenant', true))
-        """
-    )
+    for table in ("ingest_jobs", "facts_ledger"):
+        op.execute(f"ALTER TABLE {table} ENABLE ROW LEVEL SECURITY")
+        op.execute(f"ALTER TABLE {table} FORCE ROW LEVEL SECURITY")
 
-    op.execute("ALTER TABLE facts_ledger ENABLE ROW LEVEL SECURITY")
-    op.execute(
-        """
-        CREATE POLICY tenant_isolation_facts_ledger ON facts_ledger
-        USING (tenant_id = current_setting('app.current_tenant', true))
-        """
-    )
+        policy_name = f"tenant_isolation_{table}"
+        op.execute(f"DROP POLICY IF EXISTS {policy_name} ON {table}")
+        op.execute(
+            f"""
+            CREATE POLICY {policy_name} ON {table}
+            FOR ALL
+            USING (tenant_id = current_setting('app.current_tenant', true))
+            WITH CHECK (tenant_id = current_setting('app.current_tenant', true))
+            """
+        )
 
 
 def downgrade():
     op.execute("DROP POLICY IF EXISTS tenant_isolation_facts_ledger ON facts_ledger")
+    op.execute("ALTER TABLE IF EXISTS facts_ledger NO FORCE ROW LEVEL SECURITY")
     op.execute("ALTER TABLE IF EXISTS facts_ledger DISABLE ROW LEVEL SECURITY")
     op.drop_index(op.f("ix_facts_ledger_thread_id"), table_name="facts_ledger")
     op.drop_index(op.f("ix_facts_ledger_tenant_id"), table_name="facts_ledger")
     op.drop_table("facts_ledger")
 
     op.execute("DROP POLICY IF EXISTS tenant_isolation_ingest_jobs ON ingest_jobs")
+    op.execute("ALTER TABLE IF EXISTS ingest_jobs NO FORCE ROW LEVEL SECURITY")
     op.execute("ALTER TABLE IF EXISTS ingest_jobs DISABLE ROW LEVEL SECURITY")
     op.drop_index(op.f("ix_ingest_jobs_tenant_id"), table_name="ingest_jobs")
     op.drop_index(op.f("ix_ingest_jobs_status"), table_name="ingest_jobs")

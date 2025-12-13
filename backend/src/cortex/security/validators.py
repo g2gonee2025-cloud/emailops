@@ -11,7 +11,7 @@ import shlex
 from pathlib import Path
 from typing import List, Optional, Set
 
-from cortex.common.types import Result
+from cortex.common.types import Err, Ok, Result
 
 logger = logging.getLogger(__name__)
 
@@ -183,7 +183,7 @@ def validate_directory_result(
         Result containing resolved Path or error message
     """
     if not allow_parent_traversal and ".." in path:
-        return Result.failure("Parent traversal (..) not allowed")
+        return Err("Parent traversal (..) not allowed")
 
     try:
         p = Path(path).expanduser().resolve()
@@ -191,17 +191,17 @@ def validate_directory_result(
         if check_symlinks and is_dangerous_symlink(
             Path(path), allowed_roots=allowed_roots
         ):
-            return Result.failure(f"Dangerous symlink detected: {path}")
+            return Err(f"Dangerous symlink detected: {path}")
 
         if must_exist:
             if not p.exists():
-                return Result.failure(f"Directory does not exist: {p}")
+                return Err(f"Directory does not exist: {p}")
             if not p.is_dir():
-                return Result.failure(f"Path is not a directory: {p}")
+                return Err(f"Path is not a directory: {p}")
 
-        return Result.success(p)
+        return Ok(p)
     except Exception as e:
-        return Result.failure(f"Invalid path: {e}")
+        return Err(f"Invalid path: {e}")
 
 
 def validate_file_result(
@@ -234,7 +234,7 @@ def validate_file_result(
         Result containing resolved Path or error message
     """
     if not allow_parent_traversal and ".." in path:
-        return Result.failure("Parent traversal (..) not allowed")
+        return Err("Parent traversal (..) not allowed")
 
     try:
         p = Path(path).expanduser().resolve()
@@ -242,25 +242,25 @@ def validate_file_result(
         if check_symlinks and is_dangerous_symlink(
             Path(path), allowed_roots=allowed_roots
         ):
-            return Result.failure(f"Dangerous symlink detected: {path}")
+            return Err(f"Dangerous symlink detected: {path}")
 
         # Check extension if whitelist provided
         if allowed_extensions is not None:
             ext = p.suffix.lower()
             if ext not in allowed_extensions:
-                return Result.failure(
+                return Err(
                     f"File extension '{ext}' not allowed. Allowed: {sorted(allowed_extensions)}"
                 )
 
         if must_exist:
             if not p.exists():
-                return Result.failure(f"File does not exist: {p}")
+                return Err(f"File does not exist: {p}")
             if not p.is_file():
-                return Result.failure(f"Path is not a file: {p}")
+                return Err(f"Path is not a file: {p}")
 
-        return Result.success(p)
+        return Ok(p)
     except Exception as e:
-        return Result.failure(f"Invalid path: {e}")
+        return Err(f"Invalid path: {e}")
 
 
 # -----------------------------------------------------------------------------
@@ -290,18 +290,18 @@ def validate_command_args(
         Result containing validated args or error message
     """
     if allowed_commands is not None and command not in allowed_commands:
-        return Result.failure(f"Command not allowed: {command}")
+        return Err(f"Command not allowed: {command}")
 
     # Check command for dangerous characters
     if any(c in _DANGEROUS_SHELL_CHARS for c in command):
-        return Result.failure(f"Command contains dangerous characters: {command}")
+        return Err(f"Command contains dangerous characters: {command}")
 
     # Check each argument
     for arg in args:
         if any(c in _DANGEROUS_SHELL_CHARS for c in arg):
-            return Result.failure(f"Argument contains dangerous characters: {arg}")
+            return Err(f"Argument contains dangerous characters: {arg}")
 
-    return Result.success(args)
+    return Ok(args)
 
 
 def quote_shell_arg(arg: str) -> str:
@@ -336,8 +336,8 @@ def validate_email_format(email: str) -> Result[str, str]:
     """
     email = email.strip()
     if not _EMAIL_REGEX.match(email):
-        return Result.failure(f"Invalid email format: {email}")
-    return Result.success(email)
+        return Err(f"Invalid email format: {email}")
+    return Ok(email)
 
 
 # -----------------------------------------------------------------------------
@@ -365,15 +365,15 @@ def validate_environment_variable(
         Result containing (name, value) tuple or error message
     """
     if not _ENV_VAR_NAME_REGEX.match(name):
-        return Result.failure(
+        return Err(
             f"Invalid environment variable name: {name}. "
             "Must match pattern [A-Z_][A-Z0-9_]*"
         )
 
     if "\x00" in value:
-        return Result.failure("Environment variable value contains null byte")
+        return Err("Environment variable value contains null byte")
 
-    return Result.success((name, value))
+    return Ok((name, value))
 
 
 # -----------------------------------------------------------------------------
@@ -400,14 +400,14 @@ def validate_project_id(project_id: str) -> Result[str, str]:
         Result containing validated project ID or error message
     """
     if not project_id:
-        return Result.failure("Project ID cannot be empty")
+        return Err("Project ID cannot be empty")
 
     if not _GCP_PROJECT_REGEX.match(project_id):
-        return Result.failure(
+        return Err(
             f"Invalid GCP project ID: {project_id}. "
             "Must be 6-30 chars, start with lowercase letter, "
             "contain only lowercase letters/numbers/hyphens, "
             "and not end with hyphen."
         )
 
-    return Result.success(project_id)
+    return Ok(project_id)
