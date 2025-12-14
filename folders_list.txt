@@ -1,0 +1,20 @@
+           0 2000-01-01 04:00:00        -1 EML-2024-10-30_2A173A - Lunch in the Canteen(November 4-8)
+           0 2000-01-01 04:00:00        -1 EML-2024-11-01_D96819 - Lunch in the Canteen(November 4-8)
+           0 2000-01-01 04:00:00        -1 EML-2024-11-05_23DC01 - Scheduled Maintenance for AIA and WM9 - 09_11_2024
+           0 2000-01-01 04:00:00        -1 EML-2024-11-06_1D4959 - Lunch in the Canteen(November 11-15)
+           0 2000-01-01 04:00:00        -1 EML-2024-11-08_3AA99D - Lunch in the Canteen(November 11-15)
+           0 2000-01-01 04:00:00        -1 EML-2024-11-12_1A1C23 - RSO UAE - STORE RENOVATION (RE-OPENING) _ GUESS Boutique at Dubai Marina Mall
+           0 2000-01-01 04:00:00        -1 EML-2024-12-09_18D08E - Reminder┬╖ 5 Working Days to Complete Your Self-Assessment
+           0 2000-01-01 04:00:00        -1 EML-2024-12-10_224DF1 - Reminder┬╖ 4 Working Days to Complete Your Self-Assessment
+           0 2000-01-01 04:00:00        -1 EML-2024-12-11_390AF2 - Reminder┬╖ 3 Working Days to Complete Your Self-Assessment
+           0 2000-01-01 04:00:00        -1 EML-2024-12-11_41A319 - Lunch in the Canteen(December 16-20)
+           0 2000-01-01 04:00:00        -1 EML-2024-12-12_18A4AA - Customer Notification _ Update #1┬╖  On Cashless Transactions through the┬áPay by Link platform for our Cash cu
+           0 2000-01-01 04:00:00        -1 EML-2024-12-12_30D64E - A Guilt-free Guide To Holiday Festivities
+           0 2000-01-01 04:00:00        -1 EML-2024-12-12_6F865B - Reminder┬╖ 2 Working Days to Complete Your Self-Assessment
+           0 2000-01-01 04:00:00        -1 EML-2024-12-13_5ED1B5 - Reminder┬╖ Final Day to Complete Your Self-Assessment
+           0 2000-01-01 04:00:00        -1 EML-2024-12-13_F74CE0 - Lunch in the Canteen(December 16-20)
+           0 2000-01-01 04:00:00        -1 EML-2024-12-16_B307CF - Scheduled Maintenance for AIA and WM9 - 12_21_2024
+           0 2000-01-01 04:00:00        -1 EML-2024-12-18_3284A7 - Thank you for 2024 - Celebrating Our Collective Spirit and Welcoming a Bright Future Together
+           0 2000-01-01 04:00:00        -1 EML-2024-12-18_D1F53B - Lunch in the Canteen(December 23-27)
+           0 2000-01-01 04:00:00        -1 EML-2024-12-20_12AAC5 - Lunch in the Canteen(December 23-27)
+           0 2000-01-01 04:00:00        -1 EML-2024-12-23_105C14 - NASCO invites you to complete┬╖ Important Update Regarding Changes in Beneficiary Account for Premium payment

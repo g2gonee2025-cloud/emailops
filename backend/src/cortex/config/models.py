@@ -304,7 +304,7 @@ class DigitalOceanScalerConfig(BaseModel):
         default_factory=lambda: _env_list("DO_GPU_NODE_TAGS"),
         description="Tags applied to the GPU node pool when provisioning",
     )
-    api_base_url: str = Field(
+    api_BASE_URL: str = Field(
         default_factory=lambda: _env(
             "DO_API_BASE_URL", "https://api.digitalocean.com/v2"
         ),
@@ -412,7 +412,7 @@ class DigitalOceanLLMModelConfig(BaseModel):
 class DigitalOceanLLMEndpointConfig(BaseModel):
     """Inference endpoint exposed from the DOKS-hosted LLM."""
 
-    base_url: AnyHttpUrl | None = Field(
+    BASE_URL: AnyHttpUrl | None = Field(
         default_factory=lambda: _env("DO_LLM_BASE_URL", None),
         description="Base URL for the OpenAI-compatible gateway running in DOKS",
     )
@@ -790,7 +790,7 @@ class SensitiveConfig(BaseModel):
     qwen_api_key: Optional[str] = Field(
         default_factory=lambda: _env("QWEN_API_KEY", None), description="Qwen API key"
     )
-    qwen_base_url: Optional[str] = Field(
+    qwen_BASE_URL: Optional[str] = Field(
         default_factory=lambda: _env("QWEN_BASE_URL", None),
         description="Qwen API base URL",
     )

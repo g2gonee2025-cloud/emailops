@@ -14,8 +14,8 @@ from cortex.safety.grounding import (
     is_answer_grounded,
     tool_check_grounding,
 )
-from cortex.safety.injection_defense import strip_injection_patterns
 from cortex.safety.policy_enforcer import PolicyDecision, check_action
+from cortex.security.injection_defense import strip_injection_patterns
 
 __all__ = [
     # Injection defense

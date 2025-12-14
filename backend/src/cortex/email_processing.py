@@ -15,8 +15,13 @@ from cortex.utils import strip_control_chars
 # Pre-compiled Regex Patterns
 # =============================================================================
 
+
 # Email and URL patterns for redaction
-_EMAIL_PATTERN = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b")
+# EMAIL_REGEX is used for validation (anchored). For extraction, we need a similar pattern but unanchored.
+# We'll use a local pattern for extraction but aligned with the validation one conceptually.
+_EMAIL_SEARCH_PATTERN = re.compile(
+    r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
+)
 _URL_PATTERN = re.compile(r'https?://[^\s<>"{}|\\^`\[\]]+')
 
 # Excessive punctuation normalization
@@ -134,7 +139,7 @@ def clean_email_text(text: str) -> str:
     text = _QUOTED_REPLY.sub("", text)
 
     # 6. Redact emails and URLs
-    text = _EMAIL_PATTERN.sub("[email]", text)
+    text = _EMAIL_SEARCH_PATTERN.sub("[email]", text)
     text = _URL_PATTERN.sub("[URL]", text)
 
     # 7. Normalize punctuation

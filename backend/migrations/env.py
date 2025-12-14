@@ -11,15 +11,15 @@ from sqlalchemy import engine_from_config, pool
 from sqlalchemy.orm import DeclarativeMeta
 
 
-def _ensure_backend_src_on_path() -> None:
+def _ensure_BACKEND_SRC_on_path() -> None:
     migrations_dir = Path(__file__).resolve().parent
     backend_dir = migrations_dir.parent
-    backend_src = backend_dir / "src"
+    BACKEND_SRC = backend_dir / "src"
 
-    if backend_src.is_dir():
-        backend_src_str = str(backend_src)
-        if backend_src_str not in sys.path:
-            sys.path.append(backend_src_str)
+    if BACKEND_SRC.is_dir():
+        BACKEND_SRC_str = str(BACKEND_SRC)
+        if BACKEND_SRC_str not in sys.path:
+            sys.path.append(BACKEND_SRC_str)
         return
 
     # Fallback to repo-level src (agentic tooling, etc.) if present.
@@ -31,7 +31,7 @@ def _ensure_backend_src_on_path() -> None:
             sys.path.append(alt_src_str)
 
 
-_ensure_backend_src_on_path()
+_ensure_BACKEND_SRC_on_path()
 
 
 _models_module = import_module("cortex.db.models")

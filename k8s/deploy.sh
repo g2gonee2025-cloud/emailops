@@ -1,8 +1,9 @@
 #!/bin/bash
 # =============================================================================
-# EmailOps Kubernetes Deployment Script
+# EmailOps Kubernetes Deployment Script (v3.3 DOKS Edition)
 # =============================================================================
 # Deploys the full stack to DigitalOcean Kubernetes (DOKS)
+# using Managed PostgreSQL and Spaces.
 # =============================================================================
 
 set -e
@@ -10,64 +11,71 @@ set -e
 NAMESPACE="emailops"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# DOKS Cluster Info (NYC2)
+# DOKS Cluster Info (Verified from User Input)
 CLUSTER_ID="23c013d9-4d8d-4d3d-a813-7e5cbc3d0af1"
 CLUSTER_NAME="k8s-1-34-1-do-1-nyc2-1765360390845"
-GPU_POOL_ID="e359afb3-1891-4bba-94b4-c7ab1d2e1736"
-CPU_POOL_ID="c949fea3-5d57-4c30-9fd4-35acdf6973af"
+GPU_POOL_ID="e359afb3-1891-4bba-94b4-c7ab1d2e1736" # pool-f4x80anpj (H200)
+CPU_POOL_ID="c949fea3-5d57-4c30-9fd4-35acdf6973af" # pool-ewvdhlkec
 
 echo "=============================================="
 echo "EmailOps Kubernetes Deployment (NYC2)"
 echo "Cluster: $CLUSTER_NAME"
 echo "=============================================="
+echo ""
 
 # Check kubectl connection
 echo "[1/8] Checking cluster connection..."
-kubectl cluster-info || { echo "ERROR: Cannot connect to cluster"; exit 1; }
+kubectl cluster-info || { echo "ERROR: Cannot connect to cluster. Check your kubeconfig."; exit 1; }
 
 # Create namespace
-echo "[2/8] Creating namespace..."
+echo "[2/8] Creating namespace '$NAMESPACE'..."
 kubectl apply -f "$SCRIPT_DIR/namespace.yaml"
 
-# Apply secrets (must exist!)
+# Apply secrets
 echo "[3/8] Applying secrets..."
-if [ ! -f "$SCRIPT_DIR/secrets.yaml" ]; then
-    echo "ERROR: secrets.yaml not found!"
-    echo "Copy secrets-template.yaml to secrets.yaml and fill in your values."
+if [ -f "$SCRIPT_DIR/secrets_live.yaml" ]; then
+    # Auto-rename secrets_live to secrets if needed or just apply it
+    echo "    Using secrets_live.yaml..."
+    kubectl apply -f "$SCRIPT_DIR/secrets_live.yaml"
+elif [ -f "$SCRIPT_DIR/secrets.yaml" ]; then
+    kubectl apply -f "$SCRIPT_DIR/secrets.yaml"
+else
+    echo "ERROR: No secrets file found!"
+    echo "Please ensure k8s/secrets_live.yaml or k8s/secrets.yaml exists."
     exit 1
 fi
-kubectl apply -f "$SCRIPT_DIR/secrets.yaml"
 
 # Apply ConfigMap
 echo "[4/8] Applying ConfigMap..."
 kubectl apply -f "$SCRIPT_DIR/configmap.yaml"
 
-# Deploy PostgreSQL (StatefulSet with PVC)
-echo "[5/8] Deploying PostgreSQL..."
-kubectl apply -f "$SCRIPT_DIR/postgres.yaml"
-echo "    Waiting for PostgreSQL to be ready..."
-kubectl rollout status statefulset/postgres -n $NAMESPACE --timeout=120s || true
+# Deploy Database Strategy: Managed
+echo "[5/8] Configuring Database..."
+echo "    Using DigitalOcean Managed PostgreSQL (emailops-db-nyc2)."
+echo "    Skipping in-cluster Postgres deployment."
+# We do NOT run kubectl apply -f postgres.yaml
 
-# Deploy Redis
-echo "[6/8] Deploying Redis..."
+# Deploy Redis (In-Cluster Cache)
+echo "[6/8] Deploying Redis (Cache)..."
 kubectl apply -f "$SCRIPT_DIR/redis.yaml"
-kubectl rollout status deployment/redis -n $NAMESPACE --timeout=60s || true
+kubectl rollout status deployment/redis -n $NAMESPACE --timeout=60s || echo "Warning: Redis validation timed out, but proceeding."
 
 # Deploy Embeddings API (vLLM on GPU)
-echo "[7/8] Deploying Embeddings API..."
+echo "[7/8] Deploying Embeddings API (vLLM)..."
+# Ensure GPU pool is scaled up? (Optional check)
+echo "    Applying PVC and Service..."
 kubectl apply -f "$SCRIPT_DIR/embeddings-pvc.yaml" || true
 kubectl apply -f "$SCRIPT_DIR/embeddings-vllm.yaml"
-echo "    Note: Embeddings requires GPU node. Waiting for pod..."
+echo "    Note: vLLM pod will stay Pending until H200 GPU node is available."
 
 # Deploy Backend
-echo "[8/8] Deploying Backend..."
+echo "[8/8] Deploying Backend API..."
 kubectl apply -f "$SCRIPT_DIR/backend-deployment.yaml"
 
-# Optional: Deploy MiniMax M2 LLM (requires H200 GPU)
+# Optional: Deploy MiniMax M2 LLM
 if [ "$DEPLOY_LLM" = "true" ]; then
     echo "[OPTIONAL] Deploying MiniMax M2 LLM..."
     kubectl apply -f "$SCRIPT_DIR/minimax-m2-llm.yaml"
-    echo "    Note: LLM requires H200 GPU node pool to be scaled up."
 fi
 
 # Apply Ingress
@@ -80,18 +88,13 @@ kubectl apply -f "$SCRIPT_DIR/hpa.yaml" || true
 
 echo ""
 echo "=============================================="
-echo "Deployment Complete!"
+echo "Deployment Submitted!"
 echo "=============================================="
 echo ""
-echo "Check status with:"
-echo "  kubectl get pods -n $NAMESPACE"
+echo "Next Steps:"
+echo "1. Scale up the GPU node pool for embeddings:"
+echo "   doctl kubernetes cluster node-pool update $CLUSTER_ID $GPU_POOL_ID --count 1"
 echo ""
-echo "To scale up GPU pool for embeddings/LLM:"
-echo "  doctl kubernetes cluster node-pool update $CLUSTER_ID $GPU_POOL_ID --count 1"
-echo ""
-echo "To scale down GPU pool (save costs):"
-echo "  doctl kubernetes cluster node-pool update $CLUSTER_ID $GPU_POOL_ID --count 0"
-echo ""
-echo "To deploy MiniMax M2 LLM:"
-echo "  DEPLOY_LLM=true ./deploy.sh"
+echo "2. Monitor pod status:"
+echo "   kubectl get pods -n $NAMESPACE -w"
 echo ""

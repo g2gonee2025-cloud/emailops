@@ -36370,7 +36370,7 @@ Then check the signature:
 .IP
 .nf
 \f[C]
-$ gpg --verify SHA256SUMS 
+$ gpg --verify SHA256SUMS
 gpg: Signature made Mon 17 Jul 2023 15:03:17 BST
 gpg:                using DSA key FBF737ECE9F8AB18604BD2AC93935E02FF3B54FA
 gpg: Good signature from \[dq]Nick Craig-Wood <nick\[at]craig-wood.com>\[dq] [ultimate]
@@ -36396,7 +36396,7 @@ Or do the check with rclone
 .IP
 .nf
 \f[C]
-$ rclone hashsum sha256 -C SHA256SUMS rclone-v1.63.1-windows-amd64.zip 
+$ rclone hashsum sha256 -C SHA256SUMS rclone-v1.63.1-windows-amd64.zip
 2023/09/11 10:53:58 NOTICE: SHA256SUMS: improperly formatted checksum line 0
 2023/09/11 10:53:58 NOTICE: SHA256SUMS: improperly formatted checksum line 1
 2023/09/11 10:53:58 NOTICE: SHA256SUMS: improperly formatted checksum line 49
@@ -36471,7 +36471,7 @@ api_key> example_key
 Edit advanced config? (y/n)
 y) Yes
 n) No
-y/n> 
+y/n>
 Remote config
 Configuration complete.
 Options:
@@ -37756,7 +37756,7 @@ Export the following environment variables before running
 Access Key ID: \f[V]AWS_ACCESS_KEY_ID\f[R] or \f[V]AWS_ACCESS_KEY\f[R]
 .IP \[bu] 2
 Secret Access Key: \f[V]AWS_SECRET_ACCESS_KEY\f[R] or
-\f[V]AWS_SECRET_KEY\f[R]
+\f[V]S3_SECRET_KEY\f[R]
 .IP \[bu] 2
 Session Token: \f[V]AWS_SESSION_TOKEN\f[R] (optional)
 .RE
@@ -45119,7 +45119,7 @@ Choose a number from below, or type in your own value
    | Leave location constraint empty.
    \[rs] \[dq]us-east-1\[dq]
 [snip]
-region> 
+region>
 Endpoint for S3 API.
 Leave blank if using ArvanCloud to use the default endpoint for the region.
 Specify if using an S3 clone such as Ceph.
@@ -45669,7 +45669,7 @@ The resulting configuration file should look like:
 type = s3
 provider = Cubbit
 access_key_id = ACCESS_KEY
-secret_access_key = SECRET_KEY
+secret_access_key = S3_SECRET_KEY
 region = eu-west-1
 endpoint = s3.cubbit.eu
 \f[R]
@@ -45939,7 +45939,7 @@ Press Enter for the default (false).
    \[rs] (false)
  2 / Get AWS credentials from the environment (env vars or IAM).
    \[rs] (true)
-env_auth> 
+env_auth>
 Option access_key_id.
 AWS Access Key ID.
 Leave blank for anonymous access or runtime credentials.
@@ -45949,7 +45949,7 @@ Option secret_access_key.
 AWS Secret Access Key (password).
 Leave blank for anonymous access or runtime credentials.
 Enter a value. Press Enter to leave empty.
-secret_access_key> SECRET_KEY
+secret_access_key> S3_SECRET_KEY
 Option region.
 Region to connect to.
 Choose a number from below, or type in your own value.
@@ -45960,7 +45960,7 @@ Press Enter to leave empty.
    \[rs] (fsn1)
  3 / Nuremberg
    \[rs] (nbg1)
-region> 
+region>
 Option endpoint.
 Endpoint for Hetzner Object Storage
 Choose a number from below, or type in your own value.
@@ -45971,12 +45971,12 @@ Press Enter to leave empty.
    \[rs] (fsn1.your-objectstorage.com)
  3 / Nuremberg
    \[rs] (nbg1.your-objectstorage.com)
-endpoint> 
+endpoint>
 Option location_constraint.
 Location constraint - must be set to match the Region.
 Leave blank if not sure. Used when creating buckets only.
 Enter a value. Press Enter to leave empty.
-location_constraint> 
+location_constraint>
 Option acl.
 Canned ACL used when creating buckets and storing or copying objects.
 This ACL is used for creating objects and if bucket_acl isn\[aq]t set, for creating buckets too.
@@ -45993,22 +45993,22 @@ Press Enter to leave empty.
    / Owner gets FULL_CONTROL.
  2 | The AllUsers group gets READ access.
    \[rs] (public-read)
-acl> 
+acl>
 Edit advanced config?
 y) Yes
 n) No (default)
-y/n> 
+y/n>
 Configuration complete.
 Options:
 - type: s3
 - provider: Hetzner
 - access_key_id: ACCESS_KEY
-- secret_access_key: SECRET_KEY
+- secret_access_key: S3_SECRET_KEY
 Keep this \[dq]my-hetzner\[dq] remote?
 y) Yes this is OK (default)
 e) Edit this remote
 d) Delete this remote
-y/e/d> 
+y/e/d>
 Current remotes:
 
 Name                 Type
@@ -46022,7 +46022,7 @@ r) Rename remote
 c) Copy remote
 s) Set configuration password
 q) Quit config
-e/n/d/r/c/s/q> 
+e/n/d/r/c/s/q>
 \f[R]
 .fi
 .PP
@@ -46034,7 +46034,7 @@ This will leave the config file looking like this.
 type = s3
 provider = Hetzner
 access_key_id = ACCESS_KEY
-secret_access_key = SECRET_KEY
+secret_access_key = S3_SECRET_KEY
 region = hel1
 endpoint = hel1.your-objectstorage.com
 acl = private
@@ -46504,7 +46504,7 @@ Press Enter for the default (false).
    \[rs] (false)
  2 / Get AWS credentials from the environment (env vars or IAM).
    \[rs] (true)
-env_auth> 
+env_auth>
 
 Option access_key_id.
 AWS Access Key ID.
@@ -46546,12 +46546,12 @@ Press Enter to leave empty.
    / Both the object owner and the bucket owner get FULL_CONTROL over the object.
  6 | If you specify this canned ACL when creating a bucket, Amazon S3 ignores it.
    \[rs] (bucket-owner-full-control)
-acl> 
+acl>
 
 Edit advanced config?
 y) Yes
 n) No (default)
-y/n> 
+y/n>
 
 Configuration complete.
 Options:
@@ -46636,7 +46636,7 @@ Option secret_access_key.
 AWS Secret Access Key (password).
 Leave blank for anonymous access or runtime credentials.
 Enter a value. Press Enter to leave empty.
-secret_access_key> SECRET_KEY
+secret_access_key> S3_SECRET_KEY
 
 Option region.
 Region where your bucket will be created and your data stored.
@@ -46668,7 +46668,7 @@ Press Enter to leave empty.
  1 | No one else has access rights (default).
    \[rs] (private)
  [snip]
-acl> 
+acl>
 
 Edit advanced config?
 y) Yes
@@ -46680,7 +46680,7 @@ Options:
 - type: s3
 - provider: Intercolo
 - access_key_id: ACCESS_KEY
-- secret_access_key: SECRET_KEY
+- secret_access_key: S3_SECRET_KEY
 - region: de-fra
 - endpoint: de-fra.i3storage.com
 Keep this \[dq]intercolo\[dq] remote?
@@ -46699,7 +46699,7 @@ This will leave the config file looking like this.
 type = s3
 provider = Intercolo
 access_key_id = ACCESS_KEY
-secret_access_key = SECRET_KEY
+secret_access_key = S3_SECRET_KEY
 region = de-fra
 endpoint = de-fra.i3storage.com
 \f[R]
@@ -47249,7 +47249,7 @@ Press Enter for the default (false).
    \[rs] (false)
  2 / Get AWS credentials from the environment (env vars or IAM).
    \[rs] (true)
-env_auth> 
+env_auth>
 
 Option access_key_id.
 AWS Access Key ID.
@@ -47325,7 +47325,7 @@ Press Enter to leave empty.
  1 | No one else has access rights (default).
    \[rs] (private)
 [snip]
-acl> 
+acl>
 
 Edit advanced config?
 y) Yes
@@ -47450,7 +47450,7 @@ Press Enter to leave empty.
  1 | No one else has access rights (default).
    \[rs] (private)
 [snip]
-acl> 
+acl>
 
 Edit advanced config?
 y) Yes
@@ -47769,7 +47769,7 @@ Press Enter for the default (false).
    \[rs] (false)
  2 / Get AWS credentials from the environment (env vars or IAM).
    \[rs] (true)
-env_auth> 
+env_auth>
 \f[R]
 .fi
 .IP
@@ -48789,7 +48789,7 @@ Press Enter for the default (false).
    \[rs] (false)
  2 / Get AWS credentials from the environment (env vars or IAM).
    \[rs] (true)
-env_auth> 
+env_auth>
 
 Option access_key_id.
 AWS Access Key ID.
@@ -50099,22 +50099,22 @@ q) Quit config
 e/n/d/r/c/s/q> n
 
 Enter name for new remote.
-name> my zata storage 
+name> my zata storage
 
 Option Storage.
 Type of storage to configure.
 Choose a number from below, or type in your own value.
- 
+
 XX / Amazon S3 Compliant Storage Providers including AWS, ...
    \[rs] (s3)
- 
+
 Storage> s3
 
 Option provider.
 Choose your S3 provider.
 Choose a number from below, or type in your own value.
 Press Enter to leave empty.
- 
+
 XX / Zata (S3 compatible Gateway)
    \[rs] (Zata)
 
@@ -51793,7 +51793,7 @@ XX / Box
 [snip]
 Storage> box
 Box App Client Id - leave blank normally.
-client_id> 
+client_id>
 Box App Client Secret - leave blank normally.
 client_secret>
 Box App config.json location
@@ -54235,7 +54235,7 @@ Choose a number from below, or type in your own value
    \[rs] \[dq]connectors\[dq]
  5 / Access the home, favorites, and shared folders as well as the connectors.
    \[rs] \[dq]top\[dq]
-root_folder_id> 
+root_folder_id>
 Edit advanced config? (y/n)
 y) Yes
 n) No
@@ -55712,7 +55712,7 @@ Storage> compress
 Option remote.
 Remote to compress.
 Enter a value.
-remote> remote_to_press:subdir 
+remote> remote_to_press:subdir
 
 Option mode.
 Compression mode.
@@ -55730,14 +55730,14 @@ GZIP (levels -2 to 9):
 - -1 (default) \[em] recommended; equivalent to level 5.
 - 0 \[em] turns off compression.
 - 1\[en]9 \[em] increase compression at the cost of speed. Going past 6 generally offers very little return.
- 
+
 ZSTD (levels 0 to 4):
 - 0 \[em] turns off compression entirely.
 - 1 \[em] fastest compression with the lowest ratio.
 - 2 (default) \[em] good balance of speed and compression.
 - 3 \[em] better compression, but uses about 2\[en]3x more CPU than the default.
 - 4 \[em] best possible compression ratio (highest CPU cost).
- 
+
 Notes:
 - Choose GZIP for wide compatibility; ZSTD for better speed/ratio tradeoffs.
 - Negative gzip levels: -2 = Huffman-only, -1 = default (≈ level 5).
@@ -57247,7 +57247,7 @@ Leave blank normally.
 Fill in to make rclone start with directory of a given ID.
 
 Enter a string value. Press Enter for the default (\[dq]\[dq]).
-root_folder_id> 
+root_folder_id>
 Permanent Authentication Token
 
 A Permanent Authentication Token can be created in the Enterprise File
@@ -58088,10 +58088,10 @@ Choose a number from below, or type in your own value
 host> ftp.example.com
 FTP username
 Enter a string value. Press Enter for the default (\[dq]$USER\[dq]).
-user> 
+user>
 FTP port number
 Enter a signed integer. Press Enter for the default (21).
-port> 
+port>
 FTP password
 y) Yes type in my own password
 g) Generate random password
@@ -58102,10 +58102,10 @@ Confirm the password:
 password:
 Use FTP over TLS (Implicit)
 Enter a boolean value (true or false). Press Enter for the default (\[dq]false\[dq]).
-tls> 
+tls>
 Use FTP over TLS (Explicit)
 Enter a boolean value (true or false). Press Enter for the default (\[dq]false\[dq]).
-explicit_tls> 
+explicit_tls>
 Remote config
 Configuration complete.
 Options:
@@ -59419,7 +59419,7 @@ privileges
 \f[C]
 $ gcloud auth application-default print-access-token  \[rs]
    --impersonate-service-account \[rs]
-      gcs-read-only\[at]${PROJECT_ID}.iam.gserviceaccount.com  
+      gcs-read-only\[at]${PROJECT_ID}.iam.gserviceaccount.com
 
 ya29.c.c0ASRK0GbAFEewXD [truncated]
 \f[R]
@@ -63242,17 +63242,17 @@ Storage> google photos
 Google Application Client Id
 Leave blank normally.
 Enter a string value. Press Enter for the default (\[dq]\[dq]).
-client_id> 
+client_id>
 Google Application Client Secret
 Leave blank normally.
 Enter a string value. Press Enter for the default (\[dq]\[dq]).
-client_secret> 
+client_secret>
 Set to make the Google Photos backend read only.
 
 If you choose read only then rclone will only request read only access
 to your photos, otherwise rclone will request full access.
 Enter a boolean value (true or false). Press Enter for the default (\[dq]false\[dq]).
-read_only> 
+read_only>
 Edit advanced config? (y/n)
 y) Yes
 n) No
@@ -65790,11 +65790,11 @@ XX / ImageKit.io
 \[rs] (imagekit)
 [snip]
 Storage> imagekit
-  
+
 Option endpoint.
 You can find your ImageKit.io URL endpoint in your [dashboard](https://imagekit.io/dashboard/developer/api-keys)
 Enter a value.
-endpoint> https://ik.imagekit.io/imagekit_id  
+endpoint> https://ik.imagekit.io/imagekit_id
 
 Option public_key.
 You can find your ImageKit.io public key in your [dashboard](https://imagekit.io/dashboard/developer/api-keys)
@@ -66161,7 +66161,7 @@ Storage> iclouddrive
 Option apple_id.
 Apple ID.
 Enter a value.
-apple_id> APPLEID  
+apple_id> APPLEID
 Option password.
 Password.
 Choose an alternative below.
@@ -66498,12 +66498,12 @@ Option endpoint.
 IAS3 Endpoint.
 Leave blank for default value.
 Enter a string value. Press Enter for the default (https://s3.us.archive.org).
-endpoint> 
+endpoint>
 Option front_endpoint.
 Host of InternetArchive Frontend.
 Leave blank for default value.
 Enter a string value. Press Enter for the default (https://archive.org).
-front_endpoint> 
+front_endpoint>
 Option disable_checksum.
 Don\[aq]t store MD5 checksum with object metadata.
 Normally rclone will calculate the MD5 checksum of the input before
@@ -66516,7 +66516,7 @@ Option encoding.
 The encoding for the backend.
 See the [encoding section in the overview](https://rclone.org/overview/#encoding) for more info.
 Enter a encoder.MultiEncoder value. Press Enter for the default (Slash,Question,Hash,Percent,Del,Ctl,InvalidUtf8,Dot).
-encoding> 
+encoding>
 Edit advanced config?
 y) Yes
 n) No (default)
@@ -67754,7 +67754,7 @@ Press Enter to leave empty.
    \[rs] (digistorage)
  3 / Any other Koofr API compatible storage service
    \[rs] (other)
-provider> 1    
+provider> 1
 Option user.
 Your user name.
 Enter a value.
@@ -69093,7 +69093,7 @@ Password:
 Fetching nodes ...
 Loading transfers from local cache
 Login complete as me\[at]example.com
-me\[at]example.com:/$ 
+me\[at]example.com:/$
 \f[R]
 .fi
 .PP
@@ -69908,7 +69908,7 @@ account> account_name
 Storage Account Key
 key> base64encodedkey==
 Endpoint for the service - leave blank normally.
-endpoint> 
+endpoint>
 Remote config
 Configuration complete.
 Options:
@@ -71256,7 +71256,7 @@ Option env_auth.
 Read credentials from runtime (environment variables, CLI or MSI).
 See the [authentication docs](/azurefiles#authentication) for full info.
 Enter a boolean value (true or false). Press Enter for the default (false).
-env_auth> 
+env_auth>
 
 Option key.
 Storage Account Shared Key.
@@ -71268,12 +71268,12 @@ Option sas_url.
 SAS URL.
 Leave blank if using account/key or connection string.
 Enter a value. Press Enter to leave empty.
-sas_url> 
+sas_url>
 
 Option connection_string.
 Azure Files Connection String.
 Enter a value. Press Enter to leave empty.
-connection_string> 
+connection_string>
 [snip]
 
 Configuration complete.
@@ -71286,7 +71286,7 @@ Keep this \[dq]remote\[dq] remote?
 y) Yes this is OK (default)
 e) Edit this remote
 d) Delete this remote
-y/e/d> 
+y/e/d>
 \f[R]
 .fi
 .PP
@@ -73269,7 +73269,7 @@ In this case you will see a message like this
 .IP
 .nf
 \f[C]
-server reports this file is infected with a virus - use --onedrive-av-override to download anyway: Infected (name of virus): 403 Forbidden: 
+server reports this file is infected with a virus - use --onedrive-av-override to download anyway: Infected (name of virus): 403 Forbidden:
 \f[R]
 .fi
 .PP
@@ -74622,7 +74622,7 @@ Option endpoint.
 Endpoint for Object storage API.
 Leave blank to use the default endpoint for the region.
 Enter a value. Press Enter to leave empty.
-endpoint> 
+endpoint>
 
 Option config_file.
 Full Path to OCI config file
@@ -76825,9 +76825,9 @@ Choose a number from below, or type in your own value
    \[rs] \[dq]true\[dq]
 env_auth> true
 User name to log in (OS_USERNAME).
-user> 
+user>
 API key or password (OS_PASSWORD).
-key> 
+key>
 Authentication URL for server (OS_AUTH_URL).
 Choose a number from below, or type in your own value
  1 / Rackspace US
@@ -76844,25 +76844,25 @@ Choose a number from below, or type in your own value
    \[rs] \[dq]https://auth.cloud.ovh.net/v3\[dq]
  7  / Blomp Cloud Storage
    \[rs] \[dq]https://authenticate.ain.net\[dq]
-auth> 
+auth>
 User ID to log in - optional - most swift systems use user and leave this blank (v3 auth) (OS_USER_ID).
-user_id> 
+user_id>
 User domain - optional (v3 auth) (OS_USER_DOMAIN_NAME)
-domain> 
+domain>
 Tenant name - optional for v1 auth, this or tenant_id required otherwise (OS_TENANT_NAME or OS_PROJECT_NAME)
-tenant> 
+tenant>
 Tenant ID - optional for v1 auth, this or tenant required otherwise (OS_TENANT_ID)
-tenant_id> 
+tenant_id>
 Tenant domain - optional (v3 auth) (OS_PROJECT_DOMAIN_NAME)
-tenant_domain> 
+tenant_domain>
 Region name - optional (OS_REGION_NAME)
-region> 
+region>
 Storage URL - optional (OS_STORAGE_URL)
-storage_url> 
+storage_url>
 Auth Token from alternate authentication - optional (OS_AUTH_TOKEN)
-auth_token> 
+auth_token>
 AuthVersion - optional - set to (1,2,3) if your auth URL has no version (ST_AUTH_VERSION)
-auth_version> 
+auth_version>
 Endpoint type to choose from the service catalogue (OS_ENDPOINT_TYPE)
 Choose a number from below, or type in your own value
  1 / Public (default, choose this if not sure)
@@ -76871,24 +76871,24 @@ Choose a number from below, or type in your own value
    \[rs] \[dq]internal\[dq]
  3 / Admin
    \[rs] \[dq]admin\[dq]
-endpoint_type> 
+endpoint_type>
 Remote config
 --------------------
 [test]
 env_auth = true
-user = 
-key = 
-auth = 
-user_id = 
-domain = 
-tenant = 
-tenant_id = 
-tenant_domain = 
-region = 
-storage_url = 
-auth_token = 
-auth_version = 
-endpoint_type = 
+user =
+key =
+auth =
+user_id =
+domain =
+tenant =
+tenant_id =
+tenant_domain =
+region =
+storage_url =
+auth_token =
+auth_version =
+endpoint_type =
 --------------------
 y) Yes this is OK
 e) Edit this remote
@@ -77724,9 +77724,9 @@ XX / Pcloud
 [snip]
 Storage> pcloud
 Pcloud App Client Id - leave blank normally.
-client_id> 
+client_id>
 Pcloud App Client Secret - leave blank normally.
-client_secret> 
+client_secret>
 Edit advanced config?
 y) Yes
 n) No (default)
@@ -78151,7 +78151,7 @@ password:
 Edit advanced config?
 y) Yes
 n) No (default)
-y/n> 
+y/n>
 
 Configuration complete.
 Options:
@@ -78798,7 +78798,7 @@ Keep this \[dq]remote\[dq] remote?
 y) Yes this is OK
 e) Edit this remote
 d) Delete this remote
-y/e/d> 
+y/e/d>
 \f[R]
 .fi
 .PP
@@ -80407,7 +80407,7 @@ Success!
 type = seafile
 url = http://my.seafile.server/
 user = me\[at]example.com
-pass = 
+pass =
 2fa = true
 library = My Library
 --------------------
@@ -80966,7 +80966,7 @@ using the OpenSSH \f[V]known_hosts\f[R] file:
 type = sftp
 host = example.com
 user = sftpuser
-pass = 
+pass =
 known_hosts_file = \[ti]/.ssh/known_hosts
 \f[R]
 .fi
@@ -82349,7 +82349,7 @@ user> guest
 Option port.
 Samba port number.
 Enter a signed integer. Press Enter for the default (445).
-port> 
+port>
 
 Option pass.
 Samba password.
@@ -82364,8 +82364,8 @@ Password strength in bits.
 1024 is the maximum
 Bits> 64
 Your password is: XXXX
-Use this password? Please note that an obscured version of this 
-password (and not the password itself) will be stored under your 
+Use this password? Please note that an obscured version of this
+password (and not the password itself) will be stored under your
 configuration file, so keep this generated password in a safe place.
 y) Yes (default)
 n) No
@@ -82374,7 +82374,7 @@ y/n> y
 Option domain.
 Domain name for NTLM authentication.
 Enter a string value. Press Enter for the default (WORKGROUP).
-domain> 
+domain>
 
 Edit advanced config?
 y) Yes
@@ -83296,19 +83296,19 @@ Storage> sugarsync
 Sugarsync App ID.
 Leave blank to use rclone\[aq]s.
 Enter a string value. Press Enter for the default (\[dq]\[dq]).
-app_id> 
+app_id>
 Sugarsync Access Key ID.
 Leave blank to use rclone\[aq]s.
 Enter a string value. Press Enter for the default (\[dq]\[dq]).
-access_key_id> 
+access_key_id>
 Sugarsync Private Access Key
 Leave blank to use rclone\[aq]s.
 Enter a string value. Press Enter for the default (\[dq]\[dq]).
-private_access_key> 
+private_access_key>
 Permanently delete files if true
 otherwise put them in the deleted files.
 Enter a boolean value (true or false). Press Enter for the default (\[dq]false\[dq]).
-hard_delete> 
+hard_delete>
 Edit advanced config? (y/n)
 y) Yes
 n) No (default)
@@ -83622,7 +83622,7 @@ XX / Uloz.to
 Storage> ulozto
 
 Option app_token.
-The application token identifying the app. An app API key can be either found in the API doc 
+The application token identifying the app. An app API key can be either found in the API doc
 https://uloz.to/upload-resumable-api-beta or obtained from customer service.
 Enter a value. Press Enter to leave empty.
 app_token> token_value
@@ -85648,11 +85648,11 @@ Storage> zoho
 OAuth Client Id
 Leave blank normally.
 Enter a string value. Press Enter for the default (\[dq]\[dq]).
-client_id> 
+client_id>
 OAuth Client Secret
 Leave blank normally.
 Enter a string value. Press Enter for the default (\[dq]\[dq]).
-client_secret> 
+client_secret>
 Edit advanced config? (y/n)
 y) Yes
 n) No (default)
@@ -85664,7 +85664,7 @@ Use web browser to automatically authenticate rclone with remote?
 If not sure try Y. If Y failed, try N.
 y) Yes (default)
 n) No
-y/n> 
+y/n>
 If your browser doesn\[aq]t open automatically go to the following link: http://127.0.0.1:53682/auth?state=LVn0IHzxej1ZkmQw31d0wQ
 Log in and authorize rclone for access
 Waiting for code...
@@ -85686,7 +85686,7 @@ Keep this \[dq]remote\[dq] remote?
 y) Yes this is OK (default)
 e) Edit this remote
 d) Delete this remote
-y/e/d> 
+y/e/d>
 \f[R]
 .fi
 .PP

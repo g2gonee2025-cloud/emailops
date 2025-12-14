@@ -22,10 +22,10 @@ from typing import Any
 try:
     current_file = Path(__file__).resolve()
     # workers/src/cortex_workers/reindex_jobs/__init__.py -> ... -> workers -> root
-    project_root = current_file.parents[4]
-    backend_src = project_root / "backend" / "src"
-    if backend_src.exists():
-        sys.path.insert(0, str(backend_src))
+    PROJECT_ROOT = current_file.parents[4]
+    BACKEND_SRC = PROJECT_ROOT / "backend" / "src"
+    if BACKEND_SRC.exists():
+        sys.path.insert(0, str(BACKEND_SRC))
 except Exception:
     pass
 

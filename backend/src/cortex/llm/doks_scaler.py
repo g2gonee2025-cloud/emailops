@@ -98,14 +98,14 @@ class DOApiClient:
     def __init__(
         self,
         token: Optional[str],
-        base_url: str = "https://api.digitalocean.com/v2",
+        BASE_URL: str = "https://api.digitalocean.com/v2",
         timeout_s: int = 30,
         max_retries: int = 3,
         backoff_factor: float = 2.0,
         dry_run: bool = False,
     ) -> None:
         self.token = token or os.environ.get("DIGITALOCEAN_TOKEN", "")
-        self.base_url = base_url.rstrip("/")
+        self.BASE_URL = BASE_URL.rstrip("/")
         self.timeout_s = timeout_s
         self.dry_run = dry_run
 
@@ -136,7 +136,7 @@ class DOApiClient:
             logger.info("[DRY RUN] %s %s %s", method, path, kwargs)
             return {"dry_run": True}
 
-        url = f"{self.base_url}{path}"
+        url = f"{self.BASE_URL}{path}"
         timeout: Any = kwargs.pop("timeout", self.timeout_s)
 
         try:
@@ -167,8 +167,8 @@ class DOApiClient:
         next_url: Optional[str] = path
 
         while next_url:
-            if next_url.startswith(self.base_url):
-                next_url = next_url[len(self.base_url) :]
+            if next_url.startswith(self.BASE_URL):
+                next_url = next_url[len(self.BASE_URL) :]
 
             data = self.request("GET", next_url)
             items.extend(data.get(key, []))
@@ -404,7 +404,7 @@ class DigitalOceanClusterManager:
         self.model = _model_profile_from_config(config.model)
         self.api = DOApiClient(
             token=self.scaling.token,
-            base_url=self.scaling.api_base_url,
+            BASE_URL=self.scaling.api_BASE_URL,
             dry_run=self.scaling.dry_run,
         )
         self.scaler = ClusterScaler(
@@ -472,7 +472,7 @@ class DigitalOceanLLMService:
 
         self._api_client = DOApiClient(
             token=self.scaling.token,
-            base_url=self.scaling.api_base_url,
+            BASE_URL=self.scaling.api_BASE_URL,
             dry_run=self.scaling.dry_run,
         )
         self._scaler = ClusterScaler(
@@ -586,13 +586,13 @@ class DigitalOceanLLMService:
         return session
 
     def _post(self, path: str, payload: Dict[str, Any]) -> Dict[str, Any]:
-        if not self.endpoint.base_url:
+        if not self.endpoint.BASE_URL:
             raise ConfigurationError(
-                "digitalocean.endpoint.base_url is not configured",
+                "digitalocean.endpoint.BASE_URL is not configured",
                 error_code="DO_LLM_ENDPOINT_MISSING",
             )
 
-        url = urljoin(str(self.endpoint.base_url), path)
+        url = urljoin(str(self.endpoint.BASE_URL), path)
         headers = {"Content-Type": "application/json"}
         if self.endpoint.api_key:
             headers["Authorization"] = f"Bearer {self.endpoint.api_key}"

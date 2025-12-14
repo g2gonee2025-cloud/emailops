@@ -79,7 +79,7 @@ except ImportError:
             self.llm_model = os.getenv(
                 "LLM_MODEL", os.getenv("KIMI_MODEL", "MiniMaxAI/MiniMax-M2")
             )
-            self.llm_base_url = os.getenv(
+            self.llm_BASE_URL = os.getenv(
                 "LLM_ENDPOINT", os.getenv("KIMI_ENDPOINT", "http://localhost:8000/v1")
             )
             self.llm_api_key = os.getenv(
@@ -324,15 +324,15 @@ class VLLMProvider(BaseProvider):
                     "Missing dependency 'openai'. Install with: pip install -U openai"
                 ) from e
 
-            base_url = getattr(_config, "llm_base_url", None) or os.getenv(
+            BASE_URL = getattr(_config, "llm_BASE_URL", None) or os.getenv(
                 "LLM_ENDPOINT", os.getenv("KIMI_ENDPOINT", "http://localhost:8000/v1")
             )
             api_key = getattr(_config, "llm_api_key", None) or os.getenv(
                 "KIMI_API_KEY", "EMPTY"
             )
 
-            logger.info("Initializing OpenAI client for MiniMax-M2 at %s", base_url)
-            self._llm_client = OpenAI(base_url=base_url, api_key=api_key)
+            logger.info("Initializing OpenAI client for MiniMax-M2 at %s", BASE_URL)
+            self._llm_client = OpenAI(BASE_URL=BASE_URL, api_key=api_key)
             return self._llm_client
 
     # ------------- Embedding model (KaLM SentenceTransformer) -------------

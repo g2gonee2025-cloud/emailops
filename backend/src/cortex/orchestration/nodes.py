@@ -46,8 +46,8 @@ from cortex.retrieval.query_classifier import (
     tool_classify_query,
 )
 from cortex.safety.guardrails_client import validate_with_repair
-from cortex.safety.injection_defense import strip_injection_patterns
 from cortex.safety.policy_enforcer import check_action
+from cortex.security.injection_defense import strip_injection_patterns
 from pydantic import BaseModel, Field, ValidationError
 
 logger = logging.getLogger(__name__)

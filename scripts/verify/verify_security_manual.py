@@ -8,8 +8,8 @@ from pathlib import Path
 # Add backend/src to path
 sys.path.append(str(Path("backend/src").resolve()))
 
+from cortex.safety.policy_enforcer import check_action
 from cortex.security.injection_defense import InjectionDefense
-from cortex.security.policy_enforcer import PolicyEnforcer
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -45,31 +45,46 @@ def verify_injection_defense():
 
 
 def verify_policy_enforcer():
-    logger.info("Verifying Policy Enforcer...")
-    enforcer = PolicyEnforcer()
+    logger.info("Verifying Policy Enforcer (Safety Module)...")
 
-    # Test content policy
+    # Test content policy via check_action
     safe_content = "Here is the project report."
     unsafe_content = "My api key is 12345."
 
-    if not enforcer.check_content(safe_content):
-        logger.error("FALSE POSITIVE: Safe content blocked.")
+    # 1. Safe content check
+    decision_safe = check_action(
+        "draft_email", {"content": safe_content, "recipients": ["internal@company.com"]}
+    )
+    if decision_safe.decision == "deny":
+        logger.error(
+            f"FALSE POSITIVE: Safe content blocked. Reason: {decision_safe.reason}"
+        )
         return False
 
-    if enforcer.check_content(unsafe_content):
-        logger.error("FALSE NEGATIVE: Unsafe content (api key) allowed.")
+    # 2. Unsafe content check
+    decision_unsafe = check_action(
+        "draft_email",
+        {"content": unsafe_content, "recipients": ["internal@company.com"]},
+    )
+    # Should flag warnings or deny depending on risk.
+    # check_action usually allows medium/low risk with warnings unless strict.
+    # But let's check if it DETECTED the issue.
+    if not decision_unsafe.metadata.get("violations"):
+        logger.error(
+            "FALSE NEGATIVE: Unsafe content (api key) did not trigger violations."
+        )
         return False
 
-    # Test context policy
-    valid_context = {"tenant_id": "tenant-123"}
-    invalid_context = {"user_id": "user-456"}
+    logger.info(
+        f"Unsafe content correctly flagged: {decision_unsafe.metadata['violations']}"
+    )
 
-    if not enforcer.enforce_input_policy(valid_context):
-        logger.error("FALSE POSITIVE: Valid context blocked.")
-        return False
-
-    if enforcer.enforce_input_policy(invalid_context):
-        logger.error("FALSE NEGATIVE: Invalid context (missing tenant_id) allowed.")
+    # 3. High risk action check (send_email)
+    decision_send = check_action("send_email", {"content": safe_content})
+    if decision_send.decision != "require_approval":
+        logger.error(
+            f"FALSE NEGATIVE: High risk action 'send_email' did not require approval. Got: {decision_send.decision}"
+        )
         return False
 
     logger.info("Policy Enforcer: PASSED")

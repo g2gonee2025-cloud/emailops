@@ -22,10 +22,10 @@ from typing import Any
 # Add backend/src to sys.path so we can import cortex
 try:
     current_file = Path(__file__).resolve()
-    project_root = current_file.parents[2]
-    backend_src = project_root / "backend" / "src"
-    if backend_src.exists():
-        sys.path.insert(0, str(backend_src))
+    PROJECT_ROOT = current_file.parents[2]
+    BACKEND_SRC = PROJECT_ROOT / "backend" / "src"
+    if BACKEND_SRC.exists():
+        sys.path.insert(0, str(BACKEND_SRC))
 except Exception:
     pass
 

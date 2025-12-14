@@ -21,7 +21,7 @@ class CortexDoctor:
     def check_env(self) -> bool:
         """Check environment variables."""
         # Using S3_ACCESS_KEY as representative of required env vars
-        required_keys = ["OUTLOOKCORTEX_DB_URL", "OUTLOOKCORTEX_S3_ACCESS_KEY"]
+        required_keys = ["DB_URL", "S3_ACCESS_KEY"]
 
         for key in required_keys:
             # We rely on ConfigLoader to have validated these or loaded defaults

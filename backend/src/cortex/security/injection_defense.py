@@ -17,7 +17,7 @@ class InjectionDefense:
     """
 
     # Common patterns used in prompt injection / jailbreak attempts
-    # These are regex patterns to detect override instructions
+    # Combined from security and safety modules
     BLOCKLIST_PATTERNS = [
         r"ignore previous instructions",
         r"ignore all instructions",
@@ -29,6 +29,17 @@ class InjectionDefense:
         r"god mode",
         r"jailbreak",
         r"DAN mode",
+        r"ignore your previous instructions",
+        r"you are now",
+        r"new rule:",
+        r"important instruction:",
+        r"ignore all prior instructions",
+        r"disregard previous directions",
+        r"start a new conversation",
+        r"act as a",
+        r"simulate a",
+        r"you are a helpful assistant",
+        r"your new persona is",
     ]
 
     def __init__(self, sensitivity: float = 0.8):
@@ -63,23 +74,43 @@ class InjectionDefense:
     def sanitize_prompt(self, text: str) -> str:
         """
         Sanitize the input text by stripping out injection attempts.
-        Currently implements a simple block strategy: if injection is detected,
-        fails safe or strips the offending segment (here we trigger a warning and could redact).
-
-        For this implementation:
-        If injection is detected, we log it and return a sanitized warning message
-        OR we could return the original text but flagged.
-
-        To rely on robust defense, we will return a neutralized string if injection is found.
-
-        Args:
-            text: Input prompt.
-
-        Returns:
-            Sanitized text.
         """
         if self.contains_injection(text):
             logger.info("sanitizing_input", action="neutralize")
             return "[CORTEX SECURITY: POTENTIAL INJECTION DETECTED - INPUT REMOVED]"
 
         return text
+
+
+# -----------------------------------------------------------------------------
+# Standalone Functions (Ported from Safety Module)
+# -----------------------------------------------------------------------------
+
+_COMPILED_PATTERNS = [
+    re.compile(p, re.IGNORECASE) for p in InjectionDefense.BLOCKLIST_PATTERNS
+]
+
+
+def strip_injection_patterns(text: str) -> str:
+    """
+    Proactively strip known prompt injection patterns from text.
+
+    Blueprint §11.5:
+    * Removes patterns like "ignore your previous instructions"
+    * Applied to all retrieved context before LLM calls
+    """
+    if not text:
+        return ""
+
+    cleaned = text
+    for pattern in _COMPILED_PATTERNS:
+        cleaned = pattern.sub("", cleaned)
+
+    if len(cleaned) < len(text):
+        logger.warning(
+            "stripped_injection_patterns",
+            original_length=len(text),
+            cleaned_length=len(cleaned),
+        )
+
+    return cleaned

@@ -39,10 +39,10 @@ import streamlit as st
 # ---------- Path Setup ----------
 # Add project roots to path to allow importing cortex modules
 current_dir = Path(__file__).resolve().parent
-project_root = current_dir.parent
-sys.path.append(str(project_root / "backend" / "src"))
-sys.path.append(str(project_root / "cli" / "src"))
-sys.path.append(str(project_root / "workers" / "src"))
+PROJECT_ROOT = current_dir.parent
+sys.path.append(str(PROJECT_ROOT / "backend" / "src"))
+sys.path.append(str(PROJECT_ROOT / "cli" / "src"))
+sys.path.append(str(PROJECT_ROOT / "workers" / "src"))
 
 # ---------- Cortex Imports ----------
 try:
@@ -471,9 +471,9 @@ def _run_command(
             # Ensure PYTHONPATH includes our source directories
             python_path = env.get("PYTHONPATH", "")
             paths_to_add = [
-                str(project_root / "backend" / "src"),
-                str(project_root / "cli" / "src"),
-                str(project_root / "workers" / "src"),
+                str(PROJECT_ROOT / "backend" / "src"),
+                str(PROJECT_ROOT / "cli" / "src"),
+                str(PROJECT_ROOT / "workers" / "src"),
             ]
             env["PYTHONPATH"] = os.pathsep.join([*paths_to_add, python_path])
 
@@ -528,7 +528,7 @@ def _run_command(
 def _check_setup_status() -> dict[str, bool]:
     """Check the current setup status for Quick Start guidance."""
     status = {
-        "project_root_valid": False,
+        "PROJECT_ROOT_valid": False,
         "export_root_valid": False,
         "gcp_configured": False,
         "cortex_available": False,
@@ -536,9 +536,9 @@ def _check_setup_status() -> dict[str, bool]:
     }
 
     # Check project root
-    pr = st.session_state.get("project_root", "")
+    pr = st.session_state.get("PROJECT_ROOT", "")
     if pr and Path(pr).exists():
-        status["project_root_valid"] = True
+        status["PROJECT_ROOT_valid"] = True
 
     # Check export root
     er = st.session_state.get("export_root", "")
@@ -567,8 +567,8 @@ def _check_setup_status() -> dict[str, bool]:
 # ---------- Session State Initialization ----------
 if "provider" not in st.session_state:
     st.session_state.provider = "vertex"
-if "project_root" not in st.session_state:
-    st.session_state.project_root = str(project_root)
+if "PROJECT_ROOT" not in st.session_state:
+    st.session_state.PROJECT_ROOT = str(PROJECT_ROOT)
 if "export_root" not in st.session_state:
     export_env = os.getenv("EMAILOPS_EXPORT_ROOT")
     st.session_state.export_root = (
@@ -600,15 +600,15 @@ with st.sidebar:
 
     # Path Configuration
     st.subheader("📁 Paths")
-    project_root_input = st.text_input(
+    PROJECT_ROOT_input = st.text_input(
         "Code Project Root",
-        value=st.session_state.project_root,
+        value=st.session_state.PROJECT_ROOT,
         help="Directory containing the project",
-        key="project_root_input",
+        key="PROJECT_ROOT_input",
     )
-    st.session_state.project_root = project_root_input
+    st.session_state.PROJECT_ROOT = PROJECT_ROOT_input
 
-    valid, msg = _validate_path(Path(project_root_input), must_exist=True, is_dir=True)
+    valid, msg = _validate_path(Path(PROJECT_ROOT_input), must_exist=True, is_dir=True)
     if valid:
         st.success("✅ Valid project root")
     else:
@@ -715,10 +715,10 @@ if st.session_state.show_quick_start:
 
     with col1:
         # Step 1: Project Root
-        icon1 = "✅" if setup_status["project_root_valid"] else "1️⃣"
+        icon1 = "✅" if setup_status["PROJECT_ROOT_valid"] else "1️⃣"
         with st.container():
             st.markdown(f"**{icon1} Configure Project Root**")
-            if setup_status["project_root_valid"]:
+            if setup_status["PROJECT_ROOT_valid"]:
                 st.success("Project root is configured correctly!")
             else:
                 st.info("Set the path to your EmailOps project in the sidebar")
@@ -1006,7 +1006,7 @@ with tabs[1]:
             cmd.append("--force")
 
         _run_command(
-            cmd, workdir=st.session_state.project_root, title="Running Indexer"
+            cmd, workdir=st.session_state.PROJECT_ROOT, title="Running Indexer"
         )
 
 # ---------- CHUNK TAB ----------
@@ -1304,7 +1304,7 @@ with tabs[5]:
             cmd.append("--auto-install")
 
         _run_command(
-            cmd, workdir=st.session_state.project_root, title="Running System Doctor"
+            cmd, workdir=st.session_state.PROJECT_ROOT, title="Running System Doctor"
         )
 
 # ---------- LOGS TAB ----------

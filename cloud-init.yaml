@@ -1,0 +1,19 @@
+#cloud-config
+packages:
+  - git
+  - python3-pip
+  - docker.io
+  - postgresql-client
+  - unzip
+
+runcmd:
+  # Install Docker Compose
+  - curl -L "https://github.com/docker/compose/releases/download/v2.24.5/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+  - chmod +x /usr/local/bin/docker-compose
+
+  # Setup User
+  - usermod -aG docker root
+
+  # Clone Repository (Public/Deployment) or Setup Directory
+  - mkdir -p /root/workspace
+  - cd /root/workspace

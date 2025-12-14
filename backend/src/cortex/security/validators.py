@@ -16,7 +16,7 @@ from cortex.common.types import Err, Ok, Result
 logger = logging.getLogger(__name__)
 
 # Basic email regex (can be replaced with a more robust library if needed)
-_EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
+EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
 
 # Safe path characters (alphanumeric, dots, underscores, hyphens, slashes, colons for Windows)
 _SAFE_PATH_CHARS = re.compile(r"[^a-zA-Z0-9._\-/\\: ]")
@@ -335,7 +335,7 @@ def validate_email_format(email: str) -> Result[str, str]:
         Result containing validated email or error message
     """
     email = email.strip()
-    if not _EMAIL_REGEX.match(email):
+    if not EMAIL_REGEX.match(email):
         return Err(f"Invalid email format: {email}")
     return Ok(email)
 

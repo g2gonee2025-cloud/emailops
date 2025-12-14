@@ -74,6 +74,8 @@ spec:
         - key: "nvidia.com/gpu"
           operator: "Exists"
           effect: "NoSchedule"
+      nodeSelector:
+        doks.digitalocean.com/node-pool: pool-f4x80anpj
 ---
 apiVersion: v1
 kind: Service

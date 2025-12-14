@@ -347,7 +347,7 @@ class EmbeddingConfig(BaseModel):
 ```
 
 * **Provider defaults:** `CoreConfig.provider="digitalocean"` with an OpenAI-compatible gateway (§2.3 `DigitalOceanLLMConfig.endpoint`).
-* **Gateway flexibility:** point `endpoint.base_url` + `endpoint.default_embedding_model` at any hosted model (serverless or your own DOKS/vLLM). KaLM supports MRL dims {3840, 2048, 1024, 512, 256, 128, 64}; choose `output_dimensionality` accordingly.
+* **Gateway flexibility:** point `endpoint.BASE_URL` + `endpoint.default_embedding_model` at any hosted model (serverless or your own DOKS/vLLM). KaLM supports MRL dims {3840, 2048, 1024, 512, 256, 128, 64}; choose `output_dimensionality` accordingly.
 * **DB contract:** `chunks.embedding` must be `vector(output_dimensionality)`. If you change dimensions, run a migration to alter the column + re-embed existing chunks before serving traffic.
 
 #### SearchConfig
@@ -406,7 +406,7 @@ class ProcessingConfig(BaseModel):
 * **DigitalOceanLLMConfig:**
   * `scaling` → `token`, `cluster_id`, `node_pool_id`, `cluster_name`, `region`, `kubernetes_version`, `gpu_node_size`, cluster/node tags, plus GPU sizing knobs (`memory_per_gpu_gb`, `gpus_per_node`, min/max nodes, hysteresis) for the DOKS GPU pool (§17.3).
   * `model` → Mixtral/Llama MoE attributes (`params_total`, `params_active`, `context_length`, `quantization`, `kv_bytes_per_token`, `tps_per_gpu`, `max_concurrent_requests_per_gpu`).
-  * `endpoint` → OpenAI-compatible gateway settings (`base_url`, `completion_path`, `embedding_path`, `api_key`, `request_timeout_seconds`, `verify_tls`, `extra_headers`).
+  * `endpoint` → OpenAI-compatible gateway settings (`BASE_URL`, `completion_path`, `embedding_path`, `api_key`, `request_timeout_seconds`, `verify_tls`, `extra_headers`).
 * **EmailConfig:** sender defaults, reply policy, allowed senders.
 * **SummarizerConfig:** multi-pass summarizer knobs (thread/critic/improve char limits).
 * **LimitsConfig:** attachment size limits, indexable chars, chat context limits.

@@ -10,7 +10,7 @@ import requests
 #   - DO_API_KEY or OPENAI_API_KEY
 #   - DO_BASE_URL (defaults to https://inference.do-ai.run/v1)
 api_key = os.getenv("DO_API_KEY") or os.getenv("OPENAI_API_KEY")
-base_url = (os.getenv("DO_BASE_URL") or "https://inference.do-ai.run/v1").rstrip("/")
+BASE_URL = (os.getenv("DO_BASE_URL") or "https://inference.do-ai.run/v1").rstrip("/")
 
 if not api_key:
     print(
@@ -31,7 +31,7 @@ DESIRED_MODELS = [
 
 def fetch_available_models() -> list[str]:
     """Return a list of model IDs available on the endpoint."""
-    url = f"{base_url}/models"
+    url = f"{BASE_URL}/models"
     try:
         resp = requests.get(url, headers=headers, timeout=30)
         if resp.status_code != 200:
@@ -57,7 +57,7 @@ def fetch_available_models() -> list[str]:
 
 def test_model(model_name):
     """Test a specific model and return response details"""
-    url = f"{base_url}/chat/completions"
+    url = f"{BASE_URL}/chat/completions"
 
     payload = {
         "model": model_name,

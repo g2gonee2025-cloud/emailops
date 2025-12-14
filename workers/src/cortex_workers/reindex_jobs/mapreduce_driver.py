@@ -36,10 +36,10 @@ from numpy.typing import NDArray
 # Add backend/src to sys.path
 try:
     current_file = Path(__file__).resolve()
-    project_root = current_file.parents[4]
-    backend_src = project_root / "backend" / "src"
-    if backend_src.exists() and str(backend_src) not in sys.path:
-        sys.path.insert(0, str(backend_src))
+    PROJECT_ROOT = current_file.parents[4]
+    BACKEND_SRC = PROJECT_ROOT / "backend" / "src"
+    if BACKEND_SRC.exists() and str(BACKEND_SRC) not in sys.path:
+        sys.path.insert(0, str(BACKEND_SRC))
 except Exception:
     pass
 
