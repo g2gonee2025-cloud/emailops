@@ -100,6 +100,12 @@ class DefaultTextPreprocessor:
         """
         Redact PII from text using the centralized PII engine.
         """
+        from cortex.config.loader import get_config
+
+        config = get_config()
+        if not config.pii.enabled:
+            return text
+
         return redact_pii(text)
 
 

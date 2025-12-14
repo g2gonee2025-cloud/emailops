@@ -31,5 +31,14 @@ class IngestJobSummary(BaseModel):
     attachments_total: int = 0
     attachments_parsed: int = 0
     attachments_failed: int = 0
+
+    # Batch processing stats
+    folders_processed: int = 0
+    threads_created: int = 0
+    chunks_created: int = 0
+    embeddings_generated: int = 0
+    errors: int = 0
+    skipped: int = 0
+
     problems: List[Problem] = Field(default_factory=list)
     aborted_reason: Optional[str] = None

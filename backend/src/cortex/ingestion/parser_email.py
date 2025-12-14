@@ -619,17 +619,6 @@ class EmailThreader:
 
         return results
 
-    def get_thread_problems(self) -> list[dict[str, Any]]:
-        """Get list of threading problems/ambiguities for job reporting."""
-        problems: list[dict[str, Any]] = []
-        for _msg_id, thread_id in self.message_to_thread.items():
-            thread = self.threads.get(thread_id)
-            if not thread:
-                continue
-            # Check for ambiguous clustering (multiple candidates)
-            # This is tracked per-message during threading
-        return problems
-
 
 # =============================================================================
 # Convenience Functions

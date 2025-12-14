@@ -223,8 +223,9 @@ def _ingest_conversation(
 ) -> IngestJobSummary:
     from cortex.chunking.chunker import ChunkingInput, Span, chunk_text
     from cortex.config.loader import get_config
+    from cortex.db.models import AttachmentStatus
     from cortex.db.session import SessionLocal, set_session_tenant
-    from cortex.embeddings.client import EmbeddingsClient
+    from cortex.ingestion.attachments_log import parse_attachments_log
     from cortex.ingestion.conv_loader import load_conversation
     from cortex.ingestion.quoted_masks import detect_quoted_spans
     from cortex.ingestion.text_preprocessor import get_text_preprocessor
@@ -239,6 +240,9 @@ def _ingest_conversation(
         return summary
 
     logger.info("Loaded conversation: %s", convo_data.get("path"))
+
+    # Load rich attachment metadata from log CSV if available
+    att_log_meta = parse_attachments_log(convo_dir)
 
     thread_id = uuid.uuid4()
     now = datetime.now(timezone.utc)
@@ -282,8 +286,8 @@ def _ingest_conversation(
         raw_body, text_type="email", tenant_id=job.tenant_id
     )
 
-    quoted_spans_dicts = detect_quoted_spans(cleaned_body)
-    quoted_spans = [Span(**s) for s in quoted_spans_dicts]
+    quoted_spans: List[Span] = detect_quoted_spans(cleaned_body)
+    quoted_spans_dicts = [s.model_dump() for s in quoted_spans]
     has_quoted_mask = len(quoted_spans) > 0
 
     from_addr = _resolve_sender(config)
@@ -308,19 +312,28 @@ def _ingest_conversation(
     attachments_data: List[Dict[str, Any]] = []
     for att in convo_data.get("attachments", []):
         att_id = uuid.uuid4()
+        filename = Path(att["path"]).name
 
         raw_att_text = att.get("text", "")
         cleaned_att_text, att_meta = preprocessor.prepare_for_indexing(
             raw_att_text, text_type="attachment", tenant_id=job.tenant_id
         )
 
+        # SKIP: attachments_log.csv should not be ingested as an attachment
+        if filename == "attachments_log.csv":
+            continue
+
+        # Enrich with log metadata if available
+        if filename in att_log_meta:
+            att_meta.update(att_log_meta[filename])
+
         attachments_data.append(
             {
                 "attachment_id": att_id,
                 "message_id": message_id,
-                "filename": Path(att["path"]).name,
+                "filename": filename,
                 "storage_uri_raw": att.get("storage_uri_raw", att["path"]),
-                "status": "parsed",
+                "status": AttachmentStatus.parsed.value,
                 "extracted_chars": len(cleaned_att_text),
                 "text": cleaned_att_text,
                 "metadata": att_meta,
@@ -376,15 +389,19 @@ def _ingest_conversation(
                 chunk_refs.append(c_dict)
 
     if texts_to_embed:
-        logger.info("Embedding %s chunks...", len(texts_to_embed))
-        client = EmbeddingsClient()
-        embeddings = client.embed_batch(texts_to_embed)
+        # User requested to skip embedding generation ("just chunk")
+        # logger.info("Embedding %s chunks...", len(texts_to_embed))
+        # client = EmbeddingsClient()
+        # embeddings = client.embed_batch(texts_to_embed)
 
-        for i, emb in enumerate(embeddings):
-            chunk_refs[i]["embedding"] = emb
-            chunk_refs[i][
-                "embedding_model"
-            ] = f"{config.embedding.model_name}:{config.embedding.output_dimensionality}"
+        # for i, emb in enumerate(embeddings):
+        #     chunk_refs[i]["embedding"] = emb
+        #     chunk_refs[i][
+        #         "embedding_model"
+        #     ] = f"{config.embedding.model_name}|{config.embedding.output_dimensionality}"
+
+        # In placeholder mode, we just leave embedding as None or empty
+        pass
 
     transformed_results: Dict[str, List[Dict[str, Any]]] = {
         "threads": [thread_data],
@@ -393,6 +410,9 @@ def _ingest_conversation(
         "chunks": chunks_data,
     }
 
+    logger.info(
+        f"Writing job results with {len(attachments_data)} attachments. Sample status: {attachments_data[0]['status'] if attachments_data else 'N/A'}"
+    )
     with SessionLocal() as session:
         set_session_tenant(session, job.tenant_id)
         writer = DBWriter(session)
@@ -402,5 +422,7 @@ def _ingest_conversation(
     summary.messages_ingested = 1
     summary.attachments_total = len(attachments_data)
     summary.attachments_parsed = len(attachments_data)
+    summary.chunks_created = len(chunks_data)
+    summary.embeddings_generated = len(texts_to_embed)
 
     return summary

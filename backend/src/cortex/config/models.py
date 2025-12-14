@@ -751,6 +751,10 @@ class PiiConfig(BaseModel):
         default_factory=lambda: _env("PII_STRICT", True, bool),
         description="If true, require Presidio initialization; else fallback to regex without aborting.",
     )
+    enabled: bool = Field(
+        default_factory=lambda: _env("PII_ENABLED", True, bool),
+        description="If false, disable all PII redaction.",
+    )
 
     model_config = {"extra": "forbid"}
 

@@ -28,7 +28,7 @@ router = APIRouter(prefix="/ingest", tags=["ingestion"])
 class IngestFromS3Request(BaseModel):
     """Request to ingest conversations from S3/Spaces."""
 
-    prefix: str = Field(default="raw/outlook/", description="S3 prefix to scan")
+    prefix: str = Field(default="Outlook/", description="S3 prefix to scan")
     limit: Optional[int] = Field(default=None, description="Max folders to process")
     dry_run: bool = Field(
         default=False, description="If true, only list folders without ingesting"
@@ -81,7 +81,7 @@ _active_jobs: Dict[str, Dict[str, Any]] = {}
 
 @router.get("/s3/folders", response_model=ListS3FoldersResponse)
 async def list_s3_folders(
-    prefix: str = Query(default="raw/outlook/", description="S3 prefix to list"),
+    prefix: str = Query(default="Outlook/", description="S3 prefix to list"),
     limit: int = Query(default=100, ge=1, le=1000, description="Max folders to return"),
 ):
     """

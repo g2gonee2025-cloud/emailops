@@ -5,12 +5,9 @@ Implements §6.3 of the Canonical Blueprint.
 """
 from __future__ import annotations
 
-from typing import List, TypedDict
+from typing import List
 
-
-class Span(TypedDict):
-    start: int
-    end: int
+from cortex.chunking.chunker import Span
 
 
 def detect_quoted_spans(text: str) -> List[Span]:
@@ -79,12 +76,12 @@ def detect_quoted_spans(text: str) -> List[Span]:
                 # Relaxed mode: allow some gaps.
                 # Let's use strict for now.
                 in_quote = False
-                spans.append({"start": current_span_start, "end": char_idx})  # type: ignore
+                spans.append(Span(start=current_span_start, end=char_idx))
                 current_span_start = None
 
         char_idx += line_len
 
     if in_quote and current_span_start is not None:
-        spans.append({"start": current_span_start, "end": char_idx})  # type: ignore
+        spans.append(Span(start=current_span_start, end=char_idx))
 
     return spans

@@ -69,7 +69,7 @@ class IngestionProcessor:
         self, job_request: IngestJobRequest, summary: IngestJobSummary
     ) -> None:
         status = _derive_status(summary)
-        stats = summary.model_dump()
+        stats = summary.model_dump(mode="json")
         metadata = {
             "prefix": job_request.source_uri,
             "problems": [p.model_dump() for p in summary.problems],
@@ -114,7 +114,7 @@ class IngestionProcessor:
             return None
 
     def run_full_ingestion(
-        self, prefix: str = "raw/outlook/", limit: Optional[int] = None
+        self, prefix: str = "Outlook/", limit: Optional[int] = None
     ) -> List[IngestJobSummary]:
         logger.info("Starting ingestion scan for prefix %s", prefix)
         summaries: List[IngestJobSummary] = []
@@ -169,19 +169,8 @@ class IngestionProcessor:
                     agg_stats.folders_processed += 1
 
                 agg_stats.threads_created += 1  # 1 thread per folder usually
-                agg_stats.chunks_created += len(
-                    summary.problems
-                )  # Wait, summary doesn't have chunks count?
-                # Process_job returns IngestJobSummary which has messages_ingested, attachments_parsed
-                # We need to see what IngestJobSummary has.
-                # Looking at mailroom.py, it has messages_total, messages_ingested, attachments_parsed.
-                # It does NOT seem to have chunks_created in the summary object returned by mailroom.py?
-                # Let's check mailroom.py again.
-                # It returns summary.
-                # Chunks data is local vars.
-                # We might need to update IngestJobSummary definition or just accept loose stats.
-                # For now let's just count folders.
-                pass
+                agg_stats.chunks_created += summary.chunks_created
+                agg_stats.embeddings_generated += summary.embeddings_generated
             else:
                 agg_stats.errors += 1
 
@@ -192,7 +181,7 @@ def run_ingestion_cli() -> None:
     import argparse
 
     parser = argparse.ArgumentParser(description="Run S3 ingestion pipeline")
-    parser.add_argument("--prefix", default="raw/outlook/", help="S3 prefix")
+    parser.add_argument("--prefix", default="Outlook/", help="S3 prefix")
     parser.add_argument("--limit", type=int, help="Max folders to process")
     parser.add_argument("--tenant", default="default", help="Tenant ID")
 

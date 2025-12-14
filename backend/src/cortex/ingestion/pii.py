@@ -418,6 +418,9 @@ def redact_pii(text: str) -> str:
     Returns:
         Text with PII replaced by placeholders
     """
+    config = get_config()
+    if not getattr(config.pii, "enabled", True):
+        return text
     return get_pii_engine().redact(text)
 
 

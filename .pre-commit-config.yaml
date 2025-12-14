@@ -14,7 +14,7 @@ repos:
 
       - id: blueprint
         name: blueprint
-        entry: python tools/verify_blueprint.py
+        entry: python3 tools/verify_blueprint.py
         language: system
         pass_filenames: false
         stages: [pre-commit]

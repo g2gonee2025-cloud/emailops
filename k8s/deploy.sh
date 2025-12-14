@@ -55,10 +55,11 @@ echo "    Using DigitalOcean Managed PostgreSQL (emailops-db-nyc2)."
 echo "    Skipping in-cluster Postgres deployment."
 # We do NOT run kubectl apply -f postgres.yaml
 
-# Deploy Redis (In-Cluster Cache)
-echo "[6/8] Deploying Redis (Cache)..."
-kubectl apply -f "$SCRIPT_DIR/redis.yaml"
-kubectl rollout status deployment/redis -n $NAMESPACE --timeout=60s || echo "Warning: Redis validation timed out, but proceeding."
+# Redis/Valkey: Using DO Managed (skip in-cluster deployment)
+echo "[6/8] Redis/Valkey..."
+echo "    Using DigitalOcean Managed Valkey (emailops-redis)."
+echo "    Skipping in-cluster Redis deployment."
+# We do NOT run kubectl apply -f redis.yaml
 
 # Deploy Embeddings API (vLLM on GPU)
 echo "[7/8] Deploying Embeddings API (vLLM)..."

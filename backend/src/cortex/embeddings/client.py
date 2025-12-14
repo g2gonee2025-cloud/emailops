@@ -19,9 +19,15 @@ class EmbeddingsClient:
         """Embed a single text string."""
         return self.embed_texts([text])[0]
 
+    BATCH_SIZE = 50
+
     def embed_batch(self, texts: List[str]) -> List[List[float]]:
         """Embed a batch of text strings (alias for embed_texts)."""
-        return self.embed_texts(texts)
+        results = []
+        for i in range(0, len(texts), self.BATCH_SIZE):
+            batch = texts[i : i + self.BATCH_SIZE]
+            results.extend(self.embed_texts(batch))
+        return results
 
     def embed_texts(self, texts: List[str]) -> List[List[float]]:
         """Embed a list of texts and return python lists."""

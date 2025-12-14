@@ -124,6 +124,8 @@ class DBWriter:
 
             # 3. Write attachments
             for att_data in results.get("attachments", []):
+                # Text is stored in chunks, not on the attachment record
+                att_data.pop("text", None)
                 attachment = Attachment(
                     attachment_id=att_data["attachment_id"],
                     message_id=att_data["message_id"],

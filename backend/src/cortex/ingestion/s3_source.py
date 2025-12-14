@@ -7,7 +7,6 @@ Downloads conversation folders from DigitalOcean Spaces for processing.
 from __future__ import annotations
 
 import logging
-import mimetypes
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional
@@ -25,7 +24,7 @@ logger = logging.getLogger(__name__)
 class S3ConversationFolder(BaseModel):
     """Represents a conversation folder in S3."""
 
-    prefix: str  # e.g., "raw/outlook/EML-2024-12-01_ABC123 - Subject/"
+    prefix: str  # e.g., "outlook/EML-2024-12-01_ABC123 - Subject/"
     name: str  # e.g., "EML-2024-12-01_ABC123 - Subject"
     files: List[str] = Field(default_factory=list)  # List of file keys in this folder
 
@@ -76,7 +75,7 @@ class S3SourceHandler:
 
     def list_conversation_folders(
         self,
-        prefix: str = "raw/outlook/",
+        prefix: str = "Outlook/",
         limit: Optional[int] = None,
     ) -> Iterator[S3ConversationFolder]:
         """
@@ -214,67 +213,6 @@ class S3SourceHandler:
             return True
         except Exception:
             return False
-
-    def stream_conversation_data(
-        self,
-        folder: S3ConversationFolder,
-    ) -> Dict[str, Any]:
-        """
-        Stream conversation data directly from S3 without full download.
-
-        Returns a dict matching conv_loader.load_conversation() format:
-        {
-            "path": str,
-            "conversation_txt": str,
-            "manifest": dict,
-            "summary": dict,
-            "attachments": list
-        }
-        """
-        result = {
-            "path": f"s3://{self.bucket}/{folder.prefix}",
-            "conversation_txt": "",
-            "manifest": {},
-            "summary": {},
-            "attachments": [],
-        }
-
-        for file_key in folder.files:
-            basename = file_key.split("/")[-1]
-            filename = basename.lower()
-
-            if filename == "conversation.txt":
-                result["conversation_txt"] = self.get_text_object(file_key)
-            elif filename == "manifest.json":
-                result["manifest"] = self.get_json_object(file_key)
-            elif filename == "summary.json":
-                result["summary"] = self.get_json_object(file_key)
-            elif "attachments/" in file_key:
-                # For attachments, we need to download to extract text
-                # This will be handled by the ingestion pipeline
-                attachment_metadata: Dict[str, Any] = {
-                    "s3_key": file_key,
-                    "filename": basename,
-                    "text": "",  # Populated later
-                    "storage_uri_raw": f"s3://{self.bucket}/{file_key}",
-                }
-
-                try:
-                    head = self.client.head_object(Bucket=self.bucket, Key=file_key)
-                    attachment_metadata["mime_type"] = (
-                        head.get("ContentType") or mimetypes.guess_type(basename)[0]
-                    )
-                    attachment_metadata["size"] = head.get("ContentLength")
-                except Exception:
-                    attachment_metadata["mime_type"] = mimetypes.guess_type(basename)[0]
-                    attachment_metadata["size"] = None
-
-                if not attachment_metadata.get("mime_type"):
-                    attachment_metadata["mime_type"] = "application/octet-stream"
-
-                result["attachments"].append(attachment_metadata)
-
-        return result
 
 
 def create_s3_source() -> S3SourceHandler:

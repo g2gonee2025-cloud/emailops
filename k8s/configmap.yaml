@@ -38,8 +38,9 @@ data:
   # or if the app constructs the URL from parts. The backend uses OUTLOOKCORTEX_DB_URL from secrets.
   DB_REGION: "nyc2"
 
-  # Redis (in-cluster)
-  REDIS_URL: "redis://redis.emailops.svc.cluster.local:6379"
+  # Redis/Valkey (DO Managed - actual URL with credentials is in secrets)
+  REDIS_SSL: "true"
+  REDIS_PORT: "25061"
 
   # S3/Spaces Configuration (NYC3 for Storage)
   S3_ENDPOINT: "https://nyc3.digitaloceanspaces.com"

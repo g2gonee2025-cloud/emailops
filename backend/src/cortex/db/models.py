@@ -48,18 +48,18 @@ class Base(DeclarativeBase):
 
 
 class ChunkType(str, enum.Enum):
-    MESSAGE_BODY = "message_body"
-    ATTACHMENT_TEXT = "attachment_text"
-    ATTACHMENT_TABLE = "attachment_table"
-    QUOTED_HISTORY = "quoted_history"
-    OTHER = "other"
+    message_body = "message_body"
+    attachment_text = "attachment_text"
+    attachment_table = "attachment_table"
+    quoted_history = "quoted_history"
+    other = "other"
 
 
 class AttachmentStatus(str, enum.Enum):
-    PENDING = "pending"
-    PARSED = "parsed"
-    UNPARSED_PASSWORD_PROTECTED = "unparsed_password_protected"
-    FAILED = "failed"
+    pending = "pending"
+    parsed = "parsed"
+    unparsed_password_protected = "unparsed_password_protected"
+    failed = "failed"
 
 
 class RiskLevel(str, enum.Enum):
@@ -206,7 +206,7 @@ class Attachment(Base):
     storage_uri_extracted: Mapped[Optional[str]] = mapped_column(Text)
     status: Mapped[AttachmentStatus] = mapped_column(
         sa.Enum(AttachmentStatus, name="attachment_status", create_type=False),
-        default=AttachmentStatus.PENDING,
+        default=AttachmentStatus.pending,
     )
     extracted_chars: Mapped[int] = mapped_column(Integer, default=0)
     tenant_id: Mapped[str] = mapped_column(Text, nullable=False, index=True)
