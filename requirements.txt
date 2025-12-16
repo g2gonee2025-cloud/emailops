@@ -60,7 +60,7 @@ email-validator>=2.1.0
 # ---------------------------
 # Security & Auth
 # ---------------------------
-python-jose[cryptography]>=3.3.0
+PyJWT[crypto]>=2.8.0
 cryptography>=41.0.0
 
 # ---------------------------

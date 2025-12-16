@@ -23,6 +23,7 @@ import uuid
 from contextlib import asynccontextmanager
 from typing import Any, Callable, Optional
 
+import jwt
 import requests
 from cortex.common.exceptions import (
     ConfigurationError,
@@ -44,7 +45,7 @@ from cortex.security.validators import validate_email_format
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from jose import JWTError, jwt
+from jwt.exceptions import PyJWTError as JWTError
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
 # Version info - should match pyproject.toml
@@ -84,26 +85,34 @@ def _configure_jwt_decoder(
 
                 headers = jwt.get_unverified_header(token)
                 kid = headers.get("kid")
-                key = None
+                key_data = None
                 for candidate in jwks.get("keys", []):
                     if candidate.get("kid") == kid:
-                        key = candidate
+                        key_data = candidate
                         break
-                if key is None:
+                if key_data is None:
                     raise SecurityError(
                         "JWT key id not found in JWKS", threat_type="auth_invalid"
                     )
 
+                # Convert JWK to PEM key for PyJWT
+                from jwt import algorithms
+
+                public_key = algorithms.RSAAlgorithm.from_jwk(key_data)
+
+                decode_options = {}
+                if not audience:
+                    decode_options["verify_aud"] = False
+                if not issuer:
+                    decode_options["verify_iss"] = False
+
                 return jwt.decode(
                     token,
-                    key,
+                    public_key,
                     algorithms=["RS256"],  # Pin algorithm
-                    audience=audience,
-                    issuer=issuer,
-                    options={
-                        "verify_aud": bool(audience),
-                        "verify_iss": bool(issuer),
-                    },
+                    audience=audience if audience else None,
+                    issuer=issuer if issuer else None,
+                    options=decode_options,
                 )
             except JWTError as exc:
                 raise SecurityError("Invalid JWT", threat_type="auth_invalid") from exc
@@ -130,7 +139,8 @@ def _configure_jwt_decoder(
     # Dev mode: Allow unverified claims
     async def decode_unverified(token: str) -> dict[str, Any]:
         try:
-            return jwt.get_unverified_claims(token)
+            # PyJWT: decode without verification for dev mode
+            return jwt.decode(token, options={"verify_signature": False})
         except JWTError as exc:
             raise SecurityError("Invalid JWT", threat_type="auth_invalid") from exc
 
