@@ -2,6 +2,7 @@
 Full-Text Search (FTS) retrieval.
 
 Implements §8.2 of the Canonical Blueprint.
+Adapted for Conversation-based schema (conversation_id instead of thread_id/message_id).
 """
 from __future__ import annotations
 
@@ -34,48 +35,43 @@ _HEADLINE_OPTIONS = (
 
 
 class FTSResult(BaseModel):
-    """FTS search result."""
+    """FTS search result (conversation-level)."""
 
-    message_id: str
-    thread_id: str
+    conversation_id: str
     subject: str
     score: float
     snippet: str
 
 
-def search_messages_fts(
+def search_conversations_fts(
     session: Session, query: str, tenant_id: str, limit: int = 50
 ) -> List[FTSResult]:
     """
-    Perform FTS search on messages.
+    Perform FTS search on conversations.
 
-    Blueprint §8.2:
-    * FTS search on messages.tsv_subject_body
-    * Returns message-level hits
+    Blueprint §8.2 (adapted for Conversation schema):
+    * FTS search on conversations subject
+    * Returns conversation-level hits
     """
     query = (query or "").strip()
     if not query:
         return []
 
-    # Blueprint §8.2: FTS search on messages.tsv_subject_body
-    # Use websearch_to_tsquery for robust query parsing.
-    # Use ts_rank_cd for cover density ranking and normalization=32 to scale to 0..1.
-
+    # Search conversations by subject (since we store subject in conversations table)
     stmt = text(
         """
         WITH q AS (
             SELECT websearch_to_tsquery(:cfg, :query) AS tsq
         )
         SELECT
-            m.message_id,
-            m.thread_id,
-            m.subject,
-            ts_rank_cd(m.tsv_subject_body, q.tsq, 32) AS score,
-            ts_headline(:cfg, m.body_plain, q.tsq, :headline_opts) AS snippet
-        FROM messages m, q
+            conv.conversation_id,
+            conv.subject,
+            ts_rank_cd(to_tsvector(:cfg, COALESCE(conv.subject, '')), q.tsq, 32) AS score,
+            ts_headline(:cfg, COALESCE(conv.subject, ''), q.tsq, :headline_opts) AS snippet
+        FROM conversations conv, q
         WHERE
-            m.tenant_id = :tenant_id
-            AND m.tsv_subject_body @@ q.tsq
+            conv.tenant_id = :tenant_id
+            AND to_tsvector(:cfg, COALESCE(conv.subject, '')) @@ q.tsq
         ORDER BY score DESC
         LIMIT :limit
     """
@@ -94,8 +90,7 @@ def search_messages_fts(
 
     return [
         FTSResult(
-            message_id=row.message_id,
-            thread_id=str(row.thread_id),
+            conversation_id=str(row.conversation_id),
             subject=row.subject or "",
             score=row.score,
             snippet=row.snippet or "",
@@ -108,12 +103,13 @@ class ChunkFTSResult(BaseModel):
     """Chunk FTS search result."""
 
     chunk_id: str
-    thread_id: str
-    message_id: str
+    conversation_id: str
     chunk_type: str
     score: float
     snippet: str
     text: str
+    is_attachment: bool = False
+    attachment_id: str | None = None
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
@@ -122,12 +118,12 @@ def search_chunks_fts(
     query: str,
     tenant_id: str,
     limit: int = 50,
-    thread_ids: List[str] | None = None,
+    conversation_ids: List[str] | None = None,
 ) -> List[ChunkFTSResult]:
     """
     Perform FTS search on chunks.
 
-    Blueprint §8.3:
+    Blueprint §8.3 (adapted for Conversation schema):
     * FTS search on chunks.tsv_text
     * Returns chunk-level hits for hybrid fusion
     """
@@ -135,7 +131,7 @@ def search_chunks_fts(
     if not query:
         return []
 
-    thread_filter_sql = ""
+    conversation_filter_sql = ""
     params: Dict[str, Any] = {
         "query": query,
         "tenant_id": tenant_id,
@@ -144,9 +140,11 @@ def search_chunks_fts(
         "headline_opts": _HEADLINE_OPTIONS,
     }
 
-    if thread_ids:
-        thread_filter_sql = "AND c.thread_id = ANY(CAST(:thread_ids AS UUID[]))"
-        params["thread_ids"] = thread_ids
+    if conversation_ids:
+        conversation_filter_sql = (
+            "AND c.conversation_id = ANY(CAST(:conversation_ids AS UUID[]))"
+        )
+        params["conversation_ids"] = conversation_ids
 
     stmt = text(
         f"""
@@ -155,18 +153,19 @@ def search_chunks_fts(
         )
         SELECT
             c.chunk_id,
-            c.thread_id,
-            c.message_id,
+            c.conversation_id,
             c.chunk_type,
             c.text,
-            c.metadata,
+            c.is_attachment,
+            c.attachment_id,
+            c.extra_data,
             ts_rank_cd(c.tsv_text, q.tsq, 32) AS score,
             ts_headline(:cfg, c.text, q.tsq, :headline_opts) AS snippet
         FROM chunks c, q
         WHERE
             c.tenant_id = :tenant_id
             AND c.tsv_text @@ q.tsq
-            {thread_filter_sql}
+            {conversation_filter_sql}
         ORDER BY score DESC
         LIMIT :limit
     """
@@ -177,13 +176,14 @@ def search_chunks_fts(
     return [
         ChunkFTSResult(
             chunk_id=str(row.chunk_id),
-            thread_id=str(row.thread_id),
-            message_id=row.message_id or "",
-            chunk_type=row.chunk_type or "other",
+            conversation_id=str(row.conversation_id),
+            chunk_type=row.chunk_type or "message_body",
             score=row.score,
             snippet=row.snippet or "",
             text=row.text or "",
-            metadata=row.metadata or {},
+            is_attachment=row.is_attachment or False,
+            attachment_id=str(row.attachment_id) if row.attachment_id else None,
+            metadata=row.extra_data or {},
         )
         for row in results
     ]
@@ -193,9 +193,13 @@ def search_chunks_fts(
 # Canonical Blueprint Aliases (§8.2, §8.3)
 # -----------------------------------------------------------------------------
 # Blueprint uses search_fts_chunks, search_fts_messages naming convention
+# We adapt to conversation-based schema
 
 search_fts_chunks = search_chunks_fts
 """Canonical alias for search_chunks_fts per Blueprint §8.3."""
 
-search_fts_messages = search_messages_fts
-"""Canonical alias for search_messages_fts per Blueprint §8.2."""
+search_fts_conversations = search_conversations_fts
+"""Conversation-level FTS search (adapted from Blueprint §8.2 search_fts_messages)."""
+
+# Backward compat alias (search_messages_fts -> search_conversations_fts)
+search_messages_fts = search_conversations_fts

@@ -40,13 +40,28 @@ def doctor(check_all: bool = typer.Option(False, "--check-all", help="Run all ch
 def ingest(
     source: str = typer.Option(..., help="Source to ingest from (e.g. s3)"),
     dry_run: bool = typer.Option(False, help="Verify without processing"),
+    tenant: str = typer.Option("default", help="Tenant ID"),
 ):
     """
     Trigger ingestion process.
     """
     logger.info("ingestion_trigger", source=source, dry_run=dry_run)
-    # Placeholder for connecting to ingestion routes or logic
-    print(f"Triggering ingestion from {source} (Dry Run: {dry_run})")
+
+    if source.lower() == "s3":
+        from cortex.ingestion.processor import IngestionProcessor
+
+        # Use defaults from config/env
+        processor = IngestionProcessor()
+        processor.run_full_ingestion()
+    elif source == "backfill-embeddings":
+        from cortex.ingestion.backfill import backfill_embeddings
+
+        backfill_embeddings(tenant_id=tenant)
+    else:
+        logger.error("unsupported_source", source=source)
+        print(
+            f"Error: Source '{source}' not supported. Use 's3' or 'backfill-embeddings'."
+        )
 
 
 if __name__ == "__main__":

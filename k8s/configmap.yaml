@@ -20,17 +20,7 @@ data:
   EMBED_PROVIDER: "digitalocean"
   DO_LLM_BASE_URL: "http://embeddings-api.emailops.svc.cluster.local"
 
-  # DigitalOcean Custom Scaler Configuration (NYC2 Cluster)
-  DO_CLUSTER_ID: "23c013d9-4d8d-4d3d-a813-7e5cbc3d0af1"
-  DO_NODE_POOL_ID: "e359afb3-1891-4bba-94b4-c7ab1d2e1736"  # pool-f4x80anpj (H200)
-  DO_GPU_MIN_NODES: "0"
-  DO_GPU_MAX_NODES: "4"
-  DO_GPU_MEMORY_GB: "141"   # H200 GPU
-  DO_GPUS_PER_NODE: "1"
-  DO_GPU_HEADROOM: "0.1"
-  DO_GPU_DOWNSCALE_INTERVAL: "300"
-  DO_GPU_TARGET_UTIL: "0.9"
-  DO_GPU_DRY_RUN: "false"
+
 
   # Database (Managed PostgreSQL 18 - NYC2)
   # IMPORTANT: Use the PRIVATE endpoint for DOKS (in NYC2) to avoiding latency/egress costs
@@ -49,7 +39,7 @@ data:
 
   # Server configuration
   PORT: "8000"
-  WORKERS: "2"
+  WORKERS: "8"   # Match CPU limits (8 cores) and num_workers code config
 
   # CORS
   CORS_ORIGINS: "*"

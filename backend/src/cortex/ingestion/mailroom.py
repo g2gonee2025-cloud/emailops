@@ -2,6 +2,7 @@
 Mailroom: Orchestration entry for ingestion jobs.
 
 Implements §6.1 of the Canonical Blueprint.
+Updated for Conversation-based schema.
 """
 from __future__ import annotations
 
@@ -33,18 +34,17 @@ def process_job(job: IngestJobRequest) -> IngestJobSummary:
     2. Parsing emails/threads
     3. PII redaction
     4. Attachment extraction
-    5. Writing to DB
+    5. Chunking (no embedding by request)
+    6. Writing to DB
     """
     summary = IngestJobSummary(job_id=job.job_id, tenant_id=job.tenant_id)
 
     logger.info(f"Starting ingestion job {job.job_id} for tenant {job.tenant_id}")
 
     try:
-        # 1. Validate source (basic check)
         if not job.source_uri:
             raise ValueError("Source URI is required")
 
-        # 2. Download/stream content based on source type
         local_convo_dir: Optional[Path] = None
         temp_dir: Optional[Path] = None
 
@@ -204,26 +204,16 @@ def _download_sftp_tree(sftp: Any, remote_path: str, local_path: Path) -> None:
             sftp.get(remote_child, str(local_child))
 
 
-def _resolve_sender(config: Any) -> str:
-    candidates = [
-        config.email.sender_locked_email,
-        config.email.sender_reply_to,
-    ]
-    if config.email.message_id_domain:
-        candidates.append(f"no-reply@{config.email.message_id_domain}")
-    candidates.append("no-reply@emailops.local")
-    for candidate in candidates:
-        if candidate:
-            return candidate
-    return "no-reply@emailops.local"
-
-
 def _ingest_conversation(
     convo_dir: Path, job: IngestJobRequest, summary: IngestJobSummary
 ) -> IngestJobSummary:
+    """
+    Ingest a conversation folder into the database.
+
+    Uses new Conversation-based schema (no Thread/Message split).
+    """
     from cortex.chunking.chunker import ChunkingInput, Span, chunk_text
     from cortex.config.loader import get_config
-    from cortex.db.models import AttachmentStatus
     from cortex.db.session import SessionLocal, set_session_tenant
     from cortex.ingestion.attachments_log import parse_attachments_log
     from cortex.ingestion.conv_loader import load_conversation
@@ -234,6 +224,7 @@ def _ingest_conversation(
     config = get_config()
     preprocessor = get_text_preprocessor()
 
+    # Load conversation data from disk
     convo_data = load_conversation(convo_dir, include_attachment_text=True)
     if not convo_data:
         logger.warning("No data loaded from %s", convo_dir)
@@ -241,25 +232,28 @@ def _ingest_conversation(
 
     logger.info("Loaded conversation: %s", convo_data.get("path"))
 
-    # Load rich attachment metadata from log CSV if available
+    # Load attachment metadata from log CSV if available
     att_log_meta = parse_attachments_log(convo_dir)
 
-    thread_id = uuid.uuid4()
+    # Generate IDs
+    conversation_id = uuid.uuid4()
     now = datetime.now(timezone.utc)
 
+    # Extract manifest and summary data
     manifest = convo_data.get("manifest", {})
     summary_json = convo_data.get("summary", {})
 
     subject, subject_norm = resolve_subject(manifest, summary_json, convo_dir.name)
 
-    created_at = now
-    updated_at = now
+    # Parse dates
+    earliest_date = now
+    latest_date = now
 
     if manifest.get("started_at_utc"):
         try:
             from dateutil import parser as date_parser
 
-            created_at = date_parser.parse(manifest["started_at_utc"])
+            earliest_date = date_parser.parse(manifest["started_at_utc"])
         except Exception:
             pass
 
@@ -267,61 +261,59 @@ def _ingest_conversation(
         try:
             from dateutil import parser as date_parser
 
-            updated_at = date_parser.parse(manifest["ended_at_utc"])
+            latest_date = date_parser.parse(manifest["ended_at_utc"])
         except Exception:
             pass
 
-    thread_data: Dict[str, Any] = {
-        "thread_id": thread_id,
-        "subject_norm": subject_norm,
-        "original_subject": subject,
-        "created_at": created_at,
-        "updated_at": updated_at,
-        "metadata": {"source_path": str(convo_dir)},
+    # Extract participants from Conversation.txt (manifest doesn't have messages array)
+    from cortex.ingestion.conversation_parser import (
+        extract_participants_from_conversation_txt,
+    )
+
+    raw_body = convo_data.get("conversation_txt", "")
+    participants = extract_participants_from_conversation_txt(raw_body)
+
+    # Build conversation data
+    conversation_data: Dict[str, Any] = {
+        "conversation_id": conversation_id,
+        "folder_name": convo_dir.name,
+        "subject": subject_norm or subject,
+        "smart_subject": manifest.get("smart_subject"),
+        "participants": participants,
+        "messages": [],  # Manifest doesn't contain structured messages
+        "earliest_date": earliest_date,
+        "latest_date": latest_date,
+        "storage_uri": str(convo_dir),
+        "extra_data": {
+            "source_path": str(convo_dir),
+            "ingest_source": job.source_type,
+        },
     }
 
-    message_id = str(uuid.uuid4())
+    # Process body text
     raw_body = convo_data.get("conversation_txt", "")
     cleaned_body, body_meta = preprocessor.prepare_for_indexing(
         raw_body, text_type="email", tenant_id=job.tenant_id
     )
 
+    # Detect quoted spans for chunk classification
     quoted_spans: List[Span] = detect_quoted_spans(cleaned_body)
-    quoted_spans_dicts = [s.model_dump() for s in quoted_spans]
-    has_quoted_mask = len(quoted_spans) > 0
 
-    from_addr = _resolve_sender(config)
-
-    message_data: Dict[str, Any] = {
-        "message_id": message_id,
-        "thread_id": thread_id,
-        "from_addr": from_addr,
-        "to_addrs": [],
-        "subject": subject,
-        "body_plain": cleaned_body,
-        "sent_at": now,
-        "has_quoted_mask": has_quoted_mask,
-        "metadata": {
-            "type": "transcript",
-            "quoted_spans": quoted_spans_dicts,
-            "ingest_source": job.source_type,
-            **body_meta,
-        },
-    }
-
+    # Process attachments
     attachments_data: List[Dict[str, Any]] = []
     for att in convo_data.get("attachments", []):
         att_id = uuid.uuid4()
         filename = Path(att["path"]).name
 
+        # Skip metadata/generated files that shouldn't be chunked
+        skip_filenames = {"attachments_log.csv", "Conversation_human.txt"}
+        if filename in skip_filenames:
+            continue
+
         raw_att_text = att.get("text", "")
         cleaned_att_text, att_meta = preprocessor.prepare_for_indexing(
             raw_att_text, text_type="attachment", tenant_id=job.tenant_id
         )
-
-        # SKIP: attachments_log.csv should not be ingested as an attachment
-        if filename == "attachments_log.csv":
-            continue
 
         # Enrich with log metadata if available
         if filename in att_log_meta:
@@ -330,24 +322,23 @@ def _ingest_conversation(
         attachments_data.append(
             {
                 "attachment_id": att_id,
-                "message_id": message_id,
+                "conversation_id": conversation_id,
                 "filename": filename,
-                "storage_uri_raw": att.get("storage_uri_raw", att["path"]),
-                "status": AttachmentStatus.parsed.value,
-                "extracted_chars": len(cleaned_att_text),
-                "text": cleaned_att_text,
-                "metadata": att_meta,
+                "content_type": att_meta.get("mime_type"),
+                "size_bytes": att_meta.get("size_bytes"),
+                "storage_uri": att.get("storage_uri_raw", att["path"]),
+                "status": "parsed",
+                "text": cleaned_att_text,  # For chunking, not stored in DB
             }
         )
 
+    # Chunk body text
     chunks_data: List[Dict[str, Any]] = []
-    texts_to_embed: List[str] = []
-    chunk_refs: List[Dict[str, Any]] = []
 
-    if message_data["body_plain"]:
+    if cleaned_body:
         body_chunks = chunk_text(
             ChunkingInput(
-                text=message_data["body_plain"],
+                text=cleaned_body,
                 section_path="email:body",
                 quoted_spans=quoted_spans,
                 max_tokens=config.processing.chunk_size,
@@ -355,74 +346,73 @@ def _ingest_conversation(
             )
         )
         for c in body_chunks:
-            c_dict: Dict[str, Any] = c.model_dump()
-            c_dict["chunk_id"] = uuid.uuid4()
-            c_dict["thread_id"] = thread_id
-            c_dict["message_id"] = message_id
-            c_dict["tenant_id"] = job.tenant_id
+            chunks_data.append(
+                {
+                    "chunk_id": uuid.uuid4(),
+                    "conversation_id": conversation_id,
+                    "is_attachment": False,
+                    "text": c.text,
+                    "position": c.position,
+                    "char_start": c.char_start,
+                    "char_end": c.char_end,
+                    "section_path": c.section_path,
+                    "extra_data": c.metadata,
+                }
+            )
 
-            chunks_data.append(c_dict)
-            texts_to_embed.append(c.text)
-            chunk_refs.append(c_dict)
-
+    # Chunk attachments
     for att in attachments_data:
-        if att["text"]:
+        if att.get("text"):
             att_chunks = chunk_text(
                 ChunkingInput(
                     text=att["text"],
                     section_path=f"attachment:{att['filename']}",
                     max_tokens=config.processing.chunk_size,
                     overlap_tokens=config.processing.chunk_overlap,
-                    chunk_type_hint="attachment_text",
                 )
             )
             for c in att_chunks:
-                c_dict: Dict[str, Any] = c.model_dump()
-                c_dict["chunk_id"] = uuid.uuid4()
-                c_dict["thread_id"] = thread_id
-                c_dict["message_id"] = message_id
-                c_dict["attachment_id"] = att["attachment_id"]
-                c_dict["tenant_id"] = job.tenant_id
+                chunks_data.append(
+                    {
+                        "chunk_id": uuid.uuid4(),
+                        "conversation_id": conversation_id,
+                        "attachment_id": att["attachment_id"],
+                        "is_attachment": True,
+                        "text": c.text,
+                        "position": c.position,
+                        "char_start": c.char_start,
+                        "char_end": c.char_end,
+                        "section_path": c.section_path,
+                        "extra_data": c.metadata,
+                    }
+                )
 
-                chunks_data.append(c_dict)
-                texts_to_embed.append(c.text)
-                chunk_refs.append(c_dict)
+    # Remove text from attachments (not stored in DB, only used for chunking)
+    for att in attachments_data:
+        att.pop("text", None)
 
-    if texts_to_embed:
-        # User requested to skip embedding generation ("just chunk")
-        # logger.info("Embedding %s chunks...", len(texts_to_embed))
-        # client = EmbeddingsClient()
-        # embeddings = client.embed_batch(texts_to_embed)
-
-        # for i, emb in enumerate(embeddings):
-        #     chunk_refs[i]["embedding"] = emb
-        #     chunk_refs[i][
-        #         "embedding_model"
-        #     ] = f"{config.embedding.model_name}|{config.embedding.output_dimensionality}"
-
-        # In placeholder mode, we just leave embedding as None or empty
-        pass
-
-    transformed_results: Dict[str, List[Dict[str, Any]]] = {
-        "threads": [thread_data],
-        "messages": [message_data],
+    # Build results
+    results: Dict[str, Any] = {
+        "conversation": conversation_data,
         "attachments": attachments_data,
         "chunks": chunks_data,
     }
 
+    # Write to database
     logger.info(
-        f"Writing job results with {len(attachments_data)} attachments. Sample status: {attachments_data[0]['status'] if attachments_data else 'N/A'}"
+        f"Writing: 1 conversation, {len(attachments_data)} attachments, {len(chunks_data)} chunks"
     )
     with SessionLocal() as session:
         set_session_tenant(session, job.tenant_id)
         writer = DBWriter(session)
-        writer.write_job_results(job, transformed_results)
+        writer.write_job_results(job, results)
 
-    summary.messages_total = 1
-    summary.messages_ingested = 1
+    # Update summary
+    summary.messages_total = manifest.get("message_count", 1)
+    summary.messages_ingested = manifest.get("message_count", 1)
     summary.attachments_total = len(attachments_data)
     summary.attachments_parsed = len(attachments_data)
     summary.chunks_created = len(chunks_data)
-    summary.embeddings_generated = len(texts_to_embed)
+    summary.threads_created = 1
 
     return summary

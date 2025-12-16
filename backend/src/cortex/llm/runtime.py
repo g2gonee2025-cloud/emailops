@@ -389,7 +389,9 @@ class VLLMProvider(BaseProvider):
     # ------------- Retrieval embeddings -------------
     def embed_documents(self, documents: List[str]) -> np.ndarray:
         self._ensure_embed_model()
-        batch_size = getattr(_config, "embed_batch_size", 32)
+        # Use config batch_size (default 256 for H200 GPU saturation)
+        embedding_cfg = getattr(_config, "embedding", None)
+        batch_size = getattr(embedding_cfg, "batch_size", 256) if embedding_cfg else 256
         try:
             embeddings = cast(Any, self._embed_model).encode_document(
                 documents,
@@ -405,7 +407,9 @@ class VLLMProvider(BaseProvider):
 
     def embed_queries(self, queries: List[str]) -> np.ndarray:
         self._ensure_embed_model()
-        batch_size = getattr(_config, "embed_batch_size", 32)
+        # Use config batch_size (default 256 for H200 GPU saturation)
+        embedding_cfg = getattr(_config, "embedding", None)
+        batch_size = getattr(embedding_cfg, "batch_size", 256) if embedding_cfg else 256
         try:
             embeddings = cast(Any, self._embed_model).encode_query(
                 queries,
@@ -526,38 +530,52 @@ class LLMRuntime:
         self._inflight_lock = threading.Lock()
 
     def _init_scaler(self):
-        """Initialize the DigitalOcean GPU scaler if configured."""
-        try:
-            from cortex.config.loader import get_config
-            from cortex.llm.doks_scaler import DigitalOceanLLMService
+        """
+        Initialize the DigitalOcean GPU scaler if configured.
 
-            config = get_config()
-            do_config = getattr(config, "digitalocean", None)
-            if do_config is None:
-                logger.debug("DigitalOcean config not found; GPU scaler disabled")
-                return None
+        NOTE: Custom scaler disabled in favor of DO native autoscaler.
+        DO native autoscaler is more robust (runs in DO infrastructure)
+        and prevents GPU nodes from staying running if Python app crashes.
 
-            # Check if cluster/pool IDs are configured
-            scaling = getattr(do_config, "scaling", None)
-            if not scaling or not scaling.cluster_id or not scaling.node_pool_id:
-                logger.debug(
-                    "DO_CLUSTER_ID or DO_NODE_POOL_ID not set; GPU scaler disabled"
-                )
-                return None
+        To enable DO native autoscaler, use:
+            doctl kubernetes cluster node-pool update <cluster-id> <gpu-pool-id> \
+                --auto-scale --min-nodes 0 --max-nodes 4
+        """
+        logger.info("Custom GPU scaler disabled - using DO native autoscaler")
+        return None
 
-            scaler = DigitalOceanLLMService(do_config)
-            logger.info(
-                "DigitalOcean GPU scaler initialized (cluster=%s, pool=%s)",
-                scaling.cluster_id[:8],
-                scaling.node_pool_id[:8],
-            )
-            return scaler
-        except ImportError:
-            logger.debug("doks_scaler module not available; GPU scaler disabled")
-            return None
-        except Exception as e:
-            logger.warning("Failed to initialize GPU scaler: %s", e)
-            return None
+        # Original custom scaler initialization (disabled)
+        # try:
+        #     from cortex.config.loader import get_config
+        #     from cortex.llm.doks_scaler import DigitalOceanLLMService
+        #
+        #     config = get_config()
+        #     do_config = getattr(config, "digitalocean", None)
+        #     if do_config is None:
+        #         logger.debug("DigitalOcean config not found; GPU scaler disabled")
+        #         return None
+        #
+        #     # Check if cluster/pool IDs are configured
+        #     scaling = getattr(do_config, "scaling", None)
+        #     if not scaling or not scaling.cluster_id or not scaling.node_pool_id:
+        #         logger.debug(
+        #             "DO_CLUSTER_ID or DO_NODE_POOL_ID not set; GPU scaler disabled"
+        #         )
+        #         return None
+        #
+        #     scaler = DigitalOceanLLMService(do_config)
+        #     logger.info(
+        #         "DigitalOcean GPU scaler initialized (cluster=%s, pool=%s)",
+        #         scaling.cluster_id[:8],
+        #         scaling.node_pool_id[:8],
+        #     )
+        #     return scaler
+        # except ImportError:
+        #     logger.debug("doks_scaler module not available; GPU scaler disabled")
+        #     return None
+        # except Exception as e:
+        #     logger.warning("Failed to initialize GPU scaler: %s", e)
+        #     return None
 
     def _maybe_scale(self) -> None:
         """Trigger GPU scaling based on current request load."""

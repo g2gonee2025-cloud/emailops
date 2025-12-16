@@ -102,6 +102,9 @@ def scan_and_refresh(root: Path) -> ManifestValidationReport:
         conv_start, conv_end = _extract_conversation_time_range(conv_txt)
         mtime_iso = _file_mtime_iso(conv_txt)
 
+        # Extract participants from text as fallback/enrichment
+        participants = _extract_participants_from_txt(conv_txt)
+
         # Build new manifest with idempotent timestamps derived from manifest -> convo text -> mtime
         started_at = _preserve_str(
             existing_manifest.get("started_at_utc"), conv_start or mtime_iso
@@ -110,24 +113,29 @@ def scan_and_refresh(root: Path) -> ManifestValidationReport:
             existing_manifest.get("ended_at_utc"), conv_end or started_at
         )
 
-        new_manifest = {
-            "manifest_version": "1",
-            "folder": folder_rel,
-            "subject_label": _preserve_str(
-                existing_manifest.get("subject_label"), folder_rel
-            ),
-            "message_count": existing_manifest.get("message_count", 0),
-            "started_at_utc": started_at,
-            "ended_at_utc": ended_at,
-            "attachment_count": len(list(attachments_dir.iterdir())),
-            "paths": {
-                "conversation_txt": "Conversation.txt",
-                "attachments_dir": "attachments/",
-            },
-            "sha256_conversation": sha256,
-            "conv_id": existing_manifest.get("conv_id"),
-            "conv_key_type": existing_manifest.get("conv_key_type"),
-        }
+        # Start with a copy to preserve 'messages', 'participants', etc.
+        new_manifest = existing_manifest.copy()
+        new_manifest.update(
+            {
+                "manifest_version": "1",
+                "folder": folder_rel,
+                "subject_label": _preserve_str(
+                    existing_manifest.get("subject_label"), folder_rel
+                ),
+                "participants": participants,  # Explicitly added
+                "message_count": existing_manifest.get("message_count", 0),
+                "started_at_utc": started_at,
+                "ended_at_utc": ended_at,
+                "attachment_count": len(list(attachments_dir.iterdir())),
+                "paths": {
+                    "conversation_txt": "Conversation.txt",
+                    "attachments_dir": "attachments/",
+                },
+                "sha256_conversation": sha256,
+                "conv_id": existing_manifest.get("conv_id"),
+                "conv_key_type": existing_manifest.get("conv_key_type"),
+            }
+        )
 
         # Check if update needed
         if _manifests_differ(existing_manifest, new_manifest):
@@ -195,6 +203,7 @@ def _manifests_differ(old: Dict[str, Any], new: Dict[str, Any]) -> bool:
         "sha256_conversation",
         "paths",
         "attachment_count",
+        "participants",
     ]
     for k in keys:
         if old.get(k) != new.get(k):
@@ -245,3 +254,47 @@ def _extract_conversation_time_range(conv_txt: Path) -> tuple[str | None, str | 
         return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     return to_iso(earliest), to_iso(latest)
+
+
+def _extract_participants_from_txt(conv_txt: Path) -> List[str]:
+    """
+    Extract participant names/emails from headers in Conversation.txt.
+
+    Args:
+        conv_txt: Path to Conversation.txt
+
+    Returns:
+        List of distinct participant strings (sorted)
+    """
+    import re
+
+    participants = set()
+    try:
+        text = conv_txt.read_text(encoding="utf-8-sig", errors="replace")
+
+        # Regex to find From/To/Cc fields
+        # Handles:
+        # 1. "From: name <email>" (Start of line)
+        # 2. "... | From: email | ..." (Pipe delimited)
+        # 3. Avoids matching random "To:" in body text
+        clean_pattern = r"(?:^|\|)\s*(?:From|To|Cc):\s*([^|\n\r]+)"
+
+        matches = re.findall(clean_pattern, text, re.IGNORECASE | re.MULTILINE)
+
+        for m in matches:
+            clean = m.strip()
+            # Heuristics to filter noise:
+            # 1. Must be non-empty
+            # 2. Should be reasonably short (names/emails usually < 100 chars)
+            # 3. Should not look like a sentence (e.g. no "." at end unless it's an initial?)
+            if clean and len(clean) < 100:
+                # Basic cleanup of surrounding quotes/brackets if regex missed them
+                clean = clean.strip(" <>\"'")
+                participants.add(clean)
+
+    except Exception as e:
+        logger.warning(f"Failed to extract participants from {conv_txt}: {e}")
+
+    # Sort case-insensitively and de-dup
+    unique_sorted = sorted(list({p.lower(): p for p in participants}.values()))
+    return unique_sorted

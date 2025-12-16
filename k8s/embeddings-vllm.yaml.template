@@ -43,7 +43,7 @@ spec:
             - "8192"
             # Correct flag for controlling concurrency/batching
             - "--max-num-seqs"
-            - "256"
+            - "${MAX_BATCH_SIZE}"
           env:
             - name: HF_HUB_ENABLE_HF_TRANSFER
               value: "1"
@@ -79,7 +79,7 @@ spec:
           operator: "Exists"
           effect: "NoSchedule"
       nodeSelector:
-        doks.digitalocean.com/node-pool: pool-h100
+        doks.digitalocean.com/node-pool: ${NODE_POOL}
 ---
 apiVersion: v1
 kind: Service

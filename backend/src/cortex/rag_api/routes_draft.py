@@ -11,8 +11,8 @@ import logging
 from cortex.audit import log_audit_event
 from cortex.common.exceptions import CortexError
 from cortex.context import tenant_id_ctx, user_id_ctx
-from cortex.models.api import DraftEmailRequest, DraftEmailResponse
 from cortex.orchestration.graphs import build_draft_graph
+from cortex.rag_api.models import DraftEmailRequest, DraftEmailResponse
 from fastapi import APIRouter, HTTPException, Request
 
 logger = logging.getLogger(__name__)

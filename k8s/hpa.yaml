@@ -8,35 +8,43 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: emailops-backend
-  minReplicas: 2
-  maxReplicas: 10
+  # Optimized for batch embedding workloads
+  minReplicas: 1    # Scale to 1 when idle (cost savings)
+  maxReplicas: 8    # Match num_workers for parallel processing
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 70
+          averageUtilization: 70  # Industry best practice for batch
     - type: Resource
       resource:
         name: memory
         target:
           type: Utilization
-          averageUtilization: 80
+          averageUtilization: 75  # Lower than CPU to prevent OOM
   behavior:
     scaleDown:
-      stabilizationWindowSeconds: 300
+      # Longer stabilization prevents flapping during batch processing
+      stabilizationWindowSeconds: 600  # 10 min (match CA scale-down delay)
       policies:
         - type: Percent
-          value: 50
+          value: 25     # Scale down 25% at a time (more gradual)
           periodSeconds: 60
+        - type: Pods
+          value: 1      # Or remove 1 pod at a time
+          periodSeconds: 60
+      selectPolicy: Min  # Use the smaller removal (more conservative)
     scaleUp:
-      stabilizationWindowSeconds: 0
+      # Quick response for burst workloads
+      stabilizationWindowSeconds: 0  # Immediate scale-up
       policies:
         - type: Percent
-          value: 100
+          value: 100    # Double pods if needed
           periodSeconds: 15
         - type: Pods
-          value: 4
+          value: 4      # Or add up to 4 pods
           periodSeconds: 15
-      selectPolicy: Max
+      selectPolicy: Max  # Use the larger addition (aggressive scale-up)
+

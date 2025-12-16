@@ -2,10 +2,11 @@
 Vector Search retrieval.
 
 Implements §8.3 of the Canonical Blueprint.
+Adapted for Conversation-based schema (conversation_id instead of thread_id/message_id).
 
 Per pgvector official docs:
 - HNSW index for vector type limited to 2000 dims
-- We use halfvec cast for 3072-dim embeddings (supports up to 4000 dims)
+- We use halfvec cast for 3840-dim embeddings (supports up to 4000 dims)
 - Query must cast to halfvec to use the HNSW index
 """
 from __future__ import annotations
@@ -30,16 +31,27 @@ class VectorResult(BaseModel):
     score: float
     text: str
 
-    # Keep these first-class so callers don’t have to dig in JSON metadata.
-    thread_id: str = ""
-    message_id: str = ""
+    # Conversation-based schema uses conversation_id instead of thread_id
+    conversation_id: str = ""
     attachment_id: str = ""
+    is_attachment: bool = False
 
     # Raw distance can be useful for debugging/metrics.
     distance: Optional[float] = None
 
     metadata: Dict[str, Any] = Field(default_factory=dict)
     chunk_type: Optional[str] = None
+
+    # Backward compat aliases (hybrid_search.py may reference these)
+    @property
+    def thread_id(self) -> str:
+        """Alias for conversation_id (backward compat)."""
+        return self.conversation_id
+
+    @property
+    def message_id(self) -> str:
+        """Backward compat - return empty since we use conversation model."""
+        return ""
 
 
 def search_chunks_vector(
@@ -49,17 +61,15 @@ def search_chunks_vector(
     limit: int = 50,
     *,
     ef_search: Optional[int] = None,
-    thread_ids: Optional[List[str]] = None,
+    conversation_ids: Optional[List[str]] = None,
+    thread_ids: Optional[List[str]] = None,  # Backward compat alias
 ) -> List[VectorResult]:
     """
-    Perform vector search on chunks using HNSW index.
+    Perform vector search on chunks using pgvector.
 
-    Blueprint §8.3:
+    Blueprint §8.3 (adapted for Conversation schema):
     * Vector search (pgvector) over chunks.embedding
-
-    Per pgvector docs:
-    * Uses halfvec cast for 3072-dim vectors to leverage HNSW index
-    * Cosine distance operator (<=>) for normalized embeddings
+    * Uses cosine distance operator (<=>) for normalized embeddings
     """
     config = get_config()
     output_dim = config.embedding.output_dimensionality
@@ -85,29 +95,28 @@ def search_chunks_vector(
             query="vector_search",
         )
 
-    # Convert embedding to pgvector text format for raw SQL
-    # (pgvector docs use the same bracketed representation for literals)
+    # Convert embedding to pgvector text format
     embedding_str = "[" + ",".join(repr(float(v)) for v in emb_array.tolist()) + "]"
 
-    # Use raw SQL to properly cast to halfvec for HNSW index utilization
-    # Per pgvector docs: query must use same type as index (halfvec)
-    # We use CAST(:query_vec AS halfvec(:dim)) to avoid SQLAlchemy parsing issues with ::
-    # Optional thread filter (often useful for navigational lookups)
-    thread_filter_sql = ""
+    # Handle backward compat: thread_ids -> conversation_ids
+    if thread_ids and not conversation_ids:
+        conversation_ids = thread_ids
+
+    # Build query with optional conversation filter
+    conversation_filter_sql = ""
     params: Dict[str, Any] = {
         "tenant_id": tenant_id,
         "query_vec": embedding_str,
-        "dim": output_dim,
         "limit": limit,
     }
 
-    if thread_ids:
-        thread_filter_sql = "AND c.thread_id = ANY(CAST(:thread_ids AS UUID[]))"
-        params["thread_ids"] = thread_ids
+    if conversation_ids:
+        conversation_filter_sql = (
+            "AND c.conversation_id = ANY(CAST(:conversation_ids AS UUID[]))"
+        )
+        params["conversation_ids"] = conversation_ids
 
-    # Optional HNSW tuning for recall/speed tradeoff.
-    # pgvector docs recommend setting hnsw.ef_search per query using SET LOCAL.
-    # We do it inline via set_config(..., is_local=true) so it only affects this statement.
+    # Optional HNSW tuning for recall/speed tradeoff
     hnsw_settings_cte = ""
     if ef_search is not None:
         params["ef_search"] = str(int(ef_search))
@@ -115,23 +124,25 @@ def search_chunks_vector(
             "WITH settings AS (SELECT set_config('hnsw.ef_search', :ef_search, true))"
         )
 
-    # Inject dimensions directly into SQL as Postgres type modifiers cannot be parameterized
+    # Use cosine distance directly on vector type (no halfvec needed for 3840 dims
+    # since it's within pgvector's vector limit for exact search)
     stmt = text(
         f"""
         {hnsw_settings_cte}
         SELECT
             c.chunk_id,
+            c.conversation_id,
             c.text,
-            c.metadata,
+            c.extra_data,
             c.chunk_type,
-            c.thread_id,
-            c.message_id,
+            c.is_attachment,
             c.attachment_id,
-            c.embedding::halfvec({output_dim}) <=> CAST(:query_vec AS halfvec({output_dim})) AS distance
+            c.embedding <=> CAST(:query_vec AS vector({output_dim})) AS distance
         FROM chunks c
         {', settings' if ef_search is not None else ''}
         WHERE c.tenant_id = :tenant_id
-        {thread_filter_sql}
+          AND c.embedding IS NOT NULL
+        {conversation_filter_sql}
         ORDER BY distance
         LIMIT :limit
     """
@@ -141,25 +152,20 @@ def search_chunks_vector(
 
     out = []
     for row in results:
-        # pgvector’s cosine distance operator (<=>) is 1 - cosine_similarity.
+        # pgvector's cosine distance operator (<=>) is 1 - cosine_similarity.
         # Cosine similarity can be [-1, 1], so distance is typically [0, 2].
         # We map similarity to [0, 1] for easier blending with lexical scores.
         distance = float(row.distance) if row.distance is not None else None
         cosine_sim = 1.0 - distance if distance is not None else -1.0
         score = (cosine_sim + 1.0) / 2.0
         # Guard against minor numeric drift
-        if score < 0.0:
-            score = 0.0
-        elif score > 1.0:
-            score = 1.0
+        score = max(0.0, min(1.0, score))
 
-        thread_id = str(row.thread_id) if row.thread_id else ""
-        message_id = str(row.message_id) if row.message_id else ""
+        conversation_id = str(row.conversation_id) if row.conversation_id else ""
         attachment_id = str(row.attachment_id) if row.attachment_id else ""
 
-        metadata = dict(row.metadata) if isinstance(row.metadata, dict) else {}
-        metadata.setdefault("thread_id", thread_id)
-        metadata.setdefault("message_id", message_id)
+        metadata = dict(row.extra_data) if isinstance(row.extra_data, dict) else {}
+        metadata.setdefault("conversation_id", conversation_id)
         metadata.setdefault("attachment_id", attachment_id)
         if row.chunk_type:
             metadata.setdefault("chunk_type", row.chunk_type)
@@ -169,9 +175,9 @@ def search_chunks_vector(
                 chunk_id=str(row.chunk_id),
                 score=score,
                 text=row.text or "",
-                thread_id=thread_id,
-                message_id=message_id,
+                conversation_id=conversation_id,
                 attachment_id=attachment_id,
+                is_attachment=row.is_attachment or False,
                 distance=distance,
                 metadata=metadata,
                 chunk_type=row.chunk_type,

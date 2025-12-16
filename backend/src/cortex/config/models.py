@@ -102,7 +102,7 @@ class StorageConfig(BaseModel):
         default_factory=lambda: _env("S3_SECRET_KEY", None), description="S3 secret key"
     )
     bucket_raw: str = Field(
-        default_factory=lambda: _env("S3_BUCKET_RAW", "emailops-raw"),
+        default_factory=lambda: _env("S3_BUCKET_RAW", "emailops-bucket"),
         description="Bucket for raw email exports",
     )
     region: str = Field(
@@ -120,15 +120,16 @@ class StorageConfig(BaseModel):
 class CoreConfig(BaseModel):
     """Core application configuration."""
 
-    env: Literal["dev", "staging", "prod"] = Field(
-        default_factory=lambda: _env("ENV", "dev"), description="Environment name"
+    env: Literal["dev", "staging", "prod", "production"] = Field(
+        default_factory=lambda: _env("ENV", "production"),
+        description="Environment name",
     )
     tenant_mode: Literal["single", "multi"] = Field(
         default_factory=lambda: _env("TENANT_MODE", "single"),
         description="Tenant isolation mode",
     )
     persona: str = Field(
-        default_factory=lambda: _env("PERSONA", "expert insurance CSR"),
+        default_factory=lambda: _env("PERSONA", "GROUP INSURANCE SPECIALIST"),
         description="Default persona for LLM interactions",
     )
     provider: str = Field(
@@ -186,7 +187,10 @@ class ProcessingConfig(BaseModel):
         default=64, ge=1, le=1000, description="Batch size for embedding"
     )
     num_workers: int = Field(
-        default=4, ge=1, le=32, description="Number of parallel workers"
+        default=8,
+        ge=1,
+        le=64,
+        description="Number of parallel workers for GPU saturation",
     )
 
     @field_validator("chunk_overlap")
@@ -221,6 +225,18 @@ class EmbeddingConfig(BaseModel):
         le=4096,
         description="Output embedding dimension (must match DB vector column and gateway config)",
         validate_default=True,
+    )
+    batch_size: int = Field(
+        default_factory=lambda: _env("KALM_EMBED_BATCH_SIZE", 256, int),
+        ge=8,
+        le=1024,
+        description="Batch size for embedding inference (tune for GPU VRAM - 256 optimal for H200)",
+    )
+    max_seq_length: int = Field(
+        default_factory=lambda: _env("KALM_MAX_SEQ_LENGTH", 512, int),
+        ge=128,
+        le=8192,
+        description="Max sequence length for embedding model (KaLM recommends 512)",
     )
 
     # Vertex AI specific
@@ -311,7 +327,7 @@ class DigitalOceanScalerConfig(BaseModel):
         description="DigitalOcean API base URL",
     )
     memory_per_gpu_gb: float = Field(
-        default_factory=lambda: _env("DO_GPU_MEMORY_GB", 48.0, float),
+        default_factory=lambda: _env("DO_GPU_MEMORY_GB", 141.0, float),
         gt=0.0,
         description="Usable GPU memory per accelerator (GB)",
     )
@@ -555,7 +571,7 @@ class SearchConfig(BaseModel):
         description="Target tokens for fresh email context",
     )
     context_snippet_chars: int = Field(
-        default=1600, ge=100, le=10000, description="Max chars per context snippet"
+        default=8000, ge=100, le=10000, description="Max chars per context snippet"
     )
     rerank_alpha: float = Field(
         default=0.35, ge=0.0, le=1.0, description="Reranking alpha blending factor"
@@ -748,11 +764,11 @@ class PiiConfig(BaseModel):
     """PII processing configuration."""
 
     strict: bool = Field(
-        default_factory=lambda: _env("PII_STRICT", True, bool),
+        default_factory=lambda: _env("PII_STRICT", False, bool),
         description="If true, require Presidio initialization; else fallback to regex without aborting.",
     )
     enabled: bool = Field(
-        default_factory=lambda: _env("PII_ENABLED", True, bool),
+        default_factory=lambda: _env("PII_ENABLED", False, bool),
         description="If false, disable all PII redaction.",
     )
 

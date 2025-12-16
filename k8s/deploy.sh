@@ -1,9 +1,8 @@
 #!/bin/bash
 # =============================================================================
-# EmailOps Kubernetes Deployment Script (v3.3 DOKS Edition)
+# EmailOps Kubernetes Deployment Script (v4.0 Modular GPU Edition)
 # =============================================================================
-# Deploys the full stack to DigitalOcean Kubernetes (DOKS)
-# using Managed PostgreSQL and Spaces.
+# Usage: ./deploy.sh [--gpu h100|h200]
 # =============================================================================
 
 set -e
@@ -11,15 +10,42 @@ set -e
 NAMESPACE="emailops"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# DOKS Cluster Info (Verified from User Input)
-CLUSTER_ID="23c013d9-4d8d-4d3d-a813-7e5cbc3d0af1"
-CLUSTER_NAME="k8s-1-34-1-do-1-nyc2-1765360390845"
-GPU_POOL_ID="e359afb3-1891-4bba-94b4-c7ab1d2e1736" # pool-f4x80anpj (H200)
-CPU_POOL_ID="c949fea3-5d57-4c30-9fd4-35acdf6973af" # pool-ewvdhlkec
+# Default GPU Profile
+GPU_TYPE="h100"
+
+# Parse Arguments
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --gpu) GPU_TYPE="$2"; shift ;;
+        --help) echo "Usage: ./deploy.sh [--gpu h100|h200]"; exit 0 ;;
+        *) echo "Unknown parameter passed: $1"; exit 1 ;;
+    esac
+    shift
+done
+
+# GPU Profiles (Node Pool IDs & Configs)
+# H200 Pool ID: pool-f4x80anpj (e359afb3-1891-4bba-94b4-c7ab1d2e1736)
+# H100 Pool ID: pool-h100 (6bd0fb19-90a0-42eb-bc6b-8beccc704d89) - Assuming based on creation
+# NOTE: Using Pool Names for `doks.digitalocean.com/node-pool` selector is simpler and strictly correct.
+
+if [ "$GPU_TYPE" == "h100" ]; then
+    echo "Using Profile: H100 (80GB VRAM)"
+    export NODE_POOL="pool-h100"
+    export MAX_BATCH_SIZE="256"
+elif [ "$GPU_TYPE" == "h200" ]; then
+    echo "Using Profile: H200 (141GB VRAM)"
+    export NODE_POOL="pool-f4x80anpj"
+    export MAX_BATCH_SIZE="256" # Conservative start, can go up to 512
+else
+    echo "Error: Unsupported GPU type '$GPU_TYPE'. Use 'h100' or 'h200'."
+    exit 1
+fi
 
 echo "=============================================="
 echo "EmailOps Kubernetes Deployment (NYC2)"
-echo "Cluster: $CLUSTER_NAME"
+echo "Target GPU: $GPU_TYPE"
+echo "Node Pool:  $NODE_POOL"
+echo "Batch Size: $MAX_BATCH_SIZE"
 echo "=============================================="
 echo ""
 
@@ -34,68 +60,60 @@ kubectl apply -f "$SCRIPT_DIR/namespace.yaml"
 # Apply secrets
 echo "[3/8] Applying secrets..."
 if [ -f "$SCRIPT_DIR/secrets_live.yaml" ]; then
-    # Auto-rename secrets_live to secrets if needed or just apply it
     echo "    Using secrets_live.yaml..."
     kubectl apply -f "$SCRIPT_DIR/secrets_live.yaml"
 elif [ -f "$SCRIPT_DIR/secrets.yaml" ]; then
     kubectl apply -f "$SCRIPT_DIR/secrets.yaml"
 else
     echo "ERROR: No secrets file found!"
-    echo "Please ensure k8s/secrets_live.yaml or k8s/secrets.yaml exists."
     exit 1
 fi
 
-# Apply ConfigMap
+# Apply ConfigMap (Update BATCH_SIZE dynamically if needed, but we rely on CLI args for vLLM)
 echo "[4/8] Applying ConfigMap..."
 kubectl apply -f "$SCRIPT_DIR/configmap.yaml"
 
-# Deploy Database Strategy: Managed
-echo "[5/8] Configuring Database..."
-echo "    Using DigitalOcean Managed PostgreSQL (emailops-db-nyc2)."
-echo "    Skipping in-cluster Postgres deployment."
-# We do NOT run kubectl apply -f postgres.yaml
+# Apply Priority Classes
+echo "[5/8] Applying Priority Classes..."
+kubectl apply -f "$SCRIPT_DIR/priority-classes.yaml"
 
-# Redis/Valkey: Using DO Managed (skip in-cluster deployment)
-echo "[6/8] Redis/Valkey..."
-echo "    Using DigitalOcean Managed Valkey (emailops-redis)."
-echo "    Skipping in-cluster Redis deployment."
-# We do NOT run kubectl apply -f redis.yaml
+# Databases (Managed)
+echo "[6/8] Configuring Database..."
+echo "    Using DigitalOcean Managed PostgreSQL."
+echo "[7/8] Redis/Valkey..."
+echo "    Using DigitalOcean Managed Valkey."
 
-# Deploy Embeddings API (vLLM on GPU)
-echo "[7/8] Deploying Embeddings API (vLLM)..."
-# Ensure GPU pool is scaled up? (Optional check)
-echo "    Applying PVC and Service..."
-kubectl apply -f "$SCRIPT_DIR/embeddings-pvc.yaml" || true
+# Deploy Embeddings API (vLLM)
+echo "[8/8] Deploying Embeddings API (vLLM) on $GPU_TYPE..."
+# Generate manifest from template
+envsubst < "$SCRIPT_DIR/embeddings-vllm.yaml.template" > "$SCRIPT_DIR/embeddings-vllm.yaml"
 kubectl apply -f "$SCRIPT_DIR/embeddings-vllm.yaml"
-echo "    Note: vLLM pod will stay Pending until H200 GPU node is available."
 
 # Deploy Backend
-echo "[8/8] Deploying Backend API..."
+echo "[9/8] Deploying Backend API..."
 kubectl apply -f "$SCRIPT_DIR/backend-deployment.yaml"
 
-# Optional: Deploy MiniMax M2 LLM
-if [ "$DEPLOY_LLM" = "true" ]; then
-    echo "[OPTIONAL] Deploying MiniMax M2 LLM..."
-    kubectl apply -f "$SCRIPT_DIR/minimax-m2-llm.yaml"
-fi
-
 # Apply Ingress
-echo "[9/8] Applying Ingress..."
+echo "[10/8] Applying Ingress..."
 kubectl apply -f "$SCRIPT_DIR/ingress.yaml" || true
 
-# Apply HPA
-echo "[10/8] Applying HPA..."
+# Scaling & Optimization
+echo "[11/8] Applying Scaling & Optimization Layer..."
+
+# HPA
+echo "    Applying HPA..."
 kubectl apply -f "$SCRIPT_DIR/hpa.yaml" || true
+
+# GPU Buffer Pods
+echo "    Applying GPU Buffer Pods ($NODE_POOL)..."
+envsubst < "$SCRIPT_DIR/gpu-buffer.yaml.template" > "$SCRIPT_DIR/gpu-buffer.yaml"
+kubectl apply -f "$SCRIPT_DIR/gpu-buffer.yaml" || true
 
 echo ""
 echo "=============================================="
 echo "Deployment Submitted!"
 echo "=============================================="
 echo ""
-echo "Next Steps:"
-echo "1. Scale up the GPU node pool for embeddings:"
-echo "   doctl kubernetes cluster node-pool update $CLUSTER_ID $GPU_POOL_ID --count 1"
-echo ""
-echo "2. Monitor pod status:"
+echo "Monitor pod status:"
 echo "   kubectl get pods -n $NAMESPACE -w"
 echo ""

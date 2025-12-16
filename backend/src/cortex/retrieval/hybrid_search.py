@@ -49,11 +49,10 @@ class SearchResultItem(BaseModel):
     """
     Search result item.
 
-    Blueprint §8.4:
+    Blueprint §8.4 (adapted for Conversation schema):
     * chunk_id: Optional[UUID]
     * score: float
-    * thread_id: UUID
-    * message_id: str
+    * conversation_id: str (was thread_id)
     * attachment_id: Optional[UUID]
     * highlights: List[str]
     * snippet: str
@@ -65,9 +64,9 @@ class SearchResultItem(BaseModel):
 
     chunk_id: Optional[str]
     score: float
-    thread_id: str
-    message_id: str
+    conversation_id: str = ""  # Primary key for Conversation schema
     attachment_id: Optional[str] = None
+    is_attachment: bool = False
     highlights: List[str] = Field(default_factory=list)
     snippet: str = ""
     content: Optional[str] = None
@@ -79,6 +78,17 @@ class SearchResultItem(BaseModel):
     fusion_score: Optional[float] = None
     rerank_score: Optional[float] = None
     content_hash: Optional[str] = None
+
+    # Backward compatibility aliases
+    @property
+    def thread_id(self) -> str:
+        """Alias for conversation_id (backward compat)."""
+        return self.conversation_id
+
+    @property
+    def message_id(self) -> str:
+        """Backward compat - empty since we use conversation model."""
+        return ""
 
 
 class SearchResults(BaseModel):
@@ -173,10 +183,8 @@ def _merge_result_fields(
     """Merge fields from another SearchResultItem into an existing one."""
 
     # Prefer already-populated structured identifiers, but fill blanks.
-    if not into.thread_id and other.thread_id:
-        into.thread_id = other.thread_id
-    if not into.message_id and other.message_id:
-        into.message_id = other.message_id
+    if not into.conversation_id and other.conversation_id:
+        into.conversation_id = other.conversation_id
     if not into.attachment_id and other.attachment_id:
         into.attachment_id = other.attachment_id
 
@@ -414,7 +422,7 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
         # When users are clearly looking for a specific email/thread, message-level
         # FTS is a great cheap filter. Since you always have embedded chunks, we
         # then run chunk retrieval inside those threads.
-        nav_thread_ids: Optional[List[str]] = None
+        nav_conversation_ids: Optional[List[str]] = None
         if args.classification and args.classification.type == "navigational":
             nav_hits = search_messages_fts(
                 session,
@@ -422,8 +430,8 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
                 args.tenant_id,
                 limit=min(k * candidates_multiplier, 200),
             )
-            nav_thread_ids = (
-                list({h.thread_id for h in nav_hits if h.thread_id}) or None
+            nav_conversation_ids = (
+                list({h.conversation_id for h in nav_hits if h.conversation_id}) or None
             )
 
         # 3. Lexical search (FTS) on chunks
@@ -432,7 +440,7 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
             args.query,
             args.tenant_id,
             limit=k * candidates_multiplier,
-            thread_ids=nav_thread_ids,
+            conversation_ids=nav_conversation_ids,
         )
 
         # 4. Vector search (if we have an embedding)
@@ -445,7 +453,7 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
                 args.tenant_id,
                 limit=k * candidates_multiplier,
                 ef_search=hnsw_ef_search,
-                thread_ids=nav_thread_ids,
+                conversation_ids=nav_conversation_ids,
             )
 
         # Convert to SearchResultItem format
@@ -457,9 +465,9 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
                 SearchResultItem(
                     chunk_id=res.chunk_id,
                     score=res.score,
-                    thread_id=res.thread_id,
-                    message_id=res.message_id,
-                    attachment_id=None,
+                    conversation_id=res.conversation_id,
+                    attachment_id=res.attachment_id,
+                    is_attachment=res.is_attachment,
                     highlights=[res.snippet],
                     snippet=res.snippet,
                     content=res.text,
@@ -480,9 +488,9 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
                 SearchResultItem(
                     chunk_id=res.chunk_id,
                     score=res.score,
-                    thread_id=res.thread_id,
-                    message_id=res.message_id,
+                    conversation_id=res.conversation_id,
                     attachment_id=res.attachment_id or None,
+                    is_attachment=res.is_attachment,
                     highlights=[res.text[:200]] if res.text else [],
                     snippet=res.text[:200] if res.text else "",
                     content=res.text,
@@ -508,14 +516,18 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
         # 7. Lightweight rerank blending lexical/vector signals
         fused_results = rerank_results(fused_results, alpha=config.search.rerank_alpha)
 
-        # 8. Get thread timestamps for recency boost
-        thread_ids = list({r.thread_id for r in fused_results if r.thread_id})
-        thread_updated_at = _get_thread_timestamps(session, thread_ids, args.tenant_id)
+        # 8. Get conversation timestamps for recency boost
+        conversation_ids = list(
+            {r.conversation_id for r in fused_results if r.conversation_id}
+        )
+        conversation_updated_at = _get_conversation_timestamps(
+            session, conversation_ids, args.tenant_id
+        )
 
         # 9. Apply recency boost
         fused_results = apply_recency_boost(
             fused_results,
-            thread_updated_at,
+            conversation_updated_at,
             half_life_days=config.search.half_life_days,
             boost_strength=config.search.recency_boost_strength,
         )
@@ -537,26 +549,30 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
         )
 
 
-def _get_thread_timestamps(
-    session, thread_ids: List[str], tenant_id: str
+def _get_conversation_timestamps(
+    session, conversation_ids: List[str], tenant_id: str
 ) -> Dict[str, datetime]:
-    """Fetch updated_at timestamps for threads."""
-    if not thread_ids:
+    """Fetch updated_at timestamps for conversations."""
+    if not conversation_ids:
         return {}
 
     from sqlalchemy import text
 
     stmt = text(
         """
-        SELECT thread_id, updated_at
-        FROM threads
-        WHERE thread_id = ANY(CAST(:thread_ids AS UUID[]))
+        SELECT conversation_id, updated_at
+        FROM conversations
+        WHERE conversation_id = ANY(CAST(:conversation_ids AS UUID[]))
         AND tenant_id = :tenant_id
     """
     )
 
     results = session.execute(
-        stmt, {"thread_ids": thread_ids, "tenant_id": tenant_id}
+        stmt, {"conversation_ids": conversation_ids, "tenant_id": tenant_id}
     ).fetchall()
 
-    return {str(row.thread_id): row.updated_at for row in results}
+    return {str(row.conversation_id): row.updated_at for row in results}
+
+
+# Backward compat alias
+_get_thread_timestamps = _get_conversation_timestamps

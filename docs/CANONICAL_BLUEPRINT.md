@@ -645,22 +645,17 @@ All nodes import prompts from this module. Never hardcode prompts in node implem
 * `message_id` (text, pk)
 * `thread_id` (uuid, fk → `threads.thread_id`, not null)
 * `folder` (text)
-* `sent_at` (timestamptz, nullable, UTC)
-* `recv_at` (timestamptz, nullable, UTC)
-* `from_addr` (text, not null)
-* `to_addrs` (text[])  # validated email strings
-* `cc_addrs` (text[])
-* `bcc_addrs` (text[])
-* `subject` (text)
-* `body_plain` (text)  # PII‑redacted canonical text
-* `body_html` (text)   # sanitized HTML, if needed
+* `start_at` (timestamptz, nullable, UTC)
+* `end_at` (timestamptz, nullable, UTC)
+* `participants` (text[])
+* `subject_norm` (text) — normalized subject
 * `has_quoted_mask` (boolean, default false)
 * `raw_storage_uri` (text)  # pointer to raw file (.eml/.msg/etc.)
 * `tenant_id` (text, not null)
 * `tsv_subject_body` (tsvector, indexed)
 * `metadata` (jsonb), including:
   * `quoted_spans`: list of `{start: int, end: int}`
-  * `invalid_addresses`: list of invalid/partial emails
+  * `invalid_addresses`: list of invalid/partial 
   * `message_id_strategy`: `"rfc822"` or `"content_hash_v1"`
   * optional flags (`quote_density`, `pii_status`, etc.)
 

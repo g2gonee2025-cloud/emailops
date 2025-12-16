@@ -2,18 +2,17 @@
 Database Writer.
 
 Implements §6.6 of the Canonical Blueprint.
-Ensures all chunks have:
-* content_hash (for deduplication)
-* pre_cleaned flag (text was cleaned before chunking)
-* cleaning_version (version of cleaner used)
-* source (e.g., 'email_body', 'attachment')
+Updated for new Conversation-based schema.
 """
 from __future__ import annotations
 
+import hashlib
 import logging
-from typing import Any, Dict
+import uuid
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from cortex.db.models import Attachment, Chunk, Message, Thread
+from cortex.db.models import Attachment, Chunk, Conversation
 from cortex.ingestion.constants import CLEANING_VERSION
 from cortex.ingestion.models import IngestJobRequest
 from sqlalchemy.orm import Session
@@ -23,8 +22,6 @@ logger = logging.getLogger(__name__)
 
 def compute_content_hash(text: str) -> str:
     """Compute SHA-256 hash of content for deduplication."""
-    import hashlib
-
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
@@ -35,31 +32,20 @@ def ensure_chunk_metadata(
 ) -> Dict[str, Any]:
     """
     Ensure chunk has all required metadata fields per §7.1.
-
-    Args:
-        chunk_data: Raw chunk data dictionary
-        source: Source type ('email_body', 'attachment', 'quoted_block')
-        pre_cleaned: Whether text was pre-cleaned
-
-    Returns:
-        Updated chunk data with guaranteed metadata fields
     """
-    metadata = dict(chunk_data.get("metadata", {}) or {})
+    extra_data = dict(chunk_data.get("extra_data", {}) or {})
 
     # Always compute content_hash if not present
-    if "content_hash" not in metadata:
+    if "content_hash" not in extra_data:
         text = chunk_data.get("text", "")
-        metadata["content_hash"] = compute_content_hash(text)
+        extra_data["content_hash"] = compute_content_hash(text)
 
     # Always set cleaning metadata
-    metadata["pre_cleaned"] = pre_cleaned
-    metadata["cleaning_version"] = CLEANING_VERSION
+    extra_data["pre_cleaned"] = pre_cleaned
+    extra_data["cleaning_version"] = CLEANING_VERSION
+    extra_data["source"] = source
 
-    # Set source if not present
-    if "source" not in metadata:
-        metadata["source"] = source
-
-    chunk_data["metadata"] = metadata
+    chunk_data["extra_data"] = extra_data
     return chunk_data
 
 
@@ -68,8 +54,7 @@ class DBWriter:
     Transactional writer for ingestion results.
 
     Handles writing:
-    * Threads
-    * Messages
+    * Conversations
     * Attachments
     * Chunks
     """
@@ -77,105 +62,152 @@ class DBWriter:
     def __init__(self, session: Session):
         self.session = session
 
+    def write_conversation(
+        self,
+        *,
+        conversation_id: uuid.UUID,
+        tenant_id: str,
+        folder_name: str,
+        subject: Optional[str] = None,
+        smart_subject: Optional[str] = None,
+        participants: Optional[List[Dict[str, Any]]] = None,
+        messages: Optional[List[Dict[str, Any]]] = None,
+        earliest_date: Optional[datetime] = None,
+        latest_date: Optional[datetime] = None,
+        storage_uri: Optional[str] = None,
+        extra_data: Optional[Dict[str, Any]] = None,
+    ) -> Conversation:
+        """Write a conversation record."""
+        conv = Conversation(
+            conversation_id=conversation_id,
+            tenant_id=tenant_id,
+            folder_name=folder_name,
+            subject=subject,
+            smart_subject=smart_subject,
+            participants=participants,
+            messages=messages,
+            earliest_date=earliest_date,
+            latest_date=latest_date,
+            storage_uri=storage_uri,
+            extra_data=extra_data,
+        )
+        self.session.merge(conv)
+        return conv
+
+    def write_attachment(
+        self,
+        *,
+        attachment_id: uuid.UUID,
+        conversation_id: uuid.UUID,
+        filename: Optional[str] = None,
+        content_type: Optional[str] = None,
+        size_bytes: Optional[int] = None,
+        storage_uri: Optional[str] = None,
+        status: str = "pending",
+    ) -> Attachment:
+        """Write an attachment record."""
+        att = Attachment(
+            attachment_id=attachment_id,
+            conversation_id=conversation_id,
+            filename=filename,
+            content_type=content_type,
+            size_bytes=size_bytes,
+            storage_uri=storage_uri,
+            status=status,
+        )
+        self.session.merge(att)
+        return att
+
+    def write_chunk(
+        self,
+        *,
+        chunk_id: uuid.UUID,
+        conversation_id: uuid.UUID,
+        text: str,
+        position: int = 0,
+        char_start: int = 0,
+        char_end: int = 0,
+        section_path: Optional[str] = None,
+        is_attachment: bool = False,
+        attachment_id: Optional[uuid.UUID] = None,
+        extra_data: Optional[Dict[str, Any]] = None,
+    ) -> Chunk:
+        """Write a single chunk record."""
+        chunk = Chunk(
+            chunk_id=chunk_id,
+            conversation_id=conversation_id,
+            attachment_id=attachment_id,
+            is_attachment=is_attachment,
+            text=text,
+            position=position,
+            char_start=char_start,
+            char_end=char_end,
+            section_path=section_path,
+            extra_data=extra_data,
+        )
+        self.session.merge(chunk)
+        return chunk
+
     def write_job_results(self, job: IngestJobRequest, results: Dict[str, Any]) -> None:
         """
         Write ingestion results to DB.
 
-        Ensures:
-        * Consistent tenant_id
-        * Referential integrity
-        * FTS updates
+        Expected results format:
+        {
+            "conversation": {...},
+            "attachments": [...],
+            "chunks": [...]
+        }
         """
         try:
-            # 1. Write threads
-            for thread_data in results.get("threads", []):
-                thread = Thread(
-                    thread_id=thread_data["thread_id"],
+            # 1. Write conversation
+            conv_data = results.get("conversation", {})
+            if conv_data:
+                self.write_conversation(
+                    conversation_id=conv_data["conversation_id"],
                     tenant_id=job.tenant_id,
-                    subject_norm=thread_data.get("subject_norm"),
-                    original_subject=thread_data.get("original_subject"),
-                    created_at=thread_data["created_at"],
-                    updated_at=thread_data["updated_at"],
-                    metadata_=thread_data.get("metadata", {}),
+                    folder_name=conv_data.get("folder_name", ""),
+                    subject=conv_data.get("subject"),
+                    smart_subject=conv_data.get("smart_subject"),
+                    participants=conv_data.get("participants"),
+                    messages=conv_data.get("messages"),
+                    earliest_date=conv_data.get("earliest_date"),
+                    latest_date=conv_data.get("latest_date"),
+                    storage_uri=conv_data.get("storage_uri"),
+                    extra_data=conv_data.get("extra_data"),
                 )
-                self.session.merge(thread)  # Upsert
 
-            # 2. Write messages
-            for msg_data in results.get("messages", []):
-                message = Message(
-                    message_id=msg_data["message_id"],
-                    thread_id=msg_data["thread_id"],
-                    tenant_id=job.tenant_id,
-                    folder=msg_data.get("folder"),
-                    sent_at=msg_data.get("sent_at"),
-                    recv_at=msg_data.get("recv_at"),
-                    from_addr=msg_data["from_addr"],
-                    to_addrs=msg_data.get("to_addrs", []),
-                    cc_addrs=msg_data.get("cc_addrs", []),
-                    bcc_addrs=msg_data.get("bcc_addrs", []),
-                    subject=msg_data.get("subject"),
-                    body_plain=msg_data.get("body_plain"),
-                    body_html=msg_data.get("body_html"),
-                    has_quoted_mask=msg_data.get("has_quoted_mask", False),
-                    raw_storage_uri=msg_data.get("raw_storage_uri"),
-                    metadata_=msg_data.get("metadata", {}),
-                )
-                self.session.merge(message)
-
-            # 3. Write attachments
+            # 2. Write attachments
             for att_data in results.get("attachments", []):
-                # Text is stored in chunks, not on the attachment record
-                att_data.pop("text", None)
-                attachment = Attachment(
+                self.write_attachment(
                     attachment_id=att_data["attachment_id"],
-                    message_id=att_data["message_id"],
-                    tenant_id=job.tenant_id,
+                    conversation_id=att_data["conversation_id"],
                     filename=att_data.get("filename"),
-                    mime_type=att_data.get("mime_type"),
-                    storage_uri_raw=att_data.get("storage_uri_raw"),
-                    storage_uri_extracted=att_data.get("storage_uri_extracted"),
+                    content_type=att_data.get("content_type"),
+                    size_bytes=att_data.get("size_bytes"),
+                    storage_uri=att_data.get("storage_uri"),
                     status=att_data.get("status", "pending"),
-                    extracted_chars=att_data.get("extracted_chars", 0),
-                    metadata_=att_data.get("metadata", {}),
                 )
-                self.session.merge(attachment)
 
-            # 4. Write chunks - ensure all have canonical metadata
+            # 3. Write chunks with metadata
             for chunk_data in results.get("chunks", []):
-                # Determine source from chunk type
-                chunk_type = chunk_data.get("chunk_type", "unknown")
-                if chunk_data.get("attachment_id"):
-                    source = "attachment"
-                elif chunk_type in {"quoted", "quoted_history"}:
-                    source = "quoted_block"
-                else:
-                    source = "email_body"
-
-                # Ensure canonical metadata fields
-                chunk_data = ensure_chunk_metadata(
-                    chunk_data,
-                    source=source,
-                    pre_cleaned=chunk_data.get("pre_cleaned", True),
+                source = (
+                    "attachment" if chunk_data.get("is_attachment") else "email_body"
                 )
+                chunk_data = ensure_chunk_metadata(chunk_data, source=source)
 
-                chunk = Chunk(
+                self.write_chunk(
                     chunk_id=chunk_data["chunk_id"],
-                    thread_id=chunk_data["thread_id"],
-                    message_id=chunk_data.get("message_id"),
-                    attachment_id=chunk_data.get("attachment_id"),
-                    tenant_id=job.tenant_id,
-                    chunk_type=chunk_data["chunk_type"],
+                    conversation_id=chunk_data["conversation_id"],
                     text=chunk_data["text"],
-                    summary=chunk_data.get("summary"),
-                    section_path=chunk_data["section_path"],
-                    position=chunk_data["position"],
-                    char_start=chunk_data["char_start"],
-                    char_end=chunk_data["char_end"],
-                    embedding=chunk_data.get("embedding"),
-                    embedding_model=chunk_data.get("embedding_model"),
-                    metadata_=chunk_data.get("metadata", {}),
+                    position=chunk_data.get("position", 0),
+                    char_start=chunk_data.get("char_start", 0),
+                    char_end=chunk_data.get("char_end", 0),
+                    section_path=chunk_data.get("section_path"),
+                    is_attachment=chunk_data.get("is_attachment", False),
+                    attachment_id=chunk_data.get("attachment_id"),
+                    extra_data=chunk_data.get("extra_data"),
                 )
-                self.session.merge(chunk)
 
             self.session.commit()
             logger.info(f"Successfully wrote job results for {job.job_id}")
@@ -187,17 +219,13 @@ class DBWriter:
 
     def write_chunks_with_dedup(
         self,
-        chunks: list[Dict[str, Any]],
+        chunks: List[Dict[str, Any]],
         tenant_id: str,
+        conversation_id: uuid.UUID,
         source: str = "email_body",
     ) -> tuple[int, int]:
         """
         Write chunks with deduplication based on content_hash.
-
-        Args:
-            chunks: List of chunk data dictionaries
-            tenant_id: Tenant ID for RLS
-            source: Source type for metadata
 
         Returns:
             Tuple of (written_count, skipped_count)
@@ -206,15 +234,14 @@ class DBWriter:
         skipped = 0
 
         for chunk_data in chunks:
-            # Ensure metadata
             chunk_data = ensure_chunk_metadata(chunk_data, source=source)
-            content_hash = chunk_data["metadata"]["content_hash"]
+            content_hash = chunk_data["extra_data"]["content_hash"]
 
             # Check for existing chunk with same hash
             existing = (
                 self.session.query(Chunk)
-                .filter(Chunk.tenant_id == tenant_id)
-                .filter(Chunk.metadata_["content_hash"].astext == content_hash)
+                .filter(Chunk.conversation_id == conversation_id)
+                .filter(Chunk.extra_data["content_hash"].astext == content_hash)
                 .first()
             )
 
@@ -223,24 +250,18 @@ class DBWriter:
                 skipped += 1
                 continue
 
-            chunk = Chunk(
-                chunk_id=chunk_data["chunk_id"],
-                thread_id=chunk_data["thread_id"],
-                message_id=chunk_data.get("message_id"),
-                attachment_id=chunk_data.get("attachment_id"),
-                tenant_id=tenant_id,
-                chunk_type=chunk_data["chunk_type"],
+            self.write_chunk(
+                chunk_id=chunk_data.get("chunk_id", uuid.uuid4()),
+                conversation_id=conversation_id,
                 text=chunk_data["text"],
-                summary=chunk_data.get("summary"),
-                section_path=chunk_data["section_path"],
-                position=chunk_data["position"],
-                char_start=chunk_data["char_start"],
-                char_end=chunk_data["char_end"],
-                embedding=chunk_data.get("embedding"),
-                embedding_model=chunk_data.get("embedding_model"),
-                metadata_=chunk_data.get("metadata", {}),
+                position=chunk_data.get("position", 0),
+                char_start=chunk_data.get("char_start", 0),
+                char_end=chunk_data.get("char_end", 0),
+                section_path=chunk_data.get("section_path"),
+                is_attachment=chunk_data.get("is_attachment", False),
+                attachment_id=chunk_data.get("attachment_id"),
+                extra_data=chunk_data.get("extra_data"),
             )
-            self.session.add(chunk)
             written += 1
 
         self.session.commit()

@@ -1,0 +1,60 @@
+{
+    "subject": "Re: Project Cortex Update",
+    "smart_subject": "Cortex Project Status Check-in",
+    "folder": "Inbox",
+    "messages": [
+        {
+            "message_id": "<original-msg-001@example.com>",
+            "date": "2025-12-10T09:00:00Z",
+            "from": {
+                "name": "Alice Manager",
+                "smtp": "alice@example.com"
+            },
+            "to": [
+                {
+                    "name": "Bob Developer",
+                    "smtp": "bob@example.com"
+                }
+            ],
+            "cc": [],
+            "body": "Hi Bob,\n\nCan you give me an update on the Cortex implementation?\n\nThanks,\nAlice"
+        },
+        {
+            "message_id": "<reply-msg-002@example.com>",
+            "date": "2025-12-10T09:30:00Z",
+            "from": {
+                "name": "Bob Developer",
+                "smtp": "bob@example.com"
+            },
+            "to": [
+                {
+                    "name": "Alice Manager",
+                    "smtp": "alice@example.com"
+                }
+            ],
+            "cc": [],
+            "body": "Hi Alice,\n\nWe are currently in the testing phase. The database migrations are looking good.\n\nBest,\nBob\n\n> Hi Bob,\n> Can you give me an update..."
+        },
+        {
+            "message_id": "<reply-msg-003@example.com>",
+            "date": "2025-12-10T10:00:00Z",
+            "from": {
+                "name": "Alice Manager",
+                "smtp": "alice@example.com"
+            },
+            "to": [
+                {
+                    "name": "Bob Developer",
+                    "smtp": "bob@example.com"
+                }
+            ],
+            "cc": [
+                {
+                    "name": "Charlie Stakeholder",
+                    "smtp": "charlie@example.com"
+                }
+            ],
+            "body": "Great news! Let's schedule a demo for Friday.\n\n- Alice"
+        }
+    ]
+}

@@ -1,16 +1,16 @@
 """
 CLI wrapper/orchestrator around mailroom.process_job.
+
+Simplified for new Conversation-based schema (no IngestJob table).
 """
 from __future__ import annotations
 
 import logging
 import uuid
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 from cortex.config.loader import get_config
-from cortex.db.models import IngestJob
-from cortex.db.session import SessionLocal, set_session_tenant
 from cortex.ingestion.mailroom import process_job
 from cortex.ingestion.models import IngestJobRequest, IngestJobSummary
 from cortex.ingestion.s3_source import S3SourceHandler
@@ -42,41 +42,6 @@ class IngestionProcessor:
         self.s3_handler = S3SourceHandler()
         self.stats = ProcessingStats()
 
-    def _persist_job(
-        self,
-        job_request: IngestJobRequest,
-        *,
-        status: str,
-        stats: Dict[str, Any] | None = None,
-        metadata: Dict[str, Any] | None = None,
-    ) -> None:
-        with SessionLocal() as session:
-            set_session_tenant(session, job_request.tenant_id)
-            job = IngestJob(
-                job_id=job_request.job_id,
-                tenant_id=job_request.tenant_id,
-                source_type=job_request.source_type,
-                source_uri=job_request.source_uri,
-                status=status,
-                options=job_request.options,
-                stats=stats or {},
-                metadata_=metadata or {},
-            )
-            session.merge(job)
-            session.commit()
-
-    def _update_job(
-        self, job_request: IngestJobRequest, summary: IngestJobSummary
-    ) -> None:
-        status = _derive_status(summary)
-        stats = summary.model_dump(mode="json")
-        metadata = {
-            "prefix": job_request.source_uri,
-            "problems": [p.model_dump() for p in summary.problems],
-            "aborted_reason": summary.aborted_reason,
-        }
-        self._persist_job(job_request, status=status, stats=stats, metadata=metadata)
-
     def _build_job_request(self, folder_prefix: str) -> IngestJobRequest:
         return IngestJobRequest(
             job_id=uuid.uuid4(),
@@ -87,62 +52,68 @@ class IngestionProcessor:
         )
 
     def process_folder(self, folder_prefix: str) -> Optional[IngestJobSummary]:
+        """Process a single folder and return summary."""
         job_request = self._build_job_request(folder_prefix)
         try:
-            self._persist_job(
-                job_request,
-                status="pending",
-                metadata={"prefix": folder_prefix},
-            )
             summary = process_job(job_request)
-            self._update_job(job_request, summary)
             self.stats.folders_processed += 1
             self.stats.jobs_created += 1
             return summary
-        except Exception as exc:  # broad catch to keep orchestrator resilient
+        except Exception as exc:
             logger.error("Ingestion failed for %s: %s", folder_prefix, exc)
             self.stats.errors += 1
-            try:
-                self._persist_job(
-                    job_request,
-                    status="failed",
-                    stats={"error": str(exc)},
-                    metadata={"prefix": folder_prefix},
-                )
-            except Exception:
-                logger.exception("Failed to record job failure for %s", folder_prefix)
             return None
 
     def run_full_ingestion(
         self, prefix: str = "Outlook/", limit: Optional[int] = None
     ) -> List[IngestJobSummary]:
-        logger.info("Starting ingestion scan for prefix %s", prefix)
+        """Run full ingestion with parallel workers for GPU saturation."""
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        num_workers = self.config.processing.num_workers
+        logger.info(
+            "Starting ingestion scan for prefix %s with %d workers", prefix, num_workers
+        )
         summaries: List[IngestJobSummary] = []
 
         folders = list(
             self.s3_handler.list_conversation_folders(prefix=prefix, limit=limit)
         )
-        for folder in folders:
-            summary = self.process_folder(folder.prefix)
-            if summary:
-                summaries.append(summary)
+        logger.info("Found %d folders to process", len(folders))
+
+        with ThreadPoolExecutor(max_workers=num_workers) as executor:
+            futures = {
+                executor.submit(self.process_folder, folder.prefix): folder
+                for folder in folders
+            }
+
+            for i, future in enumerate(as_completed(futures), 1):
+                try:
+                    summary = future.result()
+                    if summary:
+                        summaries.append(summary)
+
+                    if i % 100 == 0:
+                        logger.info(
+                            "Progress: %d/%d folders processed", i, len(folders)
+                        )
+                except Exception as exc:
+                    folder = futures[future]
+                    logger.error("Failed to process %s: %s", folder.prefix, exc)
 
         return summaries
 
     def process_batch(self, folders: List[Any], job_id: str) -> IngestJobSummary:
-        """
-        Process a batch of folders as a single aggregate job.
+        """Process a batch of folders with parallel workers for GPU saturation."""
+        import threading
+        from concurrent.futures import ThreadPoolExecutor, as_completed
 
-        Args:
-            folders: List of folders to process (S3ConversationFolder objects)
-            job_id: The ID of the parent job
+        num_workers = self.config.processing.num_workers
+        logger.info(
+            f"Processing batch of {len(folders)} folders for job {job_id} "
+            f"with {num_workers} parallel workers"
+        )
 
-        Returns:
-            Aggregated stats for the batch
-        """
-        logger.info(f"Processing batch of {len(folders)} folders for job {job_id}")
-
-        # Initialize aggregate summary/stats
         agg_stats = IngestJobSummary(job_id=job_id, tenant_id=self.tenant_id)
         agg_stats.folders_processed = 0
         agg_stats.threads_created = 0
@@ -151,29 +122,56 @@ class IngestionProcessor:
         agg_stats.errors = 0
         agg_stats.skipped = 0
 
-        for folder in folders:
-            # We treat each folder as a sub-job or just process it
-            # Since process_folder handles its own persistence, we just aggregate stats here
-            # Note: process_folder persists individual job records.
-            # If we want a single large job, we might need to refactor,
-            # but for now we aggregate the returns.
+        # Thread-safe counter for progress tracking
+        stats_lock = threading.Lock()
+        progress = {"count": 0}
 
-            # The input folders are likely S3ConversationFolder objects from s3_source
+        def process_single(folder) -> Optional[IngestJobSummary]:
             prefix = folder.prefix
-            summary = self.process_folder(prefix)
+            return self.process_folder(prefix)
 
-            if summary:
-                if summary.aborted_reason or summary.problems:
-                    agg_stats.errors += 1
-                else:
-                    agg_stats.folders_processed += 1
+        with ThreadPoolExecutor(max_workers=num_workers) as executor:
+            futures = {executor.submit(process_single, f): f for f in folders}
 
-                agg_stats.threads_created += 1  # 1 thread per folder usually
-                agg_stats.chunks_created += summary.chunks_created
-                agg_stats.embeddings_generated += summary.embeddings_generated
-            else:
-                agg_stats.errors += 1
+            for future in as_completed(futures):
+                folder = futures[future]
+                try:
+                    summary = future.result()
 
+                    with stats_lock:
+                        progress["count"] += 1
+                        current_count = progress["count"]
+
+                        if summary:
+                            if summary.aborted_reason or summary.problems:
+                                agg_stats.errors += 1
+                            else:
+                                agg_stats.folders_processed += 1
+
+                            agg_stats.threads_created += 1
+                            agg_stats.chunks_created += summary.chunks_created
+                            agg_stats.embeddings_generated += (
+                                summary.embeddings_generated
+                            )
+                        else:
+                            agg_stats.errors += 1
+
+                        # Log progress every 100 folders
+                        if current_count % 100 == 0:
+                            logger.info(
+                                f"Progress: {current_count}/{len(folders)} folders, "
+                                f"{agg_stats.chunks_created} chunks"
+                            )
+
+                except Exception as exc:
+                    logger.error(f"Future failed for {folder.prefix}: {exc}")
+                    with stats_lock:
+                        agg_stats.errors += 1
+
+        logger.info(
+            f"Batch complete: {agg_stats.folders_processed} folders, "
+            f"{agg_stats.chunks_created} chunks, {agg_stats.errors} errors"
+        )
         return agg_stats
 
 

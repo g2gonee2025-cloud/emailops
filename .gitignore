@@ -332,3 +332,4 @@ k8s/do-tor1-emailops-k8s-kubeconfig.yaml
 temp_validation_s3_20/
 
 temp_validation_s3/
+kube-state-metrics/

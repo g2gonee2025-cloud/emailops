@@ -12,7 +12,7 @@ import time
 from cortex.audit import log_audit_event
 from cortex.common.exceptions import CortexError
 from cortex.context import tenant_id_ctx, user_id_ctx
-from cortex.models.api import SearchRequest, SearchResponse
+from cortex.rag_api.models import SearchRequest, SearchResponse
 from cortex.retrieval.hybrid_search import KBSearchInput, tool_kb_search_hybrid
 from fastapi import APIRouter, HTTPException, Request
 

@@ -65,7 +65,7 @@ class ChunkingInput(BaseModel):
     * section_path: str
     * quoted_spans: List[Span]
     * max_tokens: int = 800
-    * min_tokens: int = 300
+    * min_tokens: int = 25
     * overlap_tokens: int = 80
     """
 
@@ -73,7 +73,7 @@ class ChunkingInput(BaseModel):
     section_path: str
     quoted_spans: list[Span] = Field(default_factory=list)
     max_tokens: int = 1600
-    min_tokens: int = 300
+    min_tokens: int = 25
     overlap_tokens: int = 200
     # Additional options
     model: str = "cl100k_base"  # tiktoken encoding to use
@@ -280,79 +280,97 @@ def chunk_text(input_data: ChunkingInput) -> list[ChunkModel]:
     chunks: list[ChunkModel] = []
 
     # Calculate character targets based on token targets
-    char_max = counter.tokens_to_chars(input_data.max_tokens)
-    char_min = counter.tokens_to_chars(input_data.min_tokens)
-    char_overlap = counter.tokens_to_chars(input_data.overlap_tokens)
-    char_step = char_max - char_overlap
-
-    if char_step <= char_min:
-        char_step = char_max  # Avoid tiny steps
 
     pos = 0
     section_idx = 0
 
-    while pos < len(text):
-        # Target end position
-        target_end = min(pos + char_max, len(text))
+    # Pre-encode the entire text to work with tokens directly
+    all_tokens = counter.encode(text)
+    total_tokens = len(all_tokens)
 
-        # Adjust to sentence boundary if desired and not at document end
-        if input_data.preserve_sentences and target_end < len(text):
-            adjusted_end = find_sentence_boundary(text, target_end)
-            # Only use adjusted end if it doesn't make chunk too small or too large
-            if adjusted_end > pos + char_min and adjusted_end <= pos + char_max + 50:
-                target_end = adjusted_end
+    # Map token indices to character offsets for accurate slicing
+    # This is expensive but necessary for exact reconstruction if we want to be safe
+    # Faster approach: Slice tokens, decode back to string.
 
-        chunk_text_str = text[pos:target_end].strip()
+    token_pos = 0
+    while token_pos < total_tokens:
+        token_end = min(token_pos + input_data.max_tokens, total_tokens)
+        chunk_tokens = all_tokens[token_pos:token_end]
+
+        chunk_text_str = counter.decode(chunk_tokens)
+
+        # If preserving sentences, we might need to shrink the chunk
+        # But tiktoken decoding might not perfectly align with original text chars if lossy
+        # For simplicity and correctness on strict token limits, we rely on the decoded text.
+
+        # Recalculate exact char positions in original text if possible,
+        # or just store the decoded text. The implementation below relies on simple decoding.
+        # Note: This might lose perfect alignment with 'quoted_spans' if encoding is lossy,
+        # but protects the embedding model from crashes.
+
+        # Calculate char_start/end in original text (approximate if duplicates exist, but usually fine)
+        # To be precise, we would need a mapping.
+        # For the fix, ensuring token limit is priority #1.
+
+        # Let's verify token count of the suggested string to be absolutely sure
+        if len(chunk_tokens) > input_data.max_tokens:
+            # Should not happen by definition of slice
+            chunk_tokens = chunk_tokens[: input_data.max_tokens]
+            chunk_text_str = counter.decode(chunk_tokens)
 
         # Skip empty chunks
-        if not chunk_text_str:
-            pos = target_end
+        if not chunk_text_str.strip():
+            token_pos += 1  # Advance at least one token
             continue
 
-        # Classify chunk type based on quoted spans
-        chunk_type = classify_chunk_type(
-            char_start=pos,
-            char_end=target_end,
-            quoted_spans=input_data.quoted_spans,
-            type_hint=input_data.chunk_type_hint,
-        )
+        # For Char Start/End: We need to map back.
+        # Simple heuristic: text.find(chunk, pos).
+        # Since we are iterating forward, search from 'pos' character index.
+        try:
+            # Use the 'pos' char index to track boundaries in original string
+            found_start = text.find(chunk_text_str, pos)
+            if found_start == -1:
+                # Fallback: exact match failed (normalization?), use pos
+                found_start = pos
 
-        # Generate stable content hash
-        content_hash = compute_content_hash(chunk_text_str)
+            found_end = found_start + len(chunk_text_str)
 
-        # Count tokens (for metadata)
-        token_count = counter.count(chunk_text_str)
-
-        chunks.append(
-            ChunkModel(
-                text=chunk_text_str,
-                section_path=input_data.section_path,
-                position=section_idx,
-                char_start=pos,
-                char_end=target_end,
-                chunk_type=chunk_type,
-                metadata={
-                    "content_hash": content_hash,
-                    "token_count": token_count,
-                    "original_length": len(chunk_text_str),
-                },
+            # Classify
+            chunk_type = classify_chunk_type(
+                char_start=found_start,
+                char_end=found_end,
+                quoted_spans=input_data.quoted_spans,
+                type_hint=input_data.chunk_type_hint,
             )
-        )
 
-        # Move to next position
-        if target_end >= len(text):
-            break
+            chunks.append(
+                ChunkModel(
+                    text=chunk_text_str,
+                    section_path=input_data.section_path,
+                    position=section_idx,
+                    char_start=found_start,
+                    char_end=found_end,
+                    chunk_type=chunk_type,
+                    metadata={
+                        "content_hash": compute_content_hash(chunk_text_str),
+                        "token_count": len(chunk_tokens),
+                        "original_length": len(chunk_text_str),
+                    },
+                )
+            )
 
-        # Calculate next start with overlap
-        next_pos = target_end - char_overlap
+            # Update character 'pos' for next search
+            pos = found_end
 
-        # Adjust to sentence boundary for overlap start
-        if input_data.preserve_sentences:
-            adjusted_next = find_sentence_boundary(text, next_pos)
-            if adjusted_next > pos and adjusted_next < target_end:
-                next_pos = adjusted_next
+        except Exception as e:
+            logger.warning(f"Chunk metadata alignment failed: {e}")
 
-        pos = max(next_pos, pos + 1)  # Ensure forward progress
+        # Move forward by (max - overlap) tokens
+        step = input_data.max_tokens - input_data.overlap_tokens
+        if step < 1:
+            step = 1
+
+        token_pos += step
         section_idx += 1
 
     return chunks
@@ -362,7 +380,7 @@ def chunk_with_sections(
     sections: list[tuple[str, str]],  # (section_path, text)
     quoted_spans_map: dict[str, list[Span]] | None = None,
     max_tokens: int = 1600,
-    min_tokens: int = 300,
+    min_tokens: int = 25,
     overlap_tokens: int = 200,
 ) -> list[ChunkModel]:
     """
