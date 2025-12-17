@@ -30,7 +30,14 @@ def _env(key: str, default: Any, value_type: type = str) -> Any:
         Environment variable value or default
     """
     env_key_new = f"OUTLOOKCORTEX_{key}"
-    value = os.getenv(env_key_new) or os.getenv(key)
+    env_key_legacy = f"EMAILOPS_{key}"
+
+    value = os.getenv(env_key_new)
+    if value is None:
+        value = os.getenv(env_key_legacy)
+    if value is None:
+        value = os.getenv(key)
+
     if value is None:
         return default
     try:

@@ -92,10 +92,9 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 
-# Test files
-test_*.py
-*_test.py
-tests/
+# Test files (allow committed regression tests)
+!tests/
+!tests/**
 
 # Jupyter Notebook
 .ipynb_checkpoints
