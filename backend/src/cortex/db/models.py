@@ -133,6 +133,8 @@ class Chunk(Base):
     chunk_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
+    # Denormalized tenant for efficient filtering in retrieval paths
+    tenant_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
     conversation_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("conversations.conversation_id", ondelete="CASCADE"),

@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reranker-qwen-8b
+  namespace: emailops
+  labels:
+    app: emailops
+    component: reranker
+spec:
+  # replicas: 1 # Managed by KEDA
+  selector:
+    matchLabels:
+      app: emailops
+      component: reranker
+  template:
+    metadata:
+      labels:
+        app: emailops
+        component: reranker
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9000"  # TEI exposes metrics on separate port
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: tei
+          image: ghcr.io/huggingface/text-embeddings-inference:turing-1.5
+          args:
+            - "--model-id"
+            - "Alibaba-NLP/Qwen3-Reranker-8B"
+            - "--port"
+            - "80"
+          resources:
+            requests:
+              nvidia.com/gpu: "1"
+              memory: "16Gi"
+            limits:
+              nvidia.com/gpu: "1"
+              memory: "24Gi"
+          ports:
+            - containerPort: 80
+              name: http
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: dshm
+            - mountPath: /data
+              name: model-cache
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+        - name: model-cache
+          persistentVolumeClaim:
+            claimName: llm-model-cache
+      tolerations:
+        - key: "nvidia.com/gpu"
+          operator: "Exists"
+          effect: "NoSchedule"
+      nodeSelector:
+        doks.digitalocean.com/node-pool: pool-gpu-h100
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reranker-api
+  namespace: emailops
+  labels:
+    app: emailops
+    component: reranker
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+    - port: 9000
+      targetPort: 9000
+      protocol: TCP
+      name: metrics  # TEI exposes Prometheus metrics on port 9000
+  selector:
+    app: emailops
+    component: reranker
+

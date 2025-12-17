@@ -7,7 +7,7 @@ metadata:
     app: emailops
     component: llm
 spec:
-  replicas: 1
+  # replicas: 1 # Managed by KEDA
   strategy:
     type: Recreate
   selector:
@@ -19,6 +19,10 @@ spec:
       labels:
         app: emailops
         component: llm
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
     spec:
       volumes:
         - name: dshm
@@ -92,7 +96,7 @@ spec:
           operator: "Exists"
           effect: "NoSchedule"
       nodeSelector:
-        doks.digitalocean.com/node-pool: pool-f4x80anpj
+        doks.digitalocean.com/node-pool: pool-gpu-h100
 ---
 apiVersion: v1
 kind: Service

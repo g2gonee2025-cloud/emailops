@@ -1,71 +1,58 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: embeddings-api
+  name: reranker-mxbai
   namespace: emailops
   labels:
     app: emailops
-    component: embeddings
+    component: reranker
 spec:
   # replicas: 1 # Managed by KEDA
-  strategy:
-    type: Recreate
   selector:
     matchLabels:
       app: emailops
-      component: embeddings
+      component: reranker
   template:
     metadata:
       labels:
         app: emailops
-        component: embeddings
+        component: reranker
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8000"
         prometheus.io/path: "/metrics"
     spec:
-      priorityClassName: emailops-high-priority
-      volumes:
-        - name: dshm
-          emptyDir:
-            medium: Memory
       containers:
         - name: vllm
           image: vllm/vllm-openai:latest
           args:
             - "--model"
-            - "tencent/KaLM-Embedding-Gemma3-12B-2511"
+            - "mixedbread-ai/mxbai-rerank-large-v2"
             - "--task"
-            - "embed"
-            # - "--revision"    # Optional: Removed to use default/latest
-            # - "CausalLM"      # Optional
-            - "--enforce-eager"
-            - "--trust-remote-code"
+            - "score"  # Cross-encoder/reranker mode
             - "--port"
             - "8000"
             - "--max-model-len"
             - "8192"
-            # Correct flag for controlling concurrency/batching
-            - "--max-num-seqs"
-            - "256"
+            - "--trust-remote-code"
           env:
             - name: HF_HUB_ENABLE_HF_TRANSFER
               value: "1"
+          resources:
+            requests:
+              nvidia.com/gpu: "1"
+              memory: "8Gi"
+              cpu: "2"
+            limits:
+              nvidia.com/gpu: "1"
+              memory: "16Gi"
+              cpu: "4"
           ports:
             - containerPort: 8000
               name: http
           volumeMounts:
             - mountPath: /dev/shm
               name: dshm
-          resources:
-            requests:
-              memory: "32Gi"
-              cpu: "4"
-              nvidia.com/gpu: "1"
-            limits:
-              memory: "40Gi"
-              cpu: "8"
-              nvidia.com/gpu: "1"
           startupProbe:
             httpGet:
               path: /health
@@ -76,8 +63,13 @@ spec:
             httpGet:
               path: /health
               port: 8000
-            initialDelaySeconds: 60
+            initialDelaySeconds: 30
             periodSeconds: 20
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 2Gi
       tolerations:
         - key: "nvidia.com/gpu"
           operator: "Exists"
@@ -88,11 +80,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: embeddings-api
+  name: reranker-api
   namespace: emailops
   labels:
     app: emailops
-    component: embeddings
+    component: reranker
 spec:
   type: ClusterIP
   ports:
@@ -102,4 +94,4 @@ spec:
       name: http
   selector:
     app: emailops
-    component: embeddings
+    component: reranker

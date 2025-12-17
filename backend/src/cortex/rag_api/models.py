@@ -94,9 +94,7 @@ class SummarizeThreadRequest(BaseModel):
     """Thread summarization request payload."""
 
     thread_id: str = Field(..., description="Thread to summarize")
-    max_length: int = Field(
-        default=500, description="Max summary length in words"
-    )
+    max_length: int = Field(default=500, description="Max summary length in words")
     tenant_id: Optional[str] = None
     user_id: Optional[str] = None
 

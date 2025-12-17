@@ -98,11 +98,13 @@ def extract_participants_from_conversation_txt(text: str) -> list[dict[str, Any]
         email = extract_email_from_field(field)
         if email and email not in seen_emails:
             seen_emails.add(email)
-            participants.append({
-                "name": _extract_display_name(field, email),
-                "smtp": email,
-                "role": role,
-            })
+            participants.append(
+                {
+                    "name": _extract_display_name(field, email),
+                    "smtp": email,
+                    "role": role,
+                }
+            )
 
     def process_field(field: str | None, role: str) -> None:
         """Process a field that may contain multiple recipients."""
@@ -131,7 +133,9 @@ def extract_participants_from_conversation_txt(text: str) -> list[dict[str, Any]
         # Process Cc (may contain multiple recipients)
         process_field(cc_field, "cc")
 
-    logger.debug("Extracted %d unique participants from Conversation.txt", len(participants))
+    logger.debug(
+        "Extracted %d unique participants from Conversation.txt", len(participants)
+    )
     return participants
 
 

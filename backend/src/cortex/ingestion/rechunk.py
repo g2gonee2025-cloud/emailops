@@ -1,14 +1,14 @@
-
 import logging
-import os
-from sqlalchemy import select
-from cortex.db.session import SessionLocal
+
+from cortex.chunking.chunker import ChunkingInput, chunk_text
 from cortex.db.models import Chunk
-from cortex.chunking.chunker import chunk_text, ChunkingInput
+from cortex.db.session import SessionLocal
+from sqlalchemy import select
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("rechunk")
+
 
 def rechunk_failed():
     session = SessionLocal()
@@ -26,7 +26,9 @@ def rechunk_failed():
         total_new = 0
 
         for bad_chunk in bad_chunks:
-            logger.info(f"Processing chunk {bad_chunk.chunk_id} (Length: {len(bad_chunk.text)} chars)")
+            logger.info(
+                f"Processing chunk {bad_chunk.chunk_id} (Length: {len(bad_chunk.text)} chars)"
+            )
 
             # Use the NEW chunker logic which respects token limits
             inp = ChunkingInput(
@@ -34,7 +36,7 @@ def rechunk_failed():
                 section_path=bad_chunk.section_path or "unknown",
                 max_tokens=1600,
                 overlap_tokens=200,
-                quoted_spans=[]
+                quoted_spans=[],
             )
 
             new_models = chunk_text(inp)
@@ -42,6 +44,7 @@ def rechunk_failed():
 
             for model in new_models:
                 new_chunk = Chunk(
+                    tenant_id=bad_chunk.tenant_id,
                     conversation_id=bad_chunk.conversation_id,
                     attachment_id=bad_chunk.attachment_id,
                     is_attachment=bad_chunk.is_attachment,
@@ -51,7 +54,7 @@ def rechunk_failed():
                     char_start=bad_chunk.char_start + model.char_start,
                     char_end=bad_chunk.char_start + model.char_end,
                     section_path=bad_chunk.section_path,
-                    extra_data={"rechunked_from": str(bad_chunk.chunk_id)}
+                    extra_data={"rechunked_from": str(bad_chunk.chunk_id)},
                 )
                 session.add(new_chunk)
                 total_new += 1
@@ -60,13 +63,16 @@ def rechunk_failed():
             session.delete(bad_chunk)
 
         session.commit()
-        logger.info(f"Success! Replaced {len(bad_chunks)} bad chunks with {total_new} valid chunks.")
+        logger.info(
+            f"Success! Replaced {len(bad_chunks)} bad chunks with {total_new} valid chunks."
+        )
 
     except Exception as e:
         logger.error(f"Failed to rechunk: {e}")
         session.rollback()
     finally:
         session.close()
+
 
 if __name__ == "__main__":
     rechunk_failed()

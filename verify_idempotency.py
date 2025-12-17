@@ -1,16 +1,15 @@
-
-import logging
-import sys
-import shutil
 import hashlib
 import json
+import logging
+import shutil
+import sys
 from pathlib import Path
-from datetime import datetime, timezone
 
 # Add backend/src to path so imports work
 sys.path.append("/root/workspace/emailops-vertex-ai/backend/src")
 
 from cortex.ingestion.conv_manifest.validation import scan_and_refresh
+
 
 def setup_test_env(root: Path):
     if root.exists():
@@ -39,7 +38,7 @@ def setup_test_env(root: Path):
         "folder": "test_conversation",
         "subject_label": "test_conversation",
         "message_count": 0,
-        "started_at_utc": "2025-01-01T10:00:00Z", # Matches file content
+        "started_at_utc": "2025-01-01T10:00:00Z",  # Matches file content
         "ended_at_utc": "2025-01-01T10:00:00Z",
         "attachment_count": 0,
         "paths": {
@@ -47,13 +46,14 @@ def setup_test_env(root: Path):
             "attachments_dir": "attachments/",
         },
         "sha256_conversation": expected_hash,
-        "messages": [{"id": "preserve_me"}], # Critical field to preserve
-        "smart_subject": "Preserved Subject"  # Critical field to preserve
+        "messages": [{"id": "preserve_me"}],  # Critical field to preserve
+        "smart_subject": "Preserved Subject",  # Critical field to preserve
     }
 
     (conv_dir / "manifest.json").write_text(json.dumps(manifest, indent=2))
 
     return root
+
 
 def run_test():
     logging.basicConfig(level=logging.INFO)
@@ -77,6 +77,7 @@ def run_test():
     finally:
         if test_root.exists():
             shutil.rmtree(test_root)
+
 
 if __name__ == "__main__":
     run_test()

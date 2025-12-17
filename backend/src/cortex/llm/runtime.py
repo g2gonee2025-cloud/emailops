@@ -297,16 +297,16 @@ class VLLMProvider(BaseProvider):
     - LLM: MiniMaxAI/MiniMax-M2 served via vLLM / NIM
       exposing the OpenAI-compatible ChatCompletions API.
 
-    - Embedding: tencent/KaLM-Embedding-Gemma3-12B-2511 via SentenceTransformers.
+    - Embedding: tencent/KaLM-Embedding-Gemma3-12B-2511 via vLLM API (OpenAI-compatible).
 
     Retrieval helpers:
-      - embed_queries()   -> SentenceTransformer.encode_query()
-      - embed_documents() -> SentenceTransformer.encode_document()
+      - embed_queries()   -> client.embeddings.create()
+      - embed_documents() -> client.embeddings.create()
     """
 
     def __init__(self) -> None:
         self._llm_client: Any | None = None
-        self._embed_model: Any | None = None
+        self._embed_client: Any | None = None
         self._lock = threading.RLock()
 
     # ------------- LLM client (MiniMax-M2 via OpenAI-compatible server) -------------
@@ -335,93 +335,98 @@ class VLLMProvider(BaseProvider):
             self._llm_client = OpenAI(BASE_URL=BASE_URL, api_key=api_key)
             return self._llm_client
 
-    # ------------- Embedding model (KaLM SentenceTransformer) -------------
-    def _ensure_embed_model(self) -> None:
-        if self._embed_model is not None:
-            return
+    # ------------- Embedding client (KaLM via vLLM API) -------------
+    @property
+    def embed_client(self):
+        if self._embed_client is not None:
+            return self._embed_client
         with self._lock:
-            if self._embed_model is not None:
-                return
+            if self._embed_client is not None:
+                return self._embed_client
+
+            # Dependencies check
             try:
-                import torch  # type: ignore
-                from sentence_transformers import SentenceTransformer  # type: ignore
-            except ImportError as e:  # pragma: no cover
+                from openai import OpenAI
+            except ImportError as e:
                 raise ConfigurationError(
-                    "Missing dependencies for embeddings. Install:\n"
-                    "  pip install -U sentence-transformers torch"
+                    "Missing dependency 'openai'. Install with: pip install -U openai"
                 ) from e
 
-            model_name = getattr(_config, "embed_model", None) or os.getenv(
-                "KALM_EMBED_MODEL", "tencent/KaLM-Embedding-Gemma3-12B-2511"
-            )
-            device = getattr(_config, "embed_device", None) or os.getenv(
-                "KALM_EMBED_DEVICE",
-                "cuda" if os.getenv("CUDA_VISIBLE_DEVICES") else "cpu",
-            )
-
-            model_kwargs: Dict[str, Any] = {}
-            if device.startswith("cuda"):
-                model_kwargs["torch_dtype"] = getattr(torch, "bfloat16", torch.float16)
-                model_kwargs["attn_implementation"] = "flash_attention_2"
-            else:
-                model_kwargs["torch_dtype"] = torch.float32
-
-            logger.info("Loading embedding model %s on %s...", model_name, device)
-            self._embed_model = SentenceTransformer(
-                model_name,
-                trust_remote_code=True,
-                device=device,
-                model_kwargs=model_kwargs,
+            # Endpoint resolution:
+            # 1. EMBED_ENDPOINT (standard)
+            # 2. DO_LLM_BASE_URL (legacy DigitalOcean scaler config)
+            # 3. K8s Service DNS (fallback)
+            base_url = (
+                os.getenv("EMBED_ENDPOINT")
+                or os.getenv("DO_LLM_BASE_URL")
+                or "http://embeddings-api.emailops.svc.cluster.local"
             )
 
-            max_len = getattr(_config, "embed_max_seq_length", 512)
-            cast(Any, self._embed_model).max_seq_length = int(max_len)
+            # Ensure /v1 suffix
+            if not base_url.endswith("/v1"):
+                base_url = f"{base_url.rstrip('/')}/v1"
 
-            # Hard check: we rely on these for retrieval
-            if not hasattr(self._embed_model, "encode_query") or not hasattr(
-                self._embed_model, "encode_document"
-            ):
-                raise ConfigurationError(
-                    "SentenceTransformer model does not expose encode_query/encode_document. "
-                    "Upgrade sentence-transformers and ensure trust_remote_code=True."
-                )
+            api_key = os.getenv("EMBED_API_KEY", "EMPTY")
+
+            logger.info("Initializing OpenAI client for Embeddings at %s", base_url)
+            self._embed_client = OpenAI(base_url=base_url, api_key=api_key)
+            return self._embed_client
+
+    def _ensure_embed_model(self) -> None:
+        # No-op: client is lazy-loaded in embed_client property
+        pass
 
     # ------------- Retrieval embeddings -------------
     def embed_documents(self, documents: List[str]) -> np.ndarray:
-        self._ensure_embed_model()
-        # Use config batch_size (default 256 for H200 GPU saturation)
+        if not documents:
+            return np.array([], dtype=np.float32)
+
+        client = self.embed_client
+
+        # Resolve model name
+        model_name = getattr(_config, "embed_model", None) or os.getenv(
+            "EMBED_MODEL",
+            os.getenv("KALM_EMBED_MODEL", "tencent/KaLM-Embedding-Gemma3-12B-2511"),
+        )
+
+        # Batching
         embedding_cfg = getattr(_config, "embedding", None)
+        # Default batch size 256 for H100/H200 efficiency
         batch_size = getattr(embedding_cfg, "batch_size", 256) if embedding_cfg else 256
+
+        all_embeddings = []
+
         try:
-            embeddings = cast(Any, self._embed_model).encode_document(
-                documents,
-                normalize_embeddings=True,
-                batch_size=batch_size,
-                show_progress_bar=False,
-                convert_to_numpy=True,
-            )
-            arr = np.asarray(embeddings, dtype=np.float32)
+            for i in range(0, len(documents), batch_size):
+                batch = documents[i : i + batch_size]
+
+                # Replace newlines if configured (common for retrieval)
+                # For Gemma-3-Embedding, it's usually robust, but consistency helps.
+                # batch = [d.replace("\n", " ") for d in batch]
+
+                resp = client.embeddings.create(
+                    input=batch, model=model_name, encoding_format="float"
+                )
+
+                # Extract embeddings and sort by index to ensure order
+                batch_data = sorted(resp.data, key=lambda x: x.index)
+                batch_embeddings = [d.embedding for d in batch_data]
+                all_embeddings.extend(batch_embeddings)
+
+            arr = np.asarray(all_embeddings, dtype=np.float32)
+            # vLLM/OpenAI embeddings are usually already normalized, but we enforce it for safety
             return self.normalize_l2(arr)
+
         except Exception as e:
-            raise ProviderError(f"KaLM encode_document failed: {e}") from e
+            # Fallback or error reporting
+            raise ProviderError(f"Embedding API failed: {e}") from e
 
     def embed_queries(self, queries: List[str]) -> np.ndarray:
-        self._ensure_embed_model()
-        # Use config batch_size (default 256 for H200 GPU saturation)
-        embedding_cfg = getattr(_config, "embedding", None)
-        batch_size = getattr(embedding_cfg, "batch_size", 256) if embedding_cfg else 256
-        try:
-            embeddings = cast(Any, self._embed_model).encode_query(
-                queries,
-                normalize_embeddings=True,
-                batch_size=batch_size,
-                show_progress_bar=False,
-                convert_to_numpy=True,
-            )
-            arr = np.asarray(embeddings, dtype=np.float32)
-            return self.normalize_l2(arr)
-        except Exception as e:
-            raise ProviderError(f"KaLM encode_query failed: {e}") from e
+        # For asymmetric models, queries often need a prefix (e.g. "params: query: ...")
+        # But KaLM-Embedding-Gemma3 usually handles raw text or uses specific instructions.
+        # We'll treat them matches documents for now unless specific instruction template is needed.
+        # If instruction is needed, it should be prepended here.
+        return self.embed_documents(queries)
 
     # ------------- BaseProvider interface (defaults to document embeddings) -------------
     def embed(self, texts: List[str]) -> np.ndarray:

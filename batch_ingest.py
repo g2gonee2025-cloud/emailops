@@ -11,14 +11,14 @@ import json
 import logging
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 # Add backend/src to path
 sys.path.insert(0, str(Path(__file__).parent / "backend" / "src"))
 
-from cortex.ingestion.models import IngestJobRequest, IngestJobSummary
+from cortex.ingestion.models import IngestJobSummary
 from cortex.ingestion.processor import IngestionProcessor
 from cortex.ingestion.s3_source import create_s3_source
 
@@ -40,7 +40,7 @@ class BatchStats:
         self.skipped = 0
         self.total_chunks = 0
         self.total_attachments = 0
-        self.errors: List[Dict[str, Any]] = []
+        self.errors: list[dict[str, Any]] = []
         self.start_time = time.time()
 
     def add_success(self, summary: IngestJobSummary) -> None:
@@ -61,7 +61,7 @@ class BatchStats:
             return self.processed / elapsed
         return 0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "total_folders": self.total_folders,
             "processed": self.processed,
@@ -152,14 +152,16 @@ def main():
     parser.add_argument("--tenant", default="default", help="Tenant ID")
     parser.add_argument("--limit", type=int, help="Max folders to process")
     parser.add_argument("--skip", type=int, default=0, help="Folders to skip")
-    parser.add_argument("--report-every", type=int, default=50, help="Progress interval")
+    parser.add_argument(
+        "--report-every", type=int, default=50, help="Progress interval"
+    )
     parser.add_argument("--output", help="Output JSON file for stats")
 
     args = parser.parse_args()
 
     logger.info("=" * 60)
     logger.info("BATCH INGESTION STARTING")
-    logger.info(f"Time: {datetime.now(timezone.utc).isoformat()}")
+    logger.info(f"Time: {datetime.now(UTC).isoformat()}")
     logger.info("=" * 60)
 
     stats = run_batch(

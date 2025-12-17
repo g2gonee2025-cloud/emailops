@@ -121,6 +121,7 @@ class DBWriter:
     def write_chunk(
         self,
         *,
+        tenant_id: str,
         chunk_id: uuid.UUID,
         conversation_id: uuid.UUID,
         text: str,
@@ -134,6 +135,7 @@ class DBWriter:
     ) -> Chunk:
         """Write a single chunk record."""
         chunk = Chunk(
+            tenant_id=tenant_id,
             chunk_id=chunk_id,
             conversation_id=conversation_id,
             attachment_id=attachment_id,
@@ -197,6 +199,7 @@ class DBWriter:
                 chunk_data = ensure_chunk_metadata(chunk_data, source=source)
 
                 self.write_chunk(
+                    tenant_id=job.tenant_id,
                     chunk_id=chunk_data["chunk_id"],
                     conversation_id=chunk_data["conversation_id"],
                     text=chunk_data["text"],
@@ -251,6 +254,7 @@ class DBWriter:
                 continue
 
             self.write_chunk(
+                tenant_id=tenant_id,
                 chunk_id=chunk_data.get("chunk_id", uuid.uuid4()),
                 conversation_id=conversation_id,
                 text=chunk_data["text"],

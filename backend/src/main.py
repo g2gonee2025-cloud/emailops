@@ -637,6 +637,14 @@ def create_app() -> FastAPI:
 # Create the application instance
 app = create_app()
 
+# Initialize Prometheus instrumentation
+try:
+    from prometheus_fastapi_instrumentator import Instrumentator
+
+    Instrumentator().instrument(app).expose(app)
+    logger.info("✓ Prometheus metrics exposed at /metrics")
+except ImportError:
+    logger.warning("prometheus-fastapi-instrumentator not found; metrics disabled")
 
 # ---------------------------------------------------------------------------
 # For running directly with uvicorn

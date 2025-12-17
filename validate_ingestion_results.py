@@ -8,14 +8,15 @@ Validates the results claimed in the walkthrough:
 - 8,253 attachments processed
 - 0 failures
 """
-import sys
 import os
+import sys
 
 # Add backend/src to path
 sys.path.insert(0, os.path.join(os.getcwd(), "backend", "src"))
 
-from sqlalchemy import create_engine, text, inspect
 from cortex.config.loader import get_config
+from sqlalchemy import create_engine, inspect, text
+
 
 def validate_ingestion_results():
     print("=" * 60)
@@ -27,7 +28,7 @@ def validate_ingestion_results():
     try:
         config = get_config()
         db_url = config.database.url
-        masked = db_url.split('@')[-1] if '@' in db_url else "..."
+        masked = db_url.split("@")[-1] if "@" in db_url else "..."
         print(f"    Database: ...@{masked}")
     except Exception as e:
         print(f"❌ Failed to load config: {e}")
@@ -76,19 +77,27 @@ def validate_ingestion_results():
             if count == expected:
                 print(f"    ✅ {table}: {count:,} (exact match)")
             elif abs(diff_pct) < 1:  # Within 1%
-                print(f"    ⚠️  {table}: {count:,} (expected {expected:,}, diff: {diff:+,})")
+                print(
+                    f"    ⚠️  {table}: {count:,} (expected {expected:,}, diff: {diff:+,})"
+                )
             else:
-                print(f"    ❌ {table}: {count:,} (expected {expected:,}, diff: {diff:+,})")
+                print(
+                    f"    ❌ {table}: {count:,} (expected {expected:,}, diff: {diff:+,})"
+                )
 
     print("\n[5] Checking schema columns...")
     with engine.connect() as conn:
         # Check Chunk embedding dimension
-        emb_type = conn.execute(text("""
+        emb_type = conn.execute(
+            text(
+                """
             SELECT format_type(atttypid, atttypmod)
             FROM pg_attribute
             WHERE attrelid = 'chunks'::regclass
             AND attname = 'embedding'
-        """)).scalar()
+        """
+            )
+        ).scalar()
 
         if emb_type and "3840" in emb_type:
             print(f"    ✅ chunks.embedding: {emb_type}")
@@ -96,7 +105,7 @@ def validate_ingestion_results():
             print(f"    ⚠️  chunks.embedding: {emb_type} (expected vector(3840))")
 
         # Check key columns exist
-        chunk_cols = [c['name'] for c in inspector.get_columns("chunks")]
+        chunk_cols = [c["name"] for c in inspector.get_columns("chunks")]
         required_cols = ["char_start", "char_end", "section_path", "is_attachment"]
         for col in required_cols:
             if col in chunk_cols:
@@ -106,34 +115,40 @@ def validate_ingestion_results():
 
     print("\n[6] Checking embeddings status...")
     with engine.connect() as conn:
-        null_embeddings = conn.execute(text(
-            "SELECT COUNT(*) FROM chunks WHERE embedding IS NULL"
-        )).scalar()
-        non_null = conn.execute(text(
-            "SELECT COUNT(*) FROM chunks WHERE embedding IS NOT NULL"
-        )).scalar()
+        null_embeddings = conn.execute(
+            text("SELECT COUNT(*) FROM chunks WHERE embedding IS NULL")
+        ).scalar()
+        non_null = conn.execute(
+            text("SELECT COUNT(*) FROM chunks WHERE embedding IS NOT NULL")
+        ).scalar()
 
         print(f"    Embeddings NULL:     {null_embeddings:,}")
         print(f"    Embeddings present:  {non_null:,}")
 
         if null_embeddings == results.get("chunks", 0):
-            print("    ✅ All chunks have NULL embeddings (as expected - no embedding generation)")
+            print(
+                "    ✅ All chunks have NULL embeddings (as expected - no embedding generation)"
+            )
         elif non_null > 0:
             print(f"    ℹ️  {non_null:,} chunks have embeddings")
 
     print("\n[7] Checking chunk size distribution...")
     with engine.connect() as conn:
-        stats = conn.execute(text("""
+        stats = conn.execute(
+            text(
+                """
             SELECT
                 MIN(LENGTH(text)) as min_len,
                 MAX(LENGTH(text)) as max_len,
                 AVG(LENGTH(text))::int as avg_len,
                 PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY LENGTH(text))::int as median_len
             FROM chunks
-        """)).fetchone()
+        """
+            )
+        ).fetchone()
 
         if stats:
-            print(f"    Text length stats:")
+            print("    Text length stats:")
             print(f"      Min:    {stats[0]:,} chars")
             print(f"      Max:    {stats[1]:,} chars")
             print(f"      Avg:    {stats[2]:,} chars")
@@ -142,7 +157,9 @@ def validate_ingestion_results():
     print("\n[8] Sampling data quality...")
     with engine.connect() as conn:
         # Sample a few conversations
-        sample = conn.execute(text("""
+        sample = conn.execute(
+            text(
+                """
             SELECT
                 folder_name,
                 subject,
@@ -151,7 +168,9 @@ def validate_ingestion_results():
             FROM conversations conv
             ORDER BY RANDOM()
             LIMIT 5
-        """)).fetchall()
+        """
+            )
+        ).fetchall()
 
         print("    Sample conversations:")
         for row in sample:

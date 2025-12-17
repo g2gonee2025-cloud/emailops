@@ -14,10 +14,26 @@ from uuid import uuid4
 
 from cortex.db.models import AuditLog
 from cortex.db.session import SessionLocal
-from cortex.models.rag import AuditEntry, PolicyDecision
 from cortex.observability import trace_operation
+from cortex.safety.policy_enforcer import PolicyDecision
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
+
+
+# AuditEntry model for structured audit data
+class AuditEntry(BaseModel):
+    """Structured audit entry for API responses."""
+
+    tenant_id: str
+    user_or_agent: str
+    action: str
+    input_snapshot: Dict[str, Any]
+    output_snapshot: Optional[Dict[str, Any]] = None
+    policy_decision: Optional[PolicyDecision] = None
+    ts: datetime
+    correlation_id: Optional[str] = None
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
 def log_audit_event(

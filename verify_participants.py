@@ -1,16 +1,17 @@
-
-import sys
+import json
 import os
 import shutil
-import boto3
+import sys
 from pathlib import Path
+
+import boto3
 from botocore.client import Config
-import json
 
 # Add backend/src to path
-sys.path.append(os.path.join(os.getcwd(), 'backend', 'src'))
+sys.path.append(os.path.join(os.getcwd(), "backend", "src"))
 from cortex.config.loader import get_config
 from cortex.ingestion.conv_manifest.validation import scan_and_refresh
+
 
 def run_test():
     # 1. Setup Temp Dir (using gitignored name)
@@ -33,35 +34,44 @@ def run_test():
         s3_config = config.storage
 
         session = boto3.session.Session()
-        client = session.client('s3',
+        client = session.client(
+            "s3",
             region_name=s3_config.region,
             endpoint_url=s3_config.endpoint_url,
             aws_access_key_id=s3_config.access_key,
             aws_secret_access_key=s3_config.secret_key,
-            config=Config(signature_version='s3v4')
+            config=Config(signature_version="s3v4"),
         )
 
         print("Listing S3 folders...")
-        resp = client.list_objects_v2(Bucket=s3_config.bucket_raw, Prefix="Outlook/", Delimiter="/")
-        prefixes = [p['Prefix'] for p in resp.get('CommonPrefixes', [])]
+        resp = client.list_objects_v2(
+            Bucket=s3_config.bucket_raw, Prefix="Outlook/", Delimiter="/"
+        )
+        prefixes = [p["Prefix"] for p in resp.get("CommonPrefixes", [])]
 
         target_prefixes = prefixes[:20]
-        print(f"Found {len(prefixes)} folders, selecting first {len(target_prefixes)}...")
+        print(
+            f"Found {len(prefixes)} folders, selecting first {len(target_prefixes)}..."
+        )
 
         for prefix in target_prefixes:
-            folder_name = prefix.rstrip('/').split('/')[-1]
+            folder_name = prefix.rstrip("/").split("/")[-1]
             local_folder = temp_dir / folder_name
             local_folder.mkdir()
 
-            sub_resp = client.list_objects_v2(Bucket=s3_config.bucket_raw, Prefix=prefix)
-            if 'Contents' not in sub_resp:
+            sub_resp = client.list_objects_v2(
+                Bucket=s3_config.bucket_raw, Prefix=prefix
+            )
+            if "Contents" not in sub_resp:
                 continue
 
-            for obj in sub_resp['Contents']:
-                key = obj['Key']
-                filename = key.split('/')[-1]
+            for obj in sub_resp["Contents"]:
+                key = obj["Key"]
+                filename = key.split("/")[-1]
                 if filename in ["Conversation.txt", "manifest.json"]:
-                    client.download_file(s3_config.bucket_raw, key, str(local_folder / filename))
+                    client.download_file(
+                        s3_config.bucket_raw, key, str(local_folder / filename)
+                    )
 
         print("Download complete. Running validation...")
 
@@ -81,11 +91,14 @@ def run_test():
                 with open(manifest_path) as f:
                     data = json.load(f)
                     print(f"Folder: {data.get('folder')}")
-                    print(f"Participants: {json.dumps(data.get('participants'), indent=2)}")
+                    print(
+                        f"Participants: {json.dumps(data.get('participants'), indent=2)}"
+                    )
                 break
 
     except Exception as e:
         print(f"Error during test: {e}")
+
 
 if __name__ == "__main__":
     run_test()

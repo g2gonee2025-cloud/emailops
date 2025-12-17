@@ -1,12 +1,12 @@
-
-import sys
-import os
 import logging
+import os
+import sys
+
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 # Add backend/src to path
-sys.path.append(os.path.join(os.getcwd(), 'backend', 'src'))
+sys.path.append(os.path.join(os.getcwd(), "backend", "src"))
 from cortex.config.loader import get_config
 from cortex.embeddings.client import get_embedding
 
@@ -14,14 +14,15 @@ from cortex.embeddings.client import get_embedding
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("fix_embeddings")
 
+
 def fix_embeddings():
     try:
         config = get_config()
         db_url = config.database.url
-        if 'sslmode' not in db_url:
-            db_url += '?sslmode=require'
+        if "sslmode" not in db_url:
+            db_url += "?sslmode=require"
 
-        logger.info(f"Connecting to DB...")
+        logger.info("Connecting to DB...")
         engine = create_engine(db_url)
         Session = sessionmaker(bind=engine)
         session = Session()
@@ -37,18 +38,19 @@ def fix_embeddings():
 
         # 2. Fetch chunks
         # batch size 50
-        offset = 0
         limit = 50
 
         total_fixed = 0
 
         while True:
-            fetch_sql = text("""
+            fetch_sql = text(
+                """
                 SELECT chunk_id, text
                 FROM chunks
                 WHERE embedding IS NULL
                 LIMIT :limit
-            """)
+            """
+            )
 
             rows = session.execute(fetch_sql, {"limit": limit}).fetchall()
             if not rows:
@@ -69,11 +71,13 @@ def fix_embeddings():
                     embedding = get_embedding(chunk_text)
 
                     # Update DB
-                    update_sql = text("""
+                    update_sql = text(
+                        """
                         UPDATE chunks
                         SET embedding = :emb
                         WHERE chunk_id = :id
-                    """)
+                    """
+                    )
 
                     # pgvector expects a list/array
                     session.execute(update_sql, {"emb": embedding, "id": chunk_id})
@@ -90,6 +94,7 @@ def fix_embeddings():
     except Exception as e:
         logger.error(f"Fatal error: {e}")
         raise
+
 
 if __name__ == "__main__":
     fix_embeddings()

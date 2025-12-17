@@ -1,22 +1,23 @@
 import re
-import os
 from pathlib import Path
+
 
 def parse_env_file(path):
     env_vars = {}
-    with open(path, 'r') as f:
+    with open(path, "r") as f:
         for line in f:
             line = line.strip()
-            if not line or line.startswith('#'):
+            if not line or line.startswith("#"):
                 continue
-            if '=' in line:
-                key, val = line.split('=', 1)
+            if "=" in line:
+                key, val = line.split("=", 1)
                 env_vars[key.strip()] = val.strip()
     return env_vars
 
+
 def parse_models_file(path):
     definitions = {}
-    with open(path, 'r') as f:
+    with open(path, "r") as f:
         content = f.read()
 
     # Regex to find _env("KEY", default) calls
@@ -37,11 +38,9 @@ def parse_models_file(path):
         else:
             default_val = default_raw
 
-        definitions[key] = {
-            'default': default_val,
-            'type': type_hint
-        }
+        definitions[key] = {"default": default_val, "type": type_hint}
     return definitions
+
 
 def main():
     root = Path("/root/workspace/emailops-vertex-ai")
@@ -69,11 +68,12 @@ def main():
         # Let's check for prefixed version in .env if simple key missing
         prefixed_key = f"OUTLOOKCORTEX_{key}"
         if env_val is None and model_def:
-             env_val = env_vars.get(prefixed_key)
-             if env_val:
-                 key_display = prefixed_key # Show the actual key found
+            env_val = env_vars.get(prefixed_key)
+            if env_val:
+                # key_display = prefixed_key  # Show the actual key found
+                pass
 
-        code_default = str(model_def['default']) if model_def else "N/A"
+        code_default = str(model_def["default"]) if model_def else "N/A"
         env_display = str(env_val) if env_val is not None else "N/A"
 
         status = ""
@@ -84,10 +84,14 @@ def main():
             v2 = env_display.lower()
 
             # Special handling for empty strings vs None
-            if v1 == "none" and v2 == "": # env empty string often means empty, code None means None. Mismatch?
-                 pass
+            if (
+                v1 == "none" and v2 == ""
+            ):  # env empty string often means empty, code None means None. Mismatch?
+                pass
 
-            if v1.replace('"','').replace("'", "") == v2.replace('"','').replace("'", ""):
+            if v1.replace('"', "").replace("'", "") == v2.replace('"', "").replace(
+                "'", ""
+            ):
                 status = "MATCH"
             else:
                 status = "MISMATCH"
@@ -106,7 +110,10 @@ def main():
         elif status == "ENV_ONLY":
             # Only show if it looks like a config var
             if key.isupper():
-                 print(f"{key:<30} | {code_default:<40} | {env_display:<40} | {status:<15}")
+                print(
+                    f"{key:<30} | {code_default:<40} | {env_display:<40} | {status:<15}"
+                )
+
 
 if __name__ == "__main__":
     main()

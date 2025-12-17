@@ -8,8 +8,8 @@ from __future__ import annotations
 import uuid
 from typing import Any, Optional
 
-from cortex.models.facts_ledger import CriticReview, FactsLedger
-from cortex.models.rag import Answer, DraftCritique, EmailDraft, ThreadSummary
+from cortex.domain_models.facts_ledger import CriticReview, FactsLedger
+from cortex.domain_models.rag import Answer, DraftCritique, EmailDraft, ThreadSummary
 from cortex.retrieval.hybrid_search import SearchResults
 from cortex.retrieval.query_classifier import QueryClassification
 from pydantic import BaseModel, Field

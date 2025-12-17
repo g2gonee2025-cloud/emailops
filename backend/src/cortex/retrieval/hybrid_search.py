@@ -10,6 +10,7 @@ import math
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Literal, Optional
 
+import requests
 from cortex.embeddings.client import EmbeddingsClient
 
 # Import QueryClassification from dedicated module per Blueprint §8.2
@@ -446,6 +447,7 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
         # 4. Vector search (if we have an embedding)
         vector_results = []
         if query_embedding is not None:
+            logger.info(f"Query embedding generated. Dim: {len(query_embedding)}")
             hnsw_ef_search = getattr(config.search, "hnsw_ef_search", None)
             vector_results = search_chunks_vector(
                 session,
@@ -455,6 +457,9 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
                 ef_search=hnsw_ef_search,
                 conversation_ids=nav_conversation_ids,
             )
+            logger.info(f"Vector search returned {len(vector_results)} chunks")
+        else:
+            logger.warning("Query embedding is None, skipping vector search")
 
         # Convert to SearchResultItem format
         fts_items = []
@@ -513,8 +518,22 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
         else:
             fused_results = fuse_rrf(fts_deduped, vector_deduped, k=60)
 
-        # 7. Lightweight rerank blending lexical/vector signals
-        fused_results = rerank_results(fused_results, alpha=config.search.rerank_alpha)
+        # 7. Reranking (External vs Lightweight)
+        if config.search.reranker_endpoint:
+            # Use Qwen/External Cross-Encoder
+            fused_results = _call_external_reranker(
+                config.search.reranker_endpoint,
+                args.query,
+                fused_results,
+                top_n=50,  # Rerank top 50 candidates
+            )
+            reranker_label = "expert-qwen-8b"
+        else:
+            # Lightweight blending
+            fused_results = rerank_results(
+                fused_results, alpha=config.search.rerank_alpha
+            )
+            reranker_label = f"{fusion_method}|alpha={config.search.rerank_alpha:.2f}"
 
         # 8. Get conversation timestamps for recency boost
         conversation_ids = list(
@@ -576,3 +595,80 @@ def _get_conversation_timestamps(
 
 # Backward compat alias
 _get_thread_timestamps = _get_conversation_timestamps
+
+
+def _call_external_reranker(
+    endpoint: str, query: str, results: List[SearchResultItem], top_n: int = 50
+) -> List[SearchResultItem]:
+    """
+    Call external reranker API (vLLM with mxbai-rerank-large-v2).
+
+    vLLM Rerank API format (per official docs):
+    POST /v1/rerank
+    {
+        "model": "model-name",
+        "query": "search query",
+        "documents": ["doc1", "doc2", ...]
+    }
+
+    Response:
+    {
+        "results": [
+            {"index": 0, "relevance_score": 0.95},
+            ...
+        ]
+    }
+    """
+    if not results:
+        return []
+
+    # Rerank only the top N candidates to save time/compute
+    candidates = results[:top_n]
+
+    # vLLM rerank payload: {"model": str, "query": str, "documents": List[str]}
+    # We truncate content to 4096 chars to ensure low latency, though model supports 8k+.
+    documents = [(c.content or c.snippet or "")[:4096] for c in candidates]
+
+    try:
+        # Use /v1/rerank endpoint (Jina/Cohere compatible)
+        rerank_url = endpoint.rstrip("/")
+        if not rerank_url.endswith("/v1/rerank"):
+            rerank_url = f"{rerank_url}/v1/rerank"
+
+        resp = requests.post(
+            rerank_url,
+            json={
+                "model": "mixedbread-ai/mxbai-rerank-large-v2",
+                "query": query,
+                "documents": documents,
+            },
+            timeout=15.0,  # Allow time for cross-encoder inference
+        )
+        resp.raise_for_status()
+
+        # Response is {"results": [{"index": int, "relevance_score": float}, ...]}
+        response_data = resp.json()
+        rankings = response_data.get("results", [])
+
+        reranked = []
+        for r in rankings:
+            idx = r.get("index", 0)
+            if idx >= len(candidates):
+                continue
+            item = candidates[idx]
+
+            # Update score with the high-fidelity cross-encoder score
+            rerank_score = r.get("relevance_score", r.get("score", 0.0))
+            item.rerank_score = rerank_score
+            item.score = rerank_score
+            item.metadata["rerank_score"] = rerank_score
+            item.metadata["rerank_model"] = "mxbai-rerank-large-v2"
+            reranked.append(item)
+
+        # Sort by rerank score descending
+        reranked.sort(key=lambda x: x.rerank_score or 0, reverse=True)
+        return reranked
+
+    except Exception as e:
+        logger.error(f"External reranker failed (falling back to fusion scores): {e}")
+        return results

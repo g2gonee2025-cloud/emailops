@@ -11,9 +11,8 @@ import re
 import uuid
 from typing import Any, Dict, List, Optional, Type
 
-from cortex.llm.client import complete_json, complete_text
-from cortex.models.facts_ledger import CriticReview, FactsLedger
-from cortex.models.rag import (
+from cortex.domain_models.facts_ledger import CriticReview, FactsLedger
+from cortex.domain_models.rag import (
     Answer,
     DraftCritique,
     DraftValidationScores,
@@ -27,6 +26,7 @@ from cortex.models.rag import (
     ThreadSummary,
     ToneStyle,
 )
+from cortex.llm.client import complete_json, complete_text
 from cortex.observability import get_logger, trace_operation
 from cortex.prompts import (
     PROMPT_ANSWER_QUESTION,

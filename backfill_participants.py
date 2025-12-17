@@ -5,18 +5,22 @@ Backfill participants for existing conversations.
 Parses Conversation.txt from S3 for each conversation and updates
 the participants JSONB column with deduplicated From/To/Cc addresses.
 """
-import sys
 import logging
+import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent / "backend" / "src"))
 
-from sqlalchemy import create_engine, text
 from cortex.config.loader import get_config
+from cortex.ingestion.conversation_parser import (
+    extract_participants_from_conversation_txt,
+)
 from cortex.ingestion.s3_source import S3SourceHandler
-from cortex.ingestion.conversation_parser import extract_participants_from_conversation_txt
+from sqlalchemy import create_engine, text
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 
@@ -54,7 +58,11 @@ def backfill_participants(limit: int | None = None, dry_run: bool = False):
             try:
                 # Build S3 prefix
                 prefix = f"Outlook/{folder_name}/"
-                folders = list(handler.list_conversation_folders(prefix=prefix.rstrip("/"), limit=1))
+                folders = list(
+                    handler.list_conversation_folders(
+                        prefix=prefix.rstrip("/"), limit=1
+                    )
+                )
 
                 if not folders:
                     logger.warning(f"No S3 folder found for: {folder_name}")
@@ -84,22 +92,31 @@ def backfill_participants(limit: int | None = None, dry_run: bool = False):
                     continue
 
                 if dry_run:
-                    logger.info(f"[DRY RUN] Would update {folder_name} with {len(participants)} participants")
+                    logger.info(
+                        f"[DRY RUN] Would update {folder_name} with {len(participants)} participants"
+                    )
                 else:
                     # Update the database using raw psycopg2-style params
                     import json
-                    from sqlalchemy import bindparam
-                    stmt = text("""
+
+                    stmt = text(
+                        """
                         UPDATE conversations
                         SET participants = CAST(:participants AS jsonb)
                         WHERE conversation_id = CAST(:conv_id AS uuid)
-                    """)
+                    """
+                    )
                     conn.execute(
                         stmt,
-                        {"participants": json.dumps(participants), "conv_id": str(conv_id)}
+                        {
+                            "participants": json.dumps(participants),
+                            "conv_id": str(conv_id),
+                        },
                     )
                     conn.commit()
-                    logger.info(f"Updated {folder_name}: {len(participants)} participants")
+                    logger.info(
+                        f"Updated {folder_name}: {len(participants)} participants"
+                    )
 
                 updated += 1
 
@@ -107,14 +124,21 @@ def backfill_participants(limit: int | None = None, dry_run: bool = False):
                 logger.error(f"Error processing {folder_name}: {e}")
                 errors += 1
 
-        logger.info(f"Backfill complete: {updated} updated, {skipped} skipped, {errors} errors")
+        logger.info(
+            f"Backfill complete: {updated} updated, {skipped} skipped, {errors} errors"
+        )
         return updated, skipped, errors
 
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="Backfill participants for conversations")
-    parser.add_argument("--limit", type=int, help="Limit number of conversations to process")
+
+    parser = argparse.ArgumentParser(
+        description="Backfill participants for conversations"
+    )
+    parser.add_argument(
+        "--limit", type=int, help="Limit number of conversations to process"
+    )
     parser.add_argument("--dry-run", action="store_true", help="Don't write to DB")
     args = parser.parse_args()
 

@@ -576,6 +576,10 @@ class SearchConfig(BaseModel):
     rerank_alpha: float = Field(
         default=0.35, ge=0.0, le=1.0, description="Reranking alpha blending factor"
     )
+    reranker_endpoint: Optional[str] = Field(
+        default_factory=lambda: _env("RERANKER_ENDPOINT", None),
+        description="External reranker endpoint (vLLM serving mxbai-rerank-large-v2)",
+    )
 
     model_config = {"extra": "forbid"}
 

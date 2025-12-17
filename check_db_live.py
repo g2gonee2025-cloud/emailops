@@ -1,4 +1,5 @@
 import os
+
 import sqlalchemy as sa
 from sqlalchemy import inspect, text
 
@@ -8,13 +9,18 @@ if not db_url:
     print("❌ No DB_URL found in environment")
     exit(1)
 
-print(f"Connecting to: {db_url.split('@')[-1]}...") # Mask password
+print(f"Connecting to: {db_url.split('@')[-1]}...")  # Mask password
 engine = sa.create_engine(db_url)
 inspector = inspect(engine)
 
 required_tables = [
-    "threads", "messages", "attachments", "chunks",
-    "ingest_jobs", "facts_ledger", "audit_log"
+    "threads",
+    "messages",
+    "attachments",
+    "chunks",
+    "ingest_jobs",
+    "facts_ledger",
+    "audit_log",
 ]
 
 print("\n--- Table Check ---")
@@ -38,19 +44,23 @@ with engine.connect() as conn:
     # checking atdtypmod or pg_attribute is deeper.
 
     # Simple check: Does column exist?
-    cols = [c['name'] for c in inspector.get_columns("chunks")]
+    cols = [c["name"] for c in inspector.get_columns("chunks")]
     if "embedding" in cols:
         print("✅ Column 'chunks.embedding' exists")
     else:
         print("❌ Column 'chunks.embedding' MISSING")
 
     # Check for FTS trigger on messages
-    result = conn.execute(text("""
+    result = conn.execute(
+        text(
+            """
         SELECT trigger_name
         FROM information_schema.triggers
         WHERE event_object_table = 'messages'
         AND trigger_name = 'tsvector_update_messages'
-    """)).scalar()
+    """
+        )
+    ).scalar()
 
     if result:
         print(f"✅ Trigger '{result}' exists on messages")
@@ -58,12 +68,16 @@ with engine.connect() as conn:
         print("❌ Trigger 'tsvector_update_messages' MISSING")
 
     # Check for FTS trigger on chunks
-    result = conn.execute(text("""
+    result = conn.execute(
+        text(
+            """
         SELECT trigger_name
         FROM information_schema.triggers
         WHERE event_object_table = 'chunks'
         AND trigger_name = 'tsvector_update_chunks'
-    """)).scalar()
+    """
+        )
+    ).scalar()
 
     if result:
         print(f"✅ Trigger '{result}' exists on chunks")

@@ -1,10 +1,10 @@
+import json
+import os
+import shutil
+import sys
+from pathlib import Path
 
 import boto3
-import os
-import sys
-import shutil
-import json
-from pathlib import Path
 
 # Add backend to path
 sys.path.append("/root/workspace/emailops-vertex-ai/backend/src")
@@ -14,11 +14,12 @@ from cortex.ingestion.conv_manifest.validation import scan_and_refresh
 LIMIT = 200
 TEMP_DIR = Path("temp_s3_validation")
 
+
 def load_env_vars():
     """Load S3 credentials from .env manually."""
     env_vars = {}
     try:
-        with open(".env", "r") as f:
+        with open(".env") as f:
             for line in f:
                 line = line.strip()
                 if not line or line.startswith("#"):
@@ -29,6 +30,7 @@ def load_env_vars():
     except Exception as e:
         print(f"Error loading .env: {e}")
     return env_vars
+
 
 def main():
     if TEMP_DIR.exists():
@@ -41,12 +43,11 @@ def main():
     session = boto3.Session(
         aws_access_key_id=env.get("S3_ACCESS_KEY"),
         aws_secret_access_key=env.get("S3_SECRET_KEY"),
-        region_name=env.get("S3_REGION", "nyc3")
+        region_name=env.get("S3_REGION", "nyc3"),
     )
 
     s3 = session.client(
-        "s3",
-        endpoint_url=env.get("S3_ENDPOINT", "https://nyc3.digitaloceanspaces.com")
+        "s3", endpoint_url=env.get("S3_ENDPOINT", "https://nyc3.digitaloceanspaces.com")
     )
     bucket = env.get("S3_BUCKET_RAW", "emailops-bucket")
 
@@ -54,7 +55,7 @@ def main():
 
     # List objects to find conversation folders
     # Assuming structure is flat or has a common prefix like "Outlook/"
-    paginator = s3.get_paginator('list_objects_v2')
+    paginator = s3.get_paginator("list_objects_v2")
 
     found_folders = set()
     downloads_count = 0
@@ -79,7 +80,9 @@ def main():
                 # Download manifest and Conversation.txt
                 local_folder = TEMP_DIR / folder_prefix
                 local_folder.mkdir(parents=True, exist_ok=True)
-                (local_folder / "attachments").mkdir(exist_ok=True) # Fake attachments dir
+                (local_folder / "attachments").mkdir(
+                    exist_ok=True
+                )  # Fake attachments dir
 
                 try:
                     # Download manifest
@@ -88,7 +91,9 @@ def main():
                     # Download conversation text (needed for valid refresh)
                     conv_key = f"{folder_prefix}/Conversation.txt"
                     try:
-                        s3.download_file(bucket, conv_key, str(local_folder / "Conversation.txt"))
+                        s3.download_file(
+                            bucket, conv_key, str(local_folder / "Conversation.txt")
+                        )
                     except Exception:
                         # Stub if missing (unlikely if valid)
                         (local_folder / "Conversation.txt").write_text("Stub content")
@@ -132,13 +137,13 @@ def main():
             data = json.loads(folder_path.read_text())
             # Check for critical fields that naive validation deletes
             if "messages" not in data:
-                 print(f"FAILURE: {folder_path} lost 'messages' key!")
-                 continue
+                print(f"FAILURE: {folder_path} lost 'messages' key!")
+                continue
 
             messages = data["messages"]
             if not isinstance(messages, list):
-                 print(f"FAILURE: {folder_path} 'messages' is not a list!")
-                 continue
+                print(f"FAILURE: {folder_path} 'messages' is not a list!")
+                continue
 
             # If we reached here, it's good
             preserved += 1
@@ -151,6 +156,7 @@ def main():
         print("\nSUCCESS: All manifests retained their rich data.")
     else:
         print("\nFAILURE: Data loss detected.")
+
 
 if __name__ == "__main__":
     main()
