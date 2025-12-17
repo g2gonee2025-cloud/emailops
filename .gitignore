@@ -97,6 +97,10 @@ test_*.py
 *_test.py
 tests/
 
+# Allow tracked regression tests
+!tests/
+!tests/test_identity_decoder.py
+
 # Jupyter Notebook
 .ipynb_checkpoints
 *.ipynb_checkpoints
