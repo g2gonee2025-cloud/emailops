@@ -497,12 +497,14 @@ class VLLMProvider(BaseProvider):
             # vLLM reasoning parsers may surface reasoning in additional fields.
             # For MiniMax-M2, the recommended setup is to keep <think> blocks in the
             # conversation history, so we try to preserve them when present.
-            content = getattr(msg, "content", None) or ""
-            reasoning = (
+            raw_content = getattr(msg, "content", None) or ""
+            content = raw_content if isinstance(raw_content, str) else str(raw_content)
+            raw_reasoning = (
                 getattr(msg, "reasoning", None)
                 or getattr(msg, "reasoning_content", None)
                 or ""
             )
+            reasoning = raw_reasoning.strip() if isinstance(raw_reasoning, str) else ""
 
             if reasoning and "<think>" not in content:
                 content = f"<think>{reasoning}</think>\n{content}".strip()
@@ -529,7 +531,8 @@ class LLMRuntime:
     def __init__(self) -> None:
         self.resilience = ResilienceManager()
         self.primary = VLLMProvider()
-        self._max_retries = cast(RetryLike, _retry_cfg).max_retries
+        self.retry_config = cast(RetryLike, _retry_cfg)
+        self._max_retries = self.retry_config.max_retries
         self._scaler = self._init_scaler()
         self._inflight = 0
         self._inflight_lock = threading.Lock()
