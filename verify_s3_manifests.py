@@ -6,8 +6,11 @@ from pathlib import Path
 
 import boto3
 
-# Add backend to path
-sys.path.append("/root/workspace/emailops-vertex-ai/backend/src")
+REPO_ROOT = Path(__file__).resolve().parent
+BACKEND_SRC = (REPO_ROOT / "backend" / "src").resolve()
+if str(BACKEND_SRC) not in sys.path:
+    sys.path.insert(0, str(BACKEND_SRC))
+
 from cortex.ingestion.conv_manifest.validation import scan_and_refresh
 
 # Configuration

@@ -96,6 +96,7 @@ coverage.xml
 test_*.py
 *_test.py
 tests/
+<<<<<<< HEAD
 # Allow checked-in backend tests for regression coverage
 !backend/tests/
 !backend/tests/**
@@ -103,6 +104,10 @@ tests/
 # Allow tracked regression tests
 !tests/
 !tests/test_identity_decoder.py
+=======
+!tests/
+!tests/test_verify_idempotency.py
+>>>>>>> origin/pr/7
 
 # Jupyter Notebook
 .ipynb_checkpoints

@@ -1,6 +1,7 @@
 import logging
 import sys
 import unittest.mock
+from pathlib import Path
 
 # Configure Logging
 logging.basicConfig(
@@ -10,8 +11,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger("DeepDive")
 
-# Add src to path
-sys.path.append("/root/workspace/emailops-vertex-ai/backend/src")
+# Add backend/src to path dynamically
+REPO_ROOT = Path(__file__).resolve().parent
+BACKEND_SRC = (REPO_ROOT / "backend" / "src").resolve()
+if str(BACKEND_SRC) not in sys.path:
+    sys.path.insert(0, str(BACKEND_SRC))
 
 
 # --- MOCK EMBEDDINGS ---
