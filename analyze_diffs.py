@@ -40,13 +40,13 @@ def analyze_diffs():
 
         try:
             old = json.loads(manifest_path.read_text())
-        except:
+        except Exception:
             continue
 
         # Calculate expected values
         try:
             expected_hash = _calculate_conversation_hash(conv_txt)
-        except:
+        except Exception:
             continue
 
         attachments_dir = conv_dir / "attachments"
