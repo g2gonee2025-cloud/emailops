@@ -298,6 +298,7 @@ def chunk_text(input_data: ChunkingInput) -> list[ChunkModel]:
         chunk_tokens = all_tokens[token_pos:token_end]
 
         chunk_text_str = counter.decode(chunk_tokens)
+        token_count = len(chunk_tokens)
 
         # If preserving sentences, we might need to shrink the chunk
         # But tiktoken decoding might not perfectly align with original text chars if lossy
@@ -323,6 +324,8 @@ def chunk_text(input_data: ChunkingInput) -> list[ChunkModel]:
             token_pos += 1  # Advance at least one token
             continue
 
+        added_chunk = False
+
         # For Char Start/End: We need to map back.
         # Simple heuristic: text.find(chunk, pos).
         # Since we are iterating forward, search from 'pos' character index.
@@ -343,25 +346,58 @@ def chunk_text(input_data: ChunkingInput) -> list[ChunkModel]:
                 type_hint=input_data.chunk_type_hint,
             )
 
-            chunks.append(
-                ChunkModel(
-                    text=chunk_text_str,
-                    section_path=input_data.section_path,
-                    position=section_idx,
-                    char_start=found_start,
-                    char_end=found_end,
-                    chunk_type=chunk_type,
-                    metadata={
-                        "content_hash": compute_content_hash(chunk_text_str),
-                        "token_count": len(chunk_tokens),
-                        "original_length": len(chunk_text_str),
-                    },
+            if token_count < input_data.min_tokens and chunks:
+                last_chunk = chunks[-1]
+                if last_chunk.chunk_type == chunk_type:
+                    combined_text = last_chunk.text + chunk_text_str
+                    combined_tokens = counter.encode(combined_text)
+                    last_chunk.text = combined_text
+                    last_chunk.char_end = found_end
+                    last_chunk.metadata = {
+                        **last_chunk.metadata,
+                        "content_hash": compute_content_hash(combined_text),
+                        "token_count": len(combined_tokens),
+                        "original_length": len(combined_text),
+                    }
+                    pos = found_end
+                else:
+                    chunks.append(
+                        ChunkModel(
+                            text=chunk_text_str,
+                            section_path=input_data.section_path,
+                            position=section_idx,
+                            char_start=found_start,
+                            char_end=found_end,
+                            chunk_type=chunk_type,
+                            metadata={
+                                "content_hash": compute_content_hash(chunk_text_str),
+                                "token_count": token_count,
+                                "original_length": len(chunk_text_str),
+                            },
+                        )
+                    )
+                    added_chunk = True
+                    pos = found_end
+            else:
+                chunks.append(
+                    ChunkModel(
+                        text=chunk_text_str,
+                        section_path=input_data.section_path,
+                        position=section_idx,
+                        char_start=found_start,
+                        char_end=found_end,
+                        chunk_type=chunk_type,
+                        metadata={
+                            "content_hash": compute_content_hash(chunk_text_str),
+                            "token_count": token_count,
+                            "original_length": len(chunk_text_str),
+                        },
+                    )
                 )
-            )
+                added_chunk = True
+                pos = found_end
 
             # Update character 'pos' for next search
-            pos = found_end
-
         except Exception as e:
             logger.warning(f"Chunk metadata alignment failed: {e}")
 
@@ -371,7 +407,8 @@ def chunk_text(input_data: ChunkingInput) -> list[ChunkModel]:
             step = 1
 
         token_pos += step
-        section_idx += 1
+        if added_chunk:
+            section_idx += 1
 
     return chunks
 

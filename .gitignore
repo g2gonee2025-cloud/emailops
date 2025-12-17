@@ -96,6 +96,9 @@ coverage.xml
 test_*.py
 *_test.py
 tests/
+!backend/tests/
+!backend/tests/test_*.py
+!backend/tests/*_test.py
 
 # Allow checked-in backend tests for regression coverage
 !backend/tests/
