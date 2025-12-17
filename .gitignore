@@ -96,6 +96,8 @@ coverage.xml
 test_*.py
 *_test.py
 tests/
+!tests/
+!tests/test_verify_idempotency.py
 
 # Jupyter Notebook
 .ipynb_checkpoints

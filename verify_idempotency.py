@@ -5,8 +5,10 @@ import shutil
 import sys
 from pathlib import Path
 
-# Add backend/src to path so imports work
-sys.path.append("/root/workspace/emailops-vertex-ai/backend/src")
+REPO_ROOT = Path(__file__).resolve().parent
+BACKEND_SRC = (REPO_ROOT / "backend" / "src").resolve()
+if str(BACKEND_SRC) not in sys.path:
+    sys.path.insert(0, str(BACKEND_SRC))
 
 from cortex.ingestion.conv_manifest.validation import scan_and_refresh
 
@@ -46,6 +48,7 @@ def setup_test_env(root: Path):
             "attachments_dir": "attachments/",
         },
         "sha256_conversation": expected_hash,
+        "participants": ["test@example.com"],
         "messages": [{"id": "preserve_me"}],  # Critical field to preserve
         "smart_subject": "Preserved Subject",  # Critical field to preserve
     }
