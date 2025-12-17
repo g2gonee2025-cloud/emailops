@@ -11,6 +11,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from cortex.domain_models.facts_ledger import FactsLedger
+
 
 class ThreadParticipant(BaseModel):
     """Participant in an email thread."""
@@ -124,8 +126,11 @@ class DraftCritique(BaseModel):
 class ThreadSummary(BaseModel):
     """Summary of an email thread."""
 
+    type: Literal["thread_summary"] = "thread_summary"
     thread_id: Optional[UUID] = None
-    summary_text: str = ""
+    summary_markdown: str = ""
+    facts_ledger: FactsLedger = Field(default_factory=FactsLedger)
+    quality_scores: Dict[str, Any] = Field(default_factory=dict)
     key_points: List[str] = Field(default_factory=list)
     action_items: List[str] = Field(default_factory=list)
     participants_mentioned: List[str] = Field(default_factory=list)

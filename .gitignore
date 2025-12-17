@@ -96,6 +96,9 @@ coverage.xml
 test_*.py
 *_test.py
 tests/
+# Allow checked-in backend tests for regression coverage
+!backend/tests/
+!backend/tests/**
 
 # Jupyter Notebook
 .ipynb_checkpoints
