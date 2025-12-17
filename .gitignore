@@ -92,11 +92,6 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 
-# Test files
-test_*.py
-*_test.py
-tests/
-
 # Jupyter Notebook
 .ipynb_checkpoints
 *.ipynb_checkpoints
@@ -333,3 +328,7 @@ temp_validation_s3_20/
 
 temp_validation_s3/
 kube-state-metrics/
+
+# Allow committed tests
+!tests/
+!tests/**

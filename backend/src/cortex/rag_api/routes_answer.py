@@ -56,7 +56,7 @@ async def answer_api(request: AnswerRequest, http_request: Request):
             "assembled_context": None,
             "answer": None,
             "error": None,
-            "_correlation_id": correlation_id,  # Pass to nodes if needed
+            "correlation_id": correlation_id,  # Pass to nodes if needed
         }
 
         # Invoke graph

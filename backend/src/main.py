@@ -220,6 +220,9 @@ class CorrelationIdMiddleware(BaseHTTPMiddleware):
 
         # Store in context var for access throughout request
         token = correlation_id_ctx.set(correlation_id)
+        # Expose on request.state so downstream routes can access without
+        # coupling to contextvars.
+        request.state.correlation_id = correlation_id
 
         try:
             response = await call_next(request)
