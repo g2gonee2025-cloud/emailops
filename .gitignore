@@ -96,6 +96,9 @@ coverage.xml
 test_*.py
 *_test.py
 tests/
+!tests/
+!tests/conftest.py
+!tests/test_email_processing.py
 
 # Jupyter Notebook
 .ipynb_checkpoints

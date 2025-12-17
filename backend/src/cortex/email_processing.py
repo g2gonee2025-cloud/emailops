@@ -38,7 +38,7 @@ _MULTIPLE_NEWLINES = re.compile(r"\n{3,}")
 _BLANK_LINES = re.compile(r"^\s*$", re.MULTILINE)
 
 # Quoted reply lines (starts with >)
-_QUOTED_REPLY = re.compile(r"^>+.*$", re.MULTILINE)
+_QUOTED_REPLY = re.compile(r"^>+\s?(.*)$", re.MULTILINE)
 
 # Header patterns to remove
 _HEADER_PATTERNS = [
@@ -136,7 +136,7 @@ def clean_email_text(text: str) -> str:
     # Note: We keep the content but remove the > markers for cleaner text
     # In some cases we might want to preserve quoted context - this is configurable
     # For indexing, we typically want the raw content without markers
-    text = _QUOTED_REPLY.sub("", text)
+    text = _QUOTED_REPLY.sub(r"\1", text)
 
     # 6. Redact emails and URLs
     text = _EMAIL_SEARCH_PATTERN.sub("[email]", text)
