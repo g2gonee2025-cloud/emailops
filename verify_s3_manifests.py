@@ -1,5 +1,4 @@
 import json
-import os
 import shutil
 import sys
 from pathlib import Path
@@ -11,7 +10,7 @@ BACKEND_SRC = (REPO_ROOT / "backend" / "src").resolve()
 if str(BACKEND_SRC) not in sys.path:
     sys.path.insert(0, str(BACKEND_SRC))
 
-from cortex.ingestion.conv_manifest.validation import scan_and_refresh
+from cortex.ingestion.conv_manifest.validation import scan_and_refresh  # noqa: E402
 
 # Configuration
 LIMIT = 200
@@ -22,7 +21,7 @@ def load_env_vars():
     """Load S3 credentials from .env manually."""
     env_vars = {}
     try:
-        with open(".env") as f:
+        with Path(".env").open() as f:
             for line in f:
                 line = line.strip()
                 if not line or line.startswith("#"):
@@ -73,7 +72,7 @@ def main():
         for obj in page["Contents"]:
             key = obj["Key"]
             if key.endswith("manifest.json"):
-                folder_prefix = os.path.dirname(key)
+                folder_prefix = str(Path(key).parent)
 
                 if folder_prefix in found_folders:
                     continue

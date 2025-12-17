@@ -1,5 +1,6 @@
 """Tests for configuration environment variable handling."""
 from __future__ import annotations
+
 import sys
 from pathlib import Path
 
@@ -14,9 +15,7 @@ from cortex.config.models import DatabaseConfig  # noqa: E402
 
 def test_canonical_prefix_takes_precedence(monkeypatch):
     monkeypatch.delenv("DB_URL", raising=False)
-    monkeypatch.setenv(
-        "OUTLOOKCORTEX_DB_URL", "postgresql://canonical:5432/emailops"
-    )
+    monkeypatch.setenv("OUTLOOKCORTEX_DB_URL", "postgresql://canonical:5432/emailops")
     monkeypatch.setenv("EMAILOPS_DB_URL", "postgresql://legacy:5432/emailops")
 
     cfg = DatabaseConfig()

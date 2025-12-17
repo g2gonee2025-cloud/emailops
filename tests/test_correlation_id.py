@@ -39,9 +39,7 @@ def test_correlation_id_respects_incoming_header():
     client = TestClient(_build_test_app())
     incoming = "test-correlation-id-123"
 
-    response = client.get(
-        "/echo-correlation", headers={"X-Correlation-ID": incoming}
-    )
+    response = client.get("/echo-correlation", headers={"X-Correlation-ID": incoming})
 
     assert response.status_code == 200
     assert response.json()["correlation_id"] == incoming
