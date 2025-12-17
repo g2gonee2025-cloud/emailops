@@ -9,6 +9,8 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from cortex.domain_models.rag import ThreadSummary
+
 
 # -----------------------------------------------------------------------------
 # Search API Models (§9.2)
@@ -103,6 +105,4 @@ class SummarizeThreadResponse(BaseModel):
     """Thread summarization response payload."""
 
     correlation_id: Optional[str] = None
-    summary: str = ""
-    key_points: List[str] = Field(default_factory=list)
-    action_items: List[str] = Field(default_factory=list)
+    summary: ThreadSummary

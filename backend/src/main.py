@@ -15,6 +15,7 @@ Provides:
 """
 from __future__ import annotations
 
+import inspect
 import json
 import logging
 import os
@@ -163,11 +164,11 @@ async def _extract_identity(request: Request) -> tuple[str, str, dict[str, Any]]
             )
         # Ensure we await the decoder result
         try:
-            claims = await _jwt_decoder(token)
+            decoded = _jwt_decoder(token)
+            claims = await decoded if inspect.isawaitable(decoded) else decoded
         except TypeError:
             # Handle case where decoder is synchronous (legacy/fallback fallback)
-            # though we redefined it to be async above.
-            claims = await _jwt_decoder(token)  # type: ignore
+            claims = _jwt_decoder(token)  # type: ignore[assignment]
 
     elif config.core.env == "prod":
         raise SecurityError("Authorization header required", threat_type="auth_missing")
