@@ -47,16 +47,10 @@ class SystemConfig(Protocol):
     log_level: str
 
 
-class EmbeddingsConfig(Protocol):
+class EmbeddingConfig(Protocol):
     model_name: str
     output_dimensionality: int
     batch_size: int
-
-
-class SearchConfig(Protocol):
-    fusion_strategy: str
-    top_k: int
-    rerank_enabled: bool
 
 
 class ProcessingConfig(Protocol):
@@ -64,10 +58,18 @@ class ProcessingConfig(Protocol):
     chunk_overlap: int
 
 
+class SearchConfig(Protocol):
+    fusion_strategy: str
+    k: int
+    recency_boost_strength: float
+    mmr_lambda: float
+    reranker_endpoint: str | None
+
+
 class EmailOpsConfigProto(Protocol):
     core: CoreConfig
     system: SystemConfig
-    embeddings: EmbeddingsConfig
+    embedding: EmbeddingConfig
     search: SearchConfig
     processing: ProcessingConfig
 
@@ -315,17 +317,22 @@ def _show_config(validate: bool = False, export_format: str | None = None) -> No
                 (
                     "Embeddings",
                     [
-                        ("Model", config.embeddings.model_name),
-                        ("Dimensions", config.embeddings.output_dimensionality),
-                        ("Batch Size", config.embeddings.batch_size),
+                        ("Model", config.embedding.model_name),
+                        ("Dimensions", config.embedding.output_dimensionality),
+                        ("Batch Size", config.embedding.batch_size),
                     ],
                 ),
                 (
                     "Search",
                     [
                         ("Fusion Strategy", config.search.fusion_strategy),
-                        ("Top K", config.search.top_k),
-                        ("Rerank Enabled", config.search.rerank_enabled),
+                        ("Results (k)", config.search.k),
+                        ("Recency Boost", config.search.recency_boost_strength),
+                        ("MMR Lambda", config.search.mmr_lambda),
+                        (
+                            "Reranker Endpoint",
+                            config.search.reranker_endpoint or "disabled",
+                        ),
                     ],
                 ),
                 (
