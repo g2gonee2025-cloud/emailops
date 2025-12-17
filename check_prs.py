@@ -20,7 +20,7 @@ def main():
         # Check if merged
         # git merge-base --is-ancestor <commit> <main>
         # If return code 0, it is an ancestor (merged)
-        check = run(f"git merge-base --is-ancestor {pr} main")
+        check = run(f"git merge-base --is-ancestor {pr} HEAD")
         if check.returncode != 0:
             unmerged.append(pr)
             # Get commit msg
