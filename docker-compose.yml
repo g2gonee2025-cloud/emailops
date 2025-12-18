@@ -59,6 +59,22 @@ services:
     # ports:
     #   - "127.0.0.1:8080:80"
 
+  qdrant:
+    image: qdrant/qdrant:latest
+    environment:
+      QDRANT__SERVICE__GRPC_PORT: 6334
+      QDRANT__SERVICE__HTTP_PORT: 6333
+    volumes:
+      - qdrantdata:/qdrant/storage
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:6333/healthz >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+    networks:
+      - emailops_net
+
   app:
     build:
       context: .
@@ -71,12 +87,15 @@ services:
       # Canonical env var names expected by the backend.
       OUTLOOKCORTEX_DB_URL: "postgresql://cortex:${POSTGRES_PASSWORD}@db:5432/cortex"
       OUTLOOKCORTEX_REDIS_URL: "redis://redis:6379"
+      OUTLOOKCORTEX_QDRANT_URL: "http://qdrant:6333"
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
       embeddings:
+        condition: service_healthy
+      qdrant:
         condition: service_healthy
     volumes:
       - ./data:/data
@@ -90,6 +109,7 @@ services:
 volumes:
   pgdata:
   redisdata:
+  qdrantdata:
 
 networks:
   emailops_net:
