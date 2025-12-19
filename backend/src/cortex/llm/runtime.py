@@ -61,7 +61,7 @@ except ImportError:
     # Standalone / fallback configuration
     class RetryConfig:
         def __init__(self) -> None:
-            self.max_retries = int(os.getenv("LLM_MAX_RETRIES", "3"))
+            self.max_retries = int(os.getenv("LLM_MAX_RETRIES", "5"))
             self.circuit_failure_threshold = int(
                 os.getenv("LLM_CIRCUIT_FAILURE_THRESHOLD", "5")
             )
