@@ -198,3 +198,105 @@ class AuditLog(Base):
     action: Mapped[str] = mapped_column(String(128), nullable=False)
     actor: Mapped[Optional[str]] = mapped_column(String(256), nullable=True)
     details: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB, nullable=True)
+
+
+class EntityNode(Base):
+    """
+    Graph RAG: Represents a distinct entity (Person, Project, Org, etc.).
+    Nodes are global per tenant.
+    """
+
+    __tablename__ = "entity_nodes"
+
+    node_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    tenant_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    name: Mapped[str] = mapped_column(String(512), nullable=False)
+    type: Mapped[str] = mapped_column(String(64), nullable=False)  # e.g., "PERSON"
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    properties: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB, nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+    # Relationships
+    outgoing_edges: Mapped[List["EntityEdge"]] = relationship(
+        "EntityEdge",
+        foreign_keys="[EntityEdge.source_id]",
+        back_populates="source_node",
+        cascade="all, delete-orphan",
+    )
+    incoming_edges: Mapped[List["EntityEdge"]] = relationship(
+        "EntityEdge",
+        foreign_keys="[EntityEdge.target_id]",
+        back_populates="target_node",
+        cascade="all, delete-orphan",
+    )
+
+    __table_args__ = (
+        Index("ix_entity_nodes_tenant_name", "tenant_id", "name", unique=True),
+    )
+
+
+class EntityEdge(Base):
+    """
+    Graph RAG: Represents a relationship between two entities.
+    Edges are derived from specific conversations.
+    """
+
+    __tablename__ = "entity_edges"
+
+    edge_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    tenant_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    source_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("entity_nodes.node_id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    target_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("entity_nodes.node_id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    relation: Mapped[str] = mapped_column(
+        String(128), nullable=False
+    )  # e.g., "MANAGED_BY"
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    weight: Mapped[float] = mapped_column(
+        "weight", nullable=False, default=1.0
+    )  # Confidence score
+
+    # Provenance
+    conversation_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("conversations.conversation_id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    # Relationships
+    source_node: Mapped["EntityNode"] = relationship(
+        "EntityNode", foreign_keys=[source_id], back_populates="outgoing_edges"
+    )
+    target_node: Mapped["EntityNode"] = relationship(
+        "EntityNode", foreign_keys=[target_id], back_populates="incoming_edges"
+    )
+
+    __table_args__ = (
+        Index("ix_entity_edges_source", "source_id"),
+        Index("ix_entity_edges_target", "target_id"),
+        Index("ix_entity_edges_conversation", "conversation_id"),
+    )

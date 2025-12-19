@@ -512,6 +512,74 @@ def _ingest_conversation(
                     )
         except Exception as e:
             logger.warning(f"Summarization failed during ingestion: {e}")
+            # --- Graph Extraction Step (Graph RAG) ---
+            # Extract Knowledge Graph from the same comprehensive context
+            if summary_context.strip():
+                try:
+                    from cortex.db.models import EntityEdge, EntityNode
+
+                    # We need a session to write graph data immediately.
+                    from cortex.db.session import SessionLocal
+                    from cortex.intelligence.graph import GraphExtractor
+                    from sqlalchemy import select
+
+                    graph_extractor = GraphExtractor()
+                    G = graph_extractor.extract_graph(summary_context)
+
+                    if G.number_of_nodes() > 0:
+                        with SessionLocal() as session:
+                            for node_name, attrs in G.nodes(data=True):
+                                node_type = attrs.get("type", "UNKNOWN")
+
+                                # Check if node exists (Global Tenant Scope)
+                                stmt = select(EntityNode).where(
+                                    EntityNode.tenant_id == job.tenant_id,
+                                    EntityNode.name == node_name,
+                                )
+                                existing_node = session.execute(
+                                    stmt
+                                ).scalar_one_or_none()
+
+                                if not existing_node:
+                                    existing_node = EntityNode(
+                                        tenant_id=job.tenant_id,
+                                        name=node_name,
+                                        type=node_type,
+                                        description=f"Extracted from conversation {conversation_id}",
+                                        properties={},
+                                    )
+                                    session.add(existing_node)
+                                    session.flush()  # Get ID
+
+                                # Store node_id in graph for edge creation
+                                G.nodes[node_name]["db_id"] = existing_node.node_id
+
+                            # Edges
+                            for src, dst, edge_attrs in G.edges(data=True):
+                                src_id = G.nodes[src].get("db_id")
+                                dst_id = G.nodes[dst].get("db_id")
+
+                                if src_id and dst_id:
+                                    edge = EntityEdge(
+                                        tenant_id=job.tenant_id,
+                                        source_id=src_id,
+                                        target_id=dst_id,
+                                        relation=edge_attrs.get(
+                                            "relation", "RELATED_TO"
+                                        ),
+                                        description=edge_attrs.get("description", ""),
+                                        conversation_id=conversation_id,
+                                    )
+                                    session.add(edge)
+
+                            session.commit()
+                            logger.info(
+                                f"Extracted Knowledge Graph: {G.number_of_nodes()} nodes, {G.number_of_edges()} edges"
+                            )
+
+                except Exception as e:
+                    logger.warning(f"Graph extraction failed: {e}")
+            # -----------------------------------------
     # -----------------------------------------------------
 
     # Write to database
