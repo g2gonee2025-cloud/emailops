@@ -80,11 +80,12 @@ except ImportError:
                 "LLM_MODEL", os.getenv("KIMI_MODEL", "MiniMaxAI/MiniMax-M2")
             )
             self.llm_BASE_URL = os.getenv(
-                "LLM_ENDPOINT", os.getenv("KIMI_ENDPOINT", "http://localhost:8000/v1")
+                "LLM_ENDPOINT",
+                os.getenv("MODEL_BASE_URL", os.getenv("KIMI_ENDPOINT", "http://localhost:8000/v1"))
             )
             self.llm_api_key = os.getenv(
                 "LLM_API_KEY",
-                os.getenv("LLM_API_KEY", os.getenv("KIMI_API_KEY", "EMPTY")),
+                os.getenv("MODEL_ACCESS_KEY", os.getenv("KIMI_API_KEY", "EMPTY")),
             )
 
             # Embedding: KaLM-Embedding-Gemma3-12B-2511 (dim=3840)
