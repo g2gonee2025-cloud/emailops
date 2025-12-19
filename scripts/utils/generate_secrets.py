@@ -39,7 +39,7 @@ def generate_secrets_yaml():
         "REDIS_URL": "REDIS_URL",
         "S3_ACCESS_KEY": "S3_ACCESS_KEY",
         "S3_SECRET_KEY": "S3_SECRET_KEY",
-        "MODEL_ACCESS_KEY": "MODEL_ACCESS_KEY",
+        "DO_LLM_API_KEY": "DO_LLM_API_KEY",
         "DO_TOKEN": "DO_TOKEN",
     }
 
@@ -70,7 +70,7 @@ def generate_secrets_yaml():
                     S3_SECRET_KEY: {encoded_data['S3_SECRET_KEY']}
 
                     # AI Provider Keys
-                    MODEL_ACCESS_KEY: {encoded_data['MODEL_ACCESS_KEY']}
+                    DO_LLM_API_KEY: {encoded_data['DO_LLM_API_KEY']}
                     DO_TOKEN: {encoded_data['DO_TOKEN']}
                 """
         )

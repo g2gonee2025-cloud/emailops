@@ -81,11 +81,14 @@ except ImportError:
             )
             self.llm_BASE_URL = os.getenv(
                 "LLM_ENDPOINT",
-                os.getenv("MODEL_BASE_URL", os.getenv("KIMI_ENDPOINT", "http://localhost:8000/v1"))
+                os.getenv(
+                    "DO_LLM_BASE_URL",
+                    os.getenv("KIMI_ENDPOINT", "http://localhost:8000/v1"),
+                ),
             )
             self.llm_api_key = os.getenv(
                 "LLM_API_KEY",
-                os.getenv("MODEL_ACCESS_KEY", os.getenv("KIMI_API_KEY", "EMPTY")),
+                os.getenv("DO_LLM_API_KEY", os.getenv("KIMI_API_KEY", "EMPTY")),
             )
 
             # Embedding: KaLM-Embedding-Gemma3-12B-2511 (dim=3840)
@@ -320,20 +323,36 @@ class VLLMProvider(BaseProvider):
                 return self._llm_client
             try:
                 from openai import OpenAI  # type: ignore
-            except ImportError as e:  # pragma: no cover
+            except ImportError as e:
                 raise ConfigurationError(
                     "Missing dependency 'openai'. Install with: pip install -U openai"
                 ) from e
 
             BASE_URL = getattr(_config, "llm_BASE_URL", None) or os.getenv(
-                "LLM_ENDPOINT", os.getenv("KIMI_ENDPOINT", "http://localhost:8000/v1")
+                "LLM_ENDPOINT",
+                os.getenv(
+                    "DO_LLM_BASE_URL",
+                    os.getenv("KIMI_ENDPOINT", "http://localhost:8000/v1"),
+                ),
             )
-            api_key = getattr(_config, "llm_api_key", None) or os.getenv(
-                "KIMI_API_KEY", "EMPTY"
+            # Resolve API Key (fallback priority: Config -> Env -> Default)
+            # Treat "EMPTY" as unset to allow fallback to other env vars
+            config_key = getattr(_config, "llm_api_key", None)
+            if config_key == "EMPTY":
+                config_key = None
+
+            env_key = os.getenv("LLM_API_KEY")
+            if env_key == "EMPTY":
+                env_key = None
+
+            api_key = (
+                config_key
+                or env_key
+                or os.getenv("DO_LLM_API_KEY", os.getenv("KIMI_API_KEY", "EMPTY"))
             )
 
             logger.info("Initializing OpenAI client for MiniMax-M2 at %s", BASE_URL)
-            self._llm_client = OpenAI(BASE_URL=BASE_URL, api_key=api_key)
+            self._llm_client = OpenAI(base_url=BASE_URL, api_key=api_key)
             return self._llm_client
 
     # ------------- Embedding client (KaLM via vLLM API) -------------
@@ -840,7 +859,7 @@ def _validate_json_schema(
     data: Dict[str, Any], schema: Dict[str, Any]
 ) -> Optional[str]:
     try:
-        import jsonschema  # type: ignore
+        import jsonschema
 
         jsonschema.validate(data, schema)
         return None

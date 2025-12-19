@@ -166,7 +166,7 @@ This ledger tracks the **exact state of implementation** for each checklist step
 
 - All mandatory config keys from blueprint are defined in `.env`.
 - `OUTLOOKCORTEX_DB_URL` is correctly mapped.
-- `DO_token` and `MODEL_ACCESS_KEY` are present for Gradient/DOKS.
+- `DO_token` and `DO_LLM_API_KEY` are present for Gradient/DOKS.
 
 ### Tests & commands run
 

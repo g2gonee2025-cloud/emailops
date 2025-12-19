@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Set
+from typing import Any, Set
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class QueryExpander:
 
     def __init__(self, use_llm_fallback: bool = False):
         self.use_llm_fallback = use_llm_fallback
-        self._llm = None
+        self._llm: Any = None
 
     def expand(self, query: str, max_synonyms_per_term: int = 3) -> str:
         """
@@ -97,10 +97,7 @@ class QueryExpander:
         try:
             # User requested GPT-OSS-120B for fallback intelligence
             response = self._llm.complete_text(
-                prompt,
-                temperature=0.0,
-                max_tokens=50,
-                model="gpt-oss-120b"
+                prompt, temperature=0.0, max_tokens=50, model="gpt-oss-120b"
             )
             # Parse comma-separated response
             synonyms = {s.strip().lower() for s in response.split(",") if s.strip()}

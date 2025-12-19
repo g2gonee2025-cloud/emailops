@@ -191,13 +191,21 @@ class AuditLog(Base):
     audit_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
-    timestamp: Mapped[datetime] = mapped_column(
+    ts: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False, index=True
     )
     tenant_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    user_or_agent: Mapped[str] = mapped_column(String(256), nullable=False)
     action: Mapped[str] = mapped_column(String(128), nullable=False)
-    actor: Mapped[Optional[str]] = mapped_column(String(256), nullable=True)
-    details: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB, nullable=True)
+    input_hash: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    output_hash: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    policy_decisions: Mapped[Optional[Dict[str, Any]]] = mapped_column(
+        JSONB, nullable=True
+    )
+    risk_level: Mapped[str] = mapped_column(
+        String(32), server_default="low", nullable=False
+    )
+    metadata_: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB, nullable=True)
 
 
 class EntityNode(Base):
