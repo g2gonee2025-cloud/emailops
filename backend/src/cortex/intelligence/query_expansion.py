@@ -95,7 +95,13 @@ class QueryExpander:
 
         prompt = f"List up to {max_count} synonyms for the word '{term}'. Return only the words, comma-separated, no explanation."
         try:
-            response = self._llm.complete_text(prompt, temperature=0.0, max_tokens=50)
+            # User requested GPT-OSS-120B for fallback intelligence
+            response = self._llm.complete_text(
+                prompt,
+                temperature=0.0,
+                max_tokens=50,
+                model="gpt-oss-120b"
+            )
             # Parse comma-separated response
             synonyms = {s.strip().lower() for s in response.split(",") if s.strip()}
             synonyms.discard(term)
@@ -110,5 +116,6 @@ def expand_for_fts(query: str) -> str:
     Convenience function: expand query for Full-Text Search.
     Returns expanded query suitable for PostgreSQL ts_query or Elasticsearch.
     """
-    expander = QueryExpander(use_llm_fallback=False)
+    # Enabled LLM fallback with GPT-OSS-120B as requested
+    expander = QueryExpander(use_llm_fallback=True)
     return expander.expand(query)
