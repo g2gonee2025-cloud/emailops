@@ -36,3 +36,20 @@ culprit.txt
 k8s_sizes.json
 .env
 .gitignore
+
+# Large binaries
+rclone-*/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Temporary/build artifacts
+*.egg-info/
+build/
+*.whl
+
+# Secrets (redundant but explicit)
+secrets/
+*.pem
+*.key
