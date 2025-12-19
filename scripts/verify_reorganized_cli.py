@@ -138,7 +138,7 @@ def test_doctor_basic():
         main()
     except SystemExit as e:
         if e.code not in [0, 1, 2]:
-            raise RuntimeError(f"Unexpected exit code: {e.code}")
+            raise RuntimeError(f"Unexpected exit code: {e.code}") from e
         print(f"  Exit code: {e.code} (0=ok, 1=warnings, 2=failures)")
     finally:
         sys.argv = original
@@ -154,7 +154,7 @@ def test_doctor_check_db():
         main()
     except SystemExit as e:
         if e.code not in [0, 1, 2]:
-            raise RuntimeError(f"Unexpected exit code: {e.code}")
+            raise RuntimeError(f"Unexpected exit code: {e.code}") from e
     finally:
         sys.argv = original
 
@@ -169,7 +169,7 @@ def test_doctor_check_index():
         main()
     except SystemExit as e:
         if e.code not in [0, 1, 2]:
-            raise RuntimeError(f"Unexpected exit code: {e.code}")
+            raise RuntimeError(f"Unexpected exit code: {e.code}") from e
     finally:
         sys.argv = original
 
@@ -184,7 +184,7 @@ def test_doctor_check_exports():
         main()
     except SystemExit as e:
         if e.code not in [0, 1, 2]:
-            raise RuntimeError(f"Unexpected exit code: {e.code}")
+            raise RuntimeError(f"Unexpected exit code: {e.code}") from e
     finally:
         sys.argv = original
 
@@ -199,7 +199,7 @@ def test_doctor_json():
         main()
     except SystemExit as e:
         if e.code not in [0, 1, 2]:
-            raise RuntimeError(f"Unexpected exit code: {e.code}")
+            raise RuntimeError(f"Unexpected exit code: {e.code}") from e
     finally:
         sys.argv = original
 
@@ -214,7 +214,7 @@ def test_doctor_multi_flags():
         main()
     except SystemExit as e:
         if e.code not in [0, 1, 2]:
-            raise RuntimeError(f"Unexpected exit code: {e.code}")
+            raise RuntimeError(f"Unexpected exit code: {e.code}") from e
     finally:
         sys.argv = original
 
@@ -303,7 +303,7 @@ def test_search_filter_grammar():
 def test_rag_answer():
     from cortex.orchestration.graphs import build_answer_graph
 
-    graph = build_answer_graph()
+    build_answer_graph()
     print("  ✓ build_answer_graph() succeeded")
 
 
@@ -311,7 +311,7 @@ def test_rag_answer():
 def test_rag_summarize():
     from cortex.orchestration.graphs import build_summarize_graph
 
-    graph = build_summarize_graph()
+    build_summarize_graph()
     print("  ✓ build_summarize_graph() succeeded")
 
 
@@ -319,7 +319,7 @@ def test_rag_summarize():
 def test_rag_draft():
     from cortex.orchestration.graphs import build_draft_graph
 
-    graph = build_draft_graph()
+    build_draft_graph()
     print("  ✓ build_draft_graph() succeeded")
 
 

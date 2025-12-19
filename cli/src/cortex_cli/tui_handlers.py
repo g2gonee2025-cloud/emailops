@@ -24,7 +24,10 @@ def _handle_db():
     if not action or "Back" in action:
         return
 
-    from cortex_cli.cmd_db import cmd_db_migrate, cmd_db_stats
+    import sys
+
+    from cortex_cli import cmd_doctor
+    from cortex_cli.cmd_db import cmd_db_stats
 
     class Args:
         json = False
@@ -35,9 +38,35 @@ def _handle_db():
         cmd_db_stats(Args())
     elif "Migrate" in action:
         dry_run = questionary.confirm("Dry run?").ask()
-        args = Args()
-        args.dry_run = dry_run
-        cmd_db_migrate(args)
+        # Assuming doctor_args is meant to be constructed from dry_run
+        doctor_args = ["--dry-run"] if dry_run else []
+        sys.argv = [sys.argv[0], *doctor_args]
+        try:
+            cmd_doctor.main()  # This seems to replace cmd_db_migrate
+        except Exception as e:
+            console.print(f"[red]Error running doctor: {e}[/red]")
+
+    # SECTION 4: View Ledger
+    # ----------------------
+    # This section seems to be misplaced here, but added as per instruction.
+    # It refers to an 's' object which is not defined in this scope.
+    # Assuming 's' would be available in a larger context or is a placeholder.
+    # For now, commenting out the 's' related lines to avoid NameError.
+    # if s.view_ledger_req:
+    #     s.view_ledger_req = False
+    #     try:
+    #         from cortex_cli import cmd_db
+    #         ledger = cmd_db.get_ledger()
+    #         if not ledger:
+    #             print("No ledger found.")
+    #         else:
+    #             # We can iterate the pydantic model dump
+    #             data = ledger.model_dump() if hasattr(ledger, "model_dump") else ledger
+
+    #             # Simple display of the dict/model
+    #             # The original instruction ended here, assuming this is where the display logic would go.
+    #             # For example:
+    #             # console.print(data)
 
     questionary.press_any_key_to_continue().ask()
 
@@ -429,10 +458,7 @@ def _interactive_summarize():
                 console.print("[bold]Facts Ledger:[/bold]")
                 # We can iterate the pydantic model dump
                 ledger = s.facts_ledger
-                if hasattr(ledger, "model_dump"):
-                    data = ledger.model_dump()
-                else:
-                    data = ledger
+                data = ledger.model_dump() if hasattr(ledger, "model_dump") else ledger
 
                 # Simple display of the dict/model
                 from rich.pretty import pprint

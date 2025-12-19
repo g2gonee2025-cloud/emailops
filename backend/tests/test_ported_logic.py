@@ -25,7 +25,7 @@ class TestPortedLogic(unittest.TestCase):
         self.assertEqual(pos, 13)
 
         # CJK
-        text_cjk = "你好。世界！"
+        # text_cjk = "你好。世界！" - kept as comment for context
         # "你好" is 2 chars. "。" is 1 char.
         # Match "。" (and implicit end or next char?).
         # Regex matches `。` followed by whitespace OR end of string.
@@ -78,7 +78,7 @@ class TestPortedLogic(unittest.TestCase):
     # -------------------------------------------------------------------------
     def test_facts_ledger_merge(self):
         """Verify FactsLedger.merge correctly unions data."""
-        l1 = FactsLedger(
+        l1 = FactsLedger(  # noqa: F841 used for side effect test setup or illustrative? Assuming needs keeping or removal.
             asks=[
                 {"description": "Ask 1"}
             ],  # Simplification: passing dicts works if pydantic coerces?

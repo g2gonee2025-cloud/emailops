@@ -3,16 +3,19 @@ from pathlib import Path
 
 root_dir = Path(__file__).resolve().parents[2]
 sys.path.append(str(root_dir / "backend" / "src"))
-import unittest
-from pathlib import Path
-from unittest.mock import MagicMock, patch
+import unittest  # noqa: E402
+from pathlib import Path  # noqa: E402
+from unittest.mock import MagicMock, patch  # noqa: E402
 
 sys.path.append(str(Path("backend/src").resolve()))
 
-from cortex.config.loader import get_config
-from cortex.llm.runtime import LLMRuntime, get_runtime
-from cortex.orchestration.graphs import build_answer_graph, build_draft_graph
-from cortex.retrieval.hybrid_search import KBSearchInput
+from cortex.config.loader import get_config  # noqa: E402
+from cortex.llm.runtime import LLMRuntime, get_runtime  # noqa: E402
+from cortex.orchestration.graphs import (  # noqa: E402
+    build_answer_graph,
+    build_draft_graph,
+)
+from cortex.retrieval.hybrid_search import KBSearchInput  # noqa: E402
 
 
 class TestIntelligenceRuntime(unittest.TestCase):

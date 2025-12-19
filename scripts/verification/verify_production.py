@@ -3,8 +3,8 @@ from pathlib import Path
 
 root_dir = Path(__file__).resolve().parents[2]
 sys.path.append(str(root_dir / "backend" / "src"))
-import unittest
-from pathlib import Path
+import unittest  # noqa: E402
+from pathlib import Path  # noqa: E402
 
 # Ensure backend/src is in path
 sys.path.append(str(Path("backend/src").resolve()))

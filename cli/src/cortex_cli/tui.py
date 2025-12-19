@@ -150,7 +150,7 @@ def _handle_doctor():
     for c in checks:
         doctor_args.append(f"--{c.replace('_', '-')}")
 
-    sys.argv = [sys.argv[0]] + doctor_args
+    sys.argv = [sys.argv[0], *doctor_args]
     try:
         cmd_doctor.main()
     except SystemExit:
