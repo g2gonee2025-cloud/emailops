@@ -28,6 +28,8 @@ from .models import (
     LimitsConfig,
     PiiConfig,
     ProcessingConfig,
+    QdrantConfig,
+    RedisConfig,
     RetryConfig,
     SearchConfig,
     SecurityConfig,
@@ -61,10 +63,12 @@ class EmailOpsConfig(BaseModel):
     directories: DirectoryConfig = Field(default_factory=DirectoryConfig)
     core: CoreConfig = Field(default_factory=CoreConfig)
     database: DatabaseConfig = Field(default_factory=DatabaseConfig)
+    redis: RedisConfig = Field(default_factory=RedisConfig)
     processing: ProcessingConfig = Field(default_factory=ProcessingConfig)
     embedding: EmbeddingConfig = Field(default_factory=EmbeddingConfig)
     gcp: GcpConfig = Field(default_factory=GcpConfig)
     digitalocean: DigitalOceanLLMConfig = Field(default_factory=DigitalOceanLLMConfig)
+    qdrant: QdrantConfig = Field(default_factory=QdrantConfig)
     retry: RetryConfig = Field(default_factory=RetryConfig)
     search: SearchConfig = Field(default_factory=SearchConfig)
     storage: StorageConfig = Field(default_factory=StorageConfig)

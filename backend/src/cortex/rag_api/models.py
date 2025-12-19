@@ -7,9 +7,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
-
 from cortex.domain_models.rag import ThreadSummary
+from pydantic import BaseModel, Field
 
 
 # -----------------------------------------------------------------------------

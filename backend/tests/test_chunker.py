@@ -19,6 +19,9 @@ class DummyTokenCounter:
     def decode(self, tokens: list[str]) -> str:
         return "".join(tokens)
 
+    def count(self, text: str) -> int:
+        return len(text)
+
 
 def test_chunk_text_merges_small_tail(monkeypatch):
     """Ensure trailing chunks smaller than min_tokens merge with the previous chunk."""

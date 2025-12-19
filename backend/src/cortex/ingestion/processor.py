@@ -51,16 +51,78 @@ class IngestionProcessor:
             options={"prefix": folder_prefix},
         )
 
-    def process_folder(self, folder_prefix: str) -> Optional[IngestJobSummary]:
-        """Process a single folder and return summary."""
-        job_request = self._build_job_request(folder_prefix)
+    def process_folder(self, folder: Any) -> Optional[IngestJobSummary]:
+        """
+        Process a single folder and return summary.
+
+        Checks if folder needs processing based on last_modified timestamp.
+        """
+        from cortex.db.models import Conversation
+        from cortex.db.session import SessionLocal
+
+        # Handle both raw prefix strings and S3ConversationFolder objects
+        if isinstance(folder, str):
+            prefix = folder
+            last_modified = None
+        else:
+            prefix = folder.prefix
+            last_modified = folder.last_modified
+
+        # Check if we can skip this folder
+        if last_modified:
+            try:
+                with SessionLocal() as session:
+                    # Deterministic lookup by tenant/folder
+                    # (We rely on the unique constraint/index on these fields)
+                    existing = (
+                        session.query(Conversation)
+                        .filter(
+                            Conversation.tenant_id == self.tenant_id,
+                            Conversation.folder_name == folder.name
+                            if hasattr(folder, "name")
+                            else prefix.rstrip("/").split("/")[-1],
+                        )
+                        .first()
+                    )
+
+                    if existing and existing.extra_data:
+                        saved_mod = existing.extra_data.get("source_last_modified")
+                        if saved_mod:
+                            # Convert saved ISO string back to datetime if needed, or compare naive/aware carefully
+                            # Assuming saved as ISO format string by serializer
+                            from dateutil import parser
+
+                            if isinstance(saved_mod, str):
+                                saved_mod_dt = parser.parse(saved_mod)
+                            else:
+                                saved_mod_dt = saved_mod
+
+                            # Ensure Timezone awareness compatibility
+                            if saved_mod_dt.tzinfo is None and last_modified.tzinfo:
+                                # Assume UTC for saved if naive
+                                from datetime import timezone
+
+                                saved_mod_dt = saved_mod_dt.replace(tzinfo=timezone.utc)
+
+                            if saved_mod_dt >= last_modified:
+                                logger.info(f"Skipping unchanged folder: {prefix}")
+                                return None
+            except Exception as e:
+                logger.warning(f"Failed to check existing record for {prefix}: {e}")
+
+        job_request = self._build_job_request(prefix)
+
+        # Pass timestamp to job options so mailroom can persist it
+        if last_modified:
+            job_request.options["source_last_modified"] = last_modified.isoformat()
+
         try:
             summary = process_job(job_request)
             self.stats.folders_processed += 1
             self.stats.jobs_created += 1
             return summary
         except Exception as exc:
-            logger.error("Ingestion failed for %s: %s", folder_prefix, exc)
+            logger.error("Ingestion failed for %s: %s", prefix, exc)
             self.stats.errors += 1
             return None
 
@@ -83,7 +145,7 @@ class IngestionProcessor:
 
         with ThreadPoolExecutor(max_workers=num_workers) as executor:
             futures = {
-                executor.submit(self.process_folder, folder.prefix): folder
+                executor.submit(self.process_folder, folder): folder
                 for folder in folders
             }
 
@@ -127,8 +189,8 @@ class IngestionProcessor:
         progress = {"count": 0}
 
         def process_single(folder) -> Optional[IngestJobSummary]:
-            prefix = folder.prefix
-            return self.process_folder(prefix)
+            # prefix = folder.prefix
+            return self.process_folder(folder)
 
         with ThreadPoolExecutor(max_workers=num_workers) as executor:
             futures = {executor.submit(process_single, f): f for f in folders}

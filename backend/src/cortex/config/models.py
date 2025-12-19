@@ -177,6 +177,38 @@ class DatabaseConfig(BaseModel):
 
 
 # -----------------------------------------------------------------------------
+# Redis Configuration
+# -----------------------------------------------------------------------------
+
+
+class RedisConfig(BaseModel):
+    """Redis connection configuration."""
+
+    url: str = Field(
+        default_factory=lambda: _env("REDIS_URL", "redis://localhost:6379"),
+        description="Redis connection URL",
+    )
+    host: Optional[str] = Field(
+        default_factory=lambda: _env("REDIS_HOST", None),
+        description="Redis host",
+    )
+    port: int = Field(
+        default_factory=lambda: _env("REDIS_PORT", 6379, int),
+        description="Redis port",
+    )
+    password: Optional[str] = Field(
+        default_factory=lambda: _env("REDIS_PASSWORD", None),
+        description="Redis password",
+    )
+    ssl: bool = Field(
+        default_factory=lambda: _env("REDIS_SSL", False, bool),
+        description="Use SSL for Redis connection",
+    )
+
+    model_config = {"extra": "forbid"}
+
+
+# -----------------------------------------------------------------------------
 # Processing Configuration
 # -----------------------------------------------------------------------------
 
@@ -185,16 +217,25 @@ class ProcessingConfig(BaseModel):
     """Text processing configuration."""
 
     chunk_size: int = Field(
-        default=1600, ge=100, le=10000, description="Target chunk size in tokens"
+        default_factory=lambda: _env("CHUNK_SIZE", 1600, int),
+        ge=100,
+        le=10000,
+        description="Target chunk size in tokens",
     )
     chunk_overlap: int = Field(
-        default=200, ge=0, le=500, description="Overlap between chunks in tokens"
+        default_factory=lambda: _env("CHUNK_OVERLAP", 200, int),
+        ge=0,
+        le=500,
+        description="Overlap between chunks in tokens",
     )
     batch_size: int = Field(
-        default=64, ge=1, le=1000, description="Batch size for embedding"
+        default_factory=lambda: _env("EMBED_BATCH", 64, int),
+        ge=1,
+        le=1000,
+        description="Batch size for embedding",
     )
     num_workers: int = Field(
-        default=8,
+        default_factory=lambda: _env("NUM_WORKERS", 8, int),
         ge=1,
         le=64,
         description="Number of parallel workers for GPU saturation",
@@ -506,25 +547,46 @@ class RetryConfig(BaseModel):
     """
 
     max_retries: int = Field(
-        default=3, ge=0, le=10, description="Maximum retry attempts"
+        default_factory=lambda: _env("VERTEX_MAX_RETRIES", 3, int),
+        ge=0,
+        le=10,
+        description="Maximum retry attempts",
     )
     initial_backoff_seconds: float = Field(
-        default=1.0, ge=0.1, le=30.0, description="Initial backoff delay"
+        default_factory=lambda: _env("VERTEX_BACKOFF_INITIAL", 1.0, float),
+        ge=0.1,
+        le=30.0,
+        description="Initial backoff delay",
     )
     backoff_multiplier: float = Field(
-        default=2.0, ge=1.0, le=5.0, description="Backoff multiplier"
+        default_factory=lambda: _env("VERTEX_BACKOFF_MULTIPLIER", 2.0, float),
+        ge=1.0,
+        le=5.0,
+        description="Backoff multiplier",
     )
     rate_limit_per_sec: float = Field(
-        default=5.0, ge=0.0, le=100.0, description="Rate limit (requests/sec)"
+        default_factory=lambda: _env("API_RATE_LIMIT", 5.0, float),
+        ge=0.0,
+        le=100.0,
+        description="Rate limit (requests/sec)",
     )
     rate_limit_capacity: int = Field(
-        default=10, ge=1, le=100, description="Rate limit bucket capacity"
+        default_factory=lambda: _env("API_RATE_LIMIT_CAPACITY", 10, int),
+        ge=1,
+        le=100,
+        description="Rate limit bucket capacity",
     )
     circuit_failure_threshold: int = Field(
-        default=5, ge=1, le=50, description="Failures before circuit trips"
+        default_factory=lambda: _env("CIRCUIT_FAILURE_THRESHOLD", 5, int),
+        ge=1,
+        le=50,
+        description="Failures before circuit trips",
     )
     circuit_reset_seconds: int = Field(
-        default=60, ge=1, le=600, description="Circuit reset timeout"
+        default_factory=lambda: _env("CIRCUIT_RESET_SECONDS", 60, int),
+        ge=1,
+        le=600,
+        description="Circuit reset timeout",
     )
 
     model_config = {"extra": "forbid"}
@@ -543,45 +605,76 @@ class SearchConfig(BaseModel):
     """
 
     fusion_strategy: Literal["rrf", "weighted_sum"] = Field(
-        default="rrf", description="Fusion strategy for hybrid search"
+        default_factory=lambda: _env("FUSION_STRATEGY", "rrf"),
+        description="Fusion strategy for hybrid search",
     )
     k: int = Field(
-        default=50, ge=1, le=500, description="Number of results to retrieve"
+        default_factory=lambda: _env("SEARCH_K", 50, int),
+        ge=1,
+        le=500,
+        description="Number of results to retrieve",
     )
     half_life_days: float = Field(
-        default=30.0, ge=1.0, le=365.0, description="Recency boost half-life"
+        default_factory=lambda: _env("HALF_LIFE_DAYS", 30.0, float),
+        ge=1.0,
+        le=365.0,
+        description="Recency boost half-life",
     )
     recency_boost_strength: float = Field(
-        default=1.0, ge=0.0, le=5.0, description="Recency boost strength multiplier"
+        default_factory=lambda: _env("RECENCY_BOOST_STRENGTH", 1.0, float),
+        ge=0.0,
+        le=5.0,
+        description="Recency boost strength multiplier",
     )
     mmr_lambda: float = Field(
-        default=0.5, ge=0.0, le=1.0, description="MMR diversity vs relevance tradeoff"
+        default_factory=lambda: _env("MMR_LAMBDA", 0.5, float),
+        ge=0.0,
+        le=1.0,
+        description="MMR diversity vs relevance tradeoff",
     )
     min_score: float = Field(
-        default=0.0, ge=0.0, le=1.0, description="Minimum score threshold"
+        default_factory=lambda: _env("MIN_SCORE", 0.0, float),
+        ge=0.0,
+        le=1.0,
+        description="Minimum score threshold",
     )
 
     # Additional tuning parameters
     candidates_multiplier: int = Field(
-        default=3, ge=1, le=10, description="Candidate pool multiplier"
+        default_factory=lambda: _env("CANDIDATES_MULTIPLIER", 3, int),
+        ge=1,
+        le=10,
+        description="Candidate pool multiplier",
     )
     sim_threshold: float = Field(
-        default=0.30, ge=0.0, le=1.0, description="Similarity threshold"
+        default_factory=lambda: _env("SIM_THRESHOLD_DEFAULT", 0.30, float),
+        ge=0.0,
+        le=1.0,
+        description="Similarity threshold",
     )
     reply_tokens: int = Field(
-        default=20000, ge=1000, le=100000, description="Target tokens for reply context"
+        default_factory=lambda: _env("REPLY_TOKENS_TARGET_DEFAULT", 20000, int),
+        ge=1000,
+        le=100000,
+        description="Target tokens for reply context",
     )
     fresh_tokens: int = Field(
-        default=10000,
+        default_factory=lambda: _env("FRESH_TOKENS_TARGET_DEFAULT", 10000, int),
         ge=1000,
         le=50000,
         description="Target tokens for fresh email context",
     )
     context_snippet_chars: int = Field(
-        default=8000, ge=100, le=10000, description="Max chars per context snippet"
+        default_factory=lambda: _env("CONTEXT_SNIPPET_CHARS", 8000, int),
+        ge=100,
+        le=10000,
+        description="Max chars per context snippet",
     )
     rerank_alpha: float = Field(
-        default=0.35, ge=0.0, le=1.0, description="Reranking alpha blending factor"
+        default_factory=lambda: _env("RERANK_ALPHA", 0.35, float),
+        ge=0.0,
+        le=1.0,
+        description="Reranking alpha blending factor",
     )
     reranker_endpoint: Optional[str] = Field(
         default_factory=lambda: _env("RERANKER_ENDPOINT", None),
@@ -914,3 +1007,29 @@ class UnifiedConfig(BaseModel):
     )
 
     model_config = {"extra": "forbid"}
+
+
+# -----------------------------------------------------------------------------
+# Qdrant Configuration
+# -----------------------------------------------------------------------------
+
+
+class QdrantConfig(BaseModel):
+    """Qdrant configuration."""
+
+    enabled: bool = Field(
+        default_factory=lambda: _env("QDRANT_ENABLED", False, bool),
+        description="Whether to use Qdrant for vector search",
+    )
+    url: str = Field(
+        default_factory=lambda: _env("QDRANT_URL", "http://localhost:6333"),
+        description="Qdrant API URL",
+    )
+    api_key: Optional[str] = Field(
+        default_factory=lambda: _env("QDRANT_API_KEY", None),
+        description="Qdrant API Key",
+    )
+    collection_name: str = Field(
+        default_factory=lambda: _env("QDRANT_COLLECTION", "chunks"),
+        description="Qdrant collection name",
+    )

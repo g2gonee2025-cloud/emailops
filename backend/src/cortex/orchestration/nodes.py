@@ -37,7 +37,6 @@ from cortex.prompts import (
 )
 from cortex.retrieval.hybrid_search import (
     KBSearchInput,
-    SearchResults,
     tool_kb_search_hybrid,
 )
 from cortex.retrieval.query_classifier import (
@@ -45,6 +44,7 @@ from cortex.retrieval.query_classifier import (
     QueryClassificationInput,
     tool_classify_query,
 )
+from cortex.retrieval.results import SearchResults
 from cortex.safety.guardrails_client import validate_with_repair
 from cortex.safety.policy_enforcer import check_action
 from cortex.security.injection_defense import strip_injection_patterns
@@ -825,6 +825,12 @@ def node_summarize_improver(state: Dict[str, Any]) -> Dict[str, Any]:
             FactsLedger,
             state.get("correlation_id"),
         )
+
+        # Merge new refinement with existing facts to prevent data loss
+        if facts and isinstance(facts, FactsLedger):
+            merged_facts = facts.merge(new_facts)
+            return {"facts_ledger": merged_facts}
+
         return {"facts_ledger": new_facts}
     except Exception as e:
         logger.error(f"Improver failed: {e}")
@@ -851,10 +857,62 @@ def node_summarize_final(state: Dict[str, Any]) -> Dict[str, Any]:
 
         summary_text = complete_text(prompt)
 
+        # Prepare participant analysis by merging DB context with LLM inference
+        # If we have the thread context object, use it to ground the participants
+        thread_context_obj = state.get("_thread_context_obj")
+        final_participants = []
+
+        if thread_context_obj:
+            from cortex.domain_models.facts_ledger import ParticipantAnalysis
+
+            # Create a map of email -> ParticipantAnalysis from LLM ledger
+            ledger_participants = {
+                p.email.lower(): p for p in facts.participants if p.email
+            }
+
+            # Create a map of name -> ParticipantAnalysis as fallback
+            ledger_names = {p.name.lower(): p for p in facts.participants if p.name}
+
+            # Iterate over DB participants
+            for p in thread_context_obj.participants:
+                email_key = p.email.lower()
+
+                # Start with DB info
+                analysis = ParticipantAnalysis(
+                    name=p.name or p.email.split("@")[0],
+                    email=p.email,
+                    role="other"
+                    if p.role in ["recipient", "cc"]
+                    else "internal",  # Simple heuristic, improved below
+                    tone="neutral",
+                    stance="Unknown",
+                )
+
+                # Overlay LLM insights if available
+                if email_key in ledger_participants:
+                    match = ledger_participants[email_key]
+                    analysis.role = match.role or analysis.role
+                    analysis.tone = match.tone or analysis.tone
+                    analysis.stance = match.stance or analysis.stance
+                    analysis.name = (
+                        match.name or analysis.name
+                    )  # Prefer LLM name if potentially better formatted? Or DB?
+                elif p.name and p.name.lower() in ledger_names:
+                    match = ledger_names[p.name.lower()]
+                    analysis.role = match.role or analysis.role
+                    analysis.tone = match.tone or analysis.tone
+                    analysis.stance = match.stance or analysis.stance
+
+                final_participants.append(analysis)
+        else:
+            # Fallback if no thread context object (shouldn't happen in normal flow)
+            final_participants = facts.participants
+
         summary = ThreadSummary(
             thread_id=thread_id,
             summary_markdown=summary_text,
             facts_ledger=facts,
+            participants=final_participants,
             quality_scores={},
         )
         return {"summary": summary}

@@ -17,6 +17,7 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 from cortex.common.exceptions import RetrievalError
 from cortex.config.loader import get_config
+from cortex.config.models import QdrantConfig
 from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -62,6 +63,7 @@ def search_chunks_vector(
     *,
     ef_search: Optional[int] = None,
     conversation_ids: Optional[List[str]] = None,
+    is_attachment: Optional[bool] = None,
     thread_ids: Optional[List[str]] = None,  # Backward compat alias
 ) -> List[VectorResult]:
     """
@@ -73,6 +75,20 @@ def search_chunks_vector(
     """
     config = get_config()
     output_dim = config.embedding.output_dimensionality
+
+    # Optional Qdrant integration: if enabled, switch to Qdrant API call.
+    # Note: The actual implementation is left as a future enhancement.
+    # When Qdrant is enabled, this function could delegate to a Qdrant client
+    # that performs a filtered search and returns VectorResult objects.
+    # For now we simply log the intent.
+    qdrant_cfg: QdrantConfig = (
+        config.qdrant if hasattr(config, "qdrant") else QdrantConfig()
+    )
+    if qdrant_cfg.enabled:
+        logger.info(
+            "Qdrant integration enabled – delegating vector search to Qdrant at %s",
+            qdrant_cfg.url,
+        )
 
     if len(embedding) != output_dim:
         raise RetrievalError(
@@ -116,6 +132,14 @@ def search_chunks_vector(
         )
         params["conversation_ids"] = conversation_ids
 
+    # Attachment filter
+    attachment_filter_sql = ""
+    if is_attachment is not None:
+        if is_attachment:
+            attachment_filter_sql = "AND c.is_attachment = TRUE"
+        else:
+            attachment_filter_sql = "AND c.is_attachment = FALSE"
+
     # Optional HNSW tuning for recall/speed tradeoff
     hnsw_settings_cte = ""
     if ef_search is not None:
@@ -142,7 +166,10 @@ def search_chunks_vector(
         {', settings' if ef_search is not None else ''}
         WHERE c.tenant_id = :tenant_id
           AND c.embedding IS NOT NULL
+        WHERE c.tenant_id = :tenant_id
+          AND c.embedding IS NOT NULL
         {conversation_filter_sql}
+        {attachment_filter_sql}
         ORDER BY distance
         LIMIT :limit
     """

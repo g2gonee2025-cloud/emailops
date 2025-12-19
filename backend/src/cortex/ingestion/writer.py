@@ -192,6 +192,7 @@ class DBWriter:
                 )
 
             # 3. Write chunks with metadata
+            current_chunk_ids = []
             for chunk_data in results.get("chunks", []):
                 source = (
                     "attachment" if chunk_data.get("is_attachment") else "email_body"
@@ -211,6 +212,27 @@ class DBWriter:
                     attachment_id=chunk_data.get("attachment_id"),
                     extra_data=chunk_data.get("extra_data"),
                 )
+                current_chunk_ids.append(chunk_data["chunk_id"])
+
+            # 4. Cleanup stale chunks
+            # If we processed the conversation, any existing chunks NOT in the new list should be removed.
+            # This handles cases where content changed (new hash -> new ID) or attachments were deleted.
+            if conv_data and "conversation_id" in conv_data:
+                cid = conv_data["conversation_id"]
+                from sqlalchemy import delete
+
+                # Delete chunks for this conversation that are NOT in the current set
+                if current_chunk_ids:
+                    stmt = delete(Chunk).where(
+                        Chunk.conversation_id == cid,
+                        Chunk.chunk_id.notin_(current_chunk_ids),
+                    )
+                else:
+                    # If no chunks produced (empty convo?), delete all existing chunks
+                    stmt = delete(Chunk).where(Chunk.conversation_id == cid)
+
+                deleted = self.session.execute(stmt)
+                logger.info(f"Cleaned up {deleted.rowcount} stale chunks for {cid}")
 
             self.session.commit()
             logger.info(f"Successfully wrote job results for {job.job_id}")

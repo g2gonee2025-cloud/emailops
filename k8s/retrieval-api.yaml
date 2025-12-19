@@ -1,0 +1,172 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: retrieval-api
+  namespace: emailops
+  labels:
+    app: emailops
+    component: retrieval
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: emailops
+      component: retrieval
+  template:
+    metadata:
+      labels:
+        app: emailops
+        component: retrieval
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      priorityClassName: emailops-high-priority
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 4Gi
+      containers:
+        # Container 1: KaLM Embeddings (port 8000)
+        - name: embeddings-vllm
+          image: vllm/vllm-openai:latest
+          args:
+            - "--model"
+            - "tencent/KaLM-Embedding-Gemma3-12B-2511"
+            - "--task"
+            - "embed"
+            - "--enforce-eager"
+            - "--trust-remote-code"
+            - "--port"
+            - "8000"
+            - "--max-model-len"
+            - "8192"
+            - "--max-num-seqs"
+            - "256"
+            - "--gpu-memory-utilization"
+            - "0.55"
+          env:
+            - name: HF_HUB_ENABLE_HF_TRANSFER
+              value: "1"
+            - name: CUDA_VISIBLE_DEVICES
+              value: "0"
+          ports:
+            - containerPort: 8000
+              name: embeddings
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: dshm
+          resources:
+            requests:
+              memory: "32Gi"
+              cpu: "4"
+            limits:
+              memory: "40Gi"
+              cpu: "8"
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            failureThreshold: 60
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 60
+            periodSeconds: 20
+
+        # Container 2: MXBAI Reranker (port 8001)
+        - name: reranker-vllm
+          image: vllm/vllm-openai:latest
+          args:
+            - "--model"
+            - "mixedbread-ai/mxbai-rerank-large-v2"
+            - "--task"
+            - "score"
+            - "--port"
+            - "8001"
+            - "--max-model-len"
+            - "8192"
+            - "--trust-remote-code"
+            - "--gpu-memory-utilization"
+            - "0.15"
+          env:
+            - name: HF_HUB_ENABLE_HF_TRANSFER
+              value: "1"
+            - name: CUDA_VISIBLE_DEVICES
+              value: "0"
+          ports:
+            - containerPort: 8001
+              name: reranker
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: dshm
+          resources:
+            requests:
+              memory: "8Gi"
+              cpu: "2"
+            limits:
+              memory: "16Gi"
+              cpu: "4"
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8001
+            failureThreshold: 60
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8001
+            initialDelaySeconds: 30
+            periodSeconds: 20
+
+      tolerations:
+        - key: "nvidia.com/gpu"
+          operator: "Exists"
+          effect: "NoSchedule"
+      nodeSelector:
+        doks.digitalocean.com/node-pool: pool-gpu-h200
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: embeddings-api
+  namespace: emailops
+  labels:
+    app: emailops
+    component: retrieval
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8000
+      protocol: TCP
+      name: http
+  selector:
+    app: emailops
+    component: retrieval
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reranker-api
+  namespace: emailops
+  labels:
+    app: emailops
+    component: retrieval
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8001
+      protocol: TCP
+      name: http
+  selector:
+    app: emailops
+    component: retrieval

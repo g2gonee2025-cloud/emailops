@@ -67,7 +67,7 @@ Address all issues raised while maintaining professionalism.
 PROMPT_CRITIQUE_EMAIL: str = _with_base(
     """Review this email draft for:
 1. Tone appropriateness
-2. Clarity and conciseness  
+2. Clarity and conciseness
 3. Factual accuracy (based on provided context)
 4. Policy compliance
 5. Formatting issues
@@ -86,7 +86,13 @@ Provide specific, actionable feedback.
 PROMPT_SUMMARIZE_ANALYST: str = _with_base(
     """
 Analyze this email thread and extract a comprehensive facts ledger.
-Identify: explicit asks, commitments, key dates, unknowns, and any concerning promises.
+
+1. Participants: Identify everyone involved. For each, infer:
+   - Role: (client, broker, underwriter, internal, other)
+   - Tone: (professional, frustrated, urgent, friendly, demanding, neutral)
+   - Stance: Brief description of their position or key interests
+2. Facts: Identify explicit asks, commitments, key dates, unknowns, and any concerning promises.
+
 Be thorough but precise. Every item must be grounded in the actual emails.
 """
 )

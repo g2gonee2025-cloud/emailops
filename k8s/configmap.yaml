@@ -19,6 +19,7 @@ data:
   # Embedding provider
   EMBED_PROVIDER: "digitalocean"
   DO_LLM_BASE_URL: "http://embeddings-api.emailops.svc.cluster.local"
+  OUTLOOKCORTEX_QDRANT_URL: "http://qdrant.emailops.svc.cluster.local:6333"
 
 
 

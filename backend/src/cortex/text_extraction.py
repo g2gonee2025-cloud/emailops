@@ -10,6 +10,8 @@ import contextlib
 import logging
 import os
 import re
+import threading
+import time
 from pathlib import Path
 from typing import Any, Callable, Iterable, Sequence, cast
 
@@ -38,6 +40,45 @@ RTF_EXTENSIONS = {".rtf"}
 EMAIL_EXTENSIONS = {".eml", ".msg"}
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".gif", ".webp"}
 MBOX_EXTENSIONS = {".mbox"}
+
+# Global cache for expensive text extraction operations
+# (cached_at, mtime, size, text)
+_extraction_cache: dict[tuple[Path, int | None], tuple[float, float, int, str]] = {}
+_extraction_cache_lock = threading.Lock()
+_CACHE_TTL = int(os.getenv("EXTRACTION_CACHE_TTL", "3600"))  # 1 hour TTL
+
+
+def _is_cache_valid(
+    cache_entry: tuple[float, float, int, str],
+    *,
+    path: Path,
+) -> bool:
+    """
+    Check if a cached extraction result is still valid.
+    Validity requires:
+      - TTL not expired, and
+      - file mtime/size unchanged since cache was written.
+    """
+    try:
+        cached_at, cached_mtime, cached_size, _txt = cache_entry
+    except Exception:
+        return False
+
+    # TTL check
+    if (time.time() - float(cached_at)) > _CACHE_TTL:
+        return False
+
+    try:
+        st = path.stat()
+        cur_mtime = float(st.st_mtime)
+        cur_size = int(st.st_size)
+    except Exception:
+        return False
+
+    # Use small epsilon for float comparison safety
+    return (abs(cur_mtime - float(cached_mtime)) < 1e-6) and (
+        cur_size == int(cached_size)
+    )
 
 
 def _finalize_text(text: str, max_chars: int | None) -> str:
@@ -591,6 +632,21 @@ def extract_text(path: Path, *, max_chars: int | None = None) -> str:
         Extracted and sanitized text, possibly truncated.
         Empty string on errors or unsupported formats.
     """
+    global _extraction_cache
+
+    # Check cache first
+    try:
+        cache_key = (path.resolve(), max_chars)
+        with _extraction_cache_lock:
+            if cache_key in _extraction_cache:
+                entry = _extraction_cache[cache_key]
+                if _is_cache_valid(entry, path=path):
+                    logger.debug("Using cached text extraction for %s", path.name)
+                    return entry[3]
+    except Exception as e:
+        logger.debug("Cache lookup failed for %s: %s", path, e)
+        # Proceed with extraction on cache error
+
     # Basic path validation
     try:
         if not path.exists():
@@ -709,4 +765,32 @@ def extract_text(path: Path, *, max_chars: int | None = None) -> str:
                 add_segment(ocr_text)
 
     combined = "\n\n".join(segments)
-    return _finalize_text(combined, max_chars) if combined else ""
+    result = _finalize_text(combined, max_chars) if combined else ""
+
+    # Update cache
+    if result:
+        try:
+            cache_key = (path.resolve(), max_chars)
+            with _extraction_cache_lock:
+                try:
+                    st = path.stat()
+                    _extraction_cache[cache_key] = (
+                        time.time(),
+                        float(st.st_mtime),
+                        int(st.st_size),
+                        result,
+                    )
+                except Exception:
+                    _extraction_cache[cache_key] = (time.time(), 0.0, 0, result)
+
+                # Clean old cache entries periodically
+                if len(_extraction_cache) > 100:
+                    _extraction_cache = {
+                        k: v
+                        for k, v in _extraction_cache.items()
+                        if (time.time() - float(v[0])) <= _CACHE_TTL
+                    }
+        except Exception as e:
+            logger.debug("Failed to update cache for %s: %s", path, e)
+
+    return result

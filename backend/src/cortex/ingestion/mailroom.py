@@ -204,6 +204,14 @@ def _download_sftp_tree(sftp: Any, remote_path: str, local_path: Path) -> None:
             sftp.get(remote_child, str(local_child))
 
 
+def _generate_stable_id(namespace: uuid.UUID, *args: str) -> uuid.UUID:
+    """
+    Generate a stable UUID-5 based on a namespace and a list of string arguments.
+    """
+    joined = ":".join(str(a) for a in args)
+    return uuid.uuid5(namespace, joined)
+
+
 def _ingest_conversation(
     convo_dir: Path, job: IngestJobRequest, summary: IngestJobSummary
 ) -> IngestJobSummary:
@@ -217,9 +225,12 @@ def _ingest_conversation(
     from cortex.db.session import SessionLocal, set_session_tenant
     from cortex.ingestion.attachments_log import parse_attachments_log
     from cortex.ingestion.conv_loader import load_conversation
+    from cortex.ingestion.conversation_parser import (
+        extract_participants_from_conversation_txt,
+    )
     from cortex.ingestion.quoted_masks import detect_quoted_spans
     from cortex.ingestion.text_preprocessor import get_text_preprocessor
-    from cortex.ingestion.writer import DBWriter
+    from cortex.ingestion.writer import DBWriter, compute_content_hash
 
     config = get_config()
     preprocessor = get_text_preprocessor()
@@ -235,8 +246,14 @@ def _ingest_conversation(
     # Load attachment metadata from log CSV if available
     att_log_meta = parse_attachments_log(convo_dir)
 
-    # Generate IDs
-    conversation_id = uuid.uuid4()
+    # Generate distinct namespace for this tenant to avoid collisions across tenants
+    # We use a static seed UUID for the tenant namespace base
+    tenant_ns = uuid.uuid5(uuid.NAMESPACE_DNS, f"tenant:{job.tenant_id}")
+
+    # STABLE ID: Conversation ID based on folder name (which is usually the unique conv ID from source)
+    # Using folder name as the stable key for the conversation within this tenant
+    conversation_id = _generate_stable_id(tenant_ns, "conversation", convo_dir.name)
+
     now = datetime.now(timezone.utc)
 
     # Extract manifest and summary data
@@ -266,10 +283,6 @@ def _ingest_conversation(
             pass
 
     # Extract participants from Conversation.txt (manifest doesn't have messages array)
-    from cortex.ingestion.conversation_parser import (
-        extract_participants_from_conversation_txt,
-    )
-
     raw_body = convo_data.get("conversation_txt", "")
     participants = extract_participants_from_conversation_txt(raw_body)
 
@@ -287,11 +300,11 @@ def _ingest_conversation(
         "extra_data": {
             "source_path": str(convo_dir),
             "ingest_source": job.source_type,
+            "source_last_modified": job.options.get("source_last_modified"),
         },
     }
 
     # Process body text
-    raw_body = convo_data.get("conversation_txt", "")
     cleaned_body, body_meta = preprocessor.prepare_for_indexing(
         raw_body, text_type="email", tenant_id=job.tenant_id
     )
@@ -301,14 +314,22 @@ def _ingest_conversation(
 
     # Process attachments
     attachments_data: List[Dict[str, Any]] = []
-    for att in convo_data.get("attachments", []):
-        att_id = uuid.uuid4()
+    sorted_attachments = sorted(
+        convo_data.get("attachments", []), key=lambda x: x["path"]
+    )
+
+    for att in sorted_attachments:
         filename = Path(att["path"]).name
 
         # Skip metadata/generated files that shouldn't be chunked
         skip_filenames = {"attachments_log.csv", "Conversation_human.txt"}
         if filename in skip_filenames:
             continue
+
+        # STABLE ID: Attachment ID based on conversation ID and filename
+        att_id = _generate_stable_id(
+            tenant_ns, "attachment", str(conversation_id), filename
+        )
 
         raw_att_text = att.get("text", "")
         cleaned_att_text, att_meta = preprocessor.prepare_for_indexing(
@@ -346,9 +367,21 @@ def _ingest_conversation(
             )
         )
         for c in body_chunks:
+            # STABLE ID: Chunk ID based on parent (conversation), position, and content hash
+            # Including content hash ensures that if text changes, we get new chunks
+            content_hash = compute_content_hash(c.text)
+            chunk_id = _generate_stable_id(
+                tenant_ns,
+                "chunk",
+                str(conversation_id),
+                "body",
+                str(c.position),
+                content_hash,
+            )
+
             chunks_data.append(
                 {
-                    "chunk_id": uuid.uuid4(),
+                    "chunk_id": chunk_id,
                     "conversation_id": conversation_id,
                     "is_attachment": False,
                     "text": c.text,
@@ -372,9 +405,19 @@ def _ingest_conversation(
                 )
             )
             for c in att_chunks:
+                # STABLE ID: Chunk ID based on parent (attachment), position, and content hash
+                content_hash = compute_content_hash(c.text)
+                chunk_id = _generate_stable_id(
+                    tenant_ns,
+                    "chunk",
+                    str(att["attachment_id"]),
+                    str(c.position),
+                    content_hash,
+                )
+
                 chunks_data.append(
                     {
-                        "chunk_id": uuid.uuid4(),
+                        "chunk_id": chunk_id,
                         "conversation_id": conversation_id,
                         "attachment_id": att["attachment_id"],
                         "is_attachment": True,
@@ -397,6 +440,79 @@ def _ingest_conversation(
         "attachments": attachments_data,
         "chunks": chunks_data,
     }
+
+    # --- Summarization Step (Chunks-based) ---
+    # User requested to use the chunks we just created, which includes attachments!
+    if chunks_data:
+        try:
+            from cortex.intelligence.summarizer import ConversationSummarizer
+
+            # 1. Gather text from chunks
+            # Separate body and attachments for cleaner formatting
+            body_chunks = sorted(
+                [
+                    c
+                    for c in chunks_data
+                    if not c.get("is_attachment") and not c.get("is_summary")
+                ],
+                key=lambda x: x.get("position", 0),
+            )
+            att_chunks = sorted(
+                [c for c in chunks_data if c.get("is_attachment")],
+                key=lambda x: (x.get("attachment_id"), x.get("position", 0)),
+            )
+
+            context_parts = []
+
+            # Add message body parts
+            if body_chunks:
+                context_parts.append("--- Conversation Messages ---")
+                for c in body_chunks:
+                    context_parts.append(c.get("text", ""))
+
+            # Add attachment parts
+            if att_chunks:
+                context_parts.append("\n--- Attachments ---")
+                for c in att_chunks:
+                    # simplistic header per attachment change could be nice, but simple concat works
+                    context_parts.append(c.get("text", ""))
+
+            summary_context = "\n\n".join(context_parts)
+
+            if summary_context.strip():
+                summarizer = ConversationSummarizer()
+                summary_text = summarizer.generate_summary(summary_context)
+
+                if summary_text:
+                    summary_embedding = summarizer.embed_summary(summary_text)
+
+                    # Create a summary chunk
+                    summary_chunk_id = _generate_stable_id(
+                        tenant_ns, "chunk", str(conversation_id), "summary"
+                    )
+
+                    chunks_data.append(
+                        {
+                            "chunk_id": summary_chunk_id,
+                            "conversation_id": conversation_id,
+                            "is_attachment": False,
+                            "is_summary": True,
+                            "chunk_type": "summary",
+                            "text": summary_text,
+                            "embedding": summary_embedding,
+                            "position": -1,
+                            "char_start": 0,
+                            "char_end": len(summary_text),
+                            "section_path": "summary",
+                            "extra_data": {"generated_by": "ConversationSummarizer"},
+                        }
+                    )
+                    logger.info(
+                        f"Generated summary chunk using {len(summary_context)} chars of context"
+                    )
+        except Exception as e:
+            logger.warning(f"Summarization failed during ingestion: {e}")
+    # -----------------------------------------------------
 
     # Write to database
     logger.info(

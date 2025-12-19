@@ -21,12 +21,16 @@ from pydantic import BaseModel, Field
 logger = logging.getLogger(__name__)
 
 
+from datetime import datetime  # noqa: E402
+
+
 class S3ConversationFolder(BaseModel):
     """Represents a conversation folder in S3."""
 
     prefix: str  # e.g., "outlook/EML-2024-12-01_ABC123 - Subject/"
     name: str  # e.g., "EML-2024-12-01_ABC123 - Subject"
     files: List[str] = Field(default_factory=list)  # List of file keys in this folder
+    last_modified: Optional[datetime] = None  # Max mtime of files in folder
 
 
 class S3SourceHandler:
@@ -115,28 +119,37 @@ class S3SourceHandler:
                 seen_folders.add(folder_prefix)
 
                 # List files in this folder
-                files = self._list_folder_files(folder_prefix)
+                files, max_mtime = self._list_folder_files(folder_prefix)
 
                 yield S3ConversationFolder(
                     prefix=folder_prefix,
                     name=folder_name,
                     files=files,
+                    last_modified=max_mtime,
                 )
 
                 folder_count += 1
                 if limit and folder_count >= limit:
                     return
 
-    def _list_folder_files(self, prefix: str) -> List[str]:
-        """List all files in a folder (recursively)."""
+    def _list_folder_files(self, prefix: str) -> tuple[List[str], Optional[datetime]]:
+        """List all files in a folder (recursively) and find max mtime."""
         files = []
+        max_mtime = None
+
         paginator = self.client.get_paginator("list_objects_v2")
 
         for page in paginator.paginate(Bucket=self.bucket, Prefix=prefix):
             for obj in page.get("Contents", []):
                 files.append(obj["Key"])
 
-        return files
+                # Track max mtime
+                if "LastModified" in obj:
+                    mt = obj["LastModified"]
+                    if max_mtime is None or mt > max_mtime:
+                        max_mtime = mt
+
+        return files, max_mtime
 
     def build_folder(self, prefix: str) -> S3ConversationFolder:
         """
@@ -147,8 +160,10 @@ class S3SourceHandler:
         """
         normalized_prefix = prefix if prefix.endswith("/") else f"{prefix}/"
         name = normalized_prefix.rstrip("/").split("/")[-1]
-        files = self._list_folder_files(normalized_prefix)
-        return S3ConversationFolder(prefix=normalized_prefix, name=name, files=files)
+        files, max_mtime = self._list_folder_files(normalized_prefix)
+        return S3ConversationFolder(
+            prefix=normalized_prefix, name=name, files=files, last_modified=max_mtime
+        )
 
     def download_conversation_folder(
         self,

@@ -20,7 +20,7 @@ def reset_runtime_singleton(monkeypatch):
 def test_get_runtime_exposes_retry_config():
     rt = runtime.get_runtime()
     assert isinstance(rt, runtime.LLMRuntime)
-    assert getattr(rt, "retry_config") is not None
+    assert rt.retry_config is not None
 
 
 def test_complete_text_ignores_nonstring_reasoning():

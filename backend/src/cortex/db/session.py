@@ -120,7 +120,9 @@ def set_session_tenant(session: Session, tenant_id: str) -> None:
         )
 
     try:
-        session.execute(text(f"SET app.current_tenant = '{tenant_id}'"))
+        session.execute(
+            text("SET app.current_tenant = :tenant_id"), {"tenant_id": tenant_id}
+        )
         logger.debug(f"Set RLS tenant context: {tenant_id}")
     except Exception as e:
         raise TransactionError(

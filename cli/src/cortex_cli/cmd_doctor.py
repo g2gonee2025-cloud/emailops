@@ -348,6 +348,35 @@ def check_redis(_config: Any) -> tuple[bool, str | None]:
         return False, str(e)
 
 
+def check_reranker(config: Any) -> tuple[bool, str | None]:
+    """Check reranker endpoint connectivity."""
+    try:
+        import httpx
+
+        reranker_endpoint = getattr(config.search, "reranker_endpoint", None)
+        if not reranker_endpoint:
+            return (
+                False,
+                "No reranker endpoint configured (OUTLOOKCORTEX_RERANKER_ENDPOINT)",
+            )
+
+        # Test health endpoint
+        health_url = f"{reranker_endpoint.rstrip('/')}/health"
+        try:
+            resp = httpx.get(health_url, timeout=5.0)
+            if resp.status_code == 200:
+                return True, None
+            return False, f"Reranker returned status {resp.status_code}"
+        except httpx.ConnectError:
+            return False, f"Cannot connect to reranker at {reranker_endpoint}"
+        except httpx.TimeoutException:
+            return False, f"Reranker timeout at {reranker_endpoint}"
+    except ImportError:
+        return False, "httpx not installed (pip install httpx)"
+    except Exception as e:
+        return False, str(e)
+
+
 # -------------------------
 # Export & DB Checks (Blueprint §13.3)
 # -------------------------
@@ -616,6 +645,11 @@ Examples:
         "--check-embeddings", action="store_true", help="Test embedding functionality"
     )
     parser.add_argument(
+        "--check-reranker",
+        action="store_true",
+        help="Test reranker endpoint connectivity",
+    )
+    parser.add_argument(
         "--json", action="store_true", help="Emit machine-readable JSON only"
     )
     parser.add_argument(
@@ -773,23 +807,52 @@ Examples:
 
         success, dim = _probe_embeddings(provider)
         embeddings_success, embeddings_dim = success, dim
+
+        # Determine actual embedding endpoint being used
+        embed_endpoint = (
+            os.environ.get("EMBED_ENDPOINT")
+            or os.environ.get("DO_LLM_BASE_URL")
+            or "http://embeddings-api.emailops.svc.cluster.local"
+        )
+        if not embed_endpoint.endswith("/v1"):
+            embed_endpoint = f"{embed_endpoint.rstrip('/')}/v1"
+
         if not success:
             embeddings_error = True
             if not args.json:
-                print(
-                    f"  {_c('✗', 'red')} Embedding test failed for provider '{provider}'"
-                )
+                print(f"  {_c('✗', 'red')} Embedding test failed")
+                print(f"    Endpoint: {_c(embed_endpoint, 'dim')}")
                 print(f"\n  {_c('TROUBLESHOOTING:', 'yellow')}")
-                print("    • Check GOOGLE_APPLICATION_CREDENTIALS is set")
+                print(f"    • Ensure embedding server is running at: {embed_endpoint}")
+                print("    • Check EMBED_ENDPOINT or DO_LLM_BASE_URL env var")
                 print(
-                    "    • Verify API access with: gcloud auth application-default login"
+                    "    • For local dev, start vLLM: python -m vllm.entrypoints.openai.api_server"
                 )
-                print("    • Ensure Vertex AI API is enabled in your GCP project")
         else:
             if not args.json:
                 print(f"  {_c('✓', 'green')} Embeddings working")
+                print(f"    Endpoint:  {_c(embed_endpoint, 'dim')}")
                 print(f"    Dimension: {_c(str(dim), 'bold')}")
-                print(f"    Provider:  {_c(provider, 'bold')}")
+
+    # Reranker probe
+    reranker_success = None
+    reranker_error_msg = None
+    reranker_error = False
+    if args.check_reranker:
+        if not args.json:
+            print(f"\n{_c('▶ Testing reranker...', 'cyan')}")
+
+        success, error = check_reranker(config)
+        reranker_success = success
+        reranker_error_msg = error
+
+        if not success:
+            reranker_error = True
+            if not args.json:
+                print(f"  {_c('✗', 'red')} Reranker check failed: {error}")
+        else:
+            if not args.json:
+                print(f"  {_c('✓', 'green')} Reranker endpoint OK")
 
     # Exports check (Blueprint §13.3)
     exports_success = None
@@ -910,6 +973,14 @@ Examples:
                 if args.check_ingest
                 else None
             ),
+            "reranker": (
+                {
+                    "success": reranker_success,
+                    "error": reranker_error_msg,
+                }
+                if args.check_reranker
+                else None
+            ),
         }
         print(json.dumps(payload, indent=2))
     else:
@@ -919,7 +990,12 @@ Examples:
 
         # Determine if we have failures (exit 2), warnings (exit 1), or all ok (exit 0)
         has_failures = (
-            dep_error or index_error or embeddings_error or db_error or redis_error
+            dep_error
+            or index_error
+            or embeddings_error
+            or db_error
+            or redis_error
+            or reranker_error
         )
         has_warnings = (
             exports_warning or ingest_warning or bool(dep_report.missing_optional)
@@ -939,6 +1015,8 @@ Examples:
                 print(f"    {_c('✗', 'red')} Database connectivity failed")
             if redis_error:
                 print(f"    {_c('✗', 'red')} Redis connectivity failed")
+            if reranker_error:
+                print(f"    {_c('✗', 'red')} Reranker connectivity failed")
 
         if has_warnings:
             print(f"\n  {_c('Warnings:', 'yellow')}")

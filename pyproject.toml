@@ -23,6 +23,7 @@ exclude = [
     "venv",
     "*/migrations/*",
     "*/static/*",
+    "reference code",
 ]
 
 [tool.ruff.lint]

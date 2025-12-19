@@ -89,16 +89,20 @@ echo "[8/8] Deploying Embeddings API (vLLM) on $GPU_TYPE..."
 envsubst < "$SCRIPT_DIR/embeddings-vllm.yaml.template" > "$SCRIPT_DIR/embeddings-vllm.yaml"
 kubectl apply -f "$SCRIPT_DIR/embeddings-vllm.yaml"
 
+# Deploy Qdrant (Vector DB)
+echo "[9/8] Deploying Qdrant vector DB..."
+kubectl apply -f "$SCRIPT_DIR/qdrant.yaml"
+
 # Deploy Backend
-echo "[9/8] Deploying Backend API..."
+echo "[10/8] Deploying Backend API..."
 kubectl apply -f "$SCRIPT_DIR/backend-deployment.yaml"
 
 # Apply Ingress
-echo "[10/8] Applying Ingress..."
+echo "[11/8] Applying Ingress..."
 kubectl apply -f "$SCRIPT_DIR/ingress.yaml" || true
 
 # Scaling & Optimization
-echo "[11/8] Applying Scaling & Optimization Layer..."
+echo "[12/8] Applying Scaling & Optimization Layer..."
 
 # HPA
 echo "    Applying HPA..."

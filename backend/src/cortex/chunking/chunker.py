@@ -164,15 +164,24 @@ class TokenCounter:
 
 
 # Sentence boundary patterns
-SENTENCE_END_PATTERN = re.compile(r"(?<=[.!?])\s+(?=[A-Z])")
-PARAGRAPH_PATTERN = re.compile(r"\n\s*\n")
+# Sentence boundary:
+# - Western: . ! ?
+# - East Asian: 。 ！ ？
+# - Ellipsis: ...
+# - Arabic/Persian/Urdu: ؟ ۔
+# Allow common closing quotes/brackets after the punctuation, then whitespace or EoD.
+SENTENCE_END_PATTERN = re.compile(
+    r"[.!?。！？...؟۔]+" r'[)"\'\u2018\u2019»›）】〔〕〉》」』〗〙〞]*' r"(?:\s+|$)"
+)
+# Paragraph boundary: one or more blank lines (support both LF and CRLF)
+PARAGRAPH_PATTERN = re.compile(r"(?:\r?\n)\s*(?:\r?\n)+")
 
 
 def find_sentence_boundary(text: str, target_pos: int, window: int = 100) -> int:
     """
     Find the nearest sentence boundary to target_pos.
 
-    Searches within a window around target_pos for '.', '!', or '?' followed by space.
+    Searches within a window around target_pos.
     Returns the position after the sentence end, or target_pos if no boundary found.
     """
     start = max(0, target_pos - window)
@@ -184,21 +193,24 @@ def find_sentence_boundary(text: str, target_pos: int, window: int = 100) -> int
     best_dist = window + 1
 
     for match in SENTENCE_END_PATTERN.finditer(search_text):
-        abs_pos = start + match.start()
-        dist = abs(abs_pos - target_pos)
-        if dist < best_dist:
-            best_dist = dist
-            best_pos = abs_pos + len(match.group())
-
-    # Also check for paragraph boundaries
-    for match in PARAGRAPH_PATTERN.finditer(search_text):
+        # The regex matches the punctuation + spacing. The boundary is at the end of the match.
         abs_pos = start + match.end()
         dist = abs(abs_pos - target_pos)
         if dist < best_dist:
             best_dist = dist
             best_pos = abs_pos
 
-    return best_pos
+    # Also check for paragraph boundaries
+    for match in PARAGRAPH_PATTERN.finditer(search_text):
+        # Paragraph boundary is end of the blank lines
+        abs_pos = start + match.end()
+        dist = abs(abs_pos - target_pos)
+        if dist < best_dist:
+            best_dist = dist
+            best_pos = abs_pos
+
+    # Boundary clamp: ensure we don't return something beyond text length
+    return min(best_pos, len(text))
 
 
 def compute_content_hash(text: str) -> str:
@@ -256,6 +268,43 @@ def classify_chunk_type(
     return "message_body"
 
 
+def _apply_progressive_scaling(
+    total_tokens: int, max_tokens: int, overlap_tokens: int
+) -> tuple[int, int]:
+    """
+    Scale chunk size for very large texts to reduce chunk counts.
+
+    Bands:
+      ≤50 chunks -> 1x
+      51-150 -> 1.5x
+      151-500 -> 2.0x
+      500+ -> 3.0x
+    """
+    effective_chunk_size = max(1, int(max_tokens) - int(overlap_tokens))
+    estimated_chunks = max(
+        1, (total_tokens + effective_chunk_size - 1) // effective_chunk_size
+    )
+
+    factor = 1.0
+    if estimated_chunks <= 50:
+        factor = 1.0
+    elif estimated_chunks <= 150:
+        factor = 1.5
+    elif estimated_chunks <= 500:
+        factor = 2.0
+    else:
+        factor = 3.0
+
+    if factor > 1.0:
+        new_max = max(1, int(max_tokens * factor))
+        # Scale overlap to keep same ratio
+        new_overlap = int(overlap_tokens * (new_max / max(1, max_tokens)))
+        new_overlap = max(0, min(new_overlap, new_max - 1))
+        return new_max, new_overlap
+
+    return max_tokens, overlap_tokens
+
+
 def chunk_text(input_data: ChunkingInput) -> list[ChunkModel]:
     """
     Chunk text into smaller segments.
@@ -279,6 +328,14 @@ def chunk_text(input_data: ChunkingInput) -> list[ChunkModel]:
     counter = TokenCounter(model=input_data.model)
     chunks: list[ChunkModel] = []
 
+    # Pre-calculate token count for progressive scaling
+    total_tokens_pre = counter.count(text)
+
+    # Apply progressive scaling
+    eff_max_tokens, eff_overlap_tokens = _apply_progressive_scaling(
+        total_tokens_pre, input_data.max_tokens, input_data.overlap_tokens
+    )
+
     # Calculate character targets based on token targets
 
     pos = 0
@@ -294,7 +351,7 @@ def chunk_text(input_data: ChunkingInput) -> list[ChunkModel]:
 
     token_pos = 0
     while token_pos < total_tokens:
-        token_end = min(token_pos + input_data.max_tokens, total_tokens)
+        token_end = min(token_pos + eff_max_tokens, total_tokens)
         chunk_tokens = all_tokens[token_pos:token_end]
 
         chunk_text_str = counter.decode(chunk_tokens)
@@ -402,7 +459,7 @@ def chunk_text(input_data: ChunkingInput) -> list[ChunkModel]:
             logger.warning(f"Chunk metadata alignment failed: {e}")
 
         # Move forward by (max - overlap) tokens
-        step = input_data.max_tokens - input_data.overlap_tokens
+        step = eff_max_tokens - eff_overlap_tokens
         if step < 1:
             step = 1
 
@@ -477,7 +534,12 @@ def estimate_chunk_count(
 
     counter = TokenCounter()
     total_tokens = counter.count(text)
-    effective_step = max_tokens - overlap_tokens
+
+    eff_max_tokens, eff_overlap_tokens = _apply_progressive_scaling(
+        total_tokens, max_tokens, overlap_tokens
+    )
+
+    effective_step = eff_max_tokens - eff_overlap_tokens
 
     if effective_step <= 0:
         return 1

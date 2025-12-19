@@ -4,7 +4,6 @@ from pathlib import Path
 import pytest
 from starlette.requests import Request
 
-
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "backend" / "src"
 if str(SRC) not in sys.path:

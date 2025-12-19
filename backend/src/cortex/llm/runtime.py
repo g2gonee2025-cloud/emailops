@@ -796,8 +796,9 @@ class LLMRuntime:
                 raw_output = _call_model_for_json(repair_prompt)
 
             try:
-                clean = _strip_markdown_fences(raw_output or "")
-                parsed = json.loads(clean)
+                # Robust extraction first
+                parsed = _try_load_json(raw_output or "")
+
                 validation_error = _validate_json_schema(parsed, schema)
                 if validation_error:
                     last_error = validation_error
@@ -808,19 +809,13 @@ class LLMRuntime:
                     )
                     continue
                 return parsed
+            except ValueError as e:
+                # _try_load_json raises ValueError on parsing failure
+                last_error = str(e)
+                logger.warning("JSON decode failed (attempt %d): %s", attempt + 1, e)
             except json.JSONDecodeError as e:
                 last_error = f"JSON decode error: {e}"
                 logger.warning("JSON decode failed (attempt %d): %s", attempt + 1, e)
-
-                try:
-                    extracted = _extract_json_from_text(raw_output or "")
-                    if extracted:
-                        validation_error = _validate_json_schema(extracted, schema)
-                        if not validation_error:
-                            return extracted
-                        last_error = validation_error
-                except Exception:
-                    pass
             except Exception as e:
                 last_error = str(e)
                 logger.warning("JSON completion error (attempt %d): %s", attempt + 1, e)
@@ -854,44 +849,107 @@ def _validate_json_schema(
         return str(e)
 
 
-def _strip_markdown_fences(text: str) -> str:
-    t = (text or "").strip()
-    if not t.startswith("```"):
-        return t
-    lines = t.splitlines()
-    if lines and lines[0].startswith("```"):
-        lines = lines[1:]
-    if lines and lines[-1].startswith("```"):
-        lines = lines[:-1]
-    return "\n".join(lines).strip()
+def _extract_first_balanced_json_object(s: object) -> str | None:
+    """
+    Finds the first balanced JSON object (from '{' to '}') in a string.
+    Properly handles nested braces, strings with braces, and escaped characters.
+    """
+    if not isinstance(s, str):
+        return None
+
+    if not s or "{" not in s:
+        return None
+
+    first_brace = s.find("{")
+    if first_brace == -1:
+        return None
+
+    balance = 0
+    in_string = False
+    escape_next = False
+
+    try:
+        # We only care about finding the matching closing brace for the first opening brace
+        for i, char in enumerate(s[first_brace:]):
+            if escape_next:
+                escape_next = False
+                continue
+
+            if char == "\\":
+                escape_next = True
+                continue
+
+            if char == '"':
+                in_string = not in_string
+
+            if not in_string:
+                if char == "{":
+                    balance += 1
+                elif char == "}":
+                    balance -= 1
+
+                if balance == 0 and i > 0:
+                    return s[first_brace : first_brace + i + 1]
+    except Exception:
+        pass
+    return None
 
 
-def _extract_json_from_text(text: str) -> Dict[str, Any]:
+def _try_load_json(data: Any) -> Dict[str, Any]:
+    """
+    Robustly parse JSON from model output, accepting dict, bytes, or string.
+    Handles fenced code blocks and partial strings.
+    """
+    if isinstance(data, dict):
+        return data  # type: ignore
+
+    if not data:
+        raise ValueError("Empty data for JSON parsing")
+
+    s = data
+    if isinstance(data, bytes):
+        s = data.decode("utf-8")
+
+    s = str(s).strip()
+
+    # 1. Try direct parse
+    try:
+        obj = json.loads(s)
+        if isinstance(obj, dict):
+            return obj
+    except json.JSONDecodeError:
+        pass
+
+    # 2. Try fenced block extraction
     import re
 
-    m = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
-    if m:
+    # Match ```json ... ``` or just ``` ... ```
+    fenced_matches = list(
+        re.finditer(
+            r"```(?:json|json5|hjson)?\s*([\s\S]*?)\s*```", s, flags=re.IGNORECASE
+        )
+    )
+    for m in fenced_matches:
+        block = _extract_first_balanced_json_object(m.group(1))
+        if block:
+            try:
+                obj = json.loads(block)
+                if isinstance(obj, dict):
+                    return obj
+            except json.JSONDecodeError:
+                pass
+
+    # 3. Fallback: find first balanced object in entire string
+    block = _extract_first_balanced_json_object(s)
+    if block:
         try:
-            return json.loads(m.group(1))
+            obj = json.loads(block)
+            if isinstance(obj, dict):
+                return obj
         except json.JSONDecodeError:
             pass
 
-    brace_count = 0
-    start_idx = -1
-    for i, c in enumerate(text):
-        if c == "{":
-            if brace_count == 0:
-                start_idx = i
-            brace_count += 1
-        elif c == "}":
-            brace_count -= 1
-            if brace_count == 0 and start_idx >= 0:
-                candidate = text[start_idx : i + 1]
-                try:
-                    return json.loads(candidate)
-                except json.JSONDecodeError:
-                    start_idx = -1
-    return {}
+    raise ValueError(f"Failed to parse JSON from string: {s[:200]}...")
 
 
 # =============================================================================

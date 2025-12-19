@@ -119,6 +119,7 @@ def search_chunks_fts(
     tenant_id: str,
     limit: int = 50,
     conversation_ids: List[str] | None = None,
+    is_attachment: bool | None = None,
 ) -> List[ChunkFTSResult]:
     """
     Perform FTS search on chunks.
@@ -146,6 +147,14 @@ def search_chunks_fts(
         )
         params["conversation_ids"] = conversation_ids
 
+    # Attachment filter
+    attachment_filter_sql = ""
+    if is_attachment is not None:
+        if is_attachment:
+            attachment_filter_sql = "AND c.is_attachment = TRUE"
+        else:
+            attachment_filter_sql = "AND c.is_attachment = FALSE"
+
     stmt = text(
         f"""
         WITH q AS (
@@ -166,6 +175,7 @@ def search_chunks_fts(
             c.tenant_id = :tenant_id
             AND c.tsv_text @@ q.tsq
             {conversation_filter_sql}
+            {attachment_filter_sql}
         ORDER BY score DESC
         LIMIT :limit
     """

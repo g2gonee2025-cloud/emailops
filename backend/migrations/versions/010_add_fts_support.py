@@ -1,7 +1,7 @@
 """Add FTS support to chunks table.
 
 Revision ID: 010_add_fts_support
-Revises: None
+Revises: 001_initial_schema
 Create Date: 2024-12-16
 
 Adds:
@@ -15,7 +15,7 @@ from alembic import op
 
 # revision identifiers
 revision = "010_add_fts_support"
-down_revision = None
+down_revision = "001_initial_schema"
 branch_labels = None
 depends_on = None
 
@@ -25,6 +25,12 @@ def upgrade() -> None:
     op.execute(
         """
         ALTER TABLE chunks ADD COLUMN IF NOT EXISTS tenant_id VARCHAR(64);
+    """
+    )
+    # Create index on tenant_id if not exists (Checking explicitly via SQL or op)
+    op.execute(
+        """
+        CREATE INDEX IF NOT EXISTS ix_chunks_tenant_id ON chunks (tenant_id);
     """
     )
 
@@ -75,13 +81,6 @@ def upgrade() -> None:
     op.execute(
         """
         CREATE INDEX IF NOT EXISTS ix_chunks_tsv_text ON chunks USING GIN (tsv_text);
-    """
-    )
-
-    # 8. Create index on tenant_id
-    op.execute(
-        """
-        CREATE INDEX IF NOT EXISTS ix_chunks_tenant_id ON chunks (tenant_id);
     """
     )
 

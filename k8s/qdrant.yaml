@@ -1,0 +1,112 @@
+# =============================================================================
+# Qdrant on DOKS (DigitalOcean Kubernetes)
+# - Storage via DO Block Storage (PVC)
+# - ClusterIP service for in-cluster access
+# - Health checks on /healthz
+# =============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qdrant
+  namespace: emailops
+  labels:
+    app: emailops
+    component: qdrant
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: emailops
+      component: qdrant
+  template:
+    metadata:
+      labels:
+        app: emailops
+        component: qdrant
+    spec:
+      containers:
+        - name: qdrant
+          image: qdrant/qdrant:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 6333
+              name: http
+            - containerPort: 6334
+              name: grpc
+          env:
+            - name: QDRANT__SERVICE__HTTP_PORT
+              value: "6333"
+            - name: QDRANT__SERVICE__GRPC_PORT
+              value: "6334"
+          volumeMounts:
+            - name: qdrant-storage
+              mountPath: /qdrant/storage
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 6333
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 6333
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"
+      volumes:
+        - name: qdrant-storage
+          persistentVolumeClaim:
+            claimName: qdrant-storage
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: qdrant-storage
+  namespace: emailops
+  labels:
+    app: emailops
+    component: qdrant
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: do-block-storage
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qdrant
+  namespace: emailops
+  labels:
+    app: emailops
+    component: qdrant
+spec:
+  type: ClusterIP
+  selector:
+    app: emailops
+    component: qdrant
+  ports:
+    - name: http
+      protocol: TCP
+      port: 6333
+      targetPort: 6333
+    - name: grpc
+      protocol: TCP
+      port: 6334
+      targetPort: 6334

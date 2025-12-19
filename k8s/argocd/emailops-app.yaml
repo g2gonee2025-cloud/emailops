@@ -1,0 +1,61 @@
+# ArgoCD Application for emailops namespace
+# This Application syncs the k8s/ directory to the emailops namespace
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: emailops
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/AmeleyaHandayani/emailops-vertex-ai.git
+    targetRevision: HEAD
+    path: k8s
+    directory:
+      recurse: false
+      include: "retrieval-api.yaml"  # Only sync the consolidated manifest
+  destination:
+    # This will be overridden per-cluster when using ApplicationSet
+    server: https://kubernetes.default.svc
+    namespace: emailops
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+# ApplicationSet for multi-cluster deployment
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: emailops-multi-region
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - cluster: nyc2
+            url: https://kubernetes.default.svc  # Local cluster
+          - cluster: tor1
+            url: https://tor1-cluster-api-server  # Update after TOR1 provisioning
+  template:
+    metadata:
+      name: "emailops-{{cluster}}"
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/AmeleyaHandayani/emailops-vertex-ai.git
+        targetRevision: HEAD
+        path: k8s
+        directory:
+          include: "retrieval-api.yaml"
+      destination:
+        server: "{{url}}"
+        namespace: emailops
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

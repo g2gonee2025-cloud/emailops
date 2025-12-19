@@ -83,7 +83,7 @@ spec:
           operator: "Exists"
           effect: "NoSchedule"
       nodeSelector:
-        doks.digitalocean.com/node-pool: pool-gpu-h100
+        doks.digitalocean.com/node-pool: pool-gpu-h200
 ---
 apiVersion: v1
 kind: Service

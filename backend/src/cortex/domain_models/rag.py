@@ -9,9 +9,8 @@ from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional
 from uuid import UUID
 
+from cortex.domain_models.facts_ledger import FactsLedger, ParticipantAnalysis
 from pydantic import BaseModel, Field
-
-from cortex.domain_models.facts_ledger import FactsLedger
 
 
 class ThreadParticipant(BaseModel):
@@ -133,4 +132,5 @@ class ThreadSummary(BaseModel):
     quality_scores: Dict[str, Any] = Field(default_factory=dict)
     key_points: List[str] = Field(default_factory=list)
     action_items: List[str] = Field(default_factory=list)
-    participants_mentioned: List[str] = Field(default_factory=list)
+    action_items: List[str] = Field(default_factory=list)
+    participants: List[ParticipantAnalysis] = Field(default_factory=list)

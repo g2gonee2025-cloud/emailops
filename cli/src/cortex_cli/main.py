@@ -35,6 +35,11 @@ BACKEND_SRC = PROJECT_ROOT / "backend" / "src"
 if BACKEND_SRC.exists() and str(BACKEND_SRC) not in sys.path:
     sys.path.append(str(BACKEND_SRC))
 
+# Ensure CLI package is importable when running directly
+CLI_SRC = PROJECT_ROOT / "cli" / "src"
+if CLI_SRC.exists() and str(CLI_SRC) not in sys.path:
+    sys.path.insert(0, str(CLI_SRC))
+
 
 # Minimal protocol for the config object to satisfy static analysis when imports fail
 class CoreConfig(Protocol):
@@ -158,6 +163,15 @@ def _print_usage() -> None:
     for cmd, desc in utility_commands:
         print(f"    {_colorize(cmd, 'green'):12} {desc}")
 
+    print(f"\n{_colorize('DATA COMMANDS:', 'bold')}")
+    data_commands = [
+        ("db", "Database management (stats, migrate)"),
+        ("embeddings", "Embedding management (stats, backfill)"),
+        ("s3", "S3/Spaces storage (list, ingest)"),
+    ]
+    for cmd, desc in data_commands:
+        print(f"    {_colorize(cmd, 'green'):12} {desc}")
+
     print(f"\n{_colorize('COMMON OPTIONS:', 'bold')}")
     options = [
         ("--help, -h", "Show help for a command"),
@@ -276,7 +290,9 @@ def _show_status() -> None:
     )
 
 
-def _show_config(validate: bool = False, export_format: str | None = None) -> None:
+def _show_config(
+    validate: bool = False, export_format: str | None = None, section: str | None = None
+) -> None:
     """Show or validate configuration."""
     _print_banner()
 
@@ -301,9 +317,22 @@ def _show_config(validate: bool = False, export_format: str | None = None) -> No
         elif export_format == "json":
             import json
 
-            print(json.dumps(config.model_dump(), indent=2, default=str))
+            data = config.model_dump()
+            if section:
+                if section in data:
+                    data = {section: data[section]}
+                else:
+                    print(f"{_colorize('ERROR:', 'red')} Section '{section}' not found")
+                    return
+
+            print(json.dumps(data, indent=2, default=str))
         else:
-            print(f"{_colorize('Current Configuration:', 'bold')}\n")
+            title = (
+                f"Current Configuration ({section})"
+                if section
+                else "Current Configuration"
+            )
+            print(f"{_colorize(f'{title}:', 'bold')}\n")
 
             sections: list[tuple[str, list[tuple[str, object]]]] = [
                 (
@@ -325,14 +354,10 @@ def _show_config(validate: bool = False, export_format: str | None = None) -> No
                 (
                     "Search",
                     [
-                        ("Fusion Strategy", config.search.fusion_strategy),
-                        ("Results (k)", config.search.k),
-                        ("Recency Boost", config.search.recency_boost_strength),
-                        ("MMR Lambda", config.search.mmr_lambda),
-                        (
-                            "Reranker Endpoint",
-                            config.search.reranker_endpoint or "disabled",
-                        ),
+                        ("Strategy", config.search.fusion_strategy),
+                        ("K", config.search.k),
+                        ("Recency", config.search.recency_boost_strength),
+                        ("Reranker", config.search.reranker_endpoint),
                     ],
                 ),
                 (
@@ -344,10 +369,30 @@ def _show_config(validate: bool = False, export_format: str | None = None) -> No
                 ),
             ]
 
-            for section_name, items in sections:
-                print(f"  {_colorize(section_name + ':', 'cyan')}")
+            # Simple fallback for other sections if not explicitly mapped above
+            if section and section.lower() not in [s[0].lower() for s in sections]:
+                # Try to find attribute
+                attr = getattr(config, section.lower(), None)
+                if attr:
+                    # Generic display for unmapped sections
+                    print(f"  {_colorize(section.capitalize(), 'cyan')}")
+                    if hasattr(attr, "model_dump"):
+                        for k, v in attr.model_dump().items():
+                            print(f"    {k:<20} {v}")
+                    else:
+                        print(f"    {attr}")
+                    return
+                else:
+                    print(f"{_colorize('ERROR:', 'red')} Section '{section}' not found")
+                    return
+
+            for sec_name, items in sections:
+                if section and section.lower() != sec_name.lower():
+                    continue
+
+                print(f"  {_colorize(sec_name, 'cyan')}")
                 for key, value in items:
-                    print(f"    {key}: {_colorize(str(value), 'dim')}")
+                    print(f"    {key:<20} {value}")
                 print()
 
     except ImportError as e:
@@ -1104,6 +1149,17 @@ def main(args: list[str] | None = None) -> None:
     if args is None:
         args = sys.argv[1:]
 
+    # Launch interactive mode if no arguments provided
+    if not args:
+        try:
+            from cortex_cli.tui import interactive_loop
+
+            interactive_loop()
+            return
+        except ImportError:
+            # If rich/questionary not installed, fall back to help
+            pass
+
     parser = argparse.ArgumentParser(
         prog="cortex",
         description="EmailOps Cortex CLI - Email Intelligence Platform",
@@ -1560,12 +1616,25 @@ Run comprehensive system diagnostics including:
         action="store_true",
         help="Export configuration as JSON",
     )
+    config_parser.add_argument(
+        "--section",
+        help="View specific configuration section (e.g. core, search)",
+    )
 
     # Version command
     subparsers.add_parser(
         "version",
         help="Display version information",
     )
+
+    # Register new subcommand groups
+    from cortex_cli.cmd_db import setup_db_parser
+    from cortex_cli.cmd_embeddings import setup_embeddings_parser
+    from cortex_cli.cmd_s3 import setup_s3_parser
+
+    setup_db_parser(subparsers)
+    setup_embeddings_parser(subparsers)
+    setup_s3_parser(subparsers)
 
     # Parse arguments
     parsed_args = parser.parse_args(args)
@@ -1635,7 +1704,11 @@ Run comprehensive system diagnostics including:
 
     elif parsed_args.command == "config":
         export_format = "json" if parsed_args.json else None
-        _show_config(validate=parsed_args.validate, export_format=export_format)
+        _show_config(
+            validate=parsed_args.validate,
+            export_format=export_format,
+            section=getattr(parsed_args, "section", None),
+        )
 
     elif parsed_args.command == "validate":
         _run_validate(
@@ -1667,6 +1740,28 @@ Run comprehensive system diagnostics including:
 
     elif parsed_args.command == "version":
         _print_version()
+
+    # New subcommand groups
+    elif parsed_args.command == "db":
+        if hasattr(parsed_args, "func"):
+            parsed_args.func(parsed_args)
+        else:
+            print("Usage: cortex db <stats|migrate>")
+            sys.exit(1)
+
+    elif parsed_args.command == "embeddings":
+        if hasattr(parsed_args, "func"):
+            parsed_args.func(parsed_args)
+        else:
+            print("Usage: cortex embeddings <stats|backfill>")
+            sys.exit(1)
+
+    elif parsed_args.command == "s3":
+        if hasattr(parsed_args, "func"):
+            parsed_args.func(parsed_args)
+        else:
+            print("Usage: cortex s3 <list|ingest>")
+            sys.exit(1)
 
     else:
         _print_usage()

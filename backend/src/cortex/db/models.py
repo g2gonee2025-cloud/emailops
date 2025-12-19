@@ -10,7 +10,7 @@ import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from pgvector.sqlalchemy import Vector
+from pgvector.sqlalchemy import HALFVEC
 from sqlalchemy import (
     Boolean,
     DateTime,
@@ -21,7 +21,7 @@ from sqlalchemy import (
     Text,
     func,
 )
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR, UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -146,8 +146,15 @@ class Chunk(Base):
         nullable=True,
     )
     is_attachment: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    is_summary: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    chunk_type: Mapped[str] = mapped_column(
+        String(32), nullable=False, default="message_body"
+    )
     text: Mapped[str] = mapped_column(Text, nullable=False)
-    embedding = mapped_column(Vector(3840), nullable=True)  # pgvector, KaLM full dim
+    tsv_text: Mapped[Optional[Any]] = mapped_column(TSVECTOR, nullable=True)
+    embedding = mapped_column(
+        HALFVEC(3840), nullable=True
+    )  # pgvector, KaLM full dim (float16)
     position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     char_start: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     char_end: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
@@ -167,8 +174,10 @@ class Chunk(Base):
     __table_args__ = (
         Index("ix_chunks_conversation", "conversation_id"),
         Index("ix_chunks_is_attachment", "is_attachment"),
-        # Note: HNSW index removed (pgvector limit of 2000 dims for HNSW)
-        # Use IVFFlat for high-dim vectors: CREATE INDEX ON chunks USING ivfflat (embedding vector_cosine_ops)
+        # FTS Index
+        Index("ix_chunks_tsv_text", "tsv_text", postgresql_using="gin"),
+        # Vector Index (HNSW for high-dim halfvec)
+        # Note: Created via migration 011
     )
 
 

@@ -10,11 +10,20 @@ import math
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Literal, Optional
 
-import requests
+import numpy as np
 from cortex.embeddings.client import EmbeddingsClient
+from cortex.retrieval.cache import cache_query_embedding, get_cached_query_embedding
+from cortex.retrieval.filter_resolution import _resolve_filter_conversation_ids
+from cortex.retrieval.filters import parse_filter_grammar
 
 # Import QueryClassification from dedicated module per Blueprint §8.2
 from cortex.retrieval.query_classifier import QueryClassification
+from cortex.retrieval.reranking import (
+    apply_mmr,
+    call_external_reranker,
+    rerank_results,
+)
+from cortex.retrieval.results import SearchResultItem, SearchResults
 from pydantic import BaseModel, Field
 
 _embedding_client = EmbeddingsClient()
@@ -44,69 +53,6 @@ class KBSearchInput(BaseModel):
     k: Optional[int] = None
     fusion_method: Literal["rrf", "weighted_sum"] = "rrf"
     filters: Dict[str, Any] = Field(default_factory=dict)
-
-
-class SearchResultItem(BaseModel):
-    """
-    Search result item.
-
-    Blueprint §8.4 (adapted for Conversation schema):
-    * chunk_id: Optional[UUID]
-    * score: float
-    * conversation_id: str (was thread_id)
-    * attachment_id: Optional[UUID]
-    * highlights: List[str]
-    * snippet: str
-    * content: Optional[str]
-    * source: Optional[str]
-    * filename: Optional[str]
-    * metadata: Dict[str, Any]
-    """
-
-    chunk_id: Optional[str]
-    score: float
-    conversation_id: str = ""  # Primary key for Conversation schema
-    attachment_id: Optional[str] = None
-    is_attachment: bool = False
-    highlights: List[str] = Field(default_factory=list)
-    snippet: str = ""
-    content: Optional[str] = None
-    source: Optional[str] = None
-    filename: Optional[str] = None
-    metadata: Dict[str, Any] = Field(default_factory=dict)
-    lexical_score: Optional[float] = None
-    vector_score: Optional[float] = None
-    fusion_score: Optional[float] = None
-    rerank_score: Optional[float] = None
-    content_hash: Optional[str] = None
-
-    # Backward compatibility aliases
-    @property
-    def thread_id(self) -> str:
-        """Alias for conversation_id (backward compat)."""
-        return self.conversation_id
-
-    @property
-    def message_id(self) -> str:
-        """Backward compat - empty since we use conversation model."""
-        return ""
-
-
-class SearchResults(BaseModel):
-    """
-    Search results container.
-
-    Blueprint §8.4:
-    * type: Literal["search_results"]
-    * query: str
-    * reranker: Optional[str]
-    * results: List[SearchResultItem]
-    """
-
-    type: Literal["search_results"] = "search_results"
-    query: str
-    reranker: Optional[str] = None
-    results: List[SearchResultItem]
 
 
 def apply_recency_boost(
@@ -300,85 +246,6 @@ def fuse_weighted_sum(
     return sorted(combined.values(), key=lambda i: i.fusion_score or 0.0, reverse=True)
 
 
-def rerank_results(
-    results: List[SearchResultItem],
-    alpha: float,
-) -> List[SearchResultItem]:
-    """Apply lightweight reranker blending lexical/vector evidence."""
-
-    if not results:
-        return results
-
-    max_lex = max((item.lexical_score or 0.0 for item in results), default=0.0)
-    max_vec = max((item.vector_score or 0.0 for item in results), default=0.0)
-
-    for item in results:
-        lex_component = (item.lexical_score or 0.0) / max_lex if max_lex > 0 else 0.0
-        vec_component = (item.vector_score or 0.0) / max_vec if max_vec > 0 else 0.0
-        rerank_score = alpha * vec_component + (1 - alpha) * lex_component
-        item.rerank_score = rerank_score
-        item.score = 0.5 * item.score + 0.5 * rerank_score
-        item.metadata["rerank_score"] = rerank_score
-
-    return sorted(results, key=lambda itm: itm.score, reverse=True)
-
-
-def _tokenize_for_similarity(text: str) -> set[str]:
-    tokens = [t.lower() for t in text.split() if t]
-    return set(tokens)
-
-
-def _text_similarity(a: SearchResultItem, b: SearchResultItem) -> float:
-    """Compute simple Jaccard similarity between two result snippets/contents."""
-    text_a = a.content or a.snippet or ""
-    text_b = b.content or b.snippet or ""
-    if not text_a or not text_b:
-        return 0.0
-    tokens_a = _tokenize_for_similarity(text_a)
-    tokens_b = _tokenize_for_similarity(text_b)
-    if not tokens_a or not tokens_b:
-        return 0.0
-    intersection = len(tokens_a & tokens_b)
-    union = len(tokens_a | tokens_b)
-    return intersection / union if union else 0.0
-
-
-def apply_mmr(
-    results: List[SearchResultItem],
-    lambda_param: float,
-    limit: Optional[int] = None,
-) -> List[SearchResultItem]:
-    """Apply Maximal Marginal Relevance to diversify top results."""
-
-    if not results:
-        return results
-
-    limit = limit or len(results)
-    selected: List[SearchResultItem] = []
-    candidates = results.copy()
-
-    while candidates and len(selected) < limit:
-        best_idx = 0
-        best_score = float("-inf")
-        for idx, candidate in enumerate(candidates):
-            relevance = candidate.score
-            if selected:
-                redundancy = max(
-                    _text_similarity(candidate, chosen) for chosen in selected
-                )
-            else:
-                redundancy = 0.0
-            mmr_score = lambda_param * relevance - (1 - lambda_param) * redundancy
-            if mmr_score > best_score:
-                best_score = mmr_score
-                best_idx = idx
-        selected.append(candidates.pop(best_idx))
-
-    # Append any remaining candidates to preserve ordering info
-    selected.extend(candidates)
-    return selected
-
-
 def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
     """
     Perform hybrid search (FTS + Vector + RRF).
@@ -405,12 +272,34 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
 
     candidates_multiplier = config.search.candidates_multiplier
 
-    # 1. Embed query for vector search
+    # 0. Parse filters from query (e.g., from:john@example.com subject:"budget")
+    parsed_filters, clean_query = parse_filter_grammar(args.query)
+    if not parsed_filters.is_empty():
+        logger.info(f"Parsed filters: {parsed_filters.to_dict()}")
+
+    # Use cleaned query for embedding and FTS
+    search_query = clean_query if clean_query.strip() else args.query
+
+    # 1. Embed query for vector search (with caching)
     # Best-effort: if the embedding service is temporarily unavailable, we still
     # want FTS to keep the product functional.
     query_embedding: Optional[List[float]] = None
     try:
-        query_embedding = _embedding_client.embed(args.query)
+        # Check cache first
+        cached = get_cached_query_embedding(
+            search_query, model=config.embedding.model_name
+        )
+        if cached is not None:
+            query_embedding = cached.tolist()
+            logger.debug("Using cached query embedding for: %s", args.query[:50])
+        else:
+            query_embedding = _embedding_client.embed(search_query)
+            # Cache the embedding for future use
+            cache_query_embedding(
+                args.query,
+                np.asarray(query_embedding, dtype=np.float32),
+                model=config.embedding.model_name,
+            )
     except Exception as e:
         logger.error(f"Failed to embed query (falling back to FTS only): {e}")
 
@@ -427,7 +316,7 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
         if args.classification and args.classification.type == "navigational":
             nav_hits = search_messages_fts(
                 session,
-                args.query,
+                search_query,
                 args.tenant_id,
                 limit=min(k * candidates_multiplier, 200),
             )
@@ -435,13 +324,44 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
                 list({h.conversation_id for h in nav_hits if h.conversation_id}) or None
             )
 
+        # 2.5 Resolve Rich Filters (Date, Sender, Subject, etc.)
+        # This returns a list of conversation_ids that match the conversation-level filters.
+        filter_resolved_ids = _resolve_filter_conversation_ids(
+            session, parsed_filters, args.tenant_id
+        )
+
+        # Merge with navigational narrowing and manual conv_ids
+        final_conversation_ids: Optional[List[str]] = None
+
+        # Start with navigational IDs as base if present
+        if nav_conversation_ids:
+            final_conversation_ids = nav_conversation_ids
+
+        # Intersect with filter resolved IDs if present
+        if filter_resolved_ids is not None:
+            if final_conversation_ids is not None:
+                final_conversation_ids = (
+                    list(set(final_conversation_ids) & set(filter_resolved_ids)) or None
+                )
+            else:
+                final_conversation_ids = filter_resolved_ids
+
+        # If the intersection resulted in empty list (but filters exist),
+        # it means no results match. We should probably short-circuit.
+        # But for now, let's just pass empty list which yields 0 results.
+        if (
+            nav_conversation_ids is not None or filter_resolved_ids is not None
+        ) and not final_conversation_ids:
+            final_conversation_ids = []  # No matches
+
         # 3. Lexical search (FTS) on chunks
         fts_chunk_results = search_chunks_fts(
             session,
-            args.query,
+            search_query,
             args.tenant_id,
             limit=k * candidates_multiplier,
-            conversation_ids=nav_conversation_ids,
+            conversation_ids=final_conversation_ids,
+            is_attachment=parsed_filters.has_attachment,
         )
 
         # 4. Vector search (if we have an embedding)
@@ -455,7 +375,8 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
                 args.tenant_id,
                 limit=k * candidates_multiplier,
                 ef_search=hnsw_ef_search,
-                conversation_ids=nav_conversation_ids,
+                conversation_ids=final_conversation_ids,
+                is_attachment=parsed_filters.has_attachment,
             )
             logger.info(f"Vector search returned {len(vector_results)} chunks")
         else:
@@ -521,7 +442,7 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
         # 7. Reranking (External vs Lightweight)
         if config.search.reranker_endpoint:
             # Use Qwen/External Cross-Encoder
-            fused_results = _call_external_reranker(
+            fused_results = call_external_reranker(
                 config.search.reranker_endpoint,
                 args.query,
                 fused_results,
@@ -595,80 +516,3 @@ def _get_conversation_timestamps(
 
 # Backward compat alias
 _get_thread_timestamps = _get_conversation_timestamps
-
-
-def _call_external_reranker(
-    endpoint: str, query: str, results: List[SearchResultItem], top_n: int = 50
-) -> List[SearchResultItem]:
-    """
-    Call external reranker API (vLLM with mxbai-rerank-large-v2).
-
-    vLLM Rerank API format (per official docs):
-    POST /v1/rerank
-    {
-        "model": "model-name",
-        "query": "search query",
-        "documents": ["doc1", "doc2", ...]
-    }
-
-    Response:
-    {
-        "results": [
-            {"index": 0, "relevance_score": 0.95},
-            ...
-        ]
-    }
-    """
-    if not results:
-        return []
-
-    # Rerank only the top N candidates to save time/compute
-    candidates = results[:top_n]
-
-    # vLLM rerank payload: {"model": str, "query": str, "documents": List[str]}
-    # We truncate content to 4096 chars to ensure low latency, though model supports 8k+.
-    documents = [(c.content or c.snippet or "")[:4096] for c in candidates]
-
-    try:
-        # Use /v1/rerank endpoint (Jina/Cohere compatible)
-        rerank_url = endpoint.rstrip("/")
-        if not rerank_url.endswith("/v1/rerank"):
-            rerank_url = f"{rerank_url}/v1/rerank"
-
-        resp = requests.post(
-            rerank_url,
-            json={
-                "model": "mixedbread-ai/mxbai-rerank-large-v2",
-                "query": query,
-                "documents": documents,
-            },
-            timeout=15.0,  # Allow time for cross-encoder inference
-        )
-        resp.raise_for_status()
-
-        # Response is {"results": [{"index": int, "relevance_score": float}, ...]}
-        response_data = resp.json()
-        rankings = response_data.get("results", [])
-
-        reranked = []
-        for r in rankings:
-            idx = r.get("index", 0)
-            if idx >= len(candidates):
-                continue
-            item = candidates[idx]
-
-            # Update score with the high-fidelity cross-encoder score
-            rerank_score = r.get("relevance_score", r.get("score", 0.0))
-            item.rerank_score = rerank_score
-            item.score = rerank_score
-            item.metadata["rerank_score"] = rerank_score
-            item.metadata["rerank_model"] = "mxbai-rerank-large-v2"
-            reranked.append(item)
-
-        # Sort by rerank score descending
-        reranked.sort(key=lambda x: x.rerank_score or 0, reverse=True)
-        return reranked
-
-    except Exception as e:
-        logger.error(f"External reranker failed (falling back to fusion scores): {e}")
-        return results

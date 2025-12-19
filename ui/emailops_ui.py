@@ -354,8 +354,8 @@ if STREAMLIT_AVAILABLE:
     }
 </style>
 """,
-    unsafe_allow_html=True,
-)
+        unsafe_allow_html=True,
+    )
 
 
 # ---------- Logging Utilities ----------
@@ -600,22 +600,22 @@ else:
             st.session_state.index_root = st.session_state.export_root
     if "show_quick_start" not in st.session_state:
         st.session_state.show_quick_start = True
-    
+
     _ensure_log_handler()
-    
+
     # ---------- Sidebar Configuration ----------
     with st.sidebar:
         st.header("⚙️ Configuration")
-    
+
         # Quick Start Toggle
         st.session_state.show_quick_start = st.checkbox(
             "📚 Show Quick Start Guide",
             value=st.session_state.show_quick_start,
             help="Toggle the quick start panel on the main page",
         )
-    
+
         st.divider()
-    
+
         # Path Configuration
         st.subheader("📁 Paths")
         PROJECT_ROOT_input = st.text_input(
@@ -625,13 +625,15 @@ else:
             key="PROJECT_ROOT_input",
         )
         st.session_state.PROJECT_ROOT = PROJECT_ROOT_input
-    
-        valid, msg = _validate_path(Path(PROJECT_ROOT_input), must_exist=True, is_dir=True)
+
+        valid, msg = _validate_path(
+            Path(PROJECT_ROOT_input), must_exist=True, is_dir=True
+        )
         if valid:
             st.success("✅ Valid project root")
         else:
             st.error(f"❌ {msg}")
-    
+
         export_root = st.text_input(
             "Outlook Export Root",
             value=st.session_state.export_root,
@@ -639,7 +641,7 @@ else:
             key="export_root_input",
         )
         st.session_state.export_root = export_root
-    
+
         if export_root.strip():
             valid, msg = _validate_path(Path(export_root), must_exist=True, is_dir=True)
             if valid:
@@ -648,7 +650,7 @@ else:
                 st.error(f"❌ {msg}")
         else:
             st.warning("⚠️ Set export root before running jobs")
-    
+
         index_root = st.text_input(
             "Index Output Root",
             value=st.session_state.get("index_root", export_root),
@@ -656,9 +658,9 @@ else:
             key="index_root_input",
         )
         st.session_state.index_root = index_root
-    
+
         st.divider()
-    
+
         # Provider Configuration
         st.subheader("🔧 Provider Settings")
         provider = st.selectbox(
@@ -670,12 +672,12 @@ else:
         )
         st.session_state.provider = provider
         os.environ["EMBED_PROVIDER"] = provider
-    
+
         st.divider()
-    
+
         # Environment Variables
         st.subheader("🌍 Environment Variables")
-    
+
         with st.expander("Google Cloud Settings"):
             gcp_project = st.text_input(
                 "GCP_PROJECT",
@@ -692,7 +694,7 @@ else:
                 value=os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", ""),
                 help="Path to service account JSON file",
             )
-    
+
             if st.button("Apply GCP Settings", use_container_width=True):
                 if gcp_project:
                     os.environ["GCP_PROJECT"] = gcp_project
@@ -701,36 +703,36 @@ else:
                 if credentials_path:
                     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = credentials_path
                 st.success("✅ Environment variables updated")
-    
+
     # ---------- Main Content ----------
     st.title("📧 EmailOps Dashboard")
     st.markdown("*Comprehensive email operations management system*")
-    
+
     if not CORTEX_AVAILABLE:
         st.error(
             "❌ Cortex modules not found. Please check your installation and PYTHONPATH."
         )
         st.stop()
-    
+
     # ---------- Quick Start Panel ----------
     if st.session_state.show_quick_start:
         setup_status = _check_setup_status()
         completed_steps = sum(setup_status.values())
         total_steps = len(setup_status)
-    
+
         st.markdown("---")
         st.subheader("🚀 Quick Start Guide")
-    
+
         # Progress bar
         progress = completed_steps / total_steps
         st.progress(
             progress,
             text=f"Setup Progress: {completed_steps}/{total_steps} steps completed",
         )
-    
+
         # Setup steps in columns
         col1, col2 = st.columns(2)
-    
+
         with col1:
             # Step 1: Project Root
             icon1 = "✅" if setup_status["PROJECT_ROOT_valid"] else "1️⃣"
@@ -740,7 +742,7 @@ else:
                     st.success("Project root is configured correctly!")
                 else:
                     st.info("Set the path to your EmailOps project in the sidebar")
-    
+
             # Step 2: Export Root
             icon2 = "✅" if setup_status["export_root_valid"] else "2️⃣"
             with st.container():
@@ -749,7 +751,7 @@ else:
                     st.success("Export root is configured!")
                 else:
                     st.info("Point to your Outlook conversation exports folder")
-    
+
             # Step 3: GCP Config
             icon3 = "✅" if setup_status["gcp_configured"] else "3️⃣"
             with st.container():
@@ -758,7 +760,7 @@ else:
                     st.success("GCP credentials configured!")
                 else:
                     st.info("Set GCP_PROJECT and GOOGLE_APPLICATION_CREDENTIALS")
-    
+
         with col2:
             # Step 4: Cortex Available
             icon4 = "✅" if setup_status["cortex_available"] else "4️⃣"
@@ -768,7 +770,7 @@ else:
                     st.success("Cortex backend loaded successfully!")
                 else:
                     st.error("Cortex modules missing")
-    
+
             # Step 5: Build Index
             icon5 = "✅" if setup_status["index_exists"] else "5️⃣"
             with st.container():
@@ -777,14 +779,14 @@ else:
                     st.success("Index exists and ready!")
                 else:
                     st.info("Go to Index tab and click 'Start Indexing'")
-    
+
             # Ready to use
             if all(setup_status.values()):
                 st.balloons()
                 st.success("🎉 **All set!** You're ready to search and draft emails!")
-    
+
         st.markdown("---")
-    
+
     # ---------- Main Tabs ----------
     tabs = st.tabs(
         [
@@ -798,11 +800,11 @@ else:
             "Info Help",
         ]
     )
-    
+
     # ---------- STATUS TAB ----------
     with tabs[0]:
         st.header("📊 Index Status")
-    
+
         export_display = st.session_state.export_root or "<not set>"
         index_display = (
             st.session_state.get("index_root")
@@ -810,28 +812,30 @@ else:
             or "<not set>"
         )
         st.caption(f"Export root: `{export_display}` | Index root: `{index_display}`")
-    
+
         try:
             export_value = (
-                st.session_state.export_root.strip() if st.session_state.export_root else ""
+                st.session_state.export_root.strip()
+                if st.session_state.export_root
+                else ""
             )
             index_value = (st.session_state.get("index_root") or "").strip()
-    
+
             if not export_value:
                 st.info("👈 Set the Outlook export root in the sidebar to view status.")
             else:
                 export_path = Path(export_value)
                 index_base = Path(index_value or export_value)
                 index_dir = index_base / config.INDEX_DIRNAME
-    
+
                 if index_dir.exists():
                     index_file = index_dir / "index.faiss"
                     mapping_file = index_dir / "mapping.json"
                     embeddings_file = index_dir / "embeddings.npy"
                     meta_file = index_dir / "meta.json"
-    
+
                     col1, col2, col3, col4 = st.columns(4)
-    
+
                     with col1:
                         doc_count = 0
                         if mapping_file.exists():
@@ -843,20 +847,21 @@ else:
                             except Exception:
                                 pass
                         st.metric("📄 Documents Indexed", f"{doc_count:,}")
-    
+
                     with col2:
                         index_exists = index_file.exists() or embeddings_file.exists()
                         st.metric(
-                            "🗂️ Index Status", "✅ Ready" if index_exists else "❌ Missing"
+                            "🗂️ Index Status",
+                            "✅ Ready" if index_exists else "❌ Missing",
                         )
-    
+
                     with col3:
                         total_size_mb = 0
                         for f in [index_file, mapping_file, embeddings_file, meta_file]:
                             if f.exists():
                                 total_size_mb += f.stat().st_size / (1024 * 1024)
                         st.metric("💾 Index Size", f"{total_size_mb:.1f} MB")
-    
+
                     with col4:
                         last_modified = None
                         for f in [index_file, mapping_file, embeddings_file]:
@@ -866,28 +871,31 @@ else:
                                     last_modified = mtime
                         if last_modified:
                             st.metric(
-                                "🕐 Last Updated", last_modified.strftime("%Y-%m-%d %H:%M")
+                                "🕐 Last Updated",
+                                last_modified.strftime("%Y-%m-%d %H:%M"),
                             )
                         else:
                             st.metric("🕐 Last Updated", "N/A")
-    
+
                     if meta_file.exists():
                         try:
                             with meta_file.open(encoding="utf-8") as f:
                                 meta = json.load(f)
-    
+
                             st.subheader("📋 Index Metadata")
                             col1, col2 = st.columns(2)
-    
+
                             with col1:
                                 st.markdown(
                                     f"**Provider:** `{meta.get('provider', 'Unknown')}`"
                                 )
-                                st.markdown(f"**Model:** `{meta.get('model', 'Unknown')}`")
+                                st.markdown(
+                                    f"**Model:** `{meta.get('model', 'Unknown')}`"
+                                )
                                 st.markdown(
                                     f"**Dimensions:** `{meta.get('dimensions', 'Unknown')}`"
                                 )
-    
+
                             with col2:
                                 st.markdown(
                                     f"**Index Type:** `{meta.get('index_type', 'FAISS')}`"
@@ -900,7 +908,7 @@ else:
                                 )
                         except Exception as e:
                             st.warning(f"Could not read metadata: {e}")
-    
+
                     st.subheader("📁 Conversation Folders")
                     conv_folders = [
                         d
@@ -908,7 +916,9 @@ else:
                         if d.is_dir() and not d.name.startswith("_")
                     ]
                     if conv_folders:
-                        st.success(f"Found **{len(conv_folders)}** conversation folders")
+                        st.success(
+                            f"Found **{len(conv_folders)}** conversation folders"
+                        )
                         with st.expander("Show folders"):
                             for folder in conv_folders[:50]:
                                 st.text(f"• {folder.name}")
@@ -917,27 +927,29 @@ else:
                     else:
                         st.warning("No conversation folders found")
                 else:
-                    st.warning("⚠️ Index directory not found. Please run indexing first.")
+                    st.warning(
+                        "⚠️ Index directory not found. Please run indexing first."
+                    )
                     st.info(f"Expected location: `{index_dir}`")
-    
+
                     if st.button("🚀 Go to Index Tab", type="primary"):
                         st.info(
                             "Click on the 'Index' tab above to build your search index!"
                         )
-    
+
         except Exception as e:
             st.error(f"Failed to load index status: {e}")
-    
+
     # ---------- INDEX TAB ----------
     with tabs[1]:
         st.header("🔍 Build/Update Index")
-    
+
         st.info(
             "💡 **Tip:** Start with default settings for your first index. You can adjust parameters later for optimization."
         )
-    
+
         col1, col2, col3 = st.columns(3)
-    
+
         provider_options = [
             "vertex",
             "openai",
@@ -950,7 +962,7 @@ else:
         if default_provider not in provider_options:
             default_provider = "vertex"
         batch_default = int(os.getenv("EMBED_BATCH", config.DEFAULT_BATCH_SIZE))
-    
+
         with col1:
             provider = st.selectbox(
                 "Embedding Provider",
@@ -965,7 +977,7 @@ else:
                 value=batch_default,
                 help="Number of documents to process at once",
             )
-    
+
         with col2:
             model_override = st.text_input(
                 "Model Override (optional)",
@@ -973,12 +985,16 @@ else:
                 help="Leave empty to use provider default",
             )
             force_reindex = st.checkbox(
-                "Force Full Reindex", value=False, help="Rebuild entire index from scratch"
+                "Force Full Reindex",
+                value=False,
+                help="Rebuild entire index from scratch",
             )
-    
+
         with col3:
             limit_enabled = st.checkbox(
-                "Test Mode (limit documents)", value=False, help="Good for testing setup"
+                "Test Mode (limit documents)",
+                value=False,
+                help="Good for testing setup",
             )
             limit_chunks = st.number_input(
                 "Max Chunks per Conversation",
@@ -987,23 +1003,25 @@ else:
                 value=100,
                 disabled=not limit_enabled,
             )
-    
+
         if st.button("🚀 Start Indexing", type="primary", use_container_width=True):
             st.session_state.provider = provider
             st.session_state.embed_model = model_override
-    
+
             export_root_value = (
-                st.session_state.export_root.strip() if st.session_state.export_root else ""
+                st.session_state.export_root.strip()
+                if st.session_state.export_root
+                else ""
             )
             if not export_root_value:
                 st.error("Please set the Outlook export root before indexing.")
                 st.stop()
-    
+
             export_path = Path(export_root_value)
             if not export_path.exists():
                 st.error(f"Export root does not exist: {export_path}")
                 st.stop()
-    
+
             # Use cortex CLI
             cmd = [
                 sys.executable,
@@ -1017,27 +1035,27 @@ else:
                 "--workers",
                 str(int(os.cpu_count() or 4)),
             ]
-    
+
             if limit_enabled:
                 cmd.extend(["--limit", str(int(limit_chunks))])
             if force_reindex:
                 cmd.append("--force")
-    
+
             _run_command(
                 cmd, workdir=st.session_state.PROJECT_ROOT, title="Running Indexer"
             )
-    
+
     # ---------- CHUNK TAB ----------
     with tabs[2]:
         st.header("📄 Document Chunking")
         st.info(
             "Chunking is now handled automatically during indexing. This tab is for debugging."
         )
-    
+
     # ---------- SEARCH & DRAFT TAB ----------
     with tabs[3]:
         st.header("🔎 Search & Draft")
-    
+
         st.info(
             """
         💡 **How to use:**
@@ -1046,16 +1064,16 @@ else:
         3. Add sender info and click **Search & Draft** to generate a response
         """
         )
-    
+
         query = st.text_area(
             "Query",
             placeholder="What emails discuss the Q4 budget proposal?",
             height=100,
             help="Enter your search query or draft request",
         )
-    
+
         col1, col2 = st.columns(2)
-    
+
         with col1:
             k = st.slider(
                 "Top-K Results",
@@ -1073,7 +1091,7 @@ else:
                 step=0.05,
                 help="Higher = more creative",
             )
-    
+
         with col2:
             sender = st.text_input(
                 "Sender Name/Email",
@@ -1082,17 +1100,17 @@ else:
                 help="Required for drafting responses",
             )
             include_attachments = st.checkbox("Include Attachments", value=True)
-    
+
         col1, col2 = st.columns(2)
-    
+
         with col1:
             search_only = st.button("🔍 Search Only", use_container_width=True)
-    
+
         with col2:
             search_and_draft = st.button(
                 "✉️ Search & Draft", use_container_width=True, type="primary"
             )
-    
+
         if search_only or search_and_draft:
             if not query:
                 st.error("Please enter a query")
@@ -1105,12 +1123,12 @@ else:
                         )
                         search_results = tool_kb_search_hybrid(search_input)
                         results = search_results.results
-    
+
                         if not results:
                             st.warning("No results found. Try adjusting your query.")
                         else:
                             st.success(f"Found **{len(results)}** results")
-    
+
                             # Group results by conversation
                             conv_groups = {}
                             for r in results:
@@ -1118,34 +1136,40 @@ else:
                                 if conv_key not in conv_groups:
                                     conv_groups[conv_key] = []
                                 conv_groups[conv_key].append(r)
-    
+
                             st.subheader("📋 Search Results")
                             for conv_key, items in conv_groups.items():
-                                conv_path = Path(st.session_state.export_root) / conv_key
+                                conv_path = (
+                                    Path(st.session_state.export_root) / conv_key
+                                )
                                 path_exists = (
                                     conv_path.exists()
                                     and (conv_path / "Conversation.txt").exists()
                                 )
-    
+
                                 status_icon = "✅" if path_exists else "⚠️"
                                 first_item = items[0]
                                 # Try to get subject from metadata or snippet
-                                subject = first_item.metadata.get("subject", "No subject")
-    
+                                subject = first_item.metadata.get(
+                                    "subject", "No subject"
+                                )
+
                                 with st.expander(
                                     f"{status_icon} **{conv_key}** - {subject} ({len(items)} items)"
                                 ):
                                     st.markdown(f"**Score:** {first_item.score:.3f}")
                                     st.markdown(f"**Snippet:** {first_item.snippet}")
-    
+
                                     if path_exists:
                                         st.markdown(f"**📁 Path:** `{conv_path}`")
-                                        if st.button("Open Folder", key=f"open_{conv_key}"):
+                                        if st.button(
+                                            "Open Folder", key=f"open_{conv_key}"
+                                        ):
                                             _open_path(conv_path)
-    
+
                             if search_and_draft and sender:
                                 with st.spinner("Drafting email..."):
-    
+
                                     async def run_draft():
                                         graph = build_draft_graph().compile()
                                         initial_state = {
@@ -1162,14 +1186,16 @@ else:
                                             "error": None,
                                         }
                                         return await graph.ainvoke(initial_state)
-    
+
                                     final_state = asyncio.run(run_draft())
                                     draft_result = final_state.get("draft")
-    
+
                                 if draft_result:
                                     st.subheader("📝 Email Draft")
                                     st.text_area(
-                                        "Subject", value=draft_result.subject, disabled=True
+                                        "Subject",
+                                        value=draft_result.subject,
+                                        disabled=True,
                                     )
                                     st.text_area(
                                         "Body",
@@ -1177,7 +1203,7 @@ else:
                                         height=300,
                                         disabled=True,
                                     )
-    
+
                                     st.download_button(
                                         "📥 Download Draft JSON",
                                         data=_format_json(draft_result),
@@ -1186,28 +1212,30 @@ else:
                                     )
                                 else:
                                     st.error("Failed to generate draft.")
-    
+
                             elif search_and_draft and not sender:
-                                st.error("Please provide sender name/email for drafting")
-    
+                                st.error(
+                                    "Please provide sender name/email for drafting"
+                                )
+
                 except Exception as e:
                     st.error(f"Operation failed: {e}")
                     st.exception(e)
-    
+
     # ---------- SUMMARIZE TAB ----------
     with tabs[4]:
         st.header("📝 Summarize Email Thread")
-    
+
         thread_path = st.text_input(
             "Thread Directory",
             value=st.session_state.export_root,
             help="Directory containing Conversation.txt",
         )
-    
+
         if st.button("📊 Analyze Thread", type="primary", use_container_width=True):
             thread_dir = Path(thread_path)
             convo_file = thread_dir / "Conversation.txt"
-    
+
             if not convo_file.exists():
                 st.error(f"Conversation.txt not found in {thread_dir}")
             else:
@@ -1217,9 +1245,9 @@ else:
                         # But the graph expects a thread_id to load from DB.
                         # If we want to summarize a local file, we might need a different entry point or ingest it first.
                         # For now, let's assume the user provides a thread ID or we use the folder name as ID if it was ingested.
-    
+
                         thread_id = thread_dir.name
-    
+
                         async def run_summary():
                             graph = build_summarize_graph().compile()
                             initial_state = {
@@ -1234,20 +1262,20 @@ else:
                                 "error": None,
                             }
                             return await graph.ainvoke(initial_state)
-    
+
                         final_state = asyncio.run(run_summary())
                         summary = final_state.get("summary")
-    
+
                         if summary:
                             st.success("✅ Analysis complete")
                             st.subheader("📋 Summary")
                             st.write(summary.content)
-    
+
                             if summary.key_facts:
                                 st.subheader("Key Facts")
                                 for fact in summary.key_facts:
                                     st.write(f"- {fact}")
-    
+
                             st.download_button(
                                 "📥 Download JSON",
                                 data=_format_json(summary),
@@ -1258,15 +1286,15 @@ else:
                             st.error(
                                 "Failed to generate summary. Ensure the thread is ingested first."
                             )
-    
+
                 except Exception as e:
                     st.error(f"Analysis failed: {e}")
                     st.exception(e)
-    
+
     # ---------- DOCTOR TAB ----------
     with tabs[5]:
         st.header("🩺 System Doctor")
-    
+
         st.markdown(
             """
         Run comprehensive diagnostics to check:
@@ -1276,21 +1304,21 @@ else:
         - ✅ Embedding provider connectivity
         """
         )
-    
+
         col1, col2 = st.columns(2)
-    
+
         with col1:
             install_missing = st.checkbox(
                 "Auto-Install Missing",
                 value=False,
                 help="Automatically install missing dependencies",
             )
-    
+
         with col2:
             log_level = st.selectbox(
                 "Log Level", ["INFO", "DEBUG", "WARNING", "ERROR"], index=0
             )
-    
+
         doctor_provider = st.selectbox(
             "Provider to Check",
             [
@@ -1304,7 +1332,7 @@ else:
             ],
             index=0,
         )
-    
+
         if st.button("🔍 Run Diagnostics", type="primary", use_container_width=True):
             cmd = [
                 sys.executable,
@@ -1314,24 +1342,26 @@ else:
                 "--root",
                 st.session_state.export_root,
             ]
-    
+
             if doctor_provider != "(Use Index Provider)":
                 cmd.extend(["--provider", doctor_provider])
-    
+
             if install_missing:
                 cmd.append("--auto-install")
-    
+
             _run_command(
-                cmd, workdir=st.session_state.PROJECT_ROOT, title="Running System Doctor"
+                cmd,
+                workdir=st.session_state.PROJECT_ROOT,
+                title="Running System Doctor",
             )
-    
+
     # ---------- LOGS TAB ----------
     with tabs[6]:
         st.header("🪵 Debug Logs")
-    
+
         if LOG_BUFFER_KEY not in st.session_state:
             st.session_state[LOG_BUFFER_KEY] = deque(maxlen=LOG_BUFFER_MAXLEN)
-    
+
         level_col, search_col = st.columns([2, 1])
         with level_col:
             selected_levels = st.multiselect(
@@ -1341,9 +1371,9 @@ else:
             )
         with search_col:
             search_term = st.text_input("Search", placeholder="Filter logs...")
-    
+
         buffer_snapshot = list(st.session_state[LOG_BUFFER_KEY])
-    
+
         col1, col2, col3 = st.columns(3)
         with col1:
             st.button("Refresh Logs", use_container_width=True)
@@ -1363,18 +1393,20 @@ else:
                 mime="text/plain",
                 use_container_width=True,
             )
-    
+
         logs_to_show = []
         for entry in buffer_snapshot:
             if entry["level"] not in selected_levels:
                 continue
             if search_term and (
                 search_term.lower()
-                not in " ".join([entry["message"], entry["logger"], entry["level"]]).lower()
+                not in " ".join(
+                    [entry["message"], entry["logger"], entry["level"]]
+                ).lower()
             ):
                 continue
             logs_to_show.append(entry)
-    
+
         if logs_to_show:
             formatted = "\n".join(
                 f"{e['timestamp']} | {e['level']:<7} | {e['logger']} | {e['message']}"
@@ -1383,62 +1415,62 @@ else:
             st.code(formatted, language="log")
         else:
             st.info("No log entries match the current filters.")
-    
+
     # ---------- HELP TAB ----------
     with tabs[7]:
         st.header("Help & Documentation")
-    
+
         st.markdown(
             """
         ## 🚀 Quick Start Guide
-    
+
         ### Step 1: Configure Paths
         Set your **Project Root** (where EmailOps code lives) and **Export Root** (where your Outlook exports are) in the sidebar.
-    
+
         ### Step 2: Set Up GCP (for Vertex AI)
         ```bash
         # Set environment variables
         GCP_PROJECT=your-project-id
         GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json
         ```
-    
+
         ### Step 3: Build Index
         Go to **Index** tab → Click **Start Indexing**
-    
+
         ### Step 4: Search & Draft
         Go to **Search & Draft** tab → Enter query → Click **Search Only** or **Search & Draft**
-    
+
         ---
-    
+
         ## 🔧 CLI Quick Reference
-    
+
         The UI runs these commands under the hood:
-    
+
         ```bash
         # Build/update search index
         cortex index --root /path/to/exports --provider vertex
-    
+
         # System diagnostics
         cortex doctor --root /path/to/exports
-    
+
         # Search and draft (programmatic)
         cortex search "your query"
         ```
-    
+
         ---
-    
+
         ## 🩺 Troubleshooting
-    
+
         | Problem | Solution |
         |---------|----------|
         | Cortex modules missing | Check PYTHONPATH and project root |
         | Indexing fails | Verify export root has conversation folders |
         | No search results | Confirm index exists (check Status tab) |
         | Draft errors | Ensure Vertex AI credentials are set |
-    
+
         """
         )
-    
+
     # ---------- Footer ----------
     st.divider()
     st.markdown(
