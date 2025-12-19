@@ -284,7 +284,6 @@ def test_config_critical():
 # =============================================================================
 @test("search: imports")
 def test_search_imports():
-
     print("  ✓ All search imports successful")
 
 
@@ -329,13 +328,11 @@ def test_rag_draft():
 # =============================================================================
 @test("TUI: all handlers import")
 def test_tui_handlers():
-
     print("  ✓ All 12 TUI handlers importable")
 
 
 @test("TUI: main module imports")
 def test_tui_main():
-
     print("  ✓ TUI main module imports successful")
 
 
@@ -344,7 +341,6 @@ def test_tui_main():
 # =============================================================================
 @test("ingestion: all imports")
 def test_ingestion_imports():
-
     print("  ✓ All ingestion imports successful")
 
 
