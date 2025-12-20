@@ -186,9 +186,7 @@ def _extract_entity_mentions(text: str) -> List[str]:
     quoted = re.findall(r'["\']([^"\']{2,100})["\']', text)
     candidates.update(s.strip() for s in quoted if s.strip())
 
-    capitalized_phrases = re.findall(
-        r"\b(?:[A-Z][\w&]*(?:\s+[A-Z][\w&]*)+)\b", text
-    )
+    capitalized_phrases = re.findall(r"\b(?:[A-Z][\w&]*(?:\s+[A-Z][\w&]*)+)\b", text)
     candidates.update(s.strip() for s in capitalized_phrases if s.strip())
 
     single_caps = re.findall(r"\b[A-Z][a-z]{2,}\b", text)
@@ -499,8 +497,7 @@ def node_query_graph(state: Dict[str, Any]) -> Dict[str, Any]:
             set_session_tenant(session, tenant_id)
 
             match_conditions = [
-                func.lower(EntityNode.name) == mention.lower()
-                for mention in mentions
+                func.lower(EntityNode.name) == mention.lower() for mention in mentions
             ]
 
             for mention in mentions:
@@ -553,9 +550,7 @@ def node_query_graph(state: Dict[str, Any]) -> Dict[str, Any]:
                 )
             else:
                 context_lines.append(
-                    strip_injection_patterns(
-                        f"Entity: {node.name} ({node.type})"
-                    )
+                    strip_injection_patterns(f"Entity: {node.name} ({node.type})")
                 )
 
         for edge, source, target in edges:
