@@ -590,6 +590,7 @@ def create_app() -> FastAPI:
     # ---------------------------------------------------------------------------
     from cortex.rag_api import (
         routes_answer,
+        routes_chat,
         routes_draft,
         routes_ingest,
         routes_search,
@@ -600,6 +601,7 @@ def create_app() -> FastAPI:
     app.include_router(routes_answer.router, prefix="/api/v1", tags=["answer"])
     app.include_router(routes_draft.router, prefix="/api/v1", tags=["draft"])
     app.include_router(routes_summarize.router, prefix="/api/v1", tags=["summarize"])
+    app.include_router(routes_chat.router, prefix="/api/v1", tags=["chat"])
     app.include_router(routes_ingest.router, prefix="/api/v1", tags=["ingestion"])
 
     # ---------------------------------------------------------------------------

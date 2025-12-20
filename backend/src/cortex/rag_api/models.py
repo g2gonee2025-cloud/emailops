@@ -6,7 +6,7 @@ Implements §9 of the Canonical Blueprint.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from cortex.domain_models.rag import Answer, EmailDraft, ThreadSummary
 from pydantic import BaseModel, Field
@@ -105,3 +105,44 @@ class SummarizeThreadResponse(BaseModel):
 
     correlation_id: Optional[str] = None
     summary: ThreadSummary
+
+
+# -----------------------------------------------------------------------------
+# Chat API Models (§9.6)
+# -----------------------------------------------------------------------------
+class ChatMessage(BaseModel):
+    """Chat message payload."""
+
+    role: Literal["system", "user", "assistant"]
+    content: str
+
+
+class ChatRequest(BaseModel):
+    """Chat request payload."""
+
+    messages: List[ChatMessage]
+    thread_id: Optional[str] = Field(
+        default=None, description="Optional thread context"
+    )
+    k: int = Field(default=10, description="Number of context chunks")
+    max_length: int = Field(
+        default=500, description="Max summary length in words"
+    )
+    max_history: Optional[int] = Field(
+        default=None, description="Max chat history entries"
+    )
+    debug: bool = Field(default=False, description="Enable debug info")
+    tenant_id: Optional[str] = None
+    user_id: Optional[str] = None
+
+
+class ChatResponse(BaseModel):
+    """Chat response payload."""
+
+    correlation_id: Optional[str] = None
+    action: Literal["answer", "search", "summarize"]
+    reply: str
+    answer: Optional[Answer] = None
+    summary: Optional[ThreadSummary] = None
+    search_results: Optional[List[Dict[str, Any]]] = None
+    debug_info: Optional[Dict[str, Any]] = None
