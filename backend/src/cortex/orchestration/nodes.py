@@ -95,6 +95,29 @@ def _complete_with_guardrails(
 # -----------------------------------------------------------------------------
 
 
+def _extract_patterns(
+    text: str,
+    pattern: re.Pattern,
+    seen: set[str],
+    mentions: List[str],
+    group: int = 1,
+    min_len: int = 0,
+) -> None:
+    """Helper to extract patterns and deduplicate."""
+    for match in pattern.finditer(text):
+        ref = match.group(group).strip()
+        lower_ref = ref.lower()
+        if (min_len == 0 or len(ref) > min_len) and lower_ref not in seen:
+            # Additional check for quoted refs (Pattern 2 logic)
+            if pattern.pattern.startswith("[\"']") and not (
+                "_" in ref or any(c.isupper() for c in ref)
+            ):
+                continue
+
+            seen.add(lower_ref)
+            mentions.append(ref)
+
+
 def extract_document_mentions(text: str) -> List[str]:
     """
     Extract filenames or document references from text.
@@ -118,23 +141,18 @@ def extract_document_mentions(text: str) -> List[str]:
     seen: set[str] = set()
 
     # Pattern 1: Common document extensions
-    # Matches: report.pdf, Budget_2024.xlsx, meeting-notes.docx, etc.
-    file_extension_pattern = re.compile(
-        r"\b([\w\-_.]+\.(?:pdf|docx?|xlsx?|pptx?|txt|csv|eml|msg|png|jpg|jpeg|gif))\b",
-        re.IGNORECASE,
+    _extract_patterns(
+        text,
+        re.compile(
+            r"\b([\w\-_.]+\.(?:pdf|docx?|xlsx?|pptx?|txt|csv|eml|msg|png|jpg|jpeg|gif))\b",
+            re.IGNORECASE,
+        ),
+        seen,
+        mentions,
     )
 
-    for match in file_extension_pattern.finditer(text):
-        filename = match.group(1)
-        lower_name = filename.lower()
-        if lower_name not in seen:
-            seen.add(lower_name)
-            mentions.append(filename)
-
     # Pattern 2: Quoted file references
-    # Matches: "Budget Report", 'Q4 Summary', etc.
     quoted_pattern = re.compile(r'["\']([A-Z][A-Za-z0-9\s_\-]{2,30})["\']')
-
     for match in quoted_pattern.finditer(text):
         ref = match.group(1).strip()
         lower_ref = ref.lower()
@@ -144,19 +162,16 @@ def extract_document_mentions(text: str) -> List[str]:
             mentions.append(ref)
 
     # Pattern 3: Explicit attachment references
-    # Matches: "attached report", "the attached file", "see attachment: xyz"
-    attachment_ref_pattern = re.compile(
-        r"(?:attached|attachment|enclosed|enclosure)[:\s]+([A-Za-z0-9\s_\-]+?)(?:\.|,|\s|$)",
-        re.IGNORECASE,
+    _extract_patterns(
+        text,
+        re.compile(
+            r"(?:attached|attachment|enclosed|enclosure)[:\s]+([A-Za-z0-9\s_\-]+?)(?:\.|,|\s|$)",
+            re.IGNORECASE,
+        ),
+        seen,
+        mentions,
+        min_len=2,
     )
-
-    for match in attachment_ref_pattern.finditer(text):
-        ref = match.group(1).strip()
-        if ref and len(ref) > 2:
-            lower_ref = ref.lower()
-            if lower_ref not in seen:
-                seen.add(lower_ref)
-                mentions.append(ref)
 
     return mentions
 

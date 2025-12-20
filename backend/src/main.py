@@ -13,6 +13,7 @@ Provides:
 - OpenTelemetry instrumentation
 - OIDC/JWT security integration (§11.1)
 """
+
 from __future__ import annotations
 
 import inspect
@@ -141,7 +142,9 @@ def _configure_jwt_decoder(
     async def decode_unverified(token: str) -> dict[str, Any]:
         try:
             # PyJWT: decode without verification for dev mode
-            return jwt.decode(token, options={"verify_signature": False})
+            return jwt.decode(
+                token, options={"verify_signature": False}
+            )  # NOSONAR: dev mode only
         except JWTError as exc:
             raise SecurityError("Invalid JWT", threat_type="auth_invalid") from exc
 

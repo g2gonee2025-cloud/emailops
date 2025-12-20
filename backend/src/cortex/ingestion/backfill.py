@@ -34,7 +34,9 @@ def get_openai_client():
     return OpenAI(base_url=base_url, api_key=api_key)
 
 
-def backfill_embeddings(tenant_id: str = "default"):
+def backfill_embeddings(
+    tenant_id: str = "default", batch_size: int = BATCH_SIZE, limit: int = None
+):
     client = get_openai_client()
     if not client:
         return
@@ -61,6 +63,10 @@ def backfill_embeddings(tenant_id: str = "default"):
 
         processed = 0
         while True:
+            # Check limit
+            if limit and processed >= limit:
+                break
+
             # Fetch batch
             stmt = (
                 select(Chunk)
@@ -71,7 +77,7 @@ def backfill_embeddings(tenant_id: str = "default"):
                         Chunk.extra_data.op("->>")("skipped").is_(None),
                     )
                 )
-                .limit(BATCH_SIZE)
+                .limit(batch_size)
             )
             chunks = session.execute(stmt).scalars().all()
 

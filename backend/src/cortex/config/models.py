@@ -159,7 +159,7 @@ class DatabaseConfig(BaseModel):
     url: str = Field(
         default_factory=lambda: _env(
             "DB_URL",
-            "postgresql://postgres:postgres@localhost:5432/cortex",
+            "postgresql://postgres:CHANGE_ME_IN_PROD@localhost:5432/cortex",
         ),
         description="Database connection URL",
     )
