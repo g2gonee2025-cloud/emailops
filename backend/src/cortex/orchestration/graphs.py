@@ -11,6 +11,7 @@ from cortex.orchestration.nodes import (
     node_assemble_context,
     node_audit_draft,
     node_classify_query,
+    node_query_graph,
     node_critique_draft,
     node_draft_email_initial,
     node_generate_answer,
@@ -65,6 +66,7 @@ def build_answer_graph() -> StateGraph:
     workflow.add_node("classify", node_classify_query)
     workflow.add_node("retrieve", node_retrieve_context)
     workflow.add_node("assemble", node_assemble_context)
+    workflow.add_node("query_graph", node_query_graph)
     workflow.add_node("generate", node_generate_answer)
     workflow.add_node("handle_error", node_handle_error)
 
@@ -85,7 +87,8 @@ def build_answer_graph() -> StateGraph:
         {"continue": "assemble", "handle_error": "handle_error"},
     )
 
-    workflow.add_edge("assemble", "generate")
+    workflow.add_edge("assemble", "query_graph")
+    workflow.add_edge("query_graph", "generate")
 
     # Generate -> check error or end
     workflow.add_conditional_edges(

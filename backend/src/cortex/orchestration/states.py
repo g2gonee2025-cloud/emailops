@@ -34,6 +34,7 @@ class AnswerQuestionState(GraphState):
     * classification: Optional[QueryClassification]
     * retrieval_results: Optional[SearchResults]
     * assembled_context: Optional[str]
+    * graph_context: Optional[str]
     * answer: Optional[Answer]
     * error: Optional[str]
     """
@@ -47,6 +48,7 @@ class AnswerQuestionState(GraphState):
     classification: Optional[QueryClassification] = None
     retrieval_results: Optional[SearchResults] = None
     assembled_context: Optional[str] = None
+    graph_context: Optional[str] = None
     answer: Optional[Answer] = None
     error: Optional[str] = None
     correlation_id: str = Field(default_factory=lambda: str(uuid.uuid4()))

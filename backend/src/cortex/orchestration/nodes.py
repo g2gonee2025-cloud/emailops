@@ -50,6 +50,8 @@ from cortex.safety.guardrails_client import validate_with_repair
 from cortex.safety.policy_enforcer import check_action
 from cortex.security.injection_defense import strip_injection_patterns
 from pydantic import BaseModel, Field, ValidationError
+from sqlalchemy import func, or_, select
+from sqlalchemy.orm import aliased
 
 logger = logging.getLogger(__name__)
 
@@ -157,6 +159,63 @@ def extract_document_mentions(text: str) -> List[str]:
                 mentions.append(ref)
 
     return mentions
+
+
+def _extract_entity_mentions(text: str) -> List[str]:
+    """Extract candidate entity mentions from query text."""
+    if not text:
+        return []
+
+    candidates: set[str] = set()
+
+    quoted = re.findall(r'["\']([^"\']{2,100})["\']', text)
+    candidates.update(s.strip() for s in quoted if s.strip())
+
+    capitalized_phrases = re.findall(
+        r"\b(?:[A-Z][\w&]*(?:\s+[A-Z][\w&]*)+)\b", text
+    )
+    candidates.update(s.strip() for s in capitalized_phrases if s.strip())
+
+    single_caps = re.findall(r"\b[A-Z][a-z]{2,}\b", text)
+    candidates.update(s.strip() for s in single_caps if s.strip())
+
+    stop_words = {
+        "What",
+        "When",
+        "Where",
+        "Why",
+        "Who",
+        "How",
+        "Can",
+        "Could",
+        "Should",
+        "Would",
+        "Does",
+        "Do",
+        "Did",
+        "Is",
+        "Are",
+        "The",
+        "A",
+        "An",
+        "And",
+        "Or",
+        "To",
+        "From",
+        "For",
+        "Of",
+        "In",
+        "On",
+        "Please",
+        "Tell",
+        "Explain",
+    }
+
+    return [
+        candidate
+        for candidate in candidates
+        if candidate and candidate not in stop_words
+    ]
 
 
 @trace_operation("tool_email_get_thread")
@@ -400,6 +459,108 @@ def node_assemble_context(state: Dict[str, Any]) -> Dict[str, Any]:
     return {"assembled_context": "\n\n".join(context_parts)}
 
 
+def node_query_graph(state: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Query the knowledge graph for entities mentioned in the prompt.
+
+    Blueprint §10.1:
+    * Inject relational facts into answer context.
+    """
+    query = state.get("query", "")
+    tenant_id = state.get("tenant_id")
+
+    if not query or not tenant_id:
+        return {"graph_context": ""}
+
+    mentions = _extract_entity_mentions(query)
+    if not mentions:
+        return {"graph_context": ""}
+
+    try:
+        from cortex.db.models import EntityEdge, EntityNode
+        from cortex.db.session import SessionLocal, set_session_tenant
+
+        with SessionLocal() as session:
+            set_session_tenant(session, tenant_id)
+
+            match_conditions = [
+                func.lower(EntityNode.name) == mention.lower()
+                for mention in mentions
+            ]
+
+            for mention in mentions:
+                if len(mention) >= 4:
+                    match_conditions.append(
+                        func.lower(EntityNode.name).like(f"%{mention.lower()}%")
+                    )
+
+            if not match_conditions:
+                return {"graph_context": ""}
+
+            nodes = (
+                session.execute(
+                    select(EntityNode).where(
+                        EntityNode.tenant_id == tenant_id,
+                        or_(*match_conditions),
+                    )
+                )
+                .scalars()
+                .all()
+            )
+
+            if not nodes:
+                return {"graph_context": ""}
+
+            node_ids = [node.node_id for node in nodes]
+
+            source_node = aliased(EntityNode)
+            target_node = aliased(EntityNode)
+            edges = session.execute(
+                select(EntityEdge, source_node, target_node)
+                .join(source_node, EntityEdge.source_id == source_node.node_id)
+                .join(target_node, EntityEdge.target_id == target_node.node_id)
+                .where(
+                    EntityEdge.tenant_id == tenant_id,
+                    or_(
+                        EntityEdge.source_id.in_(node_ids),
+                        EntityEdge.target_id.in_(node_ids),
+                    ),
+                )
+            ).all()
+
+        context_lines: List[str] = []
+        for node in nodes:
+            if node.description:
+                context_lines.append(
+                    strip_injection_patterns(
+                        f"Entity: {node.name} ({node.type}) - {node.description}"
+                    )
+                )
+            else:
+                context_lines.append(
+                    strip_injection_patterns(
+                        f"Entity: {node.name} ({node.type})"
+                    )
+                )
+
+        for edge, source, target in edges:
+            relation = edge.relation.replace("_", " ").lower()
+            description = f" {edge.description}" if edge.description else ""
+            fact = f"{source.name} {relation} {target.name}.{description}"
+            context_lines.append(strip_injection_patterns(fact.strip()))
+
+        if not context_lines:
+            return {"graph_context": ""}
+
+        graph_context = "Knowledge Graph Facts:\n" + "\n".join(
+            f"- {line}" for line in context_lines
+        )
+        return {"graph_context": graph_context}
+    except Exception as e:
+        logger.error(f"Graph query failed: {e}")
+        return {"graph_context": ""}
+
+
 def node_classify_query(state: Dict[str, Any]) -> Dict[str, Any]:
     """
     Classify the user query.
@@ -460,8 +621,12 @@ def node_generate_answer(state: Dict[str, Any]) -> Dict[str, Any]:
     """
     query = state.get("query", "")
     context = state.get("assembled_context", "")
+    graph_context = state.get("graph_context", "")
+    combined_context = "\n\n".join(
+        part for part in [context, graph_context] if part
+    ).strip()
 
-    if not context:
+    if not combined_context:
         return {
             "answer": Answer(
                 query=query,
@@ -480,7 +645,8 @@ def node_generate_answer(state: Dict[str, Any]) -> Dict[str, Any]:
         # For now, let's get the text answer and construct a basic Answer object.
 
         prompt = (
-            PROMPT_ANSWER_QUESTION + f"\n\nContext:\n{context}\n\nQuestion: {query}"
+            PROMPT_ANSWER_QUESTION
+            + f"\n\nContext:\n{combined_context}\n\nQuestion: {query}"
         )
 
         answer_text = complete_text(prompt)
