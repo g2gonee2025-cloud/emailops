@@ -3,13 +3,14 @@ Export Validation & Manifest Refresh (B1).
 
 Implements §5 of the Canonical Blueprint.
 """
+
 from __future__ import annotations
 
 import hashlib
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from cortex.ingestion.core_manifest import load_manifest
 from cortex.utils.atomic_io import atomic_write_json
@@ -104,6 +105,7 @@ def scan_and_refresh(root: Path) -> ManifestValidationReport:
 
         # Extract participants from text as fallback/enrichment
         participants = _extract_participants_from_txt(conv_txt)
+        last_from, last_to = _extract_last_message_participants(conv_txt)
 
         # Build new manifest with idempotent timestamps derived from manifest -> convo text -> mtime
         started_at = _preserve_str(
@@ -123,6 +125,8 @@ def scan_and_refresh(root: Path) -> ManifestValidationReport:
                     existing_manifest.get("subject_label"), folder_rel
                 ),
                 "participants": participants,  # Explicitly added
+                "last_from": last_from,
+                "last_to": last_to,
                 "message_count": existing_manifest.get("message_count", 0),
                 "started_at_utc": started_at,
                 "ended_at_utc": ended_at,
@@ -204,6 +208,8 @@ def _manifests_differ(old: Dict[str, Any], new: Dict[str, Any]) -> bool:
         "paths",
         "attachment_count",
         "participants",
+        "last_from",
+        "last_to",
     ]
     for k in keys:
         if old.get(k) != new.get(k):
@@ -298,3 +304,39 @@ def _extract_participants_from_txt(conv_txt: Path) -> List[str]:
     # Sort case-insensitively and de-dup
     unique_sorted = sorted(list({p.lower(): p for p in participants}.values()))
     return unique_sorted
+
+
+def _extract_last_message_participants(
+    conv_txt: Path,
+) -> tuple[Optional[str], List[str]]:
+    """Extract the sender (From) and recipients (To) of the last message in the conversation.
+
+    The Conversation.txt format typically contains lines like:
+        2024-10-07 14:43 | From: alice@example.com | To: bob@example.com; carol@example.com
+    This function finds the last such line and returns the From address and a list of To addresses.
+    """
+    import re
+
+    last_from: Optional[str] = None
+    last_to: List[str] = []
+    try:
+        text = conv_txt.read_text(encoding="utf-8-sig", errors="replace")
+        # Process lines in reverse to find the last line containing From and To
+        for line in reversed(text.splitlines()):
+            if "From:" in line and "To:" in line:
+                parts = [p.strip() for p in line.split("|")]
+                from_part = next((p for p in parts if p.startswith("From:")), None)
+                to_part = next((p for p in parts if p.startswith("To:")), None)
+                if from_part and to_part:
+                    last_from = from_part.split(":", 1)[1].strip()
+                    to_raw = to_part.split(":", 1)[1].strip()
+                    for addr in re.split(r"[;,]", to_raw):
+                        addr = addr.strip()
+                        if addr:
+                            last_to.append(addr)
+                break
+    except Exception as e:
+        logger.warning(
+            f"Failed to extract last message participants from {conv_txt}: {e}"
+        )
+    return last_from, last_to

@@ -1,4 +1,5 @@
 """DigitalOcean LLM scaling + inference helpers (Blueprint §§7, 17)."""
+
 from __future__ import annotations
 
 import logging
@@ -404,7 +405,7 @@ class DigitalOceanClusterManager:
         self.model = _model_profile_from_config(config.model)
         self.api = DOApiClient(
             token=self.scaling.token,
-            BASE_URL=self.scaling.api_BASE_URL,
+            BASE_URL=self.scaling.api_base_url,
             dry_run=self.scaling.dry_run,
         )
         self.scaler = ClusterScaler(
@@ -472,7 +473,7 @@ class DigitalOceanLLMService:
 
         self._api_client = DOApiClient(
             token=self.scaling.token,
-            BASE_URL=self.scaling.api_BASE_URL,
+            BASE_URL=self.scaling.api_base_url,
             dry_run=self.scaling.dry_run,
         )
         self._scaler = ClusterScaler(

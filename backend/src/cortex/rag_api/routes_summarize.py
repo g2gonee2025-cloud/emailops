@@ -3,6 +3,7 @@ Summarize Thread API Routes.
 
 Implements §9.5 of the Canonical Blueprint.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -48,9 +49,10 @@ async def summarize_thread_endpoint(
             "tenant_id": tenant_id_ctx.get(),
             "user_id": user_id_ctx.get(),
             "thread_id": request.thread_id,
+            "max_length": request.max_length,
             "iteration_count": 0,
             "error": None,
-            "_correlation_id": correlation_id,
+            "correlation_id": correlation_id,
         }
 
         final_state = await get_summarize_graph().ainvoke(initial_state)

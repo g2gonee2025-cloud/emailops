@@ -328,31 +328,52 @@ class VLLMProvider(BaseProvider):
                     "Missing dependency 'openai'. Install with: pip install -U openai"
                 ) from e
 
-            BASE_URL = getattr(_config, "llm_BASE_URL", None) or os.getenv(
-                "LLM_ENDPOINT",
-                os.getenv(
-                    "DO_LLM_BASE_URL",
-                    os.getenv("KIMI_ENDPOINT", "http://localhost:8000/v1"),
-                ),
-            )
-            # Resolve API Key (fallback priority: Config -> Env -> Default)
-            # Treat "EMPTY" as unset to allow fallback to other env vars
-            config_key = getattr(_config, "llm_api_key", None)
-            if config_key == "EMPTY":
-                config_key = None
+            # Resolve Base URL
+            base_url = None
+            # 1. Try unified config nesting (EmailOpsConfig)
+            if hasattr(_config, "digitalocean"):
+                do_cfg = getattr(_config, "digitalocean")
+                endpoint_cfg = getattr(do_cfg, "endpoint", None)
+                if endpoint_cfg and endpoint_cfg.BASE_URL:
+                    base_url = str(endpoint_cfg.BASE_URL)
 
-            env_key = os.getenv("LLM_API_KEY")
-            if env_key == "EMPTY":
-                env_key = None
+            # 2. Try simple config / env fallback
+            if not base_url:
+                base_url = getattr(_config, "llm_BASE_URL", None) or os.getenv(
+                    "LLM_ENDPOINT",
+                    os.getenv(
+                        "DO_LLM_BASE_URL",
+                        os.getenv("KIMI_ENDPOINT", "http://localhost:8000/v1"),
+                    ),
+                )
 
-            api_key = (
-                config_key
-                or env_key
-                or os.getenv("DO_LLM_API_KEY", os.getenv("KIMI_API_KEY", "EMPTY"))
-            )
+            # Resolve API Key
+            api_key = None
+            # 1. Try unified config nesting
+            if hasattr(_config, "digitalocean"):
+                do_cfg = getattr(_config, "digitalocean")
+                endpoint_cfg = getattr(do_cfg, "endpoint", None)
+                if endpoint_cfg and endpoint_cfg.api_key:
+                    api_key = endpoint_cfg.api_key
 
-            logger.info("Initializing OpenAI client for MiniMax-M2 at %s", BASE_URL)
-            self._llm_client = OpenAI(base_url=BASE_URL, api_key=api_key)
+            # 2. Try simple config / env fallback
+            if not api_key:
+                config_key = getattr(_config, "llm_api_key", None)
+                if config_key == "EMPTY":
+                    config_key = None
+
+                env_key = os.getenv("LLM_API_KEY")
+                if env_key == "EMPTY":
+                    env_key = None
+
+                api_key = (
+                    config_key
+                    or env_key
+                    or os.getenv("DO_LLM_API_KEY", os.getenv("KIMI_API_KEY", "EMPTY"))
+                )
+
+            logger.info("Initializing OpenAI client for MiniMax-M2 at %s", base_url)
+            self._llm_client = OpenAI(base_url=base_url, api_key=api_key)
             return self._llm_client
 
     # ------------- Embedding client (KaLM via vLLM API) -------------
@@ -404,10 +425,17 @@ class VLLMProvider(BaseProvider):
         client = self.embed_client
 
         # Resolve model name
-        model_name = getattr(_config, "embed_model", None) or os.getenv(
-            "EMBED_MODEL",
-            os.getenv("KALM_EMBED_MODEL", "tencent/KaLM-Embedding-Gemma3-12B-2511"),
-        )
+        model_name = None
+        if hasattr(_config, "embedding"):
+            embed_cfg = getattr(_config, "embedding")
+            if embed_cfg and embed_cfg.model_name:
+                model_name = embed_cfg.model_name
+
+        if not model_name:
+            model_name = getattr(_config, "embed_model", None) or os.getenv(
+                "EMBED_MODEL",
+                os.getenv("KALM_EMBED_MODEL", "tencent/KaLM-Embedding-Gemma3-12B-2511"),
+            )
 
         # Batching
         embedding_cfg = getattr(_config, "embedding", None)
@@ -461,11 +489,21 @@ class VLLMProvider(BaseProvider):
         """
         try:
             client = self.llm_client
-            model_name = (
-                kwargs.get("model")
-                or getattr(_config, "llm_model", None)
-                or os.getenv("KIMI_MODEL", "MiniMaxAI/MiniMax-M2")
-            )
+            model_name = kwargs.get("model")
+
+            if not model_name:
+                # 1. Try unified config nesting
+                if hasattr(_config, "digitalocean"):
+                    do_cfg = getattr(_config, "digitalocean")
+                    endpoint_cfg = getattr(do_cfg, "endpoint", None)
+                    if endpoint_cfg and endpoint_cfg.default_completion_model:
+                        model_name = endpoint_cfg.default_completion_model
+
+                # 2. Fallback to simple field / env
+                if not model_name:
+                    model_name = getattr(_config, "llm_model", None) or os.getenv(
+                        "KIMI_MODEL", "MiniMaxAI/MiniMax-M2"
+                    )
 
             messages = kwargs.get("messages") or [{"role": "user", "content": prompt}]
             response_format = kwargs.get("response_format")
@@ -682,7 +720,13 @@ class LLMRuntime:
         if any(not isinstance(t, str) or not t.strip() for t in documents):
             raise ValidationError("documents must be non-empty strings")
 
-        expected_dim = getattr(_config, "embed_dim", 3840)
+        expected_dim = 3840
+        if hasattr(_config, "embedding"):
+            embed_cfg = getattr(_config, "embedding")
+            if embed_cfg and embed_cfg.output_dimensionality:
+                expected_dim = embed_cfg.output_dimensionality
+        else:
+            expected_dim = getattr(_config, "embed_dim", 3840)
 
         vectors = self._execute(
             "embed_documents", self.primary.embed_documents, documents
@@ -717,7 +761,13 @@ class LLMRuntime:
         if any(not isinstance(t, str) or not t.strip() for t in queries):
             raise ValidationError("queries must be non-empty strings")
 
-        expected_dim = getattr(_config, "embed_dim", 3840)
+        expected_dim = 3840
+        if hasattr(_config, "embedding"):
+            embed_cfg = getattr(_config, "embedding")
+            if embed_cfg and embed_cfg.output_dimensionality:
+                expected_dim = embed_cfg.output_dimensionality
+        else:
+            expected_dim = getattr(_config, "embed_dim", 3840)
 
         vectors = self._execute("embed_queries", self.primary.embed_queries, queries)
 

@@ -3,11 +3,12 @@ API Request/Response Models.
 
 Implements §9 of the Canonical Blueprint.
 """
+
 from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-from cortex.domain_models.rag import ThreadSummary
+from cortex.domain_models.rag import Answer, EmailDraft, ThreadSummary
 from pydantic import BaseModel, Field
 
 
@@ -50,6 +51,7 @@ class AnswerRequest(BaseModel):
         default=None, description="Optional thread context"
     )
     k: int = Field(default=10, description="Number of context chunks")
+    debug: bool = Field(default=False, description="Enable debug info")
     tenant_id: Optional[str] = None
     user_id: Optional[str] = None
 
@@ -58,8 +60,7 @@ class AnswerResponse(BaseModel):
     """Question-answering response payload."""
 
     correlation_id: Optional[str] = None
-    answer: str = ""
-    sources: List[Dict[str, Any]] = Field(default_factory=list)
+    answer: Answer
     confidence: float = 0.0
 
 
@@ -83,8 +84,7 @@ class DraftEmailResponse(BaseModel):
     """Email drafting response payload."""
 
     correlation_id: Optional[str] = None
-    draft: str = ""
-    subject: Optional[str] = None
+    draft: EmailDraft
     confidence: float = 0.0
 
 

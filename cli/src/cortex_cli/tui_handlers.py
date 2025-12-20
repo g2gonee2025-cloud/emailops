@@ -2,6 +2,7 @@
 TUI handlers for database, embeddings, S3, config, imports, and RAG.
 Moves complex logic out of the main loop.
 """
+
 import asyncio
 from pathlib import Path
 
@@ -24,9 +25,6 @@ def _handle_db():
     if not action or "Back" in action:
         return
 
-    import sys
-
-    from cortex_cli import cmd_doctor
     from cortex_cli.cmd_db import cmd_db_stats
 
     class Args:
@@ -38,13 +36,19 @@ def _handle_db():
         cmd_db_stats(Args())
     elif "Migrate" in action:
         dry_run = questionary.confirm("Dry run?").ask()
-        # Assuming doctor_args is meant to be constructed from dry_run
-        doctor_args = ["--dry-run"] if dry_run else []
-        sys.argv = [sys.argv[0], *doctor_args]
+
+        args = Args()
+        args.dry_run = dry_run
+        args.verbose = False  # TUI default
+
         try:
-            cmd_doctor.main()  # This seems to replace cmd_db_migrate
+            # Import dynamically to avoid circular imports if any
+            from cortex_cli.cmd_db import cmd_db_migrate
+
+            console.print("[dim]Running migrations...[/dim]")
+            cmd_db_migrate(args)
         except Exception as e:
-            console.print(f"[red]Error running doctor: {e}[/red]")
+            console.print(f"[red]Error running migrations: {e}[/red]")
 
     # SECTION 4: View Ledger
     # ----------------------
@@ -277,7 +281,12 @@ def _interactive_search():
     if not query:
         return
 
-    top_k = int(questionary.text("Top K results:", default="10").ask())
+    top_k_str = questionary.text("Top K results:", default="10").ask()
+    try:
+        top_k = int(top_k_str)
+    except ValueError:
+        console.print("[red]Invalid integer for Top K, defaulting to 10.[/red]")
+        top_k = 10
 
     console.print(f"[dim]Searching for '{query}'...[/dim]")
 
@@ -297,7 +306,11 @@ def _interactive_search():
             table.add_column("Snippet", style="white")
 
             for res in results.results:
-                snippet = (res.text[:150] + "...") if len(res.text) > 150 else res.text
+                raw_text = getattr(res, "text", "") or ""
+                if not isinstance(raw_text, str):
+                    raw_text = str(raw_text)
+
+                snippet = (raw_text[:150] + "...") if len(raw_text) > 150 else raw_text
                 table.add_row(
                     f"{res.score:.3f}", str(res.source), snippet.replace("\n", " ")
                 )

@@ -21,6 +21,7 @@ Examples:
     cortex search "contract renewal"
     cortex doctor --check-embeddings
 """
+
 from __future__ import annotations
 
 import argparse
@@ -175,8 +176,8 @@ def _print_usage() -> None:
     print(f"\n{_colorize('COMMON OPTIONS:', 'bold')}")
     options = [
         ("--help, -h", "Show help for a command"),
-        ("--verbose, -v", "Enable verbose output"),
-        ("--json", "Output in JSON format (machine-readable)"),
+        ("--verbose, -v", "Enable verbose output (where supported)"),
+        ("--json", "Output in JSON format (where supported)"),
     ]
     for opt, desc in options:
         print(f"    {_colorize(opt, 'yellow'):16} {desc}")
@@ -221,41 +222,28 @@ def _print_version() -> None:
     print(f"  Platform: {sys.platform}")
 
 
-def _show_status() -> None:
+def _show_status(json_output: bool = False) -> None:
     """Show current environment status."""
+    import json
     import os
 
-    _print_banner()
-    print(f"{_colorize('ENVIRONMENT STATUS:', 'bold')}\n")
-
-    # Check key environment variables
-    env_vars = [
-        ("OUTLOOKCORTEX_ENV", os.getenv("OUTLOOKCORTEX_ENV", "not set")),
-        (
-            "OUTLOOKCORTEX_DB_URL",
-            "***" if os.getenv("OUTLOOKCORTEX_DB_URL") else "not set",
-        ),
-        (
-            "GOOGLE_APPLICATION_CREDENTIALS",
-            os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "not set"),
-        ),
-    ]
-
-    print(f"  {_colorize('Environment Variables:', 'cyan')}")
-    for var, val in env_vars:
-        status = (
-            _colorize("✓", "green")
-            if val not in ("not set",)
-            else _colorize("○", "yellow")
-        )
-        if val == "***":
-            status = _colorize("✓", "green")
-        display_val = val if len(val) < 50 else val[:47] + "..."
-        print(f"    {status} {var}: {display_val}")
-
-    # Check directories
-    print(f"\n  {_colorize('Directory Structure:', 'cyan')}")
     cwd = Path.cwd()
+
+    # Collect data first
+    status_data = {
+        "environment": {
+            "OUTLOOKCORTEX_ENV": os.getenv("OUTLOOKCORTEX_ENV", "not set"),
+            "OUTLOOKCORTEX_DB_URL": "***"
+            if os.getenv("OUTLOOKCORTEX_DB_URL")
+            else "not set",
+            "GOOGLE_APPLICATION_CREDENTIALS": os.getenv(
+                "GOOGLE_APPLICATION_CREDENTIALS", "not set"
+            ),
+        },
+        "directories": {},
+        "config_files": {},
+    }
+
     dirs_to_check = [
         ("backend/src/cortex", "Backend module"),
         ("cli/src/cortex_cli", "CLI module"),
@@ -266,13 +254,12 @@ def _show_status() -> None:
 
     for dir_path, desc in dirs_to_check:
         full_path = cwd / dir_path
-        exists = full_path.exists()
-        status = _colorize("✓", "green") if exists else _colorize("✗", "red")
-        print(f"    {status} {desc}: {dir_path}")
+        status_data["directories"][dir_path] = {
+            "description": desc,
+            "exists": full_path.exists(),
+        }
 
-    # Check config files
-    print(f"\n  {_colorize('Configuration Files:', 'cyan')}")
-    config_files: list[tuple[str, str]] = [
+    config_files = [
         ("pyproject.toml", "Project configuration"),
         ("environment.yml", "Conda environment"),
         ("requirements.txt", "Python dependencies"),
@@ -281,9 +268,41 @@ def _show_status() -> None:
 
     for file_path, desc in config_files:
         full_path = cwd / file_path
-        exists = full_path.exists()
-        status = _colorize("✓", "green") if exists else _colorize("○", "dim")
-        print(f"    {status} {desc}: {file_path}")
+        status_data["config_files"][file_path] = {
+            "description": desc,
+            "exists": full_path.exists(),
+        }
+
+    if json_output:
+        print(json.dumps(status_data, indent=2))
+        return
+
+    _print_banner()
+    print(f"{_colorize('ENVIRONMENT STATUS:', 'bold')}\n")
+
+    print(f"  {_colorize('Environment Variables:', 'cyan')}")
+    for var, val in status_data["environment"].items():
+        # Re-apply masking logic for display validity check (already masked in data but checking presence)
+        is_set = val != "not set"
+        status_icon = _colorize("✓", "green") if is_set else _colorize("○", "yellow")
+        display_val = val if len(val) < 50 else val[:47] + "..."
+        print(f"    {status_icon} {var}: {display_val}")
+
+    # Check directories
+    print(f"\n  {_colorize('Directory Structure:', 'cyan')}")
+    for dir_path, info in status_data["directories"].items():
+        status_icon = (
+            _colorize("✓", "green") if info["exists"] else _colorize("✗", "red")
+        )
+        print(f"    {status_icon} {info['description']}: {dir_path}")
+
+    # Check config files
+    print(f"\n  {_colorize('Configuration Files:', 'cyan')}")
+    for file_path, info in status_data["config_files"].items():
+        status_icon = (
+            _colorize("✓", "green") if info["exists"] else _colorize("○", "dim")
+        )
+        print(f"    {status_icon} {info['description']}: {file_path}")
 
     print(
         f"\n{_colorize('TIP:', 'yellow')} Run {_colorize('cortex doctor', 'cyan')} for detailed diagnostics\n"
@@ -369,13 +388,33 @@ def _show_config(
                 ),
             ]
 
+            # Mapping from display names to config attributes/keys
+            section_map = {
+                "DigitalOcean LLM": "digitalocean_llm",
+                # Standard attributes
+                "Core": "core",
+                "Embeddings": "embedding",
+                "Search": "search",
+                "Processing": "processing",
+                "Database": "database",
+                "Storage": "storage",
+                "GCP": "gcp",
+                "Retry": "retry",
+                "Limits": "limits",
+            }
+
             # Simple fallback for other sections if not explicitly mapped above
-            if section and section.lower() not in [s[0].lower() for s in sections]:
+            target_section = section_map.get(section, section.lower())
+
+            # Use target_section for lookup, but original `section` for errors/display if needed
+            if target_section and target_section.lower() not in [
+                s[0].lower() for s in sections
+            ]:
                 # Try to find attribute
-                attr = getattr(config, section.lower(), None)
+                attr = getattr(config, target_section, None)
                 if attr:
                     # Generic display for unmapped sections
-                    print(f"  {_colorize(section.capitalize(), 'cyan')}")
+                    print(f"  {_colorize(section, 'cyan')}")
                     if hasattr(attr, "model_dump"):
                         for k, v in attr.model_dump().items():
                             print(f"    {k:<20} {v}")
@@ -383,7 +422,9 @@ def _show_config(
                         print(f"    {attr}")
                     return
                 else:
-                    print(f"{_colorize('ERROR:', 'red')} Section '{section}' not found")
+                    print(
+                        f"{_colorize('ERROR:', 'red')} Section '{section}' (mapped to '{target_section}') not found"
+                    )
                     return
 
             for sec_name, items in sections:
@@ -737,6 +778,7 @@ def _run_index(
             provider=provider,
             num_workers=workers,
             limit=limit,
+            force=force,
         )
 
         num_chunks = len(mappings)
@@ -1599,6 +1641,7 @@ Run comprehensive system diagnostics including:
         action="store_true",
         help="Output as JSON",
     )
+    status_parser.set_defaults(func=lambda args: _show_status(json_output=args.json))
 
     # Config command
     config_parser = subparsers.add_parser(
@@ -1700,7 +1743,7 @@ Run comprehensive system diagnostics including:
         doctor_main()
 
     elif parsed_args.command == "status":
-        _show_status()
+        _show_status(json_output=parsed_args.json)
 
     elif parsed_args.command == "config":
         export_format = "json" if parsed_args.json else None

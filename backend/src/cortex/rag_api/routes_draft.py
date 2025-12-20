@@ -3,6 +3,7 @@ Draft API Routes.
 
 Implements §9.2 of the Canonical Blueprint.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -43,7 +44,9 @@ async def draft_endpoint(
             "tenant_id": tenant_id_ctx.get(),
             "user_id": user_id_ctx.get(),
             "thread_id": str(request.thread_id) if request.thread_id else None,
-            "explicit_query": request.query,
+            "tone": request.tone,
+            "reply_to_message_id": request.reply_to_message_id,
+            "explicit_query": request.instruction,
             "draft_query": None,
             "retrieval_results": None,
             "assembled_context": None,
@@ -51,7 +54,7 @@ async def draft_endpoint(
             "critique": None,
             "iteration_count": 0,
             "error": None,
-            "_correlation_id": correlation_id,
+            "correlation_id": correlation_id,
         }
 
         # Invoke graph
@@ -79,7 +82,7 @@ async def draft_endpoint(
                 risk_level="medium",
                 correlation_id=correlation_id,
                 metadata={
-                    "query": request.query,
+                    "query": request.instruction,
                     "thread_id": str(request.thread_id) if request.thread_id else None,
                     "iterations": final_state.get("iteration_count", 0),
                 },

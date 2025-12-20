@@ -3,6 +3,7 @@ CLI wrapper/orchestrator around mailroom.process_job.
 
 Simplified for new Conversation-based schema (no IngestJob table).
 """
+
 from __future__ import annotations
 
 import logging
@@ -176,7 +177,9 @@ class IngestionProcessor:
             f"with {num_workers} parallel workers"
         )
 
-        agg_stats = IngestJobSummary(job_id=job_id, tenant_id=self.tenant_id)
+        agg_stats = IngestJobSummary(
+            job_id=uuid.UUID(str(job_id)), tenant_id=self.tenant_id
+        )
         agg_stats.folders_processed = 0
         agg_stats.threads_created = 0
         agg_stats.chunks_created = 0

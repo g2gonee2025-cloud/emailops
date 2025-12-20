@@ -18,6 +18,7 @@ Exit Codes (Canonical per Blueprint §13.3):
   1 - Warnings (non-critical issues detected)
   2 - Failures (critical issues detected)
 """
+
 from __future__ import annotations
 
 import argparse
@@ -33,7 +34,9 @@ from pathlib import Path
 from typing import Any
 
 from cortex.config.loader import get_config
-from cortex.llm.client import embed_texts
+
+# Lazy loaded inside functions:
+# from cortex.llm.client import embed_texts
 from sqlalchemy import create_engine, text
 
 # Library-safe logger
@@ -305,6 +308,8 @@ def check_and_install_dependencies(
 def _probe_embeddings(_provider: str) -> tuple[bool, int | None]:
     """Test embedding functionality with the configured provider."""
     try:
+        from cortex.llm.client import embed_texts
+
         # The runtime uses the configured provider from config, not a parameter
         result = embed_texts(["test"])
         if result is not None and len(result) > 0:
@@ -482,14 +487,24 @@ def check_ingest(config: Any, root: Path) -> tuple[bool, dict[str, Any], str | N
                 if folder.is_dir():
                     messages_dir = folder / "messages"
                     if messages_dir.exists():
-                        for msg_file in messages_dir.glob("*.json"):
+                        # Try to find an .eml file first, as parse_eml_file expects that
+                        for msg_file in messages_dir.glob("*.eml"):
                             sample_file = msg_file
                             break
+                        # If no .eml, fallback to .json but warn later if parser fails
+                        if not sample_file:
+                            for msg_file in messages_dir.glob("*.json"):
+                                sample_file = msg_file
+                                break
                 if sample_file:
                     break
 
         if not sample_file:
-            return True, details, "No sample messages found (export may be empty)"
+            return (
+                True,
+                details,
+                "No sample messages found (checked *.eml, *.json in messages/)",
+            )
 
         details["sample_found"] = True
 
@@ -498,13 +513,28 @@ def check_ingest(config: Any, root: Path) -> tuple[bool, dict[str, Any], str | N
             from cortex.ingestion.parser_email import parse_eml_file
 
             # Actually try to parse the sample file
-            parsed = parse_eml_file(sample_file)
-            if parsed and parsed.message_id:
-                details["parser_ok"] = True
-                details["parsed_subject"] = parsed.subject
+            if sample_file.suffix.lower() == ".json":
+                # JSON files (from previous exports) shouldn't be parsed as EML
+                # Just verify it's valid JSON
+                import json
+
+                with sample_file.open() as f:
+                    try:
+                        json.load(f)
+                        details["parser_ok"] = True
+                        details["parsed_subject"] = "N/A (JSON export)"
+                    except json.JSONDecodeError:
+                        details["parser_ok"] = False
+                        return False, details, "Invalid JSON sample"
             else:
-                details["parser_ok"] = False
-                return False, details, "Parser returned empty result"
+                # Assume EML or similar that parser can handle
+                parsed = parse_eml_file(sample_file)
+                if parsed and parsed.message_id:
+                    details["parser_ok"] = True
+                    details["parsed_subject"] = parsed.subject
+                else:
+                    details["parser_ok"] = False
+                    return False, details, "Parser returned empty result"
 
         except ImportError:
             details["parser_ok"] = False
@@ -760,10 +790,11 @@ Examples:
     if args.check_db:
         if not args.json:
             print(f"\n{_c('▶ Checking database...', 'cyan')}")
-            print(
-                f"  DEBUG: OUTLOOKCORTEX_DB_URL env: {os.environ.get('OUTLOOKCORTEX_DB_URL')}"
-            )
-            print(f"  DEBUG: Config DB URL: {config.database.url}")
+            if getattr(args, "verbose", False):
+                print(
+                    f"  DEBUG: OUTLOOKCORTEX_DB_URL env: {os.environ.get('OUTLOOKCORTEX_DB_URL')}"
+                )
+                print(f"  DEBUG: Config DB URL: {config.database.url}")
 
         success, error = check_postgres(config)
         db_success = success

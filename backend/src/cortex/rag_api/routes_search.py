@@ -3,6 +3,7 @@ Search API Routes.
 
 Implements §9.2 of the Canonical Blueprint.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -60,8 +61,8 @@ async def search_endpoint(
             input_hash = hashlib.sha256(input_str.encode()).hexdigest()
 
             log_audit_event(
-                tenant_id=request.tenant_id,
-                user_or_agent=request.user_id,
+                tenant_id=tenant_id_ctx.get(),
+                user_or_agent=user_id_ctx.get(),
                 action="search",
                 input_hash=input_hash,
                 risk_level="low",

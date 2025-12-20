@@ -3,15 +3,16 @@ Graph State Models.
 
 Implements §3.6 and §10.1 of the Canonical Blueprint.
 """
+
 from __future__ import annotations
 
 import uuid
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 from cortex.domain_models.facts_ledger import CriticReview, FactsLedger
 from cortex.domain_models.rag import Answer, DraftCritique, EmailDraft, ThreadSummary
-from cortex.retrieval.hybrid_search import SearchResults
 from cortex.retrieval.query_classifier import QueryClassification
+from cortex.retrieval.results import SearchResults
 from pydantic import BaseModel, Field
 
 
@@ -40,6 +41,8 @@ class AnswerQuestionState(GraphState):
     query: str
     tenant_id: str
     user_id: str
+    thread_id: Optional[str] = None
+    k: int = 10
     debug: bool = False
     classification: Optional[QueryClassification] = None
     retrieval_results: Optional[SearchResults] = None
@@ -62,6 +65,11 @@ class DraftEmailState(GraphState):
 
     tenant_id: str
     user_id: str
+    to: List[str] = Field(default_factory=list)
+    cc: List[str] = Field(default_factory=list)
+    subject: Optional[str] = None
+    tone: Optional[str] = None
+    reply_to_message_id: Optional[str] = None
     thread_id: Optional[str] = None
     explicit_query: Optional[str] = None
     draft_query: Optional[str] = None
@@ -86,6 +94,7 @@ class SummarizeThreadState(GraphState):
     tenant_id: str
     user_id: str
     thread_id: str
+    max_length: int = 500
     thread_context: Optional[str] = None  # Raw text of thread
     facts_ledger: Optional[FactsLedger] = None
     critique: Optional[CriticReview] = None

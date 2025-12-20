@@ -3,6 +3,7 @@ RAG API: Answer routes.
 
 Implements §9.1 of the Canonical Blueprint.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -51,6 +52,9 @@ async def answer_api(request: AnswerRequest, http_request: Request):
             "query": request.query,
             "tenant_id": tenant_id_ctx.get(),
             "user_id": user_id_ctx.get(),
+            "thread_id": request.thread_id,
+            "k": request.k,
+            "debug": request.debug,
             "classification": None,
             "retrieval_results": None,
             "assembled_context": None,

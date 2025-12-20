@@ -30,7 +30,6 @@ dist/
 
 # Project Specific
 *.log
-temp_*/
 k8s/secrets_live.yaml
 culprit.txt
 k8s_sizes.json
@@ -53,3 +52,4 @@ build/
 secrets/
 *.pem
 *.key
+temp_validation_s3_20

@@ -3,6 +3,7 @@ Graph Nodes.
 
 Implements §10.2 of the Canonical Blueprint.
 """
+
 from __future__ import annotations
 
 import json
@@ -393,7 +394,7 @@ def node_assemble_context(state: Dict[str, Any]) -> Dict[str, Any]:
 
         # Format with metadata for citation
         # We use a simple index or ID reference for the LLM
-        source_ref = f"Source {i+1} (ID: {item.chunk_id or item.message_id})"
+        source_ref = f"Source {i + 1} (ID: {item.chunk_id or item.message_id})"
         context_parts.append(f"[{source_ref}]\n{safe_text}")
 
     return {"assembled_context": "\n\n".join(context_parts)}
@@ -430,8 +431,10 @@ def node_retrieve_context(state: Dict[str, Any]) -> Dict[str, Any]:
     """
     query = state.get("query", "")
     classification = state.get("classification")
+    classification = state.get("classification")
     tenant_id = state.get("tenant_id")
     user_id = state.get("user_id")
+    k = state.get("k", 10)
 
     try:
         args = KBSearchInput(
@@ -439,6 +442,7 @@ def node_retrieve_context(state: Dict[str, Any]) -> Dict[str, Any]:
             user_id=user_id,
             query=query,
             classification=classification,
+            k=k,
         )
         results = tool_kb_search_hybrid(args)
         return {"retrieval_results": results}
@@ -851,8 +855,11 @@ def node_summarize_final(state: Dict[str, Any]) -> Dict[str, Any]:
         return {"error": "No facts ledger to finalize"}
 
     try:
+        max_len = state.get("max_length", 500)
         prompt = (
-            PROMPT_SUMMARIZE_FINAL + f"\n\nFacts Ledger:\n{facts.model_dump_json()}"
+            PROMPT_SUMMARIZE_FINAL
+            + f"\n\nConstraint: Keep summary under {max_len} words."
+            + f"\n\nFacts Ledger:\n{facts.model_dump_json()}"
         )
 
         summary_text = complete_text(prompt)

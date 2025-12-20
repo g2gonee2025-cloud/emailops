@@ -1,6 +1,7 @@
 """
 Interactive TUI for Cortex CLI.
 """
+
 import sys
 
 import questionary
@@ -104,7 +105,7 @@ def interactive_loop():
 def _handle_index(cli_main):
     provider = questionary.select(
         "Embedding Provider:",
-        choices=["vertex", "openai", "azure", "local"],
+        choices=["vertex", "openai", "local"],
         default="vertex",
     ).ask()
 
