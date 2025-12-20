@@ -1071,11 +1071,28 @@ def _run_draft(
                 print("-" * 40)
                 print(f"{draft.body_markdown}\n")
 
-                if draft.citations:
-                    print(f"{_colorize('CITATIONS:', 'dim')}")
-                    for i, citation in enumerate(draft.citations, 1):
-                        source = citation.get("source") or citation.get("snippet") or ""
-                        print(f"  {i}. {source}")
+                if draft.next_actions:
+                    print(f"{_colorize('NEXT ACTIONS:', 'dim')}")
+                    for i, action in enumerate(draft.next_actions, 1):
+                        description = getattr(action, "description", None)
+                        owner = getattr(action, "owner", None)
+                        due_date = getattr(action, "due_date", None)
+                        if description is None and isinstance(action, dict):
+                            description = action.get("description")
+                            owner = owner or action.get("owner")
+                            due_date = due_date or action.get("due_date")
+                        if description is None:
+                            description = str(action)
+                        extras = " · ".join(
+                            item
+                            for item in (
+                                f"Owner: {owner}" if owner else None,
+                                f"Due: {due_date}" if due_date else None,
+                            )
+                            if item
+                        )
+                        suffix = f" ({extras})" if extras else ""
+                        print(f"  {i}. {description}{suffix}")
             else:
                 print(f"  {_colorize('⚠', 'yellow')} No draft generated.")
             print()
