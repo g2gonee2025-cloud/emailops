@@ -53,3 +53,8 @@ secrets/
 *.pem
 *.key
 temp_validation_s3_20
+
+# SonarQube
+.sonar/
+.scannerwork/
+.sonarlint/
