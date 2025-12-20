@@ -125,6 +125,9 @@ class DBWriter:
         chunk_id: uuid.UUID,
         conversation_id: uuid.UUID,
         text: str,
+        chunk_type: str = "message_body",
+        is_summary: bool = False,
+        embedding: Optional[List[float]] = None,
         position: int = 0,
         char_start: int = 0,
         char_end: int = 0,
@@ -140,7 +143,10 @@ class DBWriter:
             conversation_id=conversation_id,
             attachment_id=attachment_id,
             is_attachment=is_attachment,
+            is_summary=is_summary,
+            chunk_type=chunk_type,
             text=text,
+            embedding=embedding,
             position=position,
             char_start=char_start,
             char_end=char_end,
@@ -194,7 +200,7 @@ class DBWriter:
             # 3. Write chunks with metadata
             current_chunk_ids = []
             for chunk_data in results.get("chunks", []):
-                source = (
+                source = chunk_data.get("source") or (
                     "attachment" if chunk_data.get("is_attachment") else "email_body"
                 )
                 chunk_data = ensure_chunk_metadata(chunk_data, source=source)
@@ -204,6 +210,9 @@ class DBWriter:
                     chunk_id=chunk_data["chunk_id"],
                     conversation_id=chunk_data["conversation_id"],
                     text=chunk_data["text"],
+                    chunk_type=chunk_data.get("chunk_type", "message_body"),
+                    is_summary=chunk_data.get("is_summary", False),
+                    embedding=chunk_data.get("embedding"),
                     position=chunk_data.get("position", 0),
                     char_start=chunk_data.get("char_start", 0),
                     char_end=chunk_data.get("char_end", 0),
