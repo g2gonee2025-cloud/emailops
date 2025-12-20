@@ -98,6 +98,7 @@ async def answer_api(request: AnswerRequest, http_request: Request):
         return AnswerResponse(
             correlation_id=correlation_id,
             answer=answer,
+            confidence=answer.confidence_overall,
             debug_info={"classification": str(final_state.get("classification"))}
             if request.debug
             else None,
