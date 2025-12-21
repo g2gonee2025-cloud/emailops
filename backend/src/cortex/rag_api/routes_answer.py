@@ -11,8 +11,7 @@ import logging
 
 from cortex.audit import log_audit_event
 from cortex.context import tenant_id_ctx, user_id_ctx
-
-# from cortex.observability import trace_operation
+from cortex.observability import trace_operation  # P2 Fix: Enable tracing
 from cortex.orchestration.graphs import build_answer_graph
 from cortex.rag_api.models import AnswerRequest, AnswerResponse
 from fastapi import APIRouter, HTTPException, Request
@@ -20,20 +19,28 @@ from fastapi import APIRouter, HTTPException, Request
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# Lazy load graph
+# Lazy load graph (fallback if app.state.graphs not available)
 _answer_graph = None
 
 
-def get_answer_graph():
+def get_answer_graph(http_request: Request = None):
+    """Get pre-compiled graph from app.state or lazy load as fallback."""
+    # P0 Fix: Prefer pre-compiled graph from lifespan
+    if http_request and hasattr(http_request.app.state, "graphs"):
+        cached = http_request.app.state.graphs.get("answer")
+        if cached:
+            return cached
+
+    # Fallback to lazy loading (for tests or if lifespan didn't set graphs)
     global _answer_graph
     if _answer_graph is None:
-        logger.info("Initializing Answer Graph...")
+        logger.info("Lazily initializing Answer Graph (prefer app.state.graphs)...")
         _answer_graph = build_answer_graph().compile()
     return _answer_graph
 
 
 @router.post("/answer", response_model=AnswerResponse)
-# @trace_operation("api_answer")
+@trace_operation("api_answer")  # P2 Fix: Enable request tracing
 async def answer_api(request: AnswerRequest, http_request: Request):
     """
     Generate an answer for the user query using RAG.
@@ -63,8 +70,9 @@ async def answer_api(request: AnswerRequest, http_request: Request):
             "correlation_id": correlation_id,  # Pass to nodes if needed
         }
 
-        # Invoke graph
-        final_state = await get_answer_graph().ainvoke(initial_state)
+        # Invoke graph - use pre-compiled from app.state if available
+        graph = get_answer_graph(http_request)
+        final_state = await graph.ainvoke(initial_state)
 
         # Check for errors
         if final_state.get("error"):
@@ -75,14 +83,14 @@ async def answer_api(request: AnswerRequest, http_request: Request):
         if not answer:
             raise HTTPException(status_code=500, detail="No answer generated")
 
-        # Audit log
+        # Audit log - P2 Fix: Use context vars (authoritative) not request body
         try:
             input_str = request.model_dump_json()
             input_hash = hashlib.sha256(input_str.encode()).hexdigest()
 
             log_audit_event(
-                tenant_id=request.tenant_id,
-                user_or_agent=request.user_id,
+                tenant_id=tenant_id_ctx.get(),  # P2 Fix: Use context
+                user_or_agent=user_id_ctx.get(),  # P2 Fix: Use context
                 action="answer_question",
                 input_hash=input_hash,
                 risk_level="low",

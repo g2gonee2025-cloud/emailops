@@ -44,7 +44,7 @@ from cortex.context import (
 )
 from cortex.observability import get_trace_context, init_observability
 from cortex.security.validators import validate_email_format
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from jwt.exceptions import PyJWTError as JWTError
@@ -139,16 +139,19 @@ def _configure_jwt_decoder(
         return
 
     # Dev mode: Allow unverified claims
-    async def decode_unverified(token: str) -> dict[str, Any]:
+    async def decode_verified_secret(token: str) -> dict[str, Any]:
         try:
-            # PyJWT: decode without verification for dev mode
-            return jwt.decode(
-                token, options={"verify_signature": False}
-            )  # NOSONAR: dev mode only
+            # Verify the token signature using the secret key
+            payload = jwt.decode(token, config.SECRET_KEY, algorithms=["HS256"])
+            return payload
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(status_code=401, detail="Token has expired")
+        except jwt.InvalidTokenError:
+            raise HTTPException(status_code=401, detail="Invalid token")
         except JWTError as exc:
             raise SecurityError("Invalid JWT", threat_type="auth_invalid") from exc
 
-    _jwt_decoder = decode_unverified
+    _jwt_decoder = decode_verified_secret
 
 
 async def _extract_identity(request: Request) -> tuple[str, str, dict[str, Any]]:
@@ -502,6 +505,7 @@ async def lifespan(app: FastAPI):
 
     Blueprint §12.3:
     - Initialize observability on startup
+    - Pre-compile LangGraph instances for thread-safety (P0 fix)
     - Clean shutdown
     """
     config = get_config()
@@ -515,6 +519,27 @@ async def lifespan(app: FastAPI):
     )
 
     logger.info(f"Starting {APP_NAME} v{APP_VERSION} ({config.core.env})")
+
+    # P0 Fix: Pre-compile LangGraph instances for thread-safety
+    # Prevents race conditions from concurrent lazy compilation
+    try:
+        from cortex.orchestration.graphs import (
+            build_answer_graph,
+            build_draft_graph,
+            build_summarize_graph,
+        )
+
+        logger.info("Pre-compiling LangGraph instances...")
+        compiled_graphs = {
+            "answer": build_answer_graph().compile(),
+            "draft": build_draft_graph().compile(),
+            "summarize": build_summarize_graph().compile(),
+        }
+        app.state.graphs = compiled_graphs
+        logger.info("✓ LangGraph instances compiled and cached")
+    except Exception as e:
+        logger.warning(f"Failed to pre-compile graphs (will lazy-init): {e}")
+        app.state.graphs = {}
 
     yield
 

@@ -610,8 +610,334 @@ def check_index_health(
 
 
 # -------------------------
-# CLI
+# CLI & Helpers
 # -------------------------
+
+
+def _run_dep_check(
+    args: Any, provider: str, pip_timeout: int
+) -> tuple[DepReport, bool]:
+    if not args.json:
+        print(f"{_c('▶ Checking dependencies...', 'cyan')}")
+
+    dep_report = check_and_install_dependencies(
+        provider, args.auto_install, pip_timeout=pip_timeout
+    )
+    dep_error = bool(dep_report.missing_critical)
+
+    if not args.json:
+        if dep_report.installed:
+            print(f"\n  {_c('Installed:', 'green')}")
+            for pkg in dep_report.installed[:10]:
+                print(f"    {_c('✓', 'green')} {pkg}")
+            if len(dep_report.installed) > 10:
+                print(
+                    f"    {_c(f'... and {len(dep_report.installed) - 10} more', 'dim')}"
+                )
+
+        if dep_report.missing_critical:
+            print(f"\n  {_c('Missing (critical):', 'red')}")
+            for pkg in dep_report.missing_critical:
+                print(f"    {_c('✗', 'red')} {pkg}")
+            print(
+                f"\n  {_c('TIP:', 'yellow')} Run {_c('cortex doctor --auto-install', 'cyan')} to fix"
+            )
+
+        if dep_report.missing_optional:
+            print(f"\n  {_c('Missing (optional):', 'yellow')}")
+            for pkg in dep_report.missing_optional[:5]:
+                print(f"    {_c('○', 'yellow')} {pkg}")
+            if len(dep_report.missing_optional) > 5:
+                print(
+                    f"    {_c(f'... and {len(dep_report.missing_optional) - 5} more', 'dim')}"
+                )
+
+    return dep_report, dep_error
+
+
+def _run_index_check(args: Any, config: Any, root: Path) -> tuple[dict[str, Any], bool]:
+    info: dict[str, Any] = {}
+    error_flag = False
+    if args.check_index:
+        if not args.json:
+            print(f"\n{_c('▶ Checking index health...', 'cyan')}")
+
+        success, status, error = check_index_health(config, root)
+        info = status
+        if not success:
+            error_flag = True
+            if not args.json:
+                print(f"  {_c('✗', 'red')} {error}")
+        else:
+            if not args.json:
+                print(f"  {_c('✓', 'green')} Index directory: {status['path']}")
+                print(
+                    f"    Files: {_c(str(status.get('file_count', 0)), 'dim')} | Embedding dim: {_c(str(status.get('config_embedding_dim')), 'dim')}"
+                )
+    return info, error_flag
+
+
+def _run_db_check(args: Any, config: Any) -> tuple[bool | None, str | None, bool]:
+    success_ret = None
+    error_msg = None
+    error_flag = False
+    if args.check_db:
+        if not args.json:
+            print(f"\n{_c('▶ Checking database...', 'cyan')}")
+            if getattr(args, "verbose", False):
+                print(
+                    f"  DEBUG: OUTLOOKCORTEX_DB_URL env: {os.environ.get('OUTLOOKCORTEX_DB_URL')}"
+                )
+                print(f"  DEBUG: Config DB URL: {config.database.url}")
+
+        success, error = check_postgres(config)
+        success_ret = success
+        error_msg = error
+
+        if not success:
+            error_flag = True
+            if not args.json:
+                print(f"  {_c('✗', 'red')} Database check failed: {error}")
+        else:
+            if not args.json:
+                print(f"  {_c('✓', 'green')} Database connected")
+    return success_ret, error_msg, error_flag
+
+
+def _run_redis_check(args: Any, config: Any) -> tuple[bool | None, str | None, bool]:
+    success_ret = None
+    error_msg = None
+    error_flag = False
+    if args.check_redis:
+        if not args.json:
+            print(f"\n{_c('▶ Checking Redis...', 'cyan')}")
+
+        success, error = check_redis(config)
+        success_ret = success
+        error_msg = error
+
+        if not success:
+            error_flag = True
+            if not args.json:
+                print(f"  {_c('✗', 'red')} Redis check failed: {error}")
+        else:
+            if not args.json:
+                print(f"  {_c('✓', 'green')} Redis connected")
+    return success_ret, error_msg, error_flag
+
+
+def _run_embed_check(args: Any, provider: str) -> tuple[bool | None, int | None, bool]:
+    success_ret = None
+    dim_ret = None
+    error_flag = False
+    if args.check_embeddings:
+        if not args.json:
+            print(f"\n{_c('▶ Testing embeddings...', 'cyan')}")
+
+        success, dim = _probe_embeddings(provider)
+        success_ret, dim_ret = success, dim
+
+        embed_endpoint = (
+            os.environ.get("EMBED_ENDPOINT")
+            or os.environ.get("DO_LLM_BASE_URL")
+            or "http://embeddings-api.emailops.svc.cluster.local"
+        )
+        if not embed_endpoint.endswith("/v1"):
+            embed_endpoint = f"{embed_endpoint.rstrip('/')}/v1"
+
+        if not success:
+            error_flag = True
+            if not args.json:
+                print(f"  {_c('✗', 'red')} Embedding test failed")
+                print(f"    Endpoint: {_c(embed_endpoint, 'dim')}")
+                print(f"\n  {_c('TROUBLESHOOTING:', 'yellow')}")
+                print(f"    • Ensure embedding server is running at: {embed_endpoint}")
+                print("    • Check EMBED_ENDPOINT or DO_LLM_BASE_URL env var")
+                print(
+                    "    • For local dev, start vLLM: python -m vllm.entrypoints.openai.api_server"
+                )
+        else:
+            if not args.json:
+                print(f"  {_c('✓', 'green')} Embeddings working")
+                print(f"    Endpoint:  {_c(embed_endpoint, 'dim')}")
+                print(f"    Dimension: {_c(str(dim), 'bold')}")
+    return success_ret, dim_ret, error_flag
+
+
+def _run_rerank_check(args: Any, config: Any) -> tuple[bool | None, str | None, bool]:
+    success_ret = None
+    error_msg = None
+    error_flag = False
+    if args.check_reranker:
+        if not args.json:
+            print(f"\n{_c('▶ Testing reranker...', 'cyan')}")
+
+        success, error = check_reranker(config)
+        success_ret = success
+        error_msg = error
+
+        if not success:
+            error_flag = True
+            if not args.json:
+                print(f"  {_c('✗', 'red')} Reranker check failed: {error}")
+        else:
+            if not args.json:
+                print(f"  {_c('✓', 'green')} Reranker endpoint OK")
+    return success_ret, error_msg, error_flag
+
+
+def _run_export_check(
+    args: Any, config: Any, root: Path
+) -> tuple[bool | None, list[str], str | None, bool]:
+    success_ret = None
+    folders: list[str] = []
+    error_msg = None
+    warning_flag = False
+    if args.check_exports:
+        if not args.json:
+            print(f"\n{_c('▶ Checking exports...', 'cyan')}")
+
+        success, f_list, error = check_exports(config, root)
+        success_ret = success
+        folders = f_list
+        error_msg = error
+
+        if not success:
+            warning_flag = True
+            if not args.json:
+                print(f"  {_c('⚠', 'yellow')} Export check: {error}")
+        else:
+            if not args.json:
+                print(f"  {_c('✓', 'green')} Export root valid")
+                if folders:
+                    print(f"    Found {len(folders)} B1 folder(s):")
+                    for f in folders[:5]:
+                        print(f"      • {f}")
+                    if len(folders) > 5:
+                        print(f"      {_c(f'... and {len(folders) - 5} more', 'dim')}")
+                else:
+                    print(
+                        f"    {_c('No B1 folders found (export may be empty)', 'dim')}"
+                    )
+    return success_ret, folders, error_msg, warning_flag
+
+
+def _run_ingest_check(
+    args: Any, config: Any, root: Path
+) -> tuple[bool | None, dict[str, Any], str | None, bool]:
+    success_ret = None
+    details: dict[str, Any] = {}
+    error_msg = None
+    warning_flag = False
+    if args.check_ingest:
+        if not args.json:
+            print(f"\n{_c('▶ Checking ingest capability...', 'cyan')}")
+
+        success, det, error = check_ingest(config, root)
+        success_ret = success
+        details = det
+        error_msg = error
+
+        if not success:
+            warning_flag = True
+            if not args.json:
+                print(f"  {_c('⚠', 'yellow')} Ingest check: {error}")
+        else:
+            if not args.json:
+                print(f"  {_c('✓', 'green')} Ingest capability OK")
+                if details.get("sample_found"):
+                    print(f"    Sample message found: {_c('✓', 'green')}")
+                if details.get("parser_ok"):
+                    print(f"    Email parser:         {_c('✓', 'green')}")
+                    if details.get("parsed_subject"):
+                        print(
+                            f"      Subject: {_c(details['parsed_subject'][:40] + '...', 'dim')}"
+                        )
+                if details.get("preprocessor_ok"):
+                    print(f"    Text preprocessor:    {_c('✓', 'green')}")
+                if error:
+                    print(f"    {_c(error, 'dim')}")
+    return success_ret, details, error_msg, warning_flag
+
+
+def _print_json_output(
+    args: Any,
+    provider: str,
+    dep_report: DepReport,
+    index_info: dict[str, Any],
+    db_res: tuple[bool | None, str | None],
+    redis_res: tuple[bool | None, str | None],
+    embed_res: tuple[bool | None, int | None, str],
+    rerank_res: tuple[bool | None, str | None],
+    export_res: tuple[bool | None, list[str], str | None],
+    ingest_res: tuple[bool | None, dict[str, Any], str | None],
+) -> None:
+    payload = {
+        "provider": provider,
+        "dependencies": {
+            "missing_critical": dep_report.missing_critical,
+            "missing_optional": dep_report.missing_optional,
+            "installed": dep_report.installed,
+        },
+        "index": index_info if args.check_index else None,
+        "database": {"success": db_res[0], "error": db_res[1]}
+        if args.check_db
+        else None,
+        "redis": {"success": redis_res[0], "error": redis_res[1]}
+        if args.check_redis
+        else None,
+        "embeddings": {
+            "success": embed_res[0],
+            "dimension": embed_res[1],
+            "provider": embed_res[2],
+        }
+        if args.check_embeddings
+        else None,
+        "exports": {
+            "success": export_res[0],
+            "folders": export_res[1],
+            "error": export_res[2],
+        }
+        if args.check_exports
+        else None,
+        "ingest": {
+            "success": ingest_res[0],
+            "details": ingest_res[1],
+            "error": ingest_res[2],
+        }
+        if args.check_ingest
+        else None,
+        "reranker": {"success": rerank_res[0], "error": rerank_res[1]}
+        if args.check_reranker
+        else None,
+    }
+    print(json.dumps(payload, indent=2))
+
+
+def _print_summary_and_exit(failures: list[str], warnings: list[str]) -> None:
+    print()
+    print(f"{_c('═' * 60, 'cyan')}")
+
+    if not failures and not warnings:
+        print(f"\n  {_c('✓ All checks passed!', 'green')}")
+    elif failures:
+        print(f"\n  {_c('Failures detected:', 'red')}")
+        for f in failures:
+            print(f"    {_c('✗', 'red')} {f}")
+
+    if warnings:
+        print(f"\n  {_c('Warnings:', 'yellow')}")
+        for w in warnings:
+            print(f"    {_c('⚠', 'yellow')} {w}")
+
+    print()
+
+    if failures:
+        sys.exit(2)
+    elif warnings:
+        sys.exit(1)
+    else:
+        sys.exit(0)
 
 
 def _configure_logging(verbose: bool) -> None:
@@ -724,359 +1050,64 @@ Examples:
         print()
 
     # Dependency checks
-    if not args.json:
-        print(f"{_c('▶ Checking dependencies...', 'cyan')}")
+    dep_report, dep_error = _run_dep_check(args, provider, pip_timeout)
 
-    dep_report = check_and_install_dependencies(
-        provider, args.auto_install, pip_timeout=pip_timeout
+    # Component checks
+    index_info, index_error = _run_index_check(args, config, root)
+    db_success, db_err_msg, db_error = _run_db_check(args, config)
+    redis_success, redis_err_msg, redis_error = _run_redis_check(args, config)
+    embed_success, embed_dim, embed_error = _run_embed_check(args, provider)
+    rerank_success, rerank_err_msg, rerank_error = _run_rerank_check(args, config)
+    exp_success, exp_folders, exp_err_msg, exp_warning = _run_export_check(
+        args, config, root
+    )
+    ing_success, ing_details, ing_err_msg, ing_warning = _run_ingest_check(
+        args, config, root
     )
 
-    dep_error = bool(dep_report.missing_critical)
-
-    if not args.json:
-        # Show installed packages
-        if dep_report.installed:
-            print(f"\n  {_c('Installed:', 'green')}")
-            for pkg in dep_report.installed[:10]:  # Show first 10
-                print(f"    {_c('✓', 'green')} {pkg}")
-            if len(dep_report.installed) > 10:
-                print(
-                    f"    {_c(f'... and {len(dep_report.installed) - 10} more', 'dim')}"
-                )
-
-        # Show missing critical
-        if dep_report.missing_critical:
-            print(f"\n  {_c('Missing (critical):', 'red')}")
-            for pkg in dep_report.missing_critical:
-                print(f"    {_c('✗', 'red')} {pkg}")
-            print(
-                f"\n  {_c('TIP:', 'yellow')} Run {_c('cortex doctor --auto-install', 'cyan')} to fix"
-            )
-
-        # Show missing optional
-        if dep_report.missing_optional:
-            print(f"\n  {_c('Missing (optional):', 'yellow')}")
-            for pkg in dep_report.missing_optional[:5]:
-                print(f"    {_c('○', 'yellow')} {pkg}")
-            if len(dep_report.missing_optional) > 5:
-                print(
-                    f"    {_c(f'... and {len(dep_report.missing_optional) - 5} more', 'dim')}"
-                )
-
-    # Index checks
-    index_info: dict[str, Any] = {}
-    index_error = False
-    if args.check_index:
-        if not args.json:
-            print(f"\n{_c('▶ Checking index health...', 'cyan')}")
-
-        success, status, error = check_index_health(config, root)
-        index_info = status
-        if not success:
-            index_error = True
-            if not args.json:
-                print(f"  {_c('✗', 'red')} {error}")
-        else:
-            if not args.json:
-                print(f"  {_c('✓', 'green')} Index directory: {status['path']}")
-                print(
-                    f"    Files: {_c(str(status.get('file_count', 0)), 'dim')} | Embedding dim: {_c(str(status.get('config_embedding_dim')), 'dim')}"
-                )
-
-    # Database check
-    db_success = None
-    db_error_msg = None
-    db_error = False
-    if args.check_db:
-        if not args.json:
-            print(f"\n{_c('▶ Checking database...', 'cyan')}")
-            if getattr(args, "verbose", False):
-                print(
-                    f"  DEBUG: OUTLOOKCORTEX_DB_URL env: {os.environ.get('OUTLOOKCORTEX_DB_URL')}"
-                )
-                print(f"  DEBUG: Config DB URL: {config.database.url}")
-
-        success, error = check_postgres(config)
-        db_success = success
-        db_error_msg = error
-
-        if not success:
-            db_error = True
-            if not args.json:
-                print(f"  {_c('✗', 'red')} Database check failed: {error}")
-        else:
-            if not args.json:
-                print(f"  {_c('✓', 'green')} Database connected")
-
-    # Redis check
-    redis_success = None
-    redis_error_msg = None
-    redis_error = False
-    if args.check_redis:
-        if not args.json:
-            print(f"\n{_c('▶ Checking Redis...', 'cyan')}")
-
-        success, error = check_redis(config)
-        redis_success = success
-        redis_error_msg = error
-
-        if not success:
-            redis_error = True
-            if not args.json:
-                print(f"  {_c('✗', 'red')} Redis check failed: {error}")
-        else:
-            if not args.json:
-                print(f"  {_c('✓', 'green')} Redis connected")
-
-    # Embeddings probe
-    embeddings_success = None
-    embeddings_dim = None
-    embeddings_error = False
-    if args.check_embeddings:
-        if not args.json:
-            print(f"\n{_c('▶ Testing embeddings...', 'cyan')}")
-
-        success, dim = _probe_embeddings(provider)
-        embeddings_success, embeddings_dim = success, dim
-
-        # Determine actual embedding endpoint being used
-        embed_endpoint = (
-            os.environ.get("EMBED_ENDPOINT")
-            or os.environ.get("DO_LLM_BASE_URL")
-            or "http://embeddings-api.emailops.svc.cluster.local"
-        )
-        if not embed_endpoint.endswith("/v1"):
-            embed_endpoint = f"{embed_endpoint.rstrip('/')}/v1"
-
-        if not success:
-            embeddings_error = True
-            if not args.json:
-                print(f"  {_c('✗', 'red')} Embedding test failed")
-                print(f"    Endpoint: {_c(embed_endpoint, 'dim')}")
-                print(f"\n  {_c('TROUBLESHOOTING:', 'yellow')}")
-                print(f"    • Ensure embedding server is running at: {embed_endpoint}")
-                print("    • Check EMBED_ENDPOINT or DO_LLM_BASE_URL env var")
-                print(
-                    "    • For local dev, start vLLM: python -m vllm.entrypoints.openai.api_server"
-                )
-        else:
-            if not args.json:
-                print(f"  {_c('✓', 'green')} Embeddings working")
-                print(f"    Endpoint:  {_c(embed_endpoint, 'dim')}")
-                print(f"    Dimension: {_c(str(dim), 'bold')}")
-
-    # Reranker probe
-    reranker_success = None
-    reranker_error_msg = None
-    reranker_error = False
-    if args.check_reranker:
-        if not args.json:
-            print(f"\n{_c('▶ Testing reranker...', 'cyan')}")
-
-        success, error = check_reranker(config)
-        reranker_success = success
-        reranker_error_msg = error
-
-        if not success:
-            reranker_error = True
-            if not args.json:
-                print(f"  {_c('✗', 'red')} Reranker check failed: {error}")
-        else:
-            if not args.json:
-                print(f"  {_c('✓', 'green')} Reranker endpoint OK")
-
-    # Exports check (Blueprint §13.3)
-    exports_success = None
-    exports_folders: list[str] = []
-    exports_error_msg = None
-    exports_warning = False
-    if args.check_exports:
-        if not args.json:
-            print(f"\n{_c('▶ Checking exports...', 'cyan')}")
-
-        success, folders, error = check_exports(config, root)
-        exports_success = success
-        exports_folders = folders
-        exports_error_msg = error
-
-        if not success:
-            exports_warning = True  # Warning, not critical failure
-            if not args.json:
-                print(f"  {_c('⚠', 'yellow')} Export check: {error}")
-        else:
-            if not args.json:
-                print(f"  {_c('✓', 'green')} Export root valid")
-                if folders:
-                    print(f"    Found {len(folders)} B1 folder(s):")
-                    for f in folders[:5]:
-                        print(f"      • {f}")
-                    if len(folders) > 5:
-                        print(f"      {_c(f'... and {len(folders) - 5} more', 'dim')}")
-                else:
-                    print(
-                        f"    {_c('No B1 folders found (export may be empty)', 'dim')}"
-                    )
-
-    # Ingest dry-run check (Blueprint §13.3)
-    ingest_success = None
-    ingest_details: dict[str, Any] = {}
-    ingest_error_msg = None
-    ingest_warning = False
-    if args.check_ingest:
-        if not args.json:
-            print(f"\n{_c('▶ Checking ingest capability...', 'cyan')}")
-
-        success, details, error = check_ingest(config, root)
-        ingest_success = success
-        ingest_details = details
-        ingest_error_msg = error
-
-        if not success:
-            ingest_warning = True
-            if not args.json:
-                print(f"  {_c('⚠', 'yellow')} Ingest check: {error}")
-        else:
-            if not args.json:
-                print(f"  {_c('✓', 'green')} Ingest capability OK")
-                if details.get("sample_found"):
-                    print(f"    Sample message found: {_c('✓', 'green')}")
-                if details.get("parser_ok"):
-                    print(f"    Email parser:         {_c('✓', 'green')}")
-                    if details.get("parsed_subject"):
-                        print(
-                            f"      Subject: {_c(details['parsed_subject'][:40] + '...', 'dim')}"
-                        )
-                if details.get("preprocessor_ok"):
-                    print(f"    Text preprocessor:    {_c('✓', 'green')}")
-                if error:
-                    print(f"    {_c(error, 'dim')}")
-
-    # JSON output
+    # Output
     if args.json:
-        payload = {
-            "provider": provider,
-            "dependencies": {
-                "missing_critical": dep_report.missing_critical,
-                "missing_optional": dep_report.missing_optional,
-                "installed": dep_report.installed,
-            },
-            "index": index_info if args.check_index else None,
-            "database": (
-                {
-                    "success": db_success,
-                    "error": db_error_msg,
-                }
-                if args.check_db
-                else None
-            ),
-            "redis": (
-                {
-                    "success": redis_success,
-                    "error": redis_error_msg,
-                }
-                if args.check_redis
-                else None
-            ),
-            "embeddings": (
-                {
-                    "success": embeddings_success,
-                    "dimension": embeddings_dim,
-                    "provider": provider,
-                }
-                if args.check_embeddings
-                else None
-            ),
-            "exports": (
-                {
-                    "success": exports_success,
-                    "folders": exports_folders,
-                    "error": exports_error_msg,
-                }
-                if args.check_exports
-                else None
-            ),
-            "ingest": (
-                {
-                    "success": ingest_success,
-                    "details": ingest_details,
-                    "error": ingest_error_msg,
-                }
-                if args.check_ingest
-                else None
-            ),
-            "reranker": (
-                {
-                    "success": reranker_success,
-                    "error": reranker_error_msg,
-                }
-                if args.check_reranker
-                else None
-            ),
-        }
-        print(json.dumps(payload, indent=2))
-    else:
-        # Summary
-        print()
-        print(f"{_c('═' * 60, 'cyan')}")
-
-        # Determine if we have failures (exit 2), warnings (exit 1), or all ok (exit 0)
-        has_failures = (
-            dep_error
-            or index_error
-            or embeddings_error
-            or db_error
-            or redis_error
-            or reranker_error
+        _print_json_output(
+            args,
+            provider,
+            dep_report,
+            index_info,
+            (db_success, db_err_msg),
+            (redis_success, redis_err_msg),
+            (embed_success, embed_dim, provider),
+            (rerank_success, rerank_err_msg),
+            (exp_success, exp_folders, exp_err_msg),
+            (ing_success, ing_details, ing_err_msg),
         )
-        has_warnings = (
-            exports_warning or ingest_warning or bool(dep_report.missing_optional)
-        )
-
-        if not has_failures and not has_warnings:
-            print(f"\n  {_c('✓ All checks passed!', 'green')}")
-        elif has_failures:
-            print(f"\n  {_c('Failures detected:', 'red')}")
-            if dep_error:
-                print(f"    {_c('✗', 'red')} Missing critical dependencies")
-            if index_error:
-                print(f"    {_c('✗', 'red')} Index health issues")
-            if embeddings_error:
-                print(f"    {_c('✗', 'red')} Embedding connectivity failed")
-            if db_error:
-                print(f"    {_c('✗', 'red')} Database connectivity failed")
-            if redis_error:
-                print(f"    {_c('✗', 'red')} Redis connectivity failed")
-            if reranker_error:
-                print(f"    {_c('✗', 'red')} Reranker connectivity failed")
-
-        if has_warnings:
-            print(f"\n  {_c('Warnings:', 'yellow')}")
-            if exports_warning:
-                print(f"    {_c('⚠', 'yellow')} Export root issues")
-            if ingest_warning:
-                print(f"    {_c('⚠', 'yellow')} Ingest capability issues")
-            if dep_report.missing_optional:
-                print(f"    {_c('⚠', 'yellow')} Missing optional packages")
-
-        print()
-
-    # Canonical exit codes per Blueprint §13.3:
-    # 0 = all checks passed
-    # 1 = warnings (non-critical)
-    # 2 = failures (critical)
-    has_failures = (
-        dep_error or index_error or embeddings_error or db_error or redis_error
-    )
-    has_warnings = (
-        exports_warning or ingest_warning or bool(dep_report.missing_optional)
-    )
-
-    if has_failures:
-        sys.exit(2)
-    elif has_warnings:
-        sys.exit(1)
     else:
-        sys.exit(0)
+        # Collect failures/warnings for summary
+        failures = []
+        if dep_error:
+            failures.append("Missing critical dependencies")
+        if index_error:
+            failures.append("Index health issues")
+        if embed_error:
+            failures.append("Embedding connectivity failed")
+        if db_error:
+            failures.append("Database connectivity failed")
+        if redis_error:
+            failures.append("Redis connectivity failed")
+        if rerank_error:
+            failures.append("Reranker connectivity failed")
+
+        warnings = []
+        if exp_warning:
+            warnings.append("Export root issues")
+        if ing_warning:
+            warnings.append("Ingest capability issues")
+        if dep_report.missing_optional:
+            warnings.append("Missing optional packages")
+
+        _print_summary_and_exit(failures, warnings)
+
+
+if __name__ == "__main__":
+    main()
 
 
 if __name__ == "__main__":

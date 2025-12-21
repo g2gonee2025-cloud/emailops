@@ -363,6 +363,9 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
             limit=k * candidates_multiplier,
             conversation_ids=final_conversation_ids,
             is_attachment=parsed_filters.has_attachment,
+            file_types=list(parsed_filters.file_types)
+            if parsed_filters.file_types
+            else None,  # P1 Fix
         )
 
         # 4. Vector search (if we have an embedding)
@@ -378,6 +381,9 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
                 ef_search=hnsw_ef_search,
                 conversation_ids=final_conversation_ids,
                 is_attachment=parsed_filters.has_attachment,
+                file_types=list(parsed_filters.file_types)
+                if parsed_filters.file_types
+                else None,  # P1 Fix
             )
             logger.info(f"Vector search returned {len(vector_results)} chunks")
         else:

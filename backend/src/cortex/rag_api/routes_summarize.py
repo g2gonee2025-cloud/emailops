@@ -11,6 +11,7 @@ import logging
 
 from cortex.audit import log_audit_event
 from cortex.context import tenant_id_ctx, user_id_ctx
+from cortex.observability import trace_operation  # P2 Fix: Enable tracing
 from cortex.orchestration.graphs import build_summarize_graph
 from cortex.rag_api.models import SummarizeThreadRequest, SummarizeThreadResponse
 from fastapi import APIRouter, HTTPException, Request
@@ -18,19 +19,28 @@ from fastapi import APIRouter, HTTPException, Request
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# Lazily compile graph to avoid startup cost
+# Lazily compile graph to avoid startup cost (fallback if app.state.graphs not available)
 _summarize_graph = None
 
 
-def get_summarize_graph():
+def get_summarize_graph(http_request: Request = None):
+    """Get pre-compiled graph from app.state or lazy load as fallback."""
+    # P0 Fix: Prefer pre-compiled graph from lifespan
+    if http_request and hasattr(http_request.app.state, "graphs"):
+        cached = http_request.app.state.graphs.get("summarize")
+        if cached:
+            return cached
+
+    # Fallback to lazy loading
     global _summarize_graph
     if _summarize_graph is None:
-        logger.info("Initializing Summarize Graph...")
+        logger.info("Lazily Initializing Summarize Graph (prefer app.state.graphs)...")
         _summarize_graph = build_summarize_graph().compile()
     return _summarize_graph
 
 
 @router.post("/summarize", response_model=SummarizeThreadResponse)
+@trace_operation("api_summarize")  # P2 Fix: Enable request tracing
 async def summarize_thread_endpoint(
     request: SummarizeThreadRequest, http_request: Request
 ) -> SummarizeThreadResponse:
@@ -55,7 +65,9 @@ async def summarize_thread_endpoint(
             "correlation_id": correlation_id,
         }
 
-        final_state = await get_summarize_graph().ainvoke(initial_state)
+        # Use pre-compiled graph from app.state if available
+        graph = get_summarize_graph(http_request)
+        final_state = await graph.ainvoke(initial_state)
 
         if final_state.get("error"):
             raise HTTPException(status_code=500, detail=final_state["error"])
@@ -64,11 +76,12 @@ async def summarize_thread_endpoint(
         if not summary:
             raise HTTPException(status_code=500, detail="No summary generated")
 
+        # P2 Fix: Use context vars (authoritative) not request body
         try:
             input_hash = hashlib.sha256(request.model_dump_json().encode()).hexdigest()
             log_audit_event(
-                tenant_id=request.tenant_id,
-                user_or_agent=request.user_id,
+                tenant_id=tenant_id_ctx.get(),  # P2 Fix: Use context
+                user_or_agent=user_id_ctx.get(),  # P2 Fix: Use context
                 action="summarize_thread",
                 input_hash=input_hash,
                 risk_level="low",

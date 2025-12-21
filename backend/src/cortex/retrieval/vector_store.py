@@ -163,6 +163,7 @@ class VectorStore(ABC):
         conversation_ids: Optional[List[str]] = None,
         is_attachment: Optional[bool] = None,
         thread_ids: Optional[List[str]] = None,
+        file_types: Optional[List[str]] = None,  # P1 Fix: file_types filter
     ) -> List[VectorResult]:
         """Search for similar vectors."""
 
@@ -184,6 +185,7 @@ class PgvectorStore(VectorStore):
         conversation_ids: Optional[List[str]] = None,
         is_attachment: Optional[bool] = None,
         thread_ids: Optional[List[str]] = None,
+        file_types: Optional[List[str]] = None,  # P1 Fix: file_types filter
     ) -> List[VectorResult]:
         emb_array = _validate_embedding(embedding, self._output_dim)
 
@@ -217,6 +219,12 @@ class PgvectorStore(VectorStore):
                 else "AND c.is_attachment = FALSE"
             )
 
+        # P1 Fix: File types filter
+        file_types_filter_sql = ""
+        if file_types:
+            file_types_filter_sql = "AND (c.extra_data->>'file_type' = ANY(:file_types) OR c.extra_data->>'source_type' = ANY(:file_types))"
+            params["file_types"] = file_types
+
         # Optional HNSW tuning for recall/speed tradeoff
         hnsw_settings_cte = ""
         if ef_search is not None:
@@ -243,6 +251,7 @@ class PgvectorStore(VectorStore):
               AND c.embedding IS NOT NULL
             {conversation_filter_sql}
             {attachment_filter_sql}
+            {file_types_filter_sql}
             ORDER BY distance
             LIMIT :limit
         """
@@ -275,6 +284,7 @@ class QdrantVectorStore(VectorStore):
         conversation_ids: Optional[List[str]] = None,
         is_attachment: Optional[bool] = None,
         thread_ids: Optional[List[str]] = None,
+        file_types: Optional[List[str]] = None,  # P1 Fix: file_types filter
     ) -> List[VectorResult]:
         emb_array = _validate_embedding(embedding, self._output_dim)
 
@@ -295,6 +305,9 @@ class QdrantVectorStore(VectorStore):
             must_filters.append(
                 {"key": "is_attachment", "match": {"value": is_attachment}}
             )
+        # P1 Fix: file_types filter for Qdrant
+        if file_types:
+            must_filters.append({"key": "file_type", "match": {"any": file_types}})
 
         payload: Dict[str, Any] = {
             "vector": emb_array.tolist(),

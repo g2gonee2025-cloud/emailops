@@ -602,7 +602,6 @@ def node_retrieve_context(state: Dict[str, Any]) -> Dict[str, Any]:
     """
     query = state.get("query", "")
     classification = state.get("classification")
-    classification = state.get("classification")
     tenant_id = state.get("tenant_id")
     user_id = state.get("user_id")
     k = state.get("k", 10)
@@ -748,7 +747,9 @@ def node_draft_email_initial(state: Dict[str, Any]) -> Dict[str, Any]:
             cc=draft_structured.cc,
             subject=draft_structured.subject or "No Subject",
             body_markdown=draft_structured.body_markdown,
-            tone_style=ToneStyle(persona_id="default", tone="professional"),
+            tone_style=ToneStyle(
+                persona_id="default", tone=state.get("tone", "professional")
+            ),  # P1 Fix: Use state.tone
             val_scores=DraftValidationScores(
                 factuality=0.0,
                 citation_coverage=0.0,

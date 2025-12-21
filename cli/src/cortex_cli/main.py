@@ -106,6 +106,61 @@ COLORS = {
 }
 
 
+# -----------------------------------------------------------------------------
+# Help Text Constants
+# -----------------------------------------------------------------------------
+
+NOT_SET = "not set"
+
+CORE_COMMANDS = [
+    ("ingest", "Process and ingest email exports into the system"),
+    ("index", "Build/rebuild search index with embeddings"),
+    ("search", "Search indexed emails with natural language"),
+    ("validate", "Validate export folder structure (B1)"),
+]
+
+RAG_COMMANDS = [
+    ("answer", "Ask questions about your emails"),
+    ("draft", "Draft email replies based on context"),
+    ("summarize", "Summarize email threads"),
+]
+
+UTILITY_COMMANDS = [
+    ("doctor", "Run system diagnostics and health checks"),
+    ("status", "Show current environment and configuration"),
+    ("config", "View, validate, or export configuration"),
+    ("version", "Display version information"),
+]
+
+DATA_COMMANDS = [
+    ("db", "Database management (stats, migrate)"),
+    ("embeddings", "Embedding management (stats, backfill)"),
+    ("s3", "S3/Spaces storage (list, ingest)"),
+]
+
+COMMON_OPTIONS = [
+    ("--help, -h", "Show help for a command"),
+    ("--verbose, -v", "Enable verbose output (where supported)"),
+    ("--json", "Output in JSON format (where supported)"),
+]
+
+EXAMPLES = [
+    ("cortex ingest ./exports/emails", "Ingest emails from a folder"),
+    ("cortex ingest ./my_export --tenant acme", "Ingest with tenant ID"),
+    ("cortex index --workers 4", "Build index with 4 workers"),
+    ('cortex search "contract terms"', "Search for contract terms"),
+    ("cortex doctor --check-embeddings", "Test embedding connectivity"),
+]
+
+WORKFLOW_STEPS = [
+    ("cortex doctor", "Check system health"),
+    ("cortex ingest <path>", "Import email exports"),
+    ("cortex index", "Build search embeddings"),
+    ("cortex search <query>", "Query your emails"),
+    ("cortex answer <question>", "Get AI answers"),
+]
+
+
 def _colorize(text: str, color: str) -> str:
     """Apply ANSI color to text if terminal supports it."""
     if not sys.stdout.isatty():
@@ -124,6 +179,15 @@ def _print_banner() -> None:
     print(banner)
 
 
+def _print_section(
+    title: str, items: list[tuple[str, str]], item_color: str = "green", width: int = 12
+) -> None:
+    """Print a section of the help output."""
+    print(f"\n{_colorize(title, 'bold')}")
+    for left, right in items:
+        print(f"    {_colorize(left, item_color):{width}} {right}")
+
+
 def _print_usage() -> None:
     """Print user-friendly usage information."""
     _print_banner()
@@ -134,71 +198,35 @@ def _print_usage() -> None:
     print(
         f"{_colorize('CORE COMMANDS:', 'bold')}  {_colorize('(Email Processing)', 'dim')}"
     )
-    core_commands = [
-        ("ingest", "Process and ingest email exports into the system"),
-        ("index", "Build/rebuild search index with embeddings"),
-        ("search", "Search indexed emails with natural language"),
-        ("validate", "Validate export folder structure (B1)"),
-    ]
-    for cmd, desc in core_commands:
+    for cmd, desc in CORE_COMMANDS:
         print(f"    {_colorize(cmd, 'green'):12} {desc}")
 
     print(
         f"\n{_colorize('RAG COMMANDS:', 'bold')}   {_colorize('(AI Capabilities)', 'dim')}"
     )
-    rag_commands = [
-        ("answer", "Ask questions about your emails"),
-        ("draft", "Draft email replies based on context"),
-        ("summarize", "Summarize email threads"),
-    ]
-    for cmd, desc in rag_commands:
+    for cmd, desc in RAG_COMMANDS:
         print(f"    {_colorize(cmd, 'green'):12} {desc}")
 
-    print(f"\n{_colorize('UTILITY COMMANDS:', 'bold')}")
-    utility_commands = [
-        ("doctor", "Run system diagnostics and health checks"),
-        ("status", "Show current environment and configuration"),
-        ("config", "View, validate, or export configuration"),
-        ("version", "Display version information"),
-    ]
-    for cmd, desc in utility_commands:
-        print(f"    {_colorize(cmd, 'green'):12} {desc}")
-
-    print(f"\n{_colorize('DATA COMMANDS:', 'bold')}")
-    data_commands = [
-        ("db", "Database management (stats, migrate)"),
-        ("embeddings", "Embedding management (stats, backfill)"),
-        ("s3", "S3/Spaces storage (list, ingest)"),
-    ]
-    for cmd, desc in data_commands:
-        print(f"    {_colorize(cmd, 'green'):12} {desc}")
+    _print_section("UTILITY COMMANDS:", UTILITY_COMMANDS)
+    _print_section("DATA COMMANDS:", DATA_COMMANDS)
 
     print(f"\n{_colorize('COMMON OPTIONS:', 'bold')}")
-    options = [
-        ("--help, -h", "Show help for a command"),
-        ("--verbose, -v", "Enable verbose output (where supported)"),
-        ("--json", "Output in JSON format (where supported)"),
-    ]
-    for opt, desc in options:
+    for opt, desc in COMMON_OPTIONS:
         print(f"    {_colorize(opt, 'yellow'):16} {desc}")
 
     print(f"\n{_colorize('EXAMPLES:', 'bold')}")
-    examples = [
-        ("cortex ingest ./exports/emails", "Ingest emails from a folder"),
-        ("cortex ingest ./my_export --tenant acme", "Ingest with tenant ID"),
-        ("cortex index --workers 4", "Build index with 4 workers"),
-        ('cortex search "contract terms"', "Search for contract terms"),
-        ("cortex doctor --check-embeddings", "Test embedding connectivity"),
-    ]
-    for example, desc in examples:
+    for example, desc in EXAMPLES:
         print(f"    {_colorize(example, 'dim'):44} # {desc}")
 
     print(f"\n{_colorize('WORKFLOW:', 'bold')}")
-    print(f"    1. {_colorize('cortex doctor', 'cyan')} → Check system health")
-    print(f"    2. {_colorize('cortex ingest <path>', 'cyan')} → Import email exports")
-    print(f"    3. {_colorize('cortex index', 'cyan')} → Build search embeddings")
-    print(f"    4. {_colorize('cortex search <query>', 'cyan')} → Query your emails")
-    print(f"    5. {_colorize('cortex answer <question>', 'cyan')} → Get AI answers")
+    for i, (cmd, desc) in enumerate(WORKFLOW_STEPS, 1):
+        # We need to manually construct the string to colorize parts of it
+        # The stored constant is just the command string, we colorize it here
+        # Actually in constants we stored "cortex doctor", let's reconstruct logic or simplified it
+        # The original code did: print(f"    {i}. {_colorize('cortex doctor', 'cyan')} → Check system health")
+        # To match exact output:
+        # We stored ("cortex doctor", "Check system health") in WORKFLOW_STEPS
+        print(f"    {i}. {_colorize(cmd, 'cyan')} → {desc}")
 
     print(f"\n{_colorize('DOCUMENTATION:', 'bold')}")
     print(
@@ -232,12 +260,12 @@ def _show_status(json_output: bool = False) -> None:
     # Collect data first
     status_data = {
         "environment": {
-            "OUTLOOKCORTEX_ENV": os.getenv("OUTLOOKCORTEX_ENV", "not set"),
+            "OUTLOOKCORTEX_ENV": os.getenv("OUTLOOKCORTEX_ENV", NOT_SET),
             "OUTLOOKCORTEX_DB_URL": (
-                "***" if os.getenv("OUTLOOKCORTEX_DB_URL") else "not set"
+                "***" if os.getenv("OUTLOOKCORTEX_DB_URL") else NOT_SET
             ),
             "GOOGLE_APPLICATION_CREDENTIALS": os.getenv(
-                "GOOGLE_APPLICATION_CREDENTIALS", "not set"
+                "GOOGLE_APPLICATION_CREDENTIALS", NOT_SET
             ),
         },
         "directories": {},
@@ -283,7 +311,7 @@ def _show_status(json_output: bool = False) -> None:
     print(f"  {_colorize('Environment Variables:', 'cyan')}")
     for var, val in status_data["environment"].items():
         # Re-apply masking logic for display validity check (already masked in data but checking presence)
-        is_set = val != "not set"
+        is_set = val != NOT_SET
         status_icon = _colorize("✓", "green") if is_set else _colorize("○", "yellow")
         display_val = val if len(val) < 50 else val[:47] + "..."
         print(f"    {status_icon} {var}: {display_val}")
@@ -404,7 +432,9 @@ def _show_config(
             }
 
             # Simple fallback for other sections if not explicitly mapped above
-            target_section = section_map.get(section, section.lower())
+            target_section = None
+            if section:
+                target_section = section_map.get(section, section.lower())
 
             # Use target_section for lookup, but original `section` for errors/display if needed
             if target_section and target_section.lower() not in [
@@ -839,30 +869,31 @@ def _run_search(
         print()
 
     try:
-        from cortex.models.api import (
-            SearchRequest as _SearchRequest,  # type: ignore[import]
+        from cortex.retrieval.hybrid_search import (
+            KBSearchInput as _KBSearchInput,  # type: ignore[import]
         )
         from cortex.retrieval.hybrid_search import (
-            hybrid_search as _hybrid_search,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
+            tool_kb_search_hybrid as _tool_kb_search_hybrid,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
         )
 
-        _SearchRequest = cast(Any, _SearchRequest)
-        _hybrid_search = cast(Any, _hybrid_search)
-        SearchRequest: type[Any]
-        hybrid_search: Callable[[Any], Any]
-        SearchRequest = cast(type[Any], _SearchRequest)
-        hybrid_search = cast(Callable[[Any], Any], _hybrid_search)
+        _KBSearchInput = cast(Any, _KBSearchInput)
+        _tool_kb_search_hybrid = cast(Any, _tool_kb_search_hybrid)
+        KBSearchInput: type[Any] = cast(type[Any], _KBSearchInput)
+        tool_kb_search_hybrid: Callable[[Any], Any] = cast(
+            Callable[[Any], Any], _tool_kb_search_hybrid
+        )
 
-        request: Any = SearchRequest(
-            query=query,
-            top_k=top_k,
+        request: Any = KBSearchInput(
             tenant_id=tenant_id,
+            user_id="cli-user",
+            query=query,
+            k=top_k,
         )
 
         if not json_output:
             print(f"  {_colorize('⏳', 'yellow')} Searching...\n")
 
-        results: Any = hybrid_search(request)
+        results: Any = tool_kb_search_hybrid(request)
 
         if json_output:
             # Convert results to JSON-serializable format

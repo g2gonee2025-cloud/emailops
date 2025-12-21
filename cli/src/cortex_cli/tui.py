@@ -12,6 +12,8 @@ from rich.panel import Panel
 
 console = Console()
 
+STYLE_HIGHLIGHT = "fg:cyan bold"
+
 
 def _print_header():
     console.print(
@@ -57,12 +59,12 @@ def interactive_loop():
             ],
             style=questionary.Style(
                 [
-                    ("qmark", "fg:cyan bold"),
+                    ("qmark", STYLE_HIGHLIGHT),
                     ("question", "fg:white bold"),
-                    ("answer", "fg:cyan bold"),
-                    ("pointer", "fg:cyan bold"),
-                    ("highlighted", "fg:cyan bold"),
-                    ("selected", "fg:cyan bold"),
+                    ("answer", STYLE_HIGHLIGHT),
+                    ("pointer", STYLE_HIGHLIGHT),
+                    ("highlighted", STYLE_HIGHLIGHT),
+                    ("selected", STYLE_HIGHLIGHT),
                     ("separator", "fg:black"),
                     ("instruction", "fg:white"),
                     ("text", "fg:white"),

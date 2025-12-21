@@ -26,10 +26,14 @@ spec:
       - name: vllm
         image: vllm/vllm-openai:latest
         resources:
+          requests:
+            memory: "16Gi"
+            cpu: "4"
           limits:
             nvidia.com/gpu: 1
             memory: "64Gi"
             ephemeral-storage: "10Gi"
+            cpu: "8"
         env:
         - name: HUGGING_FACE_HUB_TOKEN
           valueFrom:

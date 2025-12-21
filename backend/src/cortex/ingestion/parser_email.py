@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 
 # Subject normalization patterns
 _RE_FWD_PATTERN = re.compile(
-    r"^(?:re|fwd?|fw|aw|sv|vs|antw|odp|回复|答复|轉寄):\s*", re.IGNORECASE
+    r"^(?:re|fwd?|aw|sv|vs|antw|odp|回复|答复|轉寄):\s*", re.IGNORECASE
 )
 _BRACKET_PATTERN = re.compile(r"\[.*?\]")
 _WHITESPACE_PATTERN = re.compile(r"\s+")

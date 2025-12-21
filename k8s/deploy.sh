@@ -83,15 +83,18 @@ echo "    Using DigitalOcean Managed PostgreSQL."
 echo "[7/8] Redis/Valkey..."
 echo "    Using DigitalOcean Managed Valkey."
 
-# Deploy Embeddings API (vLLM)
-echo "[8/8] Deploying Embeddings API (vLLM) on $GPU_TYPE..."
-# Generate manifest from template
-envsubst < "$SCRIPT_DIR/embeddings-vllm.yaml.template" > "$SCRIPT_DIR/embeddings-vllm.yaml"
-kubectl apply -f "$SCRIPT_DIR/embeddings-vllm.yaml"
+# Deploy AI Bundle (Embeddings + Reranker)
+echo "[8/8] Deploying AI Bundle (Embeddings + Reranker) on $GPU_TYPE..."
+kubectl apply -f "$SCRIPT_DIR/ai-bundle.yaml"
 
 # Deploy Qdrant (Vector DB)
 echo "[9/8] Deploying Qdrant vector DB..."
 kubectl apply -f "$SCRIPT_DIR/qdrant.yaml"
+
+# Deploy SonarQube
+echo "[9/8] Deploying SonarQube & Postgres..."
+kubectl apply -f "$SCRIPT_DIR/sonarqube-postgres.yaml"
+kubectl apply -f "$SCRIPT_DIR/sonarqube.yaml"
 
 # Deploy Backend
 echo "[10/8] Deploying Backend API..."

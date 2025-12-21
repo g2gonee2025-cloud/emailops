@@ -15,6 +15,8 @@ from rich.table import Table
 
 console = Console()
 
+PROMPT_DRY_RUN = "Dry run?"
+
 
 # --- Database ---
 def _handle_db():
@@ -35,7 +37,7 @@ def _handle_db():
         console.print("[dim]Fetching database stats...[/dim]")
         cmd_db_stats(Args())
     elif "Migrate" in action:
-        dry_run = questionary.confirm("Dry run?").ask()
+        dry_run = questionary.confirm(PROMPT_DRY_RUN).ask()
 
         args = Args()
         args.dry_run = dry_run
@@ -97,7 +99,7 @@ def _handle_embeddings():
         cmd_embeddings_stats(Args())
     elif "Backfill" in action:
         limit = questionary.text("Limit (optional):").ask()
-        dry_run = questionary.confirm("Dry run?", default=False).ask()
+        dry_run = questionary.confirm(PROMPT_DRY_RUN, default=False).ask()
         limit_int = int(limit) if limit and limit.isdigit() else None
 
         args = Args()
@@ -137,7 +139,10 @@ def _handle_s3():
         if not prefix:
             return
 
-        dry_run = questionary.confirm("Dry run?").ask()
+        if not prefix:
+            return
+
+        dry_run = questionary.confirm(PROMPT_DRY_RUN).ask()
         args = Args()
         args.prefix = prefix
         args.dry_run = dry_run
@@ -209,7 +214,10 @@ def _handle_s3_import_flow():
     if not prefix:
         return
 
-    dry_run = questionary.confirm("Dry run?", default=False).ask()
+    if not prefix:
+        return
+
+    dry_run = questionary.confirm(PROMPT_DRY_RUN, default=False).ask()
 
     class IngestArgs:
         json = False

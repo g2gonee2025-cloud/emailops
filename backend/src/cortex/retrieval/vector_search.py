@@ -32,6 +32,7 @@ def search_chunks_vector(
     conversation_ids: Optional[List[str]] = None,
     is_attachment: Optional[bool] = None,
     thread_ids: Optional[List[str]] = None,  # Backward compat alias
+    file_types: Optional[List[str]] = None,  # P1 Fix: Add file_types filter
 ) -> List[VectorResult]:
     """
     Perform vector search on chunks using a pluggable vector store.
@@ -60,6 +61,7 @@ def search_chunks_vector(
         conversation_ids=conversation_ids,
         is_attachment=is_attachment,
         thread_ids=thread_ids,
+        file_types=file_types,
     )
 
 

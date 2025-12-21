@@ -50,16 +50,7 @@ def process_job(job: IngestJobRequest) -> IngestJobSummary:
         temp_dir: Optional[Path] = None
 
         try:
-            if job.source_type == "local_upload":
-                local_convo_dir = _validate_local_path(job.source_uri)
-            elif job.source_type == "s3":
-                temp_dir, local_convo_dir = _download_s3_source(job.source_uri)
-            elif job.source_type == "sftp":
-                temp_dir, local_convo_dir = _download_sftp_source(
-                    job.source_uri, job.options
-                )
-            else:
-                raise ValueError(f"Unsupported source type: {job.source_type}")
+            temp_dir, local_convo_dir = _resolve_source(job)
 
             summary = _ingest_conversation(local_convo_dir, job, summary)
 
@@ -222,10 +213,8 @@ def _ingest_conversation(
     Uses new Conversation-based schema (no Thread/Message split).
     """
     from cortex.config.loader import get_config
-    from cortex.db.session import SessionLocal, set_session_tenant
     from cortex.ingestion.conv_loader import load_conversation
     from cortex.ingestion.text_preprocessor import get_text_preprocessor
-    from cortex.ingestion.writer import DBWriter
 
     config = get_config()
     preprocessor = get_text_preprocessor()
@@ -272,19 +261,8 @@ def _ingest_conversation(
     _process_intelligence(chunks_data, conversation_id, tenant_ns, job)
 
     # 5. Write to DB
-    results: Dict[str, Any] = {
-        "conversation": conversation_data,
-        "attachments": attachments_data,
-        "chunks": chunks_data,
-    }
-
-    logger.info(
-        f"Writing: 1 conversation, {len(attachments_data)} attachments, {len(chunks_data)} chunks"
-    )
-    with SessionLocal() as session:
-        set_session_tenant(session, job.tenant_id)
-        writer = DBWriter(session)
-        writer.write_job_results(job, results)
+    # 5. Write to DB
+    _write_results(conversation_data, attachments_data, chunks_data, job.tenant_id, job)
 
     # Update summary
     manifest = convo_data.get("manifest", {})
@@ -636,3 +614,41 @@ def _extract_graph(
                 )
     except Exception as e:
         logger.warning(f"Graph extraction failed: {e}")
+
+
+def _resolve_source(job: IngestJobRequest) -> Tuple[Optional[Path], Optional[Path]]:
+    """Resolve and download source based on job type."""
+    if job.source_type == "local_upload":
+        return None, _validate_local_path(job.source_uri)
+    elif job.source_type == "s3":
+        return _download_s3_source(job.source_uri)
+    elif job.source_type == "sftp":
+        return _download_sftp_source(job.source_uri, job.options)
+    else:
+        raise ValueError(f"Unsupported source type: {job.source_type}")
+
+
+def _write_results(
+    conversation_data: Dict[str, Any],
+    attachments_data: List[Dict[str, Any]],
+    chunks_data: List[Dict[str, Any]],
+    tenant_id: str,
+    job: IngestJobRequest,
+) -> None:
+    """Write ingestion results to DB."""
+    from cortex.db.session import SessionLocal, set_session_tenant
+    from cortex.ingestion.writer import DBWriter
+
+    results: Dict[str, Any] = {
+        "conversation": conversation_data,
+        "attachments": attachments_data,
+        "chunks": chunks_data,
+    }
+
+    logger.info(
+        f"Writing: 1 conversation, {len(attachments_data)} attachments, {len(chunks_data)} chunks"
+    )
+    with SessionLocal() as session:
+        set_session_tenant(session, tenant_id)
+        writer = DBWriter(session)
+        writer.write_job_results(job, results)

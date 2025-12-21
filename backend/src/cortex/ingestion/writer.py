@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import logging
 import uuid
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -48,6 +49,26 @@ def ensure_chunk_metadata(
 
     chunk_data["extra_data"] = extra_data
     return chunk_data
+
+
+@dataclass
+class ChunkRecord:
+    """DTO for chunk writing to avoid too many arguments."""
+
+    tenant_id: str
+    chunk_id: uuid.UUID
+    conversation_id: uuid.UUID
+    text: str
+    chunk_type: str = "message_body"
+    is_summary: bool = False
+    embedding: Optional[List[float]] = None
+    position: int = 0
+    char_start: int = 0
+    char_end: int = 0
+    section_path: Optional[str] = None
+    is_attachment: bool = False
+    attachment_id: Optional[uuid.UUID] = None
+    extra_data: Optional[Dict[str, Any]] = None
 
 
 class DBWriter:
@@ -119,40 +140,23 @@ class DBWriter:
         self.session.merge(att)
         return att
 
-    def write_chunk(
-        self,
-        *,
-        tenant_id: str,
-        chunk_id: uuid.UUID,
-        conversation_id: uuid.UUID,
-        text: str,
-        chunk_type: str = "message_body",
-        is_summary: bool = False,
-        embedding: Optional[List[float]] = None,
-        position: int = 0,
-        char_start: int = 0,
-        char_end: int = 0,
-        section_path: Optional[str] = None,
-        is_attachment: bool = False,
-        attachment_id: Optional[uuid.UUID] = None,
-        extra_data: Optional[Dict[str, Any]] = None,
-    ) -> Chunk:
+    def write_chunk(self, record: ChunkRecord) -> Chunk:
         """Write a single chunk record."""
         chunk = Chunk(
-            tenant_id=tenant_id,
-            chunk_id=chunk_id,
-            conversation_id=conversation_id,
-            attachment_id=attachment_id,
-            is_attachment=is_attachment,
-            is_summary=is_summary,
-            chunk_type=chunk_type,
-            text=text,
-            embedding=embedding,
-            position=position,
-            char_start=char_start,
-            char_end=char_end,
-            section_path=section_path,
-            extra_data=extra_data,
+            tenant_id=record.tenant_id,
+            chunk_id=record.chunk_id,
+            conversation_id=record.conversation_id,
+            attachment_id=record.attachment_id,
+            is_attachment=record.is_attachment,
+            is_summary=record.is_summary,
+            chunk_type=record.chunk_type,
+            text=record.text,
+            embedding=record.embedding,
+            position=record.position,
+            char_start=record.char_start,
+            char_end=record.char_end,
+            section_path=record.section_path,
+            extra_data=record.extra_data,
         )
         self.session.merge(chunk)
         return chunk
@@ -206,7 +210,7 @@ class DBWriter:
                 )
                 chunk_data = ensure_chunk_metadata(chunk_data, source=source)
 
-                self.write_chunk(
+                record = ChunkRecord(
                     tenant_id=job.tenant_id,
                     chunk_id=chunk_data["chunk_id"],
                     conversation_id=chunk_data["conversation_id"],
@@ -222,6 +226,7 @@ class DBWriter:
                     attachment_id=chunk_data.get("attachment_id"),
                     extra_data=chunk_data.get("extra_data"),
                 )
+                self.write_chunk(record)
                 current_chunk_ids.append(chunk_data["chunk_id"])
 
             # 4. Cleanup stale chunks
@@ -285,7 +290,7 @@ class DBWriter:
                 skipped += 1
                 continue
 
-            self.write_chunk(
+            record = ChunkRecord(
                 tenant_id=tenant_id,
                 chunk_id=chunk_data.get("chunk_id", uuid.uuid4()),
                 conversation_id=conversation_id,
@@ -298,6 +303,7 @@ class DBWriter:
                 attachment_id=chunk_data.get("attachment_id"),
                 extra_data=chunk_data.get("extra_data"),
             )
+            self.write_chunk(record)
             written += 1
 
         self.session.commit()

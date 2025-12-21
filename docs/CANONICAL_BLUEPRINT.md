@@ -17,6 +17,12 @@
 
 ## §0. Scope, Principles & Glossary
 
+### §0.0 Global Non-Negotiables (Cloud-Only Rule)
+> **CRITICAL RULE:** This workspace operates in **Cloud-Only Mode**.
+> *   **NO** local databases or Redis containers allowed.
+> *   **ALL** development must connect to the DigitalOcean Managed Database and Redis via `doctl` auth.
+> *   Code must respect `OUTLOOKCORTEX_ENV=production` configuration in `.env`.
+
 ### §0.1 Scope
 
 * **No Azure. No direct Microsoft 365 APIs.**

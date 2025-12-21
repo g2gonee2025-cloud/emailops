@@ -2,163 +2,70 @@
 # KEDA ScaledObjects for EmailOps GPU Workloads
 # =============================================================================
 # Reference: https://keda.sh/docs/2.16/scalers/prometheus/
-# Reference: https://keda.sh/docs/2.16/concepts/scaling-deployments/
 # =============================================================================
 
 ---
-# ScaledObject for Embeddings API (vLLM serving KaLM-12B)
-# Scales based on vLLM's built-in metrics
+# ScaledObject for AI Bundle (Embeddings + Reranker)
+# Strategy: Scale to 0 when idle. Wake up (0->1) when Backend receives relevant traffic.
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: embeddings-api-scaler
+  name: ai-bundle-scaler
   namespace: emailops
 spec:
   scaleTargetRef:
-    name: embeddings-api
+    name: ai-bundle
 
-  # Scale to zero when idle (GPU node will be removed by DO Cluster Autoscaler)
+  # Scale to zero when idle
   minReplicaCount: 0
-  maxReplicaCount: 2
+  maxReplicaCount: 1              # Single GPU limit
 
-  # Cooldown periods (prevent flapping)
-  cooldownPeriod: 300           # 5 min before scale-down
-  pollingInterval: 15           # Check metrics every 15s
-
-  # Fallback if metrics unavailable
-  fallback:
-    failureThreshold: 3
-    replicas: 1                 # Keep 1 replica if Prometheus dies
-
-  triggers:
-    - type: prometheus
-      metadata:
-        serverAddress: http://prometheus-kube-prometheus-prometheus.kube-prometheus-stack.svc.cluster.local:9090
-        # vLLM exposes: vllm:num_requests_running (colon, not underscore)
-        query: sum(vllm:num_requests_running{job="embeddings-api"}) or vector(0)
-        threshold: "10"              # Scale up when >10 concurrent requests
-        activationThreshold: "1"     # Activate (scale from 0→1) on first request
-        ignoreNullValues: "true"     # Don't error if metric missing
-
----
-# ScaledObject for Reranker API (Qwen3-Reranker-8B via TEI)
-apiVersion: keda.sh/v1alpha1
-kind: ScaledObject
-metadata:
-  name: reranker-api-scaler
-  namespace: emailops
-spec:
-  scaleTargetRef:
-    name: reranker-mxbai
-
-  minReplicaCount: 0
-  maxReplicaCount: 1              # Single GPU is sufficient for reranking
-
-  cooldownPeriod: 600             # 10 min (reranker is lightweight, scale down slower)
-  pollingInterval: 30
+  # Cooldown: How long to wait after traffic stops before killing the pod
+  cooldownPeriod: 600             # 10 minutes
+  pollingInterval: 15             # Check metrics every 15s
 
   fallback:
     failureThreshold: 3
-    replicas: 0                   # Reranker is optional, can stay at 0
+    replicas: 1                   # If Prometheus fails, keep 1 replica safe
 
   triggers:
-    # Scale based on backend search request rate
-    # prometheus-fastapi-instrumentator exposes: http_request_duration_seconds_count{handler="/api/v1/search",...}
+    # Trigger: Traffic to Backend Search/Embeddings endpoints
+    # Use 'rate' to detect incoming requests.
+    # If rate > 0.05 req/s (approx 1 req every 20s), scale up.
     - type: prometheus
       metadata:
         serverAddress: http://prometheus-kube-prometheus-prometheus.kube-prometheus-stack.svc.cluster.local:9090
-        query: sum(rate(http_request_duration_seconds_count{handler=~"/api/v1/search.*"}[5m])) or vector(0)
-        threshold: "5"               # Scale up when >5 req/sec to search endpoint
-        activationThreshold: "0.5"   # Activate on any sustained search traffic
+        # Query matches both /api/v1/search AND /api/v1/embeddings
+        query: sum(rate(http_request_duration_seconds_count{handler=~"/api/v1/(search|embeddings).*"}[2m])) or vector(0)
+        threshold: "0.05"
+        activationThreshold: "0.01"  # Activate strictly on ANY traffic
+        ignoreNullValues: "true"
 
 ---
-# ScaledObject for LLM API (MiniMax-M2) - Optional, for completion workloads
-apiVersion: keda.sh/v1alpha1
-kind: ScaledObject
-metadata:
-  name: llm-api-scaler
-  namespace: emailops
-spec:
-  scaleTargetRef:
-    name: minimax-m2-llm
-
-  minReplicaCount: 0
-  maxReplicaCount: 1              # Large model, 1 instance max
-
-  cooldownPeriod: 900             # 15 min (LLM is expensive, scale down cautiously)
-  pollingInterval: 30
-
-  fallback:
-    failureThreshold: 5
-    replicas: 0                   # LLM can be offline if unused
-
-  triggers:
-    - type: prometheus
-      metadata:
-        serverAddress: http://prometheus-kube-prometheus-prometheus.kube-prometheus-stack.svc.cluster.local:9090
-        query: sum(vllm:num_requests_running{job="llm-api"}) or vector(0)
-        threshold: "1"
-        activationThreshold: "1"
-
----
-# Prometheus ServiceMonitors (if using kube-prometheus-stack)
-# These tell Prometheus to scrape metrics from each service
-
-# ServiceMonitor for Embeddings API (vLLM)
+# ServiceMonitor for AI Bundle (Scraping vLLM metrics from the pod itself)
+# Note: KEDA doesn't use this for activation (since pod is dead), but useful for monitoring when alive.
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: embeddings-metrics
+  name: ai-bundle-metrics
   namespace: emailops
   labels:
     release: prometheus
 spec:
   selector:
     matchLabels:
-      component: embeddings
+      component: ai-bundle
   endpoints:
-    - port: http
+    - port: embeddings  # Port 8000
       path: /metrics
       interval: 15s
-
----
-# ServiceMonitor for Reranker API (TEI)
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: reranker-metrics
-  namespace: emailops
-  labels:
-    release: prometheus
-spec:
-  selector:
-    matchLabels:
-      component: reranker
-  endpoints:
-    - port: metrics  # TEI metrics port (9000)
-      path: /metrics
-      interval: 15s
-
----
-# ServiceMonitor for LLM API (vLLM)
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: llm-metrics
-  namespace: emailops
-  labels:
-    release: prometheus
-spec:
-  selector:
-    matchLabels:
-      component: llm
-  endpoints:
-    - port: http
+    - port: reranker    # Port 8001
       path: /metrics
       interval: 15s
 
 ---
 # ServiceMonitor for Backend (FastAPI)
+# Critical: This provides the metrics KEDA uses to wake up the AI Bundle.
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -174,4 +81,3 @@ spec:
     - port: http
       path: /metrics
       interval: 15s
-
