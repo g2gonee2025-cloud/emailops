@@ -635,7 +635,40 @@ def extract_text(path: Path, *, max_chars: int | None = None) -> str:
     """
     global _extraction_cache
 
-    # Check cache first
+    # 1. Cache Lookup
+    cached = _check_cache(path, max_chars)
+    if cached is not None:
+        return cached
+
+    # 2. Validation
+    if not _validate_path(path):
+        return ""
+    path = path.resolve()
+    suffix = path.suffix.lower()
+
+    # 3. Text Extraction
+    segments: list[str] = []
+    seen_hashes: set[int] = set()
+
+    if suffix in TEXT_EXTENSIONS:
+        _extract_text_file(path, suffix, max_chars, segments, seen_hashes)
+    else:
+        # Build and run pipeline
+        pipeline = _build_pipeline(path, suffix, max_chars)
+        _run_pipeline(pipeline, segments, seen_hashes)
+
+        # Fallbacks (PDF OCR, Tables, Images)
+        _apply_fallbacks(path, suffix, max_chars, segments, seen_hashes)
+
+    # 4. Finalize & Cache
+    combined = "\n\n".join(segments)
+    result = _finalize_text(combined, max_chars) if combined else ""
+    _update_cache(path, max_chars, result)
+
+    return result
+
+
+def _check_cache(path: Path, max_chars: int | None) -> str | None:
     try:
         cache_key = (path.resolve(), max_chars)
         with _extraction_cache_lock:
@@ -646,152 +679,171 @@ def extract_text(path: Path, *, max_chars: int | None = None) -> str:
                     return entry[3]
     except Exception as e:
         logger.debug("Cache lookup failed for %s: %s", path, e)
-        # Proceed with extraction on cache error
+    return None
 
-    # Basic path validation
+
+def _validate_path(path: Path) -> bool:
     try:
         if not path.exists():
             logger.debug("Path does not exist: %s", path)
-            return ""
+            return False
         if not path.is_file():
             logger.debug("Path is not a file: %s", path)
-            return ""
-        path = path.resolve()
+            return False
     except (ValueError, OSError) as e:
         logger.warning("Invalid path: %s - %s", path, e)
-        return ""
+        return False
+    return True
 
-    suffix = path.suffix.lower()
-    segments: list[str] = []
-    seen_hashes: set[int] = set()
 
-    def add_segment(segment: str) -> None:
-        if not segment:
-            return
-        normalized = strip_control_chars(segment).strip()
-        if not normalized:
-            return
-        signature = hash(normalized)
-        if signature in seen_hashes:
-            return
-        seen_hashes.add(signature)
-        segments.append(normalized)
+def _add_segment(segment: str, segments: list[str], seen_hashes: set[int]) -> None:
+    if not segment:
+        return
+    normalized = strip_control_chars(segment).strip()
+    if not normalized:
+        return
+    signature = hash(normalized)
+    if signature in seen_hashes:
+        return
+    seen_hashes.add(signature)
+    segments.append(normalized)
 
-    if suffix in TEXT_EXTENSIONS:
-        from cortex.utils import read_text_file
 
-        text = read_text_file(path, max_chars=max_chars)
-        if suffix in {".html", ".htm", ".xml"}:
-            text = _html_to_text(text)
-        add_segment(text)
-    else:
-        pipeline: list[tuple[Callable[[], str], bool]] = []
+def _extract_text_file(
+    path: Path,
+    suffix: str,
+    max_chars: int | None,
+    segments: list[str],
+    seen_hashes: set[int],
+) -> None:
+    from cortex.utils import read_text_file
 
-        if suffix in EMAIL_EXTENSIONS:
-            if suffix == ".eml":
-                pipeline.append((lambda: _extract_eml(path), False))
-            else:
-                pipeline.append((lambda: _extract_msg(path), False))
-            pipeline.append(
-                (lambda: _extract_with_unstructured(path, suffix, max_chars), True)
-            )
-            pipeline.append((lambda: _extract_with_tika(path, max_chars), True))
-        elif suffix in DOCX_EXTENSIONS:
-            pipeline.append(
-                (lambda: _extract_with_unstructured(path, suffix, max_chars), False)
-            )
-            pipeline.append(
-                (lambda: _extract_word_document(path, suffix, max_chars), True)
-            )
-            pipeline.append((lambda: _extract_with_tika(path, max_chars), False))
-        elif suffix in PDF_EXTENSIONS:
-            pipeline.append(
-                (lambda: _extract_with_unstructured(path, suffix, max_chars), False)
-            )
-            pipeline.append((lambda: _extract_with_tika(path, max_chars), True))
-            pipeline.append((lambda: _extract_pdf(path, max_chars), True))
-        elif suffix in EXCEL_EXTENSIONS:
-            pipeline.append(
-                (lambda: _extract_with_unstructured(path, suffix, max_chars), False)
-            )
-            pipeline.append((lambda: _extract_excel(path, suffix, max_chars), True))
-            pipeline.append((lambda: _extract_with_tika(path, max_chars), False))
-        elif suffix in PPT_EXTENSIONS:
-            pipeline.append(
-                (lambda: _extract_with_unstructured(path, suffix, max_chars), False)
-            )
-            pipeline.append((lambda: _extract_powerpoint(path, max_chars), True))
-            pipeline.append((lambda: _extract_with_tika(path, max_chars), False))
-        elif suffix in RTF_EXTENSIONS:
-            pipeline.append(
-                (lambda: _extract_with_unstructured(path, suffix, max_chars), False)
-            )
-            pipeline.append((lambda: _extract_rtf(path, max_chars), True))
-            pipeline.append((lambda: _extract_with_tika(path, max_chars), False))
-        elif suffix in IMAGE_EXTENSIONS:
-            pipeline.append(
-                (lambda: _extract_with_unstructured(path, suffix, max_chars), False)
-            )
-            pipeline.append((lambda: _extract_with_tika(path, max_chars), False))
-            pipeline.append((lambda: _extract_image_ocr(path, max_chars), True))
-        elif suffix in MBOX_EXTENSIONS:
-            pipeline.append((lambda: _extract_with_tika(path, max_chars), False))
-            pipeline.append(
-                (lambda: _extract_with_unstructured(path, suffix, max_chars), True)
-            )
+    text = read_text_file(path, max_chars=max_chars)
+    if suffix in {".html", ".htm", ".xml"}:
+        text = _html_to_text(text)
+    _add_segment(text, segments, seen_hashes)
+
+
+def _build_pipeline(
+    path: Path, suffix: str, max_chars: int | None
+) -> list[tuple[Callable[[], str], bool]]:
+    pipeline: list[tuple[Callable[[], str], bool]] = []
+
+    # Helper lambdas
+    def uns():
+        return _extract_with_unstructured(path, suffix, max_chars)
+
+    def tika():
+        return _extract_with_tika(path, max_chars)
+
+    if suffix in EMAIL_EXTENSIONS:
+        if suffix == ".eml":
+            pipeline.append((lambda: _extract_eml(path), False))
         else:
-            pipeline.append(
-                (lambda: _extract_with_unstructured(path, suffix, max_chars), False)
-            )
-            pipeline.append((lambda: _extract_with_tika(path, max_chars), False))
+            pipeline.append((lambda: _extract_msg(path), False))
+        pipeline.append((uns, True))
+        pipeline.append((tika, True))
 
-        for extractor, always_run in pipeline:
-            if segments and not always_run:
-                continue
-            segment = extractor()
-            if segment:
-                add_segment(segment)
+    elif suffix in DOCX_EXTENSIONS:
+        pipeline.append((uns, False))
+        pipeline.append((lambda: _extract_word_document(path, suffix, max_chars), True))
+        pipeline.append((tika, False))
 
-        if suffix in PDF_EXTENSIONS:
-            if not segments:
-                ocr_text = _extract_pdf_with_ocr(path, max_chars)
-                if ocr_text:
-                    add_segment(ocr_text)
-            table_text = _extract_pdf_tables(path, max_chars)
-            if table_text:
-                add_segment(table_text)
-        elif suffix in IMAGE_EXTENSIONS and not segments:
-            ocr_text = _extract_image_ocr(path, max_chars)
+    elif suffix in PDF_EXTENSIONS:
+        pipeline.append((uns, False))
+        pipeline.append((tika, True))
+        pipeline.append((lambda: _extract_pdf(path, max_chars), True))
+
+    elif suffix in EXCEL_EXTENSIONS:
+        pipeline.append((uns, False))
+        pipeline.append((lambda: _extract_excel(path, suffix, max_chars), True))
+        pipeline.append((tika, False))
+
+    elif suffix in PPT_EXTENSIONS:
+        pipeline.append((uns, False))
+        pipeline.append((lambda: _extract_powerpoint(path, max_chars), True))
+        pipeline.append((tika, False))
+
+    elif suffix in RTF_EXTENSIONS:
+        pipeline.append((uns, False))
+        pipeline.append((lambda: _extract_rtf(path, max_chars), True))
+        pipeline.append((tika, False))
+
+    elif suffix in IMAGE_EXTENSIONS:
+        pipeline.append((uns, False))
+        pipeline.append((tika, False))
+        pipeline.append((lambda: _extract_image_ocr(path, max_chars), True))
+
+    elif suffix in MBOX_EXTENSIONS:
+        pipeline.append((tika, False))
+        pipeline.append((uns, True))
+
+    else:
+        pipeline.append((uns, False))
+        pipeline.append((tika, False))
+
+    return pipeline
+
+
+def _run_pipeline(
+    pipeline: list[tuple[Callable[[], str], bool]],
+    segments: list[str],
+    seen_hashes: set[int],
+) -> None:
+    for extractor, always_run in pipeline:
+        if segments and not always_run:
+            continue
+        segment = extractor()
+        if segment:
+            _add_segment(segment, segments, seen_hashes)
+
+
+def _apply_fallbacks(
+    path: Path,
+    suffix: str,
+    max_chars: int | None,
+    segments: list[str],
+    seen_hashes: set[int],
+) -> None:
+    if suffix in PDF_EXTENSIONS:
+        if not segments:
+            ocr_text = _extract_pdf_with_ocr(path, max_chars)
             if ocr_text:
-                add_segment(ocr_text)
+                _add_segment(ocr_text, segments, seen_hashes)
+        table_text = _extract_pdf_tables(path, max_chars)
+        if table_text:
+            _add_segment(table_text, segments, seen_hashes)
+    elif suffix in IMAGE_EXTENSIONS and not segments:
+        ocr_text = _extract_image_ocr(path, max_chars)
+        if ocr_text:
+            _add_segment(ocr_text, segments, seen_hashes)
 
-    combined = "\n\n".join(segments)
-    result = _finalize_text(combined, max_chars) if combined else ""
 
-    # Update cache
-    if result:
-        try:
-            cache_key = (path.resolve(), max_chars)
-            with _extraction_cache_lock:
-                try:
-                    st = path.stat()
-                    _extraction_cache[cache_key] = (
-                        time.time(),
-                        float(st.st_mtime),
-                        int(st.st_size),
-                        result,
-                    )
-                except Exception:
-                    _extraction_cache[cache_key] = (time.time(), 0.0, 0, result)
+def _update_cache(path: Path, max_chars: int | None, result: str) -> None:
+    global _extraction_cache
+    if not result:
+        return
 
-                # Clean old cache entries periodically
-                if len(_extraction_cache) > 100:
-                    _extraction_cache = {
-                        k: v
-                        for k, v in _extraction_cache.items()
-                        if (time.time() - float(v[0])) <= _CACHE_TTL
-                    }
-        except Exception as e:
-            logger.debug("Failed to update cache for %s: %s", path, e)
+    try:
+        cache_key = (path.resolve(), max_chars)
+        with _extraction_cache_lock:
+            try:
+                st = path.stat()
+                _extraction_cache[cache_key] = (
+                    time.time(),
+                    float(st.st_mtime),
+                    int(st.st_size),
+                    result,
+                )
+            except Exception:
+                _extraction_cache[cache_key] = (time.time(), 0.0, 0, result)
 
-    return result
+            # Clean old cache entries periodically
+            if len(_extraction_cache) > 100:
+                _extraction_cache = {
+                    k: v
+                    for k, v in _extraction_cache.items()
+                    if (time.time() - float(v[0])) <= _CACHE_TTL
+                }
+    except Exception as e:
+        logger.debug("Failed to update cache for %s: %s", path, e)

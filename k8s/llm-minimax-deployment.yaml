@@ -14,6 +14,7 @@ spec:
       labels:
         app: llm-minimax
     spec:
+      automountServiceAccountToken: false
       nodeSelector:
         workload: gpu
       tolerations:
@@ -27,6 +28,8 @@ spec:
         resources:
           limits:
             nvidia.com/gpu: 1
+            memory: "64Gi"
+            ephemeral-storage: "10Gi"
         env:
         - name: HUGGING_FACE_HUB_TOKEN
           valueFrom:

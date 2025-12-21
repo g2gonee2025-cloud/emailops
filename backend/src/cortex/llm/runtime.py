@@ -883,9 +883,7 @@ class LLMRuntime:
                 # _try_load_json raises ValueError on parsing failure
                 last_error = str(e)
                 logger.warning("JSON decode failed (attempt %d): %s", attempt + 1, e)
-            except json.JSONDecodeError as e:
-                last_error = f"JSON decode error: {e}"
-                logger.warning("JSON decode failed (attempt %d): %s", attempt + 1, e)
+
             except Exception as e:
                 last_error = str(e)
                 logger.warning("JSON completion error (attempt %d): %s", attempt + 1, e)

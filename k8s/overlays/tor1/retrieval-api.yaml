@@ -24,6 +24,7 @@ spec:
         prometheus.io/port: "8000"
         prometheus.io/path: "/metrics"
     spec:
+      automountServiceAccountToken: false
       volumes:
         - name: dshm
           emptyDir:
@@ -66,6 +67,7 @@ spec:
             limits:
               memory: "32Gi"
               cpu: "4"
+              ephemeral-storage: "10Gi"
           startupProbe:
             httpGet:
               path: /health
@@ -112,6 +114,7 @@ spec:
             limits:
               memory: "8Gi"
               cpu: "2"
+              ephemeral-storage: "10Gi"
           startupProbe:
             httpGet:
               path: /health

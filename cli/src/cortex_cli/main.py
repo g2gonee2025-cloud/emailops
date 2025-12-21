@@ -1313,6 +1313,15 @@ The ingestion pipeline:
         action="store_true",
         help="Output results as JSON",
     )
+    ingest_parser.set_defaults(
+        func=lambda args: _run_ingest(
+            source_path=args.source,
+            tenant_id=args.tenant,
+            dry_run=args.dry_run,
+            verbose=args.verbose,
+            json_output=args.json,
+        )
+    )
 
     # Index command
     index_parser = subparsers.add_parser(
@@ -1372,6 +1381,16 @@ Uses parallel workers for faster processing.
         action="store_true",
         help="Output results as JSON",
     )
+    index_parser.set_defaults(
+        func=lambda args: _run_index(
+            root=args.root,
+            provider=args.provider,
+            workers=args.workers,
+            limit=args.limit,
+            force=args.force,
+            json_output=args.json,
+        )
+    )
 
     # Search command
     search_parser = subparsers.add_parser(
@@ -1414,6 +1433,14 @@ Uses hybrid search (vector + full-text) for best results.
         action="store_true",
         help="Output results as JSON",
     )
+    search_parser.set_defaults(
+        func=lambda args: _run_search(
+            query=args.query,
+            top_k=args.top_k,
+            tenant_id=args.tenant,
+            json_output=args.json,
+        )
+    )
 
     # Validate command
     validate_parser = subparsers.add_parser(
@@ -1439,6 +1466,9 @@ This command:
         "--json",
         action="store_true",
         help="Output results as JSON",
+    )
+    validate_parser.set_defaults(
+        func=lambda args: _run_validate(path=args.path, json_output=args.json)
     )
 
     # ==========================================================================
@@ -1475,6 +1505,11 @@ The system will:
         "--json",
         action="store_true",
         help="Output results as JSON",
+    )
+    answer_parser.set_defaults(
+        func=lambda args: _run_answer(
+            query=args.query, tenant_id=args.tenant, json_output=args.json
+        )
     )
 
     # Draft command
@@ -1513,6 +1548,14 @@ The system will:
         action="store_true",
         help="Output results as JSON",
     )
+    draft_parser.set_defaults(
+        func=lambda args: _run_draft(
+            instructions=args.instructions,
+            thread_id=args.thread_id,
+            tenant_id=args.tenant,
+            json_output=args.json,
+        )
+    )
 
     # Summarize command
     summarize_parser = subparsers.add_parser(
@@ -1544,6 +1587,11 @@ The system will:
         "--json",
         action="store_true",
         help="Output results as JSON",
+    )
+    summarize_parser.set_defaults(
+        func=lambda args: _run_summarize(
+            thread_id=args.thread_id, tenant_id=args.tenant, json_output=args.json
+        )
     )
 
     # ==========================================================================
@@ -1649,6 +1697,56 @@ Run comprehensive system diagnostics including:
         help="Timeout for pip install operations (default: 300)",
     )
 
+    def _handle_doctor(args: argparse.Namespace) -> None:
+        # Lazy import to avoid loading heavy dependencies
+        from cortex_cli.cmd_doctor import main as doctor_main
+
+        # Handle --all flag
+        if getattr(args, "check_all", False):
+            args.check_index = True
+            args.check_embeddings = True
+
+        # Forward to doctor command: we need to manipulate sys.argv because doctor_main
+        # likely parses args again or relies on them.
+        # But looking at the original code, it called `doctor_main()` without args.
+        # Let's check `doctor_main` signature if possible.
+        # The original code did:
+        #   sys.argv = [sys.argv[0], *doctor_args]
+        #   doctor_main()
+        # So we replicate that behavior.
+
+        # Reconstruct args for doctor_main
+        doctor_args: list[str] = []
+        if args.root != ".":
+            doctor_args.extend(["--root", args.root])
+        if args.provider != "vertex":
+            doctor_args.extend(["--provider", args.provider])
+        if args.auto_install:
+            doctor_args.append("--auto-install")
+        if args.check_index:
+            doctor_args.append("--check-index")
+        if args.check_embeddings:
+            doctor_args.append("--check-embeddings")
+        if args.check_db:
+            doctor_args.append("--check-db")
+        if args.check_redis:
+            doctor_args.append("--check-redis")
+        if args.check_exports:
+            doctor_args.append("--check-exports")
+        if args.check_ingest:
+            doctor_args.append("--check-ingest")
+        if args.json:
+            doctor_args.append("--json")
+        if args.verbose:
+            doctor_args.append("--verbose")
+        if args.pip_timeout != 300:
+            doctor_args.extend(["--pip-timeout", str(args.pip_timeout)])
+
+        sys.argv = [sys.argv[0], *doctor_args]
+        doctor_main()
+
+    doctor_parser.set_defaults(func=_handle_doctor)
+
     # Status command
     status_parser = subparsers.add_parser(
         "status",
@@ -1684,10 +1782,11 @@ Run comprehensive system diagnostics including:
     )
 
     # Version command
-    subparsers.add_parser(
+    version_parser = subparsers.add_parser(
         "version",
         help="Display version information",
     )
+    version_parser.set_defaults(func=lambda _: _print_version())
 
     # Register new subcommand groups
     from cortex_cli.cmd_db import setup_db_parser
@@ -1711,120 +1810,8 @@ Run comprehensive system diagnostics including:
         return
 
     # Route to appropriate command
-    if parsed_args.command == "ingest":
-        _run_ingest(
-            source_path=parsed_args.source,
-            tenant_id=parsed_args.tenant,
-            dry_run=parsed_args.dry_run,
-            verbose=parsed_args.verbose,
-            json_output=parsed_args.json,
-        )
-
-    elif parsed_args.command == "index":
-        _run_index(
-            root=parsed_args.root,
-            provider=parsed_args.provider,
-            workers=parsed_args.workers,
-            limit=parsed_args.limit,
-            force=parsed_args.force,
-            json_output=parsed_args.json,
-        )
-
-    elif parsed_args.command == "search":
-        _run_search(
-            query=parsed_args.query,
-            top_k=parsed_args.top_k,
-            tenant_id=parsed_args.tenant,
-            json_output=parsed_args.json,
-        )
-
-    elif parsed_args.command == "doctor":
-        # Lazy import to avoid loading heavy dependencies
-        from cortex_cli.cmd_doctor import main as doctor_main
-
-        # Handle --all flag
-        if parsed_args.check_all:
-            parsed_args.check_index = True
-            parsed_args.check_embeddings = True
-
-        # Forward to doctor command
-        doctor_args = list(args)
-        if "doctor" in doctor_args:
-            doctor_args.remove("doctor")
-        # Convert --all to individual flags for the doctor module
-        if "--all" in doctor_args:
-            doctor_args.remove("--all")
-            if "--check-index" not in doctor_args:
-                doctor_args.append("--check-index")
-            if "--check-embeddings" not in doctor_args:
-                doctor_args.append("--check-embeddings")
-        sys.argv = [sys.argv[0], *doctor_args]
-        doctor_main()
-
-    elif parsed_args.command == "status":
-        _show_status(json_output=parsed_args.json)
-
-    elif parsed_args.command == "config":
-        export_format = "json" if parsed_args.json else None
-        _show_config(
-            validate=parsed_args.validate,
-            export_format=export_format,
-            section=getattr(parsed_args, "section", None),
-        )
-
-    elif parsed_args.command == "validate":
-        _run_validate(
-            path=parsed_args.path,
-            json_output=parsed_args.json,
-        )
-
-    elif parsed_args.command == "answer":
-        _run_answer(
-            query=parsed_args.query,
-            tenant_id=parsed_args.tenant,
-            json_output=parsed_args.json,
-        )
-
-    elif parsed_args.command == "draft":
-        _run_draft(
-            instructions=parsed_args.instructions,
-            thread_id=parsed_args.thread_id,
-            tenant_id=parsed_args.tenant,
-            json_output=parsed_args.json,
-        )
-
-    elif parsed_args.command == "summarize":
-        _run_summarize(
-            thread_id=parsed_args.thread_id,
-            tenant_id=parsed_args.tenant,
-            json_output=parsed_args.json,
-        )
-
-    elif parsed_args.command == "version":
-        _print_version()
-
-    # New subcommand groups
-    elif parsed_args.command == "db":
-        if hasattr(parsed_args, "func"):
-            parsed_args.func(parsed_args)
-        else:
-            print("Usage: cortex db <stats|migrate>")
-            sys.exit(1)
-
-    elif parsed_args.command == "embeddings":
-        if hasattr(parsed_args, "func"):
-            parsed_args.func(parsed_args)
-        else:
-            print("Usage: cortex embeddings <stats|backfill>")
-            sys.exit(1)
-
-    elif parsed_args.command == "s3":
-        if hasattr(parsed_args, "func"):
-            parsed_args.func(parsed_args)
-        else:
-            print("Usage: cortex s3 <list|ingest>")
-            sys.exit(1)
-
+    if hasattr(parsed_args, "func"):
+        parsed_args.func(parsed_args)
     else:
         _print_usage()
         sys.exit(1)

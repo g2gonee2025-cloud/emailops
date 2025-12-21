@@ -24,6 +24,7 @@ spec:
         prometheus.io/port: "8000"
         prometheus.io/path: "/metrics"
     spec:
+      automountServiceAccountToken: false
       priorityClassName: emailops-high-priority
       volumes:
         - name: dshm
@@ -67,6 +68,7 @@ spec:
             limits:
               memory: "40Gi"
               cpu: "8"
+              ephemeral-storage: "10Gi"
           startupProbe:
             httpGet:
               path: /health
@@ -113,6 +115,7 @@ spec:
             limits:
               memory: "16Gi"
               cpu: "4"
+              ephemeral-storage: "10Gi"
           startupProbe:
             httpGet:
               path: /health
