@@ -1083,30 +1083,56 @@ Examples:
             (ing_success, ing_details, ing_err_msg),
         )
     else:
-        # Collect failures/warnings for summary
-        failures = []
-        if dep_error:
-            failures.append("Missing critical dependencies")
-        if index_error:
-            failures.append("Index health issues")
-        if embed_error:
-            failures.append("Embedding connectivity failed")
-        if db_error:
-            failures.append("Database connectivity failed")
-        if redis_error:
-            failures.append("Redis connectivity failed")
-        if rerank_error:
-            failures.append("Reranker connectivity failed")
-
-        warnings = []
-        if exp_warning:
-            warnings.append("Export root issues")
-        if ing_warning:
-            warnings.append("Ingest capability issues")
-        if dep_report.missing_optional:
-            warnings.append("Missing optional packages")
-
+        failures, warnings = _collect_failures_and_warnings(
+            dep_error=dep_error,
+            index_error=index_error,
+            embed_error=embed_error,
+            db_error=db_error,
+            redis_error=redis_error,
+            rerank_error=rerank_error,
+            exp_warning=exp_warning,
+            ing_warning=ing_warning,
+            missing_optional=bool(dep_report.missing_optional),
+        )
         _print_summary_and_exit(failures, warnings)
+
+
+def _collect_failures_and_warnings(
+    *,
+    dep_error: bool,
+    index_error: bool,
+    embed_error: bool,
+    db_error: bool,
+    redis_error: bool,
+    rerank_error: bool,
+    exp_warning: bool,
+    ing_warning: bool,
+    missing_optional: bool,
+) -> tuple[list[str], list[str]]:
+    """Collect failures and warnings from check results."""
+    failures = []
+    if dep_error:
+        failures.append("Missing critical dependencies")
+    if index_error:
+        failures.append("Index health issues")
+    if embed_error:
+        failures.append("Embedding connectivity failed")
+    if db_error:
+        failures.append("Database connectivity failed")
+    if redis_error:
+        failures.append("Redis connectivity failed")
+    if rerank_error:
+        failures.append("Reranker connectivity failed")
+
+    warnings = []
+    if exp_warning:
+        warnings.append("Export root issues")
+    if ing_warning:
+        warnings.append("Ingest capability issues")
+    if missing_optional:
+        warnings.append("Missing optional packages")
+
+    return failures, warnings
 
 
 if __name__ == "__main__":
