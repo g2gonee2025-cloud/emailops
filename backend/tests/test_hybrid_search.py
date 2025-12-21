@@ -124,7 +124,7 @@ class TestHybridSearch:
 
     @patch("cortex.config.loader.get_config")
     @patch("cortex.db.session.SessionLocal")
-    @patch("cortex.retrieval.hybrid_search._embedding_client")
+    @patch("cortex.retrieval._hybrid_helpers._embedding_client")
     @patch("cortex.retrieval.fts_search.search_chunks_fts")
     @patch("cortex.retrieval.vector_search.search_chunks_vector")
     @patch("cortex.retrieval.cache.get_cached_query_embedding")
@@ -250,7 +250,7 @@ class TestHybridSearch:
             ),
         )
 
-        with patch("cortex.retrieval.hybrid_search._embedding_client") as mock_client:
+        with patch("cortex.retrieval._hybrid_helpers._embedding_client") as mock_client:
             mock_client.embed.return_value = [0.1]
             tool_kb_search_hybrid(input_args)
 

@@ -30,10 +30,12 @@ echo "  Repo root: ${REPO_ROOT}"
 
 docker run --rm \
   --user "$(id -u):$(id -g)" \
+  --network host \
   -e SONAR_HOST_URL="${SONAR_HOST_URL}" \
   -e SONAR_TOKEN="${SONAR_TOKEN}" \
   -v "${CACHE_DIR}:/opt/sonar-scanner/.sonar/cache" \
   -v "${REPO_ROOT}:/usr/src" \
-  sonarsource/sonar-scanner-cli
+  sonarsource/sonar-scanner-cli \
+  -Dsonar.working.directory=.scannerwork
 
 echo "Scan complete. report-task.txt should be in .scannerwork/"

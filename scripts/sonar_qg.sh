@@ -48,18 +48,18 @@ while :; do
 
   ce_json="$(curl -sS --fail -u "${SONAR_TOKEN}:" "$ceTaskUrl")"
 
-  status="$(echo "$ce_json" | python3 - <<'PY'
+  status="$(python3 - "$ce_json" <<'PY'
 import json,sys
-d=json.load(sys.stdin)
+d=json.loads(sys.argv[1])
 print(d["task"]["status"])
 PY
 )"
 
   case "$status" in
     SUCCESS)
-      analysisId="$(echo "$ce_json" | python3 - <<'PY'
+      analysisId="$(python3 - "$ce_json" <<'PY'
 import json,sys
-d=json.load(sys.stdin)
+d=json.loads(sys.argv[1])
 print(d["task"].get("analysisId",""))
 PY
 )"
@@ -84,9 +84,10 @@ qg_json="$(curl -sS --fail -u "${SONAR_TOKEN}:" \
   "${serverUrl}/api/qualitygates/project_status?analysisId=${analysisId}")"
 
 set +e
-echo "$qg_json" | python3 - <<'PY'
+
+python3 - "$qg_json" <<'PY'
 import json,sys
-d=json.load(sys.stdin)
+d=json.loads(sys.argv[1])
 ps=d["projectStatus"]
 status=ps.get("status","UNKNOWN")
 print(f"QUALITY_GATE={status}")
@@ -132,9 +133,9 @@ PY
   set -e
 
   if [[ $curl_rc -eq 0 ]]; then
-    echo "$issues_json" | python3 - <<'PY'
+    python3 - "$issues_json" <<'PY'
 import json,sys
-d=json.load(sys.stdin)
+d=json.loads(sys.argv[1])
 issues=d.get("issues",[])
 if not issues:
   print("TOP_ISSUES: none returned (or filtered/permissions).")

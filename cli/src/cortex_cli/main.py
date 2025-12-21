@@ -41,6 +41,12 @@ CLI_SRC = PROJECT_ROOT / "cli" / "src"
 if CLI_SRC.exists() and str(CLI_SRC) not in sys.path:
     sys.path.insert(0, str(CLI_SRC))
 
+from cortex_cli._config_helpers import (  # noqa: E402
+    _print_human_config,
+    _print_json_config,
+)
+from cortex_cli.style import colorize as _colorize  # noqa: E402
+
 
 # Minimal protocol for the config object to satisfy static analysis when imports fail
 class CoreConfig(Protocol):
@@ -94,16 +100,6 @@ else:
 # from cortex_cli.cmd_doctor import main as doctor_main
 
 # ANSI color codes for terminal output
-COLORS = {
-    "reset": "\033[0m",
-    "bold": "\033[1m",
-    "dim": "\033[2m",
-    "green": "\033[32m",
-    "yellow": "\033[33m",
-    "blue": "\033[34m",
-    "cyan": "\033[36m",
-    "red": "\033[31m",
-}
 
 
 # -----------------------------------------------------------------------------
@@ -159,13 +155,6 @@ WORKFLOW_STEPS = [
     ("cortex search <query>", "Query your emails"),
     ("cortex answer <question>", "Get AI answers"),
 ]
-
-
-def _colorize(text: str, color: str) -> str:
-    """Apply ANSI color to text if terminal supports it."""
-    if not sys.stdout.isatty():
-        return text
-    return f"{COLORS.get(color, '')}{text}{COLORS['reset']}"
 
 
 def _print_banner() -> None:
@@ -362,109 +351,9 @@ def _show_config(
             print(f"    Log Level:   {config.system.log_level}")
             print()
         elif export_format == "json":
-            import json
-
-            data = config.model_dump()
-            if section:
-                if section in data:
-                    data = {section: data[section]}
-                else:
-                    print(f"{_colorize('ERROR:', 'red')} Section '{section}' not found")
-                    return
-
-            print(json.dumps(data, indent=2, default=str))
+            _print_json_config(config, section)
         else:
-            title = (
-                f"Current Configuration ({section})"
-                if section
-                else "Current Configuration"
-            )
-            print(f"{_colorize(f'{title}:', 'bold')}\n")
-
-            sections: list[tuple[str, list[tuple[str, object]]]] = [
-                (
-                    "Core",
-                    [
-                        ("Environment", config.core.env),
-                        ("Provider", config.core.provider),
-                        ("Persona", config.core.persona),
-                    ],
-                ),
-                (
-                    "Embeddings",
-                    [
-                        ("Model", config.embedding.model_name),
-                        ("Dimensions", config.embedding.output_dimensionality),
-                        ("Batch Size", config.embedding.batch_size),
-                    ],
-                ),
-                (
-                    "Search",
-                    [
-                        ("Strategy", config.search.fusion_strategy),
-                        ("K", config.search.k),
-                        ("Recency", config.search.recency_boost_strength),
-                        ("Reranker", config.search.reranker_endpoint),
-                    ],
-                ),
-                (
-                    "Processing",
-                    [
-                        ("Chunk Size", config.processing.chunk_size),
-                        ("Chunk Overlap", config.processing.chunk_overlap),
-                    ],
-                ),
-            ]
-
-            # Mapping from display names to config attributes/keys
-            section_map = {
-                "DigitalOcean LLM": "digitalocean_llm",
-                # Standard attributes
-                "Core": "core",
-                "Embeddings": "embedding",
-                "Search": "search",
-                "Processing": "processing",
-                "Database": "database",
-                "Storage": "storage",
-                "GCP": "gcp",
-                "Retry": "retry",
-                "Limits": "limits",
-            }
-
-            # Simple fallback for other sections if not explicitly mapped above
-            target_section = None
-            if section:
-                target_section = section_map.get(section, section.lower())
-
-            # Use target_section for lookup, but original `section` for errors/display if needed
-            if target_section and target_section.lower() not in [
-                s[0].lower() for s in sections
-            ]:
-                # Try to find attribute
-                attr = getattr(config, target_section, None)
-                if attr:
-                    # Generic display for unmapped sections
-                    print(f"  {_colorize(section, 'cyan')}")
-                    if hasattr(attr, "model_dump"):
-                        for k, v in attr.model_dump().items():
-                            print(f"    {k:<20} {v}")
-                    else:
-                        print(f"    {attr}")
-                    return
-                else:
-                    print(
-                        f"{_colorize('ERROR:', 'red')} Section '{section}' (mapped to '{target_section}') not found"
-                    )
-                    return
-
-            for sec_name, items in sections:
-                if section and section.lower() != sec_name.lower():
-                    continue
-
-                print(f"  {_colorize(sec_name, 'cyan')}")
-                for key, value in items:
-                    print(f"    {key:<20} {value}")
-                print()
+            _print_human_config(config, section)
 
     except ImportError as e:
         print(f"{_colorize('ERROR:', 'red')} Could not load configuration module")

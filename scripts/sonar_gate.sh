@@ -12,6 +12,13 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Load .env if present and export variables
+if [ -f .env ]; then
+  set -a
+  source .env
+  set +a
+fi
+
 echo "========================================"
 echo "STEP 1: Running SonarQube Scan"
 echo "========================================"
