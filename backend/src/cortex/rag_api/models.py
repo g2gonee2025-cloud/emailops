@@ -125,9 +125,7 @@ class ChatRequest(BaseModel):
         default=None, description="Optional thread context"
     )
     k: int = Field(default=10, description="Number of context chunks")
-    max_length: int = Field(
-        default=500, description="Max summary length in words"
-    )
+    max_length: int = Field(default=500, description="Max summary length in words")
     max_history: Optional[int] = Field(
         default=None, description="Max chat history entries"
     )

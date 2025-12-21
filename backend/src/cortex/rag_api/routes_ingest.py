@@ -383,9 +383,7 @@ def _process_push_ingest(
         try:
             doc_key = document.document_id or str(uuid.uuid4())
             if document.document_id:
-                conversation_id = _generate_stable_id(
-                    tenant_ns, "document", doc_key
-                )
+                conversation_id = _generate_stable_id(tenant_ns, "document", doc_key)
             else:
                 conversation_id = uuid.uuid4()
 

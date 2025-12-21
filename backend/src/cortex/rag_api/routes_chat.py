@@ -53,9 +53,7 @@ def get_summarize_graph():
     return _summarize_graph
 
 
-def _trim_history(
-    messages: List[ChatMessage], max_history: int
-) -> List[ChatMessage]:
+def _trim_history(messages: List[ChatMessage], max_history: int) -> List[ChatMessage]:
     if max_history <= 0:
         return []
     if len(messages) <= max_history:
@@ -89,9 +87,7 @@ def _decide_action(
         f"{_format_history(history)}\n\n"
         "Return JSON with fields: action, reason."
     )
-    raw = complete_json(
-        prompt=prompt, schema=ChatActionDecision.model_json_schema()
-    )
+    raw = complete_json(prompt=prompt, schema=ChatActionDecision.model_json_schema())
     return ChatActionDecision.model_validate(raw)
 
 
@@ -118,9 +114,7 @@ def _build_retrieval_diagnostics(
     return diagnostics
 
 
-async def _run_search(
-    query: str, k: int, classification: Any
-) -> SearchResults:
+async def _run_search(query: str, k: int, classification: Any) -> SearchResults:
     tool_input = KBSearchInput(
         tenant_id=tenant_id_ctx.get(),
         user_id=user_id_ctx.get(),
@@ -132,9 +126,7 @@ async def _run_search(
 
 
 @router.post("/chat", response_model=ChatResponse)
-async def chat_endpoint(
-    request: ChatRequest, http_request: Request
-) -> ChatResponse:
+async def chat_endpoint(request: ChatRequest, http_request: Request) -> ChatResponse:
     """
     Conversational chat endpoint with tool routing.
 
@@ -150,9 +142,7 @@ async def chat_endpoint(
 
     latest_user = _latest_user_message(request.messages)
     if not latest_user:
-        raise HTTPException(
-            status_code=400, detail="No user message provided"
-        )
+        raise HTTPException(status_code=400, detail="No user message provided")
 
     config = get_config()
     max_history = (
@@ -178,14 +168,10 @@ async def chat_endpoint(
                 }
                 final_state = await get_summarize_graph().ainvoke(initial_state)
                 if final_state.get("error"):
-                    raise HTTPException(
-                        status_code=500, detail=final_state["error"]
-                    )
+                    raise HTTPException(status_code=500, detail=final_state["error"])
                 summary = final_state.get("summary")
                 if not summary:
-                    raise HTTPException(
-                        status_code=500, detail="No summary generated"
-                    )
+                    raise HTTPException(status_code=500, detail="No summary generated")
                 reply = summary.summary_markdown
             else:
                 summary_prompt = (
@@ -193,9 +179,7 @@ async def chat_endpoint(
                     f"{_format_history(history)}"
                 )
                 summary_text = complete_text(summary_prompt)
-                summary = ThreadSummary(
-                    summary_markdown=summary_text, key_points=[]
-                )
+                summary = ThreadSummary(summary_markdown=summary_text, key_points=[])
                 reply = summary_text
 
             response = ChatResponse(
@@ -203,21 +187,15 @@ async def chat_endpoint(
                 action="summarize",
                 reply=reply,
                 summary=summary,
-                debug_info={"reason": decision.reason}
-                if request.debug
-                else None,
+                debug_info={"reason": decision.reason} if request.debug else None,
             )
         elif decision.action == "search":
             classification = tool_classify_query(
                 QueryClassificationInput(query=latest_user, use_llm=True)
             )
-            results = await _run_search(
-                latest_user, request.k, classification
-            )
+            results = await _run_search(latest_user, request.k, classification)
             results_dicts = (
-                [r.model_dump() for r in results.results]
-                if results.results
-                else []
+                [r.model_dump() for r in results.results] if results.results else []
             )
             snippets = "\n".join(
                 f"{idx + 1}. {item.highlights[0] if item.highlights else ''}"
@@ -235,17 +213,13 @@ async def chat_endpoint(
                 action="search",
                 reply=reply,
                 search_results=results_dicts,
-                debug_info={"reason": decision.reason}
-                if request.debug
-                else None,
+                debug_info={"reason": decision.reason} if request.debug else None,
             )
         else:
             classification = tool_classify_query(
                 QueryClassificationInput(query=latest_user, use_llm=True)
             )
-            results = await _run_search(
-                latest_user, request.k, classification
-            )
+            results = await _run_search(latest_user, request.k, classification)
             context_state = {
                 "retrieval_results": results,
             }
@@ -274,23 +248,15 @@ async def chat_endpoint(
                     + f"\n\nQuestion: {latest_user}"
                 )
                 answer_text = complete_text(prompt)
-                evidence = _extract_evidence_from_answer(
-                    answer_text, results
-                )
-                confidence = (
-                    min(0.95, 0.5 + 0.1 * len(evidence))
-                    if evidence
-                    else 0.6
-                )
+                evidence = _extract_evidence_from_answer(answer_text, results)
+                confidence = min(0.95, 0.5 + 0.1 * len(evidence)) if evidence else 0.6
                 answer = Answer(
                     query=latest_user,
                     answer_markdown=answer_text,
                     evidence=evidence,
                     confidence_overall=confidence,
                     safety={},
-                    retrieval_diagnostics=_build_retrieval_diagnostics(
-                        results
-                    ),
+                    retrieval_diagnostics=_build_retrieval_diagnostics(results),
                 )
 
             response = ChatResponse(
@@ -298,9 +264,7 @@ async def chat_endpoint(
                 action="answer",
                 reply=answer.answer_markdown,
                 answer=answer,
-                debug_info={"reason": decision.reason}
-                if request.debug
-                else None,
+                debug_info={"reason": decision.reason} if request.debug else None,
             )
 
         try:
