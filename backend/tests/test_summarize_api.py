@@ -43,11 +43,18 @@ def test_thread_summary_accepts_markdown_and_quality():
 
 
 def test_summarize_endpoint_returns_graph_summary(monkeypatch):
-    monkeypatch.setattr(routes_summarize, "_summarize_graph", DummyGraph())
+    # P0 Fix: Ensure we mock the graph in app.state if it exists, as that takes precedence
+    dummy_graph = DummyGraph()
+    monkeypatch.setattr(routes_summarize, "_summarize_graph", dummy_graph)
 
     thread_id = str(uuid4())
 
     with TestClient(app) as client:
+        # Inject into app.state to bypass lifespan-loaded real graph
+        if not hasattr(app.state, "graphs"):
+            app.state.graphs = {}
+        app.state.graphs["summarize"] = dummy_graph
+
         response = client.post("/api/v1/summarize", json={"thread_id": thread_id})
 
     assert response.status_code == 200
