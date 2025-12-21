@@ -352,13 +352,11 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
                 fused_results,
                 top_n=50,  # Rerank top 50 candidates
             )
-            reranker_label = "expert-qwen-8b"
         else:
             # Lightweight blending
             fused_results = rerank_results(
                 fused_results, alpha=config.search.rerank_alpha
             )
-            reranker_label = f"{fusion_method}|alpha={config.search.rerank_alpha:.2f}"
 
         # 8. Get conversation timestamps for recency boost
         conversation_ids = list(

@@ -23,7 +23,7 @@ import os
 import time
 import uuid
 from contextlib import asynccontextmanager
-from typing import Any, Callable, Optional
+from typing import Any, Awaitable, Callable, Optional
 
 import jwt
 import requests
@@ -78,70 +78,86 @@ def _configure_jwt_decoder(
     config = get_config()
 
     if jwks_url:
-        from fastapi.concurrency import run_in_threadpool
-
-        async def decode(token: str) -> dict[str, Any]:
-            try:
-                # Run blocking IO in threadpool
-                jwks = await run_in_threadpool(_load_jwks, jwks_url)
-
-                headers = jwt.get_unverified_header(token)
-                kid = headers.get("kid")
-                key_data = None
-                for candidate in jwks.get("keys", []):
-                    if candidate.get("kid") == kid:
-                        key_data = candidate
-                        break
-                if key_data is None:
-                    raise SecurityError(
-                        "JWT key id not found in JWKS", threat_type="auth_invalid"
-                    )
-
-                # Convert JWK to PEM key for PyJWT
-                from jwt import algorithms
-
-                public_key = algorithms.RSAAlgorithm.from_jwk(key_data)
-
-                decode_options = {}
-                if not audience:
-                    decode_options["verify_aud"] = False
-                if not issuer:
-                    decode_options["verify_iss"] = False
-
-                return jwt.decode(
-                    token,
-                    public_key,
-                    algorithms=["RS256"],  # Pin algorithm
-                    audience=audience if audience else None,
-                    issuer=issuer if issuer else None,
-                    options=decode_options,
-                )
-            except JWTError as exc:
-                raise SecurityError("Invalid JWT", threat_type="auth_invalid") from exc
-            except Exception as exc:  # HTTP errors, json, etc.
-                raise SecurityError(
-                    "Failed to load JWKS", threat_type="auth_invalid"
-                ) from exc
-
-        _jwt_decoder = decode
+        _jwt_decoder = _create_jwks_decoder(jwks_url, audience, issuer)
         return
 
     # Fallback logic
     if config.core.env == "prod":
-
-        async def reject(_: str) -> dict[str, Any]:
-            raise SecurityError(
-                "JWKS configuration required in production",
-                threat_type="auth_configuration",
-            )
-
-        _jwt_decoder = reject
+        _jwt_decoder = _create_prod_reject_decoder()
         return
 
-    # Dev mode: Allow unverified claims
+    # Dev mode: Allow verified secret
+    _jwt_decoder = _create_dev_secret_decoder(config)
+
+
+def _create_jwks_decoder(
+    jwks_url: str, audience: Optional[str], issuer: Optional[str]
+) -> Callable[[str], Awaitable[dict[str, Any]]]:
+    """Create a JWKS-based JWT decoder."""
+    from fastapi.concurrency import run_in_threadpool
+
+    async def decode(token: str) -> dict[str, Any]:
+        try:
+            jwks = await run_in_threadpool(_load_jwks, jwks_url)
+            key_data = _find_jwks_key(jwks, token)
+
+            from jwt import algorithms
+
+            public_key = algorithms.RSAAlgorithm.from_jwk(key_data)
+
+            decode_options = {}
+            if not audience:
+                decode_options["verify_aud"] = False
+            if not issuer:
+                decode_options["verify_iss"] = False
+
+            return jwt.decode(
+                token,
+                public_key,
+                algorithms=["RS256"],
+                audience=audience if audience else None,
+                issuer=issuer if issuer else None,
+                options=decode_options,
+            )
+        except JWTError as exc:
+            raise SecurityError("Invalid JWT", threat_type="auth_invalid") from exc
+        except Exception as exc:
+            raise SecurityError(
+                "Failed to load JWKS", threat_type="auth_invalid"
+            ) from exc
+
+    return decode
+
+
+def _find_jwks_key(jwks: dict[str, Any], token: str) -> dict[str, Any]:
+    """Find the matching key in JWKS for the given token."""
+    headers = jwt.get_unverified_header(token)
+    kid = headers.get("kid")
+    for candidate in jwks.get("keys", []):
+        if candidate.get("kid") == kid:
+            return candidate
+    raise SecurityError("JWT key id not found in JWKS", threat_type="auth_invalid")
+
+
+def _create_prod_reject_decoder() -> Callable[[str], Awaitable[dict[str, Any]]]:
+    """Create a decoder that rejects all tokens in production without JWKS."""
+
+    async def reject(_: str) -> dict[str, Any]:
+        raise SecurityError(
+            "JWKS configuration required in production",
+            threat_type="auth_configuration",
+        )
+
+    return reject
+
+
+def _create_dev_secret_decoder(
+    config: Any,
+) -> Callable[[str], Awaitable[dict[str, Any]]]:
+    """Create a dev-mode decoder using secret key."""
+
     async def decode_verified_secret(token: str) -> dict[str, Any]:
         try:
-            # Verify the token signature using the secret key
             payload = jwt.decode(token, config.SECRET_KEY, algorithms=["HS256"])
             return payload
         except jwt.ExpiredSignatureError:
@@ -151,7 +167,7 @@ def _configure_jwt_decoder(
         except JWTError as exc:
             raise SecurityError("Invalid JWT", threat_type="auth_invalid") from exc
 
-    _jwt_decoder = decode_verified_secret
+    return decode_verified_secret
 
 
 async def _extract_identity(request: Request) -> tuple[str, str, dict[str, Any]]:

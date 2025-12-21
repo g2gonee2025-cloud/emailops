@@ -51,7 +51,6 @@ def _print_human_config(config: Any, section: str | None = None) -> None:
             if hasattr(attr, "model_dump"):
                 for k, v in attr.model_dump().items():
                     print(f"    {k:<20} {v}")
-            return
 
     # If we are here and not looking for a section, we printed summary above.
 

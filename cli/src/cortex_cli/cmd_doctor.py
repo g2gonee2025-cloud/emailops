@@ -626,33 +626,36 @@ def _run_dep_check(
     dep_error = bool(dep_report.missing_critical)
 
     if not args.json:
-        if dep_report.installed:
-            print(f"\n  {_c('Installed:', 'green')}")
-            for pkg in dep_report.installed[:10]:
-                print(f"    {_c('✓', 'green')} {pkg}")
-            if len(dep_report.installed) > 10:
-                print(
-                    f"    {_c(f'... and {len(dep_report.installed) - 10} more', 'dim')}"
-                )
-
-        if dep_report.missing_critical:
-            print(f"\n  {_c('Missing (critical):', 'red')}")
-            for pkg in dep_report.missing_critical:
-                print(f"    {_c('✗', 'red')} {pkg}")
-            print(
-                f"\n  {_c('TIP:', 'yellow')} Run {_c('cortex doctor --auto-install', 'cyan')} to fix"
-            )
-
-        if dep_report.missing_optional:
-            print(f"\n  {_c('Missing (optional):', 'yellow')}")
-            for pkg in dep_report.missing_optional[:5]:
-                print(f"    {_c('○', 'yellow')} {pkg}")
-            if len(dep_report.missing_optional) > 5:
-                print(
-                    f"    {_c(f'... and {len(dep_report.missing_optional) - 5} more', 'dim')}"
-                )
+        _print_dep_report(dep_report)
 
     return dep_report, dep_error
+
+
+def _print_dep_report(dep_report: DepReport) -> None:
+    """Print dependency report to console."""
+    if dep_report.installed:
+        print(f"\n  {_c('Installed:', 'green')}")
+        for pkg in dep_report.installed[:10]:
+            print(f"    {_c('✓', 'green')} {pkg}")
+        if len(dep_report.installed) > 10:
+            print(f"    {_c(f'... and {len(dep_report.installed) - 10} more', 'dim')}")
+
+    if dep_report.missing_critical:
+        print(f"\n  {_c('Missing (critical):', 'red')}")
+        for pkg in dep_report.missing_critical:
+            print(f"    {_c('✗', 'red')} {pkg}")
+        print(
+            f"\n  {_c('TIP:', 'yellow')} Run {_c('cortex doctor --auto-install', 'cyan')} to fix"
+        )
+
+    if dep_report.missing_optional:
+        print(f"\n  {_c('Missing (optional):', 'yellow')}")
+        for pkg in dep_report.missing_optional[:5]:
+            print(f"    {_c('○', 'yellow')} {pkg}")
+        if len(dep_report.missing_optional) > 5:
+            print(
+                f"    {_c(f'... and {len(dep_report.missing_optional) - 5} more', 'dim')}"
+            )
 
 
 def _run_index_check(args: Any, config: Any, root: Path) -> tuple[dict[str, Any], bool]:
@@ -789,75 +792,75 @@ def _run_rerank_check(args: Any, config: Any) -> tuple[bool | None, str | None, 
 def _run_export_check(
     args: Any, config: Any, root: Path
 ) -> tuple[bool | None, list[str], str | None, bool]:
-    success_ret = None
-    folders: list[str] = []
-    error_msg = None
-    warning_flag = False
-    if args.check_exports:
-        if not args.json:
-            print(f"\n{_c('▶ Checking exports...', 'cyan')}")
+    if not args.check_exports:
+        return None, [], None, False
 
-        success, f_list, error = check_exports(config, root)
-        success_ret = success
-        folders = f_list
-        error_msg = error
+    if not args.json:
+        print(f"\n{_c('▶ Checking exports...', 'cyan')}")
 
-        if not success:
-            warning_flag = True
-            if not args.json:
-                print(f"  {_c('⚠', 'yellow')} Export check: {error}")
-        else:
-            if not args.json:
-                print(f"  {_c('✓', 'green')} Export root valid")
-                if folders:
-                    print(f"    Found {len(folders)} B1 folder(s):")
-                    for f in folders[:5]:
-                        print(f"      • {f}")
-                    if len(folders) > 5:
-                        print(f"      {_c(f'... and {len(folders) - 5} more', 'dim')}")
-                else:
-                    print(
-                        f"    {_c('No B1 folders found (export may be empty)', 'dim')}"
-                    )
-    return success_ret, folders, error_msg, warning_flag
+    success, folders, error = check_exports(config, root)
+    warning_flag = not success
+
+    if not args.json:
+        _print_export_result(success, folders, error)
+
+    return success, folders, error, warning_flag
+
+
+def _print_export_result(success: bool, folders: list[str], error: str | None) -> None:
+    """Print export check result to console."""
+    if not success:
+        print(f"  {_c('⚠', 'yellow')} Export check: {error}")
+        return
+
+    print(f"  {_c('✓', 'green')} Export root valid")
+    if folders:
+        print(f"    Found {len(folders)} B1 folder(s):")
+        for f in folders[:5]:
+            print(f"      • {f}")
+        if len(folders) > 5:
+            print(f"      {_c(f'... and {len(folders) - 5} more', 'dim')}")
+    else:
+        print(f"    {_c('No B1 folders found (export may be empty)', 'dim')}")
 
 
 def _run_ingest_check(
     args: Any, config: Any, root: Path
 ) -> tuple[bool | None, dict[str, Any], str | None, bool]:
-    success_ret = None
-    details: dict[str, Any] = {}
-    error_msg = None
-    warning_flag = False
-    if args.check_ingest:
-        if not args.json:
-            print(f"\n{_c('▶ Checking ingest capability...', 'cyan')}")
+    if not args.check_ingest:
+        return None, {}, None, False
 
-        success, det, error = check_ingest(config, root)
-        success_ret = success
-        details = det
-        error_msg = error
+    if not args.json:
+        print(f"\n{_c('▶ Checking ingest capability...', 'cyan')}")
 
-        if not success:
-            warning_flag = True
-            if not args.json:
-                print(f"  {_c('⚠', 'yellow')} Ingest check: {error}")
-        else:
-            if not args.json:
-                print(f"  {_c('✓', 'green')} Ingest capability OK")
-                if details.get("sample_found"):
-                    print(f"    Sample message found: {_c('✓', 'green')}")
-                if details.get("parser_ok"):
-                    print(f"    Email parser:         {_c('✓', 'green')}")
-                    if details.get("parsed_subject"):
-                        print(
-                            f"      Subject: {_c(details['parsed_subject'][:40] + '...', 'dim')}"
-                        )
-                if details.get("preprocessor_ok"):
-                    print(f"    Text preprocessor:    {_c('✓', 'green')}")
-                if error:
-                    print(f"    {_c(error, 'dim')}")
-    return success_ret, details, error_msg, warning_flag
+    success, details, error = check_ingest(config, root)
+    warning_flag = not success
+
+    if not args.json:
+        _print_ingest_result(success, details, error)
+
+    return success, details, error, warning_flag
+
+
+def _print_ingest_result(
+    success: bool, details: dict[str, Any], error: str | None
+) -> None:
+    """Print ingest check result to console."""
+    if not success:
+        print(f"  {_c('⚠', 'yellow')} Ingest check: {error}")
+        return
+
+    print(f"  {_c('✓', 'green')} Ingest capability OK")
+    if details.get("sample_found"):
+        print(f"    Sample message found: {_c('✓', 'green')}")
+    if details.get("parser_ok"):
+        print(f"    Email parser:         {_c('✓', 'green')}")
+        if details.get("parsed_subject"):
+            print(f"      Subject: {_c(details['parsed_subject'][:40] + '...', 'dim')}")
+    if details.get("preprocessor_ok"):
+        print(f"    Text preprocessor:    {_c('✓', 'green')}")
+    if error:
+        print(f"    {_c(error, 'dim')}")
 
 
 def _print_json_output(
