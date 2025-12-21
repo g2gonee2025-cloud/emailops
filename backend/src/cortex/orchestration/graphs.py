@@ -3,6 +3,7 @@ LangGraph Definitions.
 
 Implements §10.1 of the Canonical Blueprint.
 """
+
 from __future__ import annotations
 
 import logging
@@ -11,7 +12,6 @@ from cortex.orchestration.nodes import (
     node_assemble_context,
     node_audit_draft,
     node_classify_query,
-    node_query_graph,
     node_critique_draft,
     node_draft_email_initial,
     node_generate_answer,
@@ -19,6 +19,7 @@ from cortex.orchestration.nodes import (
     node_improve_draft,
     node_load_thread,
     node_prepare_draft_query,
+    node_query_graph,
     node_retrieve_context,
     node_summarize_analyst,
     node_summarize_critic,
@@ -44,12 +45,20 @@ def _check_error(state: dict) -> str:
 
 def _route_by_classification(state: dict) -> str:
     """Route based on query classification."""
+    if state.get("error"):
+        return "handle_error"
+
     classification = state.get("classification")
     if not classification:
         return "retrieve"
 
-    # Could add specialized routing for navigational vs semantic queries
-    # For now, always go to retrieve
+    # Route based on classification type
+    # NOTE: Currently all valid classifications use retrieval, but structure
+    # allows future specialization (e.g., navigational -> direct lookup)
+    classification_type = getattr(classification, "query_type", None)
+    if classification_type == "error":
+        return "handle_error"
+
     return "retrieve"
 
 

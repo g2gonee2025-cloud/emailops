@@ -157,11 +157,8 @@ class DatabaseConfig(BaseModel):
     """Database connection configuration."""
 
     url: str = Field(
-        default_factory=lambda: _env(
-            "DB_URL",
-            "postgresql://postgres:CHANGE_ME_IN_PROD@localhost:5432/cortex",
-        ),
-        description="Database connection URL",
+        default_factory=lambda: _env("DB_URL", ""),
+        description="Database connection URL (required - set via OUTLOOKCORTEX_DB_URL or DB_URL env var)",
     )
     pool_size: int = Field(
         default_factory=lambda: _env("DB_POOL_SIZE", 20, int),
@@ -175,6 +172,13 @@ class DatabaseConfig(BaseModel):
         le=50,
         description="Maximum pool overflow",
     )
+
+    def model_post_init(self, _context: object) -> None:
+        """Validate that required configuration is present."""
+        if not self.url:
+            raise ValueError(
+                "Database URL is required. Set OUTLOOKCORTEX_DB_URL or DB_URL environment variable."
+            )
 
 
 # -----------------------------------------------------------------------------
