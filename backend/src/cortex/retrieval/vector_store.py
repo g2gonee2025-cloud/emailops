@@ -4,6 +4,7 @@ Vector store abstractions.
 Provides a pluggable interface for vector search backends such as pgvector
 and Qdrant.
 """
+
 from __future__ import annotations
 
 import logging
@@ -19,6 +20,103 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
+
+
+def _validate_embedding(embedding: List[float], expected_dim: int) -> np.ndarray:
+    """Validate embedding dimensions and values. Returns numpy array."""
+    if len(embedding) != expected_dim:
+        raise RetrievalError(
+            "Embedding dimension mismatch",
+            query="vector_search",
+            context={"expected_dim": expected_dim, "got": len(embedding)},
+        )
+
+    try:
+        emb_array = np.asarray(embedding, dtype=float)
+    except Exception:
+        raise RetrievalError(
+            "Embedding must contain numeric values",
+            query="vector_search",
+        )
+
+    if not np.all(np.isfinite(emb_array)):
+        raise RetrievalError(
+            "Embedding contains non-finite values",
+            query="vector_search",
+        )
+
+    return emb_array
+
+
+def _process_pgvector_row(row: Any) -> VectorResult:
+    """Process a pgvector result row into a VectorResult."""
+    # pgvector's cosine distance operator (<=>)  is 1 - cosine_similarity.
+    distance = float(row.distance) if row.distance is not None else None
+    cosine_sim = 1.0 - distance if distance is not None else -1.0
+    score = max(0.0, min(1.0, (cosine_sim + 1.0) / 2.0))
+
+    conversation_id = str(row.conversation_id) if row.conversation_id else ""
+    attachment_id = str(row.attachment_id) if row.attachment_id else ""
+
+    metadata = dict(row.extra_data) if isinstance(row.extra_data, dict) else {}
+    metadata.setdefault("conversation_id", conversation_id)
+    metadata.setdefault("attachment_id", attachment_id)
+    if row.chunk_type:
+        metadata.setdefault("chunk_type", row.chunk_type)
+
+    return VectorResult(
+        chunk_id=str(row.chunk_id),
+        score=score,
+        text=row.text or "",
+        conversation_id=conversation_id,
+        attachment_id=attachment_id,
+        is_attachment=row.is_attachment or False,
+        distance=distance,
+        metadata=metadata,
+        chunk_type=row.chunk_type,
+    )
+
+
+def _process_qdrant_point(point: Dict[str, Any]) -> VectorResult:
+    """Process a Qdrant point into a VectorResult."""
+    payload_data = point.get("payload") or {}
+    if not isinstance(payload_data, dict):
+        payload_data = {}
+
+    chunk_id = str(payload_data.get("chunk_id") or point.get("id") or "")
+    text = payload_data.get("text") or ""
+    conversation_id = str(payload_data.get("conversation_id") or "")
+    attachment_id = str(payload_data.get("attachment_id") or "")
+    chunk_type = payload_data.get("chunk_type")
+
+    metadata = payload_data.get("extra_data")
+    if not isinstance(metadata, dict):
+        metadata = payload_data.get("metadata")
+    if not isinstance(metadata, dict):
+        metadata = {}
+    metadata.setdefault("conversation_id", conversation_id)
+    metadata.setdefault("attachment_id", attachment_id)
+    if chunk_type:
+        metadata.setdefault("chunk_type", chunk_type)
+
+    score = point.get("score")
+    try:
+        score_value = float(score) if score is not None else 0.0
+    except (TypeError, ValueError):
+        score_value = 0.0
+    score_value = max(0.0, min(1.0, score_value))
+
+    return VectorResult(
+        chunk_id=chunk_id,
+        score=score_value,
+        text=text,
+        conversation_id=conversation_id,
+        attachment_id=attachment_id,
+        is_attachment=bool(payload_data.get("is_attachment", False)),
+        distance=None,
+        metadata=metadata,
+        chunk_type=chunk_type,
+    )
 
 
 class VectorResult(BaseModel):
@@ -87,31 +185,10 @@ class PgvectorStore(VectorStore):
         is_attachment: Optional[bool] = None,
         thread_ids: Optional[List[str]] = None,
     ) -> List[VectorResult]:
-        if len(embedding) != self._output_dim:
-            raise RetrievalError(
-                "Embedding dimension mismatch",
-                query="vector_search",
-                context={"expected_dim": self._output_dim, "got": len(embedding)},
-            )
-
-        try:
-            emb_array = np.asarray(embedding, dtype=float)
-        except Exception:
-            raise RetrievalError(
-                "Embedding must contain numeric values",
-                query="vector_search",
-            )
-
-        if not np.all(np.isfinite(emb_array)):
-            raise RetrievalError(
-                "Embedding contains non-finite values",
-                query="vector_search",
-            )
+        emb_array = _validate_embedding(embedding, self._output_dim)
 
         # Convert embedding to pgvector text format
-        embedding_str = (
-            "[" + ",".join(repr(float(v)) for v in emb_array.tolist()) + "]"
-        )
+        embedding_str = "[" + ",".join(repr(float(v)) for v in emb_array.tolist()) + "]"
 
         # Handle backward compat: thread_ids -> conversation_ids
         if thread_ids and not conversation_ids:
@@ -134,18 +211,17 @@ class PgvectorStore(VectorStore):
         # Attachment filter
         attachment_filter_sql = ""
         if is_attachment is not None:
-            if is_attachment:
-                attachment_filter_sql = "AND c.is_attachment = TRUE"
-            else:
-                attachment_filter_sql = "AND c.is_attachment = FALSE"
+            attachment_filter_sql = (
+                "AND c.is_attachment = TRUE"
+                if is_attachment
+                else "AND c.is_attachment = FALSE"
+            )
 
         # Optional HNSW tuning for recall/speed tradeoff
         hnsw_settings_cte = ""
         if ef_search is not None:
             params["ef_search"] = str(int(ef_search))
-            hnsw_settings_cte = (
-                "WITH settings AS (SELECT set_config('hnsw.ef_search', :ef_search, true))"
-            )
+            hnsw_settings_cte = "WITH settings AS (SELECT set_config('hnsw.ef_search', :ef_search, true))"
 
         # Use cosine distance directly on vector type (no halfvec needed for 3840 dims
         # since it's within pgvector's vector limit for exact search)
@@ -162,7 +238,7 @@ class PgvectorStore(VectorStore):
                 c.attachment_id,
                 c.embedding <=> CAST(:query_vec AS vector({self._output_dim})) AS distance
             FROM chunks c
-            {', settings' if ef_search is not None else ''}
+            {", settings" if ef_search is not None else ""}
             WHERE c.tenant_id = :tenant_id
               AND c.embedding IS NOT NULL
             {conversation_filter_sql}
@@ -173,42 +249,7 @@ class PgvectorStore(VectorStore):
         )
 
         results = self._session.execute(stmt, params).fetchall()
-
-        out = []
-        for row in results:
-            # pgvector's cosine distance operator (<=>) is 1 - cosine_similarity.
-            # Cosine similarity can be [-1, 1], so distance is typically [0, 2].
-            # We map similarity to [0, 1] for easier blending with lexical scores.
-            distance = float(row.distance) if row.distance is not None else None
-            cosine_sim = 1.0 - distance if distance is not None else -1.0
-            score = (cosine_sim + 1.0) / 2.0
-            # Guard against minor numeric drift
-            score = max(0.0, min(1.0, score))
-
-            conversation_id = str(row.conversation_id) if row.conversation_id else ""
-            attachment_id = str(row.attachment_id) if row.attachment_id else ""
-
-            metadata = dict(row.extra_data) if isinstance(row.extra_data, dict) else {}
-            metadata.setdefault("conversation_id", conversation_id)
-            metadata.setdefault("attachment_id", attachment_id)
-            if row.chunk_type:
-                metadata.setdefault("chunk_type", row.chunk_type)
-
-            out.append(
-                VectorResult(
-                    chunk_id=str(row.chunk_id),
-                    score=score,
-                    text=row.text or "",
-                    conversation_id=conversation_id,
-                    attachment_id=attachment_id,
-                    is_attachment=row.is_attachment or False,
-                    distance=distance,
-                    metadata=metadata,
-                    chunk_type=row.chunk_type,
-                )
-            )
-
-        return out
+        return [_process_pgvector_row(row) for row in results]
 
 
 class QdrantVectorStore(VectorStore):
@@ -235,26 +276,7 @@ class QdrantVectorStore(VectorStore):
         is_attachment: Optional[bool] = None,
         thread_ids: Optional[List[str]] = None,
     ) -> List[VectorResult]:
-        if len(embedding) != self._output_dim:
-            raise RetrievalError(
-                "Embedding dimension mismatch",
-                query="vector_search",
-                context={"expected_dim": self._output_dim, "got": len(embedding)},
-            )
-
-        try:
-            emb_array = np.asarray(embedding, dtype=float)
-        except Exception:
-            raise RetrievalError(
-                "Embedding must contain numeric values",
-                query="vector_search",
-            )
-
-        if not np.all(np.isfinite(emb_array)):
-            raise RetrievalError(
-                "Embedding contains non-finite values",
-                query="vector_search",
-            )
+        emb_array = _validate_embedding(embedding, self._output_dim)
 
         if thread_ids and not conversation_ids:
             conversation_ids = thread_ids
@@ -316,47 +338,6 @@ class QdrantVectorStore(VectorStore):
         data = response.json()
         results = data.get("result", []) if isinstance(data, dict) else []
 
-        out: List[VectorResult] = []
-        for row in results:
-            payload_data = row.get("payload") or {}
-            if not isinstance(payload_data, dict):
-                payload_data = {}
-
-            chunk_id = str(payload_data.get("chunk_id") or row.get("id") or "")
-            text = payload_data.get("text") or ""
-            conversation_id = str(payload_data.get("conversation_id") or "")
-            attachment_id = str(payload_data.get("attachment_id") or "")
-            chunk_type = payload_data.get("chunk_type")
-            metadata = payload_data.get("extra_data")
-            if not isinstance(metadata, dict):
-                metadata = payload_data.get("metadata")
-            if not isinstance(metadata, dict):
-                metadata = {}
-            metadata.setdefault("conversation_id", conversation_id)
-            metadata.setdefault("attachment_id", attachment_id)
-            if chunk_type:
-                metadata.setdefault("chunk_type", chunk_type)
-
-            score = row.get("score")
-            try:
-                score_value = float(score) if score is not None else 0.0
-            except (TypeError, ValueError):
-                score_value = 0.0
-            score_value = max(0.0, min(1.0, score_value))
-
-            out.append(
-                VectorResult(
-                    chunk_id=chunk_id,
-                    score=score_value,
-                    text=text,
-                    conversation_id=conversation_id,
-                    attachment_id=attachment_id,
-                    is_attachment=bool(payload_data.get("is_attachment", False)),
-                    distance=None,
-                    metadata=metadata,
-                    chunk_type=chunk_type,
-                )
-            )
-
+        out = [_process_qdrant_point(point) for point in results]
         logger.info("Qdrant search returned %d chunks", len(out))
         return out
