@@ -3,6 +3,7 @@ Observability infrastructure with OpenTelemetry.
 
 Implements §12 of the Canonical Blueprint.
 """
+
 from __future__ import annotations
 
 import functools
@@ -73,6 +74,116 @@ _metric_instruments: dict[tuple[str, str], Any] = {}
 _initialized = False
 
 
+def _init_tracing(service_name: str, sample_rate: float, config: Any) -> Any:
+    """Initialize OpenTelemetry tracing. Returns tracer or None."""
+    if not OTEL_AVAILABLE or trace is None:
+        return None
+
+    try:
+        resource = Resource.create(
+            {
+                "service.name": service_name,
+                "service.version": "1.0",
+                "deployment.environment": config.core.env,
+            }
+        )
+
+        provider = TracerProvider(
+            resource=resource,
+            sampler=TraceIdRatioBased(sample_rate),
+        )
+
+        # Cloud Trace exporter for GCP
+        if config.gcp.gcp_project:
+            cloud_trace_exporter = CloudTraceSpanExporter(
+                project_id=config.gcp.gcp_project
+            )
+            provider.add_span_processor(BatchSpanProcessor(cloud_trace_exporter))
+        elif OTLP_AVAILABLE:
+            otlp_exporter = OTLPSpanExporter()
+            provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
+            logging.info("✓ OTLP Trace Exporter configured")
+
+        trace.set_tracer_provider(provider)
+        tracer = trace.get_tracer(__name__)
+
+        # Auto-instrument requests library
+        RequestsInstrumentor().instrument()
+
+        logging.info(
+            "✓ OpenTelemetry tracing initialized (sample_rate=%.1f)", sample_rate
+        )
+        return tracer
+
+    except Exception as e:
+        logging.warning("Failed to initialize tracing: %s", e)
+        return None
+
+
+def _init_metrics(service_name: str, config: Any) -> Any:
+    """Initialize metrics export. Returns meter or None."""
+    if not OTEL_AVAILABLE or metrics is None:
+        return None
+
+    try:
+        resource = Resource.create({"service.name": service_name})
+
+        # Cloud Monitoring exporter for GCP
+        if config.gcp.gcp_project:
+            exporter = CloudMonitoringMetricsExporter(project_id=config.gcp.gcp_project)
+            reader = PeriodicExportingMetricReader(
+                exporter, export_interval_millis=60000
+            )
+            provider = MeterProvider(resource=resource, metric_readers=[reader])
+            metrics.set_meter_provider(provider)
+            logging.info("✓ Metrics export initialized (Cloud Monitoring)")
+            return metrics.get_meter(__name__)
+
+        if OTLP_AVAILABLE:
+            exporter = OTLPMetricExporter()
+            reader = PeriodicExportingMetricReader(
+                exporter, export_interval_millis=60000
+            )
+            provider = MeterProvider(resource=resource, metric_readers=[reader])
+            metrics.set_meter_provider(provider)
+            logging.info("✓ Metrics export initialized (OTLP)")
+            return metrics.get_meter(__name__)
+
+        logging.info("OTLP metrics exporter unavailable; metrics disabled")
+        return None
+
+    except Exception as e:
+        logging.warning("Failed to initialize metrics: %s", e)
+        return None
+
+
+def _init_structured_logging() -> None:
+    """Initialize structured logging with structlog."""
+    if not STRUCTLOG_AVAILABLE or structlog is None:
+        return
+
+    try:
+        structlog.configure(
+            processors=[
+                structlog.contextvars.merge_contextvars,
+                structlog.processors.add_log_level,
+                structlog.processors.StackInfoRenderer(),
+                structlog.dev.set_exc_info,
+                structlog.processors.TimeStamper(fmt="iso"),
+                structlog.processors.JSONRenderer(),
+            ],
+            wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
+            context_class=dict,
+            logger_factory=structlog.PrintLoggerFactory(),
+            cache_logger_on_first_use=True,
+        )
+
+        logging.info("✓ Structured logging initialized")
+
+    except Exception as e:
+        logging.warning("Failed to initialize structured logging: %s", e)
+
+
 def init_observability(
     service_name: str = "emailops",
     enable_tracing: bool = True,
@@ -97,103 +208,14 @@ def init_observability(
     # Guardrails for invalid sampling values
     sample_rate = max(0.0, min(sample_rate, 1.0))
 
-    # Initialize OpenTelemetry tracing
-    if enable_tracing and OTEL_AVAILABLE and trace is not None:
-        try:
-            resource = Resource.create(
-                {
-                    "service.name": service_name,
-                    "service.version": "1.0",
-                    "deployment.environment": config.core.env,
-                }
-            )
+    if enable_tracing:
+        _tracer = _init_tracing(service_name, sample_rate, config)
 
-            provider = TracerProvider(
-                resource=resource,
-                sampler=TraceIdRatioBased(sample_rate),
-            )
+    if enable_metrics:
+        _meter = _init_metrics(service_name, config)
 
-            # Cloud Trace exporter for GCP
-            if config.gcp.gcp_project:
-                cloud_trace_exporter = CloudTraceSpanExporter(
-                    project_id=config.gcp.gcp_project
-                )
-                provider.add_span_processor(BatchSpanProcessor(cloud_trace_exporter))
-            # OTLP Exporter (DigitalOcean / Generic)
-            elif OTLP_AVAILABLE:
-                otlp_exporter = OTLPSpanExporter()
-                provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
-                logging.info("✓ OTLP Trace Exporter configured")
-
-            trace.set_tracer_provider(provider)
-            _tracer = trace.get_tracer(__name__)
-
-            # Auto-instrument requests library
-            RequestsInstrumentor().instrument()
-
-            logging.info(
-                "✓ OpenTelemetry tracing initialized (sample_rate=%.1f)", sample_rate
-            )
-
-        except Exception as e:
-            logging.warning("Failed to initialize tracing: %s", e)
-
-    # Initialize metrics export
-    if enable_metrics and OTEL_AVAILABLE and metrics is not None:
-        try:
-            resource = Resource.create({"service.name": service_name})
-
-            # Cloud Monitoring exporter for GCP
-            if config.gcp.gcp_project:
-                exporter = CloudMonitoringMetricsExporter(
-                    project_id=config.gcp.gcp_project
-                )
-                reader = PeriodicExportingMetricReader(
-                    exporter, export_interval_millis=60000
-                )
-                provider = MeterProvider(resource=resource, metric_readers=[reader])
-                metrics.set_meter_provider(provider)
-                _meter = metrics.get_meter(__name__)
-                logging.info("✓ Metrics export initialized (Cloud Monitoring)")
-
-            # OTLP Metrics Exporter (DigitalOcean / Generic)
-            elif OTLP_AVAILABLE:
-                exporter = OTLPMetricExporter()
-                reader = PeriodicExportingMetricReader(
-                    exporter, export_interval_millis=60000
-                )
-                provider = MeterProvider(resource=resource, metric_readers=[reader])
-                metrics.set_meter_provider(provider)
-                _meter = metrics.get_meter(__name__)
-                logging.info("✓ Metrics export initialized (OTLP)")
-            else:
-                logging.info("OTLP metrics exporter unavailable; metrics disabled")
-
-        except Exception as e:
-            logging.warning("Failed to initialize metrics: %s", e)
-
-    # Initialize structured logging
-    if enable_structured_logging and STRUCTLOG_AVAILABLE and structlog is not None:
-        try:
-            structlog.configure(
-                processors=[
-                    structlog.contextvars.merge_contextvars,
-                    structlog.processors.add_log_level,
-                    structlog.processors.StackInfoRenderer(),
-                    structlog.dev.set_exc_info,
-                    structlog.processors.TimeStamper(fmt="iso"),
-                    structlog.processors.JSONRenderer(),
-                ],
-                wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
-                context_class=dict,
-                logger_factory=structlog.PrintLoggerFactory(),
-                cache_logger_on_first_use=True,
-            )
-
-            logging.info("✓ Structured logging initialized")
-
-        except Exception as e:
-            logging.warning("Failed to initialize structured logging: %s", e)
+    if enable_structured_logging:
+        _init_structured_logging()
 
     _initialized = True
 
