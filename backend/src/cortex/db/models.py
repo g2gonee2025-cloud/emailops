@@ -4,6 +4,7 @@ Database models for Cortex.
 Implements simplified schema per §4.1 of the Canonical Blueprint.
 Tables: Conversation, Attachment, Chunk, AuditLog
 """
+
 from __future__ import annotations
 
 import uuid
@@ -23,6 +24,9 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR, UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+
+# SQLAlchemy cascade constant to avoid duplication (S1192)
+CASCADE_DELETE_ORPHAN = "all, delete-orphan"
 
 
 class Base(DeclarativeBase):
@@ -74,10 +78,10 @@ class Conversation(Base):
 
     # Relationships
     attachments: Mapped[List["Attachment"]] = relationship(
-        back_populates="conversation", cascade="all, delete-orphan"
+        back_populates="conversation", cascade=CASCADE_DELETE_ORPHAN
     )
     chunks: Mapped[List["Chunk"]] = relationship(
-        back_populates="conversation", cascade="all, delete-orphan"
+        back_populates="conversation", cascade=CASCADE_DELETE_ORPHAN
     )
 
     __table_args__ = (
@@ -115,7 +119,7 @@ class Attachment(Base):
     # Relationships
     conversation: Mapped["Conversation"] = relationship(back_populates="attachments")
     chunks: Mapped[List["Chunk"]] = relationship(
-        back_populates="attachment", cascade="all, delete-orphan"
+        back_populates="attachment", cascade=CASCADE_DELETE_ORPHAN
     )
 
     __table_args__ = (Index("ix_attachments_conversation", "conversation_id"),)
@@ -240,13 +244,13 @@ class EntityNode(Base):
         "EntityEdge",
         foreign_keys="[EntityEdge.source_id]",
         back_populates="source_node",
-        cascade="all, delete-orphan",
+        cascade=CASCADE_DELETE_ORPHAN,
     )
     incoming_edges: Mapped[List["EntityEdge"]] = relationship(
         "EntityEdge",
         foreign_keys="[EntityEdge.target_id]",
         back_populates="target_node",
-        cascade="all, delete-orphan",
+        cascade=CASCADE_DELETE_ORPHAN,
     )
 
     __table_args__ = (
