@@ -16,9 +16,11 @@ def verify_config():
     print("Output Dimension:", config.embedding.output_dimensionality)
     print(
         "Redis URL:",
-        config.redis.url.split("@")[-1]
-        if "@" in config.redis.url
-        else config.redis.url,
+        (
+            config.redis.url.split("@")[-1]
+            if "@" in config.redis.url
+            else config.redis.url
+        ),
     )
     print("Chunk Size:", config.processing.chunk_size)
     print("Max Retries:", config.retry.max_retries)

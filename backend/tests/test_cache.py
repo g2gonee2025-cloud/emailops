@@ -1,6 +1,7 @@
 """
 Unit tests for Query Embedding Cache.
 """
+
 import time
 
 import numpy as np

@@ -1,6 +1,7 @@
 """
 Unit tests for Filter Resolution logic.
 """
+
 from unittest.mock import MagicMock
 
 from cortex.db.models import Conversation

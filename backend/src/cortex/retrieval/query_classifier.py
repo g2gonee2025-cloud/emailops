@@ -8,6 +8,7 @@ Classifies user queries into:
 - "semantic": analytical question requiring understanding (hybrid search)
 - "drafting": request to compose/reply to email (draft flow)
 """
+
 from __future__ import annotations
 
 import logging

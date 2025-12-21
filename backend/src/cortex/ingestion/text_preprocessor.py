@@ -3,6 +3,7 @@ Central Text Preprocessor.
 
 Implements §6.8 of the Canonical Blueprint.
 """
+
 from __future__ import annotations
 
 import logging

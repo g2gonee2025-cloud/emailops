@@ -4,6 +4,7 @@ Full-Text Search (FTS) retrieval.
 Implements §8.2 of the Canonical Blueprint.
 Adapted for Conversation-based schema (conversation_id instead of thread_id/message_id).
 """
+
 from __future__ import annotations
 
 import logging

@@ -4,6 +4,7 @@ Database Writer.
 Implements §6.6 of the Canonical Blueprint.
 Updated for new Conversation-based schema.
 """
+
 from __future__ import annotations
 
 import hashlib

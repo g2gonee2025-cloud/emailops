@@ -9,6 +9,7 @@ Per pgvector official docs:
 - We use halfvec cast for 3840-dim embeddings (supports up to 4000 dims)
 - Query must cast to halfvec to use the HNSW index
 """
+
 from __future__ import annotations
 
 import logging

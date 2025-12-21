@@ -57,7 +57,7 @@ class TestCorrectness(unittest.TestCase):
             ChunkingInput(
                 text=text,
                 section_path="attachments/test.txt",
-                chunk_type_hint="attachment_text"  # Passing string, model converts?
+                chunk_type_hint="attachment_text",  # Passing string, model converts?
                 # Wait, ChunkingInput defines type_hint as optional str.
                 # chunk_text logic uses it.
             )

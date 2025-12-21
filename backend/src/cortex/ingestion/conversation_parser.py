@@ -3,6 +3,7 @@ Parser for extracting participants from Conversation.txt files.
 
 Handles deduplication across multiple messages within the same conversation.
 """
+
 from __future__ import annotations
 
 import logging

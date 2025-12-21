@@ -4,6 +4,7 @@ Email Processing.
 Implements email cleaning and thread splitting.
 Blueprint §6.2: Email text cleaning and metadata extraction.
 """
+
 from __future__ import annotations
 
 import re

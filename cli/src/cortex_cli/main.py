@@ -233,9 +233,9 @@ def _show_status(json_output: bool = False) -> None:
     status_data = {
         "environment": {
             "OUTLOOKCORTEX_ENV": os.getenv("OUTLOOKCORTEX_ENV", "not set"),
-            "OUTLOOKCORTEX_DB_URL": "***"
-            if os.getenv("OUTLOOKCORTEX_DB_URL")
-            else "not set",
+            "OUTLOOKCORTEX_DB_URL": (
+                "***" if os.getenv("OUTLOOKCORTEX_DB_URL") else "not set"
+            ),
             "GOOGLE_APPLICATION_CREDENTIALS": os.getenv(
                 "GOOGLE_APPLICATION_CREDENTIALS", "not set"
             ),
@@ -869,9 +869,11 @@ def _run_search(
             output: dict[str, Any] = {
                 "success": True,
                 "query": query,
-                "results": [r.model_dump() for r in results.results]
-                if hasattr(results, "results")
-                else [],
+                "results": (
+                    [r.model_dump() for r in results.results]
+                    if hasattr(results, "results")
+                    else []
+                ),
                 "total": len(results.results) if hasattr(results, "results") else 0,
             }
             print(json.dumps(output, indent=2, default=str))

@@ -1,4 +1,5 @@
 """Fix the 3 remaining NULL embeddings."""
+
 import os
 
 from openai import OpenAI

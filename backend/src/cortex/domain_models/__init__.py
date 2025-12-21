@@ -3,6 +3,7 @@ Domain Models Package.
 
 Contains Pydantic models for RAG, orchestration, and facts ledger.
 """
+
 from cortex.domain_models.facts_ledger import CriticReview, FactsLedger
 from cortex.domain_models.rag import (
     Answer,

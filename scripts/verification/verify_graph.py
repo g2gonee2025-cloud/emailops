@@ -1,6 +1,7 @@
 """
 Verify Graph RAG Extraction (Live LLM).
 """
+
 import logging
 import sys
 

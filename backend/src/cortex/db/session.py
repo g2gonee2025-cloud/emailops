@@ -3,6 +3,7 @@ Database session management.
 
 Implements §4.2 and §11.1 of the Canonical Blueprint.
 """
+
 from __future__ import annotations
 
 import logging
@@ -169,9 +170,11 @@ def execute_in_transaction(
                 message=f"Transaction failed: {e}",
                 error_code="TRANSACTION_FAILED",
                 context={
-                    "operation": operation.__name__
-                    if hasattr(operation, "__name__")
-                    else str(operation)
+                    "operation": (
+                        operation.__name__
+                        if hasattr(operation, "__name__")
+                        else str(operation)
+                    )
                 },
             ) from e
         raise

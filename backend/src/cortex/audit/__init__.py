@@ -3,6 +3,7 @@ Audit Logging Module.
 
 Implements §11.4 of the Canonical Blueprint.
 """
+
 from __future__ import annotations
 
 import hashlib

@@ -1,6 +1,7 @@
 """
 Parses attachments_log.csv for rich attachment metadata.
 """
+
 import csv
 import logging
 from pathlib import Path

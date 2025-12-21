@@ -1,6 +1,7 @@
 """
 Verify the Thread Summarization functionality.
 """
+
 import logging
 import sys
 from unittest.mock import patch

@@ -3,6 +3,7 @@ Reranking Logic (Lightweight & Cross-Encoder).
 
 Implements §8.7 of the Canonical Blueprint.
 """
+
 import logging
 from typing import List, Optional
 

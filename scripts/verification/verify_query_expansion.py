@@ -1,6 +1,7 @@
 """
 Verify Query Expansion (Live).
 """
+
 import logging
 import sys
 

@@ -4,6 +4,7 @@ Grounding Check.
 Implements §9.4 of the Canonical Blueprint.
 Verifies that LLM-generated answers are supported by retrieved context/facts.
 """
+
 from __future__ import annotations
 
 import logging

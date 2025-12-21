@@ -4,6 +4,7 @@ Mailroom: Orchestration entry for ingestion jobs.
 Implements §6.1 of the Canonical Blueprint.
 Updated for Conversation-based schema.
 """
+
 from __future__ import annotations
 
 import logging

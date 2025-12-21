@@ -7,6 +7,7 @@ Dynamic proxy to runtime module-level functions.
 Usage:
     from cortex.llm.client import embed_texts, complete_text, complete_json
 """
+
 import importlib
 from typing import Any
 

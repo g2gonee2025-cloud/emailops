@@ -3,6 +3,7 @@ Attachment extraction.
 
 Implements §6.5 of the Canonical Blueprint.
 """
+
 from __future__ import annotations
 
 import logging
@@ -96,9 +97,11 @@ def process_attachment(
     text = extract_attachment_text(
         Path(ref.path),
         max_chars=max_chars or limits.max_attachment_text_chars,
-        skip_if_attachment_over_mb=skip_if_attachment_over_mb
-        if skip_if_attachment_over_mb is not None
-        else limits.skip_attachment_over_mb,
+        skip_if_attachment_over_mb=(
+            skip_if_attachment_over_mb
+            if skip_if_attachment_over_mb is not None
+            else limits.skip_attachment_over_mb
+        ),
     )
     if text is None:
         return None

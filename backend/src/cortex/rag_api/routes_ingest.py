@@ -4,6 +4,7 @@ Ingestion API routes.
 Implements §6 of the Canonical Blueprint.
 Provides endpoints for triggering and monitoring ingestion jobs.
 """
+
 from __future__ import annotations
 
 import logging

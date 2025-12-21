@@ -6,6 +6,7 @@ to avoid redundant API calls for repeated queries.
 
 Ported from reference code feature_search_draft.py.
 """
+
 from __future__ import annotations
 
 import logging

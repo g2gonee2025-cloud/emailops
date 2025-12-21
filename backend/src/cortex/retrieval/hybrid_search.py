@@ -3,6 +3,7 @@ Hybrid Search (FTS + Vector + RRF).
 
 Implements §8.3 of the Canonical Blueprint.
 """
+
 from __future__ import annotations
 
 import logging

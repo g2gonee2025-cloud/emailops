@@ -79,9 +79,11 @@ class IngestionProcessor:
                         session.query(Conversation)
                         .filter(
                             Conversation.tenant_id == self.tenant_id,
-                            Conversation.folder_name == folder.name
-                            if hasattr(folder, "name")
-                            else prefix.rstrip("/").split("/")[-1],
+                            (
+                                Conversation.folder_name == folder.name
+                                if hasattr(folder, "name")
+                                else prefix.rstrip("/").split("/")[-1]
+                            ),
                         )
                         .first()
                     )

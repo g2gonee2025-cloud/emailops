@@ -1064,9 +1064,9 @@ def node_summarize_final(state: Dict[str, Any]) -> Dict[str, Any]:
                 analysis = ParticipantAnalysis(
                     name=p.name or p.email.split("@")[0],
                     email=p.email,
-                    role="other"
-                    if p.role in ["recipient", "cc"]
-                    else "internal",  # Simple heuristic, improved below
+                    role=(
+                        "other" if p.role in ["recipient", "cc"] else "internal"
+                    ),  # Simple heuristic, improved below
                     tone="neutral",
                     stance="Unknown",
                 )

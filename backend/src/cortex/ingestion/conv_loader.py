@@ -2,6 +2,7 @@
 Conversation loading utilities.
 Handles loading conversation content, manifest/summary JSON, and attachment texts.
 """
+
 from __future__ import annotations
 
 import json

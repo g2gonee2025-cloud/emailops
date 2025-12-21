@@ -5,6 +5,7 @@ Implements §7.4 of the Canonical Blueprint.
 Abstracts the underlying queue mechanism (Redis Streams, Celery, etc.)
 as per Blueprint §2.1.
 """
+
 from __future__ import annotations
 
 import json
@@ -658,12 +659,16 @@ class RedisStreamsQueue(JobQueue):
             "status": status_data.get("status"),
             "attempts": int(status_data.get("attempts", 0)),
             "created_at": float(status_data.get("created_at", 0)),
-            "started_at": float(status_data.get("started_at", 0))
-            if status_data.get("started_at")
-            else None,
-            "completed_at": float(status_data.get("completed_at", 0))
-            if status_data.get("completed_at")
-            else None,
+            "started_at": (
+                float(status_data.get("started_at", 0))
+                if status_data.get("started_at")
+                else None
+            ),
+            "completed_at": (
+                float(status_data.get("completed_at", 0))
+                if status_data.get("completed_at")
+                else None
+            ),
             "error": status_data.get("error"),
             "type": status_data.get("type"),
         }

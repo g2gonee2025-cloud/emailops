@@ -4,6 +4,7 @@ Text Extraction.
 Wraps Unstructured, Tesseract OCR, pdfplumber, etc.
 Implements §6.5 of the Canonical Blueprint.
 """
+
 from __future__ import annotations
 
 import contextlib

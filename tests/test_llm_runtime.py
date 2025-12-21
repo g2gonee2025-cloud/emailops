@@ -24,9 +24,10 @@ def test_get_runtime_exposes_retry_config():
 
 
 def test_complete_text_ignores_nonstring_reasoning():
-    with patch("cortex.llm.runtime._config") as mock_config, patch(
-        "openai.OpenAI"
-    ) as mock_openai:
+    with (
+        patch("cortex.llm.runtime._config") as mock_config,
+        patch("openai.OpenAI") as mock_openai,
+    ):
         mock_config.core.provider = "openai"
         mock_config.sensitive.openai_api_key = "sk-mock"
 

@@ -12,6 +12,7 @@ Features:
   3. Else cluster by (normalized_subject, participants, time_window)
 * Ambiguity handling: log thread_ambiguity in job problems
 """
+
 from __future__ import annotations
 
 import hashlib

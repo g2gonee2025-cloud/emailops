@@ -4,6 +4,7 @@ Injection Defense Module.
 Implements defense against prompt injection attacks by detecting and neutralizing
 common jailbreak patterns and override attempts.
 """
+
 import re
 
 import structlog
