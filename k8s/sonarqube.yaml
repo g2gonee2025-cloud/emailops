@@ -29,10 +29,10 @@ spec:
               value: sonar
           resources:
             requests:
-              memory: "768Mi"
+              memory: "2Gi"
               cpu: "250m"
             limits:
-              memory: "2Gi"
+              memory: "4Gi"
               cpu: "1000m"
 ---
 apiVersion: v1

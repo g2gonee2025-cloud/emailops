@@ -23,7 +23,8 @@ def get_openai_client():
 
     # Internal service DNS for the embeddings-api service
     base_url = os.getenv(
-        "DO_LLM_BASE_URL", "http://embeddings-api.emailops.svc.cluster.local/v1"
+        "DO_LLM_BASE_URL",
+        "http://embeddings-api.emailops.svc.cluster.local/v1",  # NOSONAR
     )
     if not base_url.endswith("/v1"):
         base_url = f"{base_url}/v1"

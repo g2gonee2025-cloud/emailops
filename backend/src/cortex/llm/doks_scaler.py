@@ -99,14 +99,14 @@ class DOApiClient:
     def __init__(
         self,
         token: Optional[str],
-        BASE_URL: str = "https://api.digitalocean.com/v2",
+        base_url: str = "https://api.digitalocean.com/v2",
         timeout_s: int = 30,
         max_retries: int = 3,
         backoff_factor: float = 2.0,
         dry_run: bool = False,
     ) -> None:
         self.token = token or os.environ.get("DIGITALOCEAN_TOKEN", "")
-        self.BASE_URL = BASE_URL.rstrip("/")
+        self.base_url = base_url.rstrip("/")
         self.timeout_s = timeout_s
         self.dry_run = dry_run
 
@@ -137,7 +137,7 @@ class DOApiClient:
             logger.info("[DRY RUN] %s %s %s", method, path, kwargs)
             return {"dry_run": True}
 
-        url = f"{self.BASE_URL}{path}"
+        url = f"{self.base_url}{path}"
         timeout: Any = kwargs.pop("timeout", self.timeout_s)
 
         try:
@@ -168,8 +168,8 @@ class DOApiClient:
         next_url: Optional[str] = path
 
         while next_url:
-            if next_url.startswith(self.BASE_URL):
-                next_url = next_url[len(self.BASE_URL) :]
+            if next_url.startswith(self.base_url):
+                next_url = next_url[len(self.base_url) :]
 
             data = self.request("GET", next_url)
             items.extend(data.get(key, []))

@@ -27,6 +27,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # SQLAlchemy cascade constant to avoid duplication (S1192)
 CASCADE_DELETE_ORPHAN = "all, delete-orphan"
+FK_CONVERSATION_ID = "conversations.conversation_id"
 
 
 class Base(DeclarativeBase):
@@ -101,7 +102,7 @@ class Attachment(Base):
     )
     conversation_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("conversations.conversation_id", ondelete="CASCADE"),
+        ForeignKey(FK_CONVERSATION_ID, ondelete="CASCADE"),
         nullable=False,
     )
     filename: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
@@ -141,7 +142,7 @@ class Chunk(Base):
     tenant_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
     conversation_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("conversations.conversation_id", ondelete="CASCADE"),
+        ForeignKey(FK_CONVERSATION_ID, ondelete="CASCADE"),
         nullable=False,
     )
     attachment_id: Mapped[Optional[uuid.UUID]] = mapped_column(
@@ -291,7 +292,7 @@ class EntityEdge(Base):
     # Provenance
     conversation_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("conversations.conversation_id", ondelete="SET NULL"),
+        ForeignKey(FK_CONVERSATION_ID, ondelete="SET NULL"),
         nullable=True,
     )
 

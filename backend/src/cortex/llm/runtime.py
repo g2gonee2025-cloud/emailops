@@ -79,7 +79,7 @@ except ImportError:
             self.llm_model = os.getenv(
                 "LLM_MODEL", os.getenv("KIMI_MODEL", "MiniMaxAI/MiniMax-M2")
             )
-            self.llm_BASE_URL = os.getenv(
+            self.llm_base_url = os.getenv(
                 "LLM_ENDPOINT",
                 os.getenv(
                     "DO_LLM_BASE_URL",
@@ -339,7 +339,7 @@ class VLLMProvider(BaseProvider):
 
             # 2. Try simple config / env fallback
             if not base_url:
-                base_url = getattr(_config, "llm_BASE_URL", None) or os.getenv(
+                base_url = getattr(_config, "llm_base_url", None) or os.getenv(
                     "LLM_ENDPOINT",
                     os.getenv(
                         "DO_LLM_BASE_URL",

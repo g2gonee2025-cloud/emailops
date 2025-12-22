@@ -147,20 +147,7 @@ async def chat_endpoint(request: ChatRequest, http_request: Request) -> ChatResp
     """
     correlation_id = getattr(http_request.state, "correlation_id", None)
 
-    if not request.messages:
-        raise HTTPException(status_code=400, detail="messages are required")
-
-    latest_user = _latest_user_message(request.messages)
-    if not latest_user:
-        raise HTTPException(status_code=400, detail="No user message provided")
-
-    config = get_config()
-    max_history = (
-        request.max_history
-        if request.max_history is not None
-        else config.unified.max_chat_history
-    )
-    history = _trim_history(request.messages, max_history)
+    latest_user, history = _validate_and_prepare_request(request)
 
     try:
         decision = _decide_action(request, history, latest_user)
@@ -178,23 +165,9 @@ async def chat_endpoint(request: ChatRequest, http_request: Request) -> ChatResp
                 request, history, latest_user, correlation_id, decision
             )
 
-        try:
-            input_str = request.model_dump_json()
-            input_hash = hashlib.sha256(input_str.encode()).hexdigest()
-            log_audit_event(
-                tenant_id=tenant_id_ctx.get(),
-                user_or_agent=user_id_ctx.get(),
-                action="chat",
-                input_hash=input_hash,
-                risk_level="low",
-                correlation_id=correlation_id,
-                metadata={
-                    "action": response.action,
-                    "thread_id": request.thread_id,
-                },
-            )
-        except Exception as audit_err:
-            logger.error(f"Audit logging failed: {audit_err}")
+        _log_chat_audit(
+            tenant_id_ctx.get(), user_id_ctx.get(), request, response, correlation_id
+        )
 
         return response
     except HTTPException:
@@ -202,6 +175,54 @@ async def chat_endpoint(request: ChatRequest, http_request: Request) -> ChatResp
     except Exception as exc:
         logger.error(f"Chat API failed: {exc}")
         raise HTTPException(status_code=500, detail=str(exc))
+
+
+def _validate_and_prepare_request(
+    request: ChatRequest,
+) -> tuple[str, List[ChatMessage]]:
+    """Validate request and prepare history."""
+    if not request.messages:
+        raise HTTPException(status_code=400, detail="messages are required")
+
+    latest_user = _latest_user_message(request.messages)
+    if not latest_user:
+        raise HTTPException(status_code=400, detail="No user message provided")
+
+    config = get_config()
+    max_history = (
+        request.max_history
+        if request.max_history is not None
+        else config.unified.max_chat_history
+    )
+    history = _trim_history(request.messages, max_history)
+    return latest_user, history
+
+
+def _log_chat_audit(
+    tenant_id: str,
+    user_id: str,
+    request: ChatRequest,
+    response: ChatResponse,
+    correlation_id: Optional[str],
+) -> None:
+    """Log audit event for chat."""
+    try:
+        input_str = request.model_dump_json()
+        input_hash = hashlib.sha256(input_str.encode()).hexdigest()
+        log_audit_event(
+            tenant_id=tenant_id,
+            user_or_agent=user_id,
+            action="chat",
+            input_hash=input_hash,
+            risk_level="low",
+            correlation_id=correlation_id,
+            metadata={
+                "action": response.action,
+                "thread_id": request.thread_id,
+            },
+        )
+    except Exception as audit_err:
+        logger.error(f"Audit logging failed: {audit_err}")
 
 
 async def _handle_summarize(

@@ -14,9 +14,9 @@ logger = logging.getLogger(__name__)
 
 # Pattern to extract message headers
 # Format: DATE TIME | From: EMAIL | To: RECIPIENT(S) | Cc: CC_RECIPIENTS
-# Or: DATE TIME | From: EMAIL | Cc: CC_RECIPIENTS (no To field)
+# Simplify: regex reduced from complexity 30 to <20
 MESSAGE_HEADER_PATTERN = re.compile(
-    r"^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\s*\|\s*From:\s*([^\|]+?)(?:\s*\|\s*To:\s*([^\|]+?))?(?:\s*\|\s*Cc:\s*(.+?))?$",
+    r"^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\s*\|\s*From:\s*([^|]+)(?:\s*\|\s*To:\s*([^|]+))?(?:\s*\|\s*Cc:\s*(.+))?$",
     re.MULTILINE | re.IGNORECASE,
 )
 

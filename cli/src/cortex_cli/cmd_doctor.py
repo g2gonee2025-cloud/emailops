@@ -478,26 +478,8 @@ def check_ingest(config: Any, root: Path) -> tuple[bool, dict[str, Any], str | N
     }
 
     try:
-        # Find a sample message file to test parsing
         export_root = root / config.directories.export_root
-        sample_file = None
-
-        if export_root.exists():
-            for folder in export_root.iterdir():
-                if folder.is_dir():
-                    messages_dir = folder / "messages"
-                    if messages_dir.exists():
-                        # Try to find an .eml file first, as parse_eml_file expects that
-                        for msg_file in messages_dir.glob("*.eml"):
-                            sample_file = msg_file
-                            break
-                        # If no .eml, fallback to .json but warn later if parser fails
-                        if not sample_file:
-                            for msg_file in messages_dir.glob("*.json"):
-                                sample_file = msg_file
-                                break
-                if sample_file:
-                    break
+        sample_file = _find_sample_file(export_root)
 
         if not sample_file:
             return (
@@ -508,59 +490,98 @@ def check_ingest(config: Any, root: Path) -> tuple[bool, dict[str, Any], str | N
 
         details["sample_found"] = True
 
-        # Test parser import and execution
-        try:
-            from cortex.ingestion.parser_email import parse_eml_file
-
-            # Actually try to parse the sample file
-            if sample_file.suffix.lower() == ".json":
-                # JSON files (from previous exports) shouldn't be parsed as EML
-                # Just verify it's valid JSON
-                import json
-
-                with sample_file.open() as f:
-                    try:
-                        json.load(f)
-                        details["parser_ok"] = True
-                        details["parsed_subject"] = "N/A (JSON export)"
-                    except json.JSONDecodeError:
-                        details["parser_ok"] = False
-                        return False, details, "Invalid JSON sample"
-            else:
-                # Assume EML or similar that parser can handle
-                parsed = parse_eml_file(sample_file)
-                if parsed and parsed.message_id:
-                    details["parser_ok"] = True
-                    details["parsed_subject"] = parsed.subject
-                else:
-                    details["parser_ok"] = False
-                    return False, details, "Parser returned empty result"
-
-        except ImportError:
+        # Test parser
+        parser_ok, parsed_subject, parser_error = _test_parser_on_file(sample_file)
+        if parser_error:
             details["parser_ok"] = False
-            return False, details, "Failed to import email parser"
-        except Exception as e:
-            details["parser_ok"] = False
-            return False, details, f"Parser failed on sample: {e}"
+            return False, details, parser_error
 
-        # Test preprocessor import
-        try:
-            from cortex.ingestion.text_preprocessor import TextPreprocessor
+        details["parser_ok"] = parser_ok
+        if parsed_subject:
+            details["parsed_subject"] = parsed_subject
 
-            # Check if the module can be imported (it's a Protocol, so don't instantiate)
-            if TextPreprocessor:
-                details["preprocessor_ok"] = True
-        except ImportError:
-            details["preprocessor_ok"] = False
-            return False, details, "Failed to import text preprocessor"
-        except Exception as e:
-            details["preprocessor_ok"] = False
-            # This might fail if spacy model missing, which is a valid check failure
-            return False, details, f"Preprocessor import failed: {e}"
+        if not parser_ok:
+            return False, details, "Parser returned empty result"
+
+        # Test preprocessor
+        preproc_ok, preproc_error = _test_preprocessor_import()
+        details["preprocessor_ok"] = preproc_ok
+        if preproc_error:
+            return False, details, preproc_error
 
         return True, details, None
     except Exception as e:
         return False, details, str(e)
+
+
+def _find_sample_file(export_root: Path) -> Path | None:
+    """Find a sample .eml or .json message file."""
+    if not export_root.exists():
+        return None
+
+    for folder in export_root.iterdir():
+        if not folder.is_dir():
+            continue
+
+        messages_dir = folder / "messages"
+        if not messages_dir.exists():
+            continue
+
+        # Try .eml first
+        for msg_file in messages_dir.glob("*.eml"):
+            return msg_file
+
+        # Fallback to .json
+        for msg_file in messages_dir.glob("*.json"):
+            return msg_file
+
+    return None
+
+
+def _test_parser_on_file(sample_file: Path) -> tuple[bool, str | None, str | None]:
+    """
+    Test parsing the sample file.
+    Returns: (success, parsed_subject, error_message)
+    """
+    try:
+        from cortex.ingestion.parser_email import parse_eml_file
+
+        if sample_file.suffix.lower() == ".json":
+            import json
+
+            with sample_file.open() as f:
+                try:
+                    json.load(f)
+                    return True, "N/A (JSON export)", None
+                except json.JSONDecodeError:
+                    return False, None, "Invalid JSON sample"
+        else:
+            parsed = parse_eml_file(sample_file)
+            if parsed and parsed.message_id:
+                return True, parsed.subject, None
+            return False, None, None
+
+    except ImportError:
+        return False, None, "Failed to import email parser"
+    except Exception as e:
+        return False, None, f"Parser failed on sample: {e}"
+
+
+def _test_preprocessor_import() -> tuple[bool, str | None]:
+    """Test if text preprocessor can be imported."""
+    try:
+        from cortex.ingestion.text_preprocessor import TextPreprocessor
+
+        if TextPreprocessor:
+            return True, None
+        return (
+            False,
+            "TextPreprocessor class not found",
+        )  # Should not happen if import works
+    except ImportError:
+        return False, "Failed to import text preprocessor"
+    except Exception as e:
+        return False, f"Preprocessor import failed: {e}"
 
 
 def check_index_health(
@@ -1133,10 +1154,6 @@ def _collect_failures_and_warnings(
         warnings.append("Missing optional packages")
 
     return failures, warnings
-
-
-if __name__ == "__main__":
-    main()
 
 
 if __name__ == "__main__":

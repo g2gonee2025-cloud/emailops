@@ -15,6 +15,7 @@ from cortex.ingestion.conv_manifest.validation import scan_and_refresh  # noqa: 
 # Configuration
 LIMIT = 200
 TEMP_DIR = Path("temp_s3_validation")
+MANIFEST_FILENAME = "manifest.json"
 
 
 def load_env_vars():
@@ -71,7 +72,7 @@ def main():
 
         for obj in page["Contents"]:
             key = obj["Key"]
-            if key.endswith("manifest.json"):
+            if key.endswith(MANIFEST_FILENAME):
                 folder_prefix = str(Path(key).parent)
 
                 if folder_prefix in found_folders:
@@ -88,7 +89,7 @@ def main():
 
                 try:
                     # Download manifest
-                    s3.download_file(bucket, key, str(local_folder / "manifest.json"))
+                    s3.download_file(bucket, key, str(local_folder / MANIFEST_FILENAME))
 
                     # Download conversation text (needed for valid refresh)
                     conv_key = f"{folder_prefix}/Conversation.txt"
@@ -133,7 +134,7 @@ def main():
 
     # Iterate specifically over the folders we downloaded
     # (TEMP_DIR structure might be nested depending on prefix)
-    for folder_path in TEMP_DIR.rglob("manifest.json"):
+    for folder_path in TEMP_DIR.rglob(MANIFEST_FILENAME):
         checked += 1
         try:
             data = json.loads(folder_path.read_text())

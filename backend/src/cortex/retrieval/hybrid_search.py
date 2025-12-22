@@ -128,39 +128,41 @@ def _merge_result_fields(
     into: SearchResultItem, other: SearchResultItem
 ) -> SearchResultItem:
     """Merge fields from another SearchResultItem into an existing one."""
-
-    # Prefer already-populated structured identifiers, but fill blanks.
-    if not into.conversation_id and other.conversation_id:
+    # IDs
+    if not into.conversation_id:
         into.conversation_id = other.conversation_id
-    if not into.attachment_id and other.attachment_id:
+    if not into.attachment_id:
         into.attachment_id = other.attachment_id
 
-    # Preserve the richer text/snippet if one side is missing.
-    if not into.content and other.content:
+    # Content
+    if not into.content:
         into.content = other.content
-    if not into.snippet and other.snippet:
+    if not into.snippet:
         into.snippet = other.snippet
 
-    # Merge highlight fragments.
+    # Highlights
     if other.highlights:
-        seen = set(into.highlights or [])
+        # Use simple list extend and let deduplication happen if strictly needed later,
+        # or just ensure uniqueness simply.
+        existing = set(into.highlights or [])
         for h in other.highlights:
-            if h and h not in seen:
+            if h and h not in existing:
                 into.highlights.append(h)
-                seen.add(h)
+                existing.add(h)
 
-    # Merge score components.
-    if (into.lexical_score or 0.0) == 0.0 and (other.lexical_score or 0.0) > 0.0:
+    # Scores - prefer non-zero
+    if not into.lexical_score:
         into.lexical_score = other.lexical_score
-    if (into.vector_score or 0.0) == 0.0 and (other.vector_score or 0.0) > 0.0:
+    if not into.vector_score:
         into.vector_score = other.vector_score
 
-    # Merge metadata (keep existing keys unless missing)
-    for k, v in (other.metadata or {}).items():
-        into.metadata.setdefault(k, v)
+    # Metadata & Hash
+    if other.metadata:
+        into.metadata.update(
+            {k: v for k, v in other.metadata.items() if k not in into.metadata}
+        )
 
-    # Prefer explicit content_hash if present
-    if not into.content_hash and other.content_hash:
+    if not into.content_hash:
         into.content_hash = other.content_hash
 
     return into
