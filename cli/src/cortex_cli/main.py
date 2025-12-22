@@ -1582,6 +1582,47 @@ The system will:
     )
 
 
+# Boolean flags that map directly to --flag-name
+_DOCTOR_BOOL_FLAGS = [
+    ("auto_install", "--auto-install"),
+    ("check_index", "--check-index"),
+    ("check_embeddings", "--check-embeddings"),
+    ("check_db", "--check-db"),
+    ("check_redis", "--check-redis"),
+    ("check_exports", "--check-exports"),
+    ("check_ingest", "--check-ingest"),
+    ("json", "--json"),
+    ("verbose", "--verbose"),
+]
+
+
+def _handle_doctor(args: argparse.Namespace) -> None:
+    """Handle doctor command by forwarding args to cmd_doctor.main()."""
+    from cortex_cli.cmd_doctor import main as doctor_main
+
+    # Handle --all flag
+    if getattr(args, "check_all", False):
+        args.check_index = True
+        args.check_embeddings = True
+
+    # Build args list using lookup table
+    doctor_args: list[str] = []
+    if args.root != ".":
+        doctor_args.extend(["--root", args.root])
+    if args.provider != "vertex":
+        doctor_args.extend(["--provider", args.provider])
+
+    for attr, flag in _DOCTOR_BOOL_FLAGS:
+        if getattr(args, attr, False):
+            doctor_args.append(flag)
+
+    if args.pip_timeout != 300:
+        doctor_args.extend(["--pip-timeout", str(args.pip_timeout)])
+
+    sys.argv = [sys.argv[0], *doctor_args]
+    doctor_main()
+
+
 def _setup_utility_commands(subparsers: Any) -> None:
     """Setup utility CLI commands: doctor, status, config, version."""
     # Doctor command
@@ -1682,54 +1723,6 @@ Run comprehensive system diagnostics including:
         metavar="SECONDS",
         help="Timeout for pip install operations (default: 300)",
     )
-
-    def _handle_doctor(args: argparse.Namespace) -> None:
-        # Lazy import to avoid loading heavy dependencies
-        from cortex_cli.cmd_doctor import main as doctor_main
-
-        # Handle --all flag
-        if getattr(args, "check_all", False):
-            args.check_index = True
-            args.check_embeddings = True
-
-        # Forward to doctor command: we need to manipulate sys.argv because doctor_main
-        # likely parses args again or relies on them.
-        # But looking at the original code, it called `doctor_main()` without args.
-        # Let's check `doctor_main` signature if possible.
-        # The original code did:
-        #   sys.argv = [sys.argv[0], *doctor_args]
-        #   doctor_main()
-        # So we replicate that behavior.
-
-        # Reconstruct args for doctor_main
-        doctor_args: list[str] = []
-        if args.root != ".":
-            doctor_args.extend(["--root", args.root])
-        if args.provider != "vertex":
-            doctor_args.extend(["--provider", args.provider])
-        if args.auto_install:
-            doctor_args.append("--auto-install")
-        if args.check_index:
-            doctor_args.append("--check-index")
-        if args.check_embeddings:
-            doctor_args.append("--check-embeddings")
-        if args.check_db:
-            doctor_args.append("--check-db")
-        if args.check_redis:
-            doctor_args.append("--check-redis")
-        if args.check_exports:
-            doctor_args.append("--check-exports")
-        if args.check_ingest:
-            doctor_args.append("--check-ingest")
-        if args.json:
-            doctor_args.append("--json")
-        if args.verbose:
-            doctor_args.append("--verbose")
-        if args.pip_timeout != 300:
-            doctor_args.extend(["--pip-timeout", str(args.pip_timeout)])
-
-        sys.argv = [sys.argv[0], *doctor_args]
-        doctor_main()
 
     doctor_parser.set_defaults(func=_handle_doctor)
 
