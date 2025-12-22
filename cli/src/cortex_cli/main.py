@@ -930,11 +930,7 @@ def _run_draft(
     user_id: str = "cli-user",
     json_output: bool = False,
 ) -> None:
-    """
-    Draft email replies based on context.
-    """
-    import asyncio
-    import json
+    """Draft email replies based on context."""
 
     if not json_output:
         _print_banner()
@@ -945,93 +941,134 @@ def _run_draft(
         print()
 
     try:
-        from cortex.orchestration.graphs import (
-            build_draft_graph as _build_draft_graph,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
-        )
+        from cortex.orchestration.graphs import build_draft_graph as _build_draft_graph
 
         _build_draft_graph = cast(Any, _build_draft_graph)
-        build_draft_graph: Callable[[], Any]
-        build_draft_graph = cast(Callable[[], Any], _build_draft_graph)
+        build_draft_graph: Callable[[], Any] = cast(
+            Callable[[], Any], _build_draft_graph
+        )
 
         if not json_output:
             print(f"  {_colorize('⏳', 'yellow')} Drafting...")
 
-        async def _execute() -> Any:
-            graph = build_draft_graph().compile()
-            initial_state: dict[str, Any] = {
-                "tenant_id": tenant_id,
-                "user_id": user_id,
-                "thread_id": thread_id,
-                "explicit_query": instructions,
-                "draft_query": None,
-                "retrieval_results": None,
-                "assembled_context": None,
-                "draft": None,
-                "critique": None,
-                "iteration_count": 0,
-                "error": None,
-            }
-            result = await graph.ainvoke(initial_state)
-            return result
-
-        final_state: Any = asyncio.run(_execute())
+        final_state = _execute_draft_graph(
+            build_draft_graph, tenant_id, user_id, thread_id, instructions
+        )
 
         if final_state.error:
             raise Exception(final_state.error)
 
-        draft: Any | None = final_state.draft
-
-        if json_output:
-            print(
-                json.dumps(draft.model_dump() if draft else {}, indent=2, default=str)
-            )
-        else:
-            if draft:
-                print(f"\n{_colorize('DRAFT:', 'bold')}")
-                print(f"Subject: {draft.subject}")
-                print(f"To: {', '.join(draft.to)}")
-                print("-" * 40)
-                print(f"{draft.body_markdown}\n")
-
-                if draft.next_actions:
-                    print(f"{_colorize('NEXT ACTIONS:', 'dim')}")
-                    for i, action in enumerate(draft.next_actions, 1):
-                        description = getattr(action, "description", None)
-                        owner = getattr(action, "owner", None)
-                        due_date = getattr(action, "due_date", None)
-                        if description is None and isinstance(action, dict):
-                            description = action.get("description")
-                            owner = owner or action.get("owner")
-                            due_date = due_date or action.get("due_date")
-                        if description is None:
-                            description = str(action)
-                        extras = " · ".join(
-                            item
-                            for item in (
-                                f"Owner: {owner}" if owner else None,
-                                f"Due: {due_date}" if due_date else None,
-                            )
-                            if item
-                        )
-                        suffix = f" ({extras})" if extras else ""
-                        print(f"  {i}. {description}{suffix}")
-            else:
-                print(f"  {_colorize('⚠', 'yellow')} No draft generated.")
-            print()
+        _output_draft_result(final_state.draft, json_output)
 
     except ImportError as e:
-        msg = f"Could not load RAG module: {e}"
-        if json_output:
-            print(json.dumps({"error": msg, "success": False}))
-        else:
-            print(f"\n  {_colorize('ERROR:', 'red')} {msg}")
-        sys.exit(1)
+        _handle_import_error(e, json_output)
     except Exception as e:
-        if json_output:
-            print(json.dumps({"error": str(e), "success": False}))
-        else:
-            print(f"\n  {_colorize('ERROR:', 'red')} {e}")
-        sys.exit(1)
+        _handle_generic_error(e, json_output)
+
+
+def _execute_draft_graph(
+    build_draft_graph: Callable[[], Any],
+    tenant_id: str,
+    user_id: str,
+    thread_id: str | None,
+    instructions: str,
+) -> Any:
+    """Execute the draft graph and return final state."""
+    import asyncio
+
+    async def _execute() -> Any:
+        graph = build_draft_graph().compile()
+        initial_state: dict[str, Any] = {
+            "tenant_id": tenant_id,
+            "user_id": user_id,
+            "thread_id": thread_id,
+            "explicit_query": instructions,
+            "draft_query": None,
+            "retrieval_results": None,
+            "assembled_context": None,
+            "draft": None,
+            "critique": None,
+            "iteration_count": 0,
+            "error": None,
+        }
+        return await graph.ainvoke(initial_state)
+
+    return asyncio.run(_execute())
+
+
+def _output_draft_result(draft: Any | None, json_output: bool) -> None:
+    """Output draft result in JSON or human-readable format."""
+    import json
+
+    if json_output:
+        print(json.dumps(draft.model_dump() if draft else {}, indent=2, default=str))
+        return
+
+    if not draft:
+        print(f"  {_colorize('⚠', 'yellow')} No draft generated.")
+        print()
+        return
+
+    print(f"\n{_colorize('DRAFT:', 'bold')}")
+    print(f"Subject: {draft.subject}")
+    print(f"To: {', '.join(draft.to)}")
+    print("-" * 40)
+    print(f"{draft.body_markdown}\n")
+
+    if draft.next_actions:
+        _print_next_actions(draft.next_actions)
+    print()
+
+
+def _print_next_actions(next_actions: list[Any]) -> None:
+    """Print next actions from a draft."""
+    print(f"{_colorize('NEXT ACTIONS:', 'dim')}")
+    for i, action in enumerate(next_actions, 1):
+        description = getattr(action, "description", None)
+        owner = getattr(action, "owner", None)
+        due_date = getattr(action, "due_date", None)
+
+        if description is None and isinstance(action, dict):
+            description = action.get("description")
+            owner = owner or action.get("owner")
+            due_date = due_date or action.get("due_date")
+
+        if description is None:
+            description = str(action)
+
+        extras = " · ".join(
+            item
+            for item in (
+                f"Owner: {owner}" if owner else None,
+                f"Due: {due_date}" if due_date else None,
+            )
+            if item
+        )
+        suffix = f" ({extras})" if extras else ""
+        print(f"  {i}. {description}{suffix}")
+
+
+def _handle_import_error(e: ImportError, json_output: bool) -> None:
+    """Handle ImportError for RAG module loading."""
+    import json
+
+    msg = f"Could not load RAG module: {e}"
+    if json_output:
+        print(json.dumps({"error": msg, "success": False}))
+    else:
+        print(f"\n  {_colorize('ERROR:', 'red')} {msg}")
+    sys.exit(1)
+
+
+def _handle_generic_error(e: Exception, json_output: bool) -> None:
+    """Handle generic exceptions."""
+    import json
+
+    if json_output:
+        print(json.dumps({"error": str(e), "success": False}))
+    else:
+        print(f"\n  {_colorize('ERROR:', 'red')} {e}")
+    sys.exit(1)
 
 
 def _run_summarize(
