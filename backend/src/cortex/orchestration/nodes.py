@@ -490,75 +490,11 @@ def node_query_graph(state: Dict[str, Any]) -> Dict[str, Any]:
         return {"graph_context": ""}
 
     try:
-        from cortex.db.models import EntityEdge, EntityNode
-        from cortex.db.session import SessionLocal, set_session_tenant
+        nodes, edges = _fetch_graph_entities(tenant_id, mentions)
+        if not nodes:
+            return {"graph_context": ""}
 
-        with SessionLocal() as session:
-            set_session_tenant(session, tenant_id)
-
-            match_conditions = [
-                func.lower(EntityNode.name) == mention.lower() for mention in mentions
-            ]
-
-            for mention in mentions:
-                if len(mention) >= 4:
-                    match_conditions.append(
-                        func.lower(EntityNode.name).like(f"%{mention.lower()}%")
-                    )
-
-            if not match_conditions:
-                return {"graph_context": ""}
-
-            nodes = (
-                session.execute(
-                    select(EntityNode).where(
-                        EntityNode.tenant_id == tenant_id,
-                        or_(*match_conditions),
-                    )
-                )
-                .scalars()
-                .all()
-            )
-
-            if not nodes:
-                return {"graph_context": ""}
-
-            node_ids = [node.node_id for node in nodes]
-
-            source_node = aliased(EntityNode)
-            target_node = aliased(EntityNode)
-            edges = session.execute(
-                select(EntityEdge, source_node, target_node)
-                .join(source_node, EntityEdge.source_id == source_node.node_id)
-                .join(target_node, EntityEdge.target_id == target_node.node_id)
-                .where(
-                    EntityEdge.tenant_id == tenant_id,
-                    or_(
-                        EntityEdge.source_id.in_(node_ids),
-                        EntityEdge.target_id.in_(node_ids),
-                    ),
-                )
-            ).all()
-
-        context_lines: List[str] = []
-        for node in nodes:
-            if node.description:
-                context_lines.append(
-                    strip_injection_patterns(
-                        f"Entity: {node.name} ({node.type}) - {node.description}"
-                    )
-                )
-            else:
-                context_lines.append(
-                    strip_injection_patterns(f"Entity: {node.name} ({node.type})")
-                )
-
-        for edge, source, target in edges:
-            relation = edge.relation.replace("_", " ").lower()
-            description = f" {edge.description}" if edge.description else ""
-            fact = f"{source.name} {relation} {target.name}.{description}"
-            context_lines.append(strip_injection_patterns(fact.strip()))
-
+        context_lines = _build_graph_context_lines(nodes, edges)
         if not context_lines:
             return {"graph_context": ""}
 
@@ -569,6 +505,88 @@ def node_query_graph(state: Dict[str, Any]) -> Dict[str, Any]:
     except Exception as e:
         logger.error(f"Graph query failed: {e}")
         return {"graph_context": ""}
+
+
+def _fetch_graph_entities(
+    tenant_id: str, mentions: List[str]
+) -> tuple[List[Any], List[Any]]:
+    """Fetch entity nodes and edges from the knowledge graph."""
+    from cortex.db.models import EntityEdge, EntityNode
+    from cortex.db.session import SessionLocal, set_session_tenant
+
+    with SessionLocal() as session:
+        set_session_tenant(session, tenant_id)
+
+        match_conditions = [
+            func.lower(EntityNode.name) == mention.lower() for mention in mentions
+        ]
+
+        for mention in mentions:
+            if len(mention) >= 4:
+                match_conditions.append(
+                    func.lower(EntityNode.name).like(f"%{mention.lower()}%")
+                )
+
+        if not match_conditions:
+            return [], []
+
+        nodes = (
+            session.execute(
+                select(EntityNode).where(
+                    EntityNode.tenant_id == tenant_id,
+                    or_(*match_conditions),
+                )
+            )
+            .scalars()
+            .all()
+        )
+
+        if not nodes:
+            return [], []
+
+        node_ids = [node.node_id for node in nodes]
+
+        source_node = aliased(EntityNode)
+        target_node = aliased(EntityNode)
+        edges = session.execute(
+            select(EntityEdge, source_node, target_node)
+            .join(source_node, EntityEdge.source_id == source_node.node_id)
+            .join(target_node, EntityEdge.target_id == target_node.node_id)
+            .where(
+                EntityEdge.tenant_id == tenant_id,
+                or_(
+                    EntityEdge.source_id.in_(node_ids),
+                    EntityEdge.target_id.in_(node_ids),
+                ),
+            )
+        ).all()
+
+        return list(nodes), list(edges)
+
+
+def _build_graph_context_lines(nodes: List[Any], edges: List[Any]) -> List[str]:
+    """Build context lines from graph nodes and edges."""
+    context_lines: List[str] = []
+
+    for node in nodes:
+        if node.description:
+            context_lines.append(
+                strip_injection_patterns(
+                    f"Entity: {node.name} ({node.type}) - {node.description}"
+                )
+            )
+        else:
+            context_lines.append(
+                strip_injection_patterns(f"Entity: {node.name} ({node.type})")
+            )
+
+    for edge, source, target in edges:
+        relation = edge.relation.replace("_", " ").lower()
+        description = f" {edge.description}" if edge.description else ""
+        fact = f"{source.name} {relation} {target.name}.{description}"
+        context_lines.append(strip_injection_patterns(fact.strip()))
+
+    return context_lines
 
 
 def node_classify_query(state: Dict[str, Any]) -> Dict[str, Any]:
