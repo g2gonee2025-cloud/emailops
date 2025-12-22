@@ -1,15 +1,16 @@
 import os
+from typing import Any
 
-import requests
+import requests  # type: ignore
 
 SONAR_TOKEN = os.environ.get("SONAR_TOKEN")
 SONAR_HOST_URL = "http://localhost:9000"
 PROJECT_KEY = "emailops-vertex-ai"
 
-auth = (SONAR_TOKEN, "")
+auth = (SONAR_TOKEN or "", "")
 
 
-def get_hotspots():
+def get_hotspots() -> Any:
     url = f"{SONAR_HOST_URL}/api/hotspots/search"
     params = {"projectKey": PROJECT_KEY, "status": "TO_REVIEW"}
     r = requests.get(url, auth=auth, params=params)
@@ -17,7 +18,7 @@ def get_hotspots():
     return r.json()
 
 
-def get_coverage():
+def get_coverage() -> Any:
     url = f"{SONAR_HOST_URL}/api/measures/component_tree"
     params = {
         "component": PROJECT_KEY,
@@ -30,7 +31,7 @@ def get_coverage():
     return r.json()
 
 
-def get_issues():
+def get_issues() -> Any:
     url = f"{SONAR_HOST_URL}/api/issues/search"
     params = {
         "componentKeys": PROJECT_KEY,
@@ -42,7 +43,7 @@ def get_issues():
     return r.json()
 
 
-def main():
+def main() -> None:
     print("=== VIOLATIONS (New Code) ===")
     issues = get_issues()
     for issue in issues.get("issues", []):
