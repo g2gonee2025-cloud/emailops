@@ -231,45 +231,179 @@ class TestCmdDoctor(unittest.TestCase):
         config = MagicMock()
         mock_get_config.return_value = config
 
-        # Patch everything main calls to avoid side effects
-        # Explicit arguments to match sys.argv
+        # Setup config for various checks
+        config.database.url = "postgres://user:pass@host:5432/db"
+        config.embedding.output_dimensionality = (
+            768  # Correct attribute for check_index_health
+        )
+        config.search.reranker_endpoint = "http://reranker"
+
+        # Patch the dependencies used INSIDE the check functions, not the functions themselves
         with (
-            patch("cortex_cli.cmd_doctor.check_and_install_dependencies") as mock_dep,
-            patch("cortex_cli.cmd_doctor.check_index_health") as mock_idx,
-            patch("cortex_cli.cmd_doctor.check_postgres") as mock_pg,
-            patch("cortex_cli.cmd_doctor.check_redis") as mock_redis,
-            patch("cortex_cli.cmd_doctor.check_exports") as mock_exp,
-            patch("cortex_cli.cmd_doctor.check_ingest") as mock_ingest,
-            patch("cortex_cli.cmd_doctor._probe_embeddings") as mock_embed,
-            patch("cortex_cli.cmd_doctor.check_reranker") as mock_rerank,
+            patch(
+                "cortex_cli.cmd_doctor.check_and_install_dependencies"
+            ) as mock_dep,  # this one is fine to mock as we tested it separately
+            patch("cortex_cli.cmd_doctor.Path") as mock_path_cls,
+            patch("sqlalchemy.create_engine") as mock_engine,
+            patch("redis.Redis") as mock_redis_cls,
+            patch("httpx.get") as mock_http_get,
             patch(
                 "sys.argv",
-                ["doctor", "--check-index", "--check-db", "--check-embeddings"],
+                [
+                    "doctor",
+                    "--check-index",
+                    "--check-db",
+                    "--check-redis",
+                    "--check-exports",
+                    "--check-ingest",
+                    "--check-embeddings",
+                    "--check-reranker",
+                ],
+            ),
+            # Patch module-level imports used by check_index_health
+            patch("cortex_cli.cmd_doctor.create_engine") as mock_create_engine_mod,
+            patch("cortex_cli.cmd_doctor.text"),
+            # We still need to mock some internal helpers if they satisfy dependencies
+            patch("cortex_cli.cmd_doctor._probe_embeddings", return_value=(True, 768)),
+            patch(
+                "cortex_cli.cmd_doctor._find_sample_file",
+                return_value=Path("sample.eml"),
+            ),
+            patch(
+                "cortex_cli.cmd_doctor._test_parser_on_file",
+                return_value=(True, "Subject", None),
             ),
         ):
+            # Setup DB mock
+            # Link module-level mock to the same engine mock configuration
+            mock_create_engine_mod.return_value = mock_engine.return_value
+
+            mock_conn = MagicMock()
+            mock_engine.return_value.connect.return_value.__enter__.return_value = (
+                mock_conn
+            )
+            mock_result = MagicMock()
+            mock_conn.execute.return_value = mock_result
+
+            # Helper for sequential calls to execute/fetchone
+            mock_result.scalar.return_value = 1
+            # check_index_health calls fetchone() expecting an object with .dim
+            # check_db is not called by main() in this flow, so we don't need migration response
+            mock_result.fetchone.return_value = MagicMock(dim=768)
+
+            # Setup file system mocks
+            mock_path_instance = mock_path_cls.return_value
+            mock_root = mock_path_instance.expanduser.return_value.resolve.return_value
+            mock_root.exists.return_value = True
+
+            # Common mock for directories (index, export)
+            mock_dir = mock_root.__truediv__.return_value
+            mock_dir.exists.return_value = True
+            mock_dir.rglob.return_value = [MagicMock()] * 5
+
+            # Setup export/ingest structure
+            mock_child = MagicMock()
+            mock_child.is_dir.return_value = True
+            mock_child.name = "export_1"
+            (mock_child / "manifest.json").exists.return_value = True
+            mock_messages = mock_child / "messages"
+            mock_messages.exists.return_value = True
+            mock_messages.glob.return_value = [MagicMock(suffix=".eml")]
+
+            mock_dir.iterdir.return_value = [mock_child]
+
+            # Setup Redis mock
+            mock_redis = MagicMock()
+            mock_redis_cls.from_url.return_value = mock_redis
+            mock_redis.ping.return_value = True
+
+            # Setup HTTP mock
+            mock_http_get.return_value.status_code = 200
+
+            # Setup dependency check return
             mock_dep.return_value = MagicMock(
                 missing_critical=[], missing_optional=[], installed=[]
             )
-            # Main expects 'path', 'file_count', 'config_embedding_dim' in status
-            mock_idx.return_value = (
-                True,
-                {"path": "/idx", "file_count": 5, "config_embedding_dim": 768},
-                None,
-            )
 
-            # Note: main uses _run_db_check which calls check_postgres
-            # But _run_db_check expects check_postgres to return (bool, err).
-            mock_pg.return_value = (True, None)
-
-            mock_redis.return_value = (True, None)
-            mock_exp.return_value = (True, [], None)
-            mock_ingest.return_value = (True, {}, None)
-            mock_embed.return_value = (True, 768)
-            mock_rerank.return_value = (True, None)
-
-            # main() returns nothing, but might call exit.
-            # Wait, main() ends with _print_summary_and_exit which calls sys.exit(0)
+            # Run main
             try:
                 main()
             except SystemExit as e:
-                self.assertEqual(e.code, 0)
+                if e.code != 0:
+                    # Re-read stdout/stderr to debug
+                    print(f"\nMain failed with code {e.code}. Capturing stdout...")
+                    # Since we can't easily capture output already printed to sys.stdout without capsys in scope (which it is not in this method signature? wait, I can add it)
+                    # Use a trick to get the reason
+                    pass
+                self.assertEqual(
+                    e.code,
+                    0,
+                    "Doctor check failed with specific errors (see captured stdout)",
+                )
+
+
+class TestCmdDoctorExtended(unittest.TestCase):
+    """Extended tests for cmd_doctor functions."""
+
+    def test_packages_for_provider_vertex(self):
+        from cortex_cli.cmd_doctor import _packages_for_provider
+
+        critical, optional = _packages_for_provider("vertex")
+        self.assertIn("google-genai", critical)
+
+    def test_packages_for_provider_openai(self):
+        from cortex_cli.cmd_doctor import _packages_for_provider
+
+        critical, optional = _packages_for_provider("openai")
+        self.assertIn("openai", critical)
+
+    def test_packages_for_provider_unknown(self):
+        from cortex_cli.cmd_doctor import _packages_for_provider
+
+        critical, optional = _packages_for_provider("unknown_provider")
+        # Should still return lists (possibly empty or defaults)
+        self.assertIsInstance(critical, list)
+        self.assertIsInstance(optional, list)
+
+    def test_check_db_success(self):
+        from cortex_cli.cmd_doctor import check_db
+
+        config = MagicMock()
+        config.database.url = "postgres://user:pass@host:5432/db"
+
+        with patch("sqlalchemy.create_engine") as mock_engine:
+            mock_conn = MagicMock()
+            mock_engine.return_value.connect.return_value.__enter__ = MagicMock(
+                return_value=mock_conn
+            )
+            mock_engine.return_value.connect.return_value.__exit__ = MagicMock()
+            mock_conn.execute.return_value.scalar.return_value = 1
+
+            success, status, err = check_db(config)
+            self.assertTrue(success)
+
+    def test_find_requirements_file(self):
+        from cortex_cli.cmd_doctor import _find_requirements_file
+
+        result = _find_requirements_file()
+        # May return None or a Path depending on repo state
+        self.assertTrue(result is None or isinstance(result, Path))
+
+    def test_requirements_file_candidates(self):
+        from cortex_cli.cmd_doctor import _requirements_file_candidates
+
+        candidates = _requirements_file_candidates()
+        self.assertIsInstance(candidates, list)
+        self.assertTrue(len(candidates) > 0)
+
+    def test_dep_report_dataclass(self):
+        from cortex_cli.cmd_doctor import DepReport
+
+        report = DepReport(
+            provider="vertex",
+            missing_critical=[],
+            missing_optional=["faiss-cpu"],
+            installed=["numpy"],
+        )
+        self.assertEqual(report.provider, "vertex")
+        self.assertEqual(report.installed, ["numpy"])
