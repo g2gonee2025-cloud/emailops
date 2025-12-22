@@ -1215,11 +1215,42 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
         metavar="<command>",
     )
 
-    # ==========================================================================
-    # CORE COMMANDS
-    # ==========================================================================
+    # Setup command groups
+    _setup_core_commands(subparsers)
+    _setup_rag_commands(subparsers)
+    _setup_utility_commands(subparsers)
 
-    # Ingest command
+    # Register plugin subcommand groups
+    from cortex_cli.cmd_db import setup_db_parser
+    from cortex_cli.cmd_embeddings import setup_embeddings_parser
+    from cortex_cli.cmd_s3 import setup_s3_parser
+
+    setup_db_parser(subparsers)
+    setup_embeddings_parser(subparsers)
+    setup_s3_parser(subparsers)
+
+    # Parse arguments
+    parsed_args = parser.parse_args(args)
+
+    # Handle top-level flags
+    if parsed_args.version:
+        _print_version()
+        return
+
+    if parsed_args.help or parsed_args.command is None:
+        _print_usage()
+        return
+
+    # Route to appropriate command
+    if hasattr(parsed_args, "func"):
+        parsed_args.func(parsed_args)
+    else:
+        _print_usage()
+        sys.exit(1)
+
+
+def _setup_core_commands(subparsers: Any) -> None:
+    """Setup core CLI commands: ingest, index, search, validate."""
     ingest_parser = subparsers.add_parser(
         "ingest",
         help="Process and ingest email exports",
@@ -1428,10 +1459,9 @@ This command:
         func=lambda args: _run_validate(path=args.path, json_output=args.json)
     )
 
-    # ==========================================================================
-    # RAG COMMANDS
-    # ==========================================================================
 
+def _setup_rag_commands(subparsers: Any) -> None:
+    """Setup RAG CLI commands: answer, draft, summarize."""
     # Answer command
     answer_parser = subparsers.add_parser(
         "answer",
@@ -1551,10 +1581,9 @@ The system will:
         )
     )
 
-    # ==========================================================================
-    # UTILITY COMMANDS
-    # ==========================================================================
 
+def _setup_utility_commands(subparsers: Any) -> None:
+    """Setup utility CLI commands: doctor, status, config, version."""
     # Doctor command
     doctor_parser = subparsers.add_parser(
         "doctor",
@@ -1744,34 +1773,6 @@ Run comprehensive system diagnostics including:
         help="Display version information",
     )
     version_parser.set_defaults(func=lambda _: _print_version())
-
-    # Register new subcommand groups
-    from cortex_cli.cmd_db import setup_db_parser
-    from cortex_cli.cmd_embeddings import setup_embeddings_parser
-    from cortex_cli.cmd_s3 import setup_s3_parser
-
-    setup_db_parser(subparsers)
-    setup_embeddings_parser(subparsers)
-    setup_s3_parser(subparsers)
-
-    # Parse arguments
-    parsed_args = parser.parse_args(args)
-
-    # Handle top-level flags
-    if parsed_args.version:
-        _print_version()
-        return
-
-    if parsed_args.help or parsed_args.command is None:
-        _print_usage()
-        return
-
-    # Route to appropriate command
-    if hasattr(parsed_args, "func"):
-        parsed_args.func(parsed_args)
-    else:
-        _print_usage()
-        sys.exit(1)
 
 
 if __name__ == "__main__":
