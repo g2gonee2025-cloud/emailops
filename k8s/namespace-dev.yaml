@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: emailops-dev
+  labels:
+    app: emailops
+    environment: development
