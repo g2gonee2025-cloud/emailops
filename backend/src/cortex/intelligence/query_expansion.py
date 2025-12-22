@@ -4,6 +4,7 @@ Query Expansion.
 Expands user queries with synonyms to improve retrieval recall.
 Uses WordNet for English synonyms, with optional LLM fallback.
 """
+
 from __future__ import annotations
 
 import logging

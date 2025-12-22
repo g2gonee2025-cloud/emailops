@@ -58,6 +58,11 @@ line-ending = "auto"
 profile = "black"
 line_length = 88
 
+[tool.setuptools.packages.find]
+where = ["backend/src", "cli/src"]
+include = ["emailops*", "cortex*", "cortex_cli*"]
+namespaces = true
+
 [project]
 name = "emailops"
 version = "3.1.0"

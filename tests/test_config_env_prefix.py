@@ -1,4 +1,5 @@
 """Tests for configuration environment variable handling."""
+
 from __future__ import annotations
 
 import sys

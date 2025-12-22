@@ -1,0 +1,249 @@
+============================= test session starts ==============================
+platform linux -- Python 3.11.14, pytest-9.0.2, pluggy-1.6.0 -- /root/workspace/emailops-vertex-ai/.venv/bin/python3.11
+cachedir: .pytest_cache
+rootdir: /root/workspace/emailops-vertex-ai
+configfile: pytest.ini
+testpaths: backend/tests
+plugins: anyio-4.12.0, mock-3.15.1, xdist-3.8.0, langsmith-0.5.0, timeout-2.4.0, cov-7.0.0, asyncio-1.3.0
+timeout: 300.0s
+timeout method: signal
+timeout func_only: False
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 119 items
+
+backend/tests/test_bare_except.py::test_no_bare_except_in_backend PASSED [  0%]
+backend/tests/test_bare_except.py::test_no_bare_except_in_root_scripts PASSED [  1%]
+backend/tests/test_bare_except.py::test_no_bare_except_in_files PASSED   [  2%]
+backend/tests/test_cache.py::TestQueryEmbeddingCache::test_cache_put_and_get PASSED [  3%]
+backend/tests/test_cache.py::TestQueryEmbeddingCache::test_cache_miss_when_not_present PASSED [  4%]
+backend/tests/test_cache.py::TestQueryEmbeddingCache::test_cache_expiration PASSED [  5%]
+backend/tests/test_cache.py::TestQueryEmbeddingCache::test_lru_eviction PASSED [  5%]
+backend/tests/test_cache.py::TestQueryEmbeddingCache::test_cache_returns_copy PASSED [  6%]
+backend/tests/test_cache.py::TestQueryEmbeddingCache::test_different_models_are_separate_keys PASSED [  7%]
+backend/tests/test_cache.py::TestQueryEmbeddingCache::test_stats PASSED  [  8%]
+backend/tests/test_cache.py::TestQueryEmbeddingCache::test_clear PASSED  [  9%]
+backend/tests/test_cache.py::TestGlobalCacheFunctions::test_global_cache_singleton PASSED [ 10%]
+backend/tests/test_cache.py::TestGlobalCacheFunctions::test_convenience_functions PASSED [ 10%]
+backend/tests/test_chunker.py::test_chunk_text_merges_small_tail PASSED  [ 11%]
+backend/tests/test_chunker.py::test_chunk_text_keeps_single_short_chunk PASSED [ 12%]
+backend/tests/test_cmd_doctor_unit.py::TestCmdDoctorHelpers::test_find_sample_file_no_root PASSED [ 13%]
+backend/tests/test_cmd_doctor_unit.py::TestCmdDoctorHelpers::test_find_sample_file_eml PASSED [ 14%]
+backend/tests/test_cmd_doctor_unit.py::TestCmdDoctorHelpers::test_find_sample_file_json_fallback PASSED [ 15%]
+backend/tests/test_cmd_doctor_unit.py::TestCmdDoctorHelpers::test_find_sample_file_none PASSED [ 15%]
+backend/tests/test_cmd_doctor_unit.py::TestCmdDoctorHelpers::test_test_parser_on_file_eml_success PASSED [ 16%]
+backend/tests/test_cmd_doctor_unit.py::TestCmdDoctorHelpers::test_test_parser_on_file_eml_fail PASSED [ 17%]
+backend/tests/test_cmd_doctor_unit.py::TestCmdDoctorHelpers::test_test_parser_on_file_json_success PASSED [ 18%]
+backend/tests/test_cmd_doctor_unit.py::TestCmdDoctorHelpers::test_test_parser_on_file_json_fail PASSED [ 19%]
+backend/tests/test_cmd_doctor_unit.py::TestCmdDoctorHelpers::test_test_preprocessor_import_success PASSED [ 20%]
+backend/tests/test_cmd_doctor_unit.py::TestCmdDoctorHelpers::test_test_preprocessor_import_fail PASSED [ 21%]
+backend/tests/test_conv_loader.py::TestConvLoader::test_load_conversation_invalid_path PASSED [ 21%]
+backend/tests/test_conv_loader.py::TestConvLoader::test_load_conversation_missing PASSED [ 22%]
+backend/tests/test_conv_loader.py::TestConvLoader::test_load_conversation_not_dir PASSED [ 23%]
+backend/tests/test_conv_loader.py::TestConvLoader::test_load_conversation_text_fallback PASSED [ 24%]
+backend/tests/test_conv_loader.py::TestConvLoader::test_load_conversation_text_valid PASSED [ 25%]
+backend/tests/test_conv_loader.py::TestConvLoader::test_load_conversation_valid PASSED [ 26%]
+backend/tests/test_conv_loader.py::TestConvLoader::test_load_summary PASSED [ 26%]
+backend/tests/test_conv_loader.py::TestConvLoader::test_load_summary_missing PASSED [ 27%]
+backend/tests/test_core_manifest.py::TestCoreManifest::test_extract_metadata_lightweight_dates PASSED [ 28%]
+backend/tests/test_core_manifest.py::TestCoreManifest::test_extract_metadata_lightweight_timestamp PASSED [ 29%]
+backend/tests/test_core_manifest.py::TestCoreManifest::test_extract_participants_deduplication PASSED [ 30%]
+backend/tests/test_doks_scaler.py::TestDOApiClient::test_init_missing_token PASSED [ 31%]
+backend/tests/test_doks_scaler.py::TestDOApiClient::test_init_dry_run PASSED [ 31%]
+backend/tests/test_doks_scaler.py::TestDOApiClient::test_request_success PASSED [ 32%]
+backend/tests/test_doks_scaler.py::TestDOApiClient::test_pagination PASSED [ 33%]
+backend/tests/test_filter_resolution.py::TestFilterResolution::test_no_filters_returns_none PASSED [ 34%]
+backend/tests/test_filter_resolution.py::TestFilterResolution::test_only_conv_ids_returns_list PASSED [ 35%]
+backend/tests/test_filter_resolution.py::TestFilterResolution::test_subject_filter_constructs_query PASSED [ 36%]
+backend/tests/test_filter_resolution.py::TestFilterResolution::test_participant_filter_constructs_query PASSED [ 36%]
+backend/tests/test_filters.py::TestSearchFilters::test_empty_filters PASSED [ 37%]
+backend/tests/test_filters.py::TestSearchFilters::test_non_empty_with_from_emails PASSED [ 38%]
+backend/tests/test_filters.py::TestSearchFilters::test_to_dict PASSED    [ 39%]
+backend/tests/test_filters.py::TestParseFilterGrammar::test_simple_from_filter PASSED [ 40%]
+backend/tests/test_filters.py::TestParseFilterGrammar::test_quoted_subject_filter PASSED [ 41%]
+backend/tests/test_filters.py::TestParseFilterGrammar::test_multiple_filters PASSED [ 42%]
+backend/tests/test_filters.py::TestParseFilterGrammar::test_has_attachment_filter PASSED [ 42%]
+backend/tests/test_filters.py::TestParseFilterGrammar::test_no_attachment_filter PASSED [ 43%]
+backend/tests/test_filters.py::TestParseFilterGrammar::test_file_type_filter PASSED [ 44%]
+backend/tests/test_filters.py::TestParseFilterGrammar::test_exclude_terms PASSED [ 45%]
+backend/tests/test_filters.py::TestParseFilterGrammar::test_date_range_filters PASSED [ 46%]
+backend/tests/test_filters.py::TestParseFilterGrammar::test_no_filters_returns_empty PASSED [ 47%]
+backend/tests/test_filters.py::TestParseFilterGrammar::test_case_insensitive_keys PASSED [ 47%]
+backend/tests/test_filters.py::TestParseFilterGrammar::test_empty_query PASSED [ 48%]
+backend/tests/test_filters.py::TestApplyFiltersToSql::test_empty_filters_no_sql PASSED [ 49%]
+backend/tests/test_filters.py::TestApplyFiltersToSql::test_date_from_filter PASSED [ 50%]
+backend/tests/test_filters.py::TestApplyFiltersToSql::test_has_attachment_filter PASSED [ 51%]
+backend/tests/test_filters.py::TestApplyFiltersToSql::test_subject_contains_filter PASSED [ 52%]
+backend/tests/test_filters.py::TestFilterResultsPostQuery::test_empty_filters_returns_all PASSED [ 52%]
+backend/tests/test_filters.py::TestFilterResultsPostQuery::test_from_email_filter PASSED [ 53%]
+backend/tests/test_hybrid_search.py::TestHybridSearch::test_apply_recency_boost PASSED [ 54%]
+backend/tests/test_hybrid_search.py::TestHybridSearch::test_deduplicate_by_hash PASSED [ 55%]
+backend/tests/test_hybrid_search.py::TestHybridSearch::test_downweight_quoted_history PASSED [ 56%]
+backend/tests/test_hybrid_search.py::TestHybridSearch::test_fuse_rrf PASSED [ 57%]
+backend/tests/test_hybrid_search.py::TestHybridSearch::test_fuse_weighted_sum PASSED [ 57%]
+backend/tests/test_hybrid_search.py::TestHybridSearch::test_tool_kb_search_hybrid_flow PASSED [ 58%]
+backend/tests/test_hybrid_search.py::TestHybridSearch::test_navigational_search PASSED [ 59%]
+backend/tests/test_idempotency.py::TestIdempotency::test_ingest_conversation_stable_ids PASSED [ 60%]
+backend/tests/test_idempotency.py::TestIdempotency::test_stable_id_generation PASSED [ 61%]
+backend/tests/test_incremental_ingestion.py::TestIncrementalIngestion::test_incremental_processing PASSED [ 62%]
+backend/tests/test_llm_runtime.py::TestLLMRuntime::test_extract_json_markdown PASSED [ 63%]
+backend/tests/test_llm_runtime.py::TestLLMRuntime::test_extract_json_markdown_no_lang PASSED [ 63%]
+backend/tests/test_llm_runtime.py::TestLLMRuntime::test_extract_json_simple PASSED [ 64%]
+backend/tests/test_llm_runtime.py::TestLLMRuntime::test_extract_json_with_chatter PASSED [ 65%]
+backend/tests/test_participant_merging.py::TestParticipantMerging::test_merge_participants_no_context PASSED [ 66%]
+backend/tests/test_participant_merging.py::TestParticipantMerging::test_merge_participants_with_context PASSED [ 67%]
+backend/tests/test_ported_logic.py::TestPortedLogic::test_facts_ledger_merge PASSED [ 68%]
+backend/tests/test_ported_logic.py::TestPortedLogic::test_json_parsing_nested_braces PASSED [ 68%]
+backend/tests/test_ported_logic.py::TestPortedLogic::test_unicode_sentence_boundary PASSED [ 69%]
+backend/tests/test_progressive_scaling.py::test_progressive_scaling_logic[1000-500-50-500-50] PASSED [ 70%]
+backend/tests/test_progressive_scaling.py::test_progressive_scaling_logic[40000-500-50-750-75] PASSED [ 71%]
+backend/tests/test_progressive_scaling.py::test_progressive_scaling_logic[100000-500-50-1000-100] PASSED [ 72%]
+backend/tests/test_progressive_scaling.py::test_progressive_scaling_logic[300000-500-50-1500-150] PASSED [ 73%]
+backend/tests/test_progressive_scaling.py::test_progressive_scaling_preserves_min_overlap PASSED [ 73%]
+backend/tests/test_reranking.py::test_candidate_summary_text_full_metadata PASSED [ 74%]
+backend/tests/test_reranking.py::test_candidate_summary_text_partial_metadata PASSED [ 75%]
+backend/tests/test_reranking.py::test_rerank_results_alpha_blending PASSED [ 76%]
+backend/tests/test_routes_chat_unit.py::TestRoutesChat::test_chat_endpoint_answer_flow PASSED [ 77%]
+backend/tests/test_routes_chat_unit.py::TestRoutesChat::test_chat_endpoint_search_flow PASSED [ 78%]
+backend/tests/test_routes_chat_unit.py::TestRoutesChat::test_chat_endpoint_summarize_flow PASSED [ 78%]
+backend/tests/test_routes_chat_unit.py::TestRoutesChat::test_decide_action_call PASSED [ 79%]
+backend/tests/test_summarize_api.py::test_thread_summary_accepts_markdown_and_quality PASSED [ 80%]
+backend/tests/test_summarize_api.py::test_summarize_endpoint_returns_graph_summary PASSED [ 81%]
+backend/tests/test_text_extraction.py::TestTextExtraction::test_caching_behavior PASSED [ 82%]
+backend/tests/test_text_extraction.py::TestTextExtraction::test_extract_docx_mock PASSED [ 83%]
+backend/tests/test_text_extraction.py::TestTextExtraction::test_extract_eml_content PASSED [ 84%]
+backend/tests/test_text_extraction.py::TestTextExtraction::test_extract_eml_flow PASSED [ 84%]
+backend/tests/test_text_extraction.py::TestTextExtraction::test_extract_excel_mock PASSED [ 85%]
+backend/tests/test_text_extraction.py::TestTextExtraction::test_extract_msg_mock PASSED [ 86%]
+backend/tests/test_text_extraction.py::TestTextExtraction::test_extract_pdf_mock_pypdf PASSED [ 87%]
+backend/tests/test_text_extraction.py::TestTextExtraction::test_extract_pptx_mock PASSED [ 88%]
+backend/tests/test_text_extraction.py::TestTextExtraction::test_extract_rtf_mock PASSED [ 89%]
+backend/tests/test_text_extraction.py::TestTextExtraction::test_extract_text_file_path PASSED [ 89%]
+backend/tests/unit/test_backfill.py::TestBackfill::test_backfill_flow PASSED [ 90%]
+backend/tests/unit/test_backfill.py::TestBackfill::test_get_chunks_without_embeddings PASSED [ 91%]
+backend/tests/unit/test_backfill.py::TestBackfill::test_get_missing_embeddings_count PASSED [ 92%]
+backend/tests/unit/test_backfill.py::TestBackfill::test_get_openai_client PASSED [ 93%]
+backend/tests/unit/test_backfill.py::TestBackfill::test_process_embedding_batch_failure_fallback PASSED [ 94%]
+backend/tests/unit/test_backfill.py::TestBackfill::test_process_embedding_batch_success PASSED [ 94%]
+backend/tests/unit/test_email_processing_coverage.py::TestEmailProcessingCoverage::test_clean_email_basics PASSED [ 95%]
+backend/tests/unit/test_email_processing_coverage.py::TestEmailProcessingCoverage::test_clean_email_headers_stripping PASSED [ 96%]
+backend/tests/unit/test_email_processing_coverage.py::TestEmailProcessingCoverage::test_extract_metadata PASSED [ 97%]
+backend/tests/unit/test_email_processing_coverage.py::TestEmailProcessingCoverage::test_extract_metadata_alt_headers PASSED [ 98%]
+backend/tests/unit/test_email_processing_coverage.py::TestEmailProcessingCoverage::test_signature_stripping_variations PASSED [ 99%]
+backend/tests/unit/test_email_processing_coverage.py::TestEmailProcessingCoverage::test_split_thread PASSED [100%]
+
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.11.14-final-0 _______________
+
+Name                                                  Stmts   Miss  Cover   Missing
+-----------------------------------------------------------------------------------
+backend/src/cortex/__init__.py                            0      0   100%
+backend/src/cortex/audit/__init__.py                     78     37    53%   69-73, 76-80, 146-194, 219-240
+backend/src/cortex/chunking/__init__.py                   0      0   100%
+backend/src/cortex/chunking/chunker.py                  203     66    67%   31-32, 45, 49-57, 114, 119, 134-138, 142-145, 150, 154-157, 161-164, 209-213, 249-256, 263-264, 269, 329, 379-380, 384-385, 397, 424-440, 461-462, 467, 498-516, 535-550
+backend/src/cortex/cli.py                                29     29     0%   8-68
+backend/src/cortex/cmd_doctor.py                         47     47     0%   7-84
+backend/src/cortex/common/exceptions.py                  68     26    62%   36, 64-65, 77-78, 93-95, 127-129, 158-159, 177-180, 194-195, 212-213, 228-229, 244-246
+backend/src/cortex/common/types.py                       94     57    39%   57, 61, 67-70, 76-79, 85-87, 93-95, 101-104, 110-112, 118-120, 126-128, 134-136, 177, 186, 200-205, 216-222, 235-247
+backend/src/cortex/config/loader.py                     272    201    26%   48-49, 96-116, 120, 125-204, 217-270, 274-287, 291-303, 308-366, 370-382, 386-389, 419, 429-430, 440-441, 453-464, 479-495, 504-517
+backend/src/cortex/config/models.py                     238      9    96%   46, 52-53, 60, 179, 253-256
+backend/src/cortex/context.py                             6      0   100%
+backend/src/cortex/db/__init__.py                         0      0   100%
+backend/src/cortex/db/models.py                         103      0   100%
+backend/src/cortex/db/session.py                         68     35    49%   38-42, 62-90, 118, 128-129, 158-180, 199
+backend/src/cortex/domain/__init__.py                     2      2     0%   3-5
+backend/src/cortex/domain/models.py                      13     13     0%   3-24
+backend/src/cortex/domain_models/__init__.py              3      0   100%
+backend/src/cortex/domain_models/facts_ledger.py         86      8    91%   75, 89, 118, 130, 140, 142, 144, 148
+backend/src/cortex/domain_models/rag.py                  84      0   100%
+backend/src/cortex/email_processing.py                  124     17    86%   121, 125, 192, 278, 303, 327-340
+backend/src/cortex/embeddings/client.py                  31     20    35%   21, 27-31, 35-38, 43-50, 57-58
+backend/src/cortex/ingestion/__init__.py                  0      0   100%
+backend/src/cortex/ingestion/attachments.py              43     22    49%   62-82, 95-116
+backend/src/cortex/ingestion/attachments_log.py          23     17    26%   25-58
+backend/src/cortex/ingestion/backfill.py                 80     22    72%   20-22, 30, 43, 52, 125-141, 145
+backend/src/cortex/ingestion/constants.py                 2      0   100%
+backend/src/cortex/ingestion/conv_loader.py             105     53    50%   35-37, 49-50, 59-66, 77-105, 138-139, 184-187, 203-232
+backend/src/cortex/ingestion/conversation_parser.py      68     49    28%   47-73, 92, 99-102, 112-119, 123-135, 153-170
+backend/src/cortex/ingestion/core_manifest.py           211     91    57%   39-55, 74-116, 166, 170, 189, 192-193, 196-197, 203-211, 231-234, 255, 259-260, 264, 270, 272-274, 327-331, 346-347, 352, 373-380, 388, 406-407, 411-413, 422, 425-427, 443-444
+backend/src/cortex/ingestion/mailroom.py                280    141    50%   41-71, 75-80, 85-89, 93-111, 117-182, 187-196, 225-226, 300-305, 308-313, 367, 379, 493, 527-547, 554-555, 571-616, 621-628
+backend/src/cortex/ingestion/models.py                   30      0   100%
+backend/src/cortex/ingestion/parser_email.py            317    234    26%   107-113, 126, 134, 152-155, 160-170, 175, 180-181, 205-350, 372-373, 386-400, 419-422, 426-431, 436-439, 443-445, 456-492, 496-507, 511-519, 532-590, 611-621, 641-653
+backend/src/cortex/ingestion/pii.py                     146     95    35%   27-31, 91, 128-140, 173-202, 206-217, 231-256, 270, 282-380, 390, 394, 404-409, 422-425, 438
+backend/src/cortex/ingestion/processor.py               146     90    38%   30-34, 66-67, 101, 106-108, 113-114, 127-130, 136-169, 173-242, 246-264, 270
+backend/src/cortex/ingestion/quoted_masks.py             32      9    72%   35-43, 69-71, 79-81, 86
+backend/src/cortex/ingestion/rechunk.py                  35     35     0%   1-78
+backend/src/cortex/ingestion/s3_source.py                99     61    38%   67-79, 102-134, 138-153, 162-165, 184-205, 209-210, 214-216, 220-221, 225-231, 236
+backend/src/cortex/ingestion/text_preprocessor.py        34     18    47%   58, 71-98, 104-110, 119-121
+backend/src/cortex/ingestion/text_utils.py                3      0   100%
+backend/src/cortex/ingestion/writer.py                  100     62    38%   38-51, 85, 103-117, 131-141, 145-162, 175-258, 273-311
+backend/src/cortex/intelligence/graph.py                 37     18    51%   72, 86, 93-127
+backend/src/cortex/intelligence/summarizer.py            30     11    63%   34, 39, 63-71
+backend/src/cortex/llm/__init__.py                        0      0   100%
+backend/src/cortex/llm/client.py                          7      1    86%   24
+backend/src/cortex/llm/doks_scaler.py                   353    248    30%   55-56, 59-66, 69-74, 82-93, 137-138, 146, 152-153, 160, 163-164, 183, 186, 198-222, 225, 228, 239-246, 263-273, 281-293, 309-391, 403-411, 419, 426-441, 452-457, 460-463, 470-488, 493-504, 515-528, 531, 539-544, 547-549, 552-553, 556-574, 577-587, 590-624, 632-660, 668-692, 698
+backend/src/cortex/llm/runtime.py                       483    268    45%   58-160, 204-212, 220-224, 229-234, 258-264, 282-286, 321, 324-325, 340, 359-367, 380-412, 416, 420-468, 475, 480, 502, 538, 545, 548-567, 648-654, 694-695, 716-754, 757-793, 797, 802, 806-813, 823-889, 907-915, 924, 927, 931, 941-942, 945-946, 959-961, 970, 973, 977, 1005-1006, 1015-1018, 1029-1031, 1035, 1039, 1043, 1047, 1051
+backend/src/cortex/observability.py                     190    124    35%   22-31, 42-44, 53-55, 82-120, 128-157, 163, 183-184, 204, 242-265, 272-299, 315-344, 354-364
+backend/src/cortex/orchestration/__init__.py              4      0   100%
+backend/src/cortex/orchestration/graphs.py               87     22    75%   41-43, 48-62, 114-131
+backend/src/cortex/orchestration/nodes.py               394    313    21%   80-86, 107-118, 137-176, 181-227, 256-361, 375-406, 418-443, 454-472, 482-507, 514-564, 569-589, 599-607, 621-639, 649-719, 729-732, 742-787, 797-817, 827-872, 882-913, 923-943, 956-970, 980-997, 1007-1036, 1050, 1074-1076
+backend/src/cortex/orchestration/states.py               55      1    98%   23
+backend/src/cortex/prompts/__init__.py                   20      3    85%   221-238
+backend/src/cortex/queue.py                             400    400     0%   9-988
+backend/src/cortex/rag_api/__init__.py                    0      0   100%
+backend/src/cortex/rag_api/models.py                     74      0   100%
+backend/src/cortex/rag_api/routes_answer.py              46     30    35%   29-39, 54-121
+backend/src/cortex/rag_api/routes_chat.py               141     68    52%   52-62, 67, 70, 81, 106-123, 127-134, 173-177, 185, 189, 224-225, 235-262, 277-293, 309-352
+backend/src/cortex/rag_api/routes_draft.py               49     32    35%   30-40, 57-124
+backend/src/cortex/rag_api/routes_ingest.py             174    104    40%   149-173, 193-248, 260-266, 277-281, 305-337, 350-351, 359-503
+backend/src/cortex/rag_api/routes_search.py              38     22    42%   39-99
+backend/src/cortex/rag_api/routes_summarize.py           45     13    71%   36-39, 73, 77, 91-92, 98-102
+backend/src/cortex/retrieval/__init__.py                  3      0   100%
+backend/src/cortex/retrieval/_hybrid_helpers.py          53      9    83%   20-21, 32-34, 67-71, 77
+backend/src/cortex/retrieval/cache.py                    57      0   100%
+backend/src/cortex/retrieval/filter_resolution.py        52     21    60%   51-52, 55-56, 59-60, 95-101, 104-110, 113
+backend/src/cortex/retrieval/filters.py                 159     34    79%   29-30, 80, 84, 86, 90, 94, 96, 98, 114, 118-125, 187, 199, 248-249, 255, 266-269, 273-274, 308, 318-320, 324-326
+backend/src/cortex/retrieval/fts_search.py               57     26    54%   57-92, 134-198
+backend/src/cortex/retrieval/hybrid_search.py           166     13    92%   79, 139, 190, 231, 240, 280, 330, 342, 351, 403-418
+backend/src/cortex/retrieval/query_classifier.py         68     40    41%   115-119, 136-157, 177-190, 216-224, 234-237, 242-245, 250-253
+backend/src/cortex/retrieval/reranking.py                99     43    57%   78-130, 134-135, 140-150, 173
+backend/src/cortex/retrieval/results.py                  31      1    97%   57
+backend/src/cortex/retrieval/vector_search.py            17      7    59%   44-56
+backend/src/cortex/retrieval/vector_store.py            143    104    27%   27-48, 54-67, 82-109, 144, 149, 175-176, 190-261, 268-269, 272-275, 289-356
+backend/src/cortex/safety/__init__.py                     4      0   100%
+backend/src/cortex/safety/grounding.py                  144    103    28%   110, 124-170, 179-204, 226-249, 260-344, 362-402, 423-487, 518-531, 551-554, 563-566
+backend/src/cortex/safety/guardrails_client.py           89     64    28%   73-119, 151-200, 243-271, 281-296, 306-308
+backend/src/cortex/safety/policy_enforcer.py             98     70    29%   93-109, 114-122, 127-148, 153-162, 188-241, 255, 260
+backend/src/cortex/security/injection_defense.py         31     21    32%   53-54, 66-73, 79-83, 103-117
+backend/src/cortex/security/validators.py               105     79    25%   86-98, 123-152, 186-205, 237-264, 293-305, 320, 341, 368-377, 403-414
+backend/src/cortex/text_extraction.py                   574    299    48%   65-66, 70, 76-77, 89, 98-100, 105-113, 124-146, 151-171, 176-205, 210-261, 267, 274-277, 281-282, 287-305, 315-317, 334-337, 342, 345-346, 357-359, 386-388, 399-400, 403-408, 412-415, 434-438, 441, 444-467, 486-491, 502-507, 520-526, 534, 537, 539, 542-543, 551-559, 577, 582-583, 596-597, 601, 603, 606-607, 612-617, 641, 645, 678-681, 688-689, 691-695, 701, 704, 707, 723, 743, 747-783, 795, 809-815, 817-819, 825, 838-839, 843-849
+backend/src/cortex/tools/__init__.py                      2      2     0%   3-5
+backend/src/cortex/tools/search.py                        9      9     0%   3-23
+backend/src/cortex/utils/__init__.py                     25      6    76%   26, 30, 45, 47-48, 60
+backend/src/cortex/utils/atomic_io.py                    20     20     0%   5-38
+backend/src/main.py                                     257    106    59%   64-70, 81-82, 86-87, 97-129, 134-139, 145-151, 160-168, 180-193, 196, 216, 338, 340, 346-362, 376-397, 411-428, 439-440, 466-469, 501, 503, 508-509, 556-558, 664, 677, 694-695, 703-705
+cli/src/cortex_cli/__init__.py                            0      0   100%
+cli/src/cortex_cli/_config_helpers.py                    33     33     0%   1-99
+cli/src/cortex_cli/cmd_db.py                             88     88     0%   9-171
+cli/src/cortex_cli/cmd_doctor.py                        570    477    16%   60-62, 80-81, 123-132, 137, 146-149, 158-180, 185-218, 232-295, 310-321, 331-339, 344-353, 358-382, 399-416, 428-462, 474-514, 524, 528, 564-567, 577, 583-584, 591-630, 641-652, 657-677, 683-701, 705-728, 732-750, 754-788, 792-810, 816-828, 833-845, 851-863, 870-884, 899-938, 942-964, 968-974, 978-1118, 1134-1156, 1160
+cli/src/cortex_cli/cmd_embeddings.py                     71     71     0%   9-157
+cli/src/cortex_cli/cmd_s3.py                            111    111     0%   9-197
+cli/src/cortex_cli/main.py                              668    668     0%   25-1772
+cli/src/cortex_cli/style.py                               6      6     0%   1-22
+cli/src/cortex_cli/tui.py                               123    123     0%   5-263
+cli/src/cortex_cli/tui_handlers.py                      258    258     0%   6-495
+-----------------------------------------------------------------------------------
+TOTAL                                                 10121   6156    39%
+Coverage HTML written to dir htmlcov
+Coverage XML written to file coverage.xml
+============================= slowest 10 durations =============================
+19.33s call     backend/tests/test_idempotency.py::TestIdempotency::test_ingest_conversation_stable_ids
+1.10s call     backend/tests/test_text_extraction.py::TestTextExtraction::test_caching_behavior
+0.25s call     backend/tests/test_text_extraction.py::TestTextExtraction::test_extract_msg_mock
+0.24s call     backend/tests/test_summarize_api.py::test_summarize_endpoint_returns_graph_summary
+0.15s call     backend/tests/test_cache.py::TestQueryEmbeddingCache::test_cache_expiration
+0.03s call     backend/tests/test_bare_except.py::test_no_bare_except_in_files
+0.03s call     backend/tests/test_routes_chat_unit.py::TestRoutesChat::test_chat_endpoint_search_flow
+0.03s call     backend/tests/test_bare_except.py::test_no_bare_except_in_backend
+0.02s call     backend/tests/test_incremental_ingestion.py::TestIncrementalIngestion::test_incremental_processing
+0.01s call     backend/tests/test_hybrid_search.py::TestHybridSearch::test_tool_kb_search_hybrid_flow
+============================= 119 passed in 29.78s =============================

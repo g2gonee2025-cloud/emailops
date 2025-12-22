@@ -5,6 +5,7 @@ Provides:
 - `cortex s3 list` - List S3 prefixes/folders
 - `cortex s3 ingest` - Ingest from S3
 """
+
 import argparse
 import sys
 from typing import Any

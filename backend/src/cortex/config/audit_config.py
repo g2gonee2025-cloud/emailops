@@ -42,6 +42,44 @@ def parse_models_file(path):
     return definitions
 
 
+def _normalize_value(val: str) -> str:
+    """Normalize a value for comparison (lowercase, strip quotes)."""
+    return val.lower().replace('"', "").replace("'", "")
+
+
+def _determine_status(
+    model_def: dict | None, env_val: str | None, code_default: str
+) -> str:
+    """Determine the status of a config key comparison."""
+    if model_def and env_val is not None:
+        if _normalize_value(code_default) == _normalize_value(env_val):
+            return "MATCH"
+        return "MISMATCH"
+    if model_def and env_val is None:
+        return "CODE_ONLY"
+    if not model_def:
+        return "ENV_ONLY"
+    return ""
+
+
+def _should_print_entry(status: str, key: str) -> bool:
+    """Determine if an entry should be printed."""
+    if status == "MISMATCH":
+        return True
+    if status == "ENV_ONLY" and key.isupper():
+        return True
+    return False
+
+
+def _get_env_value(env_vars: dict, key: str, model_def: dict | None) -> str | None:
+    """Get environment value, checking prefixed version if needed."""
+    env_val = env_vars.get(key)
+    if env_val is None and model_def:
+        prefixed_key = f"OUTLOOKCORTEX_{key}"
+        env_val = env_vars.get(prefixed_key)
+    return env_val
+
+
 def main():
     root = Path("/root/workspace/emailops-vertex-ai")
     env_vars = parse_env_file(root / ".env")
@@ -53,66 +91,16 @@ def main():
     all_keys = sorted(set(env_vars.keys()) | set(model_defs.keys()))
 
     for key in all_keys:
-        # Ignore non-config env vars (those not in models.py) unless they explicitly overlap naming conventions
-        # But user wants "everything", so let's show overlap.
-
         model_def = model_defs.get(key)
-        env_val = env_vars.get(key)
-
-        # Handle OUTLOOKCORTEX_ prefix in env vars if model uses it?
-        # models.py _env wrapper adds OUTLOOKCORTEX_ automatically.
-        # usually .env has simple names like "DB_URL" or "PII_ENABLED" but might have "OUTLOOKCORTEX_PII_ENABLED"
-        # The script above reads .env raw.
-        # Note: models.py _env("KEY") looks for "OUTLOOKCORTEX_KEY" then "KEY".
-
-        # Let's check for prefixed version in .env if simple key missing
-        prefixed_key = f"OUTLOOKCORTEX_{key}"
-        if env_val is None and model_def:
-            env_val = env_vars.get(prefixed_key)
-            if env_val:
-                # key_display = prefixed_key  # Show the actual key found
-                pass
+        env_val = _get_env_value(env_vars, key, model_def)
 
         code_default = str(model_def["default"]) if model_def else "N/A"
         env_display = str(env_val) if env_val is not None else "N/A"
 
-        status = ""
-        if model_def and env_val is not None:
-            # Simple string comparison
-            # normalize bools/numbers
-            v1 = code_default.lower()
-            v2 = env_display.lower()
+        status = _determine_status(model_def, env_val, code_default)
 
-            # Special handling for empty strings vs None
-            if (
-                v1 == "none" and v2 == ""
-            ):  # env empty string often means empty, code None means None. Mismatch?
-                pass
-
-            if v1.replace('"', "").replace("'", "") == v2.replace('"', "").replace(
-                "'", ""
-            ):
-                status = "MATCH"
-            else:
-                status = "MISMATCH"
-        elif model_def and env_val is None:
-            status = "CODE_ONLY"
-        elif not model_def:
-            # Key in env but not in models?
-            # Filter out standard shell things or comments
-            status = "ENV_ONLY"
-
-        # Filter out boring matches if list is huge? User said "everything".
-        # But let's prioritize mismatches.
-
-        if status == "MISMATCH":
+        if _should_print_entry(status, key):
             print(f"{key:<30} | {code_default:<40} | {env_display:<40} | {status:<15}")
-        elif status == "ENV_ONLY":
-            # Only show if it looks like a config var
-            if key.isupper():
-                print(
-                    f"{key:<30} | {code_default:<40} | {env_display:<40} | {status:<15}"
-                )
 
 
 if __name__ == "__main__":

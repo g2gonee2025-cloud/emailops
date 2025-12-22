@@ -21,6 +21,7 @@ Examples:
     cortex search "contract renewal"
     cortex doctor --check-embeddings
 """
+
 from __future__ import annotations
 
 import argparse
@@ -39,6 +40,12 @@ if BACKEND_SRC.exists() and str(BACKEND_SRC) not in sys.path:
 CLI_SRC = PROJECT_ROOT / "cli" / "src"
 if CLI_SRC.exists() and str(CLI_SRC) not in sys.path:
     sys.path.insert(0, str(CLI_SRC))
+
+from cortex_cli._config_helpers import (  # noqa: E402
+    _print_human_config,
+    _print_json_config,
+)
+from cortex_cli.style import colorize as _colorize  # noqa: E402
 
 
 # Minimal protocol for the config object to satisfy static analysis when imports fail
@@ -93,23 +100,61 @@ else:
 # from cortex_cli.cmd_doctor import main as doctor_main
 
 # ANSI color codes for terminal output
-COLORS = {
-    "reset": "\033[0m",
-    "bold": "\033[1m",
-    "dim": "\033[2m",
-    "green": "\033[32m",
-    "yellow": "\033[33m",
-    "blue": "\033[34m",
-    "cyan": "\033[36m",
-    "red": "\033[31m",
-}
 
 
-def _colorize(text: str, color: str) -> str:
-    """Apply ANSI color to text if terminal supports it."""
-    if not sys.stdout.isatty():
-        return text
-    return f"{COLORS.get(color, '')}{text}{COLORS['reset']}"
+# -----------------------------------------------------------------------------
+# Help Text Constants
+# -----------------------------------------------------------------------------
+
+NOT_SET = "not set"
+
+CORE_COMMANDS = [
+    ("ingest", "Process and ingest email exports into the system"),
+    ("index", "Build/rebuild search index with embeddings"),
+    ("search", "Search indexed emails with natural language"),
+    ("validate", "Validate export folder structure (B1)"),
+]
+
+RAG_COMMANDS = [
+    ("answer", "Ask questions about your emails"),
+    ("draft", "Draft email replies based on context"),
+    ("summarize", "Summarize email threads"),
+]
+
+UTILITY_COMMANDS = [
+    ("doctor", "Run system diagnostics and health checks"),
+    ("status", "Show current environment and configuration"),
+    ("config", "View, validate, or export configuration"),
+    ("version", "Display version information"),
+]
+
+DATA_COMMANDS = [
+    ("db", "Database management (stats, migrate)"),
+    ("embeddings", "Embedding management (stats, backfill)"),
+    ("s3", "S3/Spaces storage (list, ingest)"),
+]
+
+COMMON_OPTIONS = [
+    ("--help, -h", "Show help for a command"),
+    ("--verbose, -v", "Enable verbose output (where supported)"),
+    ("--json", "Output in JSON format (where supported)"),
+]
+
+EXAMPLES = [
+    ("cortex ingest ./exports/emails", "Ingest emails from a folder"),
+    ("cortex ingest ./my_export --tenant acme", "Ingest with tenant ID"),
+    ("cortex index --workers 4", "Build index with 4 workers"),
+    ('cortex search "contract terms"', "Search for contract terms"),
+    ("cortex doctor --check-embeddings", "Test embedding connectivity"),
+]
+
+WORKFLOW_STEPS = [
+    ("cortex doctor", "Check system health"),
+    ("cortex ingest <path>", "Import email exports"),
+    ("cortex index", "Build search embeddings"),
+    ("cortex search <query>", "Query your emails"),
+    ("cortex answer <question>", "Get AI answers"),
+]
 
 
 def _print_banner() -> None:
@@ -123,6 +168,15 @@ def _print_banner() -> None:
     print(banner)
 
 
+def _print_section(
+    title: str, items: list[tuple[str, str]], item_color: str = "green", width: int = 12
+) -> None:
+    """Print a section of the help output."""
+    print(f"\n{_colorize(title, 'bold')}")
+    for left, right in items:
+        print(f"    {_colorize(left, item_color):{width}} {right}")
+
+
 def _print_usage() -> None:
     """Print user-friendly usage information."""
     _print_banner()
@@ -133,71 +187,35 @@ def _print_usage() -> None:
     print(
         f"{_colorize('CORE COMMANDS:', 'bold')}  {_colorize('(Email Processing)', 'dim')}"
     )
-    core_commands = [
-        ("ingest", "Process and ingest email exports into the system"),
-        ("index", "Build/rebuild search index with embeddings"),
-        ("search", "Search indexed emails with natural language"),
-        ("validate", "Validate export folder structure (B1)"),
-    ]
-    for cmd, desc in core_commands:
+    for cmd, desc in CORE_COMMANDS:
         print(f"    {_colorize(cmd, 'green'):12} {desc}")
 
     print(
         f"\n{_colorize('RAG COMMANDS:', 'bold')}   {_colorize('(AI Capabilities)', 'dim')}"
     )
-    rag_commands = [
-        ("answer", "Ask questions about your emails"),
-        ("draft", "Draft email replies based on context"),
-        ("summarize", "Summarize email threads"),
-    ]
-    for cmd, desc in rag_commands:
+    for cmd, desc in RAG_COMMANDS:
         print(f"    {_colorize(cmd, 'green'):12} {desc}")
 
-    print(f"\n{_colorize('UTILITY COMMANDS:', 'bold')}")
-    utility_commands = [
-        ("doctor", "Run system diagnostics and health checks"),
-        ("status", "Show current environment and configuration"),
-        ("config", "View, validate, or export configuration"),
-        ("version", "Display version information"),
-    ]
-    for cmd, desc in utility_commands:
-        print(f"    {_colorize(cmd, 'green'):12} {desc}")
-
-    print(f"\n{_colorize('DATA COMMANDS:', 'bold')}")
-    data_commands = [
-        ("db", "Database management (stats, migrate)"),
-        ("embeddings", "Embedding management (stats, backfill)"),
-        ("s3", "S3/Spaces storage (list, ingest)"),
-    ]
-    for cmd, desc in data_commands:
-        print(f"    {_colorize(cmd, 'green'):12} {desc}")
+    _print_section("UTILITY COMMANDS:", UTILITY_COMMANDS)
+    _print_section("DATA COMMANDS:", DATA_COMMANDS)
 
     print(f"\n{_colorize('COMMON OPTIONS:', 'bold')}")
-    options = [
-        ("--help, -h", "Show help for a command"),
-        ("--verbose, -v", "Enable verbose output"),
-        ("--json", "Output in JSON format (machine-readable)"),
-    ]
-    for opt, desc in options:
+    for opt, desc in COMMON_OPTIONS:
         print(f"    {_colorize(opt, 'yellow'):16} {desc}")
 
     print(f"\n{_colorize('EXAMPLES:', 'bold')}")
-    examples = [
-        ("cortex ingest ./exports/emails", "Ingest emails from a folder"),
-        ("cortex ingest ./my_export --tenant acme", "Ingest with tenant ID"),
-        ("cortex index --workers 4", "Build index with 4 workers"),
-        ('cortex search "contract terms"', "Search for contract terms"),
-        ("cortex doctor --check-embeddings", "Test embedding connectivity"),
-    ]
-    for example, desc in examples:
+    for example, desc in EXAMPLES:
         print(f"    {_colorize(example, 'dim'):44} # {desc}")
 
     print(f"\n{_colorize('WORKFLOW:', 'bold')}")
-    print(f"    1. {_colorize('cortex doctor', 'cyan')} → Check system health")
-    print(f"    2. {_colorize('cortex ingest <path>', 'cyan')} → Import email exports")
-    print(f"    3. {_colorize('cortex index', 'cyan')} → Build search embeddings")
-    print(f"    4. {_colorize('cortex search <query>', 'cyan')} → Query your emails")
-    print(f"    5. {_colorize('cortex answer <question>', 'cyan')} → Get AI answers")
+    for i, (cmd, desc) in enumerate(WORKFLOW_STEPS, 1):
+        # We need to manually construct the string to colorize parts of it
+        # The stored constant is just the command string, we colorize it here
+        # Actually in constants we stored "cortex doctor", let's reconstruct logic or simplified it
+        # The original code did: print(f"    {i}. {_colorize('cortex doctor', 'cyan')} → Check system health")
+        # To match exact output:
+        # We stored ("cortex doctor", "Check system health") in WORKFLOW_STEPS
+        print(f"    {i}. {_colorize(cmd, 'cyan')} → {desc}")
 
     print(f"\n{_colorize('DOCUMENTATION:', 'bold')}")
     print(
@@ -221,41 +239,28 @@ def _print_version() -> None:
     print(f"  Platform: {sys.platform}")
 
 
-def _show_status() -> None:
+def _show_status(json_output: bool = False) -> None:
     """Show current environment status."""
+    import json
     import os
 
-    _print_banner()
-    print(f"{_colorize('ENVIRONMENT STATUS:', 'bold')}\n")
-
-    # Check key environment variables
-    env_vars = [
-        ("OUTLOOKCORTEX_ENV", os.getenv("OUTLOOKCORTEX_ENV", "not set")),
-        (
-            "OUTLOOKCORTEX_DB_URL",
-            "***" if os.getenv("OUTLOOKCORTEX_DB_URL") else "not set",
-        ),
-        (
-            "GOOGLE_APPLICATION_CREDENTIALS",
-            os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "not set"),
-        ),
-    ]
-
-    print(f"  {_colorize('Environment Variables:', 'cyan')}")
-    for var, val in env_vars:
-        status = (
-            _colorize("✓", "green")
-            if val not in ("not set",)
-            else _colorize("○", "yellow")
-        )
-        if val == "***":
-            status = _colorize("✓", "green")
-        display_val = val if len(val) < 50 else val[:47] + "..."
-        print(f"    {status} {var}: {display_val}")
-
-    # Check directories
-    print(f"\n  {_colorize('Directory Structure:', 'cyan')}")
     cwd = Path.cwd()
+
+    # Collect data first
+    status_data = {
+        "environment": {
+            "OUTLOOKCORTEX_ENV": os.getenv("OUTLOOKCORTEX_ENV", NOT_SET),
+            "OUTLOOKCORTEX_DB_URL": (
+                "***" if os.getenv("OUTLOOKCORTEX_DB_URL") else NOT_SET
+            ),
+            "GOOGLE_APPLICATION_CREDENTIALS": os.getenv(
+                "GOOGLE_APPLICATION_CREDENTIALS", NOT_SET
+            ),
+        },
+        "directories": {},
+        "config_files": {},
+    }
+
     dirs_to_check = [
         ("backend/src/cortex", "Backend module"),
         ("cli/src/cortex_cli", "CLI module"),
@@ -266,13 +271,12 @@ def _show_status() -> None:
 
     for dir_path, desc in dirs_to_check:
         full_path = cwd / dir_path
-        exists = full_path.exists()
-        status = _colorize("✓", "green") if exists else _colorize("✗", "red")
-        print(f"    {status} {desc}: {dir_path}")
+        status_data["directories"][dir_path] = {
+            "description": desc,
+            "exists": full_path.exists(),
+        }
 
-    # Check config files
-    print(f"\n  {_colorize('Configuration Files:', 'cyan')}")
-    config_files: list[tuple[str, str]] = [
+    config_files = [
         ("pyproject.toml", "Project configuration"),
         ("environment.yml", "Conda environment"),
         ("requirements.txt", "Python dependencies"),
@@ -281,9 +285,41 @@ def _show_status() -> None:
 
     for file_path, desc in config_files:
         full_path = cwd / file_path
-        exists = full_path.exists()
-        status = _colorize("✓", "green") if exists else _colorize("○", "dim")
-        print(f"    {status} {desc}: {file_path}")
+        status_data["config_files"][file_path] = {
+            "description": desc,
+            "exists": full_path.exists(),
+        }
+
+    if json_output:
+        print(json.dumps(status_data, indent=2))
+        return
+
+    _print_banner()
+    print(f"{_colorize('ENVIRONMENT STATUS:', 'bold')}\n")
+
+    print(f"  {_colorize('Environment Variables:', 'cyan')}")
+    for var, val in status_data["environment"].items():
+        # Re-apply masking logic for display validity check (already masked in data but checking presence)
+        is_set = val != NOT_SET
+        status_icon = _colorize("✓", "green") if is_set else _colorize("○", "yellow")
+        display_val = val if len(val) < 50 else val[:47] + "..."
+        print(f"    {status_icon} {var}: {display_val}")
+
+    # Check directories
+    print(f"\n  {_colorize('Directory Structure:', 'cyan')}")
+    for dir_path, info in status_data["directories"].items():
+        status_icon = (
+            _colorize("✓", "green") if info["exists"] else _colorize("✗", "red")
+        )
+        print(f"    {status_icon} {info['description']}: {dir_path}")
+
+    # Check config files
+    print(f"\n  {_colorize('Configuration Files:', 'cyan')}")
+    for file_path, info in status_data["config_files"].items():
+        status_icon = (
+            _colorize("✓", "green") if info["exists"] else _colorize("○", "dim")
+        )
+        print(f"    {status_icon} {info['description']}: {file_path}")
 
     print(
         f"\n{_colorize('TIP:', 'yellow')} Run {_colorize('cortex doctor', 'cyan')} for detailed diagnostics\n"
@@ -315,85 +351,9 @@ def _show_config(
             print(f"    Log Level:   {config.system.log_level}")
             print()
         elif export_format == "json":
-            import json
-
-            data = config.model_dump()
-            if section:
-                if section in data:
-                    data = {section: data[section]}
-                else:
-                    print(f"{_colorize('ERROR:', 'red')} Section '{section}' not found")
-                    return
-
-            print(json.dumps(data, indent=2, default=str))
+            _print_json_config(config, section)
         else:
-            title = (
-                f"Current Configuration ({section})"
-                if section
-                else "Current Configuration"
-            )
-            print(f"{_colorize(f'{title}:', 'bold')}\n")
-
-            sections: list[tuple[str, list[tuple[str, object]]]] = [
-                (
-                    "Core",
-                    [
-                        ("Environment", config.core.env),
-                        ("Provider", config.core.provider),
-                        ("Persona", config.core.persona),
-                    ],
-                ),
-                (
-                    "Embeddings",
-                    [
-                        ("Model", config.embedding.model_name),
-                        ("Dimensions", config.embedding.output_dimensionality),
-                        ("Batch Size", config.embedding.batch_size),
-                    ],
-                ),
-                (
-                    "Search",
-                    [
-                        ("Strategy", config.search.fusion_strategy),
-                        ("K", config.search.k),
-                        ("Recency", config.search.recency_boost_strength),
-                        ("Reranker", config.search.reranker_endpoint),
-                    ],
-                ),
-                (
-                    "Processing",
-                    [
-                        ("Chunk Size", config.processing.chunk_size),
-                        ("Chunk Overlap", config.processing.chunk_overlap),
-                    ],
-                ),
-            ]
-
-            # Simple fallback for other sections if not explicitly mapped above
-            if section and section.lower() not in [s[0].lower() for s in sections]:
-                # Try to find attribute
-                attr = getattr(config, section.lower(), None)
-                if attr:
-                    # Generic display for unmapped sections
-                    print(f"  {_colorize(section.capitalize(), 'cyan')}")
-                    if hasattr(attr, "model_dump"):
-                        for k, v in attr.model_dump().items():
-                            print(f"    {k:<20} {v}")
-                    else:
-                        print(f"    {attr}")
-                    return
-                else:
-                    print(f"{_colorize('ERROR:', 'red')} Section '{section}' not found")
-                    return
-
-            for sec_name, items in sections:
-                if section and section.lower() != sec_name.lower():
-                    continue
-
-                print(f"  {_colorize(sec_name, 'cyan')}")
-                for key, value in items:
-                    print(f"    {key:<20} {value}")
-                print()
+            _print_human_config(config, section)
 
     except ImportError as e:
         print(f"{_colorize('ERROR:', 'red')} Could not load configuration module")
@@ -737,6 +697,7 @@ def _run_index(
             provider=provider,
             num_workers=workers,
             limit=limit,
+            force=force,
         )
 
         num_chunks = len(mappings)
@@ -797,39 +758,42 @@ def _run_search(
         print()
 
     try:
-        from cortex.models.api import (
-            SearchRequest as _SearchRequest,  # type: ignore[import]
+        from cortex.retrieval.hybrid_search import (
+            KBSearchInput as _KBSearchInput,  # type: ignore[import]
         )
         from cortex.retrieval.hybrid_search import (
-            hybrid_search as _hybrid_search,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
+            tool_kb_search_hybrid as _tool_kb_search_hybrid,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
         )
 
-        _SearchRequest = cast(Any, _SearchRequest)
-        _hybrid_search = cast(Any, _hybrid_search)
-        SearchRequest: type[Any]
-        hybrid_search: Callable[[Any], Any]
-        SearchRequest = cast(type[Any], _SearchRequest)
-        hybrid_search = cast(Callable[[Any], Any], _hybrid_search)
+        _KBSearchInput = cast(Any, _KBSearchInput)
+        _tool_kb_search_hybrid = cast(Any, _tool_kb_search_hybrid)
+        KBSearchInput: type[Any] = cast(type[Any], _KBSearchInput)
+        tool_kb_search_hybrid: Callable[[Any], Any] = cast(
+            Callable[[Any], Any], _tool_kb_search_hybrid
+        )
 
-        request: Any = SearchRequest(
-            query=query,
-            top_k=top_k,
+        request: Any = KBSearchInput(
             tenant_id=tenant_id,
+            user_id="cli-user",
+            query=query,
+            k=top_k,
         )
 
         if not json_output:
             print(f"  {_colorize('⏳', 'yellow')} Searching...\n")
 
-        results: Any = hybrid_search(request)
+        results: Any = tool_kb_search_hybrid(request)
 
         if json_output:
             # Convert results to JSON-serializable format
             output: dict[str, Any] = {
                 "success": True,
                 "query": query,
-                "results": [r.model_dump() for r in results.results]
-                if hasattr(results, "results")
-                else [],
+                "results": (
+                    [r.model_dump() for r in results.results]
+                    if hasattr(results, "results")
+                    else []
+                ),
                 "total": len(results.results) if hasattr(results, "results") else 0,
             }
             print(json.dumps(output, indent=2, default=str))
@@ -966,11 +930,7 @@ def _run_draft(
     user_id: str = "cli-user",
     json_output: bool = False,
 ) -> None:
-    """
-    Draft email replies based on context.
-    """
-    import asyncio
-    import json
+    """Draft email replies based on context."""
 
     if not json_output:
         _print_banner()
@@ -981,76 +941,134 @@ def _run_draft(
         print()
 
     try:
-        from cortex.orchestration.graphs import (
-            build_draft_graph as _build_draft_graph,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
-        )
+        from cortex.orchestration.graphs import build_draft_graph as _build_draft_graph
 
         _build_draft_graph = cast(Any, _build_draft_graph)
-        build_draft_graph: Callable[[], Any]
-        build_draft_graph = cast(Callable[[], Any], _build_draft_graph)
+        build_draft_graph: Callable[[], Any] = cast(
+            Callable[[], Any], _build_draft_graph
+        )
 
         if not json_output:
             print(f"  {_colorize('⏳', 'yellow')} Drafting...")
 
-        async def _execute() -> Any:
-            graph = build_draft_graph().compile()
-            initial_state: dict[str, Any] = {
-                "tenant_id": tenant_id,
-                "user_id": user_id,
-                "thread_id": thread_id,
-                "explicit_query": instructions,
-                "draft_query": None,
-                "retrieval_results": None,
-                "assembled_context": None,
-                "draft": None,
-                "critique": None,
-                "iteration_count": 0,
-                "error": None,
-            }
-            result = await graph.ainvoke(initial_state)
-            return result
-
-        final_state: Any = asyncio.run(_execute())
+        final_state = _execute_draft_graph(
+            build_draft_graph, tenant_id, user_id, thread_id, instructions
+        )
 
         if final_state.error:
             raise Exception(final_state.error)
 
-        draft: Any | None = final_state.draft
-
-        if json_output:
-            print(
-                json.dumps(draft.model_dump() if draft else {}, indent=2, default=str)
-            )
-        else:
-            if draft:
-                print(f"\n{_colorize('DRAFT:', 'bold')}")
-                print(f"Subject: {draft.subject}")
-                print(f"To: {', '.join(draft.to)}")
-                print("-" * 40)
-                print(f"{draft.body_markdown}\n")
-
-                if draft.citations:
-                    print(f"{_colorize('CITATIONS:', 'dim')}")
-                    for i, citation in enumerate(draft.citations, 1):
-                        source = citation.get("source") or citation.get("snippet") or ""
-                        print(f"  {i}. {source}")
-            else:
-                print(f"  {_colorize('⚠', 'yellow')} No draft generated.")
-            print()
+        _output_draft_result(final_state.draft, json_output)
 
     except ImportError as e:
-        msg = f"Could not load RAG module: {e}"
-        if json_output:
-            print(json.dumps({"error": msg, "success": False}))
-        else:
-            print(f"\n  {_colorize('ERROR:', 'red')} {msg}")
-        sys.exit(1)
+        _handle_import_error(e, json_output)
     except Exception as e:
-        if json_output:
-            print(json.dumps({"error": str(e), "success": False}))
-        else:
-            print(f"\n  {_colorize('ERROR:', 'red')} {e}")
-        sys.exit(1)
+        _handle_generic_error(e, json_output)
+
+
+def _execute_draft_graph(
+    build_draft_graph: Callable[[], Any],
+    tenant_id: str,
+    user_id: str,
+    thread_id: str | None,
+    instructions: str,
+) -> Any:
+    """Execute the draft graph and return final state."""
+    import asyncio
+
+    async def _execute() -> Any:
+        graph = build_draft_graph().compile()
+        initial_state: dict[str, Any] = {
+            "tenant_id": tenant_id,
+            "user_id": user_id,
+            "thread_id": thread_id,
+            "explicit_query": instructions,
+            "draft_query": None,
+            "retrieval_results": None,
+            "assembled_context": None,
+            "draft": None,
+            "critique": None,
+            "iteration_count": 0,
+            "error": None,
+        }
+        return await graph.ainvoke(initial_state)
+
+    return asyncio.run(_execute())
+
+
+def _output_draft_result(draft: Any | None, json_output: bool) -> None:
+    """Output draft result in JSON or human-readable format."""
+    import json
+
+    if json_output:
+        print(json.dumps(draft.model_dump() if draft else {}, indent=2, default=str))
+        return
+
+    if not draft:
+        print(f"  {_colorize('⚠', 'yellow')} No draft generated.")
+        print()
+        return
+
+    print(f"\n{_colorize('DRAFT:', 'bold')}")
+    print(f"Subject: {draft.subject}")
+    print(f"To: {', '.join(draft.to)}")
+    print("-" * 40)
+    print(f"{draft.body_markdown}\n")
+
+    if draft.next_actions:
+        _print_next_actions(draft.next_actions)
+    print()
+
+
+def _print_next_actions(next_actions: list[Any]) -> None:
+    """Print next actions from a draft."""
+    print(f"{_colorize('NEXT ACTIONS:', 'dim')}")
+    for i, action in enumerate(next_actions, 1):
+        description = getattr(action, "description", None)
+        owner = getattr(action, "owner", None)
+        due_date = getattr(action, "due_date", None)
+
+        if description is None and isinstance(action, dict):
+            description = action.get("description")
+            owner = owner or action.get("owner")
+            due_date = due_date or action.get("due_date")
+
+        if description is None:
+            description = str(action)
+
+        extras = " · ".join(
+            item
+            for item in (
+                f"Owner: {owner}" if owner else None,
+                f"Due: {due_date}" if due_date else None,
+            )
+            if item
+        )
+        suffix = f" ({extras})" if extras else ""
+        print(f"  {i}. {description}{suffix}")
+
+
+def _handle_import_error(e: ImportError, json_output: bool) -> None:
+    """Handle ImportError for RAG module loading."""
+    import json
+
+    msg = f"Could not load RAG module: {e}"
+    if json_output:
+        print(json.dumps({"error": msg, "success": False}))
+    else:
+        print(f"\n  {_colorize('ERROR:', 'red')} {msg}")
+    sys.exit(1)
+
+
+def _handle_generic_error(e: Exception, json_output: bool) -> None:
+    """Handle generic exceptions."""
+    import json
+
+    if json_output:
+        print(json.dumps({"error": str(e), "success": False}))
+    else:
+        print(f"\n  {_colorize('ERROR:', 'red')} {e}")
+    sys.exit(1)
 
 
 def _run_summarize(
@@ -1197,11 +1215,42 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
         metavar="<command>",
     )
 
-    # ==========================================================================
-    # CORE COMMANDS
-    # ==========================================================================
+    # Setup command groups
+    _setup_core_commands(subparsers)
+    _setup_rag_commands(subparsers)
+    _setup_utility_commands(subparsers)
 
-    # Ingest command
+    # Register plugin subcommand groups
+    from cortex_cli.cmd_db import setup_db_parser
+    from cortex_cli.cmd_embeddings import setup_embeddings_parser
+    from cortex_cli.cmd_s3 import setup_s3_parser
+
+    setup_db_parser(subparsers)
+    setup_embeddings_parser(subparsers)
+    setup_s3_parser(subparsers)
+
+    # Parse arguments
+    parsed_args = parser.parse_args(args)
+
+    # Handle top-level flags
+    if parsed_args.version:
+        _print_version()
+        return
+
+    if parsed_args.help or parsed_args.command is None:
+        _print_usage()
+        return
+
+    # Route to appropriate command
+    if hasattr(parsed_args, "func"):
+        parsed_args.func(parsed_args)
+    else:
+        _print_usage()
+        sys.exit(1)
+
+
+def _setup_core_commands(subparsers: Any) -> None:
+    """Setup core CLI commands: ingest, index, search, validate."""
     ingest_parser = subparsers.add_parser(
         "ingest",
         help="Process and ingest email exports",
@@ -1251,6 +1300,15 @@ The ingestion pipeline:
         "--json",
         action="store_true",
         help="Output results as JSON",
+    )
+    ingest_parser.set_defaults(
+        func=lambda args: _run_ingest(
+            source_path=args.source,
+            tenant_id=args.tenant,
+            dry_run=args.dry_run,
+            verbose=args.verbose,
+            json_output=args.json,
+        )
     )
 
     # Index command
@@ -1311,6 +1369,16 @@ Uses parallel workers for faster processing.
         action="store_true",
         help="Output results as JSON",
     )
+    index_parser.set_defaults(
+        func=lambda args: _run_index(
+            root=args.root,
+            provider=args.provider,
+            workers=args.workers,
+            limit=args.limit,
+            force=args.force,
+            json_output=args.json,
+        )
+    )
 
     # Search command
     search_parser = subparsers.add_parser(
@@ -1353,6 +1421,14 @@ Uses hybrid search (vector + full-text) for best results.
         action="store_true",
         help="Output results as JSON",
     )
+    search_parser.set_defaults(
+        func=lambda args: _run_search(
+            query=args.query,
+            top_k=args.top_k,
+            tenant_id=args.tenant,
+            json_output=args.json,
+        )
+    )
 
     # Validate command
     validate_parser = subparsers.add_parser(
@@ -1379,11 +1455,13 @@ This command:
         action="store_true",
         help="Output results as JSON",
     )
+    validate_parser.set_defaults(
+        func=lambda args: _run_validate(path=args.path, json_output=args.json)
+    )
 
-    # ==========================================================================
-    # RAG COMMANDS
-    # ==========================================================================
 
+def _setup_rag_commands(subparsers: Any) -> None:
+    """Setup RAG CLI commands: answer, draft, summarize."""
     # Answer command
     answer_parser = subparsers.add_parser(
         "answer",
@@ -1414,6 +1492,11 @@ The system will:
         "--json",
         action="store_true",
         help="Output results as JSON",
+    )
+    answer_parser.set_defaults(
+        func=lambda args: _run_answer(
+            query=args.query, tenant_id=args.tenant, json_output=args.json
+        )
     )
 
     # Draft command
@@ -1452,6 +1535,14 @@ The system will:
         action="store_true",
         help="Output results as JSON",
     )
+    draft_parser.set_defaults(
+        func=lambda args: _run_draft(
+            instructions=args.instructions,
+            thread_id=args.thread_id,
+            tenant_id=args.tenant,
+            json_output=args.json,
+        )
+    )
 
     # Summarize command
     summarize_parser = subparsers.add_parser(
@@ -1484,11 +1575,56 @@ The system will:
         action="store_true",
         help="Output results as JSON",
     )
+    summarize_parser.set_defaults(
+        func=lambda args: _run_summarize(
+            thread_id=args.thread_id, tenant_id=args.tenant, json_output=args.json
+        )
+    )
 
-    # ==========================================================================
-    # UTILITY COMMANDS
-    # ==========================================================================
 
+# Boolean flags that map directly to --flag-name
+_DOCTOR_BOOL_FLAGS = [
+    ("auto_install", "--auto-install"),
+    ("check_index", "--check-index"),
+    ("check_embeddings", "--check-embeddings"),
+    ("check_db", "--check-db"),
+    ("check_redis", "--check-redis"),
+    ("check_exports", "--check-exports"),
+    ("check_ingest", "--check-ingest"),
+    ("json", "--json"),
+    ("verbose", "--verbose"),
+]
+
+
+def _handle_doctor(args: argparse.Namespace) -> None:
+    """Handle doctor command by forwarding args to cmd_doctor.main()."""
+    from cortex_cli.cmd_doctor import main as doctor_main
+
+    # Handle --all flag
+    if getattr(args, "check_all", False):
+        args.check_index = True
+        args.check_embeddings = True
+
+    # Build args list using lookup table
+    doctor_args: list[str] = []
+    if args.root != ".":
+        doctor_args.extend(["--root", args.root])
+    if args.provider != "vertex":
+        doctor_args.extend(["--provider", args.provider])
+
+    for attr, flag in _DOCTOR_BOOL_FLAGS:
+        if getattr(args, attr, False):
+            doctor_args.append(flag)
+
+    if args.pip_timeout != 300:
+        doctor_args.extend(["--pip-timeout", str(args.pip_timeout)])
+
+    sys.argv = [sys.argv[0], *doctor_args]
+    doctor_main()
+
+
+def _setup_utility_commands(subparsers: Any) -> None:
+    """Setup utility CLI commands: doctor, status, config, version."""
     # Doctor command
     doctor_parser = subparsers.add_parser(
         "doctor",
@@ -1588,6 +1724,8 @@ Run comprehensive system diagnostics including:
         help="Timeout for pip install operations (default: 300)",
     )
 
+    doctor_parser.set_defaults(func=_handle_doctor)
+
     # Status command
     status_parser = subparsers.add_parser(
         "status",
@@ -1599,6 +1737,7 @@ Run comprehensive system diagnostics including:
         action="store_true",
         help="Output as JSON",
     )
+    status_parser.set_defaults(func=lambda args: _show_status(json_output=args.json))
 
     # Config command
     config_parser = subparsers.add_parser(
@@ -1622,150 +1761,11 @@ Run comprehensive system diagnostics including:
     )
 
     # Version command
-    subparsers.add_parser(
+    version_parser = subparsers.add_parser(
         "version",
         help="Display version information",
     )
-
-    # Register new subcommand groups
-    from cortex_cli.cmd_db import setup_db_parser
-    from cortex_cli.cmd_embeddings import setup_embeddings_parser
-    from cortex_cli.cmd_s3 import setup_s3_parser
-
-    setup_db_parser(subparsers)
-    setup_embeddings_parser(subparsers)
-    setup_s3_parser(subparsers)
-
-    # Parse arguments
-    parsed_args = parser.parse_args(args)
-
-    # Handle top-level flags
-    if parsed_args.version:
-        _print_version()
-        return
-
-    if parsed_args.help or parsed_args.command is None:
-        _print_usage()
-        return
-
-    # Route to appropriate command
-    if parsed_args.command == "ingest":
-        _run_ingest(
-            source_path=parsed_args.source,
-            tenant_id=parsed_args.tenant,
-            dry_run=parsed_args.dry_run,
-            verbose=parsed_args.verbose,
-            json_output=parsed_args.json,
-        )
-
-    elif parsed_args.command == "index":
-        _run_index(
-            root=parsed_args.root,
-            provider=parsed_args.provider,
-            workers=parsed_args.workers,
-            limit=parsed_args.limit,
-            force=parsed_args.force,
-            json_output=parsed_args.json,
-        )
-
-    elif parsed_args.command == "search":
-        _run_search(
-            query=parsed_args.query,
-            top_k=parsed_args.top_k,
-            tenant_id=parsed_args.tenant,
-            json_output=parsed_args.json,
-        )
-
-    elif parsed_args.command == "doctor":
-        # Lazy import to avoid loading heavy dependencies
-        from cortex_cli.cmd_doctor import main as doctor_main
-
-        # Handle --all flag
-        if parsed_args.check_all:
-            parsed_args.check_index = True
-            parsed_args.check_embeddings = True
-
-        # Forward to doctor command
-        doctor_args = list(args)
-        if "doctor" in doctor_args:
-            doctor_args.remove("doctor")
-        # Convert --all to individual flags for the doctor module
-        if "--all" in doctor_args:
-            doctor_args.remove("--all")
-            if "--check-index" not in doctor_args:
-                doctor_args.append("--check-index")
-            if "--check-embeddings" not in doctor_args:
-                doctor_args.append("--check-embeddings")
-        sys.argv = [sys.argv[0], *doctor_args]
-        doctor_main()
-
-    elif parsed_args.command == "status":
-        _show_status()
-
-    elif parsed_args.command == "config":
-        export_format = "json" if parsed_args.json else None
-        _show_config(
-            validate=parsed_args.validate,
-            export_format=export_format,
-            section=getattr(parsed_args, "section", None),
-        )
-
-    elif parsed_args.command == "validate":
-        _run_validate(
-            path=parsed_args.path,
-            json_output=parsed_args.json,
-        )
-
-    elif parsed_args.command == "answer":
-        _run_answer(
-            query=parsed_args.query,
-            tenant_id=parsed_args.tenant,
-            json_output=parsed_args.json,
-        )
-
-    elif parsed_args.command == "draft":
-        _run_draft(
-            instructions=parsed_args.instructions,
-            thread_id=parsed_args.thread_id,
-            tenant_id=parsed_args.tenant,
-            json_output=parsed_args.json,
-        )
-
-    elif parsed_args.command == "summarize":
-        _run_summarize(
-            thread_id=parsed_args.thread_id,
-            tenant_id=parsed_args.tenant,
-            json_output=parsed_args.json,
-        )
-
-    elif parsed_args.command == "version":
-        _print_version()
-
-    # New subcommand groups
-    elif parsed_args.command == "db":
-        if hasattr(parsed_args, "func"):
-            parsed_args.func(parsed_args)
-        else:
-            print("Usage: cortex db <stats|migrate>")
-            sys.exit(1)
-
-    elif parsed_args.command == "embeddings":
-        if hasattr(parsed_args, "func"):
-            parsed_args.func(parsed_args)
-        else:
-            print("Usage: cortex embeddings <stats|backfill>")
-            sys.exit(1)
-
-    elif parsed_args.command == "s3":
-        if hasattr(parsed_args, "func"):
-            parsed_args.func(parsed_args)
-        else:
-            print("Usage: cortex s3 <list|ingest>")
-            sys.exit(1)
-
-    else:
-        _print_usage()
-        sys.exit(1)
+    version_parser.set_defaults(func=lambda _: _print_version())
 
 
 if __name__ == "__main__":

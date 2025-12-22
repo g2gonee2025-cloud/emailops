@@ -3,6 +3,7 @@ RAG Domain Models.
 
 Implements §10 of the Canonical Blueprint - data models for orchestration.
 """
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -119,7 +120,13 @@ class DraftCritique(BaseModel):
     clarity_feedback: str = ""
     completeness_feedback: str = ""
     suggestions: List[str] = Field(default_factory=list)
-    issues: List[str] = Field(default_factory=list)
+    issues: List[Issue] = Field(default_factory=list)
+
+
+class Issue(BaseModel):
+    description: str
+    severity: str = "medium"
+    category: str = "general"
 
 
 class ThreadSummary(BaseModel):
@@ -131,6 +138,5 @@ class ThreadSummary(BaseModel):
     facts_ledger: FactsLedger = Field(default_factory=FactsLedger)
     quality_scores: Dict[str, Any] = Field(default_factory=dict)
     key_points: List[str] = Field(default_factory=list)
-    action_items: List[str] = Field(default_factory=list)
     action_items: List[str] = Field(default_factory=list)
     participants: List[ParticipantAnalysis] = Field(default_factory=list)

@@ -139,8 +139,20 @@ def extract_metadata_lightweight(manifest: dict[str, Any]) -> dict[str, Any]:
         Dict with keys: subject, from, to, cc, start_date, end_date
     """
     man = manifest or {}
-    subject = (man.get("smart_subject") or man.get("subject") or "").strip()
+    return {
+        "subject": _extract_subject_lightweight(man),
+        **_extract_participants_grouped(man),
+        **_extract_date_range(man),
+    }
 
+
+def _extract_subject_lightweight(manifest: dict[str, Any]) -> str:
+    return (manifest.get("smart_subject") or manifest.get("subject") or "").strip()
+
+
+def _extract_participants_grouped(
+    manifest: dict[str, Any],
+) -> dict[str, list[tuple[str, str]]]:
     from_list: list[tuple[str, str]] = []
     to_list: list[tuple[str, str]] = []
     cc_list: list[tuple[str, str]] = []
@@ -149,89 +161,70 @@ def extract_metadata_lightweight(manifest: dict[str, Any]) -> dict[str, Any]:
     seen_to: set[str] = set()
     seen_cc: set[str] = set()
 
-    def _add_pair(
-        out: list[tuple[str, str]], seen: set[str], name: str, email: str
-    ) -> None:
-        name_s = (name or "").strip()
-        email_s = (email or "").strip()
-        if not name_s and not email_s:
-            return
-        key = email_s.lower() if email_s else f"name:{_normalize_name(name_s)}"
-        if not key or key in seen:
-            return
-        seen.add(key)
-        out.append((name_s, email_s))
+    msgs = manifest.get("messages") or []
+    if not isinstance(msgs, list):
+        return {"from": [], "to": [], "cc": []}
 
-    # Aggregate from/to/cc across all messages (deduplicated)
-    try:
-        msgs = man.get("messages") or []
-        if isinstance(msgs, list):
-            for msg in msgs:
-                if not isinstance(msg, dict):
-                    continue
+    for msg in msgs:
+        if not isinstance(msg, dict):
+            continue
+        _process_message_participants(
+            msg, from_list, to_list, cc_list, seen_from, seen_to, seen_cc
+        )
 
-                f = msg.get("from")
-                if isinstance(f, dict):
-                    _add_pair(
-                        from_list, seen_from, f.get("name", ""), f.get("smtp", "")
-                    )
+    return {"from": from_list, "to": to_list, "cc": cc_list}
 
-                for rec in msg.get("to") or []:
-                    if isinstance(rec, dict):
-                        _add_pair(
-                            to_list, seen_to, rec.get("name", ""), rec.get("smtp", "")
-                        )
 
-                for rec in msg.get("cc") or []:
-                    if isinstance(rec, dict):
-                        _add_pair(
-                            cc_list, seen_cc, rec.get("name", ""), rec.get("smtp", "")
-                        )
-    except Exception:
-        pass
+def _process_message_participants(
+    msg: dict[str, Any],
+    from_list: list[tuple[str, str]],
+    to_list: list[tuple[str, str]],
+    cc_list: list[tuple[str, str]],
+    seen_from: set[str],
+    seen_to: set[str],
+    seen_cc: set[str],
+) -> None:
+    f = msg.get("from")
+    if isinstance(f, dict):
+        _add_pair(from_list, seen_from, f.get("name", ""), f.get("smtp", ""))
 
-    # Dates: best-effort min/max across messages (falls back to first/last)
+    for rec in msg.get("to") or []:
+        if isinstance(rec, dict):
+            _add_pair(to_list, seen_to, rec.get("name", ""), rec.get("smtp", ""))
+
+    for rec in msg.get("cc") or []:
+        if isinstance(rec, dict):
+            _add_pair(cc_list, seen_cc, rec.get("name", ""), rec.get("smtp", ""))
+
+
+def _add_pair(
+    out: list[tuple[str, str]], seen: set[str], name: str, email: str
+) -> None:
+    name_s = (name or "").strip()
+    email_s = (email or "").strip()
+    if not name_s and not email_s:
+        return
+    key = email_s.lower() if email_s else f"name:{_normalize_name(name_s)}"
+    if not key or key in seen:
+        return
+    seen.add(key)
+    out.append((name_s, email_s))
+
+
+def _extract_date_range(manifest: dict[str, Any]) -> dict[str, Any]:
     start_date = None
     end_date = None
     try:
-        msgs = man.get("messages") or []
+        msgs = manifest.get("messages") or []
         if isinstance(msgs, list) and msgs:
+            # Fallback to first/last if parsing fails or returns no valid dates
             raw_start = msgs[0].get("date") if isinstance(msgs[0], dict) else None
             raw_end = msgs[-1].get("date") if isinstance(msgs[-1], dict) else None
 
-            from datetime import datetime, timezone
-
-            def _parse_dt(v: Any) -> datetime | None:
-                if v is None:
-                    return None
-                if isinstance(v, (int, float)):
-                    try:
-                        return datetime.fromtimestamp(float(v), tz=timezone.utc)
-                    except Exception:
-                        return None
-                if isinstance(v, str):
-                    s = v.strip()
-                    if not s:
-                        return None
-                    if s.endswith("Z"):
-                        s = s[:-1] + "+00:00"
-                    try:
-                        dt = datetime.fromisoformat(s)
-                        if dt.tzinfo is None:
-                            dt = dt.replace(tzinfo=timezone.utc)
-                        return dt
-                    except Exception:
-                        return None
-                return None
-
-            dts: list[datetime] = []
-            for msg in msgs:
-                if isinstance(msg, dict) and msg.get("date") is not None:
-                    dt = _parse_dt(msg.get("date"))
-                    if dt is not None:
-                        dts.append(dt)
-
+            dts = _parse_all_dates(msgs)
             if dts:
+                from datetime import timezone
+
                 start_date = min(dts).astimezone(timezone.utc).isoformat()
                 end_date = max(dts).astimezone(timezone.utc).isoformat()
             else:
@@ -240,14 +233,45 @@ def extract_metadata_lightweight(manifest: dict[str, Any]) -> dict[str, Any]:
     except Exception:
         pass
 
-    return {
-        "subject": subject,
-        "from": from_list,
-        "to": to_list,
-        "cc": cc_list,
-        "start_date": start_date,
-        "end_date": end_date,
-    }
+    return {"start_date": start_date, "end_date": end_date}
+
+
+def _parse_all_dates(msgs: list[Any]) -> list[Any]:
+    from datetime import datetime
+
+    dts: list[datetime] = []
+    for msg in msgs:
+        if isinstance(msg, dict) and msg.get("date") is not None:
+            dt = _parse_dt(msg.get("date"))
+            if dt is not None:
+                dts.append(dt)
+    return dts
+
+
+def _parse_dt(v: Any) -> Any | None:
+    from datetime import datetime, timezone
+
+    if v is None:
+        return None
+    if isinstance(v, (int, float)):
+        try:
+            return datetime.fromtimestamp(float(v), tz=timezone.utc)
+        except Exception:
+            return None
+    if isinstance(v, str):
+        s = v.strip()
+        if not s:
+            return None
+        if s.endswith("Z"):
+            s = s[:-1] + "+00:00"
+        try:
+            dt = datetime.fromisoformat(s)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            return dt
+        except Exception:
+            return None
+    return None
 
 
 # ============================================================================

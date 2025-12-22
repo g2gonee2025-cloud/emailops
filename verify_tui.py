@@ -4,7 +4,10 @@ import sys
 sys.path.append("/root/workspace/emailops-vertex-ai/cli/src")
 
 try:
-    from cortex_cli import tui
+    import importlib.util
+
+    if importlib.util.find_spec("cortex_cli.tui") is None:
+        raise ImportError("cortex_cli.tui not found")
 
     print("Successfully imported tui")
 except ImportError as e:

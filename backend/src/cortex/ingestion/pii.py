@@ -7,6 +7,7 @@ Implements §6.4 of the Canonical Blueprint:
 - Supports multiple entity types for comprehensive PII coverage
 - Provides statistics on detected entities for auditing
 """
+
 # pyright: reportMissingImports=false, reportOptionalCall=false
 from __future__ import annotations
 

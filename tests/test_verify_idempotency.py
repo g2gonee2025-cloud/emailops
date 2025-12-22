@@ -5,7 +5,7 @@ from pathlib import Path
 
 def load_verify_idempotency_module():
     repo_root = Path(__file__).resolve().parents[1]
-    script_path = repo_root / "verify_idempotency.py"
+    script_path = repo_root / "scripts" / "verification" / "verify_idempotency.py"
 
     spec = importlib.util.spec_from_file_location(
         "verify_idempotency_module", script_path

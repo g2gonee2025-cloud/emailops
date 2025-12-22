@@ -3,6 +3,7 @@ Hybrid Search (FTS + Vector + RRF).
 
 Implements §8.3 of the Canonical Blueprint.
 """
+
 from __future__ import annotations
 
 import logging
@@ -10,10 +11,12 @@ import math
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Literal, Optional
 
-import numpy as np
-from cortex.embeddings.client import EmbeddingsClient
-from cortex.retrieval.cache import cache_query_embedding, get_cached_query_embedding
-from cortex.retrieval.filter_resolution import _resolve_filter_conversation_ids
+from cortex.retrieval._hybrid_helpers import (
+    _convert_fts_to_items,
+    _convert_vector_to_items,
+    _get_query_embedding,
+    _resolve_target_conversations,
+)
 from cortex.retrieval.filters import parse_filter_grammar
 
 # Import QueryClassification from dedicated module per Blueprint §8.2
@@ -25,9 +28,6 @@ from cortex.retrieval.reranking import (
 )
 from cortex.retrieval.results import SearchResultItem, SearchResults
 from pydantic import BaseModel, Field
-
-_embedding_client = EmbeddingsClient()
-
 
 logger = logging.getLogger(__name__)
 
@@ -128,39 +128,41 @@ def _merge_result_fields(
     into: SearchResultItem, other: SearchResultItem
 ) -> SearchResultItem:
     """Merge fields from another SearchResultItem into an existing one."""
-
-    # Prefer already-populated structured identifiers, but fill blanks.
-    if not into.conversation_id and other.conversation_id:
+    # IDs
+    if not into.conversation_id:
         into.conversation_id = other.conversation_id
-    if not into.attachment_id and other.attachment_id:
+    if not into.attachment_id:
         into.attachment_id = other.attachment_id
 
-    # Preserve the richer text/snippet if one side is missing.
-    if not into.content and other.content:
+    # Content
+    if not into.content:
         into.content = other.content
-    if not into.snippet and other.snippet:
+    if not into.snippet:
         into.snippet = other.snippet
 
-    # Merge highlight fragments.
+    # Highlights
     if other.highlights:
-        seen = set(into.highlights or [])
+        # Use simple list extend and let deduplication happen if strictly needed later,
+        # or just ensure uniqueness simply.
+        existing = set(into.highlights or [])
         for h in other.highlights:
-            if h and h not in seen:
+            if h and h not in existing:
                 into.highlights.append(h)
-                seen.add(h)
+                existing.add(h)
 
-    # Merge score components.
-    if (into.lexical_score or 0.0) == 0.0 and (other.lexical_score or 0.0) > 0.0:
+    # Scores - prefer non-zero
+    if not into.lexical_score:
         into.lexical_score = other.lexical_score
-    if (into.vector_score or 0.0) == 0.0 and (other.vector_score or 0.0) > 0.0:
+    if not into.vector_score:
         into.vector_score = other.vector_score
 
-    # Merge metadata (keep existing keys unless missing)
-    for k, v in (other.metadata or {}).items():
-        into.metadata.setdefault(k, v)
+    # Metadata & Hash
+    if other.metadata:
+        into.metadata.update(
+            {k: v for k, v in other.metadata.items() if k not in into.metadata}
+        )
 
-    # Prefer explicit content_hash if present
-    if not into.content_hash and other.content_hash:
+    if not into.content_hash:
         into.content_hash = other.content_hash
 
     return into
@@ -263,7 +265,7 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
     """
     from cortex.config.loader import get_config
     from cortex.db.session import SessionLocal
-    from cortex.retrieval.fts_search import search_chunks_fts, search_messages_fts
+    from cortex.retrieval.fts_search import search_chunks_fts
     from cortex.retrieval.vector_search import search_chunks_vector
 
     config = get_config()
@@ -281,78 +283,17 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
     search_query = clean_query if clean_query.strip() else args.query
 
     # 1. Embed query for vector search (with caching)
-    # Best-effort: if the embedding service is temporarily unavailable, we still
-    # want FTS to keep the product functional.
-    query_embedding: Optional[List[float]] = None
-    try:
-        # Check cache first
-        cached = get_cached_query_embedding(
-            search_query, model=config.embedding.model_name
-        )
-        if cached is not None:
-            query_embedding = cached.tolist()
-            logger.debug("Using cached query embedding for: %s", args.query[:50])
-        else:
-            query_embedding = _embedding_client.embed(search_query)
-            # Cache the embedding for future use
-            cache_query_embedding(
-                args.query,
-                np.asarray(query_embedding, dtype=np.float32),
-                model=config.embedding.model_name,
-            )
-    except Exception as e:
-        logger.error(f"Failed to embed query (falling back to FTS only): {e}")
+    query_embedding = _get_query_embedding(search_query, config)
 
     with SessionLocal() as session:
         from cortex.db.session import set_session_tenant
 
         set_session_tenant(session, args.tenant_id)
 
-        # 2. Optional navigational narrowing
-        # When users are clearly looking for a specific email/thread, message-level
-        # FTS is a great cheap filter. Since you always have embedded chunks, we
-        # then run chunk retrieval inside those threads.
-        nav_conversation_ids: Optional[List[str]] = None
-        if args.classification and args.classification.type == "navigational":
-            nav_hits = search_messages_fts(
-                session,
-                search_query,
-                args.tenant_id,
-                limit=min(k * candidates_multiplier, 200),
-            )
-            nav_conversation_ids = (
-                list({h.conversation_id for h in nav_hits if h.conversation_id}) or None
-            )
-
-        # 2.5 Resolve Rich Filters (Date, Sender, Subject, etc.)
-        # This returns a list of conversation_ids that match the conversation-level filters.
-        filter_resolved_ids = _resolve_filter_conversation_ids(
-            session, parsed_filters, args.tenant_id
+        # 2. Resolve Conversations (Navigational + Filters)
+        final_conversation_ids = _resolve_target_conversations(
+            session, args, search_query, k * candidates_multiplier, parsed_filters
         )
-
-        # Merge with navigational narrowing and manual conv_ids
-        final_conversation_ids: Optional[List[str]] = None
-
-        # Start with navigational IDs as base if present
-        if nav_conversation_ids:
-            final_conversation_ids = nav_conversation_ids
-
-        # Intersect with filter resolved IDs if present
-        if filter_resolved_ids is not None:
-            if final_conversation_ids is not None:
-                final_conversation_ids = (
-                    list(set(final_conversation_ids) & set(filter_resolved_ids)) or None
-                )
-            else:
-                final_conversation_ids = filter_resolved_ids
-
-        # If the intersection resulted in empty list (but filters exist),
-        # it means no results match. We should probably short-circuit.
-        # But for now, let's just pass empty list which yields 0 results.
-        if (
-            nav_conversation_ids is not None or filter_resolved_ids is not None
-        ) and not final_conversation_ids:
-            final_conversation_ids = []  # No matches
 
         # 3. Lexical search (FTS) on chunks
         fts_chunk_results = search_chunks_fts(
@@ -362,6 +303,9 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
             limit=k * candidates_multiplier,
             conversation_ids=final_conversation_ids,
             is_attachment=parsed_filters.has_attachment,
+            file_types=list(parsed_filters.file_types)
+            if parsed_filters.file_types
+            else None,  # P1 Fix
         )
 
         # 4. Vector search (if we have an embedding)
@@ -377,55 +321,17 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
                 ef_search=hnsw_ef_search,
                 conversation_ids=final_conversation_ids,
                 is_attachment=parsed_filters.has_attachment,
+                file_types=list(parsed_filters.file_types)
+                if parsed_filters.file_types
+                else None,  # P1 Fix
             )
             logger.info(f"Vector search returned {len(vector_results)} chunks")
         else:
             logger.warning("Query embedding is None, skipping vector search")
 
         # Convert to SearchResultItem format
-        fts_items = []
-        for res in fts_chunk_results:
-            metadata = dict(res.metadata or {})
-            metadata.setdefault("chunk_type", res.chunk_type)
-            fts_items.append(
-                SearchResultItem(
-                    chunk_id=res.chunk_id,
-                    score=res.score,
-                    conversation_id=res.conversation_id,
-                    attachment_id=res.attachment_id,
-                    is_attachment=res.is_attachment,
-                    highlights=[res.snippet],
-                    snippet=res.snippet,
-                    content=res.text,
-                    source=metadata.get("source"),
-                    metadata=metadata,
-                    lexical_score=res.score,
-                    vector_score=0.0,
-                    content_hash=metadata.get("content_hash"),
-                )
-            )
-
-        vector_items = []
-        for res in vector_results:
-            metadata = dict(res.metadata or {})
-            if res.chunk_type:
-                metadata.setdefault("chunk_type", res.chunk_type)
-            vector_items.append(
-                SearchResultItem(
-                    chunk_id=res.chunk_id,
-                    score=res.score,
-                    conversation_id=res.conversation_id,
-                    attachment_id=res.attachment_id or None,
-                    is_attachment=res.is_attachment,
-                    highlights=[res.text[:200]] if res.text else [],
-                    snippet=res.text[:200] if res.text else "",
-                    content=res.text,
-                    metadata=metadata,
-                    lexical_score=0.0,
-                    vector_score=res.score,
-                    content_hash=metadata.get("content_hash"),
-                )
-            )
+        fts_items = _convert_fts_to_items(fts_chunk_results)
+        vector_items = _convert_vector_to_items(vector_results)
 
         # 5. Deduplication by content_hash
         fts_deduped = deduplicate_by_hash(fts_items)
@@ -448,13 +354,11 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
                 fused_results,
                 top_n=50,  # Rerank top 50 candidates
             )
-            reranker_label = "expert-qwen-8b"
         else:
             # Lightweight blending
             fused_results = rerank_results(
                 fused_results, alpha=config.search.rerank_alpha
             )
-            reranker_label = f"{fusion_method}|alpha={config.search.rerank_alpha:.2f}"
 
         # 8. Get conversation timestamps for recency boost
         conversation_ids = list(

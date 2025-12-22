@@ -3,12 +3,13 @@ API Request/Response Models.
 
 Implements §9 of the Canonical Blueprint.
 """
+
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 
-from cortex.domain_models.rag import ThreadSummary
-from pydantic import BaseModel, Field
+from cortex.domain_models.rag import Answer, EmailDraft, ThreadSummary
+from pydantic import BaseModel, ConfigDict, Field
 
 
 # -----------------------------------------------------------------------------
@@ -16,6 +17,8 @@ from pydantic import BaseModel, Field
 # -----------------------------------------------------------------------------
 class SearchRequest(BaseModel):
     """Search request payload."""
+
+    model_config = ConfigDict(extra="forbid")
 
     query: str = Field(..., description="Search query text")
     k: int = Field(default=10, ge=1, le=500, description="Number of results")
@@ -45,11 +48,14 @@ class SearchResponse(BaseModel):
 class AnswerRequest(BaseModel):
     """Question-answering request payload."""
 
+    model_config = ConfigDict(extra="forbid")
+
     query: str = Field(..., description="Question to answer")
     thread_id: Optional[str] = Field(
         default=None, description="Optional thread context"
     )
     k: int = Field(default=10, description="Number of context chunks")
+    debug: bool = Field(default=False, description="Enable debug info")
     tenant_id: Optional[str] = None
     user_id: Optional[str] = None
 
@@ -57,10 +63,12 @@ class AnswerRequest(BaseModel):
 class AnswerResponse(BaseModel):
     """Question-answering response payload."""
 
+    model_config = ConfigDict(extra="forbid")
+
     correlation_id: Optional[str] = None
-    answer: str = ""
-    sources: List[Dict[str, Any]] = Field(default_factory=list)
+    answer: Answer
     confidence: float = 0.0
+    debug_info: Optional[Dict[str, Any]] = None
 
 
 # -----------------------------------------------------------------------------
@@ -68,6 +76,8 @@ class AnswerResponse(BaseModel):
 # -----------------------------------------------------------------------------
 class DraftEmailRequest(BaseModel):
     """Email drafting request payload."""
+
+    model_config = ConfigDict(extra="forbid")
 
     instruction: str = Field(..., description="Drafting instruction")
     thread_id: Optional[str] = Field(default=None, description="Thread context")
@@ -82,10 +92,12 @@ class DraftEmailRequest(BaseModel):
 class DraftEmailResponse(BaseModel):
     """Email drafting response payload."""
 
+    model_config = ConfigDict(extra="forbid")
+
     correlation_id: Optional[str] = None
-    draft: str = ""
-    subject: Optional[str] = None
+    draft: EmailDraft
     confidence: float = 0.0
+    iterations: int = 0
 
 
 # -----------------------------------------------------------------------------
@@ -93,6 +105,8 @@ class DraftEmailResponse(BaseModel):
 # -----------------------------------------------------------------------------
 class SummarizeThreadRequest(BaseModel):
     """Thread summarization request payload."""
+
+    model_config = ConfigDict(extra="forbid")
 
     thread_id: str = Field(..., description="Thread to summarize")
     max_length: int = Field(default=500, description="Max summary length in words")
@@ -103,5 +117,46 @@ class SummarizeThreadRequest(BaseModel):
 class SummarizeThreadResponse(BaseModel):
     """Thread summarization response payload."""
 
+    model_config = ConfigDict(extra="forbid")
+
     correlation_id: Optional[str] = None
     summary: ThreadSummary
+
+
+# -----------------------------------------------------------------------------
+# Chat API Models (§9.6)
+# -----------------------------------------------------------------------------
+class ChatMessage(BaseModel):
+    """Chat message payload."""
+
+    role: Literal["system", "user", "assistant"]
+    content: str
+
+
+class ChatRequest(BaseModel):
+    """Chat request payload."""
+
+    messages: List[ChatMessage]
+    thread_id: Optional[str] = Field(
+        default=None, description="Optional thread context"
+    )
+    k: int = Field(default=10, description="Number of context chunks")
+    max_length: int = Field(default=500, description="Max summary length in words")
+    max_history: Optional[int] = Field(
+        default=None, description="Max chat history entries"
+    )
+    debug: bool = Field(default=False, description="Enable debug info")
+    tenant_id: Optional[str] = None
+    user_id: Optional[str] = None
+
+
+class ChatResponse(BaseModel):
+    """Chat response payload."""
+
+    correlation_id: Optional[str] = None
+    action: Literal["answer", "search", "summarize"]
+    reply: str
+    answer: Optional[Answer] = None
+    summary: Optional[ThreadSummary] = None
+    search_results: Optional[List[Dict[str, Any]]] = None
+    debug_info: Optional[Dict[str, Any]] = None

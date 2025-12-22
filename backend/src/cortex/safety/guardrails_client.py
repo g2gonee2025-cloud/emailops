@@ -4,6 +4,7 @@ Guardrails Client.
 Implements §9.3 of the Canonical Blueprint.
 Provides LLM output validation with single repair attempt.
 """
+
 from __future__ import annotations
 
 import json

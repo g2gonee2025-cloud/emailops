@@ -3,6 +3,7 @@ Retrieval module for Cortex.
 
 Implements §8 of the Canonical Blueprint.
 """
+
 from cortex.retrieval.hybrid_search import (
     KBSearchInput,
     SearchResultItem,

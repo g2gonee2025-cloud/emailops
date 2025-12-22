@@ -3,6 +3,7 @@ Graph Nodes.
 
 Implements §10.2 of the Canonical Blueprint.
 """
+
 from __future__ import annotations
 
 import json
@@ -49,6 +50,8 @@ from cortex.safety.guardrails_client import validate_with_repair
 from cortex.safety.policy_enforcer import check_action
 from cortex.security.injection_defense import strip_injection_patterns
 from pydantic import BaseModel, Field, ValidationError
+from sqlalchemy import func, or_, select
+from sqlalchemy.orm import aliased
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +95,29 @@ def _complete_with_guardrails(
 # -----------------------------------------------------------------------------
 
 
+def _extract_patterns(
+    text: str,
+    pattern: re.Pattern,
+    seen: set[str],
+    mentions: List[str],
+    group: int = 1,
+    min_len: int = 0,
+) -> None:
+    """Helper to extract patterns and deduplicate."""
+    for match in pattern.finditer(text):
+        ref = match.group(group).strip()
+        lower_ref = ref.lower()
+        if (min_len == 0 or len(ref) > min_len) and lower_ref not in seen:
+            # Additional check for quoted refs (Pattern 2 logic)
+            if pattern.pattern.startswith("[\"']") and not (
+                "_" in ref or any(c.isupper() for c in ref)
+            ):
+                continue
+
+            seen.add(lower_ref)
+            mentions.append(ref)
+
+
 def extract_document_mentions(text: str) -> List[str]:
     """
     Extract filenames or document references from text.
@@ -115,23 +141,18 @@ def extract_document_mentions(text: str) -> List[str]:
     seen: set[str] = set()
 
     # Pattern 1: Common document extensions
-    # Matches: report.pdf, Budget_2024.xlsx, meeting-notes.docx, etc.
-    file_extension_pattern = re.compile(
-        r"\b([\w\-_.]+\.(?:pdf|docx?|xlsx?|pptx?|txt|csv|eml|msg|png|jpg|jpeg|gif))\b",
-        re.IGNORECASE,
+    _extract_patterns(
+        text,
+        re.compile(
+            r"\b([\w\-_.]+\.(?:pdf|docx?|xlsx?|pptx?|txt|csv|eml|msg|png|jpg|jpeg|gif))\b",
+            re.IGNORECASE,
+        ),
+        seen,
+        mentions,
     )
 
-    for match in file_extension_pattern.finditer(text):
-        filename = match.group(1)
-        lower_name = filename.lower()
-        if lower_name not in seen:
-            seen.add(lower_name)
-            mentions.append(filename)
-
     # Pattern 2: Quoted file references
-    # Matches: "Budget Report", 'Q4 Summary', etc.
     quoted_pattern = re.compile(r'["\']([A-Z][A-Za-z0-9\s_\-]{2,30})["\']')
-
     for match in quoted_pattern.finditer(text):
         ref = match.group(1).strip()
         lower_ref = ref.lower()
@@ -141,21 +162,73 @@ def extract_document_mentions(text: str) -> List[str]:
             mentions.append(ref)
 
     # Pattern 3: Explicit attachment references
-    # Matches: "attached report", "the attached file", "see attachment: xyz"
-    attachment_ref_pattern = re.compile(
-        r"(?:attached|attachment|enclosed|enclosure)[:\s]+([A-Za-z0-9\s_\-]+?)(?:\.|,|\s|$)",
-        re.IGNORECASE,
+    _extract_patterns(
+        text,
+        re.compile(
+            r"(?:attached|attachment|enclosed|enclosure)[:\s]+([A-Za-z0-9\s_\-]+?)(?:\.|,|\s|$)",
+            re.IGNORECASE,
+        ),
+        seen,
+        mentions,
+        min_len=2,
     )
 
-    for match in attachment_ref_pattern.finditer(text):
-        ref = match.group(1).strip()
-        if ref and len(ref) > 2:
-            lower_ref = ref.lower()
-            if lower_ref not in seen:
-                seen.add(lower_ref)
-                mentions.append(ref)
-
     return mentions
+
+
+def _extract_entity_mentions(text: str) -> List[str]:
+    """Extract candidate entity mentions from query text."""
+    if not text:
+        return []
+
+    candidates: set[str] = set()
+
+    quoted = re.findall(r'["\']([^"\']{2,100})["\']', text)
+    candidates.update(s.strip() for s in quoted if s.strip())
+
+    capitalized_phrases = re.findall(r"\b(?:[A-Z][\w&]*(?:\s+[A-Z][\w&]*)+)\b", text)
+    candidates.update(s.strip() for s in capitalized_phrases if s.strip())
+
+    single_caps = re.findall(r"\b[A-Z][a-z]{2,}\b", text)
+    candidates.update(s.strip() for s in single_caps if s.strip())
+
+    stop_words = {
+        "What",
+        "When",
+        "Where",
+        "Why",
+        "Who",
+        "How",
+        "Can",
+        "Could",
+        "Should",
+        "Would",
+        "Does",
+        "Do",
+        "Did",
+        "Is",
+        "Are",
+        "The",
+        "A",
+        "An",
+        "And",
+        "Or",
+        "To",
+        "From",
+        "For",
+        "Of",
+        "In",
+        "On",
+        "Please",
+        "Tell",
+        "Explain",
+    }
+
+    return [
+        candidate
+        for candidate in candidates
+        if candidate and candidate not in stop_words
+    ]
 
 
 @trace_operation("tool_email_get_thread")
@@ -393,10 +466,127 @@ def node_assemble_context(state: Dict[str, Any]) -> Dict[str, Any]:
 
         # Format with metadata for citation
         # We use a simple index or ID reference for the LLM
-        source_ref = f"Source {i+1} (ID: {item.chunk_id or item.message_id})"
+        source_ref = f"Source {i + 1} (ID: {item.chunk_id or item.message_id})"
         context_parts.append(f"[{source_ref}]\n{safe_text}")
 
     return {"assembled_context": "\n\n".join(context_parts)}
+
+
+def node_query_graph(state: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Query the knowledge graph for entities mentioned in the prompt.
+
+    Blueprint §10.1:
+    * Inject relational facts into answer context.
+    """
+    query = state.get("query", "")
+    tenant_id = state.get("tenant_id")
+
+    if not query or not tenant_id:
+        return {"graph_context": ""}
+
+    mentions = _extract_entity_mentions(query)
+    if not mentions:
+        return {"graph_context": ""}
+
+    try:
+        nodes, edges = _fetch_graph_entities(tenant_id, mentions)
+        if not nodes:
+            return {"graph_context": ""}
+
+        context_lines = _build_graph_context_lines(nodes, edges)
+        if not context_lines:
+            return {"graph_context": ""}
+
+        graph_context = "Knowledge Graph Facts:\n" + "\n".join(
+            f"- {line}" for line in context_lines
+        )
+        return {"graph_context": graph_context}
+    except Exception as e:
+        logger.error(f"Graph query failed: {e}")
+        return {"graph_context": ""}
+
+
+def _fetch_graph_entities(
+    tenant_id: str, mentions: List[str]
+) -> tuple[List[Any], List[Any]]:
+    """Fetch entity nodes and edges from the knowledge graph."""
+    from cortex.db.models import EntityEdge, EntityNode
+    from cortex.db.session import SessionLocal, set_session_tenant
+
+    with SessionLocal() as session:
+        set_session_tenant(session, tenant_id)
+
+        match_conditions = [
+            func.lower(EntityNode.name) == mention.lower() for mention in mentions
+        ]
+
+        for mention in mentions:
+            if len(mention) >= 4:
+                match_conditions.append(
+                    func.lower(EntityNode.name).like(f"%{mention.lower()}%")
+                )
+
+        if not match_conditions:
+            return [], []
+
+        nodes = (
+            session.execute(
+                select(EntityNode).where(
+                    EntityNode.tenant_id == tenant_id,
+                    or_(*match_conditions),
+                )
+            )
+            .scalars()
+            .all()
+        )
+
+        if not nodes:
+            return [], []
+
+        node_ids = [node.node_id for node in nodes]
+
+        source_node = aliased(EntityNode)
+        target_node = aliased(EntityNode)
+        edges = session.execute(
+            select(EntityEdge, source_node, target_node)
+            .join(source_node, EntityEdge.source_id == source_node.node_id)
+            .join(target_node, EntityEdge.target_id == target_node.node_id)
+            .where(
+                EntityEdge.tenant_id == tenant_id,
+                or_(
+                    EntityEdge.source_id.in_(node_ids),
+                    EntityEdge.target_id.in_(node_ids),
+                ),
+            )
+        ).all()
+
+        return list(nodes), list(edges)
+
+
+def _build_graph_context_lines(nodes: List[Any], edges: List[Any]) -> List[str]:
+    """Build context lines from graph nodes and edges."""
+    context_lines: List[str] = []
+
+    for node in nodes:
+        if node.description:
+            context_lines.append(
+                strip_injection_patterns(
+                    f"Entity: {node.name} ({node.type}) - {node.description}"
+                )
+            )
+        else:
+            context_lines.append(
+                strip_injection_patterns(f"Entity: {node.name} ({node.type})")
+            )
+
+    for edge, source, target in edges:
+        relation = edge.relation.replace("_", " ").lower()
+        description = f" {edge.description}" if edge.description else ""
+        fact = f"{source.name} {relation} {target.name}.{description}"
+        context_lines.append(strip_injection_patterns(fact.strip()))
+
+    return context_lines
 
 
 def node_classify_query(state: Dict[str, Any]) -> Dict[str, Any]:
@@ -432,6 +622,7 @@ def node_retrieve_context(state: Dict[str, Any]) -> Dict[str, Any]:
     classification = state.get("classification")
     tenant_id = state.get("tenant_id")
     user_id = state.get("user_id")
+    k = state.get("k", 10)
 
     try:
         args = KBSearchInput(
@@ -439,6 +630,7 @@ def node_retrieve_context(state: Dict[str, Any]) -> Dict[str, Any]:
             user_id=user_id,
             query=query,
             classification=classification,
+            k=k,
         )
         results = tool_kb_search_hybrid(args)
         return {"retrieval_results": results}
@@ -456,8 +648,12 @@ def node_generate_answer(state: Dict[str, Any]) -> Dict[str, Any]:
     """
     query = state.get("query", "")
     context = state.get("assembled_context", "")
+    graph_context = state.get("graph_context", "")
+    combined_context = "\n\n".join(
+        part for part in [context, graph_context] if part
+    ).strip()
 
-    if not context:
+    if not combined_context:
         return {
             "answer": Answer(
                 query=query,
@@ -476,7 +672,8 @@ def node_generate_answer(state: Dict[str, Any]) -> Dict[str, Any]:
         # For now, let's get the text answer and construct a basic Answer object.
 
         prompt = (
-            PROMPT_ANSWER_QUESTION + f"\n\nContext:\n{context}\n\nQuestion: {query}"
+            PROMPT_ANSWER_QUESTION
+            + f"\n\nContext:\n{combined_context}\n\nQuestion: {query}"
         )
 
         answer_text = complete_text(prompt)
@@ -568,7 +765,9 @@ def node_draft_email_initial(state: Dict[str, Any]) -> Dict[str, Any]:
             cc=draft_structured.cc,
             subject=draft_structured.subject or "No Subject",
             body_markdown=draft_structured.body_markdown,
-            tone_style=ToneStyle(persona_id="default", tone="professional"),
+            tone_style=ToneStyle(
+                persona_id="default", tone=state.get("tone", "professional")
+            ),  # P1 Fix: Use state.tone
             val_scores=DraftValidationScores(
                 factuality=0.0,
                 citation_coverage=0.0,
@@ -851,62 +1050,18 @@ def node_summarize_final(state: Dict[str, Any]) -> Dict[str, Any]:
         return {"error": "No facts ledger to finalize"}
 
     try:
+        max_len = state.get("max_length", 500)
         prompt = (
-            PROMPT_SUMMARIZE_FINAL + f"\n\nFacts Ledger:\n{facts.model_dump_json()}"
+            PROMPT_SUMMARIZE_FINAL
+            + f"\n\nConstraint: Keep summary under {max_len} words."
+            + f"\n\nFacts Ledger:\n{facts.model_dump_json()}"
         )
 
         summary_text = complete_text(prompt)
 
         # Prepare participant analysis by merging DB context with LLM inference
-        # If we have the thread context object, use it to ground the participants
         thread_context_obj = state.get("_thread_context_obj")
-        final_participants = []
-
-        if thread_context_obj:
-            from cortex.domain_models.facts_ledger import ParticipantAnalysis
-
-            # Create a map of email -> ParticipantAnalysis from LLM ledger
-            ledger_participants = {
-                p.email.lower(): p for p in facts.participants if p.email
-            }
-
-            # Create a map of name -> ParticipantAnalysis as fallback
-            ledger_names = {p.name.lower(): p for p in facts.participants if p.name}
-
-            # Iterate over DB participants
-            for p in thread_context_obj.participants:
-                email_key = p.email.lower()
-
-                # Start with DB info
-                analysis = ParticipantAnalysis(
-                    name=p.name or p.email.split("@")[0],
-                    email=p.email,
-                    role="other"
-                    if p.role in ["recipient", "cc"]
-                    else "internal",  # Simple heuristic, improved below
-                    tone="neutral",
-                    stance="Unknown",
-                )
-
-                # Overlay LLM insights if available
-                if email_key in ledger_participants:
-                    match = ledger_participants[email_key]
-                    analysis.role = match.role or analysis.role
-                    analysis.tone = match.tone or analysis.tone
-                    analysis.stance = match.stance or analysis.stance
-                    analysis.name = (
-                        match.name or analysis.name
-                    )  # Prefer LLM name if potentially better formatted? Or DB?
-                elif p.name and p.name.lower() in ledger_names:
-                    match = ledger_names[p.name.lower()]
-                    analysis.role = match.role or analysis.role
-                    analysis.tone = match.tone or analysis.tone
-                    analysis.stance = match.stance or analysis.stance
-
-                final_participants.append(analysis)
-        else:
-            # Fallback if no thread context object (shouldn't happen in normal flow)
-            final_participants = facts.participants
+        final_participants = _merge_participants(facts, thread_context_obj)
 
         summary = ThreadSummary(
             thread_id=thread_id,
@@ -919,3 +1074,56 @@ def node_summarize_final(state: Dict[str, Any]) -> Dict[str, Any]:
     except Exception as e:
         logger.error(f"Finalization failed: {e}")
         return {"error": f"Finalization failed: {str(e)}"}
+
+
+def _merge_participants(facts: Any, thread_context_obj: Any) -> list[Any]:
+    """Merge DB participant context with LLM-inferred insights."""
+    if not thread_context_obj:
+        return facts.participants
+
+    from cortex.domain_models.facts_ledger import ParticipantAnalysis
+
+    # Create lookup maps from LLM ledger
+    ledger_by_email = {p.email.lower(): p for p in facts.participants if p.email}
+    ledger_by_name = {p.name.lower(): p for p in facts.participants if p.name}
+
+    return [
+        _create_merged_participant(
+            p, ledger_by_email, ledger_by_name, ParticipantAnalysis
+        )
+        for p in thread_context_obj.participants
+    ]
+
+
+def _create_merged_participant(
+    p: Any,
+    ledger_by_email: dict[str, Any],
+    ledger_by_name: dict[str, Any],
+    ParticipantAnalysis: type,
+) -> Any:
+    """Create a merged participant with DB info and LLM insights."""
+    email_key = p.email.lower()
+
+    # Start with DB info
+    analysis = ParticipantAnalysis(
+        name=p.name or p.email.split("@")[0],
+        email=p.email,
+        role="other" if p.role in ["recipient", "cc"] else "internal",
+        tone="neutral",
+        stance="Unknown",
+    )
+
+    # Find matching LLM insight
+    match = ledger_by_email.get(email_key) or (
+        ledger_by_name.get(p.name.lower()) if p.name else None
+    )
+
+    # Overlay LLM insights if found
+    if match:
+        analysis.role = match.role or analysis.role
+        analysis.tone = match.tone or analysis.tone
+        analysis.stance = match.stance or analysis.stance
+        if email_key in ledger_by_email:
+            analysis.name = match.name or analysis.name
+
+    return analysis

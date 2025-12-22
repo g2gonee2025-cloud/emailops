@@ -4,6 +4,7 @@ Mailroom: Orchestration entry for ingestion jobs.
 Implements §6.1 of the Canonical Blueprint.
 Updated for Conversation-based schema.
 """
+
 from __future__ import annotations
 
 import logging
@@ -49,16 +50,7 @@ def process_job(job: IngestJobRequest) -> IngestJobSummary:
         temp_dir: Optional[Path] = None
 
         try:
-            if job.source_type == "local_upload":
-                local_convo_dir = _validate_local_path(job.source_uri)
-            elif job.source_type == "s3":
-                temp_dir, local_convo_dir = _download_s3_source(job.source_uri)
-            elif job.source_type == "sftp":
-                temp_dir, local_convo_dir = _download_sftp_source(
-                    job.source_uri, job.options
-                )
-            else:
-                raise ValueError(f"Unsupported source type: {job.source_type}")
+            temp_dir, local_convo_dir = _resolve_source(job)
 
             summary = _ingest_conversation(local_convo_dir, job, summary)
 
@@ -220,17 +212,9 @@ def _ingest_conversation(
 
     Uses new Conversation-based schema (no Thread/Message split).
     """
-    from cortex.chunking.chunker import ChunkingInput, Span, chunk_text
     from cortex.config.loader import get_config
-    from cortex.db.session import SessionLocal, set_session_tenant
-    from cortex.ingestion.attachments_log import parse_attachments_log
     from cortex.ingestion.conv_loader import load_conversation
-    from cortex.ingestion.conversation_parser import (
-        extract_participants_from_conversation_txt,
-    )
-    from cortex.ingestion.quoted_masks import detect_quoted_spans
     from cortex.ingestion.text_preprocessor import get_text_preprocessor
-    from cortex.ingestion.writer import DBWriter, compute_content_hash
 
     config = get_config()
     preprocessor = get_text_preprocessor()
@@ -243,28 +227,74 @@ def _ingest_conversation(
 
     logger.info("Loaded conversation: %s", convo_data.get("path"))
 
-    # Load attachment metadata from log CSV if available
-    att_log_meta = parse_attachments_log(convo_dir)
-
-    # Generate distinct namespace for this tenant to avoid collisions across tenants
-    # We use a static seed UUID for the tenant namespace base
+    # Generate distinct namespace for this tenant
     tenant_ns = uuid.uuid5(uuid.NAMESPACE_DNS, f"tenant:{job.tenant_id}")
-
-    # STABLE ID: Conversation ID based on folder name (which is usually the unique conv ID from source)
-    # Using folder name as the stable key for the conversation within this tenant
+    # STABLE ID: Conversation ID based on folder name
     conversation_id = _generate_stable_id(tenant_ns, "conversation", convo_dir.name)
 
-    now = datetime.now(timezone.utc)
+    # 1. Prepare Metadata
+    conversation_data = _prepare_conversation_data(
+        convo_dir, convo_data, conversation_id, job, tenant_ns
+    )
 
-    # Extract manifest and summary data
+    # 2. Process Body & Attachments
+    cleaned_body, quoted_spans, attachments_data = _process_body_and_attachments(
+        convo_data,
+        conversation_id,
+        tenant_ns,
+        job.tenant_id,
+        preprocessor,
+        convo_dir,
+    )
+
+    # 3. Create Chunks
+    chunks_data = _create_chunks(
+        cleaned_body,
+        attachments_data,
+        quoted_spans,
+        conversation_id,
+        tenant_ns,
+        config,
+    )
+
+    # 4. Intelligence (Summary + Graph)
+    _process_intelligence(chunks_data, conversation_id, tenant_ns, job)
+
+    # 5. Write to DB
+    # 5. Write to DB
+    _write_results(conversation_data, attachments_data, chunks_data, job.tenant_id, job)
+
+    # Update summary
+    manifest = convo_data.get("manifest", {})
+    summary.messages_total = manifest.get("message_count", 1)
+    summary.messages_ingested = manifest.get("message_count", 1)
+    summary.attachments_total = len(attachments_data)
+    summary.attachments_parsed = len(attachments_data)
+    summary.chunks_created = len(chunks_data)
+    summary.threads_created = 1
+
+    return summary
+
+
+def _prepare_conversation_data(
+    convo_dir: Path,
+    convo_data: Dict[str, Any],
+    conversation_id: uuid.UUID,
+    job: IngestJobRequest,
+    tenant_ns: uuid.UUID,
+) -> Dict[str, Any]:
+    from cortex.ingestion.conversation_parser import (
+        extract_participants_from_conversation_txt,
+    )
+
     manifest = convo_data.get("manifest", {})
     summary_json = convo_data.get("summary", {})
 
     subject, subject_norm = resolve_subject(manifest, summary_json, convo_dir.name)
 
     # Parse dates
-    earliest_date = now
-    latest_date = now
+    earliest_date = datetime.now(timezone.utc)
+    latest_date = datetime.now(timezone.utc)
 
     if manifest.get("started_at_utc"):
         try:
@@ -282,12 +312,11 @@ def _ingest_conversation(
         except Exception:
             pass
 
-    # Extract participants from Conversation.txt (manifest doesn't have messages array)
+    # Extract participants
     raw_body = convo_data.get("conversation_txt", "")
     participants = extract_participants_from_conversation_txt(raw_body)
 
-    # Build conversation data
-    conversation_data: Dict[str, Any] = {
+    return {
         "conversation_id": conversation_id,
         "folder_name": convo_dir.name,
         "subject": subject_norm or subject,
@@ -304,15 +333,27 @@ def _ingest_conversation(
         },
     }
 
-    # Process body text
+
+def _process_body_and_attachments(
+    convo_data: Dict[str, Any],
+    conversation_id: uuid.UUID,
+    tenant_ns: uuid.UUID,
+    tenant_id: str,
+    preprocessor: Any,
+    convo_dir: Path,
+) -> Tuple[str, List[Any], List[Dict[str, Any]]]:
+    from cortex.ingestion.attachments_log import parse_attachments_log
+    from cortex.ingestion.quoted_masks import detect_quoted_spans
+
+    raw_body = convo_data.get("conversation_txt", "")
     cleaned_body, body_meta = preprocessor.prepare_for_indexing(
-        raw_body, text_type="email", tenant_id=job.tenant_id
+        raw_body, text_type="email", tenant_id=tenant_id
     )
 
-    # Detect quoted spans for chunk classification
-    quoted_spans: List[Span] = detect_quoted_spans(cleaned_body)
+    quoted_spans = detect_quoted_spans(cleaned_body)
 
-    # Process attachments
+    # Attachments
+    att_log_meta = parse_attachments_log(convo_dir)
     attachments_data: List[Dict[str, Any]] = []
     sorted_attachments = sorted(
         convo_data.get("attachments", []), key=lambda x: x["path"]
@@ -320,23 +361,20 @@ def _ingest_conversation(
 
     for att in sorted_attachments:
         filename = Path(att["path"]).name
-
         # Skip metadata/generated files that shouldn't be chunked
         skip_filenames = {"attachments_log.csv", "Conversation_human.txt"}
         if filename in skip_filenames:
             continue
 
-        # STABLE ID: Attachment ID based on conversation ID and filename
         att_id = _generate_stable_id(
             tenant_ns, "attachment", str(conversation_id), filename
         )
 
         raw_att_text = att.get("text", "")
         cleaned_att_text, att_meta = preprocessor.prepare_for_indexing(
-            raw_att_text, text_type="attachment", tenant_id=job.tenant_id
+            raw_att_text, text_type="attachment", tenant_id=tenant_id
         )
 
-        # Enrich with log metadata if available
         if filename in att_log_meta:
             att_meta.update(att_log_meta[filename])
 
@@ -349,11 +387,24 @@ def _ingest_conversation(
                 "size_bytes": att_meta.get("size_bytes"),
                 "storage_uri": att.get("storage_uri_raw", att["path"]),
                 "status": "parsed",
-                "text": cleaned_att_text,  # For chunking, not stored in DB
+                "text": cleaned_att_text,  # For chunking
             }
         )
 
-    # Chunk body text
+    return cleaned_body, quoted_spans, attachments_data
+
+
+def _create_chunks(
+    cleaned_body: str,
+    attachments_data: List[Dict[str, Any]],
+    quoted_spans: List[Any],
+    conversation_id: uuid.UUID,
+    tenant_ns: uuid.UUID,
+    config: Any,
+) -> List[Dict[str, Any]]:
+    from cortex.chunking.chunker import ChunkingInput, chunk_text
+    from cortex.ingestion.writer import compute_content_hash
+
     chunks_data: List[Dict[str, Any]] = []
 
     if cleaned_body:
@@ -367,8 +418,6 @@ def _ingest_conversation(
             )
         )
         for c in body_chunks:
-            # STABLE ID: Chunk ID based on parent (conversation), position, and content hash
-            # Including content hash ensures that if text changes, we get new chunks
             content_hash = compute_content_hash(c.text)
             chunk_id = _generate_stable_id(
                 tenant_ns,
@@ -378,7 +427,6 @@ def _ingest_conversation(
                 str(c.position),
                 content_hash,
             )
-
             chunks_data.append(
                 {
                     "chunk_id": chunk_id,
@@ -405,7 +453,6 @@ def _ingest_conversation(
                 )
             )
             for c in att_chunks:
-                # STABLE ID: Chunk ID based on parent (attachment), position, and content hash
                 content_hash = compute_content_hash(c.text)
                 chunk_id = _generate_stable_id(
                     tenant_ns,
@@ -414,7 +461,6 @@ def _ingest_conversation(
                     str(c.position),
                     content_hash,
                 )
-
                 chunks_data.append(
                     {
                         "chunk_id": chunk_id,
@@ -430,173 +476,179 @@ def _ingest_conversation(
                     }
                 )
 
-    # Remove text from attachments (not stored in DB, only used for chunking)
+    # Remove text from attachments (not stored in DB)
     for att in attachments_data:
         att.pop("text", None)
 
-    # Build results
+    return chunks_data
+
+
+def _process_intelligence(
+    chunks_data: List[Dict[str, Any]],
+    conversation_id: uuid.UUID,
+    tenant_ns: uuid.UUID,
+    job: IngestJobRequest,
+) -> None:
+    if not chunks_data:
+        return
+
+    try:
+        from cortex.intelligence.summarizer import ConversationSummarizer
+
+        # Prepare context (body + attachments)
+        body_chunks = sorted(
+            [c for c in chunks_data if not c.get("is_attachment")],
+            key=lambda x: x.get("position", 0),
+        )
+        att_chunks = sorted(
+            [c for c in chunks_data if c.get("is_attachment")],
+            key=lambda x: (x.get("attachment_id"), x.get("position", 0)),
+        )
+
+        context_parts = []
+        if body_chunks:
+            context_parts.append("--- Conversation Messages ---")
+            for c in body_chunks:
+                context_parts.append(c.get("text", ""))
+
+        if att_chunks:
+            context_parts.append("\n--- Attachments ---")
+            for c in att_chunks:
+                context_parts.append(c.get("text", ""))
+
+        summary_context = "\n\n".join(context_parts)
+
+        if summary_context.strip():
+            # 1. Summarization
+            summarizer = ConversationSummarizer()
+            summary_text = summarizer.generate_summary(summary_context)
+
+            if summary_text:
+                summary_embedding = summarizer.embed_summary(summary_text)
+                summary_chunk_id = _generate_stable_id(
+                    tenant_ns, "chunk", str(conversation_id), "summary"
+                )
+                chunks_data.append(
+                    {
+                        "chunk_id": summary_chunk_id,
+                        "conversation_id": conversation_id,
+                        "is_attachment": False,
+                        "is_summary": True,
+                        "chunk_type": "summary",
+                        "text": summary_text,
+                        "embedding": summary_embedding,
+                        "position": -1,
+                        "char_start": 0,
+                        "char_end": len(summary_text),
+                        "section_path": "summary",
+                        "extra_data": {"generated_by": "ConversationSummarizer"},
+                    }
+                )
+                logger.info(
+                    f"Generated summary chunk using {len(summary_context)} chars of context"
+                )
+
+            # 2. Graph Extraction
+            _extract_graph(summary_context, conversation_id, job.tenant_id)
+
+    except Exception as e:
+        logger.warning(f"Intelligence processing failed: {e}")
+
+
+def _extract_graph(
+    summary_context: str, conversation_id: uuid.UUID, tenant_id: str
+) -> None:
+    try:
+        from cortex.db.models import EntityEdge, EntityNode
+        from cortex.db.session import SessionLocal
+        from cortex.intelligence.graph import GraphExtractor
+        from sqlalchemy import select
+
+        graph_extractor = GraphExtractor()
+        G = graph_extractor.extract_graph(summary_context)
+
+        if G.number_of_nodes() > 0:
+            with SessionLocal() as session:
+                for node_name, attrs in G.nodes(data=True):
+                    node_type = attrs.get("type", "UNKNOWN")
+
+                    # Check if node exists (Global Tenant Scope)
+                    stmt = select(EntityNode).where(
+                        EntityNode.tenant_id == tenant_id,
+                        EntityNode.name == node_name,
+                    )
+                    existing_node = session.execute(stmt).scalar_one_or_none()
+
+                    if not existing_node:
+                        existing_node = EntityNode(
+                            tenant_id=tenant_id,
+                            name=node_name,
+                            type=node_type,
+                            description=f"Extracted from conversation {conversation_id}",
+                            properties={},
+                        )
+                        session.add(existing_node)
+                        session.flush()
+
+                    G.nodes[node_name]["db_id"] = existing_node.node_id
+
+                # Edges
+                for src, dst, edge_attrs in G.edges(data=True):
+                    src_id = G.nodes[src].get("db_id")
+                    dst_id = G.nodes[dst].get("db_id")
+
+                    if src_id and dst_id:
+                        edge = EntityEdge(
+                            tenant_id=tenant_id,
+                            source_id=src_id,
+                            target_id=dst_id,
+                            relation=edge_attrs.get("relation", "RELATED_TO"),
+                            description=edge_attrs.get("description", ""),
+                            conversation_id=conversation_id,
+                        )
+                        session.add(edge)
+
+                session.commit()
+                logger.info(
+                    f"Extracted Knowledge Graph: {G.number_of_nodes()} nodes, {G.number_of_edges()} edges"
+                )
+    except Exception as e:
+        logger.warning(f"Graph extraction failed: {e}")
+
+
+def _resolve_source(job: IngestJobRequest) -> Tuple[Optional[Path], Optional[Path]]:
+    """Resolve and download source based on job type."""
+    if job.source_type == "local_upload":
+        return None, _validate_local_path(job.source_uri)
+    elif job.source_type == "s3":
+        return _download_s3_source(job.source_uri)
+    elif job.source_type == "sftp":
+        return _download_sftp_source(job.source_uri, job.options)
+    else:
+        raise ValueError(f"Unsupported source type: {job.source_type}")
+
+
+def _write_results(
+    conversation_data: Dict[str, Any],
+    attachments_data: List[Dict[str, Any]],
+    chunks_data: List[Dict[str, Any]],
+    tenant_id: str,
+    job: IngestJobRequest,
+) -> None:
+    """Write ingestion results to DB."""
+    from cortex.db.session import SessionLocal, set_session_tenant
+    from cortex.ingestion.writer import DBWriter
+
     results: Dict[str, Any] = {
         "conversation": conversation_data,
         "attachments": attachments_data,
         "chunks": chunks_data,
     }
 
-    # --- Summarization Step (Chunks-based) ---
-    # User requested to use the chunks we just created, which includes attachments!
-    if chunks_data:
-        try:
-            from cortex.intelligence.summarizer import ConversationSummarizer
-
-            # 1. Gather text from chunks
-            # Separate body and attachments for cleaner formatting
-            body_chunks = sorted(
-                [
-                    c
-                    for c in chunks_data
-                    if not c.get("is_attachment") and not c.get("is_summary")
-                ],
-                key=lambda x: x.get("position", 0),
-            )
-            att_chunks = sorted(
-                [c for c in chunks_data if c.get("is_attachment")],
-                key=lambda x: (x.get("attachment_id"), x.get("position", 0)),
-            )
-
-            context_parts = []
-
-            # Add message body parts
-            if body_chunks:
-                context_parts.append("--- Conversation Messages ---")
-                for c in body_chunks:
-                    context_parts.append(c.get("text", ""))
-
-            # Add attachment parts
-            if att_chunks:
-                context_parts.append("\n--- Attachments ---")
-                for c in att_chunks:
-                    # simplistic header per attachment change could be nice, but simple concat works
-                    context_parts.append(c.get("text", ""))
-
-            summary_context = "\n\n".join(context_parts)
-
-            if summary_context.strip():
-                summarizer = ConversationSummarizer()
-                summary_text = summarizer.generate_summary(summary_context)
-
-                if summary_text:
-                    summary_embedding = summarizer.embed_summary(summary_text)
-
-                    # Create a summary chunk
-                    summary_chunk_id = _generate_stable_id(
-                        tenant_ns, "chunk", str(conversation_id), "summary"
-                    )
-
-                    chunks_data.append(
-                        {
-                            "chunk_id": summary_chunk_id,
-                            "conversation_id": conversation_id,
-                            "is_attachment": False,
-                            "is_summary": True,
-                            "chunk_type": "summary",
-                            "text": summary_text,
-                            "embedding": summary_embedding,
-                            "position": -1,
-                            "char_start": 0,
-                            "char_end": len(summary_text),
-                            "section_path": "summary",
-                            "extra_data": {"generated_by": "ConversationSummarizer"},
-                        }
-                    )
-                    logger.info(
-                        f"Generated summary chunk using {len(summary_context)} chars of context"
-                    )
-        except Exception as e:
-            logger.warning(f"Summarization failed during ingestion: {e}")
-            # --- Graph Extraction Step (Graph RAG) ---
-            # Extract Knowledge Graph from the same comprehensive context
-            if summary_context.strip():
-                try:
-                    from cortex.db.models import EntityEdge, EntityNode
-
-                    # We need a session to write graph data immediately.
-                    from cortex.db.session import SessionLocal
-                    from cortex.intelligence.graph import GraphExtractor
-                    from sqlalchemy import select
-
-                    graph_extractor = GraphExtractor()
-                    G = graph_extractor.extract_graph(summary_context)
-
-                    if G.number_of_nodes() > 0:
-                        with SessionLocal() as session:
-                            for node_name, attrs in G.nodes(data=True):
-                                node_type = attrs.get("type", "UNKNOWN")
-
-                                # Check if node exists (Global Tenant Scope)
-                                stmt = select(EntityNode).where(
-                                    EntityNode.tenant_id == job.tenant_id,
-                                    EntityNode.name == node_name,
-                                )
-                                existing_node = session.execute(
-                                    stmt
-                                ).scalar_one_or_none()
-
-                                if not existing_node:
-                                    existing_node = EntityNode(
-                                        tenant_id=job.tenant_id,
-                                        name=node_name,
-                                        type=node_type,
-                                        description=f"Extracted from conversation {conversation_id}",
-                                        properties={},
-                                    )
-                                    session.add(existing_node)
-                                    session.flush()  # Get ID
-
-                                # Store node_id in graph for edge creation
-                                G.nodes[node_name]["db_id"] = existing_node.node_id
-
-                            # Edges
-                            for src, dst, edge_attrs in G.edges(data=True):
-                                src_id = G.nodes[src].get("db_id")
-                                dst_id = G.nodes[dst].get("db_id")
-
-                                if src_id and dst_id:
-                                    edge = EntityEdge(
-                                        tenant_id=job.tenant_id,
-                                        source_id=src_id,
-                                        target_id=dst_id,
-                                        relation=edge_attrs.get(
-                                            "relation", "RELATED_TO"
-                                        ),
-                                        description=edge_attrs.get("description", ""),
-                                        conversation_id=conversation_id,
-                                    )
-                                    session.add(edge)
-
-                            session.commit()
-                            logger.info(
-                                f"Extracted Knowledge Graph: {G.number_of_nodes()} nodes, {G.number_of_edges()} edges"
-                            )
-
-                except Exception as e:
-                    logger.warning(f"Graph extraction failed: {e}")
-            # -----------------------------------------
-    # -----------------------------------------------------
-
-    # Write to database
     logger.info(
         f"Writing: 1 conversation, {len(attachments_data)} attachments, {len(chunks_data)} chunks"
     )
     with SessionLocal() as session:
-        set_session_tenant(session, job.tenant_id)
+        set_session_tenant(session, tenant_id)
         writer = DBWriter(session)
         writer.write_job_results(job, results)
-
-    # Update summary
-    summary.messages_total = manifest.get("message_count", 1)
-    summary.messages_ingested = manifest.get("message_count", 1)
-    summary.attachments_total = len(attachments_data)
-    summary.attachments_parsed = len(attachments_data)
-    summary.chunks_created = len(chunks_data)
-    summary.threads_created = 1
-
-    return summary

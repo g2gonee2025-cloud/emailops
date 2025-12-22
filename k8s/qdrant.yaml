@@ -25,6 +25,7 @@ spec:
         app: emailops
         component: qdrant
     spec:
+      automountServiceAccountToken: false
       containers:
         - name: qdrant
           image: qdrant/qdrant:latest
@@ -60,11 +61,12 @@ spec:
             failureThreshold: 3
           resources:
             requests:
-              cpu: "250m"
+              cpu: "50m"
               memory: "512Mi"
             limits:
               cpu: "1000m"
               memory: "2Gi"
+              ephemeral-storage: "2Gi"
       volumes:
         - name: qdrant-storage
           persistentVolumeClaim:

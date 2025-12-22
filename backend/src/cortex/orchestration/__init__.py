@@ -3,6 +3,7 @@ Orchestration module for Cortex.
 
 Implements §10 of the Canonical Blueprint.
 """
+
 from cortex.orchestration.graphs import (
     graph_answer_question,
     graph_draft_email,
@@ -20,6 +21,7 @@ from cortex.orchestration.nodes import (  # Helper tools (§10.2); Answer graph 
     node_improve_draft,
     node_load_thread,
     node_prepare_draft_query,
+    node_query_graph,
     node_retrieve_context,
     node_summarize_analyst,
     node_summarize_critic,
@@ -42,6 +44,7 @@ __all__ = [
     "node_assemble_context",
     "node_classify_query",
     "node_retrieve_context",
+    "node_query_graph",
     "node_generate_answer",
     "node_prepare_draft_query",
     "node_draft_email_initial",

@@ -7,6 +7,7 @@ Implements §7.1 of the Canonical Blueprint:
 - Generate stable content_hash for deduplication
 - Prefer sentence/paragraph boundaries for cleaner splits
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -171,10 +172,12 @@ class TokenCounter:
 # - Arabic/Persian/Urdu: ؟ ۔
 # Allow common closing quotes/brackets after the punctuation, then whitespace or EoD.
 SENTENCE_END_PATTERN = re.compile(
-    r"[.!?。！？...؟۔]+" r'[)"\'\u2018\u2019»›）】〔〕〉》」』〗〙〞]*' r"(?:\s+|$)"
+    r"[.!?。！？…؟۔]+"  # Simplified: use … instead of ... for ellipsis
+    r'[)"\'\u2018\u2019»›）】〔〕〉》」』〗〙〞]*'
+    r"(?:\s+|$)"  # Non-capturing group for alternation
 )
 # Paragraph boundary: one or more blank lines (support both LF and CRLF)
-PARAGRAPH_PATTERN = re.compile(r"(?:\r?\n)\s*(?:\r?\n)+")
+PARAGRAPH_PATTERN = re.compile(r"\r?\n\s*\r?\n+")
 
 
 def find_sentence_boundary(text: str, target_pos: int, window: int = 100) -> int:

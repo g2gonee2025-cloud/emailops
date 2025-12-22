@@ -4,6 +4,7 @@ Graph RAG Extractor.
 Extracts Knowledge Graph entities and relationships from text using LLM.
 Adapted from RAGFlow/GraphRAG.
 """
+
 from __future__ import annotations
 
 import logging

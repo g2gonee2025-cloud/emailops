@@ -8,6 +8,7 @@ Adds:
 - Alters embedding column to halfvec(3840)
 - Adds HNSW index for efficient high-dim search
 """
+
 from alembic import op
 
 # revision identifiers

@@ -5,6 +5,7 @@ Provides:
 - `cortex db stats` - Show database statistics
 - `cortex db migrate` - Run Alembic migrations
 """
+
 import argparse
 import sys
 from typing import Any

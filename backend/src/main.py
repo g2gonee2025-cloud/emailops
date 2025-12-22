@@ -13,6 +13,7 @@ Provides:
 - OpenTelemetry instrumentation
 - OIDC/JWT security integration (§11.1)
 """
+
 from __future__ import annotations
 
 import inspect
@@ -22,7 +23,7 @@ import os
 import time
 import uuid
 from contextlib import asynccontextmanager
-from typing import Any, Callable, Optional
+from typing import Any, Awaitable, Callable, Optional
 
 import jwt
 import requests
@@ -43,7 +44,7 @@ from cortex.context import (
 )
 from cortex.observability import get_trace_context, init_observability
 from cortex.security.validators import validate_email_format
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from jwt.exceptions import PyJWTError as JWTError
@@ -77,75 +78,96 @@ def _configure_jwt_decoder(
     config = get_config()
 
     if jwks_url:
-        from fastapi.concurrency import run_in_threadpool
-
-        async def decode(token: str) -> dict[str, Any]:
-            try:
-                # Run blocking IO in threadpool
-                jwks = await run_in_threadpool(_load_jwks, jwks_url)
-
-                headers = jwt.get_unverified_header(token)
-                kid = headers.get("kid")
-                key_data = None
-                for candidate in jwks.get("keys", []):
-                    if candidate.get("kid") == kid:
-                        key_data = candidate
-                        break
-                if key_data is None:
-                    raise SecurityError(
-                        "JWT key id not found in JWKS", threat_type="auth_invalid"
-                    )
-
-                # Convert JWK to PEM key for PyJWT
-                from jwt import algorithms
-
-                public_key = algorithms.RSAAlgorithm.from_jwk(key_data)
-
-                decode_options = {}
-                if not audience:
-                    decode_options["verify_aud"] = False
-                if not issuer:
-                    decode_options["verify_iss"] = False
-
-                return jwt.decode(
-                    token,
-                    public_key,
-                    algorithms=["RS256"],  # Pin algorithm
-                    audience=audience if audience else None,
-                    issuer=issuer if issuer else None,
-                    options=decode_options,
-                )
-            except JWTError as exc:
-                raise SecurityError("Invalid JWT", threat_type="auth_invalid") from exc
-            except Exception as exc:  # HTTP errors, json, etc.
-                raise SecurityError(
-                    "Failed to load JWKS", threat_type="auth_invalid"
-                ) from exc
-
-        _jwt_decoder = decode
+        _jwt_decoder = _create_jwks_decoder(jwks_url, audience, issuer)
         return
 
     # Fallback logic
     if config.core.env == "prod":
-
-        async def reject(_: str) -> dict[str, Any]:
-            raise SecurityError(
-                "JWKS configuration required in production",
-                threat_type="auth_configuration",
-            )
-
-        _jwt_decoder = reject
+        _jwt_decoder = _create_prod_reject_decoder()
         return
 
-    # Dev mode: Allow unverified claims
-    async def decode_unverified(token: str) -> dict[str, Any]:
+    # Dev mode: Allow verified secret
+    _jwt_decoder = _create_dev_secret_decoder(config)
+
+
+def _create_jwks_decoder(
+    jwks_url: str, audience: Optional[str], issuer: Optional[str]
+) -> Callable[[str], Awaitable[dict[str, Any]]]:
+    """Create a JWKS-based JWT decoder."""
+    from fastapi.concurrency import run_in_threadpool
+
+    async def decode(token: str) -> dict[str, Any]:
         try:
-            # PyJWT: decode without verification for dev mode
-            return jwt.decode(token, options={"verify_signature": False})
+            jwks = await run_in_threadpool(_load_jwks, jwks_url)
+            key_data = _find_jwks_key(jwks, token)
+
+            from jwt import algorithms
+
+            public_key = algorithms.RSAAlgorithm.from_jwk(key_data)
+
+            decode_options = {}
+            if not audience:
+                decode_options["verify_aud"] = False
+            if not issuer:
+                decode_options["verify_iss"] = False
+
+            return jwt.decode(
+                token,
+                public_key,
+                algorithms=["RS256"],
+                audience=audience if audience else None,
+                issuer=issuer if issuer else None,
+                options=decode_options,
+            )
+        except JWTError as exc:
+            raise SecurityError("Invalid JWT", threat_type="auth_invalid") from exc
+        except Exception as exc:
+            raise SecurityError(
+                "Failed to load JWKS", threat_type="auth_invalid"
+            ) from exc
+
+    return decode
+
+
+def _find_jwks_key(jwks: dict[str, Any], token: str) -> dict[str, Any]:
+    """Find the matching key in JWKS for the given token."""
+    headers = jwt.get_unverified_header(token)
+    kid = headers.get("kid")
+    for candidate in jwks.get("keys", []):
+        if candidate.get("kid") == kid:
+            return candidate
+    raise SecurityError("JWT key id not found in JWKS", threat_type="auth_invalid")
+
+
+def _create_prod_reject_decoder() -> Callable[[str], Awaitable[dict[str, Any]]]:
+    """Create a decoder that rejects all tokens in production without JWKS."""
+
+    async def reject(_: str) -> dict[str, Any]:
+        raise SecurityError(
+            "JWKS configuration required in production",
+            threat_type="auth_configuration",
+        )
+
+    return reject
+
+
+def _create_dev_secret_decoder(
+    config: Any,
+) -> Callable[[str], Awaitable[dict[str, Any]]]:
+    """Create a dev-mode decoder using secret key."""
+
+    async def decode_verified_secret(token: str) -> dict[str, Any]:
+        try:
+            payload = jwt.decode(token, config.SECRET_KEY, algorithms=["HS256"])
+            return payload
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(status_code=401, detail="Token has expired")
+        except jwt.InvalidTokenError:
+            raise HTTPException(status_code=401, detail="Invalid token")
         except JWTError as exc:
             raise SecurityError("Invalid JWT", threat_type="auth_invalid") from exc
 
-    _jwt_decoder = decode_unverified
+    return decode_verified_secret
 
 
 async def _extract_identity(request: Request) -> tuple[str, str, dict[str, Any]]:
@@ -499,6 +521,7 @@ async def lifespan(app: FastAPI):
 
     Blueprint §12.3:
     - Initialize observability on startup
+    - Pre-compile LangGraph instances for thread-safety (P0 fix)
     - Clean shutdown
     """
     config = get_config()
@@ -512,6 +535,27 @@ async def lifespan(app: FastAPI):
     )
 
     logger.info(f"Starting {APP_NAME} v{APP_VERSION} ({config.core.env})")
+
+    # P0 Fix: Pre-compile LangGraph instances for thread-safety
+    # Prevents race conditions from concurrent lazy compilation
+    try:
+        from cortex.orchestration.graphs import (
+            build_answer_graph,
+            build_draft_graph,
+            build_summarize_graph,
+        )
+
+        logger.info("Pre-compiling LangGraph instances...")
+        compiled_graphs = {
+            "answer": build_answer_graph().compile(),
+            "draft": build_draft_graph().compile(),
+            "summarize": build_summarize_graph().compile(),
+        }
+        app.state.graphs = compiled_graphs
+        logger.info("✓ LangGraph instances compiled and cached")
+    except Exception as e:
+        logger.warning(f"Failed to pre-compile graphs (will lazy-init): {e}")
+        app.state.graphs = {}
 
     yield
 
@@ -590,6 +634,7 @@ def create_app() -> FastAPI:
     # ---------------------------------------------------------------------------
     from cortex.rag_api import (
         routes_answer,
+        routes_chat,
         routes_draft,
         routes_ingest,
         routes_search,
@@ -600,6 +645,7 @@ def create_app() -> FastAPI:
     app.include_router(routes_answer.router, prefix="/api/v1", tags=["answer"])
     app.include_router(routes_draft.router, prefix="/api/v1", tags=["draft"])
     app.include_router(routes_summarize.router, prefix="/api/v1", tags=["summarize"])
+    app.include_router(routes_chat.router, prefix="/api/v1", tags=["chat"])
     app.include_router(routes_ingest.router, prefix="/api/v1", tags=["ingestion"])
 
     # ---------------------------------------------------------------------------

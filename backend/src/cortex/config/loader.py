@@ -3,6 +3,7 @@ Configuration loader for EmailOps.
 
 Implements §2.3 of the Canonical Blueprint.
 """
+
 from __future__ import annotations
 
 import json
@@ -140,6 +141,18 @@ class EmailOpsConfig(BaseModel):
         # DigitalOcean LLM controls
         if self.digitalocean.scaling.token:
             os.environ["DIGITALOCEAN_TOKEN"] = self.digitalocean.scaling.token
+
+        # DigitalOcean Endpoint (DOKS Inference)
+        if self.digitalocean.endpoint.BASE_URL:
+            os.environ["DO_LLM_BASE_URL"] = str(self.digitalocean.endpoint.BASE_URL)
+        if self.digitalocean.endpoint.api_key:
+            os.environ["DO_LLM_API_KEY"] = self.digitalocean.endpoint.api_key
+        os.environ[
+            "DO_LLM_COMPLETION_MODEL"
+        ] = self.digitalocean.endpoint.default_completion_model
+        os.environ[
+            "DO_LLM_EMBEDDING_MODEL"
+        ] = self.digitalocean.endpoint.default_embedding_model
 
         # Processing settings
         os.environ["EMBED_BATCH"] = str(self.processing.batch_size)

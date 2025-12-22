@@ -4,6 +4,7 @@ Configuration Models.
 Implements §2.3 of the Canonical Blueprint.
 All configuration models use Pydantic for validation benefits.
 """
+
 from __future__ import annotations
 
 import os
@@ -156,11 +157,8 @@ class DatabaseConfig(BaseModel):
     """Database connection configuration."""
 
     url: str = Field(
-        default_factory=lambda: _env(
-            "DB_URL",
-            "postgresql://postgres:postgres@localhost:5432/cortex",
-        ),
-        description="Database connection URL",
+        default_factory=lambda: _env("DB_URL", ""),
+        description="Database connection URL (required - set via OUTLOOKCORTEX_DB_URL or DB_URL env var)",
     )
     pool_size: int = Field(
         default_factory=lambda: _env("DB_POOL_SIZE", 20, int),
@@ -174,6 +172,13 @@ class DatabaseConfig(BaseModel):
         le=50,
         description="Maximum pool overflow",
     )
+
+    def model_post_init(self, _context: object) -> None:
+        """Validate that required configuration is present."""
+        if not self.url:
+            raise ValueError(
+                "Database URL is required. Set OUTLOOKCORTEX_DB_URL or DB_URL environment variable."
+            )
 
 
 # -----------------------------------------------------------------------------
@@ -333,7 +338,7 @@ class DigitalOceanScalerConfig(BaseModel):
     """Scaling controls for DigitalOcean Kubernetes GPU pools."""
 
     token: Optional[str] = Field(
-        default_factory=lambda: _env("DO_TOKEN", None),
+        default_factory=lambda: _env("DO_TOKEN", os.getenv("DIGITALOCEAN_TOKEN")),
         description="DigitalOcean API token (falls back to DIGITALOCEAN_TOKEN)",
     )
     cluster_id: Optional[str] = Field(
@@ -368,7 +373,7 @@ class DigitalOceanScalerConfig(BaseModel):
         default_factory=lambda: _env_list("DO_GPU_NODE_TAGS"),
         description="Tags applied to the GPU node pool when provisioning",
     )
-    api_BASE_URL: str = Field(
+    api_base_url: str = Field(
         default_factory=lambda: _env(
             "DO_API_BASE_URL", "https://api.digitalocean.com/v2"
         ),
@@ -914,7 +919,7 @@ class SensitiveConfig(BaseModel):
     qwen_api_key: Optional[str] = Field(
         default_factory=lambda: _env("QWEN_API_KEY", None), description="Qwen API key"
     )
-    qwen_BASE_URL: Optional[str] = Field(
+    qwen_base_url: Optional[str] = Field(
         default_factory=lambda: _env("QWEN_BASE_URL", None),
         description="Qwen API base URL",
     )

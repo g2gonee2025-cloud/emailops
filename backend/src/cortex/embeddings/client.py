@@ -3,6 +3,7 @@ Embeddings Client.
 
 Provides a stable interface for embedding operations.
 """
+
 from __future__ import annotations
 
 from typing import List

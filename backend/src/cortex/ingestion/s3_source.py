@@ -4,6 +4,7 @@ S3/Spaces Source Handler for Ingestion.
 Implements §6 and §17 of the Canonical Blueprint.
 Downloads conversation folders from DigitalOcean Spaces for processing.
 """
+
 from __future__ import annotations
 
 import logging

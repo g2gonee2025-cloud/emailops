@@ -1,0 +1,2 @@
+2024-10-07 14:43 | From: alice@example.com | To: bob@example.com; carol@example.com
+2024-10-07 15:50 | From: dave@example.com | To: eve@example.com

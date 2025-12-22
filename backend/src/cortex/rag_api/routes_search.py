@@ -3,6 +3,7 @@ Search API Routes.
 
 Implements §9.2 of the Canonical Blueprint.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -12,6 +13,7 @@ import time
 from cortex.audit import log_audit_event
 from cortex.common.exceptions import CortexError
 from cortex.context import tenant_id_ctx, user_id_ctx
+from cortex.observability import trace_operation  # P2 Fix: Enable tracing
 from cortex.rag_api.models import SearchRequest, SearchResponse
 from cortex.retrieval.hybrid_search import KBSearchInput, tool_kb_search_hybrid
 from fastapi import APIRouter, HTTPException, Request
@@ -21,6 +23,7 @@ router = APIRouter()
 
 
 @router.post("/search", response_model=SearchResponse)
+@trace_operation("api_search")  # P2 Fix: Enable request tracing
 async def search_endpoint(
     request: SearchRequest, http_request: Request
 ) -> SearchResponse:
@@ -60,8 +63,8 @@ async def search_endpoint(
             input_hash = hashlib.sha256(input_str.encode()).hexdigest()
 
             log_audit_event(
-                tenant_id=request.tenant_id,
-                user_or_agent=request.user_id,
+                tenant_id=tenant_id_ctx.get(),
+                user_or_agent=user_id_ctx.get(),
                 action="search",
                 input_hash=input_hash,
                 risk_level="low",

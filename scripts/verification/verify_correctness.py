@@ -3,14 +3,14 @@ from pathlib import Path
 
 root_dir = Path(__file__).resolve().parents[2]
 sys.path.append(str(root_dir / "backend" / "src"))
-import unittest
-from pathlib import Path
+import unittest  # noqa: E402
+from pathlib import Path  # noqa: E402
 
 # Add src to path
 sys.path.append(str(Path.cwd() / "backend" / "src"))
 
-from cortex.chunking.chunker import ChunkingInput, chunk_text
-from cortex.ingestion.quoted_masks import detect_quoted_spans
+from cortex.chunking.chunker import ChunkingInput, chunk_text  # noqa: E402
+from cortex.ingestion.quoted_masks import detect_quoted_spans  # noqa: E402
 
 
 class TestCorrectness(unittest.TestCase):
@@ -57,7 +57,7 @@ class TestCorrectness(unittest.TestCase):
             ChunkingInput(
                 text=text,
                 section_path="attachments/test.txt",
-                chunk_type_hint="attachment_text"  # Passing string, model converts?
+                chunk_type_hint="attachment_text",  # Passing string, model converts?
                 # Wait, ChunkingInput defines type_hint as optional str.
                 # chunk_text logic uses it.
             )

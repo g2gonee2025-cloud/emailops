@@ -1,6 +1,7 @@
 """
 Unit tests for Search Filters and Grammar Parser.
 """
+
 from datetime import datetime, timezone
 
 from cortex.retrieval.filters import (

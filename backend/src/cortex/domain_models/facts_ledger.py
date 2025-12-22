@@ -3,6 +3,7 @@ Facts Ledger Domain Models.
 
 Implements §10.4 of the Canonical Blueprint - summarization models.
 """
+
 from __future__ import annotations
 
 from datetime import datetime

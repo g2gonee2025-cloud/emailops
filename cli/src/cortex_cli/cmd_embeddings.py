@@ -5,6 +5,7 @@ Provides:
 - `cortex embeddings stats` - Show embedding statistics
 - `cortex embeddings backfill` - Backfill missing embeddings
 """
+
 import argparse
 import sys
 from typing import Any

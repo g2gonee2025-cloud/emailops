@@ -1,6 +1,7 @@
 """
 Interactive TUI for Cortex CLI.
 """
+
 import sys
 
 import questionary
@@ -10,6 +11,8 @@ from rich.panel import Panel
 # Lazy imports are handled inside functions to ensure fast startup
 
 console = Console()
+
+STYLE_HIGHLIGHT = "fg:cyan bold"
 
 
 def _print_header():
@@ -56,12 +59,12 @@ def interactive_loop():
             ],
             style=questionary.Style(
                 [
-                    ("qmark", "fg:cyan bold"),
+                    ("qmark", STYLE_HIGHLIGHT),
                     ("question", "fg:white bold"),
-                    ("answer", "fg:cyan bold"),
-                    ("pointer", "fg:cyan bold"),
-                    ("highlighted", "fg:cyan bold"),
-                    ("selected", "fg:cyan bold"),
+                    ("answer", STYLE_HIGHLIGHT),
+                    ("pointer", STYLE_HIGHLIGHT),
+                    ("highlighted", STYLE_HIGHLIGHT),
+                    ("selected", STYLE_HIGHLIGHT),
                     ("separator", "fg:black"),
                     ("instruction", "fg:white"),
                     ("text", "fg:white"),
@@ -104,7 +107,7 @@ def interactive_loop():
 def _handle_index(cli_main):
     provider = questionary.select(
         "Embedding Provider:",
-        choices=["vertex", "openai", "azure", "local"],
+        choices=["vertex", "openai", "local"],
         default="vertex",
     ).ask()
 
@@ -150,7 +153,7 @@ def _handle_doctor():
     for c in checks:
         doctor_args.append(f"--{c.replace('_', '-')}")
 
-    sys.argv = [sys.argv[0]] + doctor_args
+    sys.argv = [sys.argv[0], *doctor_args]
     try:
         cmd_doctor.main()
     except SystemExit:

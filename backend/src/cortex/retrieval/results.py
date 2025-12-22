@@ -3,6 +3,7 @@ Search Result Models.
 
 Moved from hybrid_search.py to avoid circular dependencies.
 """
+
 from __future__ import annotations
 
 from typing import Any, Dict, List, Literal, Optional

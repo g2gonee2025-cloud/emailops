@@ -4,6 +4,7 @@ Conversation Summarizer.
 Generates high-level summaries of conversation threads to enable
 "topic-aware" retrieval.
 """
+
 from __future__ import annotations
 
 import logging

@@ -4,6 +4,7 @@ Email Processing.
 Implements email cleaning and thread splitting.
 Blueprint §6.2: Email text cleaning and metadata extraction.
 """
+
 from __future__ import annotations
 
 import re
@@ -41,21 +42,23 @@ _BLANK_LINES = re.compile(r"^\s*$", re.MULTILINE)
 _QUOTED_REPLY = re.compile(r"^>+\s?(.*)$", re.MULTILINE)
 
 # Header patterns to remove
+# Header patterns to remove
+# Simplified to avoid backtracking warnings (s5852)
 _HEADER_PATTERNS = [
-    re.compile(r"^From:\s*.+$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^To:\s*.+$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^Cc:\s*.+$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^Bcc:\s*.+$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^Subject:\s*.+$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^Date:\s*.+$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^Sent:\s*.+$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^Reply-To:\s*.+$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^Message-ID:\s*.+$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^In-Reply-To:\s*.+$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^References:\s*.+$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^Content-Type:\s*.+$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^MIME-Version:\s*.+$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^X-[A-Za-z-]+:\s*.+$", re.MULTILINE | re.IGNORECASE),
+    re.compile(r"^From:.*$", re.MULTILINE | re.IGNORECASE),
+    re.compile(r"^To:.*$", re.MULTILINE | re.IGNORECASE),
+    re.compile(r"^Cc:.*$", re.MULTILINE | re.IGNORECASE),
+    re.compile(r"^Bcc:.*$", re.MULTILINE | re.IGNORECASE),
+    re.compile(r"^Subject:.*$", re.MULTILINE | re.IGNORECASE),
+    re.compile(r"^Date:.*$", re.MULTILINE | re.IGNORECASE),
+    re.compile(r"^Sent:.*$", re.MULTILINE | re.IGNORECASE),
+    re.compile(r"^Reply-To:.*$", re.MULTILINE | re.IGNORECASE),
+    re.compile(r"^Message-ID:.*$", re.MULTILINE | re.IGNORECASE),
+    re.compile(r"^In-Reply-To:.*$", re.MULTILINE | re.IGNORECASE),
+    re.compile(r"^References:.*$", re.MULTILINE | re.IGNORECASE),
+    re.compile(r"^Content-Type:.*$", re.MULTILINE | re.IGNORECASE),
+    re.compile(r"^MIME-Version:.*$", re.MULTILINE | re.IGNORECASE),
+    re.compile(r"^X-[a-z-]+:.*$", re.MULTILINE | re.IGNORECASE),
 ]
 
 # Signature patterns (checked in last 2000 chars)
@@ -216,40 +219,44 @@ def extract_email_metadata(text: str) -> dict[str, Any]:
     }
 
     # Extract From
-    from_match = re.search(
-        r"^From:\s*(.+)$", header_block, re.MULTILINE | re.IGNORECASE
-    )
+    from_match = re.search(r"^From:.*$", header_block, re.MULTILINE | re.IGNORECASE)
     if from_match:
-        result["sender"] = from_match.group(1).strip()
+        result["sender"] = from_match.group(0)[5:].strip()
 
     # Extract To (may have multiple addresses)
-    to_match = re.search(r"^To:\s*(.+)$", header_block, re.MULTILINE | re.IGNORECASE)
+    to_match = re.search(r"^To:.*$", header_block, re.MULTILINE | re.IGNORECASE)
     if to_match:
-        result["recipients"] = [addr.strip() for addr in to_match.group(1).split(",")]
+        # Skip "To:" prefix (3 chars)
+        result["recipients"] = [
+            addr.strip() for addr in to_match.group(0)[3:].split(",")
+        ]
 
     # Extract Cc
-    cc_match = re.search(r"^Cc:\s*(.+)$", header_block, re.MULTILINE | re.IGNORECASE)
+    cc_match = re.search(r"^Cc:.*$", header_block, re.MULTILINE | re.IGNORECASE)
     if cc_match:
-        result["cc"] = [addr.strip() for addr in cc_match.group(1).split(",")]
+        result["cc"] = [addr.strip() for addr in cc_match.group(0)[3:].split(",")]
 
     # Extract Bcc
-    bcc_match = re.search(r"^Bcc:\s*(.+)$", header_block, re.MULTILINE | re.IGNORECASE)
+    bcc_match = re.search(r"^Bcc:.*$", header_block, re.MULTILINE | re.IGNORECASE)
     if bcc_match:
-        result["bcc"] = [addr.strip() for addr in bcc_match.group(1).split(",")]
+        result["bcc"] = [addr.strip() for addr in bcc_match.group(0)[4:].split(",")]
 
     # Extract Date (try both Date: and Sent:)
     date_match = re.search(
-        r"^(?:Date|Sent):\s*(.+)$", header_block, re.MULTILINE | re.IGNORECASE
+        r"^(?:Date|Sent):.*$", header_block, re.MULTILINE | re.IGNORECASE
     )
     if date_match:
-        result["date"] = date_match.group(1).strip()
+        # Split by colon to get value
+        parts = date_match.group(0).split(":", 1)
+        if len(parts) > 1:
+            result["date"] = parts[1].strip()
 
     # Extract Subject
     subject_match = re.search(
-        r"^Subject:\s*(.+)$", header_block, re.MULTILINE | re.IGNORECASE
+        r"^Subject:.*$", header_block, re.MULTILINE | re.IGNORECASE
     )
     if subject_match:
-        result["subject"] = subject_match.group(1).strip()
+        result["subject"] = subject_match.group(0)[8:].strip()
 
     return result
 

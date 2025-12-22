@@ -15,6 +15,7 @@ Supports filters:
 - type:pdf,docx
 - -excludeterm (minus prefix for exclusion)
 """
+
 from __future__ import annotations
 
 import re

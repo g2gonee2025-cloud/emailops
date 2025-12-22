@@ -11,6 +11,7 @@ Adds:
 - GIN index on tsv_text
 - Trigger to auto-update tsv_text
 """
+
 from alembic import op
 
 # revision identifiers

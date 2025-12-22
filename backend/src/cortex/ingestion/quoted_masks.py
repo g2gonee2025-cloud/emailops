@@ -3,6 +3,7 @@ Quoted text masking.
 
 Implements §6.3 of the Canonical Blueprint.
 """
+
 from __future__ import annotations
 
 from typing import List

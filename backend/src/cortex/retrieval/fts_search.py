@@ -4,6 +4,7 @@ Full-Text Search (FTS) retrieval.
 Implements §8.2 of the Canonical Blueprint.
 Adapted for Conversation-based schema (conversation_id instead of thread_id/message_id).
 """
+
 from __future__ import annotations
 
 import logging
@@ -120,6 +121,7 @@ def search_chunks_fts(
     limit: int = 50,
     conversation_ids: List[str] | None = None,
     is_attachment: bool | None = None,
+    file_types: List[str] | None = None,  # P1 Fix: Add file_types filter
 ) -> List[ChunkFTSResult]:
     """
     Perform FTS search on chunks.
@@ -127,6 +129,7 @@ def search_chunks_fts(
     Blueprint §8.3 (adapted for Conversation schema):
     * FTS search on chunks.tsv_text
     * Returns chunk-level hits for hybrid fusion
+    * Supports file_types filtering (e.g., ['pdf', 'docx'])
     """
     query = (query or "").strip()
     if not query:
@@ -155,6 +158,14 @@ def search_chunks_fts(
         else:
             attachment_filter_sql = "AND c.is_attachment = FALSE"
 
+    # P1 Fix: File types filter (e.g., type:pdf returns only PDF chunks)
+    file_types_filter_sql = ""
+    if file_types:
+        # Filter by chunk metadata.source containing file extension
+        # OR by chunk_type for attachment chunks
+        file_types_filter_sql = "AND (c.extra_data->>'file_type' = ANY(:file_types) OR c.extra_data->>'source_type' = ANY(:file_types))"
+        params["file_types"] = file_types
+
     stmt = text(
         f"""
         WITH q AS (
@@ -176,6 +187,7 @@ def search_chunks_fts(
             AND c.tsv_text @@ q.tsq
             {conversation_filter_sql}
             {attachment_filter_sql}
+            {file_types_filter_sql}
         ORDER BY score DESC
         LIMIT :limit
     """

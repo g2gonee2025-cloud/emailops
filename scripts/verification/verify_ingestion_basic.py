@@ -3,16 +3,19 @@ from pathlib import Path
 
 root_dir = Path(__file__).resolve().parents[2]
 sys.path.append(str(root_dir / "backend" / "src"))
-import unittest
-from pathlib import Path
+import unittest  # noqa: E402
+from pathlib import Path  # noqa: E402
 
 sys.path.append(str(Path("backend/src").resolve()))
 
-from unittest.mock import patch
+from unittest.mock import patch  # noqa: E402
 
-from cortex.ingestion.pii import redact_pii
-from cortex.ingestion.text_preprocessor import get_text_preprocessor
-from cortex.security.validators import validate_file_result, validate_project_id
+from cortex.ingestion.pii import redact_pii  # noqa: E402
+from cortex.ingestion.text_preprocessor import get_text_preprocessor  # noqa: E402
+from cortex.security.validators import (  # noqa: E402
+    validate_file_result,
+    validate_project_id,
+)
 
 
 class TestSecurityAndIngestion(unittest.TestCase):

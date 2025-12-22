@@ -36,11 +36,11 @@ spec:
                 name: emailops-secrets
           resources:
             requests:
-              memory: "2Gi"
-              cpu: "1500m"   # Scaled down to fit 2-core nodes (schedulable)
+              memory: "512Mi"
+              cpu: "100m"
             limits:
-              memory: "8Gi"
-              cpu: "8000m"   # Burst up to available limits
+              memory: "4Gi"
+              cpu: "1000m"
           livenessProbe:
             httpGet:
               path: /health

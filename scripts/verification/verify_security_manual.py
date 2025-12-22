@@ -3,18 +3,18 @@ import sys
 """
 Manual Verification Script for Security Modules.
 """
-import logging
-from pathlib import Path
+import logging  # noqa: E402
+from pathlib import Path  # noqa: E402
 
 root_dir = Path(__file__).resolve().parents[2]
 sys.path.append(str(root_dir / "backend" / "src"))
-from pathlib import Path
+from pathlib import Path  # noqa: E402
 
 # Add backend/src to path
 sys.path.append(str(Path("backend/src").resolve()))
 
-from cortex.safety.policy_enforcer import check_action
-from cortex.security.injection_defense import InjectionDefense
+from cortex.safety.policy_enforcer import check_action  # noqa: E402
+from cortex.security.injection_defense import InjectionDefense  # noqa: E402
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
