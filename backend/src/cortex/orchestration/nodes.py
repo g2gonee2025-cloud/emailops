@@ -1061,40 +1061,51 @@ def node_summarize_final(state: Dict[str, Any]) -> Dict[str, Any]:
 def _merge_participants(facts: Any, thread_context_obj: Any) -> list[Any]:
     """Merge DB participant context with LLM-inferred insights."""
     if not thread_context_obj:
-        # Fallback if no thread context object (shouldn't happen in normal flow)
         return facts.participants
 
     from cortex.domain_models.facts_ledger import ParticipantAnalysis
 
     # Create lookup maps from LLM ledger
-    ledger_participants = {p.email.lower(): p for p in facts.participants if p.email}
-    ledger_names = {p.name.lower(): p for p in facts.participants if p.name}
+    ledger_by_email = {p.email.lower(): p for p in facts.participants if p.email}
+    ledger_by_name = {p.name.lower(): p for p in facts.participants if p.name}
 
-    final_participants = []
-    for p in thread_context_obj.participants:
-        email_key = p.email.lower()
-
-        # Start with DB info
-        analysis = ParticipantAnalysis(
-            name=p.name or p.email.split("@")[0],
-            email=p.email,
-            role="other" if p.role in ["recipient", "cc"] else "internal",
-            tone="neutral",
-            stance="Unknown",
+    return [
+        _create_merged_participant(
+            p, ledger_by_email, ledger_by_name, ParticipantAnalysis
         )
+        for p in thread_context_obj.participants
+    ]
 
-        # Overlay LLM insights if available
-        match = ledger_participants.get(email_key)
-        if not match and p.name:
-            match = ledger_names.get(p.name.lower())
 
-        if match:
-            analysis.role = match.role or analysis.role
-            analysis.tone = match.tone or analysis.tone
-            analysis.stance = match.stance or analysis.stance
-            if email_key in ledger_participants:
-                analysis.name = match.name or analysis.name
+def _create_merged_participant(
+    p: Any,
+    ledger_by_email: dict[str, Any],
+    ledger_by_name: dict[str, Any],
+    ParticipantAnalysis: type,
+) -> Any:
+    """Create a merged participant with DB info and LLM insights."""
+    email_key = p.email.lower()
 
-        final_participants.append(analysis)
+    # Start with DB info
+    analysis = ParticipantAnalysis(
+        name=p.name or p.email.split("@")[0],
+        email=p.email,
+        role="other" if p.role in ["recipient", "cc"] else "internal",
+        tone="neutral",
+        stance="Unknown",
+    )
 
-    return final_participants
+    # Find matching LLM insight
+    match = ledger_by_email.get(email_key) or (
+        ledger_by_name.get(p.name.lower()) if p.name else None
+    )
+
+    # Overlay LLM insights if found
+    if match:
+        analysis.role = match.role or analysis.role
+        analysis.tone = match.tone or analysis.tone
+        analysis.stance = match.stance or analysis.stance
+        if email_key in ledger_by_email:
+            analysis.name = match.name or analysis.name
+
+    return analysis

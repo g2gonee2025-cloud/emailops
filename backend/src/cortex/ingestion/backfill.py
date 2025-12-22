@@ -44,103 +44,100 @@ def backfill_embeddings(
     model_name = os.getenv("EMBED_MODEL", "tencent/KaLM-Embedding-Gemma3-12B-2511")
 
     with SessionLocal() as session:
-        # Check total to process
-        total_stmt = (
-            select(func.count(Chunk.chunk_id))
-            .where(Chunk.embedding.is_(None))
-            .where(
-                or_(
-                    Chunk.extra_data.is_(None),
-                    Chunk.extra_data.op("->>")("skipped").is_(None),
-                )
-            )
-        )
-        total_missing = session.execute(total_stmt).scalar()
+        total_missing = _get_missing_embeddings_count(session)
         logger.info(f"Total chunks missing embeddings: {total_missing}")
 
         if total_missing == 0:
             return
 
         processed = 0
-        while True:
-            # Check limit
-            if limit and processed >= limit:
-                break
-
-            # Fetch batch
-            stmt = (
-                select(Chunk)
-                .where(Chunk.embedding.is_(None))
-                .where(
-                    or_(
-                        Chunk.extra_data.is_(None),
-                        Chunk.extra_data.op("->>")("skipped").is_(None),
-                    )
-                )
-                .limit(batch_size)
-            )
-            chunks = session.execute(stmt).scalars().all()
-
+        while not (limit and processed >= limit):
+            chunks = _get_chunks_without_embeddings(session, batch_size)
             if not chunks:
                 break
 
             texts = [c.text for c in chunks]
-
-            try:
-                start_time = time.time()
-                # logger.info(f"Processing chunks: {[str(c.chunk_id) for c in chunks]}")
-                resp = client.embeddings.create(
-                    input=texts, model=model_name, encoding_format="float"
-                )
-                duration = time.time() - start_time
-
-                # Default OpenAI response structure
-                embeddings = [data.embedding for data in resp.data]
-
-                # Update DB
-                for i, chunk in enumerate(chunks):
-                    chunk.embedding = embeddings[i]
-
-                session.commit()
-
-                processed += len(chunks)
-                logger.info(
-                    f"Processed {processed}/{total_missing} chunks. Batch took {duration:.2f}s"
-                )
-
-            except Exception as e:
-                # Fallback to serial processing if batch fails
-                logger.warning(
-                    f"Batch failed with error: {e}. Retrying chunks serially..."
-                )
-
-                for chunk in chunks:
-                    try:
-                        resp = client.embeddings.create(
-                            input=[chunk.text],
-                            model=model_name,
-                            encoding_format="float",
-                        )
-                        chunk.embedding = resp.data[0].embedding
-                        # Commit safe chunks immediately or in small groups?
-                        # Committing individually to be safe
-                        session.commit()
-                        processed += 1
-
-                    except Exception as inner_e:
-                        logger.warning(
-                            f"Skipping bad chunk {chunk.chunk_id}: {inner_e}"
-                        )
-                        # Mark as skipped
-                        ed = dict(chunk.extra_data) if chunk.extra_data else {}
-                        ed["skipped"] = True
-                        ed["error"] = str(inner_e)[:200]
-                        chunk.extra_data = ed
-                        session.commit()
-
-                continue
+            batch_processed = _process_embedding_batch(
+                client, session, chunks, texts, model_name
+            )
+            processed += batch_processed
+            logger.info(f"Processed {processed}/{total_missing} chunks.")
 
     logger.info("Backfill complete!")
+
+
+def _get_missing_embeddings_count(session) -> int:
+    """Get count of chunks missing embeddings."""
+    stmt = (
+        select(func.count(Chunk.chunk_id))
+        .where(Chunk.embedding.is_(None))
+        .where(
+            or_(
+                Chunk.extra_data.is_(None),
+                Chunk.extra_data.op("->>")("skipped").is_(None),
+            )
+        )
+    )
+    return session.execute(stmt).scalar()
+
+
+def _get_chunks_without_embeddings(session, batch_size: int) -> list:
+    """Fetch a batch of chunks without embeddings."""
+    stmt = (
+        select(Chunk)
+        .where(Chunk.embedding.is_(None))
+        .where(
+            or_(
+                Chunk.extra_data.is_(None),
+                Chunk.extra_data.op("->>")("skipped").is_(None),
+            )
+        )
+        .limit(batch_size)
+    )
+    return session.execute(stmt).scalars().all()
+
+
+def _process_embedding_batch(client, session, chunks, texts, model_name) -> int:
+    """Process a batch of embeddings, falling back to serial on error."""
+    try:
+        start_time = time.time()
+        resp = client.embeddings.create(
+            input=texts, model=model_name, encoding_format="float"
+        )
+        duration = time.time() - start_time
+
+        embeddings = [data.embedding for data in resp.data]
+        for i, chunk in enumerate(chunks):
+            chunk.embedding = embeddings[i]
+
+        session.commit()
+        logger.info(f"Batch took {duration:.2f}s")
+        return len(chunks)
+
+    except Exception as e:
+        logger.warning(f"Batch failed with error: {e}. Retrying chunks serially...")
+        return _process_chunks_serially(client, session, chunks, model_name)
+
+
+def _process_chunks_serially(client, session, chunks, model_name) -> int:
+    """Process chunks one by one after batch failure."""
+    processed = 0
+    for chunk in chunks:
+        try:
+            resp = client.embeddings.create(
+                input=[chunk.text], model=model_name, encoding_format="float"
+            )
+            chunk.embedding = resp.data[0].embedding
+            session.commit()
+            processed += 1
+        except Exception as inner_e:
+            logger.warning(f"Skipping bad chunk {chunk.chunk_id}: {inner_e}")
+            ed = dict(chunk.extra_data) if chunk.extra_data else {}
+            ed["skipped"] = True
+            ed["error"] = str(inner_e)[:200]
+            chunk.extra_data = ed
+            session.commit()
+    return processed
 
 
 if __name__ == "__main__":
