@@ -544,7 +544,7 @@ def _test_parser_on_file(sample_file: Path) -> tuple[bool, str | None, str | Non
     Returns: (success, parsed_subject, error_message)
     """
     try:
-        from cortex.ingestion.parser_email import parse_eml_file
+        from cortex.archive.parser_email import parse_eml_file
 
         if sample_file.suffix.lower() == ".json":
             import json

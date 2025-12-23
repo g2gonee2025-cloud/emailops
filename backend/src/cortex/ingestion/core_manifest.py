@@ -6,8 +6,6 @@ import re
 from pathlib import Path
 from typing import Any
 
-from cortex.ingestion.parser_email import normalize_subject
-
 """
 core_manifest.py - Centralized manifest.json parsing and metadata extraction.
 
@@ -21,6 +19,48 @@ All other modules should import from here instead of duplicating logic.
 
 # Control character pattern
 _CONTROL_CHARS = re.compile(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]")
+
+# Subject normalization patterns
+_RE_FWD_PATTERN = re.compile(
+    r"^(?:re|fwd?|aw|sv|vs|antw|odp|回复|答复|轉寄):\s*", re.IGNORECASE
+)
+_BRACKET_PATTERN = re.compile(r"\[.*?\]")
+_WHITESPACE_PATTERN = re.compile(r"\s+")
+
+
+def _normalize_subject_helper(subject: str) -> str:
+    """
+    Normalize subject for threading.
+
+    - Remove Re:, Fwd:, FW:, etc. prefixes (in multiple languages)
+    - Remove [bracketed] content like [EXTERNAL]
+    - Collapse whitespace
+    - Lowercase
+    """
+    if not subject:
+        return ""
+
+    # Remove Re/Fwd prefixes iteratively
+    normalized = subject
+    while True:
+        new_val = _RE_FWD_PATTERN.sub("", normalized).strip()
+        if new_val == normalized:
+            break
+        normalized = new_val
+
+    # Remove bracketed content
+    normalized = _BRACKET_PATTERN.sub("", normalized)
+
+    # Collapse whitespace and lowercase
+    normalized = _WHITESPACE_PATTERN.sub(" ", normalized).strip().lower()
+
+    return normalized
+
+
+def normalize_subject(subject: str) -> str:
+    """Public helper that normalizes subjects consistently across modules."""
+    return _normalize_subject_helper(subject)
+
 
 logger = logging.getLogger(__name__)
 

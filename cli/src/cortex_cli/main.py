@@ -109,6 +109,7 @@ else:
 NOT_SET = "not set"
 
 CORE_COMMANDS = [
+    ("pipeline", "Run the unified ingestion pipeline"),
     ("ingest", "Process and ingest email exports into the system"),
     ("index", "Build/rebuild search index with embeddings"),
     ("search", "Search indexed emails with natural language"),
@@ -141,17 +142,15 @@ COMMON_OPTIONS = [
 ]
 
 EXAMPLES = [
-    ("cortex ingest ./exports/emails", "Ingest emails from a folder"),
-    ("cortex ingest ./my_export --tenant acme", "Ingest with tenant ID"),
-    ("cortex index --workers 4", "Build index with 4 workers"),
+    ("cortex pipeline --source Outlook/ --tenant acme", "Run full pipeline"),
+    ("cortex pipeline --dry-run --limit 5", "Preview 5 folders"),
     ('cortex search "contract terms"', "Search for contract terms"),
     ("cortex doctor --check-embeddings", "Test embedding connectivity"),
 ]
 
 WORKFLOW_STEPS = [
     ("cortex doctor", "Check system health"),
-    ("cortex ingest <path>", "Import email exports"),
-    ("cortex index", "Build search embeddings"),
+    ("cortex pipeline --source <path>", "Run full E2E pipeline"),
     ("cortex search <query>", "Query your emails"),
     ("cortex answer <question>", "Get AI answers"),
 ]
@@ -441,6 +440,22 @@ def _run_validate(
         else:
             print(f"\n  {_colorize('ERROR:', 'red')} {e}")
         sys.exit(1)
+
+
+def _run_pipeline(args: argparse.Namespace) -> None:
+    """Wrapper for pipeline command."""
+    from cortex_cli.cmd_pipeline import cmd_pipeline_run
+
+    cmd_pipeline_run(
+        source_prefix=args.source,
+        tenant_id=args.tenant,
+        limit=args.limit,
+        concurrency=args.concurrency,
+        auto_embed=args.auto_embed,
+        dry_run=args.dry_run,
+        verbose=args.verbose,
+        json_output=args.json,
+    )
 
 
 def _run_ingest(
@@ -743,10 +758,14 @@ def _run_search(
     query: str,
     top_k: int = 10,
     tenant_id: str = "default",
+    fusion: str = "rrf",
+    debug: bool = False,
     json_output: bool = False,
 ) -> None:
     """
     Search indexed emails with natural language queries.
+
+    Supports Hybrid Search (Vector + FTS + RRF/Weighted).
     """
     import json
 
@@ -755,6 +774,9 @@ def _run_search(
         print(f"{_colorize('▶ SEARCH', 'bold')}\n")
         print(f"  Query:   {_colorize(query, 'cyan')}")
         print(f"  Top K:   {_colorize(str(top_k), 'dim')}")
+        print(f"  Fusion:  {_colorize(fusion, 'dim')}")
+        if debug:
+            print(f"  {_colorize('DEBUG MODE', 'yellow')}")
         print()
 
     try:
@@ -777,6 +799,7 @@ def _run_search(
             user_id="cli-user",
             query=query,
             k=top_k,
+            fusion_method=fusion,  # type: ignore
         )
 
         if not json_output:
@@ -804,14 +827,40 @@ def _run_search(
                 )
                 for i, r in enumerate(results.results[:top_k], 1):
                     score = getattr(r, "score", 0)
-                    text = getattr(r, "text", str(r))[:200]
-                    source = getattr(r, "source", "unknown")
+                    # P1 Fix: Use correct field names from SearchResultItem
+                    content = getattr(r, "content", "") or ""
+                    highlights = getattr(r, "highlights", [])
+                    text = (
+                        content[:200]
+                        if content
+                        else (highlights[0][:200] if highlights else "")
+                    )
+                    chunk_id = getattr(r, "chunk_id", None) or getattr(
+                        r, "message_id", "unknown"
+                    )
+                    chunk_type = (
+                        r.metadata.get("chunk_type", "unknown")
+                        if hasattr(r, "metadata")
+                        else "unknown"
+                    )
+
+                    # Score display
+                    score_str = f"{score:.4f}"
+                    if debug:
+                        fusion_score = getattr(r, "fusion_score", None) or 0
+                        vec_score = getattr(r, "vector_score", None) or 0
+                        lex_score = getattr(r, "lexical_score", None) or 0
+                        score_str += f" (F:{fusion_score:.3f} V:{vec_score:.3f} L:{lex_score:.3f})"
 
                     print(
-                        f"  {_colorize(f'[{i}]', 'bold')} Score: {_colorize(f'{score:.3f}', 'cyan')}"
+                        f"  {_colorize(f'[{i}]', 'bold')} Score: {_colorize(score_str, 'cyan')}"
                     )
-                    print(f"      Source: {_colorize(str(source), 'dim')}")
-                    print(f"      {text}...")
+                    print(
+                        f"      Source: {_colorize(str(chunk_id), 'dim')} ({chunk_type})"
+                    )
+                    print(f"      {text.replace(chr(10), ' ')}...")
+                    if debug and highlights:
+                        print(f"      Highlights: {highlights[:2]}")
                     print()
             else:
                 print(f"  {_colorize('○', 'yellow')} No results found for: {query}")
@@ -1311,6 +1360,65 @@ The ingestion pipeline:
         )
     )
 
+    # Pipeline command
+    pipeline_parser = subparsers.add_parser(
+        "pipeline",
+        help="Run the unified ingestion pipeline",
+        description="""
+Run the end-to-end Cortex pipeline:
+  1. Discovery: Scans source (S3/Local) for conversation folders.
+  2. Ingestion: Atomic batch processing (Validate -> Ingest).
+  3. Embedding: (Optional) Triggers vector generation.
+
+Examples:
+  cortex pipeline --source "Outlook/Inbox" --tenant "acme" --auto-embed
+        """,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    pipeline_parser.add_argument(
+        "--source",
+        default="Outlook/",
+        help="S3 prefix or local path to scan (default: Outlook/)",
+    )
+    pipeline_parser.add_argument(
+        "--tenant",
+        default="default",
+        help="Tenant ID to associate with data",
+    )
+    pipeline_parser.add_argument(
+        "--limit",
+        type=int,
+        help="Max folders to process",
+    )
+    pipeline_parser.add_argument(
+        "--concurrency",
+        type=int,
+        default=4,
+        help="Number of parallel workers (default: 4)",
+    )
+    pipeline_parser.add_argument(
+        "--auto-embed",
+        action="store_true",
+        help="Trigger embedding generation after ingestion",
+    )
+    pipeline_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Preview what would be processed without making changes",
+    )
+    pipeline_parser.add_argument(
+        "--verbose",
+        "-v",
+        action="store_true",
+        help="Enable verbose/debug output",
+    )
+    pipeline_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Output results as JSON",
+    )
+    pipeline_parser.set_defaults(func=lambda args: _run_pipeline(args))
+
     # Index command
     index_parser = subparsers.add_parser(
         "index",
@@ -1417,6 +1525,17 @@ Uses hybrid search (vector + full-text) for best results.
         help="Tenant ID (default: 'default')",
     )
     search_parser.add_argument(
+        "--fusion",
+        choices=["rrf", "weighted_sum"],
+        default="rrf",
+        help="Fusion method: rrf (default) or weighted_sum",
+    )
+    search_parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Show detailed score breakdown (F/V/L)",
+    )
+    search_parser.add_argument(
         "--json",
         action="store_true",
         help="Output results as JSON",
@@ -1426,6 +1545,8 @@ Uses hybrid search (vector + full-text) for best results.
             query=args.query,
             top_k=args.top_k,
             tenant_id=args.tenant,
+            fusion=args.fusion,
+            debug=args.debug,
             json_output=args.json,
         )
     )

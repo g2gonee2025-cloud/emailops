@@ -1,86 +1,42 @@
 """
-Parser for extracting participants from Conversation.txt files.
-
-Handles deduplication across multiple messages within the same conversation.
+Unified Parser for conversation text and participant extraction.
+Replaces ad-hoc regex logic in validation.py and email_processing.py.
 """
 
 from __future__ import annotations
 
 import logging
 import re
-from typing import Any
+from typing import Any, Dict, List, Tuple
 
 logger = logging.getLogger(__name__)
 
-# Pattern to extract message headers
-# Format: DATE TIME | From: EMAIL | To: RECIPIENT(S) | Cc: CC_RECIPIENTS
-# Simplify: regex reduced from complexity 30 to <20
-MESSAGE_HEADER_PATTERN = re.compile(
-    r"^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\s*\|\s*From:\s*([^|]+)(?:\s*\|\s*To:\s*([^|]+))?(?:\s*\|\s*Cc:\s*(.+))?$",
-    re.MULTILINE | re.IGNORECASE,
+# =============================================================================
+# Constants & Patterns
+# =============================================================================
+
+# Matches standard Conversation.txt header lines:
+# 2024-10-07 14:43 | From: ... | To: ...
+HEADER_LINE_PATTERN = re.compile(
+    r"^\d{4}-\d{2}-\d{2}.+?\|\s*From:.+$", re.MULTILINE | re.IGNORECASE
 )
 
-# Pattern to extract email addresses from various formats
+# Robust field extractor that handles "Field: Value" within pipe delimiters
+FIELD_PATTERN = re.compile(r"(?:^|\|)\s*(From|To|Cc|Bcc):\s*([^|\n\r]+)", re.IGNORECASE)
+
+# Exchange Distinguished Name (Legacy Support)
+EXCHANGE_DN_PATTERN = re.compile(r"/o=[^/]+/ou=[^/]+(?:/cn=[^/\s]+)+", re.IGNORECASE)
+
+# RFC 5322 Email Pattern (Simplified for text extraction)
 EMAIL_PATTERN = re.compile(
-    r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}",
-    re.IGNORECASE,
-)
-
-# Pattern for Exchange DN format (e.g., /o=exchangelabs/ou=.../cn=recipients/cn=...)
-EXCHANGE_DN_PATTERN = re.compile(
-    r"/o=[^/]+/ou=[^/]+(?:/cn=[^/\s]+)+",
-    re.IGNORECASE,
+    r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", re.IGNORECASE
 )
 
 
-def extract_email_from_field(field: str) -> str | None:
+def extract_participants_from_conversation_txt(text: str) -> List[Dict[str, Any]]:
     """
-    Extract an email address from a From/To field.
-
-    Handles:
-    - Plain email: user@domain.com
-    - Display name with email: "John Doe" <john@example.com>
-    - Exchange DN: /o=exchangelabs/ou=.../cn=recipients/cn=abc123-username
-
-    Returns the email address or None if not found.
-    """
-    if not field:
-        return None
-
-    field = field.strip()
-
-    # Try to extract standard email first
-    email_match = EMAIL_PATTERN.search(field)
-    if email_match:
-        return email_match.group(0).lower()
-
-    # Check for Exchange DN format - extract the last CN component
-    dn_match = EXCHANGE_DN_PATTERN.search(field)
-    if dn_match:
-        # Extract the last cn= component as an identifier
-        dn = dn_match.group(0)
-        cn_parts = re.findall(r"/cn=([^/]+)", dn, re.IGNORECASE)
-        if cn_parts:
-            # Use the last CN as a pseudo-email identifier
-            last_cn = cn_parts[-1]
-            # Clean up common prefixes like "ho1", "exch", etc.
-            if "-" in last_cn:
-                parts = last_cn.split("-", 1)
-                if len(parts) > 1 and len(parts[1]) > 3:
-                    return f"{parts[1]}@exchange.local"
-            return f"{last_cn}@exchange.local"
-
-    return None
-
-
-def extract_participants_from_conversation_txt(text: str) -> list[dict[str, Any]]:
-    """
-    Extract unique participants from Conversation.txt content.
-
-    Parses header lines in format:
-        DATE TIME | From: SENDER | To: RECIPIENT(S) | Cc: CC_RECIPIENTS
-
-    Deduplicates by email address (case-insensitive).
+    The Single Source of Truth for extracting participants from raw text.
+    Used by: Ingestion, Validation, and Backfills.
 
     Args:
         text: Raw content of Conversation.txt
@@ -91,80 +47,125 @@ def extract_participants_from_conversation_txt(text: str) -> list[dict[str, Any]
     if not text:
         return []
 
-    seen_emails: set[str] = set()
-    participants: list[dict[str, Any]] = []
+    participants: Dict[str, Dict[str, Any]] = {}
 
-    def add_participant(field: str, role: str) -> None:
-        """Helper to add a participant if not already seen."""
-        email = extract_email_from_field(field)
-        if email and email not in seen_emails:
-            seen_emails.add(email)
-            participants.append(
-                {
-                    "name": _extract_display_name(field, email),
+    # 1. Scan for header lines
+    for line in HEADER_LINE_PATTERN.findall(text):
+        _parse_header_line(line, participants)
+
+    # 2. Convert to sorted list
+    return sorted(list(participants.values()), key=lambda x: x["smtp"])
+
+
+def _split_recipients(value: str) -> List[str]:
+    """
+    Split recipient string by comma or semicolon, respecting quoted strings.
+    E.g. '"Doe, John" <j@d.com>, Jane' -> ['"Doe, John" <j@d.com>', 'Jane']
+    """
+    # Regex explanation:
+    # 1. Quoted string: "..." (non-capturing group for content)
+    # 2. OR Non-separator chars: [^;,]+
+    # Pattern finds all chunks that are either a quoted string or non-delimiters
+    # This is complex to do purely with split, so we verify a simple state machine approach
+    # or a robust regex findall.
+
+    # Robust regex approach:
+    # Match either:
+    # - A quoted string: "  (?:[^"\\]|\\.)*  "
+    # - A non-special char sequence: [^;,"]+
+    # Then join them until we hit a delimiter? No.
+
+    # Simpler: Use a state-machine parser for robustness
+    if not value:
+        return []
+
+    parts = []
+    current = []
+    in_quote = False
+
+    for char in value:
+        if char == '"':
+            in_quote = not in_quote
+            current.append(char)
+        elif char in (",", ";") and not in_quote:
+            # Delimiter found outside quote
+            parts.append("".join(current).strip())
+            current = []
+        else:
+            current.append(char)
+
+    if current:
+        parts.append("".join(current).strip())
+
+    return [p for p in parts if p]
+
+
+def _parse_header_line(line: str, participants: Dict[str, Dict[str, Any]]) -> None:
+    """Parse a single header line and update participants dict."""
+    for match in FIELD_PATTERN.finditer(line):
+        role_raw, value = match.groups()
+        role = _normalize_role(role_raw)
+
+        # Use robust splitter
+        raw_addrs = _split_recipients(value)
+
+        for raw_addr in raw_addrs:
+            email, name = _extract_email_and_name(raw_addr)
+            if email and email not in participants:
+                participants[email] = {
+                    "name": name,
                     "smtp": email,
-                    "role": role,
+                    "role": role,  # Note: Role is first-seen basis
                 }
-            )
-
-    def process_field(field: str | None, role: str) -> None:
-        """Process a field that may contain multiple recipients."""
-        if not field:
-            return
-        # Split by common delimiters: semicolon, comma
-        parts = re.split(r"[;,]", field)
-        for part in parts:
-            part = part.strip()
-            if part:
-                add_participant(part, role)
-
-    # Find all message headers
-    for match in MESSAGE_HEADER_PATTERN.finditer(text):
-        from_field = match.group(1)
-        to_field = match.group(2)
-        cc_field = match.group(3)
-
-        # Process From (single sender)
-        if from_field:
-            add_participant(from_field.strip(), "sender")
-
-        # Process To (may contain multiple recipients)
-        process_field(to_field, "recipient")
-
-        # Process Cc (may contain multiple recipients)
-        process_field(cc_field, "cc")
-
-    logger.debug(
-        "Extracted %d unique participants from Conversation.txt", len(participants)
-    )
-    return participants
 
 
-def _extract_display_name(field: str, email: str) -> str:
+def _extract_email_and_name(raw: str) -> Tuple[str | None, str]:
     """
-    Extract display name from a field, defaulting to email prefix if no name found.
-
-    Handles formats like:
-    - "John Doe" <john@example.com>
-    - John Doe <john@example.com>
-    - john@example.com
+    Extract clean email and display name from raw string.
+    Handles: "Name <email>", "email", and Exchange DNs.
     """
-    # Check for quoted display name
-    quoted_match = re.match(r'"([^"]+)"', field)
-    if quoted_match:
-        return quoted_match.group(1).strip()
+    # 1. Try standard email extraction
+    email_match = EMAIL_PATTERN.search(raw)
+    if email_match:
+        email = email_match.group(0).lower()
+        # Remove email from raw to detect name
+        name_candidate = (
+            raw.replace(email, "").replace("<", "").replace(">", "").strip('" ').strip()
+        )
+        name = name_candidate if name_candidate else email.split("@")[0]
+        return email, _clean_name(name)
 
-    # Check for name before angle bracket
-    angle_match = re.match(r"([^<]+)<", field)
-    if angle_match:
-        name = angle_match.group(1).strip()
-        if name and name != email:
-            return name
+    # 2. Try Exchange DN
+    dn_match = EXCHANGE_DN_PATTERN.search(raw)
+    if dn_match:
+        # Pseudo-email extraction from CN
+        dn = dn_match.group(0)
+        cn_parts = re.findall(r"/cn=([^/]+)", dn, re.IGNORECASE)
+        if cn_parts:
+            last_cn = cn_parts[-1]
+            # Heuristic: Usernames often follow "recipients/cn="
+            pseudo_email = f"{last_cn}@exchange.local".lower()
+            return pseudo_email, _clean_name(last_cn)
 
-    # Default to email prefix
-    if "@" in email:
-        prefix = email.split("@")[0]
-        # Clean up and capitalize
-        return prefix.replace(".", " ").replace("_", " ").title()
+    return None, ""
 
-    return email
+
+def _clean_name(name: str) -> str:
+    """Normalize display name."""
+    if not name:
+        return ""
+    # Remove surrounding quotes, flip "Last, First"???
+    # For now, just title case and strip
+    return name.title().strip()
+
+
+def _normalize_role(role: str) -> str:
+    role = role.lower()
+    if role == "from":
+        return "sender"
+    if role == "to":
+        return "recipient"
+    return role  # cc, bcc
+
+
+__all__ = ["extract_participants_from_conversation_txt"]

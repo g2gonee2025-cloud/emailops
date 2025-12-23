@@ -10,6 +10,8 @@ import argparse
 import sys
 from typing import Any
 
+from cortex_cli.style import colorize as _colorize
+
 try:
     from rich import box
     from rich.console import Console
@@ -20,22 +22,6 @@ except ImportError:
     RICH_AVAILABLE = False
 
 console = Console() if RICH_AVAILABLE else None
-
-
-def _colorize(text: str, color: str) -> str:
-    """Fallback colorize if rich not available."""
-    colors = {
-        "reset": "\033[0m",
-        "bold": "\033[1m",
-        "dim": "\033[2m",
-        "green": "\033[32m",
-        "yellow": "\033[33m",
-        "cyan": "\033[36m",
-        "red": "\033[31m",
-    }
-    if not sys.stdout.isatty():
-        return text
-    return f"{colors.get(color, '')}{text}{colors['reset']}"
 
 
 def cmd_db_stats(args: argparse.Namespace) -> None:

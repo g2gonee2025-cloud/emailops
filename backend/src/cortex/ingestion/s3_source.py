@@ -220,6 +220,15 @@ class S3SourceHandler:
         content = self.get_object_content(key)
         return content.decode("utf-8-sig")
 
+    def upload_file(self, local_path: Path, key: str) -> None:
+        """Upload a local file to S3.
+
+        Args:
+            local_path: Path to local file to upload
+            key: S3 key (path) for the uploaded file
+        """
+        self.client.upload_file(str(local_path), self.bucket, key)
+
     def conversation_exists(self, folder_prefix: str) -> bool:
         """Check if a conversation folder exists and has required files."""
         try:

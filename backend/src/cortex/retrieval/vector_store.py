@@ -244,7 +244,7 @@ class PgvectorStore(VectorStore):
                 c.chunk_type,
                 c.is_attachment,
                 c.attachment_id,
-                c.embedding <=> CAST(:query_vec AS vector({self._output_dim})) AS distance
+                c.embedding <=> CAST(:query_vec AS halfvec({self._output_dim})) AS distance
             FROM chunks c
             {", settings" if ef_search is not None else ""}
             WHERE c.tenant_id = :tenant_id

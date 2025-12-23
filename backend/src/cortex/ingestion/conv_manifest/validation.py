@@ -13,15 +13,11 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from cortex.ingestion.core_manifest import load_manifest
+from cortex.ingestion.models import Problem
 from cortex.utils.atomic_io import atomic_write_json
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
-
-
-class Problem(BaseModel):
-    folder: str
-    issue: str
 
 
 class ManifestValidationReport(BaseModel):
@@ -266,44 +262,34 @@ def _extract_participants_from_txt(conv_txt: Path) -> List[str]:
     """
     Extract participant names/emails from headers in Conversation.txt.
 
+    Delegates to the Single Source of Truth in conversation_parser.py.
+
     Args:
         conv_txt: Path to Conversation.txt
 
     Returns:
-        List of distinct participant strings (sorted)
+        List of distinct participant strings (sorted, plain email addresses)
     """
-    import re
-
-    participants = set()
     try:
+        from cortex.ingestion.conversation_parser import (
+            extract_participants_from_conversation_txt,
+        )
+
         text = conv_txt.read_text(encoding="utf-8-sig", errors="replace")
+        participants = extract_participants_from_conversation_txt(text)
 
-        # Regex to find From/To/Cc fields
-        # Handles:
-        # 1. "From: name <email>" (Start of line)
-        # 2. "... | From: email | ..." (Pipe delimited)
-        # 3. Avoids matching random "To:" in body text
-        clean_pattern = r"(?:^|\|)\s*(?:From|To|Cc):\s*([^|\n\r]+)"
+        # Validation manifest expects a flat list of plain email addresses
+        # Extract just the smtp field for backward compatibility
+        results = set()
+        for p in participants:
+            if p.get("smtp"):
+                results.add(p["smtp"])
 
-        matches = re.findall(clean_pattern, text, re.IGNORECASE | re.MULTILINE)
-
-        for m in matches:
-            clean = m.strip()
-            # Heuristics to filter noise:
-            # 1. Must be non-empty
-            # 2. Should be reasonably short (names/emails usually < 100 chars)
-            # 3. Should not look like a sentence (e.g. no "." at end unless it's an initial?)
-            if clean and len(clean) < 100:
-                # Basic cleanup of surrounding quotes/brackets if regex missed them
-                clean = clean.strip(" <>\"'")
-                participants.add(clean)
+        return sorted(list(results), key=str.lower)
 
     except Exception as e:
         logger.warning(f"Failed to extract participants from {conv_txt}: {e}")
-
-    # Sort case-insensitively and de-dup
-    unique_sorted = sorted(list({p.lower(): p for p in participants}.values()))
-    return unique_sorted
+        return []
 
 
 def _extract_last_message_participants(

@@ -1,7 +1,25 @@
+"""
+DEPRECATED: This script's logic has been merged into the Core module.
+
+Use `cortex.email_processing.clean_email_text()` instead.
+
+This file will be removed in a future release. The patterns and logic have been
+consolidated into `backend/src/cortex/email_processing.py` to avoid duplication.
+
+For local file cleaning, use the cortex CLI instead.
+"""
+
 import re
 import shutil
 import sys
+import warnings
 from pathlib import Path
+
+warnings.warn(
+    "clean_conversation.py is deprecated. Use cortex.email_processing.clean_email_text() instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 try:
     # Tkinter is optional; we handle environments without a GUI.

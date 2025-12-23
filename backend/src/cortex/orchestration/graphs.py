@@ -149,6 +149,7 @@ def build_draft_graph() -> StateGraph:
 
     # Nodes
     workflow.add_node("prepare_query", node_prepare_draft_query)
+    workflow.add_node("load_thread", node_load_thread)
     # Reuse retrieval nodes from answer graph, but we need to map state keys if they differ
     # DraftEmailState has 'explicit_query' mapped to 'query' by prepare_query node
     # And it has 'retrieval_results' and 'assembled_context' same as AnswerQuestionState
@@ -164,7 +165,9 @@ def build_draft_graph() -> StateGraph:
     workflow.add_node("handle_error", node_handle_error)
 
     # Edges
-    workflow.set_entry_point("prepare_query")
+    # Flow: load_thread -> prepare_query -> retrieve ...
+    workflow.set_entry_point("load_thread")
+    workflow.add_edge("load_thread", "prepare_query")
     workflow.add_edge("prepare_query", "retrieve")
     workflow.add_edge("retrieve", "assemble")
     workflow.add_edge("assemble", "draft_initial")

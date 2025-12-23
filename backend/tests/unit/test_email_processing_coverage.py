@@ -1,12 +1,14 @@
 import unittest
 
-from cortex.email_processing import (
-    clean_email_text,
+import pytest
+from cortex.archive.email_processing_legacy import (
     extract_email_metadata,
     split_email_thread,
 )
+from cortex.email_processing import clean_email_text
 
 
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 class TestEmailProcessingCoverage(unittest.TestCase):
     def test_clean_email_basics(self):
         # Text must be > 100 chars for signature stripping

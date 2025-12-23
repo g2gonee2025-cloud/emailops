@@ -10,6 +10,8 @@ import argparse
 import sys
 from typing import Any
 
+from cortex_cli.style import colorize as _colorize
+
 try:
     from rich.console import Console
 
@@ -20,37 +22,17 @@ except ImportError:
 console = Console() if RICH_AVAILABLE else None
 
 
-def _colorize(text: str, color: str) -> str:
-    colors = {
-        "reset": "\033[0m",
-        "bold": "\033[1m",
-        "dim": "\033[2m",
-        "green": "\033[32m",
-        "yellow": "\033[33m",
-        "cyan": "\033[36m",
-        "red": "\033[31m",
-    }
-    if not sys.stdout.isatty():
-        return text
-    return f"{colors.get(color, '')}{text}{colors['reset']}"
-
-
-def cmd_embeddings_stats(_args: argparse.Namespace) -> None:
+def cmd_embeddings_stats(args: argparse.Namespace) -> None:
     """Show embedding statistics."""
     try:
+        import json as json_module
+
         from cortex.config.loader import get_config
         from cortex.db.session import engine
         from sqlalchemy import text
         from sqlalchemy.orm import Session
 
         config = get_config()
-        # engine is already imported
-
-        print(f"\n{_colorize('EMBEDDING STATISTICS', 'bold')}\n")
-        print(f"  Model: {_colorize(config.embedding.model_name, 'cyan')}")
-        print(
-            f"  Dimensions: {_colorize(str(config.embedding.output_dimensionality), 'cyan')}\n"
-        )
 
         with Session(engine) as session:
             total = session.execute(text("SELECT COUNT(*) FROM chunks")).scalar() or 0
@@ -61,9 +43,25 @@ def cmd_embeddings_stats(_args: argparse.Namespace) -> None:
                 or 0
             )
             missing = total - with_emb
-
             pct = (with_emb / total * 100) if total > 0 else 0
 
+        stats = {
+            "model": config.embedding.model_name,
+            "dimensions": config.embedding.output_dimensionality,
+            "total_chunks": total,
+            "with_embedding": with_emb,
+            "missing": missing,
+            "coverage_pct": round(pct, 1),
+        }
+
+        if getattr(args, "json", False):
+            print(json_module.dumps(stats, indent=2))
+        else:
+            print(f"\n{_colorize('EMBEDDING STATISTICS', 'bold')}\n")
+            print(f"  Model: {_colorize(config.embedding.model_name, 'cyan')}")
+            print(
+                f"  Dimensions: {_colorize(str(config.embedding.output_dimensionality), 'cyan')}\n"
+            )
             print(f"  Total Chunks:    {_colorize(str(total), 'bold')}")
             print(f"  With Embedding:  {_colorize(str(with_emb), 'green')}")
             print(
@@ -137,6 +135,7 @@ def setup_embeddings_parser(subparsers: Any) -> None:
         help="Show embedding statistics",
         description="Display embedding model info and coverage stats.",
     )
+    stats_parser.add_argument("--json", action="store_true", help="Output as JSON")
     stats_parser.set_defaults(func=cmd_embeddings_stats)
 
     # embeddings backfill

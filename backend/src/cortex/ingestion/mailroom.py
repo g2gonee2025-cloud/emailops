@@ -258,11 +258,12 @@ def _ingest_conversation(
     )
 
     # 4. Intelligence (Summary + Graph)
-    _process_intelligence(chunks_data, conversation_id, tenant_ns, job)
+    graph_data = _process_intelligence(chunks_data, conversation_id, tenant_ns, job)
 
     # 5. Write to DB
-    # 5. Write to DB
-    _write_results(conversation_data, attachments_data, chunks_data, job.tenant_id, job)
+    _write_results(
+        conversation_data, attachments_data, chunks_data, graph_data, job.tenant_id, job
+    )
 
     # Update summary
     manifest = convo_data.get("manifest", {})
@@ -488,9 +489,14 @@ def _process_intelligence(
     conversation_id: uuid.UUID,
     tenant_ns: uuid.UUID,
     job: IngestJobRequest,
-) -> None:
+) -> Dict[str, Any]:
+    """
+    Generate intelligence (summary, graph) and return graph data for writing.
+    """
+    graph_data = {"nodes": [], "edges": []}
+
     if not chunks_data:
-        return
+        return graph_data
 
     try:
         from cortex.intelligence.summarizer import ConversationSummarizer
@@ -549,71 +555,57 @@ def _process_intelligence(
                 )
 
             # 2. Graph Extraction
-            _extract_graph(summary_context, conversation_id, job.tenant_id)
+            graph_data = _extract_graph(summary_context, conversation_id, job.tenant_id)
 
     except Exception as e:
         logger.warning(f"Intelligence processing failed: {e}")
 
+    return graph_data
+
 
 def _extract_graph(
     summary_context: str, conversation_id: uuid.UUID, tenant_id: str
-) -> None:
+) -> Dict[str, Any]:
+    """
+    Extract graph nodes and edges from text.
+    Returns dict with 'nodes' and 'edges' lists for deferred writing.
+    """
+    graph_data = {"nodes": [], "edges": []}
     try:
-        from cortex.db.models import EntityEdge, EntityNode
-        from cortex.db.session import SessionLocal
         from cortex.intelligence.graph import GraphExtractor
-        from sqlalchemy import select
 
         graph_extractor = GraphExtractor()
         G = graph_extractor.extract_graph(summary_context)
 
         if G.number_of_nodes() > 0:
-            with SessionLocal() as session:
-                for node_name, attrs in G.nodes(data=True):
-                    node_type = attrs.get("type", "UNKNOWN")
-
-                    # Check if node exists (Global Tenant Scope)
-                    stmt = select(EntityNode).where(
-                        EntityNode.tenant_id == tenant_id,
-                        EntityNode.name == node_name,
-                    )
-                    existing_node = session.execute(stmt).scalar_one_or_none()
-
-                    if not existing_node:
-                        existing_node = EntityNode(
-                            tenant_id=tenant_id,
-                            name=node_name,
-                            type=node_type,
-                            description=f"Extracted from conversation {conversation_id}",
-                            properties={},
-                        )
-                        session.add(existing_node)
-                        session.flush()
-
-                    G.nodes[node_name]["db_id"] = existing_node.node_id
-
-                # Edges
-                for src, dst, edge_attrs in G.edges(data=True):
-                    src_id = G.nodes[src].get("db_id")
-                    dst_id = G.nodes[dst].get("db_id")
-
-                    if src_id and dst_id:
-                        edge = EntityEdge(
-                            tenant_id=tenant_id,
-                            source_id=src_id,
-                            target_id=dst_id,
-                            relation=edge_attrs.get("relation", "RELATED_TO"),
-                            description=edge_attrs.get("description", ""),
-                            conversation_id=conversation_id,
-                        )
-                        session.add(edge)
-
-                session.commit()
-                logger.info(
-                    f"Extracted Knowledge Graph: {G.number_of_nodes()} nodes, {G.number_of_edges()} edges"
+            # Format for writer
+            for node_name, attrs in G.nodes(data=True):
+                graph_data["nodes"].append(
+                    {
+                        "name": node_name,
+                        "type": attrs.get("type", "UNKNOWN"),
+                        "properties": {},
+                    }
                 )
+
+            for src, dst, edge_attrs in G.edges(data=True):
+                graph_data["edges"].append(
+                    {
+                        "source": src,
+                        "target": dst,
+                        "relation": edge_attrs.get("relation", "RELATED_TO"),
+                        "description": edge_attrs.get("description", ""),
+                    }
+                )
+
+            logger.info(
+                f"Extracted Knowledge Graph: {len(graph_data['nodes'])} nodes, {len(graph_data['edges'])} edges"
+            )
+
     except Exception as e:
         logger.warning(f"Graph extraction failed: {e}")
+
+    return graph_data
 
 
 def _resolve_source(job: IngestJobRequest) -> Tuple[Optional[Path], Optional[Path]]:
@@ -632,6 +624,7 @@ def _write_results(
     conversation_data: Dict[str, Any],
     attachments_data: List[Dict[str, Any]],
     chunks_data: List[Dict[str, Any]],
+    graph_data: Dict[str, Any],
     tenant_id: str,
     job: IngestJobRequest,
 ) -> None:
@@ -643,6 +636,7 @@ def _write_results(
         "conversation": conversation_data,
         "attachments": attachments_data,
         "chunks": chunks_data,
+        "graph": graph_data,
     }
 
     logger.info(

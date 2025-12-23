@@ -8,7 +8,6 @@ Blueprint §6.2: Email text cleaning and metadata extraction.
 from __future__ import annotations
 
 import re
-from typing import Any
 
 from cortex.utils import strip_control_chars
 
@@ -42,14 +41,20 @@ _BLANK_LINES = re.compile(r"^\s*$", re.MULTILINE)
 _QUOTED_REPLY = re.compile(r"^>+\s?(.*)$", re.MULTILINE)
 
 # Header patterns to remove
-# Header patterns to remove
-# Simplified to avoid backtracking warnings (s5852)
+# Includes standard RFC 822 headers + Conversation.txt-specific formats + i18n
 _HEADER_PATTERNS = [
+    # Conversation.txt-specific: "2024-10-07 14:43 | From: ..."
+    re.compile(
+        r"^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\s+\|\s+From:.*$",
+        re.MULTILINE | re.IGNORECASE,
+    ),
     re.compile(r"^From:.*$", re.MULTILINE | re.IGNORECASE),
     re.compile(r"^To:.*$", re.MULTILINE | re.IGNORECASE),
     re.compile(r"^Cc:.*$", re.MULTILINE | re.IGNORECASE),
     re.compile(r"^Bcc:.*$", re.MULTILINE | re.IGNORECASE),
     re.compile(r"^Subject:.*$", re.MULTILINE | re.IGNORECASE),
+    # Chinese subject header
+    re.compile(r"^主题:.*$", re.MULTILINE | re.IGNORECASE),
     re.compile(r"^Date:.*$", re.MULTILINE | re.IGNORECASE),
     re.compile(r"^Sent:.*$", re.MULTILINE | re.IGNORECASE),
     re.compile(r"^Reply-To:.*$", re.MULTILINE | re.IGNORECASE),
@@ -82,6 +87,34 @@ _SIGNATURE_PATTERNS = [
     re.compile(r"^DISCLAIMER:", re.MULTILINE | re.IGNORECASE),
 ]
 
+# Boilerplate keywords for line-level filtering (merged from clean_conversation.py)
+# These are checked case-insensitively against each line
+_BOILERPLATE_KEYWORDS = [
+    # English disclaimers
+    "Email from external sender",
+    "This message, and its attachments",
+    "This communication is confidential",
+    "legal notice",
+    "confidentiality notice",
+    "Please consider the environment before printing",
+    "Go Green, Avoid Printing",
+    # French disclaimers (i18n support)
+    "Ce message, et ses éventuelles pièces jointes",
+    "Ce message a été classifié",
+    "L'Internet ne permettant pas d'assurer l'intégrité de ce Message",
+    "Classification : Interne",
+    "Classification : Internal",
+    "Classification : Public",
+    # Organization-specific (can be extended)
+    "A member of the Nasco Insurance Group",
+]
+
+# Domain noise - lines that are just marketing URLs/domains
+_DOMAIN_NOISE = [
+    "CHALHOUBGROUP.COM",
+    "CAREERS.CHALHOUBGROUP.COM",
+]
+
 # Forwarding separator patterns
 _FORWARDING_PATTERNS = [
     re.compile(r"^-{3,}\s*Original Message\s*-{3,}", re.MULTILINE | re.IGNORECASE),
@@ -90,6 +123,41 @@ _FORWARDING_PATTERNS = [
     re.compile(r"^Begin forwarded message:", re.MULTILINE | re.IGNORECASE),
     re.compile(r"^On .+ wrote:$", re.MULTILINE),  # "On [date], [person] wrote:"
 ]
+
+
+def _is_boilerplate_line(line: str) -> bool:
+    """
+    Check if a line is boilerplate/noise that should be removed.
+
+    Consolidated from clean_conversation.py to avoid logic forks.
+    """
+    stripped = line.strip()
+    if not stripped:
+        return False
+
+    # Single URL lines
+    if re.fullmatch(r"https?://\S+", stripped, re.IGNORECASE):
+        return True
+
+    # Domain noise
+    if stripped.upper() in _DOMAIN_NOISE:
+        return True
+
+    # Bare www domains
+    if re.fullmatch(r"www\.[A-Za-z0-9.-]+", stripped):
+        return True
+
+    # Check against boilerplate keywords
+    lower = stripped.lower()
+    for keyword in _BOILERPLATE_KEYWORDS:
+        if keyword.lower() in lower:
+            return True
+
+    # Very long address-like lines (signature blocks)
+    if len(stripped) > 80 and stripped.count(",") >= 3 and "@" not in stripped:
+        return True
+
+    return False
 
 
 # =============================================================================
@@ -141,7 +209,13 @@ def clean_email_text(text: str) -> str:
     # For indexing, we typically want the raw content without markers
     text = _QUOTED_REPLY.sub(r"\1", text)
 
-    # 6. Redact emails and URLs
+    # 6. Remove boilerplate lines (disclaimers, domain noise, etc.)
+    # Consolidated from clean_conversation.py to avoid logic forks
+    lines = text.split("\n")
+    lines = [line for line in lines if not _is_boilerplate_line(line)]
+    text = "\n".join(lines)
+
+    # 7. Redact emails and URLs
     text = _EMAIL_SEARCH_PATTERN.sub("[email]", text)
     text = _URL_PATTERN.sub("[URL]", text)
 
@@ -192,154 +266,4 @@ def _strip_signature(text: str) -> str:
     return text
 
 
-def extract_email_metadata(text: str) -> dict[str, Any]:
-    """
-    Extract email metadata from header block.
-
-    Args:
-        text: Email text with headers
-
-    Returns:
-        Dict with sender, recipients, date, subject, cc, bcc
-    """
-    # Split at first double newline to get header block
-    parts = text.split("\n\n", 1)
-    header_block = parts[0] if parts else ""
-
-    # Unfold folded headers (lines starting with whitespace)
-    header_block = re.sub(r"\n[ \t]+", " ", header_block)
-
-    result: dict[str, Any] = {
-        "sender": None,
-        "recipients": [],
-        "date": None,
-        "subject": None,
-        "cc": [],
-        "bcc": [],
-    }
-
-    # Extract From
-    from_match = re.search(r"^From:.*$", header_block, re.MULTILINE | re.IGNORECASE)
-    if from_match:
-        result["sender"] = from_match.group(0)[5:].strip()
-
-    # Extract To (may have multiple addresses)
-    to_match = re.search(r"^To:.*$", header_block, re.MULTILINE | re.IGNORECASE)
-    if to_match:
-        # Skip "To:" prefix (3 chars)
-        result["recipients"] = [
-            addr.strip() for addr in to_match.group(0)[3:].split(",")
-        ]
-
-    # Extract Cc
-    cc_match = re.search(r"^Cc:.*$", header_block, re.MULTILINE | re.IGNORECASE)
-    if cc_match:
-        result["cc"] = [addr.strip() for addr in cc_match.group(0)[3:].split(",")]
-
-    # Extract Bcc
-    bcc_match = re.search(r"^Bcc:.*$", header_block, re.MULTILINE | re.IGNORECASE)
-    if bcc_match:
-        result["bcc"] = [addr.strip() for addr in bcc_match.group(0)[4:].split(",")]
-
-    # Extract Date (try both Date: and Sent:)
-    date_match = re.search(
-        r"^(?:Date|Sent):.*$", header_block, re.MULTILINE | re.IGNORECASE
-    )
-    if date_match:
-        # Split by colon to get value
-        parts = date_match.group(0).split(":", 1)
-        if len(parts) > 1:
-            result["date"] = parts[1].strip()
-
-    # Extract Subject
-    subject_match = re.search(
-        r"^Subject:.*$", header_block, re.MULTILINE | re.IGNORECASE
-    )
-    if subject_match:
-        result["subject"] = subject_match.group(0)[8:].strip()
-
-    return result
-
-
-def split_email_thread(text: str) -> list[str]:
-    """
-    Split an email thread into individual messages.
-
-    Uses common reply/forward separators to split the thread,
-    then attempts to sort chronologically by Date header.
-
-    Args:
-        text: Full email thread text
-
-    Returns:
-        List of individual message texts, oldest first
-    """
-    if not text:
-        return []
-
-    # Split on common separators
-    separators = [
-        r"-{3,}\s*Original Message\s*-{3,}",
-        r"-{3,}\s*Forwarded Message\s*-{3,}",
-        r"_{10,}",
-        r"On .+ wrote:",
-        r"Begin forwarded message:",
-    ]
-
-    # Build combined pattern
-    combined = "|".join(f"({sep})" for sep in separators)
-
-    # Split but keep separators
-    parts = re.split(f"({combined})", text, flags=re.IGNORECASE | re.MULTILINE)
-
-    # Clean up parts - remove empty and separator-only parts
-    messages = []
-    current = ""
-    for part in parts:
-        if part is None:
-            continue
-        part = part.strip()
-        if not part:
-            continue
-        # Check if this is a separator
-        is_sep = any(re.match(sep, part, re.IGNORECASE) for sep in separators)
-        if is_sep:
-            if current:
-                messages.append(current.strip())
-                current = ""
-        else:
-            current = part if not current else current + "\n\n" + part
-
-    if current:
-        messages.append(current.strip())
-
-    # Try to sort chronologically
-    messages_with_dates = []
-    for msg in messages:
-        meta = extract_email_metadata(msg)
-        date_str = meta.get("date")
-        messages_with_dates.append((msg, date_str))
-
-    # Only sort if we have dates for most messages
-    dated_count = sum(1 for _, d in messages_with_dates if d)
-    if dated_count >= len(messages) // 2:
-        # Parse dates and sort (basic heuristic - keep original order if parsing fails)
-        try:
-            from dateutil import parser as date_parser
-
-            def parse_date(d):
-                if not d:
-                    return None
-                try:
-                    return date_parser.parse(d)
-                except Exception:
-                    return None
-
-            messages_with_dates.sort(key=lambda x: parse_date(x[1]) or x[1] or "")
-        except ImportError:
-            pass  # No dateutil, keep original order
-
-    return [msg for msg, _ in messages_with_dates]
-
-
-__all__ = ["clean_email_text", "extract_email_metadata", "split_email_thread"]
+__all__ = ["clean_email_text"]

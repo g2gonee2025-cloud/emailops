@@ -45,7 +45,7 @@ class TestCmdDoctorHelpers:
         # Empty messages dir
         assert _find_sample_file(mock_export_root) is None
 
-    @patch("cortex.ingestion.parser_email.parse_eml_file")
+    @patch("cortex.archive.parser_email.parse_eml_file")
     def test_test_parser_on_file_eml_success(self, mock_parse, tmp_path):
         eml = tmp_path / "test.eml"
         eml.touch()
@@ -59,7 +59,7 @@ class TestCmdDoctorHelpers:
         assert subject == "Test Subject"
         assert error is None
 
-    @patch("cortex.ingestion.parser_email.parse_eml_file")
+    @patch("cortex.archive.parser_email.parse_eml_file")
     def test_test_parser_on_file_eml_fail(self, mock_parse, tmp_path):
         eml = tmp_path / "test.eml"
         eml.touch()

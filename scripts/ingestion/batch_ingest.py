@@ -3,7 +3,12 @@
 Batch ingestion script for processing S3 Outlook folders.
 
 Processes all folders through: validation, cleaning, chunking (no embedding).
+
+NOTE: This script is a "power user" tool pending CLI feature parity.
+Once `cortex ingest --batch` is implemented with progress/stats/skip/limit
+features, this script will be deprecated. See codebase_audit.md for details.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -140,7 +145,7 @@ def run_batch(
                 f"Progress: {i}/{len(folders)} ({pct:.1f}%) | "
                 f"OK: {stats.processed} | Failed: {stats.failed} | "
                 f"Chunks: {stats.total_chunks} | "
-                f"Rate: {rate:.2f}/s | ETA: {eta/60:.1f}m"
+                f"Rate: {rate:.2f}/s | ETA: {eta / 60:.1f}m"
             )
 
     return stats
@@ -178,7 +183,7 @@ def main():
     logger.info(f"Failed: {stats.failed}")
     logger.info(f"Total Chunks: {stats.total_chunks}")
     logger.info(f"Total Attachments: {stats.total_attachments}")
-    logger.info(f"Elapsed: {stats.elapsed()/60:.1f} minutes")
+    logger.info(f"Elapsed: {stats.elapsed() / 60:.1f} minutes")
     logger.info(f"Rate: {stats.rate():.2f} folders/second")
     logger.info("=" * 60)
 

@@ -19,6 +19,9 @@ from pydantic import BaseModel, Field
 class GraphState(BaseModel):
     """Base class that exposes dict-like helpers for LangGraph nodes."""
 
+    # Internal metadata
+    _graph_type: str = "unknown"
+
     def get(self, key: str, default: Any | None = None) -> Any | None:
         return getattr(self, key, default)
 
@@ -73,6 +76,7 @@ class DraftEmailState(GraphState):
     tone: Optional[str] = None
     reply_to_message_id: Optional[str] = None
     thread_id: Optional[str] = None
+    thread_context: Optional[str] = None  # Loaded from DB if thread_id is present
     explicit_query: Optional[str] = None
     draft_query: Optional[str] = None
     retrieval_results: Optional[SearchResults] = None

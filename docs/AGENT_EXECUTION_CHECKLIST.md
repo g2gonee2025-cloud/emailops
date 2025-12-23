@@ -451,6 +451,6 @@ For each step, **ALL** checklist items and tests must be completed before moving
 
 - [ ] End‑to‑end tests or manual flows in production (with test accounts/data).
 - [ ] Confirm observability signals show healthy, stable behavior.
-- [ ] Document remaining risks and TODOs in the ledger.
+- [ ] Document remaining risks and TODOs in the Implementation_Ledger.md.
 
 ---

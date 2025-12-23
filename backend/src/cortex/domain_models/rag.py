@@ -112,6 +112,12 @@ class EmailDraft(BaseModel):
     next_actions: List[NextAction] = Field(default_factory=list)
 
 
+class Issue(BaseModel):
+    description: str
+    severity: str = "medium"
+    category: str = "general"
+
+
 class DraftCritique(BaseModel):
     """Critique of a draft email."""
 
@@ -121,12 +127,6 @@ class DraftCritique(BaseModel):
     completeness_feedback: str = ""
     suggestions: List[str] = Field(default_factory=list)
     issues: List[Issue] = Field(default_factory=list)
-
-
-class Issue(BaseModel):
-    description: str
-    severity: str = "medium"
-    category: str = "general"
 
 
 class ThreadSummary(BaseModel):

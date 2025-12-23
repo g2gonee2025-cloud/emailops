@@ -1,1 +1,1 @@
-See CANONICAL_BLUEPRINT.md
+# Copilot Instructions\n\nSee instructions.md for agent guidelines.
