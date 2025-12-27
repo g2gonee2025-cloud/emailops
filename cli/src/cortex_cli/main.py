@@ -146,7 +146,7 @@ UTILITY_COMMANDS = [
 DATA_COMMANDS = [
     ("db", "Database management (stats, migrate)"),
     ("embeddings", "Embedding management (stats, backfill)"),
-    ("s3", "S3/Spaces storage (list, ingest)"),
+    ("s3", "S3/Spaces storage (list, ingest, check-structure)"),
     ("maintenance", "System maintenance (resolve-entities)"),
 ]
 
