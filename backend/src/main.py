@@ -539,6 +539,10 @@ async def lifespan(app: FastAPI):
     - Clean shutdown
     """
     config = get_config()
+    import redis.asyncio as redis
+    # On startup: Create Redis client and store in app state
+    app.state.redis = redis.from_url(config.redis.url, decode_responses=True)
+
 
     # Initialize observability stack
     init_observability(
@@ -572,6 +576,9 @@ async def lifespan(app: FastAPI):
         app.state.graphs = {}
 
     yield
+
+    # On shutdown: Gracefully close the Redis client
+    await app.state.redis.close()
 
     logger.info(f"Shutting down {APP_NAME}")
 
