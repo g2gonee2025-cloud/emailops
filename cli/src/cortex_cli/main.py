@@ -1320,11 +1320,13 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     from cortex_cli.cmd_embeddings import setup_embeddings_parser
     from cortex_cli.cmd_maintenance import setup_maintenance_parser
     from cortex_cli.cmd_s3 import setup_s3_parser
+    from cortex_cli.cmd_test import setup_test_parser
 
     setup_db_parser(subparsers)
     setup_embeddings_parser(subparsers)
     setup_s3_parser(subparsers)
     setup_maintenance_parser(subparsers)
+    setup_test_parser(subparsers)
 
     # Parse arguments
     parsed_args = parser.parse_args(args)
