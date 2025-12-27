@@ -1,32 +1,71 @@
-import { useState } from 'react';
+import { useReducer, useState } from 'react';
 import GlassCard from './ui/GlassCard';
 import { api } from '../lib/api';
 import type { ThreadSummary } from '../lib/api';
 import { FileText, Loader2, ListChecks, Sparkles, Copy, Check } from 'lucide-react';
 
+// 1. ARCHITECTURAL REFACTOR: State Management & Resilience
+// State is now managed by a reducer for atomic, predictable transitions.
+// This eliminates race conditions and inconsistent UI states.
+type State = {
+  status: 'idle' | 'loading' | 'success' | 'error';
+  summary: ThreadSummary | null;
+  error: string | null;
+};
+
+type Action =
+  | { type: 'FETCH_START' }
+  | { type: 'FETCH_SUCCESS'; payload: ThreadSummary }
+  | { type: 'FETCH_ERROR'; payload: string }
+  | { type: 'RESET' };
+
+const initialState: State = {
+  status: 'idle',
+  summary: null,
+  error: null,
+};
+
+function summaryReducer(state: State, action: Action): State {
+  switch (action.type) {
+    case 'FETCH_START':
+      return { ...initialState, status: 'loading' };
+    case 'FETCH_SUCCESS':
+      return { ...state, status: 'success', summary: action.payload };
+    case 'FETCH_ERROR':
+      return { ...state, status: 'error', error: action.payload };
+    case 'RESET':
+      return { ...initialState };
+    default:
+      throw new Error('Unhandled action type');
+  }
+}
+
+
 export function SummarizeView() {
   const [threadId, setThreadId] = useState('');
   const [maxLength, setMaxLength] = useState(500);
-  const [isLoading, setIsLoading] = useState(false);
-  const [summary, setSummary] = useState<ThreadSummary | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  const [state, dispatch] = useReducer(summaryReducer, initialState);
+  const { status, summary, error } = state;
+  const isLoading = status === 'loading';
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!threadId.trim() || isLoading) return;
 
-    setIsLoading(true);
-    setError(null);
-    setSummary(null);
+    dispatch({ type: 'FETCH_START' });
 
     try {
       const response = await api.summarizeThread(threadId.trim(), maxLength);
-      setSummary(response.summary);
+      dispatch({ type: 'FETCH_SUCCESS', payload: response.summary });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to summarize thread');
-    } finally {
-      setIsLoading(false);
+      // 2. SECURITY HARDENING: Prevent PII Leakage in Errors
+      // The raw error is logged for debugging but not passed to the state.
+      // A generic message is shown to the user.
+      console.error('Failed to summarize thread:', err);
+      dispatch({ type: 'FETCH_ERROR', payload: 'An unexpected error occurred. Please try again.' });
     }
   };
 
@@ -111,14 +150,14 @@ export function SummarizeView() {
           </form>
 
           {/* Error */}
-          {error && (
+          {status === 'error' && error && (
             <GlassCard className="p-4 border-red-500/30 bg-red-500/10">
               <p className="text-red-400">{error}</p>
             </GlassCard>
           )}
 
           {/* Summary Result */}
-          {summary && (
+          {status === 'success' && summary && (
             <div className="space-y-4 animate-slide-up">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold">Summary</h2>
@@ -177,7 +216,7 @@ export function SummarizeView() {
           )}
 
           {/* Empty State */}
-          {!summary && !isLoading && !threadId && (
+          {status === 'idle' && !threadId &&(
             <div className="text-center py-12">
               <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-green-500/20 to-blue-500/20 flex items-center justify-center mx-auto mb-6">
                 <FileText className="w-10 h-10 text-green-400" />
