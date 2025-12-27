@@ -56,6 +56,7 @@ if _dotenv_path.exists():
 else:
     load_dotenv()  # Fall back to default dotenv discovery
 
+from cortex_cli import cmd_search
 from cortex_cli._config_helpers import (  # noqa: E402
     _print_human_config,
     _print_json_config,
@@ -110,8 +111,10 @@ if TYPE_CHECKING:
 else:
     EmailOpsConfig = EmailOpsConfigProto
 
+from cortex.observability import init_observability
+
 # Lazy import for heavy dependencies
-# from cortex_cli.cmd_doctor import main as doctor_main
+from cortex_cli.cmd_doctor import main as doctor_main
 
 # ANSI color codes for terminal output
 
@@ -147,8 +150,13 @@ UTILITY_COMMANDS = [
 DATA_COMMANDS = [
     ("db", "Database management (stats, migrate)"),
     ("embeddings", "Embedding management (stats, backfill)"),
+    ("graph", "Knowledge Graph commands (discover-schema)"),
     ("s3", "S3/Spaces storage (list, ingest, check-structure)"),
     ("maintenance", "System maintenance (resolve-entities)"),
+    ("queue", "Job queue management (stats)"),
+    ("fix-issues", "Generate patches for SonarQube issues"),
+    ("patch", "Fix malformed patch files"),
+    ("schema", "Graph schema analysis tools"),
 ]
 
 COMMON_OPTIONS = [
@@ -821,7 +829,17 @@ def _run_search(
         if not json_output:
             print(f"  {_colorize('⏳', 'yellow')} Searching...\n")
 
-        results: Any = tool_kb_search_hybrid(request)
+        result: Any = tool_kb_search_hybrid(request)
+
+        if result.is_err():
+            error = result.unwrap_err()
+            if json_output:
+                print(json.dumps({"error": error.message, "success": False}))
+            else:
+                print(f"\n  {_colorize('ERROR:', 'red')} {error.message}")
+            sys.exit(1)
+
+        results = result.unwrap()
 
         if json_output:
             # Convert results to JSON-serializable format
@@ -1260,6 +1278,15 @@ def main(args: list[str] | None = None) -> None:
 
     A user-friendly command-line interface for managing EmailOps Cortex.
     """
+    # Initialize observability §12.3
+    # This should be one of the first things to run
+    try:
+        from cortex.observability import init_observability
+
+        init_observability(service_name="cortex-cli")
+    except ImportError:
+        # If cortex backend is not installed, CLI should still function
+        pass
     if args is None:
         args = sys.argv[1:]
 
@@ -1317,17 +1344,85 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     _setup_utility_commands(subparsers)
 
     # Register plugin subcommand groups
+    import typer
+    from cortex_cli.cmd_backfill import setup_backfill_parser
     from cortex_cli.cmd_db import setup_db_parser
     from cortex_cli.cmd_embeddings import setup_embeddings_parser
+    from cortex_cli.cmd_fix import setup_fix_parser
+    from cortex_cli.cmd_graph import app as graph_app
+    from cortex_cli.cmd_login import setup_login_parser
     from cortex_cli.cmd_maintenance import setup_maintenance_parser
+    from cortex_cli.cmd_queue import setup_queue_parser
     from cortex_cli.cmd_s3 import setup_s3_parser
+    from cortex_cli.cmd_safety import setup_safety_parser
     from cortex_cli.cmd_test import setup_test_parser
+    from cortex_cli.cmd_grounding import setup_grounding_parser
+    from rich.console import Console
+    from typer.core import TyperGroup
+    from typer.main import get_command_from_info
 
+    # A bit of a hack to integrate Typer apps with argparse
+    def setup_typer_command(subparsers, name, app, help_text=""):
+        parser = subparsers.add_parser(name, help=help_text, add_help=False)
+        command_info = typer.main.get_command_info(
+            app,
+            name=name,
+            pretty_exceptions_short=False,
+            pretty_exceptions_show_locals=False,
+            rich_markup_mode="rich",
+        )
+        command = get_command_from_info(
+            command_info,
+            pretty_exceptions_short=False,
+            pretty_exceptions_show_locals=False,
+            rich_markup_mode="rich",
+        )
+
+        def _run_typer(args):
+            try:
+                if isinstance(command, TyperGroup):
+                    command(args.typer_args, standalone_mode=False)
+                else:
+                    command(standalone_mode=False)
+
+            except typer.Exit as e:
+                if e.code != 0:
+                    console = Console()
+                    console.print(f"[bold red]Error:[/bold red] {e}")
+                # Do not exit process
+            except Exception as e:
+                console = Console()
+                console.print(f"[bold red]An unexpected error occurred:[/bold red] {e}")
+
+        parser.set_defaults(func=lambda args: _run_typer(args))
+        # This is a simple way to pass through args. A more robust solution might be needed.
+        parser.add_argument("typer_args", nargs="*")
+
+    from cortex_cli.cmd_index import setup_index_parser
+    from cortex_cli.cmd_patch import setup_patch_parser
+    from cortex_cli.cmd_schema import setup_schema_parser
+    from cortex_cli.cmd_test import setup_test_parser
+    from cortex_cli.config import _config
+
+    setup_backfill_parser(subparsers)
     setup_db_parser(subparsers)
     setup_embeddings_parser(subparsers)
     setup_s3_parser(subparsers)
     setup_maintenance_parser(subparsers)
     setup_test_parser(subparsers)
+    setup_grounding_parser(subparsers)
+    setup_safety_parser(subparsers)
+    setup_queue_parser(subparsers)x_parser(subparsers)
+    setup_login_parser(subparsers)
+    setup_typer_command(
+        subparsers, "graph", graph_app, help_text="Knowledge Graph commands"
+    )
+    setup_patch_parser(subparsers)
+    setup_index_parser(subparsers)
+    setup_schema_parser(subparsers)
+    if "sqlite" not in _config.database.url:
+        setup_test_parser(subparsers)
+>>>>>>> origin/main
 
     # Parse arguments
     parsed_args = parser.parse_args(args)
@@ -1951,14 +2046,13 @@ Run comprehensive system diagnostics including:
         help="Automatically fix common code issues",
         description="Run the auto-fix script to resolve low-hanging fruit issues.",
     )
-    autofix_parser.set_defaults(
-        func=lambda _: _run_autofix()
-    )
+    autofix_parser.set_defaults(func=lambda _: _run_autofix())
 
 
 def _run_autofix():
     """Run the autofix script."""
     from cortex_cli.cmd_autofix import main as autofix_main
+
     autofix_main()
 
 

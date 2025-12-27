@@ -48,18 +48,12 @@ def read_text_file(
             with path.open("r", encoding=encoding) as f:
                 content = f.read(max_chars)
         return content
-    except (FileNotFoundError, PermissionError, UnicodeDecodeError):
+    except (FileNotFoundError, PermissionError, UnicodeDecodeError, IOError):
         # Allow specific errors to bubble up or handle them?
         # The original code acted as a silent fallback (returning ""), typically used for optional files.
         # But for debugging, silent failure is bad.
         # Given "Phase 1" fixes, let's keep the signature but maybe log?
         # For now, let's stick to the safer behavior but at least narrow the exception.
-        return ""
-    except Exception:
-        # To match original behavior but be slightly safer (though "Exception" was used)
-        # We will keep the original broad catch if it's intended for resilience,
-        # but the review complaint was about masking errors.
-        # Let's return empty string but at least we validated max_chars above.
         return ""
 
 
