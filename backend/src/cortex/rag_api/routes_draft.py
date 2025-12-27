@@ -13,37 +13,35 @@ from cortex.audit import log_audit_event
 from cortex.common.exceptions import CortexError
 from cortex.context import tenant_id_ctx, user_id_ctx
 from cortex.observability import trace_operation  # P2 Fix: Enable tracing
-from cortex.orchestration.graphs import build_draft_graph
 from cortex.rag_api.models import DraftEmailRequest, DraftEmailResponse
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# Lazy load graph (fallback if app.state.graphs not available)
-_draft_graph = None
 
+def get_draft_graph(http_request: Request):
+    """
+    Get pre-compiled graph from app.state.
 
-def get_draft_graph(http_request: Request = None):
-    """Get pre-compiled graph from app.state or lazy load as fallback."""
-    # P0 Fix: Prefer pre-compiled graph from lifespan
-    if http_request and hasattr(http_request.app.state, "graphs"):
-        cached = http_request.app.state.graphs.get("draft")
-        if cached:
-            return cached
-
-    # Fallback to lazy loading
-    global _draft_graph
-    if _draft_graph is None:
-        logger.info("Lazily initializing Draft Graph (prefer app.state.graphs)...")
-        _draft_graph = build_draft_graph().compile()
-    return _draft_graph
+    This is intended to be used as a FastAPI dependency.
+    """
+    try:
+        return http_request.app.state.graphs["draft"]
+    except (AttributeError, KeyError) as e:
+        logger.exception("Draft graph not found in app.state.graphs. Check lifespan configuration.")
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error: Draft service not configured",
+        ) from e
 
 
 @router.post("/draft-email", response_model=DraftEmailResponse)
 @trace_operation("api_draft_email")  # P2 Fix: Enable request tracing
 async def draft_endpoint(
-    request: DraftEmailRequest, http_request: Request
+    request: DraftEmailRequest,
+    http_request: Request,
+    graph=Depends(get_draft_graph),
 ) -> DraftEmailResponse:
     """
     Draft email endpoint.
@@ -75,8 +73,7 @@ async def draft_endpoint(
             "correlation_id": correlation_id,
         }
 
-        # Invoke graph - use pre-compiled from app.state if available
-        graph = get_draft_graph(http_request)
+        # Invoke graph
         final_state = await graph.ainvoke(initial_state)
 
         # Check for errors

@@ -99,14 +99,20 @@ def get_file_path_from_patch(patch_content: str) -> str | None:
     for line in patch_content.split("\n"):
         if line.startswith("--- "):
             path_part = line[4:]
-            return path_part.split("\t")[0].strip() if "\t" in path_part else path_part.strip()
+            return (
+                path_part.split("\t")[0].strip()
+                if "\t" in path_part
+                else path_part.strip()
+            )
     return None
 
 
 def call_llm(prompt: str, model: str) -> str:
     """Call LLM to fix patch."""
     api_key = os.getenv("LLM_API_KEY") or os.getenv("DO_API_KEY")
-    base_url = (os.getenv("LLM_ENDPOINT") or "https://inference.do-ai.run/v1").rstrip("/")
+    base_url = (os.getenv("LLM_ENDPOINT") or "https://inference.do-ai.run/v1").rstrip(
+        "/"
+    )
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
     url = f"{base_url}/chat/completions"
 
@@ -213,9 +219,7 @@ def main(args: argparse.Namespace) -> None:
     results = []
     with ThreadPoolExecutor(max_workers=args.max_workers) as executor:
         futures = {
-            executor.submit(
-                fix_patch, p, output_dir, project_root, args.model
-            ): p
+            executor.submit(fix_patch, p, output_dir, project_root, args.model): p
             for p in patches
         }
 
@@ -230,8 +234,8 @@ def main(args: argparse.Namespace) -> None:
             else:
                 logger.warning(f"⚠️ {result['file']}: {status}")
 
-    fixed_count = sum(
-        1 for r in results if r["status"] in ("fixed", "already_valid")
-    )
+    fixed_count = sum(1 for r in results if r["status"] in ("fixed", "already_valid"))
     logger.info(f"\n{'=' * 60}")
-    logger.info(f"Result: {fixed_count}/{len(patches)} patches are ready in {output_dir}")
+    logger.info(
+        f"Result: {fixed_count}/{len(patches)} patches are ready in {output_dir}"
+    )

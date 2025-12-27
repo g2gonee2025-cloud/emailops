@@ -84,7 +84,9 @@ class FactsLedger(BaseModel):
             for item in l1 + l2:
                 # Use key_fn if provided, otherwise invalid JSON for complex objects
                 k = key_fn(item) if key_fn else item
-                if isinstance(k, (dict, list)):
+                if isinstance(k, BaseModel):
+                    k = k.model_dump_json()
+                elif isinstance(k, (dict, list)):
                     # Fallback for unhashable: stringify
                     k = str(k)
 
@@ -93,9 +95,15 @@ class FactsLedger(BaseModel):
                     out.append(item)
             return out
 
-        asks = _merge_lists(self.asks, other.asks, lambda x: x.description)
+        asks = _merge_lists(
+            self.asks,
+            other.asks,
+            lambda x: (x.description, x.from_participant, x.to_participant),
+        )
         commitments = _merge_lists(
-            self.commitments, other.commitments, lambda x: x.description
+            self.commitments,
+            other.commitments,
+            lambda x: (x.description, x.by_participant),
         )
         key_dates = _merge_lists(
             self.key_dates, other.key_dates, lambda x: (x.date, x.description)

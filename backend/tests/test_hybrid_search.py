@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from unittest.mock import Mock, patch
 
+import numpy as np
 import pytest
 import numpy as np
 
@@ -136,7 +137,7 @@ class TestHybridSearch:
         mock_get_cache,
         mock_search_vector,
         mock_search_fts,
-        mock_client,
+        mock_get_runtime,
         mock_session_cls,
         mock_get_config,
     ):
@@ -158,13 +159,12 @@ class TestHybridSearch:
         # Setup Components
         mock_session = Mock()
         mock_session_cls.return_value.__enter__.return_value = mock_session
-
-        # Setup Cache miss then Embed
-        mock_get_cache.return_value = None
-
         mock_runtime = Mock()
+        mock_get_runtime.return_value = mock_runtime
+
+        # Setup Cache miss then Embed via mocked runtime
+        mock_get_cache.return_value = None
         mock_runtime.embed_queries.return_value = np.array([[0.1, 0.2, 0.3]])
-        mock_client.return_value = mock_runtime
 
         # Setup Results with correct types
         # FTS returns ChunkFTSResult
@@ -198,15 +198,17 @@ class TestHybridSearch:
             user_id="u1",
             query="test query",
         )
-        results = tool_kb_search_hybrid(input_args)
+        result = tool_kb_search_hybrid(input_args)
 
         # Verification
+        assert result.is_ok()
+        results = result.unwrap()
         assert len(results.results) == 1
         assert results.results[0].chunk_id == "1"
         assert "rrf" in results.reranker
 
         # Check calls
-        mock_client.return_value.embed_queries.assert_called_once_with(["test query"])
+        mock_runtime.embed_queries.assert_called_once_with(["test query"])
         mock_search_fts.assert_called_once()
         mock_search_vector.assert_called_once()
         mock_timestamps.assert_called_once()

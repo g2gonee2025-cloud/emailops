@@ -1,8 +1,12 @@
-from typing import Any
-from pathlib import Path
 import os
+from pathlib import Path
+from typing import Any
+
 from .style import colorize as _colorize
 
+from cortex.config.loader import get_config
+
+_config = get_config()
 
 def resolve_index_dir(root_dir: Path | None) -> Path:
     """Resolve the index directory."""
@@ -13,12 +17,15 @@ def resolve_index_dir(root_dir: Path | None) -> Path:
 
     return Path(os.getenv("INDEX_DIR", INDEX_DIRNAME_DEFAULT))
 
+
 def resolve_sender(sender: str | None) -> str:
     """Resolve the sender."""
     from .cmd_search import SENDER_LOCKED
+
     if sender:
         return sender
     return SENDER_LOCKED
+
 
 def _print_json_config(config: Any, section: str | None = None) -> None:
     """Print configuration in JSON format."""

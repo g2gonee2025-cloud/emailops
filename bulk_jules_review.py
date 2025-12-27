@@ -1,13 +1,14 @@
-import os
-import sys
-import glob
-import re
 import asyncio
-import aiohttp
+import glob
 import json
 import logging
+import os
+import re
+import sys
 from pathlib import Path
-from typing import List, Dict, Set
+from typing import Dict, List, Set
+
+import aiohttp
 
 # Configuration
 API_KEY = os.environ.get("JULES_API_KEY")

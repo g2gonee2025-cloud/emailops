@@ -56,12 +56,12 @@ if _dotenv_path.exists():
 else:
     load_dotenv()  # Fall back to default dotenv discovery
 
+from cortex_cli import cmd_search
 from cortex_cli._config_helpers import (  # noqa: E402
     _print_human_config,
     _print_json_config,
 )
 from cortex_cli.style import colorize as _colorize  # noqa: E402
-from cortex_cli import cmd_search
 
 
 # Minimal protocol for the config object to satisfy static analysis when imports fail
@@ -111,6 +111,8 @@ if TYPE_CHECKING:
 else:
     EmailOpsConfig = EmailOpsConfigProto
 
+from cortex.observability import init_observability
+
 # Lazy import for heavy dependencies
 from cortex_cli.cmd_doctor import main as doctor_main
 
@@ -148,26 +150,13 @@ UTILITY_COMMANDS = [
 DATA_COMMANDS = [
     ("db", "Database management (stats, migrate)"),
     ("embeddings", "Embedding management (stats, backfill)"),
-<<<<<<< HEAD
     ("graph", "Knowledge Graph commands (discover-schema)"),
-    ("s3", "S3/Spaces storage (list, ingest)"),
-=======
     ("s3", "S3/Spaces storage (list, ingest, check-structure)"),
->>>>>>> origin/main
     ("maintenance", "System maintenance (resolve-entities)"),
-<<<<<<< HEAD
     ("queue", "Job queue management (stats)"),
-=======
-<<<<<<< HEAD
     ("fix-issues", "Generate patches for SonarQube issues"),
-=======
-<<<<<<< HEAD
     ("patch", "Fix malformed patch files"),
-=======
     ("schema", "Graph schema analysis tools"),
->>>>>>> origin/main
->>>>>>> origin/main
->>>>>>> origin/main
 ]
 
 COMMON_OPTIONS = [
@@ -789,134 +778,6 @@ def _run_index(
         sys.exit(1)
 
 
-def _run_search(
-    query: str,
-    top_k: int = 10,
-    tenant_id: str = "default",
-    fusion: str = "rrf",
-    debug: bool = False,
-    json_output: bool = False,
-) -> None:
-    """
-    Search indexed emails with natural language queries.
-
-    Supports Hybrid Search (Vector + FTS + RRF/Weighted).
-    """
-    import json
-
-    if not json_output:
-        _print_banner()
-        print(f"{_colorize('▶ SEARCH', 'bold')}\n")
-        print(f"  Query:   {_colorize(query, 'cyan')}")
-        print(f"  Top K:   {_colorize(str(top_k), 'dim')}")
-        print(f"  Fusion:  {_colorize(fusion, 'dim')}")
-        if debug:
-            print(f"  {_colorize('DEBUG MODE', 'yellow')}")
-        print()
-
-    try:
-        from cortex.retrieval.hybrid_search import (
-            KBSearchInput as _KBSearchInput,  # type: ignore[import]
-        )
-        from cortex.retrieval.hybrid_search import (
-            tool_kb_search_hybrid as _tool_kb_search_hybrid,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
-        )
-
-        _KBSearchInput = cast(Any, _KBSearchInput)
-        _tool_kb_search_hybrid = cast(Any, _tool_kb_search_hybrid)
-        KBSearchInput: type[Any] = cast(type[Any], _KBSearchInput)
-        tool_kb_search_hybrid: Callable[[Any], Any] = cast(
-            Callable[[Any], Any], _tool_kb_search_hybrid
-        )
-
-        request: Any = KBSearchInput(
-            tenant_id=tenant_id,
-            user_id="cli-user",
-            query=query,
-            k=top_k,
-            fusion_method=fusion,  # type: ignore
-        )
-
-        if not json_output:
-            print(f"  {_colorize('⏳', 'yellow')} Searching...\n")
-
-        results: Any = tool_kb_search_hybrid(request)
-
-        if json_output:
-            # Convert results to JSON-serializable format
-            output: dict[str, Any] = {
-                "success": True,
-                "query": query,
-                "results": (
-                    [r.model_dump() for r in results.results]
-                    if hasattr(results, "results")
-                    else []
-                ),
-                "total": len(results.results) if hasattr(results, "results") else 0,
-            }
-            print(json.dumps(output, indent=2, default=str))
-        else:
-            if hasattr(results, "results") and results.results:
-                print(
-                    f"  {_colorize('✓', 'green')} Found {len(results.results)} result(s):\n"
-                )
-                for i, r in enumerate(results.results[:top_k], 1):
-                    score = getattr(r, "score", 0)
-                    # P1 Fix: Use correct field names from SearchResultItem
-                    content = getattr(r, "content", "") or ""
-                    highlights = getattr(r, "highlights", [])
-                    text = (
-                        content[:200]
-                        if content
-                        else (highlights[0][:200] if highlights else "")
-                    )
-                    chunk_id = getattr(r, "chunk_id", None) or getattr(
-                        r, "message_id", "unknown"
-                    )
-                    chunk_type = (
-                        r.metadata.get("chunk_type", "unknown")
-                        if hasattr(r, "metadata")
-                        else "unknown"
-                    )
-
-                    # Score display
-                    score_str = f"{score:.4f}"
-                    if debug:
-                        fusion_score = getattr(r, "fusion_score", None) or 0
-                        vec_score = getattr(r, "vector_score", None) or 0
-                        lex_score = getattr(r, "lexical_score", None) or 0
-                        score_str += f" (F:{fusion_score:.3f} V:{vec_score:.3f} L:{lex_score:.3f})"
-
-                    print(
-                        f"  {_colorize(f'[{i}]', 'bold')} Score: {_colorize(score_str, 'cyan')}"
-                    )
-                    print(
-                        f"      Source: {_colorize(str(chunk_id), 'dim')} ({chunk_type})"
-                    )
-                    print(f"      {text.replace(chr(10), ' ')}...")
-                    if debug and highlights:
-                        print(f"      Highlights: {highlights[:2]}")
-                    print()
-            else:
-                print(f"  {_colorize('○', 'yellow')} No results found for: {query}")
-            print()
-
-    except ImportError as e:
-        msg = f"Could not load search module: {e}"
-        if json_output:
-            print(json.dumps({"error": msg, "success": False}))
-        else:
-            print(f"\n  {_colorize('ERROR:', 'red')} {msg}")
-            print(f"  Make sure you have run {_colorize('cortex index', 'cyan')} first")
-        sys.exit(1)
-    except Exception as e:
-        if json_output:
-            print(json.dumps({"error": str(e), "success": False}))
-        else:
-            print(f"\n  {_colorize('ERROR:', 'red')} {e}")
-        sys.exit(1)
-
-
 # =============================================================================
 # RAG COMMANDS: answer, draft, summarize
 # =============================================================================
@@ -931,8 +792,8 @@ def _run_answer(
     """
     Ask questions about your emails using RAG.
     """
-    import asyncio
     import json
+    from cortex_cli.api_client import get_api_client
 
     if not json_output:
         _print_banner()
@@ -941,62 +802,26 @@ def _run_answer(
         print()
 
     try:
-        from cortex.orchestration.graphs import (
-            build_answer_graph as _build_answer_graph,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
-        )
-
-        _build_answer_graph = cast(Any, _build_answer_graph)
-        build_answer_graph: Callable[[], Any]
-        build_answer_graph = cast(Callable[[], Any], _build_answer_graph)
-
         if not json_output:
             print(f"  {_colorize('⏳', 'yellow')} Thinking...")
 
-        async def _execute() -> Any:
-            graph = build_answer_graph().compile()
-            initial_state: dict[str, Any] = {
-                "query": query,
-                "tenant_id": tenant_id,
-                "user_id": user_id,
-                "classification": None,
-                "retrieval_results": None,
-                "assembled_context": None,
-                "answer": None,
-                "error": None,
-            }
-            result = await graph.ainvoke(initial_state)
-            return result
+        api_client = get_api_client()
+        response = api_client.answer(query=query, tenant_id=tenant_id, user_id=user_id)
 
-        final_state: Any = asyncio.run(_execute())
-
-        # Handle both dict and object-like state access
-        error = (
-            final_state.get("error")
-            if isinstance(final_state, dict)
-            else getattr(final_state, "error", None)
-        )
-        if error:
-            raise Exception(error)
-
-        answer: Any | None = (
-            final_state.get("answer")
-            if isinstance(final_state, dict)
-            else getattr(final_state, "answer", None)
-        )
+        answer = response.get("answer")
 
         if json_output:
-            print(
-                json.dumps(answer.model_dump() if answer else {}, indent=2, default=str)
-            )
+            print(json.dumps(answer if answer else {}, indent=2, default=str))
         else:
             if answer:
                 print(f"\n{_colorize('ANSWER:', 'bold')}")
-                print(f"{answer.answer_markdown}\n")
+                print(f"{answer.get('answer_markdown', '')}\n")
 
-                if answer.evidence:
+                evidence = answer.get("evidence", [])
+                if evidence:
                     print(f"{_colorize('SOURCES:', 'dim')}")
-                    for i, ev in enumerate(answer.evidence, 1):
-                        snippet = ev.snippet or ev.text or ""
+                    for i, ev in enumerate(evidence, 1):
+                        snippet = ev.get("snippet") or ev.get("text") or ""
                         print(f"  {i}. {snippet}")
             else:
                 print(f"  {_colorize('⚠', 'yellow')} No answer generated.")
@@ -1015,165 +840,6 @@ def _run_answer(
         else:
             print(f"\n  {_colorize('ERROR:', 'red')} {e}")
         sys.exit(1)
-
-
-def _run_draft(
-    instructions: str,
-    thread_id: str | None = None,
-    tenant_id: str = "default",
-    user_id: str = "cli-user",
-    json_output: bool = False,
-) -> None:
-    """Draft email replies based on context."""
-
-    if not json_output:
-        _print_banner()
-        print(f"{_colorize('▶ DRAFT EMAIL', 'bold')}\n")
-        print(f"  Instructions: {_colorize(instructions, 'cyan')}")
-        if thread_id:
-            print(f"  Thread ID:    {_colorize(thread_id, 'dim')}")
-        print()
-
-    try:
-        from cortex.orchestration.graphs import build_draft_graph as _build_draft_graph
-
-        _build_draft_graph = cast(Any, _build_draft_graph)
-        build_draft_graph: Callable[[], Any] = cast(
-            Callable[[], Any], _build_draft_graph
-        )
-
-        if not json_output:
-            print(f"  {_colorize('⏳', 'yellow')} Drafting...")
-
-        final_state = _execute_draft_graph(
-            build_draft_graph, tenant_id, user_id, thread_id, instructions
-        )
-
-        # Handle both dict and object-like state access
-        error = (
-            final_state.get("error")
-            if isinstance(final_state, dict)
-            else getattr(final_state, "error", None)
-        )
-        if error:
-            raise Exception(error)
-
-        draft = (
-            final_state.get("draft")
-            if isinstance(final_state, dict)
-            else getattr(final_state, "draft", None)
-        )
-        _output_draft_result(draft, json_output)
-
-    except ImportError as e:
-        _handle_import_error(e, json_output)
-    except Exception as e:
-        _handle_generic_error(e, json_output)
-
-
-def _execute_draft_graph(
-    build_draft_graph: Callable[[], Any],
-    tenant_id: str,
-    user_id: str,
-    thread_id: str | None,
-    instructions: str,
-) -> Any:
-    """Execute the draft graph and return final state."""
-    import asyncio
-
-    async def _execute() -> Any:
-        graph = build_draft_graph().compile()
-        initial_state: dict[str, Any] = {
-            "tenant_id": tenant_id,
-            "user_id": user_id,
-            "thread_id": thread_id,
-            "explicit_query": instructions,
-            "draft_query": None,
-            "retrieval_results": None,
-            "assembled_context": None,
-            "draft": None,
-            "critique": None,
-            "iteration_count": 0,
-            "error": None,
-        }
-        return await graph.ainvoke(initial_state)
-
-    return asyncio.run(_execute())
-
-
-def _output_draft_result(draft: Any | None, json_output: bool) -> None:
-    """Output draft result in JSON or human-readable format."""
-    import json
-
-    if json_output:
-        print(json.dumps(draft.model_dump() if draft else {}, indent=2, default=str))
-        return
-
-    if not draft:
-        print(f"  {_colorize('⚠', 'yellow')} No draft generated.")
-        print()
-        return
-
-    print(f"\n{_colorize('DRAFT:', 'bold')}")
-    print(f"Subject: {draft.subject}")
-    print(f"To: {', '.join(draft.to)}")
-    print("-" * 40)
-    print(f"{draft.body_markdown}\n")
-
-    if draft.next_actions:
-        _print_next_actions(draft.next_actions)
-    print()
-
-
-def _print_next_actions(next_actions: list[Any]) -> None:
-    """Print next actions from a draft."""
-    print(f"{_colorize('NEXT ACTIONS:', 'dim')}")
-    for i, action in enumerate(next_actions, 1):
-        description = getattr(action, "description", None)
-        owner = getattr(action, "owner", None)
-        due_date = getattr(action, "due_date", None)
-
-        if description is None and isinstance(action, dict):
-            description = action.get("description")
-            owner = owner or action.get("owner")
-            due_date = due_date or action.get("due_date")
-
-        if description is None:
-            description = str(action)
-
-        extras = " · ".join(
-            item
-            for item in (
-                f"Owner: {owner}" if owner else None,
-                f"Due: {due_date}" if due_date else None,
-            )
-            if item
-        )
-        suffix = f" ({extras})" if extras else ""
-        print(f"  {i}. {description}{suffix}")
-
-
-def _handle_import_error(e: ImportError, json_output: bool) -> None:
-    """Handle ImportError for RAG module loading."""
-    import json
-
-    msg = f"Could not load RAG module: {e}"
-    if json_output:
-        print(json.dumps({"error": msg, "success": False}))
-    else:
-        print(f"\n  {_colorize('ERROR:', 'red')} {msg}")
-    sys.exit(1)
-
-
-def _handle_generic_error(e: Exception, json_output: bool) -> None:
-    """Handle generic exceptions."""
-    import json
-
-    if json_output:
-        print(json.dumps({"error": str(e), "success": False}))
-    else:
-        print(f"\n  {_colorize('ERROR:', 'red')} {e}")
-    sys.exit(1)
 
 
 def _run_summarize(
@@ -1279,6 +945,15 @@ def main(args: list[str] | None = None) -> None:
 
     A user-friendly command-line interface for managing EmailOps Cortex.
     """
+    # Initialize observability §12.3
+    # This should be one of the first things to run
+    try:
+        from cortex.observability import init_observability
+
+        init_observability(service_name="cortex-cli")
+    except ImportError:
+        # If cortex backend is not installed, CLI should still function
+        pass
     if args is None:
         args = sys.argv[1:]
 
@@ -1336,18 +1011,23 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     _setup_utility_commands(subparsers)
 
     # Register plugin subcommand groups
+    import typer
     from cortex_cli.cmd_backfill import setup_backfill_parser
     from cortex_cli.cmd_db import setup_db_parser
     from cortex_cli.cmd_embeddings import setup_embeddings_parser
-    from cortex_cli.cmd_graph import app as graph_app
-    from cortex_cli.cmd_maintenance import setup_maintenance_parser
-    from cortex_cli.cmd_s3 import setup_s3_parser
-    from cortex_cli.cmd_queue import setup_queue_parser
     from cortex_cli.cmd_fix import setup_fix_parser
-    import typer
-    from typer.main import get_command_from_info
-    from typer.core import TyperGroup
+    from cortex_cli.cmd_graph import app as graph_app
+    from cortex_cli.cmd_grounding import setup_grounding_parser
+    from cortex_cli.cmd_login import setup_login_parser
+    from cortex_cli.cmd_maintenance import setup_maintenance_parser
+    from cortex_cli.cmd_queue import setup_queue_parser
+    from cortex_cli.cmd_s3 import setup_s3_parser
+    from cortex_cli.cmd_safety import setup_safety_parser
+    from cortex_cli.cmd_test import setup_test_parser
+    from cortex_cli.cmd_search import setup_search_parser
     from rich.console import Console
+    from typer.core import TyperGroup
+    from typer.main import get_command_from_info
 
     # A bit of a hack to integrate Typer apps with argparse
     def setup_typer_command(subparsers, name, app, help_text=""):
@@ -1359,12 +1039,17 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
             pretty_exceptions_show_locals=False,
             rich_markup_mode="rich",
         )
-        command = get_command_from_info(command_info, pretty_exceptions_short=False, pretty_exceptions_show_locals=False, rich_markup_mode="rich")
+        command = get_command_from_info(
+            command_info,
+            pretty_exceptions_short=False,
+            pretty_exceptions_show_locals=False,
+            rich_markup_mode="rich",
+        )
 
         def _run_typer(args):
             try:
                 if isinstance(command, TyperGroup):
-                     command(args.typer_args, standalone_mode=False)
+                    command(args.typer_args, standalone_mode=False)
                 else:
                     command(standalone_mode=False)
 
@@ -1377,25 +1062,30 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
                 console = Console()
                 console.print(f"[bold red]An unexpected error occurred:[/bold red] {e}")
 
-
         parser.set_defaults(func=lambda args: _run_typer(args))
         # This is a simple way to pass through args. A more robust solution might be needed.
         parser.add_argument("typer_args", nargs="*")
 
-    from cortex_cli.cmd_patch import setup_patch_parser
     from cortex_cli.cmd_index import setup_index_parser
+    from cortex_cli.cmd_patch import setup_patch_parser
     from cortex_cli.cmd_schema import setup_schema_parser
     from cortex_cli.cmd_test import setup_test_parser
-    from cortex_cli.config import _config
+    from cortex_cli._config_helpers import _config
 
     setup_backfill_parser(subparsers)
     setup_db_parser(subparsers)
     setup_embeddings_parser(subparsers)
     setup_s3_parser(subparsers)
     setup_maintenance_parser(subparsers)
+    setup_test_parser(subparsers)
+    setup_search_parser(subparsers)
+    setup_grounding_parser(subparsers)
+    setup_safety_parser(subparsers)
     setup_queue_parser(subparsers)
-    setup_fix_parser(subparsers)
-    setup_typer_command(subparsers, "graph", graph_app, help_text="Knowledge Graph commands")
+    setup_login_parser(subparsers)
+    setup_typer_command(
+        subparsers, "graph", graph_app, help_text="Knowledge Graph commands"
+    )
     setup_patch_parser(subparsers)
     setup_index_parser(subparsers)
     setup_schema_parser(subparsers)
@@ -1543,138 +1233,6 @@ Examples:
     )
     pipeline_parser.set_defaults(func=lambda args: _run_pipeline(args))
 
-    # Index command
-    index_parser = subparsers.add_parser(
-        "index",
-        help="Build/rebuild search index with embeddings",
-        description="""
-Build or rebuild the search index.
-
-This command:
-  1. Scans conversation folders for content
-  2. Chunks text into embedding-friendly segments
-  3. Generates embeddings using the configured provider
-  4. Saves index for fast retrieval
-
-Uses parallel workers for faster processing.
-        """,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    index_parser.add_argument(
-        "--root",
-        "-r",
-        default=".",
-        metavar="DIR",
-        help="Root directory containing conversations (default: current)",
-    )
-    index_parser.add_argument(
-        "--provider",
-        type=str,
-        default="digitalocean",
-        choices=["digitalocean"],
-        help="Embedding provider",
-    )
-    index_parser.add_argument(
-        "--workers",
-        "-w",
-        type=int,
-        default=4,
-        metavar="N",
-        help="Number of parallel workers (default: 4)",
-    )
-    index_parser.add_argument(
-        "--limit",
-        "-l",
-        type=int,
-        default=None,
-        metavar="N",
-        help="Limit number of conversations to index (for testing)",
-    )
-    index_parser.add_argument(
-        "--force",
-        "-f",
-        action="store_true",
-        help="Force full reindex (ignore existing)",
-    )
-    index_parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Output results as JSON",
-    )
-    index_parser.set_defaults(
-        func=lambda args: _run_index(
-            root=args.root,
-            provider=args.provider,
-            workers=args.workers,
-            limit=args.limit,
-            force=args.force,
-            json_output=args.json,
-        )
-    )
-
-    # Search command
-    search_parser = subparsers.add_parser(
-        "search",
-        help="Search indexed emails with natural language",
-        description="""
-Search your indexed emails using natural language queries.
-
-Examples:
-  cortex search "contract renewal terms"
-  cortex search "emails from John about budget" --top-k 20
-  cortex search "attachments mentioning quarterly report"
-
-Uses hybrid search (vector + full-text) for best results.
-        """,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    search_parser.add_argument(
-        "query",
-        metavar="QUERY",
-        help="Natural language search query",
-    )
-    search_parser.add_argument(
-        "--top-k",
-        "-k",
-        type=int,
-        default=10,
-        metavar="N",
-        help="Number of results to return (default: 10)",
-    )
-    search_parser.add_argument(
-        "--tenant",
-        "-t",
-        default="default",
-        metavar="ID",
-        help="Tenant ID (default: 'default')",
-    )
-    search_parser.add_argument(
-        "--fusion",
-        choices=["rrf", "weighted_sum"],
-        default="rrf",
-        help="Fusion method: rrf (default) or weighted_sum",
-    )
-    search_parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="Show detailed score breakdown (F/V/L)",
-    )
-    search_parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Output results as JSON",
-    )
-    search_parser.set_defaults(
-        func=lambda args: _run_search(
-            query=args.query,
-            top_k=args.top_k,
-            tenant_id=args.tenant,
-            fusion=args.fusion,
-            debug=args.debug,
-            json_output=args.json,
-        )
-    )
-
     # Validate command
     validate_parser = subparsers.add_parser(
         "validate",
@@ -1703,6 +1261,9 @@ This command:
     validate_parser.set_defaults(
         func=lambda args: _run_validate(path=args.path, json_output=args.json)
     )
+
+
+from cortex_cli.cmd_draft import setup_draft_parser
 
 
 def _setup_rag_commands(subparsers: Any) -> None:
@@ -1745,49 +1306,7 @@ The system will:
     )
 
     # Draft command
-    draft_parser = subparsers.add_parser(
-        "draft",
-        help="Draft email replies based on context",
-        description="""
-Draft an email reply based on instructions and optional thread context.
-
-The system will:
-  1. Retrieve relevant context (if thread ID provided)
-  2. Follow your instructions
-  3. Generate a professional email draft
-        """,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    draft_parser.add_argument(
-        "instructions",
-        metavar="INSTRUCTIONS",
-        help="Instructions for the draft (e.g. 'Reply politely declining')",
-    )
-    draft_parser.add_argument(
-        "--thread-id",
-        metavar="UUID",
-        help="ID of the thread to reply to",
-    )
-    draft_parser.add_argument(
-        "--tenant",
-        "-t",
-        default="default",
-        metavar="ID",
-        help="Tenant ID (default: 'default')",
-    )
-    draft_parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Output results as JSON",
-    )
-    draft_parser.set_defaults(
-        func=lambda args: _run_draft(
-            instructions=args.instructions,
-            thread_id=args.thread_id,
-            tenant_id=args.tenant,
-            json_output=args.json,
-        )
-    )
+    setup_draft_parser(subparsers)
 
     # Summarize command
     summarize_parser = subparsers.add_parser(

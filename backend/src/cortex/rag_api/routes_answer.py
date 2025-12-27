@@ -13,6 +13,7 @@ from typing import Optional
 
 from cortex.audit import log_audit_event
 from cortex.context import tenant_id_ctx, user_id_ctx
+from cortex.domain_models.rag import Answer
 from cortex.observability import trace_operation  # P2 Fix: Enable tracing
 from cortex.orchestration.graphs import build_answer_graph
 from cortex.rag_api.models import AnswerRequest, AnswerResponse
@@ -74,9 +75,11 @@ async def answer_api(request: AnswerRequest, http_request: Request):
             logger.error(f"Graph execution error: {final_state['error']}")
             raise HTTPException(status_code=500, detail="Answer workflow failed")
 
-        answer = final_state.get("answer")
-        if not answer:
+        answer_dict = final_state.get("answer")
+        if not answer_dict:
             raise HTTPException(status_code=500, detail="No answer generated")
+
+        answer = Answer.model_validate(answer_dict)
 
         try:
             # Audit logic (preserved)

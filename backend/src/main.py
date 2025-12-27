@@ -215,6 +215,9 @@ async def _extract_identity(request: Request) -> tuple[str, str, dict[str, Any]]
         else:
             user_id = result.value or user_id
 
+    # Extract role, default to "user"
+    claims["role"] = claims.get("role", "user")
+
     return str(tenant_id), str(user_id), claims
 
 
