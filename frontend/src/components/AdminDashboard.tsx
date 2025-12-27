@@ -23,31 +23,66 @@ interface StatusData {
     status: string;
 }
 
+const SENSITIVE_KEY_SUBSTRINGS = ['KEY', 'SECRET', 'TOKEN', 'URL', 'PASS', 'CONNECTION_STRING', 'PW'];
+
+const redactObject = (obj: Record<string, unknown> | null | undefined): Record<string, unknown> | null => {
+    if (!obj) return null;
+
+    return Object.fromEntries(
+        Object.entries(obj).map(([key, value]) => {
+            const upperKey = key.toUpperCase();
+            if (SENSITIVE_KEY_SUBSTRINGS.some(substring => upperKey.includes(substring))) {
+                return [key, '******'];
+            }
+            return [key, value];
+        })
+    );
+};
+
+
 export function AdminDashboard() {
   const [doctorReport, setDoctorReport] = useState<DoctorReport | null>(null);
   const [isRunningDoctor, setIsRunningDoctor] = useState(false);
   const [status, setStatus] = useState<StatusData | null>(null);
   const [config, setConfig] = useState<Record<string, unknown> | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [doctorError, setDoctorError] = useState<string | null>(null);
 
   useEffect(() => {
     loadInitialData();
   }, []);
 
   const loadInitialData = async () => {
-    const [statusData, configData] = await Promise.all([
-      api.fetchStatus(),
-      api.fetchConfig()
-    ]);
-    setStatus(statusData as StatusData);
-    setConfig(configData as unknown as Record<string, unknown>);
+    setError(null);
+    try {
+        const [statusData, configData] = await Promise.all([
+            api.fetchStatus(),
+            api.fetchConfig()
+        ]);
+        setStatus(statusData as StatusData);
+        setConfig(redactObject(configData as unknown as Record<string, unknown>));
+    } catch (err) {
+        setError("Failed to load initial environment data. Please try again later.");
+        console.error(err);
+    }
   };
 
   const runDiagnostics = async () => {
     setIsRunningDoctor(true);
+    setDoctorError(null);
+    setDoctorReport(null);
     try {
-        const report = await api.runDoctor();
-        setDoctorReport(report as DoctorReport);
-    } finally {
+        const report = await api.runDoctor() as DoctorReport;
+        const redactedChecks = report.checks.map(check => ({
+            ...check,
+            details: redactObject(check.details),
+        }));
+        setDoctorReport({ ...report, checks: redactedChecks });
+    } catch(err) {
+        setDoctorError("An error occurred while running diagnostics. Please check the console.");
+        console.error(err);
+    }
+    finally {
         setIsRunningDoctor(false);
     }
   };
@@ -108,7 +143,15 @@ export function AdminDashboard() {
             </div>
 
             <div className="space-y-4 min-h-[200px]">
-                {!doctorReport && !isRunningDoctor && (
+                {doctorError && (
+                    <div className="h-full flex flex-col items-center justify-center text-red-400/70 py-12">
+                        <AlertTriangle className="w-12 h-12 mb-4 opacity-50" />
+                        <p className="font-semibold">Diagnostics Failed</p>
+                        <p className="text-sm text-white/30">{doctorError}</p>
+                    </div>
+                )}
+
+                {!doctorReport && !isRunningDoctor && !doctorError &&(
                     <div className="h-full flex flex-col items-center justify-center text-white/20 py-12">
                         <Activity className="w-12 h-12 mb-4 opacity-50" />
                         <p>Ready to scan system health</p>
@@ -160,8 +203,15 @@ export function AdminDashboard() {
                     </div>
                     <h2 className="text-xl font-semibold">Environment</h2>
                 </div>
-                {status ? (
-                    <div className="grid grid-cols-2 gap-4">
+                {error && (
+                    <div className="text-red-400/70 text-center py-8">
+                        <AlertTriangle className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                        <p>{error}</p>
+                    </div>
+                )}
+                {!status && !error && <div className="text-white/20 text-center py-8">Loading status...</div>}
+                {status && (
+                     <div className="grid grid-cols-2 gap-4">
                         <div className="p-3 rounded-lg bg-white/5 border border-white/5">
                             <span className="text-xs text-white/40 block mb-1">Service</span>
                             <span className="font-mono text-sm">{status.service}</span>
@@ -178,8 +228,6 @@ export function AdminDashboard() {
                              </span>
                         </div>
                     </div>
-                ) : (
-                    <div className="text-white/20 text-center py-8">Loading status...</div>
                 )}
             </GlassCard>
 
@@ -191,7 +239,14 @@ export function AdminDashboard() {
                     </div>
                     <h2 className="text-xl font-semibold">Configuration</h2>
                 </div>
-                {config ? (
+                {error && (
+                    <div className="text-red-400/70 text-center py-8">
+                        <AlertTriangle className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                        <p>Could not load configuration.</p>
+                    </div>
+                )}
+                {!config && !error && <div className="text-white/20 text-center py-8">Loading configuration...</div>}
+                {config && (
                     <div className="space-y-4">
                         {Object.entries(config).map(([key, value]) => (
                              <div key={key} className="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
@@ -202,8 +257,6 @@ export function AdminDashboard() {
                              </div>
                         ))}
                     </div>
-                ) : (
-                    <div className="text-white/20 text-center py-8">Loading configuration...</div>
                 )}
             </GlassCard>
         </div>
