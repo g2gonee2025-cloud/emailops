@@ -167,8 +167,12 @@ class TestNodeHandleError:
 
         result = node_handle_error(state)
 
-        assert result["error"] == "Something went wrong"
+        assert result["error"] == "An internal error occurred during graph execution."
         mock_audit.assert_called_once()
+        metadata = mock_audit.call_args.kwargs["metadata"]
+        assert "Something went wrong" not in metadata["error"]
+        assert "internal error" in metadata["error"]
+
 
     @patch("cortex.orchestration.nodes.log_audit_event")
     def test_handle_error_default_error(self, mock_audit):
@@ -177,7 +181,9 @@ class TestNodeHandleError:
 
         result = node_handle_error(state)
 
-        assert result["error"] == "Unknown error"
+        assert result["error"] == "An internal error occurred during graph execution."
+        mock_audit.assert_called_once()
+        assert "internal error" in mock_audit.call_args.kwargs["metadata"]["error"]
 
     @patch("cortex.orchestration.nodes.log_audit_event")
     def test_handle_error_audit_failure_is_caught(self, mock_audit):
@@ -188,7 +194,7 @@ class TestNodeHandleError:
 
         # Should not raise, should still return
         result = node_handle_error(state)
-        assert result["error"] == "original error"
+        assert result["error"] == "An internal error occurred during graph execution."
 
 
 class TestExtractEvidenceFromAnswer:
