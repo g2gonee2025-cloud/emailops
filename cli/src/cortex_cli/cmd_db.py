@@ -278,6 +278,10 @@ def setup_db_parser(subparsers: Any) -> None:
     )
     cleanup_parser.set_defaults(func=cmd_db_cleanup)
 
+    # db rechunk
+    from .cmd_rechunk import setup_rechunk_parser
+    setup_rechunk_parser(db_subparsers)
+
     def _default_db_handler(args: argparse.Namespace) -> None:
         if not args.db_command:
             args.json = getattr(args, "json", False)
