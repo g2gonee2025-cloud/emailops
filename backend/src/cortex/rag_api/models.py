@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Literal, Optional
 
 from cortex.domain_models.rag import Answer, EmailDraft, ThreadSummary
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 # -----------------------------------------------------------------------------
@@ -20,20 +20,23 @@ class SearchRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    query: str = Field(..., description="Search query text")
-    k: int = Field(default=10, ge=1, le=500, description="Number of results")
-    tenant_id: Optional[str] = Field(
-        default=None, description="Tenant ID (auto-filled from context)"
+    query: str = Field(
+        ..., description="Search query text", min_length=1, max_length=2000
     )
-    user_id: Optional[str] = Field(
-        default=None, description="User ID (auto-filled from context)"
-    )
+    k: int = Field(default=10, ge=1, le=100, description="Number of results")
     filters: Dict[str, Any] = Field(
         default_factory=dict, description="Optional filters"
     )
-    fusion_method: Optional[str] = Field(
+    fusion_method: Optional[Literal["rrf", "weighted_sum"]] = Field(
         default="rrf", description="Fusion method (rrf or weighted_sum)"
     )
+
+    @field_validator("filters")
+    @classmethod
+    def validate_filters(cls, v: Dict[str, Any]) -> Dict[str, Any]:
+        if len(v) > 10:
+            raise ValueError("Cannot specify more than 10 filter conditions.")
+        return v
 
 
 class SearchResponse(BaseModel):

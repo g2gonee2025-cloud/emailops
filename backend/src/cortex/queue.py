@@ -875,7 +875,6 @@ class CeleryQueue(JobQueue):
         self, job_types: List[str], timeout: int = 10
     ) -> Optional[Dict[str, Any]]:
         """
-        """
         Dequeue is handled by Celery workers automatically.
         This method is not used in a Celery-based setup and is here for ABC compliance.
         """

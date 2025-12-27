@@ -13,19 +13,23 @@ import time
 from cortex.audit import log_audit_event
 from cortex.common.exceptions import CortexError
 from cortex.context import tenant_id_ctx, user_id_ctx
-from cortex.observability import trace_operation  # P2 Fix: Enable tracing
+from cortex.observability import trace_operation
 from cortex.rag_api.models import SearchRequest, SearchResponse
 from cortex.retrieval.hybrid_search import KBSearchInput, tool_kb_search_hybrid
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
+from cortex.security.dependencies import get_current_user
+from cortex.security.auth import UserIdentity
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
 @router.post("/search", response_model=SearchResponse)
-@trace_operation("api_search")  # P2 Fix: Enable request tracing
+@trace_operation("api_search")
 async def search_endpoint(
-    request: SearchRequest, http_request: Request
+    request: SearchRequest,
+    http_request: Request,
+    user: UserIdentity = Depends(get_current_user),
 ) -> SearchResponse:
     """
     Search endpoint.
@@ -43,8 +47,8 @@ async def search_endpoint(
 
         # Map API request to tool input
         tool_input = KBSearchInput(
-            tenant_id=tenant_id_ctx.get(),
-            user_id=user_id_ctx.get(),
+            tenant_id=user.tenant_id,
+            user_id=user.user_id,
             query=request.query,
             k=request.k,
             filters=request.filters,
