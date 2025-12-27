@@ -21,6 +21,7 @@ _EMAIL_SEARCH_PATTERN = re.compile(
     r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"
 )
 _URL_PATTERN = re.compile(r'https?://[^\s<>"{}|\\^`\[\]]+')
+_WWW_URL_SEARCH_PATTERN = re.compile(r"\bwww\.[a-z0-9.-]+\.[a-z]{2,}\b", re.IGNORECASE)
 # A stricter version for fullmatch, preventing over-matching on noisy text
 _URL_FULLMATCH_PATTERN = re.compile(r'https?://[^\s<>"{}|\\^`\[\]]+', re.IGNORECASE)
 _WWW_DOMAIN_PATTERN = re.compile(r"www\.[A-Za-z0-9.-]+")
@@ -236,6 +237,7 @@ def clean_email_text(text: str) -> str:
     # 7. Redact emails and URLs
     text = _EMAIL_SEARCH_PATTERN.sub("[email]", text)
     text = _URL_PATTERN.sub("[URL]", text)
+    text = _WWW_URL_SEARCH_PATTERN.sub("[URL]", text)
 
     # 8. Normalize punctuation
     text = _EXCESSIVE_DOTS.sub("...", text)
