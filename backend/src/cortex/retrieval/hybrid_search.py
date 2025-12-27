@@ -381,9 +381,7 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> Result[SearchResults, Retrieva
                     fts_deduped, vector_deduped, alpha=config.search.rerank_alpha
                 )
             else:
-                fused_results = fuse_rrf(
-                    fts_deduped, vector_deduped, k=RRF_K_DEFAULT
-                )
+                fused_results = fuse_rrf(fts_deduped, vector_deduped, k=RRF_K_DEFAULT)
 
             # 6.5. Apply Summary Boost
             if summary_boost_ids:
@@ -433,9 +431,7 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> Result[SearchResults, Retrieva
             fused_results = downweight_quoted_history(
                 fused_results, factor=QUOTED_HISTORY_DOWNWEIGHT_FACTOR
             )
-            fused_results = sorted(
-                fused_results, key=lambda r: r.score, reverse=True
-            )
+            fused_results = sorted(fused_results, key=lambda r: r.score, reverse=True)
 
             # 11. MMR diversity for the final top-k list
             fused_results = apply_mmr(

@@ -183,14 +183,17 @@ class TestCliMainUtils:
         mock_hybrid.KBSearchInput = mock_search_input
         mock_hybrid.tool_kb_search_hybrid = mock_search_func
 
-        with patch.dict(
-            sys.modules,
-            {
-                "cortex": MagicMock(),
-                "cortex.retrieval": MagicMock(),
-                "cortex.retrieval.hybrid_search": mock_hybrid,
-            },
-        ), pytest.raises(SystemExit):
+        with (
+            patch.dict(
+                sys.modules,
+                {
+                    "cortex": MagicMock(),
+                    "cortex.retrieval": MagicMock(),
+                    "cortex.retrieval.hybrid_search": mock_hybrid,
+                },
+            ),
+            pytest.raises(SystemExit),
+        ):
             _run_search("query", json_output=False)
 
         captured = capsys.readouterr()

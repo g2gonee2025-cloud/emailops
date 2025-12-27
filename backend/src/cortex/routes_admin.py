@@ -3,9 +3,6 @@ import logging
 import os
 from typing import Any, Dict, List
 
-from fastapi import APIRouter
-from pydantic import BaseModel
-
 from cortex.config.loader import get_config
 from cortex.health import (
     DoctorCheckResult,
@@ -14,6 +11,8 @@ from cortex.health import (
     check_reranker,
     probe_embeddings,
 )
+from fastapi import APIRouter
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 logger = logging.getLogger(__name__)
@@ -37,7 +36,9 @@ async def get_config_info() -> Dict[str, Any]:
         "environment": getattr(core_config, "env", None),
         "provider": getattr(core_config, "provider", None),
         "log_level": getattr(system_config, "log_level", None),
-        "database_url": "***" if db_config and getattr(db_config, "url", None) else None,
+        "database_url": (
+            "***" if db_config and getattr(db_config, "url", None) else None
+        ),
     }
 
 

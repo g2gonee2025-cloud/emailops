@@ -1,13 +1,13 @@
 """System health and diagnostic checks."""
+
 from __future__ import annotations
 
 import logging
 import os
 from typing import Any, Dict
 
-from pydantic import BaseModel
-
 from cortex.config.loader import EmailOpsConfig
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 DEFAULT_REDIS_URL = "redis://localhost:6379"
@@ -37,9 +37,7 @@ async def check_postgres(config: EmailOpsConfig) -> DoctorCheckResult:
         engine = create_engine(config.database.url)
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
-        return DoctorCheckResult(
-            name="PostgreSQL", status="pass", message="Connected"
-        )
+        return DoctorCheckResult(name="PostgreSQL", status="pass", message="Connected")
     except ImportError:
         return DoctorCheckResult(
             name="PostgreSQL", status="fail", message="sqlalchemy is not installed"
@@ -103,7 +101,9 @@ async def probe_embeddings(config: EmailOpsConfig) -> DoctorCheckResult:
             )
         else:
             return DoctorCheckResult(
-                name="Embeddings API", status="fail", message="Probe returned empty result"
+                name="Embeddings API",
+                status="fail",
+                message="Probe returned empty result",
             )
     except Exception as e:
         logger.error("Embedding probe failed: %s", e, exc_info=True)
@@ -145,7 +145,7 @@ async def check_reranker(config: EmailOpsConfig) -> DoctorCheckResult:
                     message=f"Reranker returned status {resp.status_code}",
                 )
     except ImportError:
-            return DoctorCheckResult(
+        return DoctorCheckResult(
             name="Reranker API",
             status="warn",
             message="httpx not installed (pip install httpx)",
