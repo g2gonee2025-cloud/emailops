@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 from uuid import UUID
 
+from cortex.indexer import Indexer
 from cortex.ingestion.processor import IngestionProcessor
 from cortex.ingestion.s3_source import S3SourceHandler
 
@@ -58,7 +59,11 @@ class PipelineOrchestrator:
         self.concurrency = concurrency
         self.dry_run = dry_run
         self.processor = IngestionProcessor(tenant_id=tenant_id)
-        self.s3_handler = S3SourceHandler()
+        if not self.dry_run:
+            self.s3_handler = S3SourceHandler()
+        else:
+            self.s3_handler = None
+        self.indexer = Indexer(concurrency=concurrency)
         self.stats = PipelineStats()
 
     def run(
@@ -72,9 +77,12 @@ class PipelineOrchestrator:
         )
 
         # 1. Discovery (Lazy iterator)
-        folders_iter = self.s3_handler.list_conversation_folders(
-            prefix=source_prefix, limit=limit
-        )
+        if self.dry_run:
+            folders_iter = []
+        else:
+            folders_iter = self.s3_handler.list_conversation_folders(
+                prefix=source_prefix, limit=limit
+            )
 
         # 2. Parallel Processing
         logger.info(
@@ -82,26 +90,20 @@ class PipelineOrchestrator:
         )
 
         with ThreadPoolExecutor(max_workers=self.concurrency) as executor:
-            # Submit tasks lazily as we iterate (or fill queue)
-            # Note: For strict lazy submission, we'd need bounded semaphore or map;
-            # here we verify S3 iterator doesn't block "too much" before submitting.
-            # Dict comprehension here consumes iterator, but that's fine if tasks submitted.
-            future_to_folder = {
-                executor.submit(self._process_single_folder, folder): folder
-                for folder in folders_iter
-            }
+            future_to_folder = {}
+            for folder in folders_iter:
+                self.stats.folders_found += 1
+                future = executor.submit(self._process_single_folder, folder)
+                future_to_folder[future] = folder
 
-            # Process results as they complete
             for future in as_completed(future_to_folder):
                 folder = future_to_folder[future]
                 try:
-                    future.result()  # _process_single_folder handles exceptions/stats internally?
+                    future.result()
                 except Exception as e:
-                    logger.exception(
-                        f"Pipeline: Error processing folder '{folder}': {e}"
-                    )
-                    # Not incrementing folders_failed here; _process_single_folder already handles it.
+                    logger.exception(f"Pipeline: Error processing folder '{folder}': {e}")
 
+        self.indexer.shutdown()
         total_time = self.stats.duration_seconds
         logger.info(
             f"Pipeline complete in {total_time:.2f}s. "
@@ -184,7 +186,7 @@ class PipelineOrchestrator:
             # For this MVP, we will count it as "queued" conceptually.
             # In a real impl, we would call:
             # indexer.index_conversation(conversation_id)
-            pass
-
+            self.indexer.enqueue_conversation(conversation_id)
+            self.stats.embeddings_generated += chunk_count
         except Exception as e:
             logger.error(f"Embedding failure for {conversation_id}: {e}")
