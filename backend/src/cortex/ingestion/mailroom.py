@@ -7,6 +7,7 @@ Updated for Conversation-based schema.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 import shutil
@@ -55,7 +56,7 @@ def process_job(job: IngestJobRequest) -> IngestJobSummary:
         try:
             temp_dir, local_convo_dir = _resolve_source(job)
 
-            summary = _ingest_conversation(local_convo_dir, job, summary)
+            summary = asyncio.run(_ingest_conversation(local_convo_dir, job, summary))
 
         finally:
             if temp_dir and temp_dir.exists():
@@ -217,7 +218,7 @@ def _generate_stable_id(namespace: uuid.UUID, *args: str) -> uuid.UUID:
     return uuid.uuid5(namespace, joined)
 
 
-def _ingest_conversation(
+async def _ingest_conversation(
     convo_dir: Path, job: IngestJobRequest, summary: IngestJobSummary
 ) -> IngestJobSummary:
     """
@@ -271,7 +272,7 @@ def _ingest_conversation(
     )
 
     # 4. Intelligence (Summary + Graph)
-    graph_data, summary_text = _process_intelligence(
+    graph_data, summary_text = await _process_intelligence(
         chunks_data, conversation_id, tenant_ns, job
     )
 
@@ -502,7 +503,7 @@ def _create_chunks(
     return chunks_data
 
 
-def _process_intelligence(
+async def _process_intelligence(
     chunks_data: List[Dict[str, Any]],
     conversation_id: uuid.UUID,
     tenant_ns: uuid.UUID,
@@ -587,7 +588,7 @@ def _process_intelligence(
                 )
 
             # 2. Graph Extraction
-            graph_data = _extract_graph(summary_context, conversation_id, job.tenant_id)
+            graph_data = await _extract_graph(summary_context, conversation_id, job.tenant_id)
 
     except Exception as e:
         logger.warning(f"Intelligence processing failed: {e}")
@@ -595,7 +596,7 @@ def _process_intelligence(
     return graph_data, summary_text_out
 
 
-def _extract_graph(
+async def _extract_graph(
     summary_context: str, conversation_id: uuid.UUID, tenant_id: str
 ) -> Dict[str, Any]:
     """
@@ -607,7 +608,7 @@ def _extract_graph(
         from cortex.intelligence.graph import GraphExtractor
 
         graph_extractor = GraphExtractor()
-        G = graph_extractor.extract_graph(summary_context)
+        G = await graph_extractor.extract_graph(summary_context)
 
         if G.number_of_nodes() > 0:
             # Format for writer
