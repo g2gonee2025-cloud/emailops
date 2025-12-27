@@ -74,6 +74,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]  # Adjusted for new path
 _PROVIDER_ALIASES: dict[str, str] = {
     "hf": "huggingface",
     "do": "digitalocean",
+    "vertexai": "vertex",
 }
 
 
@@ -181,6 +182,8 @@ def _packages_for_provider(provider: str) -> tuple[list[str], list[str]]:
     if provider == "openai" or provider == "digitalocean":
         critical = ["openai"]
         optional = ["tiktoken"]
+    elif provider == "vertex":
+        critical = ["google-genai"]
     elif provider == "cohere":
         critical = ["cohere"]
     elif provider == "huggingface":

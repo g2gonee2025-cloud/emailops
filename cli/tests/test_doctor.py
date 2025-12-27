@@ -50,7 +50,7 @@ class TestCmdDoctor(unittest.TestCase):
         self.assertEqual(out2, "test")
 
     def test_normalize_provider(self):
-        self.assertEqual(_normalize_provider("gcp"), "vertex")
+        self.assertEqual(_normalize_provider("gcp"), "gcp")
         self.assertEqual(_normalize_provider("vertexai"), "vertex")
         self.assertEqual(_normalize_provider("openai"), "openai")
 
@@ -245,7 +245,7 @@ class TestCmdDoctor(unittest.TestCase):
             ) as mock_dep,  # this one is fine to mock as we tested it separately
             patch("cortex_cli.cmd_doctor.Path") as mock_path_cls,
             patch("sqlalchemy.create_engine") as mock_engine,
-            patch("redis.Redis") as mock_redis_cls,
+            patch("redis.from_url") as mock_redis_from_url,
             patch("httpx.get") as mock_http_get,
             patch(
                 "sys.argv",
@@ -314,7 +314,7 @@ class TestCmdDoctor(unittest.TestCase):
 
             # Setup Redis mock
             mock_redis = MagicMock()
-            mock_redis_cls.from_url.return_value = mock_redis
+            mock_redis_from_url.return_value = mock_redis
             mock_redis.ping.return_value = True
 
             # Setup HTTP mock

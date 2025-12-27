@@ -1316,11 +1316,13 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     _setup_utility_commands(subparsers)
 
     # Register plugin subcommand groups
+    from cortex_cli.cmd_backfill import setup_backfill_parser
     from cortex_cli.cmd_db import setup_db_parser
     from cortex_cli.cmd_embeddings import setup_embeddings_parser
     from cortex_cli.cmd_maintenance import setup_maintenance_parser
     from cortex_cli.cmd_s3 import setup_s3_parser
 
+    setup_backfill_parser(subparsers)
     setup_db_parser(subparsers)
     setup_embeddings_parser(subparsers)
     setup_s3_parser(subparsers)
