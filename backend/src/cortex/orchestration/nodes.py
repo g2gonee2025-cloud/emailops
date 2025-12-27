@@ -1133,8 +1133,8 @@ def node_audit_draft(state: Dict[str, Any]) -> Dict[str, Any]:
         # Robustness: Fallback to neutral scores so pipeline continues
         draft.val_scores = DraftValidationScores(
             factuality=0.5,
-            citation=0.5,
-            tone=0.5,
+            citation_coverage=0.5,
+            tone_fit=0.5,
             safety=0.5,
             overall=0.5,
             feedback=f"Audit service unavailable (Error: {str(e)}). Validation skipped.",
