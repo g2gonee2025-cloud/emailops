@@ -86,6 +86,7 @@ def run_batch(
     limit: int | None = None,
     skip: int = 0,
     report_every: int = 50,
+    max_consecutive_failures: int = 10,
 ) -> BatchStats:
     """
     Run batch ingestion on S3 folders.
@@ -96,6 +97,7 @@ def run_batch(
         limit: Max folders to process (None = all)
         skip: Number of folders to skip at start
         report_every: Print progress every N folders
+        max_consecutive_failures: Abort if this many folders fail in a row.
 
     Returns:
         BatchStats with processing results
@@ -107,34 +109,59 @@ def run_batch(
     logger.info(f"Starting batch ingestion from s3://{handler.bucket}/{prefix}")
     logger.info(f"Tenant: {tenant_id}, Limit: {limit or 'all'}, Skip: {skip}")
 
-    # List all folders
-    folders = list(handler.list_conversation_folders(prefix=prefix, limit=None))
-    stats.total_folders = len(folders)
-    logger.info(f"Found {stats.total_folders} folders")
+    # This block is refactored to handle memory optimization and N+1 query fix.
+    # We now use an iterator and pre-fetch timestamps.
+    all_folders = handler.list_conversation_folders(prefix=prefix)
 
-    # Apply skip/limit
+    # Apply skip/limit logic before fetching timestamps to reduce DB load
+    folders_to_process = []
     if skip > 0:
-        folders = folders[skip:]
-        logger.info(f"Skipping first {skip} folders, {len(folders)} remaining")
+        try:
+            for _ in range(skip):
+                next(all_folders)
+        except StopIteration:
+            pass  # Skip is larger than total number of folders
 
     if limit:
-        folders = folders[:limit]
-        logger.info(f"Limited to {limit} folders")
+        folders_to_process = [folder for _, folder in zip(range(limit), all_folders)]
+    else:
+        folders_to_process = list(all_folders)
 
-    for i, folder in enumerate(folders, 1):
+    stats.total_folders = len(folders_to_process)
+    logger.info(f"Found {stats.total_folders} folders to process after skip/limit.")
+
+    # N+1 Query Fix: Pre-fetch all existing timestamps
+    folder_names = [f.name for f in folders_to_process]
+    existing_timestamps = processor._get_existing_timestamps(folder_names)
+    logger.info(f"Pre-fetched {len(existing_timestamps)} existing folder timestamps.")
+
+    consecutive_failures = 0
+    for i, folder in enumerate(folders_to_process, 1):
         try:
-            summary = processor.process_folder(folder.prefix)
+            # Pass the pre-fetched timestamps to the processor
+            summary = processor.process_folder(folder, existing_timestamps)
 
-            if summary and not summary.aborted_reason:
+            if summary is None:
+                # This indicates the folder was skipped, not an error
+                stats.skipped += 1
+                consecutive_failures = 0
+            elif not summary.aborted_reason:
                 stats.add_success(summary)
-            elif summary and summary.aborted_reason:
-                stats.add_failure(folder.name, summary.aborted_reason)
+                consecutive_failures = 0
             else:
-                stats.add_failure(folder.name, "No summary returned")
-
+                stats.add_failure(folder.name, summary.aborted_reason)
+                consecutive_failures += 1
         except Exception as e:
             stats.add_failure(folder.name, str(e))
-            logger.error(f"Error processing {folder.name}: {e}")
+            logger.error(f"Error processing {folder.name}: {e}", exc_info=True)
+            consecutive_failures += 1
+
+        if consecutive_failures >= max_consecutive_failures:
+            logger.critical(
+                f"Aborting due to {consecutive_failures} consecutive failures. "
+                "This may indicate a persistent issue with S3, the database, or the network."
+            )
+            break
 
         # Progress report
         if i % report_every == 0 or i == len(folders):
@@ -161,6 +188,12 @@ def main():
         "--report-every", type=int, default=50, help="Progress interval"
     )
     parser.add_argument("--output", help="Output JSON file for stats")
+    parser.add_argument(
+        "--max-consecutive-failures",
+        type=int,
+        default=10,
+        help="Abort after N consecutive failures",
+    )
 
     args = parser.parse_args()
 
@@ -175,6 +208,7 @@ def main():
         limit=args.limit,
         skip=args.skip,
         report_every=args.report_every,
+        max_consecutive_failures=args.max_consecutive_failures,
     )
 
     logger.info("=" * 60)

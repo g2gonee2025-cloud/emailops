@@ -205,22 +205,35 @@ class S3SourceHandler:
         folder_path = local_dir / folder.name
         folder_path.mkdir(parents=True, exist_ok=True)
 
+        resolved_folder_path = folder_path.resolve()
         logger.info(
-            f"Downloading {len(folder.files)} files from {folder.prefix} to {folder_path}"
+            f"Downloading {len(folder.files)} files from {folder.prefix} to {resolved_folder_path}"
         )
 
         for file_key in folder.files:
-            # Get relative path within folder
-            raw_rel = file_key[len(folder.prefix) :].replace("\\", "/")
-            relative_path = os.path.normpath("/" + raw_rel).lstrip("/\\")
-            if relative_path.startswith(".."):
-                relative_path = os.path.basename(relative_path)
-            if not relative_path:
+            if not file_key.startswith(folder.prefix):
+                logger.warning(
+                    f"Skipping file key '{file_key}' outside of prefix '{folder.prefix}'"
+                )
                 continue
 
-            local_file = folder_path / relative_path
-            local_file.parent.mkdir(parents=True, exist_ok=True)
+            # Prevent absolute paths and path traversal attacks.
+            relative_path_str = file_key[len(folder.prefix) :].lstrip("/\\")
+            if not relative_path_str:
+                continue
 
+            local_file = resolved_folder_path / relative_path_str
+
+            # Security check: ensure the resolved path is within the intended directory.
+            resolved_local_file = local_file.resolve()
+            if not resolved_local_file.is_relative_to(resolved_folder_path):
+                logger.error(
+                    f"Path traversal attempt blocked for key '{file_key}'. "
+                    f"Resolved path '{resolved_local_file}' is outside '{resolved_folder_path}'."
+                )
+                continue
+
+            local_file.parent.mkdir(parents=True, exist_ok=True)
             self.client.download_file(self.bucket, file_key, str(local_file))
 
         return folder_path

@@ -80,11 +80,10 @@ class IngestionProcessor:
         return timestamps
 
     def process_folder(
-        self, folder: Any, existing_timestamps: dict[str, Any]
+        self, folder: Any, existing_timestamps: Optional[dict[str, Any]] = None
     ) -> Optional[IngestJobSummary]:
         """
         Process a single folder and return summary.
-
         Checks if folder needs processing based on pre-fetched last_modified timestamp.
         """
         # Handle both raw prefix strings and S3ConversationFolder objects
