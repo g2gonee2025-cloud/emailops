@@ -290,44 +290,39 @@ def filter_results_post_query(
 ) -> List[Dict[str, Any]]:
     """
     Post-filter results that couldn't be filtered in SQL.
-
     Handles from/to/cc participant filtering using metadata.
     """
-    if filters.is_empty():
+    # Quick exit if no relevant filters are set
+    if not any([filters.from_emails, filters.to_emails, filters.cc_emails]):
         return results
-
-    filtered = []
+    filtered_results = []
     for r in results:
-        # Get participants from metadata
         metadata = r.get("metadata", {}) or {}
         participants = metadata.get("participants", [])
-
-        # Normalize participant list
-        if isinstance(participants, list):
-            emails = {
-                p.get("email", "").lower() for p in participants if isinstance(p, dict)
-            }
-        else:
-            emails = set()
-
-        # From filter (check if any participant matches)
-        if filters.from_emails:
-            from_match = emails & filters.from_emails
-            if not from_match:
-                continue
-
-        # To filter
-        if filters.to_emails:
-            to_match = emails & filters.to_emails
-            if not to_match:
-                continue
-
-        # CC filter
-        if filters.cc_emails:
-            cc_match = emails & filters.cc_emails
-            if not cc_match:
-                continue
-
-        filtered.append(r)
-
-    return filtered
+        if not isinstance(participants, list):
+            continue
+        # Create sets of emails for each role
+        senders = {
+            p.get("smtp", "").lower()
+            for p in participants
+            if isinstance(p, dict) and p.get("role") == "sender"
+        }
+        recipients = {
+            p.get("smtp", "").lower()
+            for p in participants
+            if isinstance(p, dict) and p.get("role") == "recipient"
+        }
+        cc_recipients = {
+            p.get("smtp", "").lower()
+            for p in participants
+            if isinstance(p, dict) and p.get("role") == "cc"
+        }
+        # Apply filters
+        if filters.from_emails and not (senders & filters.from_emails):
+            continue
+        if filters.to_emails and not (recipients & filters.to_emails):
+            continue
+        if filters.cc_emails and not (cc_recipients & filters.cc_emails):
+            continue
+        filtered_results.append(r)
+    return filtered_results
