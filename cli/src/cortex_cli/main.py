@@ -141,6 +141,7 @@ UTILITY_COMMANDS = [
     ("status", "Show current environment and configuration"),
     ("config", "View, validate, or export configuration"),
     ("version", "Display version information"),
+    ("autofix", "Automatically fix common code issues"),
 ]
 
 DATA_COMMANDS = [
@@ -1942,6 +1943,21 @@ Run comprehensive system diagnostics including:
         help="Display version information",
     )
     version_parser.set_defaults(func=lambda _: _print_version())
+
+    autofix_parser = subparsers.add_parser(
+        "autofix",
+        help="Automatically fix common code issues",
+        description="Run the auto-fix script to resolve low-hanging fruit issues.",
+    )
+    autofix_parser.set_defaults(
+        func=lambda _: _run_autofix()
+    )
+
+
+def _run_autofix():
+    """Run the autofix script."""
+    from cortex_cli.cmd_autofix import main as autofix_main
+    autofix_main()
 
 
 if __name__ == "__main__":
