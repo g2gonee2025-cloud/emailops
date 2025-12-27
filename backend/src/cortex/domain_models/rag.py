@@ -90,6 +90,7 @@ class DraftValidationScores(BaseModel):
     safety: float = 0.0
     overall: float = 0.0
     thresholds: Dict[str, float] = Field(default_factory=dict)
+    feedback: Optional[str] = None
 
 
 class NextAction(BaseModel):

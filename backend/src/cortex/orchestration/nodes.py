@@ -358,14 +358,6 @@ def _select_all_available_attachments(
     return selected
 
 
-def _safe_stat_mb(path: Path) -> float:
-    """Safely get file size in MB."""
-    try:
-        return path.stat().st_size / (1024 * 1024) if path.exists() else 0.0
-    except Exception:
-        return 0.0
-
-
 @trace_operation("tool_email_get_thread")
 def tool_email_get_thread(
     thread_id: uuid.UUID | str,
@@ -1136,8 +1128,8 @@ def node_audit_draft(state: Dict[str, Any]) -> Dict[str, Any]:
         # Robustness: Fallback to neutral scores so pipeline continues
         draft.val_scores = DraftValidationScores(
             factuality=0.5,
-            citation=0.5,
-            tone=0.5,
+            citation_coverage=0.5,
+            tone_fit=0.5,
             safety=0.5,
             overall=0.5,
             feedback=f"Audit service unavailable (Error: {str(e)}). Validation skipped.",
