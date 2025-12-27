@@ -1,7 +1,24 @@
 from typing import Any
-
+from pathlib import Path
+import os
 from .style import colorize as _colorize
 
+
+def resolve_index_dir(root_dir: Path | None) -> Path:
+    """Resolve the index directory."""
+    if root_dir:
+        return root_dir / "_index"
+    # Fallback to environment variable or default
+    from backend.src.cortex.indexing.metadata import INDEX_DIRNAME_DEFAULT
+
+    return Path(os.getenv("INDEX_DIR", INDEX_DIRNAME_DEFAULT))
+
+def resolve_sender(sender: str | None) -> str:
+    """Resolve the sender."""
+    from .cmd_search import SENDER_LOCKED
+    if sender:
+        return sender
+    return SENDER_LOCKED
 
 def _print_json_config(config: Any, section: str | None = None) -> None:
     """Print configuration in JSON format."""
@@ -26,6 +43,7 @@ def _print_human_config(config: Any, section: str | None = None) -> None:
         "DigitalOcean LLM": "digitalocean_llm",
         "Core": "core",
         "Embeddings": "embedding",
+        "Email": "email",
         "Search": "search",
         "Processing": "processing",
         "Database": "database",
@@ -51,6 +69,8 @@ def _print_human_config(config: Any, section: str | None = None) -> None:
             if hasattr(attr, "model_dump"):
                 for k, v in attr.model_dump().items():
                     print(f"    {k:<20} {v}")
+        else:
+            print(f"{_colorize('ERROR:', 'red')} Section '{section}' not found")
 
     # If we are here and not looking for a section, we printed summary above.
 
