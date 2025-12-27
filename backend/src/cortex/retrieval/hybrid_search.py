@@ -66,7 +66,7 @@ class KBSearchInput(BaseModel):
 
 def apply_recency_boost(
     results: List[SearchResultItem],
-    thread_updated_at: Dict[str, datetime],
+    conversation_updated_at: Dict[str, datetime],
     half_life_days: float = RECENCY_HALF_LIFE_DAYS,
     boost_strength: float = RECENCY_BOOST_STRENGTH,
 ) -> List[SearchResultItem]:
@@ -81,7 +81,10 @@ def apply_recency_boost(
     decay_rate = math.log(2) / half_life_days
 
     for item in results:
-        updated = thread_updated_at.get(item.thread_id)
+        if not item.conversation_id:
+            continue
+
+        updated = conversation_updated_at.get(item.conversation_id)
         if updated:
             # Handle timezone-naive datetimes
             if updated.tzinfo is None:
@@ -195,7 +198,7 @@ def fuse_rrf(
 
     # Score from FTS ranking
     for rank, item in enumerate(fts_results, start=1):
-        key = item.chunk_id or item.message_id or f"unknown_{rank}"
+        key = item.chunk_id or item.content_hash or f"fts-unkeyed-{rank}"
         scores[key] = scores.get(key, 0) + 1 / (k + rank)
         if key in items:
             items[key] = _merge_result_fields(items[key], item)
@@ -204,7 +207,7 @@ def fuse_rrf(
 
     # Score from vector ranking
     for rank, item in enumerate(vector_results, start=1):
-        key = item.chunk_id or item.message_id
+        key = item.chunk_id or item.content_hash or f"vector-unkeyed-{rank}"
         scores[key] = scores.get(key, 0) + 1 / (k + rank)
         if key in items:
             items[key] = _merge_result_fields(items[key], item)
@@ -236,15 +239,15 @@ def fuse_weighted_sum(
 
     combined: Dict[str, SearchResultItem] = {}
 
-    for item in fts_results:
-        key = item.chunk_id or item.message_id
+    for i, item in enumerate(fts_results):
+        key = item.chunk_id or item.content_hash or f"fts-unkeyed-{i}"
         if key in combined:
             combined[key] = _merge_result_fields(combined[key], item)
         else:
             combined[key] = item
 
-    for item in vector_results:
-        key = item.chunk_id or item.message_id
+    for i, item in enumerate(vector_results):
+        key = item.chunk_id or item.content_hash or f"vector-unkeyed-{i}"
         if key in combined:
             combined[key] = _merge_result_fields(combined[key], item)
         else:
@@ -459,5 +462,3 @@ def _get_conversation_timestamps(
         return {}
 
 
-# Backward compat alias
-_get_thread_timestamps = _get_conversation_timestamps
