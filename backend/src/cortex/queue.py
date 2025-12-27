@@ -875,16 +875,7 @@ class CeleryQueue(JobQueue):
         self, job_types: List[str], timeout: int = 10
     ) -> Optional[Dict[str, Any]]:
         """
-<<<<<<< HEAD
-        Dequeue is handled by Celery workers and is not supported in this client.
-
-        This method will raise a NotImplementedError because Celery's architecture
-        pushes tasks to workers, rather than having clients pull them.
         """
-        raise NotImplementedError(
-            "Dequeue is handled by Celery workers and is not supported via this interface."
-        )
-=======
         Dequeue is handled by Celery workers automatically.
         This method is not used in a Celery-based setup and is here for ABC compliance.
         """
@@ -892,7 +883,6 @@ class CeleryQueue(JobQueue):
         # Block for a short time to simulate waiting, but Celery workers operate independently.
         time.sleep(timeout)
         return None
->>>>>>> origin/main
 
     def ack(self, job_id: str) -> None:
         """Acknowledge job completion (handled automatically by Celery)."""
@@ -987,15 +977,10 @@ def get_queue(job_types: Optional[List[str]] = None) -> JobQueue:
                     redis_url = os.getenv(
                         "OUTLOOKCORTEX_REDIS_URL", "redis://localhost:6379"
                     )
-<<<<<<< HEAD
-                    _queue_instance = RedisStreamsQueue(
-                        redis_url=redis_url, job_types=job_types
-=======
                     # For workers, this will create consumer groups. For producers, it can be an empty list.
                     all_job_types = job_types or []
                     _queue_instance = RedisStreamsQueue(
                         redis_url=redis_url, job_types=all_job_types
->>>>>>> origin/main
                     )
                     logger.info("Initialized Redis Streams queue")
                 except ImportError as e:
