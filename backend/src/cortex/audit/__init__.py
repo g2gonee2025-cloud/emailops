@@ -104,7 +104,7 @@ def log_audit_event(
             output_hash=output_hash,
             policy_decisions=policy_decisions,
             risk_level=risk_level,
-            metadata=final_metadata,
+            audit_metadata=final_metadata,
         )
 
         if db_session:
@@ -236,7 +236,7 @@ def get_audit_trail(
                 query = query.filter(AuditLog.user_or_agent == user_or_agent)
             if correlation_id:
                 query = query.filter(
-                    AuditLog.metadata["correlation_id"].astext == correlation_id
+                    AuditLog.audit_metadata["correlation_id"].astext == correlation_id
                 )
             if since:
                 query = query.filter(AuditLog.ts >= since)
@@ -289,7 +289,7 @@ def get_audit_log_cli(
         )
         for r in results:
             correlation_id_str = (
-                r.metadata.get("correlation_id") if r.metadata else "N/A"
+                r.audit_metadata.get("correlation_id") if r.audit_metadata else "N/A"
             )
             table.add_row(
                 str(r.ts),

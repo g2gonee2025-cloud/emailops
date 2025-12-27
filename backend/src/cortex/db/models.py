@@ -232,7 +232,7 @@ class AuditLog(Base):
     risk_level: Mapped[str] = mapped_column(
         String(32), server_default="low", nullable=False
     )
-    metadata: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    audit_metadata: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
 
 
 class EntityNode(Base):
