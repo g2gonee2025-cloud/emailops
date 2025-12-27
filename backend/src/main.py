@@ -43,6 +43,7 @@ from cortex.context import (
     user_id_ctx,
 )
 from cortex.observability import get_trace_context, init_observability
+from cortex.security.dependencies import get_current_user
 from cortex.security.validators import validate_email_format
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware

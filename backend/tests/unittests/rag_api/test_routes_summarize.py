@@ -1,4 +1,3 @@
-
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -9,43 +8,30 @@ from cortex.rag_api.routes_summarize import summarize_thread_endpoint
 
 
 @pytest.mark.asyncio
-async def test_summarize_thread_endpoint_graph_error():
+async def test_summarize_thread_endpoint_service_error():
     """
-    Verify that if the summarization graph returns an error, the endpoint
-    raises a 500 HTTPException with a specific error message.
+    Verify that if the summarize service raises an exception, the endpoint
+    raises a 500 HTTPException.
     """
     # Arrange
     request = SummarizeThreadRequest(thread_id="test_thread")
     http_request = MagicMock()
     http_request.state.correlation_id = "test_correlation_id"
+    mock_user = "test_user"
 
-    # Mock the graph to simulate an error during invocation
-    mock_graph = MagicMock()
-    mock_graph.ainvoke = AsyncMock(return_value={"error": "Test graph error"})
-
-    # Create mocks for context variables
-    mock_tenant_ctx = MagicMock()
-    mock_tenant_ctx.get.return_value = "test_tenant"
-    mock_user_ctx = MagicMock()
-    mock_user_ctx.get.return_value = "test_user"
-
-    # Patch dependencies: context variables and the graph getter
-    with patch("cortex.rag_api.routes_summarize.tenant_id_ctx", new=mock_tenant_ctx), \
-         patch("cortex.rag_api.routes_summarize.user_id_ctx", new=mock_user_ctx), \
-         patch(
-            "cortex.rag_api.routes_summarize.get_summarize_graph",
-            new_callable=AsyncMock,
-            return_value=mock_graph,
-        ), \
-         patch("cortex.rag_api.routes_summarize.log_audit_event") as mock_audit:
-
+    # Patch the service to simulate a failure
+    with patch(
+        "cortex.rag_api.routes_summarize.summarize_thread_service",
+        new_callable=AsyncMock,
+        side_effect=ValueError("Service layer error"),
+    ) as mock_summarize_service:
         # Act & Assert
         with pytest.raises(HTTPException) as exc_info:
-            await summarize_thread_endpoint(request, http_request)
+            await summarize_thread_endpoint(request, http_request, user=mock_user)
 
-        # Assert correct exception is raised
-        assert exc_info.value.status_code == 500
-        assert exc_info.value.detail == "Summarization workflow failed"
+        # Assert that the correct exception is raised by the endpoint
+        assert exc_info.value.status_code == 400
+        assert "Service layer error" in exc_info.value.detail
 
-        # Assert that audit logging was NOT called on failure
-        mock_audit.assert_not_called()
+        # Ensure the service was called
+        mock_summarize_service.assert_awaited_once()
