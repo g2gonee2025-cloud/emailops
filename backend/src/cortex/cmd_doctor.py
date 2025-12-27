@@ -22,8 +22,7 @@ class CortexDoctor:
 
     def check_env(self) -> bool:
         """Check environment variables."""
-        # Using S3_ACCESS_KEY as representative of required env vars
-        required_keys = ["DB_URL", "S3_ACCESS_KEY"]
+        required_keys = ["OUTLOOKCORTEX_DB_URL", "OUTLOOKCORTEX_S3_ACCESS_KEY"]
 
         missing = [key for key in required_keys if not os.environ.get(key)]
 
@@ -31,10 +30,10 @@ class CortexDoctor:
             # Also check if config loaded them (fallback)
             if self.config:
                 # If config exists, we assume it loaded them, but let's verify specifics
-                if "DB_URL" in missing and self.config.database.url:
-                    missing.remove("DB_URL")
-                if "S3_ACCESS_KEY" in missing and self.config.storage.access_key:
-                    missing.remove("S3_ACCESS_KEY")
+                if "OUTLOOKCORTEX_DB_URL" in missing and self.config.database.url:
+                    missing.remove("OUTLOOKCORTEX_DB_URL")
+                if "OUTLOOKCORTEX_S3_ACCESS_KEY" in missing and self.config.storage.access_key:
+                    missing.remove("OUTLOOKCORTEX_S3_ACCESS_KEY")
 
         if missing:
             logger.error("env_check_failed", missing_keys=missing)
@@ -46,13 +45,14 @@ class CortexDoctor:
     def check_db(self) -> bool:
         """Check Database Connectivity."""
         try:
-            # Check availability in config
-            if self.config.database.url:
-                logger.info("db_check", status="OK", url="[MASKED]")
-                return True
-            else:
-                logger.error("db_check_failed", reason="missing_url")
-                return False
+            from cortex.db.session import engine
+            from sqlalchemy import text
+
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+
+            logger.info("db_check", status="OK", url="[MASKED]")
+            return True
         except Exception as e:
             logger.error("db_check_failed", error=str(e))
             return False
@@ -60,13 +60,15 @@ class CortexDoctor:
     def check_s3(self) -> bool:
         """Check Object Storage Connectivity."""
         try:
-            if self.config.storage.access_key and self.config.storage.secret_key:
-                logger.info(
-                    "s3_check", status="OK", bucket=self.config.storage.bucket_name
+            from cortex.ingestion.s3_source import S3SourceHandler
+
+            with S3SourceHandler() as s3_handler:
+                s3_handler.client.list_objects_v2(
+                    Bucket=s3_handler.bucket, MaxKeys=1
                 )
-                return True
-            logger.error("s3_check_failed", reason="missing_credentials")
-            return False
+                bucket_used = s3_handler.bucket
+            logger.info("s3_check", status="OK", bucket=bucket_used)
+            return True
         except Exception as e:
             logger.error("s3_check_failed", error=str(e))
             return False
