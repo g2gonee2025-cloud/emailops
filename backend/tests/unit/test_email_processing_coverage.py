@@ -93,3 +93,28 @@ Actual Body"""
         text2 = "Msg1\nOn 01/01/2024, bob wrote:\n> Quoted"
         msgs2 = split_email_thread(text2)
         self.assertTrue(len(msgs2) >= 2)
+
+    def test_boilerplate_line_removal(self):
+        # Test that boilerplate lines are correctly identified and removed
+        boilerplate_lines = [
+            "This communication is confidential and intended for the recipient only.",
+            "Please consider the environment before printing this email.",
+            "CAREERS.CHALHOUBGROUP.COM",
+            "Some Very Long Company Name Inc. | 123 Main Street, Suite 100, Anytown, CA 90210, USA | Tel: 555-1234",  # Long address-like line
+            "http://www.example.com/some/long/url/that/is/just/a/url",
+        ]
+
+        for line in boilerplate_lines:
+            text = f"This is the actual content.\n{line}\nThis is more content."
+            cleaned = clean_email_text(text)
+            self.assertIn("This is the actual content.", cleaned)
+            self.assertIn("This is more content.", cleaned)
+            self.assertNotIn(line.strip(), cleaned)
+
+    def test_domain_noise_removal(self):
+        # Test removal of lines that are just marketing domains
+        text = "Some content\nCHALHOUBGROUP.COM\nMore content"
+        cleaned = clean_email_text(text)
+        self.assertIn("Some content", cleaned)
+        self.assertIn("More content", cleaned)
+        self.assertNotIn("CHALHOUBGROUP.COM", cleaned)
