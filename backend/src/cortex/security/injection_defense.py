@@ -11,8 +11,9 @@ import structlog
 
 logger = structlog.get_logger(__name__)
 
-# Common patterns used in prompt injection / jailbreak attempts
+# Enhanced patterns to detect more sophisticated injection attempts
 BLOCKLIST_PATTERNS = [
+    # Original patterns
     r"ignore previous instructions",
     r"ignore all instructions",
     r"forget all previous instructions",
@@ -34,6 +35,20 @@ BLOCKLIST_PATTERNS = [
     r"simulate a",
     r"you are a helpful assistant",
     r"your new persona is",
+
+    # Sophisticated patterns
+    # Detects character separators and noise, e.g., "i g n o r e"
+    r"i\s*g\s*n\s*o\s*r\s*e",
+    # Detects role-playing variations
+    r"from now on, you are",
+    r"you will now act as",
+    # Detects context shifting
+    r"what if someone said",
+    # Detects direct commands
+    r"print the following",
+    r"output the following",
+    # Unicode homoglyphs (example with Cyrillic 'і' and 'е')
+    r"іgnorе",
 ]
 
 _COMPILED_PATTERNS = [re.compile(p, re.IGNORECASE) for p in BLOCKLIST_PATTERNS]
@@ -60,26 +75,17 @@ def contains_injection(text: str) -> bool:
     return False
 
 
-def strip_injection_patterns(text: str) -> str:
+def validate_for_injection(text: str):
     """
-    Proactively strip known prompt injection patterns from text.
+    Validates the input text for injection patterns and raises an exception if a threat is detected.
 
-    Blueprint §11.5:
-    * Removes patterns like "ignore your previous instructions"
-    * Applied to all retrieved context before LLM calls
+    Args:
+        text: The input text to validate.
+
+    Raises:
+        ValueError: If the text contains a potential injection pattern.
     """
-    if not text:
-        return ""
+    if contains_injection(text):
+        raise ValueError("Potential injection attack detected.")
 
-    cleaned = text
-    for pattern in _COMPILED_PATTERNS:
-        cleaned = pattern.sub("", cleaned)
 
-    if len(cleaned) < len(text):
-        logger.warning(
-            "stripped_injection_patterns",
-            original_length=len(text),
-            cleaned_length=len(cleaned),
-        )
-
-    return cleaned

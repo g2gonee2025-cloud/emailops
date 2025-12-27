@@ -50,7 +50,7 @@ from cortex.retrieval.query_classifier import (
 from cortex.retrieval.results import SearchResults
 from cortex.safety.guardrails_client import validate_with_repair
 from cortex.safety.policy_enforcer import check_action
-from cortex.safety import strip_injection_patterns
+from cortex.security.injection_defense import validate_for_injection
 from cortex.security.validators import sanitize_retrieved_content, validate_file_result
 from pydantic import BaseModel, Field, ValidationError
 from sqlalchemy import func, or_, select
@@ -730,10 +730,12 @@ def node_classify_query(state: Dict[str, Any]) -> Dict[str, Any]:
     Blueprint §8.1:
     * Determine intent (navigational, semantic, drafting)
     """
-    query = strip_injection_patterns(state.get("query", ""))
-
-    # Update state with sanitized query
-    state["query"] = query
+    query = state.get("query", "")
+    try:
+        validate_for_injection(query)
+    except ValueError:
+        logger.error("Potential injection attack detected in query.", query=query)
+        return {"error": "Invalid input detected."}
 
     try:
         args = QueryClassificationInput(query=query, use_llm=True)
@@ -863,10 +865,15 @@ def node_prepare_draft_query(state: Dict[str, Any]) -> Dict[str, Any]:
     Blueprint §10.3:
     * Combine explicit query and thread context
     """
-    explicit_query = strip_injection_patterns(state.get("explicit_query", ""))
-
-    # Update state with sanitized query
-    state["explicit_query"] = explicit_query
+    explicit_query = state.get("explicit_query", "")
+    try:
+        validate_for_injection(explicit_query)
+    except ValueError:
+        logger.error(
+            "Potential injection attack detected in explicit_query.",
+            query=explicit_query,
+        )
+        return {"error": "Invalid input detected."}
 
     # If we had thread context, we would combine it here.
     # For now, just use explicit query as the search query.
