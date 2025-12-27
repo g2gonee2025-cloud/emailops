@@ -12,10 +12,11 @@ import uuid
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
+import httpx
 import numpy as np
-import requests
 from cortex.common.exceptions import RetrievalError
 from cortex.config.models import QdrantConfig
+from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -154,7 +155,7 @@ class VectorStore(ABC):
     """Abstract vector store interface."""
 
     @abstractmethod
-    def search(
+    async def search(
         self,
         embedding: List[float],
         tenant_id: str,
@@ -175,7 +176,7 @@ class PgvectorStore(VectorStore):
         self._session = session
         self._output_dim = output_dim
 
-    def search(
+    async def search(
         self,
         embedding: List[float],
         tenant_id: str,
@@ -200,7 +201,7 @@ class PgvectorStore(VectorStore):
         """
         # P2 Fix: Cap limit to prevent resource exhaustion
         limit = min(limit, 500)
-        emb_array = _validate_embedding(embedding, self._output_dim)
+        emb_array = await run_in_threadpool(_validate_embedding, embedding, self._output_dim)
 
         # CRITICAL: Validate conversation_ids to prevent malformed UUID errors
         if conversation_ids:
@@ -229,11 +230,15 @@ class PgvectorStore(VectorStore):
         # Optional HNSW tuning for recall/speed tradeoff
         if ef_search is not None:
             # Set session-local configuration safely
-            self._session.execute(text("SET LOCAL hnsw.ef_search = :ef_search"), {"ef_search": ef_search})
+            await run_in_threadpool(
+                self._session.execute,
+                text("SET LOCAL hnsw.ef_search = :ef_search"),
+                {"ef_search": ef_search},
+            )
 
         # Fully parameterized query to prevent SQL injection
         stmt = text(
-            f"""
+            """
             SELECT
                 c.chunk_id,
                 c.conversation_id,
@@ -242,7 +247,7 @@ class PgvectorStore(VectorStore):
                 c.chunk_type,
                 c.is_attachment,
                 c.attachment_id,
-                c.embedding <=> CAST(:query_vec AS halfvec({self._output_dim})) AS distance
+                c.embedding <=> CAST(:query_vec AS halfvec(:output_dim)) AS distance
             FROM chunks c
             WHERE c.tenant_id = :tenant_id
               AND c.embedding IS NOT NULL
@@ -253,8 +258,10 @@ class PgvectorStore(VectorStore):
             LIMIT :limit
         """
         )
+        params["output_dim"] = self._output_dim
 
-        results = self._session.execute(stmt, params).fetchall()
+        result_proxy = await run_in_threadpool(self._session.execute, stmt, params)
+        results = result_proxy.fetchall()
         return [_process_pgvector_row(row) for row in results]
 
 
@@ -264,6 +271,11 @@ class QdrantVectorStore(VectorStore):
     def __init__(self, config: QdrantConfig, output_dim: int) -> None:
         self._config = config
         self._output_dim = output_dim
+        self._client = httpx.AsyncClient(
+            base_url=self._config.url.rstrip("/"),
+            headers=self._headers(),
+            timeout=10,
+        )
 
     def _headers(self) -> Dict[str, str]:
         headers = {"Content-Type": "application/json"}
@@ -271,7 +283,7 @@ class QdrantVectorStore(VectorStore):
             headers["api-key"] = self._config.api_key
         return headers
 
-    def search(
+    async def search(
         self,
         embedding: List[float],
         tenant_id: str,
@@ -284,7 +296,7 @@ class QdrantVectorStore(VectorStore):
     ) -> List[VectorResult]:
         # P2 Fix: Cap limit to prevent resource exhaustion
         limit = min(limit, 500)
-        emb_array = _validate_embedding(embedding, self._output_dim)
+        emb_array = await run_in_threadpool(_validate_embedding, embedding, self._output_dim)
 
         must_filters: List[Dict[str, Any]] = [
             {"key": "tenant_id", "match": {"value": tenant_id}},
@@ -321,38 +333,30 @@ class QdrantVectorStore(VectorStore):
         if ef_search is not None:
             payload["params"] = {"hnsw_ef": int(ef_search)}
 
-        url = (
-            f"{self._config.url.rstrip('/')}/collections/"
-            f"{self._config.collection_name}/points/search"
-        )
+        url = f"/collections/{self._config.collection_name}/points/search"
 
         try:
-            response = requests.post(
-                url,
-                json=payload,
-                headers=self._headers(),
-                timeout=10,
+            response = await self._client.post(url, json=payload)
+            response.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            raise RetrievalError(
+                "Qdrant search failed",
+                query="vector_search",
+                context={
+                    "status_code": exc.response.status_code,
+                    "detail": exc.response.text,
+                },
             )
-        except requests.RequestException as exc:
+        except httpx.RequestError as exc:
             raise RetrievalError(
                 "Failed to query Qdrant",
                 query="vector_search",
                 context={"error": str(exc)},
             )
 
-        if response.status_code != 200:
-            raise RetrievalError(
-                "Qdrant search failed",
-                query="vector_search",
-                context={
-                    "status_code": response.status_code,
-                    "detail": response.text,
-                },
-            )
-
         try:
             data = response.json()
-        except requests.JSONDecodeError:
+        except Exception:
             raise RetrievalError(
                 "Qdrant returned invalid JSON",
                 query="vector_search",

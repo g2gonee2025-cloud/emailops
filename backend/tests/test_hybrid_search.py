@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import numpy as np
 import pytest
@@ -124,14 +124,23 @@ class TestHybridSearch:
         assert fused[0].lexical_score == pytest.approx(0.5)
         assert fused[0].vector_score == pytest.approx(0.8)
 
+    @pytest.mark.asyncio
     @patch("cortex.config.loader.get_config")
-    @patch("cortex.db.session.SessionLocal")
+    @patch("cortex.retrieval.hybrid_search.SessionLocal")
     @patch("cortex.retrieval._hybrid_helpers._get_runtime")
-    @patch("cortex.retrieval.fts_search.search_chunks_fts")
-    @patch("cortex.retrieval.vector_search.search_chunks_vector")
+    @patch(
+        "cortex.retrieval.hybrid_search.search_chunks_fts", new_callable=AsyncMock
+    )
+    @patch(
+        "cortex.retrieval.hybrid_search.search_chunks_vector",
+        new_callable=AsyncMock,
+    )
     @patch("cortex.retrieval.cache.get_cached_query_embedding")
-    @patch("cortex.retrieval.hybrid_search._get_conversation_timestamps")
-    def test_tool_kb_search_hybrid_flow(
+    @patch(
+        "cortex.retrieval.hybrid_search._get_conversation_timestamps",
+        new_callable=AsyncMock,
+    )
+    async def test_tool_kb_search_hybrid_flow(
         self,
         mock_timestamps,
         mock_get_cache,
@@ -198,7 +207,7 @@ class TestHybridSearch:
             user_id="u1",
             query="test query",
         )
-        result = tool_kb_search_hybrid(input_args)
+        result = await tool_kb_search_hybrid(input_args)
 
         # Verification
         assert result.is_ok()
@@ -213,13 +222,27 @@ class TestHybridSearch:
         mock_search_vector.assert_called_once()
         mock_timestamps.assert_called_once()
 
+    @pytest.mark.asyncio
     @patch("cortex.config.loader.get_config")
-    @patch("cortex.db.session.SessionLocal")
-    @patch("cortex.retrieval.fts_search.search_messages_fts")
-    @patch("cortex.retrieval.fts_search.search_chunks_fts")
-    @patch("cortex.retrieval.vector_search.search_chunks_vector")
-    def test_navigational_search(
-        self, mock_vector, mock_fts, mock_msg_fts, mock_session_cls, mock_config
+    @patch("cortex.retrieval.hybrid_search.SessionLocal")
+    @patch(
+        "cortex.retrieval.hybrid_search.search_conversations_fts",
+        new_callable=AsyncMock,
+    )
+    @patch(
+        "cortex.retrieval.hybrid_search.search_chunks_fts", new_callable=AsyncMock
+    )
+    @patch(
+        "cortex.retrieval.hybrid_search.search_chunks_vector",
+        new_callable=AsyncMock,
+    )
+    async def test_navigational_search(
+        self,
+        mock_vector_search,
+        mock_chunk_search,
+        mock_convo_search,
+        mock_session_cls,
+        mock_config,
     ):
         """Test navigational search logic triggers message search."""
         mock_config.return_value.search.k = 10
@@ -235,7 +258,7 @@ class TestHybridSearch:
         mock_session_cls.return_value.__enter__.return_value = Mock()
 
         # Setup Navigational Hit (FTSResult)
-        mock_msg_fts.return_value = [
+        mock_convo_search.return_value = [
             FTSResult(
                 conversation_id="c_nav",
                 subject="Subject",
@@ -244,8 +267,8 @@ class TestHybridSearch:
             )
         ]
         # And ensure normal search returns nothing
-        mock_fts.return_value = []
-        mock_vector.return_value = []
+        mock_chunk_search.return_value = []
+        mock_vector_search.return_value = []
 
         input_args = KBSearchInput(
             tenant_id="t1",
@@ -260,22 +283,27 @@ class TestHybridSearch:
             mock_runtime = Mock()
             mock_runtime.embed_queries.return_value = np.array([[0.1]])
             mock_get_runtime.return_value = mock_runtime
-            tool_kb_search_hybrid(input_args)
+            await tool_kb_search_hybrid(input_args)
 
         # Verify message search was called
-        mock_msg_fts.assert_called_once()
+        mock_convo_search.assert_called_once()
 
         # Verify FTS called with filtered conversation_id from navigational result
-        _, kwargs = mock_fts.call_args
+        _, kwargs = mock_chunk_search.call_args
         assert "conversation_ids" in kwargs
         assert "c_nav" in kwargs["conversation_ids"]
 
-
+    @pytest.mark.asyncio
     @patch("cortex.config.loader.get_config")
-    @patch("cortex.db.session.SessionLocal")
-    @patch("cortex.retrieval.fts_search.search_chunks_fts")
-    @patch("cortex.retrieval.vector_search.search_chunks_vector")
-    def test_sql_injection_through_file_types(
+    @patch("cortex.retrieval.hybrid_search.SessionLocal")
+    @patch(
+        "cortex.retrieval.hybrid_search.search_chunks_fts", new_callable=AsyncMock
+    )
+    @patch(
+        "cortex.retrieval.hybrid_search.search_chunks_vector",
+        new_callable=AsyncMock,
+    )
+    async def test_sql_injection_through_file_types(
         self, mock_vector, mock_fts, mock_session_cls, mock_config
     ):
         """Test that file_types filter is not vulnerable to SQL injection."""
@@ -308,7 +336,7 @@ class TestHybridSearch:
             # Simulate embedding for the cleaned query part, which is empty
             mock_runtime.embed_queries.return_value = np.array([[]])
             mock_get_runtime.return_value = mock_runtime
-            tool_kb_search_hybrid(input_args)
+            await tool_kb_search_hybrid(input_args)
 
         # Verify that search_chunks_fts was called
         mock_fts.assert_called_once()

@@ -29,6 +29,7 @@ from cortex.retrieval.reranking import (
     rerank_results,
 )
 from cortex.retrieval.results import SearchResultItem, SearchResults
+from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
@@ -313,7 +314,8 @@ async def tool_kb_search_hybrid(args: KBSearchInput) -> Result[SearchResults, Re
             # 1.5. Summary-Awareness: Find highly relevant threads by summary
             summary_boost_ids = set()
             try:
-                summary_hits = search_conversations_fts(
+                summary_hits = await run_in_threadpool(
+                    search_conversations_fts,
                     session,
                     search_query,
                     args.tenant_id,
@@ -328,12 +330,18 @@ async def tool_kb_search_hybrid(args: KBSearchInput) -> Result[SearchResults, Re
                 logger.warning("Summary search failed: %s", e)
 
             # 2. Resolve Conversations (Navigational + Filters)
-            final_conversation_ids = _resolve_target_conversations(
-                session, args, search_query, k * candidates_multiplier, parsed_filters
+            final_conversation_ids = await run_in_threadpool(
+                _resolve_target_conversations,
+                session,
+                args,
+                search_query,
+                k * candidates_multiplier,
+                parsed_filters,
             )
 
             # 3. Lexical search (FTS) on chunks
-            fts_chunk_results = search_chunks_fts(
+            fts_chunk_results = await run_in_threadpool(
+                search_chunks_fts,
                 session,
                 search_query,
                 args.tenant_id,
@@ -352,7 +360,7 @@ async def tool_kb_search_hybrid(args: KBSearchInput) -> Result[SearchResults, Re
             if query_embedding is not None:
                 logger.info(f"Query embedding generated. Dim: {len(query_embedding)}")
                 hnsw_ef_search = getattr(config.search, "hnsw_ef_search", None)
-                vector_results = search_chunks_vector(
+                vector_results = await search_chunks_vector(
                     session,
                     query_embedding,
                     args.tenant_id,
@@ -418,8 +426,8 @@ async def tool_kb_search_hybrid(args: KBSearchInput) -> Result[SearchResults, Re
             conversation_ids = list(
                 {r.conversation_id for r in fused_results if r.conversation_id}
             )
-            conversation_updated_at = _get_conversation_timestamps(
-                session, conversation_ids, args.tenant_id
+            conversation_updated_at = await run_in_threadpool(
+                _get_conversation_timestamps, session, conversation_ids, args.tenant_id
             )
 
             # 9. Apply recency boost

@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import numpy as np
 import pytest
@@ -63,7 +63,8 @@ class TestVectorStoreUtils:
 
 
 class TestPgvectorStore:
-    def test_search(self):
+    @pytest.mark.asyncio
+    async def test_search(self):
         session = MagicMock()
         # Mock result
         row = MagicMock()
@@ -79,7 +80,7 @@ class TestPgvectorStore:
         session.execute.return_value.fetchall.return_value = [row]
 
         store = PgvectorStore(session, 3)
-        results = store.search([0.1, 0.1, 0.1], "tenant", limit=5)
+        results = await store.search([0.1, 0.1, 0.1], "tenant", limit=5)
 
         assert len(results) == 1
         assert results[0].chunk_id == "1"
@@ -89,7 +90,8 @@ class TestPgvectorStore:
 
 
 class TestQdrantVectorStore:
-    def test_search_success(self):
+    @pytest.mark.asyncio
+    async def test_search_success(self):
         config = MagicMock()
         config.url = "http://qdrant"
         config.collection_name = "test"
@@ -97,17 +99,20 @@ class TestQdrantVectorStore:
 
         store = QdrantVectorStore(config, 3)
 
-        with patch("requests.post") as mock_post:
-            mock_post.return_value.status_code = 200
-            mock_post.return_value.json.return_value = {
+        with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {
                 "result": [{"id": "1", "score": 0.9, "payload": {"text": "found"}}]
             }
+            mock_post.return_value = mock_response
 
-            results = store.search([0.1, 0.1, 0.1], "tenant")
+            results = await store.search([0.1, 0.1, 0.1], "tenant")
             assert len(results) == 1
             assert results[0].score == 0.9
 
-    def test_search_with_file_types_filter(self):
+    @pytest.mark.asyncio
+    async def test_search_with_file_types_filter(self):
         config = MagicMock()
         config.url = "http://qdrant"
         config.collection_name = "test"
@@ -115,11 +120,15 @@ class TestQdrantVectorStore:
 
         store = QdrantVectorStore(config, 3)
 
-        with patch("requests.post") as mock_post:
-            mock_post.return_value.status_code = 200
-            mock_post.return_value.json.return_value = {"result": []}
+        with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {"result": []}
+            mock_post.return_value = mock_response
 
-            store.search([0.1, 0.1, 0.1], "tenant", file_types=["pdf", "docx"])
+            await store.search(
+                [0.1, 0.1, 0.1], "tenant", file_types=["pdf", "docx"]
+            )
 
             mock_post.assert_called_once()
             call_args, call_kwargs = mock_post.call_args

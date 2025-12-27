@@ -22,7 +22,7 @@ from sqlalchemy.orm import Session
 logger = logging.getLogger(__name__)
 
 
-def search_chunks_vector(
+async def search_chunks_vector(
     session: Session,
     embedding: List[float],
     tenant_id: str,
@@ -62,7 +62,7 @@ def search_chunks_vector(
     else:
         store = PgvectorStore(session, output_dim)
 
-    return store.search(
+    return await store.search(
         embedding,
         tenant_id,
         limit=limit,
