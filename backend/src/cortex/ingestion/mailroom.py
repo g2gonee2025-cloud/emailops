@@ -75,6 +75,17 @@ def process_job(job: IngestJobRequest) -> IngestJobSummary:
 
 
 def _validate_local_path(path_str: str) -> Path:
+    upload_dir = os.getenv("CORTEX_LOCAL_UPLOAD_DIR")
+    if not upload_dir:
+        raise ValueError("CORTEX_LOCAL_UPLOAD_DIR is not set, insecure local upload disabled.")
+
+    safe_base_dir = Path(upload_dir).resolve()
+
+    # Security: Prevent path traversal attacks.
+    resolved_path = Path(path_str).resolve()
+    if not str(resolved_path).startswith(str(safe_base_dir)):
+        raise ValueError(f"Path is outside of the allowed directory: {path_str}")
+
     path = Path(path_str)
     if not path.exists():
         raise ValueError(f"Local path does not exist: {path_str}")
@@ -152,10 +163,17 @@ def _download_sftp_source(
 
     pkey = None
     if pkey_path:
-        pkey = paramiko.RSAKey.from_private_key_file(pkey_path)
+        # Try loading the key with common formats to avoid breaking existing integrations.
+        for key_class in (paramiko.Ed25519Key, paramiko.RSAKey, paramiko.ECDSAKey, paramiko.DSSKey):
+            try:
+                pkey = key_class.from_private_key_file(pkey_path)
+                break
+            except paramiko.ssh_exception.SSHException:
+                continue
+        if not pkey:
+            raise ValueError(f"Failed to load private key from {pkey_path}. Unsupported format.")
 
-    sftp = None
-    try:
+    with client:
         client.connect(
             hostname=host,
             port=port,
@@ -165,24 +183,16 @@ def _download_sftp_source(
             timeout=30,
         )
 
-        sftp = client.open_sftp()
+        with client.open_sftp() as sftp:
+            temp_dir = Path(tempfile.mkdtemp(prefix="cortex_sftp_"))
+            remote_root = Path(remote_path)
+            root_name = remote_root.name or remote_root.parent.name or "sftp_conversation"
+            local_root = temp_dir / root_name
+            local_root.mkdir(parents=True, exist_ok=True)
 
-        temp_dir = Path(tempfile.mkdtemp(prefix="cortex_sftp_"))
-        remote_root = Path(remote_path)
-        root_name = remote_root.name or remote_root.parent.name or "sftp_conversation"
-        local_root = temp_dir / root_name
-        local_root.mkdir(parents=True, exist_ok=True)
+            _download_sftp_tree(sftp, str(remote_root), local_root)
 
-        _download_sftp_tree(sftp, str(remote_root), local_root)
-
-        return temp_dir, local_root
-    finally:
-        if sftp is not None:
-            try:
-                sftp.close()
-            except Exception:
-                pass
-        client.close()
+            return temp_dir, local_root
 
 
 def _download_sftp_tree(sftp: Any, remote_path: str, local_path: Path) -> None:
