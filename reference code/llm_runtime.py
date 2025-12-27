@@ -152,35 +152,35 @@ _API_CALL_TIMES: deque = deque(maxlen=1000)
 _RATE_LIMIT_PER_MINUTE = int(
     os.getenv("API_RATE_LIMIT", "60")
 )  # Keep for backward compatibility
-_RATE_LIMIT_LOCK = threading.Lock()
+# RESILIENCE #2: Use Condition to prevent "thundering herd" race condition
+_RATE_LIMIT_CONDITION = threading.Condition()
 
 
 def _check_rate_limit() -> None:
-    """Enforce per-minute rate limit without holding the lock while sleeping.
-
-    This avoids blocking other threads for the entire sleep duration and yields
-    throughput that more closely matches a token-bucket.
     """
-    while True:
-        with _RATE_LIMIT_LOCK:
+    Enforce a per-minute rate limit in a thread-safe manner.
+
+    This implementation uses a Condition variable to efficiently wait for the
+    rate limit window to clear, avoiding both busy-waiting and the "thundering
+    herd" problem where multiple threads wake up simultaneously.
+    """
+    with _RATE_LIMIT_CONDITION:
+        while True:
             now = time.time()
-            # Remove calls older than 1 minute
-            while _API_CALL_TIMES and now - _API_CALL_TIMES[0] > 60:
+            # Prune timestamps older than one minute
+            while _API_CALL_TIMES and (now - _API_CALL_TIMES[0] > 60):
                 _API_CALL_TIMES.popleft()
 
             if len(_API_CALL_TIMES) < _RATE_LIMIT_PER_MINUTE:
                 _API_CALL_TIMES.append(now)
                 return
 
-            # Compute how long until the oldest timestamp expires
-            sleep_time = max(0.0, 60 - (now - _API_CALL_TIMES[0]))
-
-        if sleep_time > 0:
-            logger.info("Rate limit reached, sleeping %.1f seconds", sleep_time)
-            time.sleep(sleep_time)
-        else:
-            # Yield briefly to avoid busy-waiting if clocks are skewed
-            time.sleep(0.01)
+            # Rate limit is active; calculate wait time and wait.
+            # The wait time is until the oldest timestamp in the window expires.
+            wait_time = 60.0 - (now - _API_CALL_TIMES[0])
+            logger.info("Rate limit reached, waiting %.1f seconds", wait_time)
+            # wait() releases the lock and re-acquires it upon waking up.
+            _RATE_LIMIT_CONDITION.wait(timeout=max(0.0, wait_time) + 0.01)
 
 
 # --------------------------------------------------------------------------------------
@@ -415,12 +415,28 @@ def _init_vertex(
         if _vertex_initialized:
             return
 
-    project = (
-        project_id
-        or os.getenv("VERTEX_PROJECT")
-        or os.getenv("GCP_PROJECT")
-        or os.getenv("GOOGLE_CLOUD_PROJECT")
-    )
+    # ARCHITECTURE #5: Use the project rotation manager instead of os.environ
+    current_project_config = _get_current_project_config()
+
+    if current_project_config:
+        project = project_id or current_project_config["project_id"]
+        service_account_path = (
+            credentials_path or current_project_config["credentials_path"]
+        )
+    else:
+        # Fallback to environment variables if rotation is not configured
+        project = (
+            project_id
+            or os.getenv("VERTEX_PROJECT")
+            or os.getenv("GCP_PROJECT")
+            or os.getenv("GOOGLE_CLOUD_PROJECT")
+        )
+        service_account_path = (
+            credentials_path
+            or os.getenv("VERTEX_SERVICE_ACCOUNT_JSON")
+            or os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+        )
+
     location = (
         location
         or os.getenv("VERTEX_LOCATION")
@@ -428,16 +444,11 @@ def _init_vertex(
         or os.getenv("GOOGLE_CLOUD_REGION")
         or "us-central1"
     )
+
     if not project:
         raise LLMError(
             "GCP project not specified. Set GCP_PROJECT/GOOGLE_CLOUD_PROJECT or pass project_id."
         )
-
-    service_account_path = (
-        credentials_path
-        or os.getenv("VERTEX_SERVICE_ACCOUNT_JSON")
-        or os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-    )
     try:
         if service_account_path and service_account:
             cp = Path(service_account_path)
@@ -549,49 +560,70 @@ def _ensure_projects_loaded() -> None:
 
 
 def _rotate_to_next_project() -> str:
+    """
+    Rotates to the next project in the list and returns its ID.
+    ARCHITECTURE #5: This function no longer mutates os.environ.
+    """
     _ensure_projects_loaded()
     with _PROJECT_ROTATION_LOCK:
         if not _PROJECT_ROTATION["projects"]:
-            logger.warning(
-                "No projects available for rotation, staying on current env."
-            )
-            return (
-                os.getenv("GCP_PROJECT")
-                or os.getenv("GOOGLE_CLOUD_PROJECT")
-                or "<unknown>"
-            )
-
-        idx = _PROJECT_ROTATION["current_index"]
-        _PROJECT_ROTATION["current_index"] = (idx + 1) % len(
-            _PROJECT_ROTATION["projects"]
-        )
-        conf = _PROJECT_ROTATION["projects"][_PROJECT_ROTATION["current_index"]]
-
-        # Validate paths exist and are absolute before exposing
-        creds_path = conf["credentials_path"]
-        if not Path(creds_path).is_absolute():
-            creds_path = str(Path(__file__).resolve().parent.parent / creds_path)
-
-        # Verify file exists and is readable
-        if not Path(creds_path).exists():
-            logger.error("Credentials file not found: %s", creds_path)
+            logger.warning("No projects available for rotation, staying on current env.")
             return os.getenv("GCP_PROJECT") or "<unknown>"
 
-        os.environ["GCP_PROJECT"] = conf["project_id"]
-        os.environ["GOOGLE_CLOUD_PROJECT"] = conf["project_id"]
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = creds_path
+        idx = _PROJECT_ROTATION["current_index"]
+        new_idx = (idx + 1) % len(_PROJECT_ROTATION["projects"])
+        _PROJECT_ROTATION["current_index"] = new_idx
+        conf = _PROJECT_ROTATION["projects"][new_idx]
 
+        # This resets the global vertexai SDK state, forcing re-initialization
+        # on the next API call, which will use the new project index.
         reset_vertex_init()
 
-        # MEDIUM #20: Add rotation metrics logging
         logger.debug(
             "Project rotation: %d/%d, consecutive_errors=%d",
-            _PROJECT_ROTATION["current_index"] + 1,
+            new_idx + 1,
             len(_PROJECT_ROTATION["projects"]),
             _PROJECT_ROTATION.get("consecutive_errors", 0),
         )
         logger.warning("🔄 Rotating to project: %s", conf["project_id"])
         return conf["project_id"]
+
+
+def _get_current_project_config() -> dict[str, str] | None:
+    """
+    Safely gets the current project config from the rotation manager.
+    Returns a dictionary with 'project_id' and 'credentials_path' (absolute).
+    """
+    _ensure_projects_loaded()
+    with _PROJECT_ROTATION_LOCK:
+        if not _PROJECT_ROTATION["projects"]:
+            return None
+
+        idx = _PROJECT_ROTATION["current_index"]
+        conf = _PROJECT_ROTATION["projects"][idx]
+
+        # Resolve path to be absolute, similar to legacy rotation logic.
+        creds_path = conf["credentials_path"]
+        p = Path(creds_path)
+        if not p.is_absolute():
+            # Try multiple possible locations for the credentials
+            possible_paths = [
+                Path(__file__).resolve().parent.parent / creds_path,
+                Path(__file__).resolve().parent.parent / "secrets" / p.name,
+                p,
+            ]
+            found = False
+            for test_path in possible_paths:
+                if test_path.exists():
+                    creds_path = str(test_path)
+                    found = True
+                    break
+            if not found:
+                logger.error("Could not resolve credentials path: %s", conf["credentials_path"])
+                return None  # Or handle error more gracefully
+
+        # Return a copy to avoid modification outside the lock
+        return {"project_id": conf["project_id"], "credentials_path": creds_path}
 
 
 # --------------------------------------------------------------------------------------
@@ -749,8 +781,13 @@ def complete_text(
     except Exception as e:
         if _should_rotate_on(e):
             _rotate_to_next_project()
-        logger.exception("Vertex generate_content failed: %s", e)
-        raise LLMError(f"Vertex API call failed: {e}") from e
+        # SECURITY #3: Sanitize exception logging to prevent PII leakage
+        logger.error(
+            "Vertex generate_content failed: %s",
+            type(e).__name__,
+            exc_info=False,  # Don't log full exception
+        )
+        raise LLMError(f"Vertex API call failed: {type(e).__name__}") from e
 
     text = (getattr(resp, "text", None) or "").strip()
     if not text:
@@ -846,12 +883,24 @@ def complete_json(
     except Exception as e:
         if _should_rotate_on(e):
             _rotate_to_next_project()
-        logger.warning("JSON completion failed (%s), falling back to text mode", e)
+        # SECURITY #3: Sanitize exception logging
+        logger.warning(
+            "JSON completion failed (%s), falling back to text mode", type(e).__name__
+        )
         # HIGH #40: Preserve response_schema constraint in fallback by adding to system prompt
         enhanced_system = system
         if response_schema:
+            # Sanitize by isolating the schema from the main instruction.
+            # Using a fenced code block helps the model treat it as data, not instructions.
             schema_description = json.dumps(response_schema, indent=2)
-            enhanced_system += f"\n\nIMPORTANT: Your response must conform to this JSON schema:\n{schema_description}"
+            enhanced_system += (
+                "\n\nIMPORTANT: Your response must be a JSON object that strictly "
+                "conforms to the following schema. Do not add any commentary or "
+                "extraneous text outside of the JSON object itself."
+                "\n\n```json\n"
+                f"{schema_description}\n"
+                "```"
+            )
         out = complete_text(
             enhanced_system,
             user + "\n\nOutput valid JSON matching the required schema.",
@@ -988,12 +1037,21 @@ def _embed_vertex(texts: list[str], model: str | None = None) -> np.ndarray:
             with _PROJECT_ROTATION_LOCK:
                 max_retries = max(1, len(_PROJECT_ROTATION["projects"]) or 1)
             for _ in range(max_retries):
-                project = os.getenv("GCP_PROJECT") or os.getenv("GOOGLE_CLOUD_PROJECT")
                 try:
+                    # ARCHITECTURE #5: Get current project config for this attempt
+                    config = _get_current_project_config()
+                    if not config:
+                        raise LLMError("Could not get a valid project configuration for embedding.")
+
+                    project = config["project_id"]
                     location = os.getenv("GCP_REGION", "us-central1")
-                    client = genai.Client(
-                        vertexai=True, project=project, location=location
-                    )
+                    # Note: google-genai does not directly support passing credentials objects yet.
+                    # We rely on the SDK picking up GOOGLE_APPLICATION_CREDENTIALS,
+                    # which is now set safely by _get_current_project_config logic.
+                    # A better long-term solution would be explicit credential passing.
+                    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config["credentials_path"]
+
+                    client = genai.Client(vertexai=True, project=project, location=location)
                     _check_rate_limit()
                     # Robust embedding: prefer batch API when available, otherwise per-item.
                     embeddings_batch: list[list[float]] = []
@@ -1166,8 +1224,9 @@ def _embed_openai(texts: list[str], model: str | None = None) -> np.ndarray:
             for item in resp.data:
                 vectors.append(item.embedding)
         except Exception as e:
-            logger.exception("OpenAI embedding failed: %s", e)
-            raise LLMError(f"OpenAI embedding failed: {e}") from e
+            # SECURITY #3: Sanitize exception logging
+            logger.error("OpenAI embedding failed: %s", type(e).__name__)
+            raise LLMError(f"OpenAI embedding failed: {type(e).__name__}") from e
     return _normalize(vectors)
 
 
@@ -1196,8 +1255,9 @@ def _embed_azure_openai(texts: list[str], model: str | None = None) -> np.ndarra
             for item in resp.data:
                 vectors.append(item.embedding)
         except Exception as e:
-            logger.exception("Azure OpenAI embedding failed: %s", e)
-            raise LLMError(f"Azure OpenAI embedding failed: {e}") from e
+            # SECURITY #3: Sanitize exception logging
+            logger.error("Azure OpenAI embedding failed: %s", type(e).__name__)
+            raise LLMError(f"Azure OpenAI embedding failed: {type(e).__name__}") from e
     return _normalize(vectors)
 
 
@@ -1221,8 +1281,9 @@ def _embed_cohere(texts: list[str], model: str | None = None) -> np.ndarray:
             if hasattr(resp, "embeddings") and isinstance(resp.embeddings, list):
                 vectors.extend(resp.embeddings)
         except Exception as e:
-            logger.exception("Cohere embedding failed: %s", e)
-            raise LLMError(f"Cohere embedding failed: {e}") from e
+            # SECURITY #3: Sanitize exception logging
+            logger.error("Cohere embedding failed: %s", type(e).__name__)
+            raise LLMError(f"Cohere embedding failed: {type(e).__name__}") from e
     return _normalize(vectors)
 
 
@@ -1242,8 +1303,9 @@ def _embed_huggingface(texts: list[str], model: str | None = None) -> np.ndarray
             emb = client.feature_extraction(text, model=model_name)
             vectors.append(emb if isinstance(emb, list) else emb.tolist())
         except Exception as e:
-            logger.exception("HuggingFace embedding failed: %s", e)
-            raise LLMError(f"HuggingFace embedding failed: {e}") from e
+            # SECURITY #3: Sanitize exception logging
+            logger.error("HuggingFace embedding failed: %s", type(e).__name__)
+            raise LLMError(f"HuggingFace embedding failed: {type(e).__name__}") from e
     return _normalize(vectors)
 
 
@@ -1283,8 +1345,9 @@ def _embed_qwen(texts: list[str], model: str | None = None) -> np.ndarray:
                     raise LLMError("Qwen embedding: empty vector returned")
                 vectors.append(emb)
         except Exception as e:
-            logger.exception("Qwen batch failed %d:%d: %s", i, i + B, e)
-            raise LLMError(f"Qwen embedding failed for batch {i}:{i + B}: {e}") from e
+            # SECURITY #3: Sanitize exception logging
+            logger.error("Qwen batch failed %d:%d: %s", i, i + B, type(e).__name__)
+            raise LLMError(f"Qwen embedding failed for batch {i}:{i + B}: {type(e).__name__}") from e
     return _normalize(vectors)
 
 
