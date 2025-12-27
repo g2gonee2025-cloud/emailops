@@ -299,11 +299,12 @@ def _interactive_search():
     console.print(f"[dim]Searching for '{query}'...[/dim]")
 
     try:
-        from cortex.models.api import SearchRequest
-        from cortex.retrieval.hybrid_search import hybrid_search
+        from cortex.retrieval.hybrid_search import KBSearchInput, tool_kb_search_hybrid
 
-        req = SearchRequest(query=query, top_k=top_k, tenant_id="default")
-        results = hybrid_search(req)
+        search_input = KBSearchInput(
+            query=query, k=top_k, tenant_id="default", user_id="cli-user"
+        )
+        results = tool_kb_search_hybrid(search_input)
 
         if not results.results:
             console.print("[yellow]No results found.[/yellow]")
@@ -339,37 +340,31 @@ def _interactive_answer():
     console.print("[dim]Thinking...[/dim]")
 
     try:
-        from cortex.orchestration.graphs import build_answer_graph
+        from cortex_cli.api_client import get_api_client
 
-        graph = build_answer_graph().compile()
+        api_client = get_api_client()
+        response = api_client.answer(query=query, tenant_id="default", user_id="cli-user")
 
-        async def _run():
-            return await graph.ainvoke(
-                {"query": query, "tenant_id": "default", "user_id": "cli-user"}
-            )
+        answer = response.get("answer")
 
-        state = asyncio.run(_run())
-
-        if state.get("error"):
-            console.print(f"[bold red]Error:[/bold red] {state['error']}")
-        elif state.get("answer"):
-            ans = state["answer"]
+        if not answer:
+            console.print("[yellow]No answer generated.[/yellow]")
+        else:
             console.print(
                 Panel(
-                    Markdown(ans.answer_markdown), title="Answer", border_style="green"
+                    Markdown(answer.get("answer_markdown", "")), title="Answer", border_style="green"
                 )
             )
 
-            if ans.evidence:
+            evidence = answer.get("evidence", [])
+            if evidence:
                 table = Table(title="Sources", box=box.SIMPLE)
                 table.add_column("Ref", style="cyan")
                 table.add_column("Evidence")
-                for i, ev in enumerate(ans.evidence, 1):
-                    txt = ev.snippet or ev.text or "No text"
+                for i, ev in enumerate(evidence, 1):
+                    txt = ev.get("snippet") or ev.get("text") or "No text"
                     table.add_row(str(i), txt[:100] + "...")
                 console.print(table)
-        else:
-            console.print("[yellow]No answer generated.[/yellow]")
 
     except Exception as e:
         console.print(f"[bold red]QA failed:[/bold red] {e}")

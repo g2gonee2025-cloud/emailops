@@ -106,3 +106,44 @@ class TestQdrantVectorStore:
             results = store.search([0.1, 0.1, 0.1], "tenant")
             assert len(results) == 1
             assert results[0].score == 0.9
+
+    def test_search_with_file_types_filter(self):
+        config = MagicMock()
+        config.url = "http://qdrant"
+        config.collection_name = "test"
+        config.api_key = "key"
+
+        store = QdrantVectorStore(config, 3)
+
+        with patch("requests.post") as mock_post:
+            mock_post.return_value.status_code = 200
+            mock_post.return_value.json.return_value = {"result": []}
+
+            store.search([0.1, 0.1, 0.1], "tenant", file_types=["pdf", "docx"])
+
+            mock_post.assert_called_once()
+            call_args, call_kwargs = mock_post.call_args
+            payload = call_kwargs.get("json", {})
+            filters = payload.get("filter", {})
+            must_filters = filters.get("must", [])
+
+            file_type_filter = next(
+                (
+                    f
+                    for f in must_filters
+                    if "should" in f
+                    and any("file_type" in s.get("key", "") for s in f["should"])
+                ),
+                None,
+            )
+
+            assert file_type_filter is not None
+            assert len(file_type_filter["should"]) == 2
+            assert file_type_filter["should"][0] == {
+                "key": "file_type",
+                "match": {"any": ["pdf", "docx"]},
+            }
+            assert file_type_filter["should"][1] == {
+                "key": "source_type",
+                "match": {"any": ["pdf", "docx"]},
+            }

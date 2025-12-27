@@ -2,7 +2,6 @@
 Safety module for Cortex.
 
 Provides:
-- Injection defense (§11.5)
 - Policy enforcement (§11.2)
 - Guardrails for LLM output repair (§9.3)
 - Grounding verification (§9.4)

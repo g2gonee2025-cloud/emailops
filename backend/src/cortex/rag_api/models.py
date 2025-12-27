@@ -31,6 +31,9 @@ class SearchRequest(BaseModel):
     filters: Dict[str, Any] = Field(
         default_factory=dict, description="Optional filters"
     )
+    fusion_method: Optional[str] = Field(
+        default="rrf", description="Fusion method (rrf or weighted_sum)"
+    )
 
 
 class SearchResponse(BaseModel):

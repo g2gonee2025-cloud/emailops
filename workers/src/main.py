@@ -261,7 +261,9 @@ class WorkerProcess:
 
     def run(self) -> None:
         """Main worker loop."""
-        queue = get_queue()
+        # Initialize queue within the worker process, passing all known job types
+        # to ensure consumer groups are created.
+        queue = get_queue(job_types=self.job_types)
         logger.info(f"Worker {self.worker_id} started, listening for: {self.job_types}")
 
         while self._running:

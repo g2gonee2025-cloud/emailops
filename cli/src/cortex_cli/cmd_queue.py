@@ -1,10 +1,10 @@
 """
 Queue CLI commands.
 """
-from rich.console import Console
-from rich.table import Table
 
 from cortex.queue import get_queue
+from rich.console import Console
+from rich.table import Table
 
 console = Console()
 

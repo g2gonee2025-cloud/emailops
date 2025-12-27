@@ -82,6 +82,7 @@ def generate_summary(
     try:
         with SessionLocal() as session:
             from cortex.db.session import set_session_tenant
+
             set_session_tenant(session, tenant_id)
             # Get conversation with chunks
             convo = session.execute(
@@ -139,7 +140,9 @@ def main():
     parser = argparse.ArgumentParser(
         description="Simple Summary Backfill (no embedding)"
     )
-    parser.add_argument("--tenant-id", type=str, default=None, help="Tenant ID to process")
+    parser.add_argument(
+        "--tenant-id", type=str, default=None, help="Tenant ID to process"
+    )
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--workers", type=int, default=5)
     args = parser.parse_args()
@@ -149,7 +152,9 @@ def main():
         total = min(total, args.limit)
 
     if args.tenant_id:
-        logger.info(f"Found {total} conversations for tenant '{args.tenant_id}' without summaries")
+        logger.info(
+            f"Found {total} conversations for tenant '{args.tenant_id}' without summaries"
+        )
     else:
         logger.info(f"Found {total} conversations without summaries")
 
@@ -161,9 +166,10 @@ def main():
     success = 0
     failed = 0
 
-    with ThreadPoolExecutor(max_workers=args.workers) as executor, tqdm(
-        total=total, desc="Generating summaries"
-    ) as pbar:
+    with (
+        ThreadPoolExecutor(max_workers=args.workers) as executor,
+        tqdm(total=total, desc="Generating summaries") as pbar,
+    ):
         futures = {
             executor.submit(generate_summary, cid, tid, summarizer): cid
             for cid, tid in stream_missing_conversations(args.limit, args.tenant_id)
