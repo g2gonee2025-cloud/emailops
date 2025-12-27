@@ -62,7 +62,7 @@ def search_conversations_fts(
     stmt = text(
         """
         WITH q AS (
-            SELECT websearch_to_tsquery(:cfg, :query) AS tsq
+            SELECT plainto_tsquery(:cfg, :query) AS tsq
         )
         SELECT
             conv.conversation_id,
@@ -131,7 +131,7 @@ def search_chunks_fts(
     limit: int = 50,
     conversation_ids: List[str] | None = None,
     is_attachment: bool | None = None,
-    file_types: List[str] | None = None,  # P1 Fix: Add file_types filter
+    file_types: List[str] | None = None,
 ) -> List[ChunkFTSResult]:
     """
     Perform FTS search on chunks.
@@ -145,7 +145,6 @@ def search_chunks_fts(
     if not query:
         return []
 
-    conversation_filter_sql = ""
     params: Dict[str, Any] = {
         "query": query,
         "tenant_id": tenant_id,
@@ -154,32 +153,28 @@ def search_chunks_fts(
         "headline_opts": _HEADLINE_OPTIONS,
     }
 
+    where_clauses = ["c.tenant_id = :tenant_id", "c.tsv_text @@ q.tsq"]
+
     if conversation_ids:
-        conversation_filter_sql = (
-            "AND c.conversation_id = ANY(CAST(:conversation_ids AS UUID[]))"
-        )
+        where_clauses.append("c.conversation_id = ANY(CAST(:conversation_ids AS UUID[]))")
         params["conversation_ids"] = conversation_ids
 
     # Attachment filter
-    attachment_filter_sql = ""
     if is_attachment is not None:
-        if is_attachment:
-            attachment_filter_sql = "AND c.is_attachment = TRUE"
-        else:
-            attachment_filter_sql = "AND c.is_attachment = FALSE"
+        where_clauses.append("c.is_attachment = :is_attachment")
+        params["is_attachment"] = is_attachment
 
-    # P1 Fix: File types filter (e.g., type:pdf returns only PDF chunks)
-    file_types_filter_sql = ""
+    # File types filter (e.g., type:pdf returns only PDF chunks)
     if file_types:
-        # Filter by chunk metadata.source containing file extension
-        # OR by chunk_type for attachment chunks
-        file_types_filter_sql = "AND (c.extra_data->>'file_type' = ANY(:file_types) OR c.extra_data->>'source_type' = ANY(:file_types))"
+        where_clauses.append("c.extra_data->>'file_type' = ANY(:file_types)")
         params["file_types"] = file_types
+
+    where_sql = " AND ".join(where_clauses)
 
     stmt = text(
         f"""
         WITH q AS (
-            SELECT websearch_to_tsquery(:cfg, :query) AS tsq
+            SELECT plainto_tsquery(:cfg, :query) AS tsq
         )
         SELECT
             c.chunk_id,
@@ -192,12 +187,7 @@ def search_chunks_fts(
             ts_rank_cd(c.tsv_text, q.tsq, 32) AS score,
             ts_headline(:cfg, c.text, q.tsq, :headline_opts) AS snippet
         FROM chunks c, q
-        WHERE
-            c.tenant_id = :tenant_id
-            AND c.tsv_text @@ q.tsq
-            {conversation_filter_sql}
-            {attachment_filter_sql}
-            {file_types_filter_sql}
+        WHERE {where_sql}
         ORDER BY score DESC
         LIMIT :limit
     """
