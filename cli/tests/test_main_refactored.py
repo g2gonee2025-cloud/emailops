@@ -9,6 +9,7 @@ from cortex_cli.main import (
     _run_search,
     _run_validate,
     _show_status,
+    main,
 )
 
 
@@ -163,35 +164,20 @@ class TestCliMainUtils:
         with patch("pathlib.Path.cwd") as mock_cwd:
             mock_path = MagicMock()
             mock_path.exists.return_value = True
-            mock_cwd.return_value = mock_path
+            mock_cwd.return_value = mock_.path
             mock_path.__truediv__.return_value.exists.return_value = True
 
             _show_status(json_output=False)
         captured = capsys.readouterr()
         assert "ENVIRONMENT STATUS:" in captured.out
 
-    def test_main_dispatch(self, capsys):
-        import contextlib
-
-        from cortex_cli.main import main
-
-        # Test help
-        with patch("sys.argv", ["cortex", "--help"]), contextlib.suppress(SystemExit):
-            main()
+    def test_main_dispatch_help(self, capsys):
+        main(["--help"])
         captured = capsys.readouterr()
-        assert "Usage:" in captured.out or "USAGE:" in captured.out
+        assert "USAGE:" in captured.out
 
-    def test_main_command(self, capsys):
-        import contextlib
-
-        from cortex_cli.main import main
-
-        # Test 'version' command
-        with (
-            patch("sys.argv", ["cortex", "version"]),
-            patch("importlib.metadata.version", return_value="1.0.0"),
-            contextlib.suppress(SystemExit),
-        ):
-            main()
+    def test_main_command_version(self, capsys):
+        with patch("importlib.metadata.version", return_value="1.0.0"):
+            main(["version"])
         captured = capsys.readouterr()
         assert "Version:" in captured.out
