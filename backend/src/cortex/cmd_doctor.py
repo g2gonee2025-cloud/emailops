@@ -5,8 +5,9 @@ Implements system health checks for the Cortex Doctor CLI.
 """
 
 import os
-
+import boto3
 import structlog
+from sqlalchemy import create_engine
 from cortex.config.loader import get_config
 
 logger = structlog.get_logger(__name__)
@@ -22,19 +23,8 @@ class CortexDoctor:
 
     def check_env(self) -> bool:
         """Check environment variables."""
-        # Using S3_ACCESS_KEY as representative of required env vars
-        required_keys = ["DB_URL", "S3_ACCESS_KEY"]
-
+        required_keys = ["OUTLOOKCORTEX_DB_URL", "OUTLOOKCORTEX_S3_ACCESS_KEY"]
         missing = [key for key in required_keys if not os.environ.get(key)]
-
-        if missing:
-            # Also check if config loaded them (fallback)
-            if self.config:
-                # If config exists, we assume it loaded them, but let's verify specifics
-                if "DB_URL" in missing and self.config.database.url:
-                    missing.remove("DB_URL")
-                if "S3_ACCESS_KEY" in missing and self.config.storage.access_key:
-                    missing.remove("S3_ACCESS_KEY")
 
         if missing:
             logger.error("env_check_failed", missing_keys=missing)
@@ -46,13 +36,10 @@ class CortexDoctor:
     def check_db(self) -> bool:
         """Check Database Connectivity."""
         try:
-            # Check availability in config
-            if self.config.database.url:
+            engine = create_engine(self.config.database.url)
+            with engine.connect() as connection:
                 logger.info("db_check", status="OK", url="[MASKED]")
                 return True
-            else:
-                logger.error("db_check_failed", reason="missing_url")
-                return False
         except Exception as e:
             logger.error("db_check_failed", error=str(e))
             return False
@@ -60,13 +47,16 @@ class CortexDoctor:
     def check_s3(self) -> bool:
         """Check Object Storage Connectivity."""
         try:
-            if self.config.storage.access_key and self.config.storage.secret_key:
-                logger.info(
-                    "s3_check", status="OK", bucket=self.config.storage.bucket_name
-                )
-                return True
-            logger.error("s3_check_failed", reason="missing_credentials")
-            return False
+            s3 = boto3.client(
+                "s3",
+                aws_access_key_id=self.config.storage.access_key,
+                aws_secret_access_key=self.config.storage.secret_key,
+                endpoint_url=self.config.storage.endpoint_url,
+                region_name=self.config.storage.region,
+            )
+            s3.list_buckets()
+            logger.info("s3_check", status="OK", bucket=self.config.storage.bucket_name)
+            return True
         except Exception as e:
             logger.error("s3_check_failed", error=str(e))
             return False
