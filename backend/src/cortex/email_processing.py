@@ -124,6 +124,15 @@ _DOMAIN_NOISE = [
     "CAREERS.CHALHOUBGROUP.COM",
 ]
 
+# A single regex to replace the brittle address detection logic.
+# It checks for long lines with multiple separators, typical of signature address blocks.
+_ADDRESS_LIKE_PATTERN = re.compile(
+    r"^(?!.*@)"  # Must not contain an email address
+    r"(?=.{" + str(MAX_BOILERPLATE_LINE_LENGTH + 1) + r",})"  # Must be longer than our max length
+    r".*[,\s|./\\]{2,}.*[,\s|./\\]{2,}.*$"  # Must have at least two separators
+)
+
+
 # Forwarding separator patterns
 _FORWARDING_PATTERNS = [
     re.compile(r"^-{3,}\s*Original Message\s*-{3,}", re.MULTILINE | re.IGNORECASE),
@@ -162,16 +171,8 @@ def _is_boilerplate_line(line: str) -> bool:
         if keyword.lower() in lower:
             return True
 
-    # Very long address-like lines (signature blocks)
-    # This logic is brittle. A better approach would use pattern matching for addresses.
-    # For now, let's replace the comma counting with a check for multiple non-alphanumeric separators.
-    # e.g. "Some Company | 123 Main St, Anytown, USA | Tel: 555-1234"
-    separators = re.findall(r"[,\s|./\\]{2,}", stripped)
-    if (
-        len(stripped) > MAX_BOILERPLATE_LINE_LENGTH
-        and len(separators) >= 2
-        and "@" not in stripped
-    ):
+    # Use the pre-compiled regex for address-like lines.
+    if _ADDRESS_LIKE_PATTERN.match(stripped):
         return True
 
     return False
@@ -234,7 +235,12 @@ def clean_email_text(text: str) -> str:
     lines = [line for line in lines if not _is_boilerplate_line(line)]
     text = "\n".join(lines)
 
-    # 7. Normalize punctuation
+    # 7. Redact PII (per Blueprint §6.2)
+    text = _EMAIL_SEARCH_PATTERN.sub("[EMAIL_REDACTED]", text)
+    text = _URL_PATTERN.sub("[URL_REDACTED]", text)
+    text = _WWW_URL_SEARCH_PATTERN.sub("[URL_REDACTED]", text)
+
+    # 8. Normalize punctuation
     text = _EXCESSIVE_DOTS.sub("...", text)
     text = _EXCESSIVE_EXCLAIM.sub("!", text)
     text = _EXCESSIVE_QUESTION.sub("?", text)
@@ -242,11 +248,11 @@ def clean_email_text(text: str) -> str:
     text = _EXCESSIVE_DASHES.sub("---", text)
     text = _EXCESSIVE_UNDERSCORES.sub("", text)
 
-    # 8. Normalize whitespace
+    # 9. Normalize whitespace
     text = _MULTIPLE_SPACES.sub(" ", text)
     text = _MULTIPLE_NEWLINES.sub("\n\n", text)
 
-    # 9. Final trim
+    # 10. Final trim
     return text.strip()
 
 

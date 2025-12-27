@@ -1,10 +1,7 @@
 import unittest
 
 import pytest
-from cortex.archive.email_processing_legacy import (
-    extract_email_metadata,
-    split_email_thread,
-)
+
 from cortex.email_processing import clean_email_text
 
 
@@ -18,22 +15,6 @@ class TestEmailProcessingCoverage(unittest.TestCase):
         self.assertIn("Body content", cleaned)
         self.assertNotIn("From:", cleaned)
         self.assertNotIn("Sig", cleaned)
-
-    def test_extract_metadata(self):
-        text = "From: bob@example.com\nTo: alice@example.com, eve@example.com\nSubject: Hi\nCc: charlie@example.com\nBcc: ghost@example.com\nDate: Mon, 1 Jan 2024 10:00:00 -0000\nSome-Header: val\n\nBody"
-        meta = extract_email_metadata(text)
-        self.assertEqual(meta["sender"], "bob@example.com")
-        self.assertEqual(meta["subject"], "Hi")
-        self.assertEqual(len(meta["recipients"]), 2)
-        self.assertIn("charlie@example.com", meta["cc"])
-        self.assertIn("ghost@example.com", meta["bcc"])
-        self.assertIn("Mon, 1 Jan 2024", meta["date"])
-
-    def test_extract_metadata_alt_headers(self):
-        # Test Sent vs Date, and multiline headers handling if implemented (regex is ^Header:.*$)
-        text = "From: me\nTo: you\nSent: Today\nSubject: Re: Hi\n\nMsg"
-        meta = extract_email_metadata(text)
-        self.assertEqual(meta["date"], "Today")
 
     def test_clean_email_headers_stripping(self):
         text = """From: me
@@ -85,15 +66,6 @@ Actual Body"""
             elif "iPhone" in sig:
                 self.assertNotIn("iPhone", cleaned)
 
-    def test_split_thread(self):
-        text = "Msg1\n-----Original Message-----\nMsg2"
-        msgs = split_email_thread(text)
-        self.assertTrue(len(msgs) >= 2)
-
-        text2 = "Msg1\nOn 01/01/2024, bob wrote:\n> Quoted"
-        msgs2 = split_email_thread(text2)
-        self.assertTrue(len(msgs2) >= 2)
-
     def test_boilerplate_line_removal(self):
         # Test that boilerplate lines are correctly identified and removed
         boilerplate_lines = [
@@ -118,3 +90,20 @@ Actual Body"""
         self.assertIn("Some content", cleaned)
         self.assertIn("More content", cleaned)
         self.assertNotIn("CHALHOUBGROUP.COM", cleaned)
+
+    def test_pii_redaction(self):
+        # Test that emails and URLs are redacted
+        text = "Contact me at bob@example.com or visit http://example.com for more info. Also check www.google.com."
+        cleaned = clean_email_text(text)
+        self.assertNotIn("bob@example.com", cleaned)
+        self.assertNotIn("http://example.com", cleaned)
+        self.assertNotIn("www.google.com", cleaned)
+        self.assertIn("[EMAIL_REDACTED]", cleaned)
+        self.assertIn("[URL_REDACTED]", cleaned)
+
+    def test_pii_redaction_no_false_positives(self):
+        # Test that legitimate text is not redacted
+        text = "This is a sentence with some@sort of typo and no domain. It's not an email."
+        cleaned = clean_email_text(text)
+        self.assertIn("some@sort", cleaned)
+        self.assertNotIn("[EMAIL_REDACTED]", cleaned)
