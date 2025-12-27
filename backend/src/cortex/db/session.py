@@ -80,11 +80,16 @@ def raise_sanitized(
 
 _config = get_config()
 
+engine_args = {
+    "pool_pre_ping": True,
+}
+if "sqlite" not in _config.database.url:
+    engine_args["pool_size"] = _config.database.pool_size
+    engine_args["max_overflow"] = _config.database.max_overflow
+
 engine = create_engine(
     _config.database.url,
-    pool_size=_config.database.pool_size,
-    max_overflow=_config.database.max_overflow,
-    pool_pre_ping=True,
+    **engine_args,
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
