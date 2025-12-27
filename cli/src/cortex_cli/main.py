@@ -141,6 +141,7 @@ UTILITY_COMMANDS = [
     ("status", "Show current environment and configuration"),
     ("config", "View, validate, or export configuration"),
     ("version", "Display version information"),
+    ("patch", "Apply or revert codebase patches"),
 ]
 
 DATA_COMMANDS = [
@@ -1319,12 +1320,14 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     from cortex_cli.cmd_db import setup_db_parser
     from cortex_cli.cmd_embeddings import setup_embeddings_parser
     from cortex_cli.cmd_maintenance import setup_maintenance_parser
+    from cortex_cli.cmd_patch import setup_patch_parser
     from cortex_cli.cmd_s3 import setup_s3_parser
 
     setup_db_parser(subparsers)
     setup_embeddings_parser(subparsers)
     setup_s3_parser(subparsers)
     setup_maintenance_parser(subparsers)
+    setup_patch_parser(subparsers)
 
     # Parse arguments
     parsed_args = parser.parse_args(args)
