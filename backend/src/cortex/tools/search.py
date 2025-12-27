@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Union
-
 from cortex.domain.models import KBSearchInput
 from cortex.retrieval.hybrid_search import KBSearchInput as HybridSearchInput
 from cortex.retrieval.hybrid_search import (
@@ -15,7 +13,7 @@ RetrievalKBSearchInput = HybridSearchInput
 
 
 def tool_kb_search_hybrid(
-    args: Union[KBSearchInput, RetrievalKBSearchInput],
+    args: KBSearchInput | RetrievalKBSearchInput,
 ) -> SearchResults:
     """Run hybrid search using the retrieval tool."""
 

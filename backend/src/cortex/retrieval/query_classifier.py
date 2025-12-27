@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import List, Literal
+from typing import Literal
 
 from cortex.observability import trace_operation
 from pydantic import BaseModel, Field
@@ -35,7 +35,7 @@ class QueryClassification(BaseModel):
     type: Literal["navigational", "semantic", "drafting"] = Field(
         ..., description="Query type determining retrieval strategy"
     )
-    flags: List[str] = Field(
+    flags: list[str] = Field(
         default_factory=list,
         description="Additional flags: followup, requires_grounding_check, time_sensitive",
     )
@@ -122,7 +122,7 @@ _GROUNDING_CHECK_PATTERNS = [
 ]
 
 
-def _match_any_pattern(text: str, patterns: List[re.Pattern]) -> bool:
+def _match_any_pattern(text: str, patterns: list[re.Pattern]) -> bool:
     """Check if text matches any of the given compiled patterns."""
     for pattern in patterns:
         if pattern.search(text):
@@ -145,7 +145,7 @@ def classify_query_fast(query: str) -> QueryClassification:
         QueryClassification with type and flags
     """
     query = query.strip()
-    flags: List[str] = []
+    flags: list[str] = []
 
     # Detect flags first
     if _match_any_pattern(query, _TIME_SENSITIVE_PATTERNS):
@@ -267,10 +267,10 @@ def requires_grounding_check(query: str) -> bool:
 __all__ = [
     "QueryClassification",
     "QueryClassificationInput",
-    "tool_classify_query",
     "classify_query_fast",
     "classify_query_llm",
-    "is_navigational",
     "is_drafting",
+    "is_navigational",
     "requires_grounding_check",
+    "tool_classify_query",
 ]

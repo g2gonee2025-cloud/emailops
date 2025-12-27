@@ -3,7 +3,7 @@ import json
 import logging
 import os
 import time
-from typing import Any, Dict, List
+from typing import Any
 
 import aiohttp
 
@@ -41,8 +41,10 @@ if not JULES_API_KEY:
 
 
 async def create_session(
-    session: aiohttp.ClientSession, file_path: str, context_files: List[str] = None
-) -> Dict[str, Any]:
+    session: aiohttp.ClientSession,
+    file_path: str,
+    context_files: list[str] | None = None,
+) -> dict[str, Any]:
     headers = {"X-Goog-Api-Key": JULES_API_KEY, "Content-Type": "application/json"}
 
     prompt_text = (
@@ -95,7 +97,7 @@ async def create_session(
         return {"file": file_path, "status": "error", "error": str(e)}
 
 
-async def process_files(failed_items: List[Dict[str, Any]]):
+async def process_files(failed_items: list[dict[str, Any]]):
     results = []
 
     # Use a Queue for better dynamic processing
@@ -179,12 +181,9 @@ def main():
 
     print(f"Reading failures from {report_file}...")
     try:
-        with open(report_file, "r") as f:
+        with open(report_file) as f:
             data = json.load(f)
-            if isinstance(data, dict):
-                past_results = data.get("results", [])
-            else:
-                past_results = data
+            past_results = data.get("results", []) if isinstance(data, dict) else data
     except Exception as e:
         print(f"Error reading report: {e}")
         return
@@ -203,7 +202,7 @@ def main():
     print(
         f"Starting PERSISTENT processing of {len(items_to_process)} high-value files."
     )
-    print(f"Strategy: 5 Concurrent, Wait 3m on 429.")
+    print("Strategy: 5 Concurrent, Wait 3m on 429.")
 
     try:
         results = asyncio.run(process_files(items_to_process))
@@ -214,7 +213,7 @@ def main():
     successes = [r for r in results if r["status"] == "success"]
 
     print("-" * 40)
-    print(f"Persistent Retry Complete.")
+    print("Persistent Retry Complete.")
     print(f"Successes: {len(successes)}")
     print("-" * 40)
 

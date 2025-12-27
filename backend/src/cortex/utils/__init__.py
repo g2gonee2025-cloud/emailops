@@ -48,7 +48,7 @@ def read_text_file(
             with path.open("r", encoding=encoding) as f:
                 content = f.read(max_chars)
         return content
-    except (FileNotFoundError, PermissionError, UnicodeDecodeError, IOError):
+    except (OSError, FileNotFoundError, PermissionError, UnicodeDecodeError):
         # Allow specific errors to bubble up or handle them?
         # The original code acted as a silent fallback (returning ""), typically used for optional files.
         # But for debugging, silent failure is bad.

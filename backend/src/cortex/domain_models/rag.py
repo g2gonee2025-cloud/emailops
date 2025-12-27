@@ -7,7 +7,7 @@ Implements §10 of the Canonical Blueprint - data models for orchestration.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 from uuid import UUID
 
 from cortex.domain_models.facts_ledger import FactsLedger, ParticipantAnalysis
@@ -18,19 +18,19 @@ class ThreadParticipant(BaseModel):
     """Participant in an email thread."""
 
     email: str
-    name: Optional[str] = None
+    name: str | None = None
     role: Literal["sender", "recipient", "cc"] = "recipient"
 
 
 class ThreadMessage(BaseModel):
     """Single message in a thread."""
 
-    message_id: Optional[UUID] = None
-    sent_at: Optional[datetime] = None
-    recv_at: Optional[datetime] = None
+    message_id: UUID | None = None
+    sent_at: datetime | None = None
+    recv_at: datetime | None = None
     from_addr: str = ""
-    to_addrs: List[str] = Field(default_factory=list)
-    cc_addrs: List[str] = Field(default_factory=list)
+    to_addrs: list[str] = Field(default_factory=list)
+    cc_addrs: list[str] = Field(default_factory=list)
     subject: str = ""
     body_markdown: str = ""
     is_inbound: bool = False
@@ -39,10 +39,10 @@ class ThreadMessage(BaseModel):
 class ThreadContext(BaseModel):
     """Full context for an email thread."""
 
-    thread_id: Optional[UUID] = None
+    thread_id: UUID | None = None
     subject: str = ""
-    participants: List[ThreadParticipant] = Field(default_factory=list)
-    messages: List[ThreadMessage] = Field(default_factory=list)
+    participants: list[ThreadParticipant] = Field(default_factory=list)
+    messages: list[ThreadMessage] = Field(default_factory=list)
 
 
 class EvidenceItem(BaseModel):
@@ -60,7 +60,7 @@ class RetrievalDiagnostics(BaseModel):
     lexical_score: float = 0.0
     vector_score: float = 0.0
     fused_rank: int = 0
-    reranker: Optional[str] = None
+    reranker: str | None = None
 
 
 class Answer(BaseModel):
@@ -68,10 +68,10 @@ class Answer(BaseModel):
 
     query: str
     answer_markdown: str = ""
-    evidence: List[EvidenceItem] = Field(default_factory=list)
+    evidence: list[EvidenceItem] = Field(default_factory=list)
     confidence_overall: float = 0.0
-    safety: Dict[str, Any] = Field(default_factory=dict)
-    retrieval_diagnostics: List[RetrievalDiagnostics] = Field(default_factory=list)
+    safety: dict[str, Any] = Field(default_factory=dict)
+    retrieval_diagnostics: list[RetrievalDiagnostics] = Field(default_factory=list)
 
 
 class ToneStyle(BaseModel):
@@ -89,29 +89,29 @@ class DraftValidationScores(BaseModel):
     tone_fit: float = 0.0
     safety: float = 0.0
     overall: float = 0.0
-    thresholds: Dict[str, float] = Field(default_factory=dict)
-    feedback: Optional[str] = None
+    thresholds: dict[str, float] = Field(default_factory=dict)
+    feedback: str | None = None
 
 
 class NextAction(BaseModel):
     """Next action item extracted from email."""
 
     description: str
-    owner: Optional[str] = None
-    due_date: Optional[str] = None
+    owner: str | None = None
+    due_date: str | None = None
 
 
 class EmailDraft(BaseModel):
     """Generated email draft."""
 
-    to: List[str] = Field(default_factory=list)
-    cc: List[str] = Field(default_factory=list)
+    to: list[str] = Field(default_factory=list)
+    cc: list[str] = Field(default_factory=list)
     subject: str = ""
     body_markdown: str = ""
     tone_style: ToneStyle = Field(default_factory=ToneStyle)
     val_scores: DraftValidationScores = Field(default_factory=DraftValidationScores)
-    next_actions: List[NextAction] = Field(default_factory=list)
-    attachments: List[Dict[str, str]] = Field(
+    next_actions: list[NextAction] = Field(default_factory=list)
+    attachments: list[dict[str, str]] = Field(
         default_factory=list,
         description="List of attachments with 'path' and 'filename'",
     )
@@ -130,18 +130,18 @@ class DraftCritique(BaseModel):
     tone_feedback: str = ""
     clarity_feedback: str = ""
     completeness_feedback: str = ""
-    suggestions: List[str] = Field(default_factory=list)
-    issues: List[Issue] = Field(default_factory=list)
+    suggestions: list[str] = Field(default_factory=list)
+    issues: list[Issue] = Field(default_factory=list)
 
 
 class ThreadSummary(BaseModel):
     """Summary of an email thread."""
 
     type: Literal["thread_summary"] = "thread_summary"
-    thread_id: Optional[UUID] = None
+    thread_id: UUID | None = None
     summary_markdown: str = ""
     facts_ledger: FactsLedger = Field(default_factory=FactsLedger)
-    quality_scores: Dict[str, Any] = Field(default_factory=dict)
-    key_points: List[str] = Field(default_factory=list)
-    action_items: List[str] = Field(default_factory=list)
-    participants: List[ParticipantAnalysis] = Field(default_factory=list)
+    quality_scores: dict[str, Any] = Field(default_factory=dict)
+    key_points: list[str] = Field(default_factory=list)
+    action_items: list[str] = Field(default_factory=list)
+    participants: list[ParticipantAnalysis] = Field(default_factory=list)

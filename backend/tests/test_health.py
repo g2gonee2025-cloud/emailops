@@ -1,4 +1,3 @@
-import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
@@ -40,7 +39,7 @@ async def test_check_postgres_success(mock_config):
 async def test_check_postgres_failure(mock_config):
     with patch(
         "sqlalchemy.create_engine", side_effect=Exception("Connection timed out")
-    ) as mock_create_engine:
+    ):
         result = await check_postgres(mock_config)
         assert result.name == "PostgreSQL"
         assert result.status == "fail"

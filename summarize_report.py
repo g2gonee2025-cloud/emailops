@@ -1,6 +1,6 @@
 import json
 
-with open("jules_batch_report.json", "r") as f:
+with open("jules_batch_report.json") as f:
     data = json.load(f)
 
 success = sum(1 for item in data if item.get("status") == "success")

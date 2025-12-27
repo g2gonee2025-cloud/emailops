@@ -1,12 +1,14 @@
 """
 Draft command for Cortex CLI.
 """
+
 import os
 import uuid
-import httpx
 
+import httpx
 from rich.console import Console
 from rich.syntax import Syntax
+
 
 def setup_draft_parser(parser):
     """
@@ -48,14 +50,20 @@ def run_draft_command(args):
             res.raise_for_status()
 
             response_data = res.json()
-            draft_content = response_data.get("draft", {}).get("draft", "No draft generated.")
+            draft_content = response_data.get("draft", {}).get(
+                "draft", "No draft generated."
+            )
 
             console.print("\n[bold]Drafted Email:[/bold]")
             syntax = Syntax(draft_content, "markdown", theme="default", word_wrap=True)
             console.print(syntax)
 
-            console.print(f"\n[dim]Correlation ID: {response_data.get('correlation_id')}[/dim]")
-            console.print(f"[dim]Iterations: {response_data.get('iterations', 0)}[/dim]")
+            console.print(
+                f"\n[dim]Correlation ID: {response_data.get('correlation_id')}[/dim]"
+            )
+            console.print(
+                f"[dim]Iterations: {response_data.get('iterations', 0)}[/dim]"
+            )
 
     except httpx.HTTPStatusError as e:
         console.print(f"[red]Error: {e.response.status_code} - {e.response.text}[/red]")

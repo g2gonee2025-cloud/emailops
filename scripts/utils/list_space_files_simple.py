@@ -3,6 +3,7 @@ Standalone utility to list objects in a DigitalOcean Space.
 
 Similar to `aws s3 ls`, but uses local .env file for auth.
 """
+
 import argparse
 import os
 from collections.abc import Iterable

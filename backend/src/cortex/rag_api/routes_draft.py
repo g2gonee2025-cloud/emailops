@@ -29,7 +29,9 @@ def get_draft_graph(http_request: Request):
     try:
         return http_request.app.state.graphs["draft"]
     except (AttributeError, KeyError) as e:
-        logger.exception("Draft graph not found in app.state.graphs. Check lifespan configuration.")
+        logger.exception(
+            "Draft graph not found in app.state.graphs. Check lifespan configuration."
+        )
         raise HTTPException(
             status_code=500,
             detail="Internal server error: Draft service not configured",

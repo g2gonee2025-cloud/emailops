@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from cortex_cli.cmd_fix import run_fix_insecure_symlinks, setup_fix_parser
+from cortex_cli.cmd_fix import run_fix_insecure_symlinks
 
 
 class TestCmdFix(unittest.TestCase):

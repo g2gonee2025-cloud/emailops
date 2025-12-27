@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -278,8 +278,8 @@ def _extract_date_range(manifest: dict[str, Any]) -> dict[str, Any]:
 
             dts = _parse_all_dates(msgs)
             if dts:
-                start_date = min(dts).astimezone(timezone.utc).isoformat()
-                end_date = max(dts).astimezone(timezone.utc).isoformat()
+                start_date = min(dts).astimezone(UTC).isoformat()
+                end_date = max(dts).astimezone(UTC).isoformat()
             else:
                 start_date = raw_start
                 end_date = raw_end
@@ -304,7 +304,7 @@ def _parse_dt(v: Any) -> Any | None:
         return None
     if isinstance(v, (int, float)):
         try:
-            return datetime.fromtimestamp(float(v), tz=timezone.utc)
+            return datetime.fromtimestamp(float(v), tz=UTC)
         except Exception:
             return None
     if isinstance(v, str):
@@ -316,7 +316,7 @@ def _parse_dt(v: Any) -> Any | None:
         try:
             dt = datetime.fromisoformat(s)
             if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=timezone.utc)
+                dt = dt.replace(tzinfo=UTC)
             return dt
         except Exception:
             return None

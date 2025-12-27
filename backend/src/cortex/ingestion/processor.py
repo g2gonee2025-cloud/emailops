@@ -9,7 +9,8 @@ from __future__ import annotations
 import logging
 import uuid
 from dataclasses import dataclass
-from typing import Any, List, Optional
+from datetime import UTC
+from typing import Any
 
 from cortex.config.loader import get_config
 from cortex.ingestion.mailroom import process_job
@@ -52,7 +53,7 @@ class IngestionProcessor:
             options={"prefix": folder_prefix},
         )
 
-    def process_folder(self, folder: Any) -> Optional[IngestJobSummary]:
+    def process_folder(self, folder: Any) -> IngestJobSummary | None:
         """
         Process a single folder and return summary.
 
@@ -100,9 +101,8 @@ class IngestionProcessor:
                             # Ensure Timezone awareness compatibility
                             if saved_mod_dt.tzinfo is None and last_modified.tzinfo:
                                 # Assume UTC for saved if naive
-                                from datetime import timezone
 
-                                saved_mod_dt = saved_mod_dt.replace(tzinfo=timezone.utc)
+                                saved_mod_dt = saved_mod_dt.replace(tzinfo=UTC)
 
                             if saved_mod_dt >= last_modified:
                                 logger.info(f"Skipping unchanged folder: {prefix}")
@@ -127,8 +127,8 @@ class IngestionProcessor:
             return None
 
     def run_full_ingestion(
-        self, prefix: str = "Outlook/", limit: Optional[int] = None
-    ) -> List[IngestJobSummary]:
+        self, prefix: str = "Outlook/", limit: int | None = None
+    ) -> list[IngestJobSummary]:
         """Run full ingestion with parallel workers for GPU saturation."""
         from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -136,7 +136,7 @@ class IngestionProcessor:
         logger.info(
             "Starting ingestion scan for prefix %s with %d workers", prefix, num_workers
         )
-        summaries: List[IngestJobSummary] = []
+        summaries: list[IngestJobSummary] = []
 
         folders = self.s3_handler.list_conversation_folders(prefix=prefix, limit=limit)
         logger.info("Starting ingestion scan")
@@ -163,7 +163,7 @@ class IngestionProcessor:
 
         return summaries
 
-    def process_batch(self, folders: List[Any], job_id: str) -> IngestJobSummary:
+    def process_batch(self, folders: list[Any], job_id: str) -> IngestJobSummary:
         """Process a batch of folders with parallel workers for GPU saturation."""
         import threading
         from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -186,7 +186,7 @@ class IngestionProcessor:
         stats_lock = threading.Lock()
         progress = {"count": 0}
 
-        def process_single(folder) -> Optional[IngestJobSummary]:
+        def process_single(folder) -> IngestJobSummary | None:
             # prefix = folder.prefix
             return self.process_folder(folder)
 

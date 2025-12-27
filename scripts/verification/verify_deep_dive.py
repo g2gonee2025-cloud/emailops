@@ -32,11 +32,11 @@ class MockEmbeddingsClient:
 sys.modules["cortex.embeddings.client"] = unittest.mock.Mock()
 sys.modules["cortex.embeddings.client"].EmbeddingsClient = MockEmbeddingsClient
 
-from cortex.db.models import Attachment, Conversation  # noqa: E402
-from cortex.db.session import SessionLocal  # noqa: E402
+from cortex.db.models import Attachment, Conversation
+from cortex.db.session import SessionLocal
 
 # --- IMPORTS ---
-from cortex.ingestion.processor import IngestionProcessor  # noqa: E402
+from cortex.ingestion.processor import IngestionProcessor
 
 
 def analyze_db_results(tenant_id: str):

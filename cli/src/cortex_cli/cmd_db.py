@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from cortex_cli.operations.backfill_graph import run_backfill_graph
+from cortex_cli.style import colorize as _colorize
 
 try:
     from rich import box
@@ -171,7 +172,7 @@ def cmd_db_migrate(args: argparse.Namespace) -> None:
         if args.dry_run:
             console.print(result.stdout)
     else:
-        console.print(f"[red]✗ Migration failed.[/red]")
+        console.print("[red]✗ Migration failed.[/red]")
         console.print(result.stderr)
         sys.exit(1)
 
@@ -280,6 +281,7 @@ def setup_db_parser(subparsers: Any) -> None:
 
     # db rechunk
     from .cmd_rechunk import setup_rechunk_parser
+
     setup_rechunk_parser(db_subparsers)
 
     def _default_db_handler(args: argparse.Namespace) -> None:

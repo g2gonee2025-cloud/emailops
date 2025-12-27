@@ -9,7 +9,7 @@ import threading
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple, cast
+from typing import Any, cast
 from urllib.parse import urljoin
 
 import numpy as np
@@ -23,7 +23,7 @@ from urllib3.util.retry import Retry
 logger = logging.getLogger(__name__)
 
 # Bytes per parameter for the supported quantisation schemes.
-QUANT_BYTES: Dict[str, float] = {
+QUANT_BYTES: dict[str, float] = {
     "fp16": 2.0,
     "bf16": 2.0,
     "fp32": 4.0,
@@ -44,12 +44,12 @@ class ModelProfile:
     name: str
     params_total: float
     context_length: int
-    params_active: Optional[float] = None
+    params_active: float | None = None
     quantization: str = "fp16"
     additional_memory_gb: float = 4.0
     kv_bytes_per_token: float = DEFAULT_KV_CACHE_BYTES_PER_TOKEN
-    tps_per_gpu: Optional[float] = None
-    max_concurrent_requests_per_gpu: Optional[int] = None
+    tps_per_gpu: float | None = None
+    max_concurrent_requests_per_gpu: int | None = None
 
     def __post_init__(self) -> None:
         if self.params_active is None:
@@ -78,7 +78,7 @@ def calculate_required_gpus(
     model: ModelProfile,
     memory_per_gpu_gb: float,
     headroom: float = 0.2,
-) -> Tuple[int, float]:
+) -> tuple[int, float]:
     if memory_per_gpu_gb <= 0:
         raise ValueError("memory_per_gpu_gb must be > 0")
     if not (0.0 <= headroom < 1.0):
@@ -98,7 +98,7 @@ class DOApiClient:
 
     def __init__(
         self,
-        token: Optional[str],
+        token: str | None,
         base_url: str = "https://api.digitalocean.com/v2",
         timeout_s: int = 30,
         max_retries: int = 3,
@@ -163,9 +163,9 @@ class DOApiClient:
         except ValueError:
             return {"raw": resp.text}
 
-    def _paginate(self, path: str, key: str) -> List[Dict[str, Any]]:
-        items: List[Dict[str, Any]] = []
-        next_url: Optional[str] = path
+    def _paginate(self, path: str, key: str) -> list[dict[str, Any]]:
+        items: list[dict[str, Any]] = []
+        next_url: str | None = path
 
         while next_url:
             if next_url.startswith(self.base_url):
@@ -179,28 +179,28 @@ class DOApiClient:
 
         return items
 
-    def list_clusters(self) -> List[Dict[str, Any]]:
+    def list_clusters(self) -> list[dict[str, Any]]:
         return self._paginate("/kubernetes/clusters", "kubernetes_clusters")
 
-    def get_cluster(self, cluster_id: str) -> Dict[str, Any]:
+    def get_cluster(self, cluster_id: str) -> dict[str, Any]:
         return self.request("GET", f"/kubernetes/clusters/{cluster_id}")
 
     def create_cluster(
         self,
         name: str,
         region: str,
-        version: Optional[str],
+        version: str | None,
         node_size: str,
         count: int,
-        tags: Optional[List[str]] = None,
-        node_tags: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
+        tags: list[str] | None = None,
+        node_tags: list[str] | None = None,
+    ) -> dict[str, Any]:
         if count <= 0:
             raise ValueError("Initial node count must be > 0")
         if not name or not region or not node_size:
             raise ValueError("name, region, and node_size are required")
 
-        node_pool: Dict[str, Any] = {
+        node_pool: dict[str, Any] = {
             "name": f"{name}-gpu-pool",
             "size": node_size,
             "count": count,
@@ -209,7 +209,7 @@ class DOApiClient:
         if node_tags:
             node_pool["tags"] = node_tags
 
-        body: Dict[str, Any] = {
+        body: dict[str, Any] = {
             "name": name,
             "region": region,
             "node_pools": [node_pool],
@@ -221,10 +221,10 @@ class DOApiClient:
 
         return self.request("POST", "/kubernetes/clusters", json=body)
 
-    def delete_cluster(self, cluster_id: str) -> Dict[str, Any]:
+    def delete_cluster(self, cluster_id: str) -> dict[str, Any]:
         return self.request("DELETE", f"/kubernetes/clusters/{cluster_id}")
 
-    def list_node_pools(self, cluster_id: str) -> List[Dict[str, Any]]:
+    def list_node_pools(self, cluster_id: str) -> list[dict[str, Any]]:
         return self._paginate(
             f"/kubernetes/clusters/{cluster_id}/node_pools", "node_pools"
         )
@@ -235,11 +235,11 @@ class DOApiClient:
         node_pool_id: str,
         count: int,
         force_disable_autoscale: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         if count < 0:
             raise ValueError("count must be >= 0")
 
-        patch: Dict[str, Any] = {"count": count}
+        patch: dict[str, Any] = {"count": count}
         if force_disable_autoscale:
             patch["auto_scale"] = False
 
@@ -277,7 +277,7 @@ class ClusterScaler:
         model: ModelProfile,
         min_nodes: int = 0,
         max_nodes: int = 4,
-    ) -> Tuple[int, int]:
+    ) -> tuple[int, int]:
         if min_nodes < 0:
             raise ValueError("min_nodes must be >= 0")
         if max_nodes <= 0:
@@ -301,11 +301,11 @@ class ClusterScaler:
         min_nodes: int,
         max_nodes: int,
         max_scale_factor: float = 2.0,
-        last_scale_time: Optional[float] = None,
+        last_scale_time: float | None = None,
         min_downscale_interval_s: int = 300,
-        incoming_tokens_per_second: Optional[float] = None,
+        incoming_tokens_per_second: float | None = None,
         target_gpu_utilization: float = 0.7,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         if queued_requests < 0:
             raise ValueError("queued_requests cannot be negative")
         if max_scale_factor <= 0:
@@ -336,7 +336,7 @@ class ClusterScaler:
         else:
             required_nodes = max(1, math.ceil(required_gpus / self.gpus_per_node))
 
-        pool: Dict[str, Any]
+        pool: dict[str, Any]
         if self.api.dry_run:
             pool = {
                 "id": node_pool_id,
@@ -344,7 +344,7 @@ class ClusterScaler:
                 "auto_scale": False,
             }
         else:
-            pools: List[Dict[str, Any]] = self.api.list_node_pools(cluster_id)
+            pools: list[dict[str, Any]] = self.api.list_node_pools(cluster_id)
             pool_candidate = next(
                 (p for p in pools if p.get("id") == node_pool_id), None
             )
@@ -415,14 +415,14 @@ class DigitalOceanClusterManager:
             headroom=self.scaling.headroom,
         )
 
-    def plan_gpu_pool(self) -> Tuple[int, int]:
+    def plan_gpu_pool(self) -> tuple[int, int]:
         return self.scaler.plan_node_pool(
             self.model,
             min_nodes=self.scaling.min_nodes,
             max_nodes=self.scaling.max_nodes,
         )
 
-    def provision_cluster(self) -> Dict[str, Any]:
+    def provision_cluster(self) -> dict[str, Any]:
         if not self.scaling.cluster_name:
             raise ConfigurationError(
                 "digitalocean.scaling.cluster_name is required to provision"
@@ -448,7 +448,7 @@ class DigitalOceanClusterManager:
             node_tags=self.scaling.node_tags,
         )
 
-    def destroy_cluster(self, cluster_id: Optional[str] = None) -> Dict[str, Any]:
+    def destroy_cluster(self, cluster_id: str | None = None) -> dict[str, Any]:
         target = cluster_id or self.scaling.cluster_id
         if not target:
             raise ConfigurationError(
@@ -456,7 +456,7 @@ class DigitalOceanClusterManager:
             )
         return self.api.delete_cluster(target)
 
-    def describe_cluster(self, cluster_id: Optional[str] = None) -> Dict[str, Any]:
+    def describe_cluster(self, cluster_id: str | None = None) -> dict[str, Any]:
         target = cluster_id or self.scaling.cluster_id
         if not target:
             raise ConfigurationError("cluster_id is required to describe a cluster")
@@ -482,19 +482,19 @@ class DigitalOceanLLMService:
             gpus_per_node=self.scaling.gpus_per_node,
             headroom=self.scaling.headroom,
         )
-        self._last_scale_time: Optional[float] = None
+        self._last_scale_time: float | None = None
         self._inflight = 0
         self._inflight_lock = threading.Lock()
         self._http_session = self._build_session()
 
     def embed_texts(
-        self, texts: List[str], expected_dim: Optional[int] = None
+        self, texts: list[str], expected_dim: int | None = None
     ) -> np.ndarray:
         if not texts:
             dim = expected_dim or 0
             return np.zeros((0, dim), dtype=np.float32)
 
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "model": self.endpoint.default_embedding_model,
             "input": texts,
         }
@@ -508,11 +508,11 @@ class DigitalOceanLLMService:
         prompt: str,
         temperature: float = 0.2,
         max_tokens: int = 1024,
-        model: Optional[str] = None,
-        response_format: Optional[Dict[str, Any]] = None,
-        extra_payload: Optional[Dict[str, Any]] = None,
+        model: str | None = None,
+        response_format: dict[str, Any] | None = None,
+        extra_payload: dict[str, Any] | None = None,
     ) -> str:
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "model": model or self.endpoint.default_completion_model,
             "prompt": prompt,
             "temperature": temperature,
@@ -527,7 +527,7 @@ class DigitalOceanLLMService:
             response = self._post(self.endpoint.completion_path, payload)
         return self._extract_completion_text(response)
 
-    def plan_node_pool(self) -> Tuple[int, int]:
+    def plan_node_pool(self) -> tuple[int, int]:
         return self._scaler.plan_node_pool(
             self.model,
             min_nodes=self.scaling.min_nodes,
@@ -586,7 +586,7 @@ class DigitalOceanLLMService:
         session.mount("http://", adapter)
         return session
 
-    def _post(self, path: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def _post(self, path: str, payload: dict[str, Any]) -> dict[str, Any]:
         if not self.endpoint.BASE_URL:
             raise ConfigurationError(
                 "digitalocean.endpoint.BASE_URL is not configured",
@@ -628,7 +628,7 @@ class DigitalOceanLLMService:
             ) from exc
 
     @staticmethod
-    def _extract_completion_text(payload: Dict[str, Any]) -> str:
+    def _extract_completion_text(payload: dict[str, Any]) -> str:
         if not payload:
             raise ProviderError(
                 "Empty completion response", provider="digitalocean", retryable=True
@@ -636,24 +636,24 @@ class DigitalOceanLLMService:
 
         choices_obj = payload.get("choices")
         if isinstance(choices_obj, list) and choices_obj:
-            choices = cast(List[Dict[str, Any]], choices_obj)
-            choice: Dict[str, Any] = choices[0]
+            choices = cast(list[dict[str, Any]], choices_obj)
+            choice: dict[str, Any] = choices[0]
             if choice.get("text"):
                 return str(choice["text"])
             message_obj = choice.get("message", {})
             if isinstance(message_obj, dict):
-                message = cast(Dict[str, Any], message_obj)
+                message = cast(dict[str, Any], message_obj)
                 content = message.get("content")
             else:
                 content = None
             if isinstance(content, str):
                 return content
             if isinstance(content, list):
-                content_list = cast(List[Any], content)
-                parts: List[Dict[str, Any]] = []
+                content_list = cast(list[Any], content)
+                parts: list[dict[str, Any]] = []
                 for part in content_list:
                     if isinstance(part, dict):
-                        parts.append(cast(Dict[str, Any], part))
+                        parts.append(cast(dict[str, Any], part))
                 return "".join(str(part.get("text", "")) for part in parts)
         if payload.get("output"):
             return str(payload["output"])
@@ -664,7 +664,7 @@ class DigitalOceanLLMService:
         )
 
     @staticmethod
-    def _parse_embeddings(payload: Dict[str, Any]) -> List[List[float]]:
+    def _parse_embeddings(payload: dict[str, Any]) -> list[list[float]]:
         data_obj = payload.get("data")
         if not isinstance(data_obj, list) or not data_obj:
             raise ProviderError(
@@ -673,12 +673,12 @@ class DigitalOceanLLMService:
                 retryable=False,
             )
 
-        vectors: List[List[float]] = []
-        rows: List[Dict[str, Any]] = []
-        data_list = cast(List[Any], data_obj)
+        vectors: list[list[float]] = []
+        rows: list[dict[str, Any]] = []
+        data_list = cast(list[Any], data_obj)
         for row in data_list:
             if isinstance(row, dict):
-                rows.append(cast(Dict[str, Any], row))
+                rows.append(cast(dict[str, Any], row))
         for row_dict in rows:
             vector = row_dict.get("embedding") or row_dict.get("vector")
             if not isinstance(vector, list):
@@ -687,7 +687,7 @@ class DigitalOceanLLMService:
                     provider="digitalocean",
                     retryable=False,
                 )
-            vector_list = cast(List[Any], vector)
+            vector_list = cast(list[Any], vector)
             vectors.append([float(v) for v in vector_list])
         return vectors
 

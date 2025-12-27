@@ -12,7 +12,7 @@ import logging
 import threading
 from collections.abc import Callable
 from contextvars import ContextVar
-from typing import Any, Dict
+from typing import Any
 
 from cortex.config.loader import get_config
 
@@ -328,7 +328,7 @@ _metric_lock = threading.Lock()
 def record_metric(
     metric_name: str,
     value: float | int,
-    labels: Dict[str, str] | None = None,
+    labels: dict[str, str] | None = None,
     metric_type: str = "counter",
 ) -> None:
     """

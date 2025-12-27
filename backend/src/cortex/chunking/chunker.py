@@ -40,11 +40,11 @@ class Span(BaseModel):
     start: int
     end: int
 
-    def overlaps(self, other: "Span") -> bool:
+    def overlaps(self, other: Span) -> bool:
         """Check if this span overlaps with another."""
         return not (self.end <= other.start or other.end <= self.start)
 
-    def overlap_ratio(self, other: "Span") -> float:
+    def overlap_ratio(self, other: Span) -> float:
         """Calculate what percentage of this span overlaps with another."""
         if self.end <= other.start or other.end <= self.start:
             return 0.0
@@ -333,7 +333,6 @@ class Chunker:
             current_pos += len(self.counter.decode([token]))
         self.token_map[len(self.all_tokens)] = current_pos
 
-
     def chunk(self) -> list[ChunkModel]:
         if not self.text or not self.text.strip():
             return []
@@ -367,7 +366,6 @@ class Chunker:
                 if boundary_token_idx > token_pos:
                     token_end = boundary_token_idx
 
-
             char_start = self.token_map[token_pos]
             char_end = self.token_map[token_end]
 
@@ -385,24 +383,46 @@ class Chunker:
                 type_hint=self.input_data.chunk_type_hint,
             )
 
-            if token_count < self.input_data.min_tokens and chunks and chunks[-1].chunk_type == chunk_type:
+            if (
+                token_count < self.input_data.min_tokens
+                and chunks
+                and chunks[-1].chunk_type == chunk_type
+            ):
                 last_chunk = chunks[-1]
-                combined_text = self.text[last_chunk.char_start:char_end]
+                combined_text = self.text[last_chunk.char_start : char_end]
                 combined_tokens = self.counter.count(combined_text)
 
                 if combined_tokens <= eff_max_tokens:
                     last_chunk.char_end = char_end
                     last_chunk.text = combined_text
-                    last_chunk.metadata.update({
-                        "content_hash": compute_content_hash(last_chunk.text),
-                        "token_count": combined_tokens,
-                        "original_length": len(last_chunk.text),
-                    })
+                    last_chunk.metadata.update(
+                        {
+                            "content_hash": compute_content_hash(last_chunk.text),
+                            "token_count": combined_tokens,
+                            "original_length": len(last_chunk.text),
+                        }
+                    )
                 else:
-                    self._add_chunk(chunks, chunk_text_str, token_count, char_start, char_end, chunk_type, section_idx)
+                    self._add_chunk(
+                        chunks,
+                        chunk_text_str,
+                        token_count,
+                        char_start,
+                        char_end,
+                        chunk_type,
+                        section_idx,
+                    )
                     section_idx += 1
             else:
-                self._add_chunk(chunks, chunk_text_str, token_count, char_start, char_end, chunk_type, section_idx)
+                self._add_chunk(
+                    chunks,
+                    chunk_text_str,
+                    token_count,
+                    char_start,
+                    char_end,
+                    chunk_type,
+                    section_idx,
+                )
                 section_idx += 1
 
             next_token_pos = token_end - eff_overlap_tokens
@@ -412,20 +432,25 @@ class Chunker:
 
         return chunks
 
-    def _add_chunk(self, chunks_list, text, token_count, char_start, char_end, chunk_type, position):
-        chunks_list.append(ChunkModel(
-            text=text,
-            section_path=self.input_data.section_path,
-            position=position,
-            char_start=char_start,
-            char_end=char_end,
-            chunk_type=chunk_type,
-            metadata={
-                "content_hash": compute_content_hash(text),
-                "token_count": token_count,
-                "original_length": len(text),
-            },
-        ))
+    def _add_chunk(
+        self, chunks_list, text, token_count, char_start, char_end, chunk_type, position
+    ):
+        chunks_list.append(
+            ChunkModel(
+                text=text,
+                section_path=self.input_data.section_path,
+                position=position,
+                char_start=char_start,
+                char_end=char_end,
+                chunk_type=chunk_type,
+                metadata={
+                    "content_hash": compute_content_hash(text),
+                    "token_count": token_count,
+                    "original_length": len(text),
+                },
+            )
+        )
+
 
 def chunk_text(input_data: ChunkingInput) -> list[ChunkModel]:
     """

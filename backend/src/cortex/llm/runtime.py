@@ -23,7 +23,7 @@ import os
 import threading
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Protocol, cast
+from typing import Any, Protocol, cast
 
 import numpy as np
 from tenacity import (
@@ -271,7 +271,7 @@ class BaseProvider(ABC):
     """Abstract base class for providers."""
 
     @abstractmethod
-    def embed(self, texts: List[str]) -> np.ndarray: ...
+    def embed(self, texts: list[str]) -> np.ndarray: ...
 
     @abstractmethod
     def complete(self, prompt: str, **kwargs: Any) -> str: ...
@@ -330,7 +330,7 @@ class VLLMProvider(BaseProvider):
             base_url = None
             # 1. Try unified config nesting (EmailOpsConfig)
             if hasattr(_config, "digitalocean"):
-                do_cfg = getattr(_config, "digitalocean")
+                do_cfg = _config.digitalocean
                 endpoint_cfg = getattr(do_cfg, "endpoint", None)
                 if endpoint_cfg and endpoint_cfg.BASE_URL:
                     base_url = str(endpoint_cfg.BASE_URL)
@@ -349,7 +349,7 @@ class VLLMProvider(BaseProvider):
             api_key = None
             # 1. Try unified config nesting
             if hasattr(_config, "digitalocean"):
-                do_cfg = getattr(_config, "digitalocean")
+                do_cfg = _config.digitalocean
                 endpoint_cfg = getattr(do_cfg, "endpoint", None)
                 if endpoint_cfg and endpoint_cfg.api_key:
                     api_key = endpoint_cfg.api_key
@@ -424,7 +424,7 @@ class VLLMProvider(BaseProvider):
         pass
 
     # ------------- Retrieval embeddings -------------
-    def embed_documents(self, documents: List[str]) -> np.ndarray:
+    def embed_documents(self, documents: list[str]) -> np.ndarray:
         if not documents:
             return np.array([], dtype=np.float32)
 
@@ -433,7 +433,7 @@ class VLLMProvider(BaseProvider):
         # Resolve model name
         model_name = None
         if hasattr(_config, "embedding"):
-            embed_cfg = getattr(_config, "embedding")
+            embed_cfg = _config.embedding
             if embed_cfg and embed_cfg.model_name:
                 model_name = embed_cfg.model_name
 
@@ -475,7 +475,7 @@ class VLLMProvider(BaseProvider):
             # Fallback or error reporting
             raise ProviderError(f"Embedding API failed: {e}") from e
 
-    def embed_queries(self, queries: List[str]) -> np.ndarray:
+    def embed_queries(self, queries: list[str]) -> np.ndarray:
         # For asymmetric models, queries often need a prefix (e.g. "params: query: ...")
         # But KaLM-Embedding-Gemma3 usually handles raw text or uses specific instructions.
         # We'll treat them matches documents for now unless specific instruction template is needed.
@@ -483,7 +483,7 @@ class VLLMProvider(BaseProvider):
         return self.embed_documents(queries)
 
     # ------------- BaseProvider interface (defaults to document embeddings) -------------
-    def embed(self, texts: List[str]) -> np.ndarray:
+    def embed(self, texts: list[str]) -> np.ndarray:
         # Back-compat: treat generic "texts" as documents for RAG ingestion
         return self.embed_documents(texts)
 
@@ -500,7 +500,7 @@ class VLLMProvider(BaseProvider):
             if not model_name:
                 # 1. Try unified config nesting
                 if hasattr(_config, "digitalocean"):
-                    do_cfg = getattr(_config, "digitalocean")
+                    do_cfg = _config.digitalocean
                     endpoint_cfg = getattr(do_cfg, "endpoint", None)
                     if endpoint_cfg and endpoint_cfg.default_completion_model:
                         model_name = endpoint_cfg.default_completion_model
@@ -518,7 +518,7 @@ class VLLMProvider(BaseProvider):
 
             # NOTE: Keep this request object small. For long-context models,
             # client-side overhead can become noticeable if you do heavy post-processing here.
-            req: Dict[str, Any] = {
+            req: dict[str, Any] = {
                 "model": model_name,
                 "messages": messages,
                 "temperature": kwargs.get("temperature", 0.3),
@@ -721,7 +721,7 @@ class LLMRuntime:
             self._track_request_end()
 
     # ---------------- Public API: embeddings (document/query) ----------------
-    def embed_documents(self, documents: List[str]) -> np.ndarray:
+    def embed_documents(self, documents: list[str]) -> np.ndarray:
         if not documents:
             raise ValidationError("documents must be non-empty")
         if any(not isinstance(t, str) or not t.strip() for t in documents):
@@ -729,7 +729,7 @@ class LLMRuntime:
 
         expected_dim = 3840
         if hasattr(_config, "embedding"):
-            embed_cfg = getattr(_config, "embedding")
+            embed_cfg = _config.embedding
             if embed_cfg and embed_cfg.output_dimensionality:
                 expected_dim = embed_cfg.output_dimensionality
         else:
@@ -739,7 +739,7 @@ class LLMRuntime:
         embed_mode = "auto"  # default
         cpu_fallback_enabled = True
         if hasattr(_config, "embedding"):
-            embed_cfg = getattr(_config, "embedding")
+            embed_cfg = _config.embedding
             embed_mode = getattr(embed_cfg, "embed_mode", "auto")
             cpu_fallback_enabled = getattr(embed_cfg, "cpu_fallback_enabled", True)
 
@@ -824,7 +824,7 @@ class LLMRuntime:
 
         return vectors
 
-    def embed_queries(self, queries: List[str]) -> np.ndarray:
+    def embed_queries(self, queries: list[str]) -> np.ndarray:
         if not queries:
             raise ValidationError("queries must be non-empty")
         if any(not isinstance(t, str) or not t.strip() for t in queries):
@@ -832,7 +832,7 @@ class LLMRuntime:
 
         expected_dim = 3840
         if hasattr(_config, "embedding"):
-            embed_cfg = getattr(_config, "embedding")
+            embed_cfg = _config.embedding
             if embed_cfg and embed_cfg.output_dimensionality:
                 expected_dim = embed_cfg.output_dimensionality
         else:
@@ -842,7 +842,7 @@ class LLMRuntime:
         embed_mode = "auto"  # default
         cpu_fallback_enabled = True
         if hasattr(_config, "embedding"):
-            embed_cfg = getattr(_config, "embedding")
+            embed_cfg = _config.embedding
             embed_mode = getattr(embed_cfg, "embed_mode", "auto")
             cpu_fallback_enabled = getattr(embed_cfg, "cpu_fallback_enabled", True)
 
@@ -924,7 +924,7 @@ class LLMRuntime:
         return vectors
 
     # Back-compat: embed_texts defaults to document embeddings (RAG ingestion)
-    def embed_texts(self, texts: List[str]) -> np.ndarray:
+    def embed_texts(self, texts: list[str]) -> np.ndarray:
         return self.embed_documents(texts)
 
     # ---------------- Public API: text completion ----------------
@@ -947,10 +947,10 @@ class LLMRuntime:
     def complete_json(
         self,
         prompt: str,
-        schema: Dict[str, Any],
+        schema: dict[str, Any],
         max_repair_attempts: int = 2,
         **kwargs: Any,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         if not isinstance(prompt, str) or not prompt.strip():
             raise ValidationError("prompt must be a non-empty string")
 
@@ -977,8 +977,8 @@ class LLMRuntime:
                     return self.complete_text(p, **base_kwargs)
                 raise
 
-        raw_output: Optional[str] = None
-        last_error: Optional[str] = None
+        raw_output: str | None = None
+        last_error: str | None = None
 
         for attempt in range(max_repair_attempts + 1):
             if attempt == 0:
@@ -1032,9 +1032,7 @@ class LLMRuntime:
 # =============================================================================
 # JSON helpers
 # =============================================================================
-def _validate_json_schema(
-    data: Dict[str, Any], schema: Dict[str, Any]
-) -> Optional[str]:
+def _validate_json_schema(data: dict[str, Any], schema: dict[str, Any]) -> str | None:
     try:
         import jsonschema
 
@@ -1092,7 +1090,7 @@ def _extract_first_balanced_json_object(s: object) -> str | None:
     return None
 
 
-def _try_load_json(data: Any) -> Dict[str, Any]:
+def _try_load_json(data: Any) -> dict[str, Any]:
     """
     Robustly parse JSON from model output, accepting dict, bytes, or string.
     Handles fenced code blocks and partial strings.
@@ -1160,7 +1158,7 @@ def _try_load_json(data: Any) -> Dict[str, Any]:
 # =============================================================================
 # Module-level singleton and convenience functions
 # =============================================================================
-_runtime_instance: Optional[LLMRuntime] = None
+_runtime_instance: LLMRuntime | None = None
 
 
 def get_runtime() -> LLMRuntime:
@@ -1170,15 +1168,15 @@ def get_runtime() -> LLMRuntime:
     return _runtime_instance
 
 
-def embed_documents(documents: List[str]) -> np.ndarray:
+def embed_documents(documents: list[str]) -> np.ndarray:
     return get_runtime().embed_documents(documents)
 
 
-def embed_queries(queries: List[str]) -> np.ndarray:
+def embed_queries(queries: list[str]) -> np.ndarray:
     return get_runtime().embed_queries(queries)
 
 
-def embed_texts(texts: List[str]) -> np.ndarray:
+def embed_texts(texts: list[str]) -> np.ndarray:
     return get_runtime().embed_texts(texts)
 
 
@@ -1186,5 +1184,5 @@ def complete_text(prompt: str, **kwargs: Any) -> str:
     return get_runtime().complete_text(prompt, **kwargs)
 
 
-def complete_json(prompt: str, schema: Dict[str, Any], **kwargs: Any) -> Dict[str, Any]:
+def complete_json(prompt: str, schema: dict[str, Any], **kwargs: Any) -> dict[str, Any]:
     return get_runtime().complete_json(prompt, schema, **kwargs)

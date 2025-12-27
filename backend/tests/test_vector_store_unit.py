@@ -122,7 +122,7 @@ class TestQdrantVectorStore:
             store.search([0.1, 0.1, 0.1], "tenant", file_types=["pdf", "docx"])
 
             mock_post.assert_called_once()
-            call_args, call_kwargs = mock_post.call_args
+            _, call_kwargs = mock_post.call_args
             payload = call_kwargs.get("json", {})
             filters = payload.get("filter", {})
             must_filters = filters.get("must", [])

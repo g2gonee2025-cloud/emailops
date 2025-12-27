@@ -12,7 +12,7 @@ import logging
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from cortex.db.models import Attachment, Chunk, Conversation
 from cortex.ingestion.constants import CLEANING_VERSION
@@ -28,10 +28,10 @@ def compute_content_hash(text: str) -> str:
 
 
 def ensure_chunk_metadata(
-    chunk_data: Dict[str, Any],
+    chunk_data: dict[str, Any],
     source: str = "email_body",
     pre_cleaned: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Ensure chunk has all required metadata fields per §7.1.
     """
@@ -61,14 +61,14 @@ class ChunkRecord:
     text: str
     chunk_type: str = "message_body"
     is_summary: bool = False
-    embedding: Optional[List[float]] = None
+    embedding: list[float] | None = None
     position: int = 0
     char_start: int = 0
     char_end: int = 0
-    section_path: Optional[str] = None
+    section_path: str | None = None
     is_attachment: bool = False
-    attachment_id: Optional[uuid.UUID] = None
-    extra_data: Optional[Dict[str, Any]] = None
+    attachment_id: uuid.UUID | None = None
+    extra_data: dict[str, Any] | None = None
 
 
 class DBWriter:
@@ -90,15 +90,15 @@ class DBWriter:
         conversation_id: uuid.UUID,
         tenant_id: str,
         folder_name: str,
-        subject: Optional[str] = None,
-        smart_subject: Optional[str] = None,
-        summary_text: Optional[str] = None,
-        participants: Optional[List[Dict[str, Any]]] = None,
-        messages: Optional[List[Dict[str, Any]]] = None,
-        earliest_date: Optional[datetime] = None,
-        latest_date: Optional[datetime] = None,
-        storage_uri: Optional[str] = None,
-        extra_data: Optional[Dict[str, Any]] = None,
+        subject: str | None = None,
+        smart_subject: str | None = None,
+        summary_text: str | None = None,
+        participants: list[dict[str, Any]] | None = None,
+        messages: list[dict[str, Any]] | None = None,
+        earliest_date: datetime | None = None,
+        latest_date: datetime | None = None,
+        storage_uri: str | None = None,
+        extra_data: dict[str, Any] | None = None,
     ) -> Conversation:
         """Write a conversation record."""
         conv = Conversation(
@@ -123,10 +123,10 @@ class DBWriter:
         *,
         attachment_id: uuid.UUID,
         conversation_id: uuid.UUID,
-        filename: Optional[str] = None,
-        content_type: Optional[str] = None,
-        size_bytes: Optional[int] = None,
-        storage_uri: Optional[str] = None,
+        filename: str | None = None,
+        content_type: str | None = None,
+        size_bytes: int | None = None,
+        storage_uri: str | None = None,
         status: str = "pending",
     ) -> Attachment:
         """Write an attachment record."""
@@ -163,7 +163,7 @@ class DBWriter:
         self.session.merge(chunk)
         return chunk
 
-    def write_job_results(self, job: IngestJobRequest, results: Dict[str, Any]) -> None:
+    def write_job_results(self, job: IngestJobRequest, results: dict[str, Any]) -> None:
         """
         Write ingestion results to DB.
 
@@ -329,7 +329,7 @@ class DBWriter:
 
     def write_chunks_with_dedup(
         self,
-        chunks: List[Dict[str, Any]],
+        chunks: list[dict[str, Any]],
         tenant_id: str,
         conversation_id: uuid.UUID,
         source: str = "email_body",

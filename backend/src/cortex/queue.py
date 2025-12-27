@@ -17,7 +17,7 @@ import time
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -43,17 +43,17 @@ class Job:
 
     id: str
     type: str
-    payload: Dict[str, Any]
+    payload: dict[str, Any]
     priority: int = 0
     status: str = JobStatus.PENDING
     attempts: int = 0
     max_attempts: int = 3
     created_at: float = field(default_factory=time.time)
-    started_at: Optional[float] = None
-    completed_at: Optional[float] = None
-    error: Optional[str] = None
+    started_at: float | None = None
+    completed_at: float | None = None
+    error: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert job to dictionary."""
         return {
             "id": self.id,
@@ -70,7 +70,7 @@ class Job:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "Job":
+    def from_dict(cls, data: dict[str, Any]) -> Job:
         """Create job from dictionary."""
         return cls(
             id=data["id"],
@@ -96,7 +96,7 @@ class JobQueue(ABC):
     """Abstract base class for job queues."""
 
     @abstractmethod
-    def enqueue(self, job_type: str, payload: Dict[str, Any], priority: int = 0) -> str:
+    def enqueue(self, job_type: str, payload: dict[str, Any], priority: int = 0) -> str:
         """
         Enqueue a job.
 
@@ -111,9 +111,7 @@ class JobQueue(ABC):
         pass
 
     @abstractmethod
-    def dequeue(
-        self, job_types: List[str], timeout: int = 10
-    ) -> Optional[Dict[str, Any]]:
+    def dequeue(self, job_types: list[str], timeout: int = 10) -> dict[str, Any] | None:
         """
         Dequeue a job.
 
@@ -137,7 +135,7 @@ class JobQueue(ABC):
         pass
 
     @abstractmethod
-    def nack(self, job_id: str, error: Optional[str] = None) -> None:
+    def nack(self, job_id: str, error: str | None = None) -> None:
         """
         Negative acknowledge (fail/retry).
 
@@ -148,7 +146,7 @@ class JobQueue(ABC):
         pass
 
     @abstractmethod
-    def get_job_status(self, job_id: str) -> Optional[Dict[str, Any]]:
+    def get_job_status(self, job_id: str) -> dict[str, Any] | None:
         """
         Get job status.
 
@@ -161,7 +159,7 @@ class JobQueue(ABC):
         pass
 
     @abstractmethod
-    def get_queue_stats(self) -> Dict[str, int]:
+    def get_queue_stats(self) -> dict[str, int]:
         """
         Get queue statistics.
 
@@ -183,10 +181,10 @@ class InMemoryQueue(JobQueue):
         from queue import PriorityQueue
 
         self._queue = PriorityQueue()
-        self._jobs: Dict[str, Job] = {}
+        self._jobs: dict[str, Job] = {}
         self._lock = threading.Lock()
 
-    def enqueue(self, job_type: str, payload: Dict[str, Any], priority: int = 0) -> str:
+    def enqueue(self, job_type: str, payload: dict[str, Any], priority: int = 0) -> str:
         job_id = str(uuid.uuid4())
         job = Job(
             id=job_id,
@@ -201,9 +199,7 @@ class InMemoryQueue(JobQueue):
         logger.debug(f"Enqueued job {job_id} of type {job_type}")
         return job_id
 
-    def dequeue(
-        self, job_types: List[str], timeout: int = 10
-    ) -> Optional[Dict[str, Any]]:
+    def dequeue(self, job_types: list[str], timeout: int = 10) -> dict[str, Any] | None:
         from queue import Empty
 
         start = time.time()
@@ -236,7 +232,7 @@ class InMemoryQueue(JobQueue):
                 job.completed_at = time.time()
                 logger.debug(f"Acknowledged job {job_id}")
 
-    def nack(self, job_id: str, error: Optional[str] = None) -> None:
+    def nack(self, job_id: str, error: str | None = None) -> None:
         with self._lock:
             if job_id in self._jobs:
                 job = self._jobs[job_id]
@@ -251,12 +247,12 @@ class InMemoryQueue(JobQueue):
                     self._queue.put((-job.priority, job.created_at, job_id))
                     logger.debug(f"Job {job_id} requeued (attempt {job.attempts})")
 
-    def get_job_status(self, job_id: str) -> Optional[Dict[str, Any]]:
+    def get_job_status(self, job_id: str) -> dict[str, Any] | None:
         with self._lock:
             job = self._jobs.get(job_id)
             return job.to_dict() if job else None
 
-    def get_queue_stats(self) -> Dict[str, int]:
+    def get_queue_stats(self) -> dict[str, int]:
         with self._lock:
             stats = {
                 "pending": 0,
@@ -304,7 +300,7 @@ class RedisStreamsQueue(JobQueue):
     def __init__(
         self,
         redis_url: str = "redis://localhost:6379",
-        job_types: Optional[List[str]] = None,
+        job_types: list[str] | None = None,
         max_retries: int = 3,
         visibility_timeout: int = 300,  # 5 minutes
         block_timeout: int = 5000,  # 5 seconds in ms
@@ -351,7 +347,7 @@ class RedisStreamsQueue(JobQueue):
             return f"{self.STREAM_PREFIX}{job_type}:low"
         return f"{self.STREAM_PREFIX}{job_type}:normal"
 
-    def _ensure_consumer_groups(self, job_types: List[str]) -> None:
+    def _ensure_consumer_groups(self, job_types: list[str]) -> None:
         """Ensure consumer groups exist for all job types and priorities."""
         priorities = ["high", "normal", "low"]
         for job_type in job_types:
@@ -368,7 +364,7 @@ class RedisStreamsQueue(JobQueue):
                         continue
                     logger.warning(f"Failed to create consumer group for {stream}: {e}")
 
-    def enqueue(self, job_type: str, payload: Dict[str, Any], priority: int = 0) -> str:
+    def enqueue(self, job_type: str, payload: dict[str, Any], priority: int = 0) -> str:
         """Enqueue a job to Redis Streams."""
         job_id = str(uuid.uuid4())
         job = Job(
@@ -408,9 +404,7 @@ class RedisStreamsQueue(JobQueue):
         logger.debug(f"Enqueued job {job_id} to stream {stream}")
         return job_id
 
-    def dequeue(
-        self, job_types: List[str], timeout: int = 10
-    ) -> Optional[Dict[str, Any]]:
+    def dequeue(self, job_types: list[str], timeout: int = 10) -> dict[str, Any] | None:
         """Dequeue a job from Redis Streams."""
         # Build list of streams to read from (in priority order)
         streams = {}
@@ -480,7 +474,7 @@ class RedisStreamsQueue(JobQueue):
             logger.error(f"Error dequeuing from Redis: {e}")
             return None
 
-    def _claim_stale_messages(self, job_types: List[str]) -> Optional[Dict[str, Any]]:
+    def _claim_stale_messages(self, job_types: list[str]) -> dict[str, Any] | None:
         """Attempt to claim stale (pending too long) messages."""
         min_idle_time = self._visibility_timeout * 1000  # Convert to ms
 
@@ -558,7 +552,7 @@ class RedisStreamsQueue(JobQueue):
         return None
 
     def _move_to_dead_letter(
-        self, job_id: str, stream: str, message_id: str, data: Dict[str, Any]
+        self, job_id: str, stream: str, message_id: str, data: dict[str, Any]
     ) -> None:
         """Move a failed job to the dead letter queue."""
         # Add to dead letter stream
@@ -610,7 +604,7 @@ class RedisStreamsQueue(JobQueue):
 
         logger.debug(f"Acknowledged job {job_id}")
 
-    def nack(self, job_id: str, error: Optional[str] = None) -> None:
+    def nack(self, job_id: str, error: str | None = None) -> None:
         """
         Negative acknowledge (fail/retry).
 
@@ -635,18 +629,23 @@ class RedisStreamsQueue(JobQueue):
                 # Retrieve the full job data to move it
                 # XCLAIM returns the message, but it might be simpler to just query it
                 # We assume the message is still in the stream.
-                data = self._redis.xrange(stream, min=message_id, max=message_id, count=1)
+                data = self._redis.xrange(
+                    stream, min=message_id, max=message_id, count=1
+                )
                 if data:
                     _, job_data = data[0]
                     self._move_to_dead_letter(job_id, stream, message_id, job_data)
                 else:
                     # Fallback if message is gone for some reason
-                    logger.warning(f"Could not find message {message_id} in stream {stream} for job {job_id} to dead-letter.")
+                    logger.warning(
+                        f"Could not find message {message_id} in stream {stream} for job {job_id} to dead-letter."
+                    )
                     self._redis.hset(
                         status_key,
                         mapping={
                             "status": JobStatus.DEAD_LETTER,
-                            "error": error or "Max retries exceeded (message not found)",
+                            "error": error
+                            or "Max retries exceeded (message not found)",
                         },
                     )
             else:
@@ -665,14 +664,14 @@ class RedisStreamsQueue(JobQueue):
             self._redis.hset(
                 status_key,
                 mapping={
-                    "status": JobStatus.PENDING, # Mark as pending for retry
+                    "status": JobStatus.PENDING,  # Mark as pending for retry
                     "error": error or "",
                     "last_failed_at": str(time.time()),
                 },
             )
             logger.debug(f"Nacked job {job_id} (attempt {attempts}). Will be retried.")
 
-    def get_job_status(self, job_id: str) -> Optional[Dict[str, Any]]:
+    def get_job_status(self, job_id: str) -> dict[str, Any] | None:
         """Get job status."""
         status_data = self._redis.hgetall(f"{self.STATUS_PREFIX}{job_id}")
         if not status_data:
@@ -697,7 +696,7 @@ class RedisStreamsQueue(JobQueue):
             "type": status_data.get("type"),
         }
 
-    def get_queue_stats(self) -> Dict[str, int]:
+    def get_queue_stats(self) -> dict[str, int]:
         """Get queue statistics."""
         stats = {
             "pending": 0,
@@ -789,7 +788,7 @@ class CeleryQueue(JobQueue):
     def __init__(
         self,
         broker_url: str = "redis://localhost:6379/0",
-        job_types: Optional[List[str]] = None,
+        job_types: list[str] | None = None,
     ):
         """
         Initialize Celery queue.
@@ -815,10 +814,10 @@ class CeleryQueue(JobQueue):
             task_acks_late=True,
             task_reject_on_worker_lost=True,
         )
-        self._pending_jobs: Dict[str, Dict[str, Any]] = {}
+        self._pending_jobs: dict[str, dict[str, Any]] = {}
         self._lock = threading.Lock()
         self._job_types = job_types or []
-        self._task_map: Dict[str, Any] = {}
+        self._task_map: dict[str, Any] = {}
 
         # Register task handlers
         self._register_tasks()
@@ -830,7 +829,7 @@ class CeleryQueue(JobQueue):
 
         def create_task(name):
             @self._app.task(name=f"cortex.{name}", bind=True, max_retries=3)
-            def generic_task(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+            def generic_task(self, payload: dict[str, Any]) -> dict[str, Any]:
                 # Worker-side logic would go here.
                 # For this abstraction, we just return a success marker.
                 return {"status": "completed", "payload": payload}
@@ -840,15 +839,13 @@ class CeleryQueue(JobQueue):
         for job_type in self._job_types:
             self._task_map[job_type] = create_task(job_type)
 
-    def enqueue(self, job_type: str, payload: Dict[str, Any], priority: int = 0) -> str:
+    def enqueue(self, job_type: str, payload: dict[str, Any], priority: int = 0) -> str:
         """Enqueue a job via Celery."""
         job_id = str(uuid.uuid4())
 
         task = self._task_map.get(job_type)
         if not task:
-            raise ValueError(
-                f"Unknown or unregistered job type for Celery: {job_type}"
-            )
+            raise ValueError(f"Unknown or unregistered job type for Celery: {job_type}")
 
         # Calculate Celery priority (0-9, lower = higher priority)
         celery_priority = max(0, min(9, 5 - (priority // 2)))
@@ -871,15 +868,14 @@ class CeleryQueue(JobQueue):
         logger.debug(f"Enqueued Celery task {job_id} of type {job_type}")
         return job_id
 
-    def dequeue(
-        self, job_types: List[str], timeout: int = 10
-    ) -> Optional[Dict[str, Any]]:
-        """
+    def dequeue(self, job_types: list[str], timeout: int = 10) -> dict[str, Any] | None:
         """
         Dequeue is handled by Celery workers automatically.
         This method is not used in a Celery-based setup and is here for ABC compliance.
         """
-        logger.debug("CeleryQueue.dequeue called but is a no-op; workers handle dequeuing.")
+        logger.debug(
+            "CeleryQueue.dequeue called but is a no-op; workers handle dequeuing."
+        )
         # Block for a short time to simulate waiting, but Celery workers operate independently.
         time.sleep(timeout)
         return None
@@ -891,11 +887,11 @@ class CeleryQueue(JobQueue):
                 del self._pending_jobs[job_id]
         logger.debug(f"Acknowledged Celery task {job_id}")
 
-    def nack(self, job_id: str, error: Optional[str] = None) -> None:
+    def nack(self, job_id: str, error: str | None = None) -> None:
         """Negative acknowledge - Celery handles retries automatically."""
         logger.debug(f"Nack Celery task {job_id}: {error}")
 
-    def get_job_status(self, job_id: str) -> Optional[Dict[str, Any]]:
+    def get_job_status(self, job_id: str) -> dict[str, Any] | None:
         """Get job status via Celery AsyncResult."""
         from celery.result import AsyncResult
 
@@ -916,7 +912,7 @@ class CeleryQueue(JobQueue):
             "error": str(result.result) if result.failed() else None,
         }
 
-    def get_queue_stats(self) -> Dict[str, int]:
+    def get_queue_stats(self) -> dict[str, int]:
         """Get queue statistics."""
         # Celery queue inspection requires the inspect API
         try:
@@ -941,11 +937,11 @@ class CeleryQueue(JobQueue):
 # Queue Factory
 # -----------------------------------------------------------------------------
 
-_queue_instance: Optional[JobQueue] = None
+_queue_instance: JobQueue | None = None
 _queue_lock = threading.Lock()
 
 
-def get_queue(job_types: Optional[List[str]] = None) -> JobQueue:
+def get_queue(job_types: list[str] | None = None) -> JobQueue:
     """
     Get the configured queue instance.
 
@@ -1021,7 +1017,7 @@ def get_queue(job_types: Optional[List[str]] = None) -> JobQueue:
 
 
 def reset_queue() -> None:
-    """Reset the queue instance (useful for testing)."""
+    # Reset the queue instance (useful for testing).
     global _queue_instance
     with _queue_lock:
         _queue_instance = None

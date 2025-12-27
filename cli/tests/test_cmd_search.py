@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import argparse
@@ -26,10 +25,17 @@ def test_search_command_success(capsys):
     }
 
     with patch("httpx.Client") as mock_client:
-        mock_client.return_value.__enter__.return_value.post.return_value = mock_response
+        mock_client.return_value.__enter__.return_value.post.return_value = (
+            mock_response
+        )
 
         args = argparse.Namespace(
-            query="test query", top_k=10, tenant="default", debug=False, json=False, fusion="rrf"
+            query="test query",
+            top_k=10,
+            tenant="default",
+            debug=False,
+            json=False,
+            fusion="rrf",
         )
         _run_search_command(args)
 
@@ -59,10 +65,17 @@ def test_search_command_json_output(capsys):
     }
 
     with patch("httpx.Client") as mock_client:
-        mock_client.return_value.__enter__.return_value.post.return_value = mock_response
+        mock_client.return_value.__enter__.return_value.post.return_value = (
+            mock_response
+        )
 
         args = argparse.Namespace(
-            query="json test", top_k=5, tenant="default", debug=False, json=True, fusion="weighted_sum"
+            query="json test",
+            top_k=5,
+            tenant="default",
+            debug=False,
+            json=True,
+            fusion="weighted_sum",
         )
         _run_search_command(args)
 
@@ -75,10 +88,17 @@ def test_search_command_json_output(capsys):
 def test_search_command_http_error(capsys):
     """Test the search command with a 500 HTTP error."""
     with patch("httpx.Client") as mock_client, patch("sys.exit") as mock_exit:
-        mock_client.return_value.__enter__.return_value.post.side_effect = Exception("Server Error")
+        mock_client.return_value.__enter__.return_value.post.side_effect = Exception(
+            "Server Error"
+        )
 
         args = argparse.Namespace(
-            query="http error", top_k=10, tenant="default", debug=False, json=False, fusion="rrf"
+            query="http error",
+            top_k=10,
+            tenant="default",
+            debug=False,
+            json=False,
+            fusion="rrf",
         )
         _run_search_command(args)
 

@@ -89,8 +89,6 @@ async def login(request: LoginRequest) -> LoginResponse:
     try:
         token = jwt.encode(payload, config.SECRET_KEY, algorithm="HS256")
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Token generation failed: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Token generation failed: {e!s}")
 
     return LoginResponse(access_token=token, expires_in=expires_seconds)

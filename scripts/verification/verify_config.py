@@ -1,9 +1,9 @@
 from pathlib import Path
 
 root_dir = Path(__file__).resolve().parents[2]
-from pathlib import Path  # noqa: E402
+from pathlib import Path
 
-from cortex.config.loader import get_config  # noqa: E402
+from cortex.config.loader import get_config
 
 
 def _safe_get(obj, *attrs):

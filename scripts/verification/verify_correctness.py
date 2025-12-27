@@ -3,14 +3,14 @@ from pathlib import Path
 
 root_dir = Path(__file__).resolve().parents[2]
 sys.path.append(str(root_dir / "backend" / "src"))
-import unittest  # noqa: E402
-from pathlib import Path  # noqa: E402
+import unittest
+from pathlib import Path
 
 # Add src to path
 sys.path.append(str(Path.cwd() / "backend" / "src"))
 
-from cortex.chunking.chunker import ChunkingInput, chunk_text  # noqa: E402
-from cortex.ingestion.quoted_masks import detect_quoted_spans  # noqa: E402
+from cortex.chunking.chunker import ChunkingInput, chunk_text
+from cortex.ingestion.quoted_masks import detect_quoted_spans
 
 
 class TestCorrectness(unittest.TestCase):

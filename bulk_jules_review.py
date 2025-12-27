@@ -1,12 +1,10 @@
 import asyncio
-import glob
 import json
 import logging
 import os
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Set
 
 import aiohttp
 
@@ -32,14 +30,14 @@ if not API_KEY:
 
 async def count_lines(filepath: Path) -> int:
     try:
-        with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+        with open(filepath, encoding="utf-8", errors="ignore") as f:
             return sum(1 for _ in f)
     except Exception as e:
         logger.warning(f"Could not count lines for {filepath}: {e}")
         return 0
 
 
-def find_imports(filepath: Path) -> Set[Path]:
+def find_imports(filepath: Path) -> set[Path]:
     """
     Very basic import detection for context resolution.
     Returns a set of absolute paths to imported files if they exist in the project.
@@ -89,7 +87,7 @@ def find_imports(filepath: Path) -> Set[Path]:
 async def create_session(
     session: aiohttp.ClientSession,
     file_path: Path,
-    context_files: Set[Path],
+    context_files: set[Path],
     sem: asyncio.Semaphore,
 ):
     async with sem:

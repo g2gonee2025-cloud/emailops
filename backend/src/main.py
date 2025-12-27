@@ -22,8 +22,9 @@ import logging
 import os
 import time
 import uuid
+from collections.abc import Awaitable, Callable
 from contextlib import asynccontextmanager
-from typing import Any, Awaitable, Callable, Optional
+from typing import Any
 
 import jwt
 import requests
@@ -56,7 +57,7 @@ APP_NAME = "Outlook Cortex (EmailOps Edition)"
 
 
 # JWT/JWKS helpers
-_jwt_decoder: Optional[Callable[[str], Any]] = None  # Returns Awaitable[dict] or dict
+_jwt_decoder: Callable[[str], Any] | None = None  # Returns Awaitable[dict] or dict
 _jwks_cache: dict[str, Any] = {}
 
 
@@ -71,7 +72,7 @@ def _load_jwks(jwks_url: str) -> dict[str, Any]:
 
 
 def _configure_jwt_decoder(
-    *, jwks_url: Optional[str], audience: Optional[str], issuer: Optional[str]
+    *, jwks_url: str | None, audience: str | None, issuer: str | None
 ) -> None:
     global _jwt_decoder
 
@@ -91,7 +92,7 @@ def _configure_jwt_decoder(
 
 
 def _create_jwks_decoder(
-    jwks_url: str, audience: Optional[str], issuer: Optional[str]
+    jwks_url: str, audience: str | None, issuer: str | None
 ) -> Callable[[str], Awaitable[dict[str, Any]]]:
     """Create a JWKS-based JWT decoder."""
     from fastapi.concurrency import run_in_threadpool
@@ -372,8 +373,8 @@ def create_error_response(
     status_code: int,
     error_type: str,
     message: str,
-    error_code: Optional[str] = None,
-    context: Optional[dict[str, Any]] = None,
+    error_code: str | None = None,
+    context: dict[str, Any] | None = None,
 ) -> JSONResponse:
     """Create a structured error response with correlation ID."""
     correlation_id = correlation_id_ctx.get()
@@ -421,9 +422,7 @@ async def cortex_error_handler(request: Request, exc: Exception) -> JSONResponse
         status_code = 400
     elif isinstance(exc, SecurityError):
         status_code = 403
-    elif isinstance(exc, ProviderError):
-        status_code = 503 if exc.retryable else 502
-    elif isinstance(exc, EmbeddingError):
+    elif isinstance(exc, ProviderError) or isinstance(exc, EmbeddingError):
         status_code = 503 if exc.retryable else 502
     elif isinstance(exc, ConfigurationError):
         status_code = 500

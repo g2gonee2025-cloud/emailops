@@ -12,7 +12,7 @@ import requests
 from dotenv import load_dotenv
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    pass
 
 # Load environment variables from .env file
 load_dotenv()

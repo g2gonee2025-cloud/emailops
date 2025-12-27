@@ -5,12 +5,12 @@ Parses attachments_log.csv for rich attachment metadata.
 import csv
 import logging
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
-def parse_attachments_log(convo_dir: Path) -> Dict[str, Dict[str, Any]]:
+def parse_attachments_log(convo_dir: Path) -> dict[str, dict[str, Any]]:
     """
     Parse attachments_log.csv and return a mapping of filename -> metadata.
 
@@ -34,7 +34,7 @@ def parse_attachments_log(convo_dir: Path) -> Dict[str, Dict[str, Any]]:
 
     metadata_map = {}
     try:
-        with open(csv_path, "r", encoding="utf-8-sig", newline="") as f:
+        with open(csv_path, encoding="utf-8-sig", newline="") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 filename = row.get("filename")

@@ -52,7 +52,10 @@ class TestCliMainUtils:
         mock_report.problems = []
         mock_scan.return_value = mock_report
 
-        with patch("pathlib.Path.exists", return_value=True), patch("pathlib.Path.is_dir", return_value=True):
+        with (
+            patch("pathlib.Path.exists", return_value=True),
+            patch("pathlib.Path.is_dir", return_value=True),
+        ):
             _run_validate("some/path")
 
         captured = capsys.readouterr()

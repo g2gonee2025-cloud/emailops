@@ -10,8 +10,8 @@ from botocore.client import Config
 # Add backend/src to path
 root_dir = Path(__file__).resolve().parents[2]
 sys.path.append(str(root_dir / "backend" / "src"))
-from cortex.config.loader import get_config  # noqa: E402
-from cortex.ingestion.conv_manifest.validation import scan_and_refresh  # noqa: E402
+from cortex.config.loader import get_config
+from cortex.ingestion.conv_manifest.validation import scan_and_refresh
 
 
 def run_test():

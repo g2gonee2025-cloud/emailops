@@ -1,5 +1,5 @@
 import argparse
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from cortex_cli.cmd_rechunk import cmd_db_rechunk
 
@@ -22,5 +22,5 @@ def test_cmd_db_rechunk():
             chunk_size_limit=5000,
             dry_run=True,
             max_tokens=1000,
-            progress_callback=mock_run_rechunk.call_args.kwargs['progress_callback'],
+            progress_callback=mock_run_rechunk.call_args.kwargs["progress_callback"],
         )

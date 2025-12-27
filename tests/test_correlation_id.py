@@ -10,7 +10,7 @@ BACKEND_SRC = PROJECT_ROOT / "backend" / "src"
 if str(BACKEND_SRC) not in sys.path:
     sys.path.insert(0, str(BACKEND_SRC))
 
-from main import CorrelationIdMiddleware  # noqa: E402
+from main import CorrelationIdMiddleware
 
 
 def _build_test_app() -> FastAPI:

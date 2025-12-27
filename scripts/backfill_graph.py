@@ -21,14 +21,14 @@ BACKEND_SRC = PROJECT_ROOT / "backend" / "src"
 if BACKEND_SRC.exists():
     sys.path.insert(0, str(BACKEND_SRC))
 
-from dotenv import load_dotenv  # noqa: E402
+from dotenv import load_dotenv
 
 load_dotenv(PROJECT_ROOT / ".env")
 
-from cortex.db.models import Chunk, Conversation  # noqa: E402
-from cortex.db.session import SessionLocal  # noqa: E402
-from cortex.intelligence.graph import GraphExtractor  # noqa: E402
-from sqlalchemy import select  # noqa: E402
+from cortex.db.models import Chunk, Conversation
+from cortex.db.session import SessionLocal
+from cortex.intelligence.graph import GraphExtractor
+from sqlalchemy import select
 
 # Configure logging
 logging.basicConfig(
@@ -349,7 +349,7 @@ def run_backfill(
             }
 
             for future in as_completed(futures):
-                conv_id, tid = futures[future]
+                conv_id, _tid = futures[future]
                 try:
                     result = future.result()
                     if result["success"]:

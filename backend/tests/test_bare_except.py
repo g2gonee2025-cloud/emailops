@@ -1,8 +1,6 @@
-
 import ast
 import sys
 from pathlib import Path
-from typing import List
 
 import pytest
 
@@ -23,7 +21,7 @@ ROOT_SCRIPTS = [
 ]
 
 
-def get_python_files(paths: List[Path]) -> List[Path]:
+def get_python_files(paths: list[Path]) -> list[Path]:
     """Find all Python files in the given paths."""
     python_files = []
     for path in paths:
@@ -63,7 +61,7 @@ def find_bare_excepts(file_path: Path):
         pytest.param([Path(p) for p in ROOT_SCRIPTS], id="root_scripts"),
     ],
 )
-def test_no_bare_except_in_codebase(paths_to_check: List[Path]):
+def test_no_bare_except_in_codebase(paths_to_check: list[Path]):
     """
     Test that no Python files in the specified paths have bare except clauses.
     This test is parameterized to run on different sets of files.
@@ -83,4 +81,3 @@ def test_no_bare_except_in_codebase(paths_to_check: List[Path]):
         )
         error_msg += "\n\nPlease use 'except Exception:' instead of a bare except."
         raise AssertionError(error_msg)
-

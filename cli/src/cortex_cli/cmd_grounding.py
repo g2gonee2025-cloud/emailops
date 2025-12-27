@@ -1,7 +1,6 @@
 """Grounding check CLI command."""
 
 import argparse
-import json
 import sys
 
 from rich.console import Console
@@ -22,7 +21,6 @@ except ImportError:
     backend_path = Path(__file__).resolve().parent.parent.parent.parent / "backend/src"
     sys.path.insert(0, str(backend_path))
     from cortex.safety.grounding import (
-        ClaimAnalysis,
         GroundingCheckInput,
         tool_check_grounding,
     )

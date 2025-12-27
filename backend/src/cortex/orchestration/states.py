@@ -7,7 +7,7 @@ Implements §3.6 and §10.1 of the Canonical Blueprint.
 from __future__ import annotations
 
 import uuid
-from typing import Any, List, Optional
+from typing import Any
 
 from cortex.domain_models.facts_ledger import CriticReview, FactsLedger
 from cortex.domain_models.rag import Answer, DraftCritique, EmailDraft, ThreadSummary
@@ -49,15 +49,15 @@ class AnswerQuestionState(GraphState):
     query: str
     tenant_id: str
     user_id: str
-    thread_id: Optional[str] = None
+    thread_id: str | None = None
     k: int = DEFAULT_RETRIEVAL_K
     debug: bool = False
-    classification: Optional[QueryClassification] = None
-    retrieval_results: Optional[SearchResults] = None
-    assembled_context: Optional[str] = None
-    graph_context: Optional[str] = None
-    answer: Optional[Answer] = None
-    error: Optional[str] = None
+    classification: QueryClassification | None = None
+    retrieval_results: SearchResults | None = None
+    assembled_context: str | None = None
+    graph_context: str | None = None
+    answer: Answer | None = None
+    error: str | None = None
     correlation_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
 
 
@@ -74,21 +74,21 @@ class DraftEmailState(GraphState):
 
     tenant_id: str
     user_id: str
-    to: List[str] = Field(default_factory=list)
-    cc: List[str] = Field(default_factory=list)
-    subject: Optional[str] = None
-    tone: Optional[str] = None
-    reply_to_message_id: Optional[str] = None
-    thread_id: Optional[str] = None
-    thread_context: Optional[str] = None  # Loaded from DB if thread_id is present
-    explicit_query: Optional[str] = None
-    draft_query: Optional[str] = None
-    retrieval_results: Optional[SearchResults] = None
-    assembled_context: Optional[str] = None
-    draft: Optional[EmailDraft] = None
-    critique: Optional[DraftCritique] = None
+    to: list[str] = Field(default_factory=list)
+    cc: list[str] = Field(default_factory=list)
+    subject: str | None = None
+    tone: str | None = None
+    reply_to_message_id: str | None = None
+    thread_id: str | None = None
+    thread_context: str | None = None  # Loaded from DB if thread_id is present
+    explicit_query: str | None = None
+    draft_query: str | None = None
+    retrieval_results: SearchResults | None = None
+    assembled_context: str | None = None
+    draft: EmailDraft | None = None
+    critique: DraftCritique | None = None
     iteration_count: int = 0
-    error: Optional[str] = None
+    error: str | None = None
     correlation_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
 
 
@@ -105,10 +105,10 @@ class SummarizeThreadState(GraphState):
     user_id: str
     thread_id: str
     max_length: int = DEFAULT_SUMMARY_MAX_LENGTH
-    thread_context: Optional[str] = None  # Raw text of thread
-    facts_ledger: Optional[FactsLedger] = None
-    critique: Optional[CriticReview] = None
+    thread_context: str | None = None  # Raw text of thread
+    facts_ledger: FactsLedger | None = None
+    critique: CriticReview | None = None
     iteration_count: int = 0
-    summary: Optional[ThreadSummary] = None
-    error: Optional[str] = None
+    summary: ThreadSummary | None = None
+    error: str | None = None
     correlation_id: str = Field(default_factory=lambda: str(uuid.uuid4()))

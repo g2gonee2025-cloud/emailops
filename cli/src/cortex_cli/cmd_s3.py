@@ -43,7 +43,9 @@ def cmd_s3_upload(args: argparse.Namespace) -> None:
         config = get_config()
 
         # Validate source directory before use
-        validated_source_dir = validate_directory_result(args.source_dir, must_exist=True)
+        validated_source_dir = validate_directory_result(
+            args.source_dir, must_exist=True
+        )
         if validated_source_dir.is_err():
             print(
                 f"{_colorize('ERROR:', 'red')} Invalid source directory: {validated_source_dir.err()}"
@@ -268,7 +270,6 @@ def cmd_s3_validate(args: argparse.Namespace) -> None:
     import json
     import shutil
     import tempfile
-    from pathlib import Path
 
     try:
         from cortex.ingestion.conv_manifest.validation import scan_and_refresh

@@ -13,7 +13,7 @@ import logging
 import threading
 import time
 from collections import OrderedDict
-from typing import Any, Optional, Tuple
+from typing import Any
 
 import numpy as np
 
@@ -45,7 +45,7 @@ class QueryEmbeddingCache:
         max_size: int = DEFAULT_MAX_CACHE_SIZE,
     ):
         # Use OrderedDict for O(1) LRU
-        self._cache: OrderedDict[str, Tuple[float, np.ndarray]] = OrderedDict()
+        self._cache: OrderedDict[str, tuple[float, np.ndarray]] = OrderedDict()
         self._lock = threading.Lock()
         self._ttl = ttl_seconds
         self._max_size = max_size
@@ -54,7 +54,7 @@ class QueryEmbeddingCache:
         """Create cache key from query and model name."""
         return f"{model}::{query}"
 
-    def get(self, query: str, model: str = "") -> Optional[np.ndarray]:
+    def get(self, query: str, model: str = "") -> np.ndarray | None:
         """
         Get cached embedding if available and not expired.
 
@@ -126,7 +126,7 @@ class QueryEmbeddingCache:
 
 
 # Global singleton instance
-_query_cache: Optional[QueryEmbeddingCache] = None
+_query_cache: QueryEmbeddingCache | None = None
 _cache_lock = threading.Lock()
 
 
@@ -143,7 +143,7 @@ def get_query_cache() -> QueryEmbeddingCache:
 def get_cached_query_embedding(
     query: str,
     model: str = "",
-) -> Optional[np.ndarray]:
+) -> np.ndarray | None:
     """Convenience function to get cached embedding."""
     return get_query_cache().get(query, model)
 

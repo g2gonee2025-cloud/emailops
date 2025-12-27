@@ -1,5 +1,5 @@
 import argparse
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 from cortex_cli.cmd_index import cmd_index_stats

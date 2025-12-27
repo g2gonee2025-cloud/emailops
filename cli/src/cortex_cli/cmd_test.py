@@ -1,4 +1,3 @@
-
 import subprocess
 import sys
 from argparse import ArgumentParser, Namespace
@@ -39,7 +38,7 @@ def run_tests(args: Namespace) -> None:
     Execute pytest with the given arguments.
     """
     print(colorize("▶ RUNNING TESTS", "bold"))
-    command = [sys.executable, "-m", "pytest"] + args.pytest_args
+    command = [sys.executable, "-m", "pytest", *args.pytest_args]
     try:
         subprocess.run(command, check=True)
         print(colorize("✓ Tests passed", "green"))
@@ -47,5 +46,10 @@ def run_tests(args: Namespace) -> None:
         print(colorize("✗ Tests failed", "red"))
         sys.exit(1)
     except FileNotFoundError:
-        print(colorize("✗ Error: pytest not found. Please install it with 'pip install pytest'", "red"))
+        print(
+            colorize(
+                "✗ Error: pytest not found. Please install it with 'pip install pytest'",
+                "red",
+            )
+        )
         sys.exit(1)

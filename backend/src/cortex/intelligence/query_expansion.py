@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Any, Set
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -80,9 +80,9 @@ class QueryExpander:
         # Join parts with AND for ts_query
         return " & ".join(expanded_parts)
 
-    def _get_synonyms(self, term: str, max_count: int) -> Set[str]:
+    def _get_synonyms(self, term: str, max_count: int) -> set[str]:
         """Get synonyms for a term."""
-        synonyms: Set[str] = set()
+        synonyms: set[str] = set()
 
         # Skip very short words
         if len(term) <= 2:
@@ -109,7 +109,7 @@ class QueryExpander:
 
         return synonyms
 
-    def _llm_synonyms(self, term: str, max_count: int) -> Set[str]:
+    def _llm_synonyms(self, term: str, max_count: int) -> set[str]:
         """Use LLM to generate synonyms (expensive, use sparingly)."""
         if not self._llm_runtime:
             return set()

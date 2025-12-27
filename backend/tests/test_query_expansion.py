@@ -3,9 +3,7 @@ Unit tests for query expansion.
 """
 
 import unittest
-from unittest.mock import patch, Mock
-
-import numpy as np
+from unittest.mock import Mock, patch
 
 from cortex.intelligence.query_expansion import QueryExpander, expand_for_fts
 
@@ -17,7 +15,9 @@ class TestQueryExpansion(unittest.TestCase):
         """Test expansion when no synonym providers are available."""
         mock_llm_runtime.return_value = None
         expander = QueryExpander(use_llm_fallback=False)
-        self.assertEqual(expander.expand("computer networking"), "computer & networking")
+        self.assertEqual(
+            expander.expand("computer networking"), "computer & networking"
+        )
 
     @patch("cortex.intelligence.query_expansion.WORDNET_AVAILABLE", True)
     @patch("cortex.intelligence.query_expansion.wordnet", create=True)
@@ -30,7 +30,9 @@ class TestQueryExpansion(unittest.TestCase):
         mock_synset.lemmas.return_value = [mock_lemma]
         mock_wordnet.synsets.return_value = [mock_synset]
 
-        with patch("cortex.intelligence.query_expansion._query_expander_instance") as mock_expander_instance:
+        with patch(
+            "cortex.intelligence.query_expansion._query_expander_instance"
+        ) as mock_expander_instance:
             mock_expander = QueryExpander(use_llm_fallback=False)
             mock_expander_instance.expand.side_effect = mock_expander.expand
 
@@ -69,12 +71,16 @@ class TestQueryExpansion(unittest.TestCase):
 
     def test_postgres_syntax(self):
         """Verify the output syntax is compatible with to_tsquery."""
-        with patch("cortex.intelligence.query_expansion.QueryExpander._get_synonyms") as mock_syn:
+        with patch(
+            "cortex.intelligence.query_expansion.QueryExpander._get_synonyms"
+        ) as mock_syn:
             mock_syn.side_effect = [
                 {"notebook", "laptop"},
                 {"power", "supply"},
             ]
-            with patch("cortex.intelligence.query_expansion._query_expander_instance") as mock_expander_instance:
+            with patch(
+                "cortex.intelligence.query_expansion._query_expander_instance"
+            ) as mock_expander_instance:
                 mock_expander = QueryExpander(use_llm_fallback=False)
                 mock_expander._get_synonyms = mock_syn
                 mock_expander_instance.expand.side_effect = mock_expander.expand
@@ -93,7 +99,10 @@ class TestQueryExpansion(unittest.TestCase):
                         sorted_parts.append(part)
                 sorted_expanded = " & ".join(sorted_parts)
 
-                self.assertEqual(sorted_expanded, "(computer | laptop | notebook) & (battery | power | supply)")
+                self.assertEqual(
+                    sorted_expanded,
+                    "(computer | laptop | notebook) & (battery | power | supply)",
+                )
 
 
 if __name__ == "__main__":

@@ -12,7 +12,7 @@ import logging
 import re
 import threading
 import warnings
-from typing import Any, Dict, List, Optional, Type, TypeVar
+from typing import Any, TypeVar
 
 from cortex.common.exceptions import LLMOutputSchemaError
 from cortex.llm.client import complete_json
@@ -34,13 +34,13 @@ class RepairAttempt(BaseModel):
     """Result of a repair attempt."""
 
     success: bool = Field(..., description="Whether repair was successful")
-    repaired_json: Optional[Dict[str, Any]] = Field(
+    repaired_json: dict[str, Any] | None = Field(
         None, description="The repaired JSON if successful"
     )
-    error_message: Optional[str] = Field(
+    error_message: str | None = Field(
         None, description="Error message if repair failed"
     )
-    original_errors: List[str] = Field(
+    original_errors: list[str] = Field(
         default_factory=list, description="Original validation errors"
     )
 
@@ -52,9 +52,9 @@ class RepairAttempt(BaseModel):
 
 @trace_operation("attempt_llm_repair")
 def attempt_llm_repair(
-    invalid_json: Dict[str, Any],
-    target_model: Type[T],
-    validation_errors: List[str],
+    invalid_json: dict[str, Any],
+    target_model: type[T],
+    validation_errors: list[str],
     max_attempts: int = 1,
 ) -> RepairAttempt:
     """
@@ -126,7 +126,7 @@ def attempt_llm_repair(
 
 def validate_with_repair(
     raw_output: str,
-    target_model: Type[T],
+    target_model: type[T],
     correlation_id: str,
     max_attempts: int = 1,
 ) -> T:
@@ -230,10 +230,10 @@ class GuardrailsClient:  # DEPRECATED
     def validate_output(
         self,
         output: Any,
-        schema: Type[T],
+        schema: type[T],
         max_retries: int = 1,
-        correlation_id: Optional[str] = None,
-    ) -> Optional[T]:
+        correlation_id: str | None = None,
+    ) -> T | None:
         """
         Validate LLM output against a schema, with repair attempts.
 
@@ -278,7 +278,7 @@ class GuardrailsClient:  # DEPRECATED
 
 
 # Singleton instance for convenience
-_guardrails_client: Optional[GuardrailsClient] = None
+_guardrails_client: GuardrailsClient | None = None
 _client_lock = threading.Lock()
 
 
@@ -296,9 +296,9 @@ def get_guardrails_client() -> GuardrailsClient:  # DEPRECATED
 
 
 __all__ = [
+    "GuardrailsClient",
     "RepairAttempt",
     "attempt_llm_repair",
-    "validate_with_repair",
-    "GuardrailsClient",
     "get_guardrails_client",
+    "validate_with_repair",
 ]

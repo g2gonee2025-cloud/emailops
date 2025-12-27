@@ -8,10 +8,10 @@ from sqlalchemy import create_engine, text
 EMBED_API = os.getenv("EMBED_API_URL", "http://localhost:8081/v1")
 EMBED_MODEL = os.getenv("EMBED_MODEL", "tencent/KaLM-Embedding-Gemma3-12B-2511")
 
-import sys  # noqa: E402
+import sys
 
 sys.path.insert(0, "backend/src")
-from cortex.config.loader import get_config  # noqa: E402
+from cortex.config.loader import get_config
 
 
 def main():

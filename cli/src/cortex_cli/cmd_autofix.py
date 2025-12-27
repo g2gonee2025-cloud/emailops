@@ -11,10 +11,10 @@ Fixes low-hanging fruit issues from bulk_review_report_v2.json:
 - Long lines (via ruff)
 """
 
+import ast
 import re
 import subprocess
 import sys
-import ast
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -244,6 +244,7 @@ def fix_unnecessary_hasattr():
                 else:
                     # Fallback for older versions (less perfect formatting)
                     import astor
+
                     content = astor.to_source(new_tree)
 
                 file_path.write_text(content)
@@ -261,6 +262,7 @@ class IfTrueTransformer(ast.NodeTransformer):
     """
     An AST transformer that replaces 'if True:' blocks with their body.
     """
+
     def __init__(self):
         self.changed = False
 
@@ -432,10 +434,11 @@ def fix_specific_issues():
     safety_init = ROOT / "backend/src/cortex/safety/__init__.py"
     if safety_init.exists():
         content = safety_init.read_text()
-        if "from .action_checker import check_action" in content and content.count("check_action") == 1:
-            content = content.replace(
-                "from .action_checker import check_action\n", ""
-            )
+        if (
+            "from .action_checker import check_action" in content
+            and content.count("check_action") == 1
+        ):
+            content = content.replace("from .action_checker import check_action\n", "")
             safety_init.write_text(content)
             print("  ✅ Removed unused check_action import from safety/__init__.py")
             fixed_count += 1

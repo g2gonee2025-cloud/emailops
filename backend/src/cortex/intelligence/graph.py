@@ -9,7 +9,7 @@ sliding window chunking and graph merging for long contexts.
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List
+from typing import Any
 
 import networkx as nx
 from cortex.llm.runtime import LLMRuntime
@@ -239,7 +239,7 @@ class GraphExtractor:
         final_G = self._merge_graphs(sub_graphs)
         return final_G
 
-    def _chunk_text(self, text: str) -> List[str]:
+    def _chunk_text(self, text: str) -> list[str]:
         """Simple sliding window chunker."""
         if len(text) <= self.chunk_size:
             return [text]
@@ -277,7 +277,7 @@ class GraphExtractor:
             logger.warning(f"Graph extraction failed for chunk {index}: {e}")
             return nx.DiGraph()
 
-    def _parse_json_to_graph(self, data: Dict[str, Any]) -> nx.DiGraph:
+    def _parse_json_to_graph(self, data: dict[str, Any]) -> nx.DiGraph:
         """Parses Validated JSON into a NetworkX graph."""
         G = nx.DiGraph()
         try:
@@ -319,7 +319,7 @@ class GraphExtractor:
             logger.warning(f"Failed to parse graph JSON: {e}")
         return G
 
-    def _merge_graphs(self, graphs: List[nx.DiGraph]) -> nx.DiGraph:
+    def _merge_graphs(self, graphs: list[nx.DiGraph]) -> nx.DiGraph:
         """Merges multiple subgraphs into one master graph."""
         if not graphs:
             return nx.DiGraph()

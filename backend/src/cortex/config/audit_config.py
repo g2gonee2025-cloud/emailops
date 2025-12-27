@@ -4,7 +4,7 @@ from pathlib import Path
 
 def parse_env_file(path):
     env_vars = {}
-    with open(path, "r") as f:
+    with open(path) as f:
         for line in f:
             line = line.strip()
             if not line or line.startswith("#"):
@@ -17,7 +17,7 @@ def parse_env_file(path):
 
 def parse_models_file(path):
     definitions = {}
-    with open(path, "r") as f:
+    with open(path) as f:
         content = f.read()
 
     # Regex to find _env("KEY", default) calls
@@ -31,9 +31,9 @@ def parse_models_file(path):
         type_hint = match.group(3).strip() if match.group(3) else None
 
         # Clean up quotes from strings
-        if default_raw.startswith('"') and default_raw.endswith('"'):
-            default_val = default_raw[1:-1]
-        elif default_raw.startswith("'") and default_raw.endswith("'"):
+        if (default_raw.startswith('"') and default_raw.endswith('"')) or (
+            default_raw.startswith("'") and default_raw.endswith("'")
+        ):
             default_val = default_raw[1:-1]
         else:
             default_val = default_raw

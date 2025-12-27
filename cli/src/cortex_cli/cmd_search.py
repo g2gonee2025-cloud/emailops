@@ -1,6 +1,7 @@
 """
 Search command for Cortex CLI.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -12,7 +13,6 @@ from typing import Any
 import httpx
 
 from .style import colorize
-from cortex_cli.main import _print_banner
 
 # Make this configurable
 API_BASE_URL = os.getenv("CORTEX_API_URL", "http://127.0.0.1:8000/api/v1")
@@ -72,7 +72,9 @@ Uses an API call to the backend search service.
     search_parser.set_defaults(func=_run_search_command)
 
 
-def _display_search_results(data: dict[str, Any], query: str, top_k: int, debug: bool) -> None:
+def _display_search_results(
+    data: dict[str, Any], query: str, top_k: int, debug: bool
+) -> None:
     """Display search results in a human-readable format."""
     results = data.get("results", [])
     if results:
@@ -96,14 +98,14 @@ def _display_search_results(data: dict[str, Any], query: str, top_k: int, debug:
                 fusion_score = r.get("fusion_score") or 0
                 vec_score = r.get("vector_score") or 0
                 lex_score = r.get("lexical_score") or 0
-                score_str += f" (F:{fusion_score:.3f} V:{vec_score:.3f} L:{lex_score:.3f})"
+                score_str += (
+                    f" (F:{fusion_score:.3f} V:{vec_score:.3f} L:{lex_score:.3f})"
+                )
 
             print(
                 f"  {colorize(f'[{i}]', 'bold')} Score: {colorize(score_str, 'cyan')}"
             )
-            print(
-                f"      Source: {colorize(str(chunk_id), 'dim')} ({chunk_type})"
-            )
+            print(f"      Source: {colorize(str(chunk_id), 'dim')} ({chunk_type})")
             print(f"      {text.replace(chr(10), ' ')}...")
             if debug and highlights:
                 print(f"      Highlights: {highlights[:2]}")
@@ -119,6 +121,8 @@ def _display_search_results(data: dict[str, Any], query: str, top_k: int, debug:
 def _run_search_command(args: argparse.Namespace) -> None:
     """Run search command by calling the search API."""
     if not args.json:
+        from cortex_cli.main import _print_banner
+
         _print_banner()
         print(f"{colorize('▶ SEARCH', 'bold')}\n")
         print(f"  Query:   {colorize(args.query, 'cyan')}")
@@ -180,5 +184,3 @@ def _run_search_command(args: argparse.Namespace) -> None:
         else:
             print(f"\n  {colorize('ERROR:', 'red')} {e}")
             sys.exit(1)
-import contextlib
-import hashlib

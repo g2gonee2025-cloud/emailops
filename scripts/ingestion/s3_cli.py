@@ -17,7 +17,7 @@ from botocore.client import Config
 root_dir = Path(__file__).resolve().parents[2]
 sys.path.append(str(root_dir / "backend" / "src"))
 
-from cortex.config.loader import get_config  # noqa: E402
+from cortex.config.loader import get_config
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger("s3_cli")

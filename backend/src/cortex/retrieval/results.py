@@ -6,7 +6,7 @@ Moved from hybrid_search.py to avoid circular dependencies.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -28,24 +28,24 @@ class SearchResultItem(BaseModel):
     * metadata: Dict[str, Any]
     """
 
-    chunk_id: Optional[str]
+    chunk_id: str | None
     score: float
     # Optional conversation identifier; None indicates "unassigned"
-    conversation_id: Optional[str] = None
-    attachment_id: Optional[str] = None
+    conversation_id: str | None = None
+    attachment_id: str | None = None
     is_attachment: bool = False
     highlights: list[str] = Field(default_factory=list)
     # Empty snippet is valid for metadata-only results
     snippet: str = ""
-    content: Optional[str] = None
-    source: Optional[str] = None
-    filename: Optional[str] = None
-    metadata: Dict[str, Any] = Field(default_factory=dict)
-    lexical_score: Optional[float] = None
-    vector_score: Optional[float] = None
-    fusion_score: Optional[float] = None
-    rerank_score: Optional[float] = None
-    content_hash: Optional[str] = None
+    content: str | None = None
+    source: str | None = None
+    filename: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    lexical_score: float | None = None
+    vector_score: float | None = None
+    fusion_score: float | None = None
+    rerank_score: float | None = None
+    content_hash: str | None = None
 
     # Backward compatibility aliases
     @property
@@ -61,7 +61,7 @@ class SearchResultItem(BaseModel):
         return ""
 
     @classmethod
-    def from_fts_result(cls, res: Any) -> "SearchResultItem":
+    def from_fts_result(cls, res: Any) -> SearchResultItem:
         """Factory from FTS result (ChunkFTSResult or similar)."""
         # Mapping depends on the exact shape of FTS result
         return cls(
@@ -88,5 +88,5 @@ class SearchResults(BaseModel):
 
     type: Literal["search_results"] = "search_results"
     query: str
-    reranker: Optional[str] = None
-    results: List[SearchResultItem]
+    reranker: str | None = None
+    results: list[SearchResultItem]

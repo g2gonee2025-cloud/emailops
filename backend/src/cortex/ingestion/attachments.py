@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 import uuid
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from cortex.config.loader import get_config
 from cortex.ingestion.text_preprocessor import get_text_preprocessor
@@ -33,7 +33,7 @@ class AttachmentRef(BaseModel):
     attachment_id: uuid.UUID
     message_id: str
     path: str
-    mime_type: Optional[str]
+    mime_type: str | None
 
 
 class ExtractedAttachment(BaseModel):
@@ -47,8 +47,8 @@ class ExtractedAttachment(BaseModel):
     """
 
     text: str
-    tables: List[Dict[str, Any]]
-    metadata: Dict[str, Any]
+    tables: list[dict[str, Any]]
+    metadata: dict[str, Any]
 
 
 def extract_attachment_text(
@@ -88,7 +88,7 @@ def process_attachment(
     tenant_id: str,
     max_chars: int | None = None,
     skip_if_attachment_over_mb: float | None = None,
-) -> Optional[ExtractedAttachment]:
+) -> ExtractedAttachment | None:
     """
     Process a single attachment with limits and PII-safe cleaning.
     """

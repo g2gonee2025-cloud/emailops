@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Tests for validation manifest last_from/last_to extraction"""
 
 import json
@@ -12,7 +11,7 @@ project_root = Path(__file__).resolve().parents[2]
 src_path = project_root
 sys.path.append(str(src_path))
 
-from cortex.ingestion.conv_manifest.validation import scan_and_refresh  # noqa: E402
+from cortex.ingestion.conv_manifest.validation import scan_and_refresh
 
 
 @pytest.fixture

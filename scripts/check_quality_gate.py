@@ -1,9 +1,11 @@
-import requests
 import os
+
+import requests
 
 # Try to load .env file for local development.
 try:
     from dotenv import load_dotenv
+
     load_dotenv()
 except ImportError:
     print("dotenv not installed, skipping loading .env file.")

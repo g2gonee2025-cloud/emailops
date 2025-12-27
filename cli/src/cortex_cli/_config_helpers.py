@@ -2,11 +2,12 @@ import os
 from pathlib import Path
 from typing import Any
 
-from .style import colorize as _colorize
-
 from cortex.config.loader import get_config
 
+from .style import colorize as _colorize
+
 _config = get_config()
+
 
 def resolve_index_dir(root_dir: Path | None) -> Path:
     """Resolve the index directory."""

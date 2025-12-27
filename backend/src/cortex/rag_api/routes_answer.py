@@ -9,7 +9,6 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import logging
-from typing import Optional
 
 from cortex.audit import log_audit_event
 from cortex.context import tenant_id_ctx, user_id_ctx
@@ -28,7 +27,7 @@ _answer_graph = None
 _graph_lock = asyncio.Lock()
 
 
-async def get_answer_graph(http_request: Optional[Request] = None):
+async def get_answer_graph(http_request: Request | None = None):
     """Get pre-compiled graph from app.state or lazy load as fallback in thread-safe way."""
     if http_request and hasattr(http_request.app.state, "graphs"):
         cached = http_request.app.state.graphs.get("answer")

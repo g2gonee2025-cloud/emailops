@@ -21,15 +21,15 @@ BACKEND_SRC = PROJECT_ROOT / "backend" / "src"
 if BACKEND_SRC.exists():
     sys.path.insert(0, str(BACKEND_SRC))
 
-from dotenv import load_dotenv  # noqa: E402
+from dotenv import load_dotenv
 
 load_dotenv(PROJECT_ROOT / ".env")
 
-from cortex.db.models import Chunk, Conversation  # noqa: E402
-from cortex.db.session import SessionLocal  # noqa: E402
-from cortex.intelligence.summarizer import ConversationSummarizer  # noqa: E402
-from sqlalchemy import func, select  # noqa: E402
-from tqdm import tqdm  # noqa: E402
+from cortex.db.models import Chunk, Conversation
+from cortex.db.session import SessionLocal
+from cortex.intelligence.summarizer import ConversationSummarizer
+from sqlalchemy import func, select
+from tqdm import tqdm
 
 logging.basicConfig(
     level=logging.INFO,
@@ -69,8 +69,7 @@ def stream_missing_conversations(
         if limit:
             stmt = stmt.limit(limit)
 
-        for row in session.execute(stmt).yield_per(100):
-            yield row
+        yield from session.execute(stmt).yield_per(100)
 
 
 def generate_summary(

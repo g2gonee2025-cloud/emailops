@@ -14,7 +14,7 @@ from sqlalchemy import create_engine, inspect, text
 root_dir = Path(__file__).resolve().parents[2]
 sys.path.append(str(root_dir / "backend" / "src"))
 
-from cortex.config.loader import get_config  # noqa: E402
+from cortex.config.loader import get_config
 
 
 def check_connection(_args):

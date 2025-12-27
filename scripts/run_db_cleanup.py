@@ -9,11 +9,11 @@ This script provides functionality to clean up the database by performing tasks 
 The script is tenant-aware and can be run for a specific tenant, all tenants,
 or a dry run to preview changes.
 """
+
 import argparse
 import asyncio
 import sys
 from pathlib import Path
-from typing import List, Optional
 
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -26,14 +26,14 @@ from cortex.config.loader import get_config
 from cortex.db.models import Conversation, EntityEdge, EntityNode
 
 
-async def get_all_tenants(session: AsyncSession) -> List[str]:
+async def get_all_tenants(session: AsyncSession) -> list[str]:
     """Fetches a list of all unique tenant IDs from the database."""
     result = await session.execute(select(Conversation.tenant_id).distinct())
     return result.scalars().all()
 
 
 async def cleanup_db(
-    tenant_id: Optional[str] = None, all_tenants: bool = False, dry_run: bool = False
+    tenant_id: str | None = None, all_tenants: bool = False, dry_run: bool = False
 ) -> None:
     """
     Performs cleanup operations on the database for a specified tenant or all tenants.
@@ -47,12 +47,12 @@ async def cleanup_db(
     db_url = config.database.url.replace("postgresql://", "postgresql+asyncpg://")
     db_url = db_url.replace("sslmode=require", "ssl=require")
 
-    print(f"Connecting to database...")
+    print("Connecting to database...")
     engine = create_async_engine(db_url)
     async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
     async with async_session() as session:
-        tenants_to_process: List[str] = []
+        tenants_to_process: list[str] = []
         if all_tenants:
             print("Fetching all tenants...")
             tenants_to_process = await get_all_tenants(session)
@@ -79,10 +79,16 @@ async def cleanup_db(
                 stmt = base_stmt.where(Conversation.subject.ilike(keyword))
                 if dry_run:
                     # Estimate count for dry run
-                    count_stmt = select(func.count()).select_from(stmt.table).where(*stmt.where.clauses)
+                    count_stmt = (
+                        select(func.count())
+                        .select_from(stmt.table)
+                        .where(*stmt.where.clauses)
+                    )
                     result = await session.execute(count_stmt)
                     count = result.scalar_one()
-                    print(f"  [DRY RUN] Would delete {count} conversations matching '{keyword}'.")
+                    print(
+                        f"  [DRY RUN] Would delete {count} conversations matching '{keyword}'."
+                    )
                 else:
                     result = await session.execute(stmt)
                     count = result.rowcount
@@ -101,12 +107,14 @@ async def cleanup_db(
                 .outerjoin(EntityEdge, EntityNode.node_id == EntityEdge.target_id)
                 .where(
                     EntityNode.tenant_id == current_tenant_id,
-                    EntityEdge.edge_id.is_(None)
+                    EntityEdge.edge_id.is_(None),
                 )
             )
 
             if dry_run:
-                count_stmt = select(func.count()).select_from(orphaned_nodes_stmt.alias())
+                count_stmt = select(func.count()).select_from(
+                    orphaned_nodes_stmt.alias()
+                )
                 result = await session.execute(count_stmt)
                 orphan_count = result.scalar_one()
                 print(f"  [DRY RUN] Would delete {orphan_count} isolated nodes.")
@@ -118,7 +126,9 @@ async def cleanup_db(
 
                     # Extract IDs for deletion
                     orphan_ids = [node.node_id for node in orphan_nodes]
-                    delete_stmt = delete(EntityNode).where(EntityNode.node_id.in_(orphan_ids))
+                    delete_stmt = delete(EntityNode).where(
+                        EntityNode.node_id.in_(orphan_ids)
+                    )
                     delete_result = await session.execute(delete_stmt)
                     print(f"  -> Deleted {delete_result.rowcount} nodes.")
                 else:
@@ -132,7 +142,11 @@ async def cleanup_db(
             )
 
             if dry_run:
-                count_stmt = select(func.count()).select_from(stmt.table).where(*stmt.where.clauses)
+                count_stmt = (
+                    select(func.count())
+                    .select_from(stmt.table)
+                    .where(*stmt.where.clauses)
+                )
                 result = await session.execute(count_stmt)
                 count = result.scalar_one()
                 print(f"  [DRY RUN] Would delete {count} orphaned edges.")
@@ -144,7 +158,9 @@ async def cleanup_db(
                     print("No orphaned edges found.")
 
             if dry_run:
-                print(f"\n[DRY RUN] No changes were made for tenant {current_tenant_id}.")
+                print(
+                    f"\n[DRY RUN] No changes were made for tenant {current_tenant_id}."
+                )
                 await session.rollback()
             else:
                 print(f"\nCommitting changes for tenant {current_tenant_id}...")
@@ -157,7 +173,9 @@ async def cleanup_db(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Cortex Database Cleanup Tool")
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--tenant-id", type=str, help="The specific tenant ID to clean up.")
+    group.add_argument(
+        "--tenant-id", type=str, help="The specific tenant ID to clean up."
+    )
     group.add_argument(
         "--all-tenants", action="store_true", help="Run cleanup for all tenants."
     )
@@ -172,4 +190,8 @@ if __name__ == "__main__":
     if sys.platform == "win32":
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-    asyncio.run(cleanup_db(tenant_id=args.tenant_id, all_tenants=args.all_tenants, dry_run=args.dry_run))
+    asyncio.run(
+        cleanup_db(
+            tenant_id=args.tenant_id, all_tenants=args.all_tenants, dry_run=args.dry_run
+        )
+    )

@@ -1,9 +1,8 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from unittest.mock import Mock, patch
 
 import numpy as np
 import pytest
-import numpy as np
 
 # Import the correct return types
 from cortex.retrieval.fts_search import ChunkFTSResult, FTSResult
@@ -56,7 +55,7 @@ class TestHybridSearch:
 
     def test_apply_recency_boost(self, mock_results):
         """Test timestamp-based score boosting."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         thread_updated_at = {
             "c1": now,  # Very fresh
             "c2": now - timedelta(days=30),  # 1 half-life old
@@ -190,7 +189,7 @@ class TestHybridSearch:
             )
         ]
 
-        mock_timestamps.return_value = {"c1": datetime.now(timezone.utc)}
+        mock_timestamps.return_value = {"c1": datetime.now(UTC)}
 
         # Execute
         input_args = KBSearchInput(

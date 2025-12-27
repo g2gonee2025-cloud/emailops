@@ -37,7 +37,7 @@ def backfill_summaries(args: argparse.Namespace) -> None:
 
 
 def setup_backfill_parser(
-    subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]",
+    subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
 ) -> None:
     """Add backfill subcommands to the CLI parser."""
     backfill_parser = subparsers.add_parser(

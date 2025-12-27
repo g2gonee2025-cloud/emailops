@@ -343,7 +343,9 @@ def _interactive_answer():
         from cortex_cli.api_client import get_api_client
 
         api_client = get_api_client()
-        response = api_client.answer(query=query, tenant_id="default", user_id="cli-user")
+        response = api_client.answer(
+            query=query, tenant_id="default", user_id="cli-user"
+        )
 
         answer = response.get("answer")
 
@@ -352,7 +354,9 @@ def _interactive_answer():
         else:
             console.print(
                 Panel(
-                    Markdown(answer.get("answer_markdown", "")), title="Answer", border_style="green"
+                    Markdown(answer.get("answer_markdown", "")),
+                    title="Answer",
+                    border_style="green",
                 )
             )
 

@@ -13,8 +13,9 @@ import os
 import re
 import threading
 import time
+from collections.abc import Callable, Iterable, Sequence
 from pathlib import Path
-from typing import Any, Callable, Iterable, Sequence, cast
+from typing import Any, cast
 
 from cortex.utils import strip_control_chars
 

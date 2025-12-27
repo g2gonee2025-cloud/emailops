@@ -17,8 +17,8 @@ if _backend_src.is_dir():
 else:
     raise RuntimeError(f"Expected backend/src at {_backend_src} but it was not found")
 
-from cortex.db.models import Chunk  # noqa: E402
-from cortex.intelligence.summarizer import ConversationSummarizer  # noqa: E402
+from cortex.db.models import Chunk
+from cortex.intelligence.summarizer import ConversationSummarizer
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

@@ -10,7 +10,7 @@ BACKEND_SRC = (REPO_ROOT / "backend" / "src").resolve()
 if str(BACKEND_SRC) not in sys.path:
     sys.path.insert(0, str(BACKEND_SRC))
 
-from cortex.ingestion.conv_manifest.validation import scan_and_refresh  # noqa: E402
+from cortex.ingestion.conv_manifest.validation import scan_and_refresh
 
 
 def setup_test_env(root: Path):

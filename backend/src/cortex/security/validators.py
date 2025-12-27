@@ -10,7 +10,6 @@ import logging
 import re
 import shlex
 from pathlib import Path
-from typing import List, Optional, Set
 
 from cortex.common.types import Err, Ok, Result
 
@@ -151,10 +150,10 @@ def sanitize_retrieved_content(text: str) -> str:
 _SAFE_PATH_CHARS = re.compile(r"[^a-zA-Z0-9._\-/\\: ]")
 
 # Dangerous shell characters
-_DANGEROUS_SHELL_CHARS: Set[str] = {"&", "|", ";", "`", "$", "\n", "\r", "\x00"}
+_DANGEROUS_SHELL_CHARS: set[str] = {"&", "|", ";", "`", "$", "\n", "\r", "\x00"}
 
 # Default allowed file extensions (lowercase, with dot)
-DEFAULT_ALLOWED_EXTENSIONS: Set[str] = {
+DEFAULT_ALLOWED_EXTENSIONS: set[str] = {
     ".txt",
     ".json",
     ".md",
@@ -231,9 +230,7 @@ def sanitize_path_input(path_input: str) -> str:
 # -----------------------------------------------------------------------------
 
 
-def is_dangerous_symlink(
-    path: Path, allowed_roots: Optional[List[Path]] = None
-) -> bool:
+def is_dangerous_symlink(path: Path, allowed_roots: list[Path] | None = None) -> bool:
     """
     Check if a path is a symlink pointing outside allowed directories.
 
@@ -290,7 +287,7 @@ def validate_directory_result(
     must_exist: bool = True,
     allow_parent_traversal: bool = False,
     check_symlinks: bool = True,
-    allowed_roots: Optional[List[Path]] = None,
+    allowed_roots: list[Path] | None = None,
 ) -> Result[Path, str]:
     """
     Validate a directory path.
@@ -343,9 +340,9 @@ def validate_file_result(
     path: str,
     must_exist: bool = True,
     allow_parent_traversal: bool = False,
-    allowed_extensions: Optional[Set[str]] = None,
+    allowed_extensions: set[str] | None = None,
     check_symlinks: bool = True,
-    allowed_roots: Optional[List[Path]] = None,
+    allowed_roots: list[Path] | None = None,
 ) -> Result[Path, str]:
     """
     Validate a file path.
@@ -410,9 +407,9 @@ def validate_file_result(
 
 def validate_command_args(
     command: str,
-    args: List[str],
-    allowed_commands: Optional[List[str]] = None,
-) -> Result[List[str], str]:
+    args: list[str],
+    allowed_commands: list[str] | None = None,
+) -> Result[list[str], str]:
     """
     Validate command arguments.
 

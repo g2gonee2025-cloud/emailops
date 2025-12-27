@@ -12,7 +12,7 @@ import os
 import re
 import threading
 from pathlib import Path
-from typing import Any, Dict, List, cast
+from typing import Any
 
 from cortex.common.exceptions import ConfigurationError
 from dotenv import load_dotenv
@@ -313,7 +313,7 @@ def validate_env_prefix() -> list[str]:
     Blueprint §3.3:
     - Prefix all env vars with OUTLOOKCORTEX_
     """
-    warnings: List[str] = []
+    warnings: list[str] = []
     deprecated_prefix = "EMAILOPS_"
     canonical_prefix = "OUTLOOKCORTEX_"
 
@@ -368,7 +368,7 @@ def validate_directories(config: EmailOpsConfig) -> list[str]:
 
     Returns list of warnings for missing directories.
     """
-    warnings: List[str] = []
+    warnings: list[str] = []
 
     # Check secrets_dir
     secrets_dir = config.get_secrets_dir()

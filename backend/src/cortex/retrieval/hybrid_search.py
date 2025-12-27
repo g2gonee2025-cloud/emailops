@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import logging
 import math
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Literal, Optional
+from datetime import UTC, datetime
+from typing import Any, Literal
 
 from cortex.common.exceptions import RetrievalError
 from cortex.common.types import Err, Ok, Result
@@ -60,18 +60,18 @@ class KBSearchInput(BaseModel):
     tenant_id: str
     user_id: str
     query: str
-    classification: Optional[QueryClassification] = None
-    k: Optional[int] = None
+    classification: QueryClassification | None = None
+    k: int | None = None
     fusion_method: Literal["rrf", "weighted_sum"] = "rrf"
-    filters: Dict[str, Any] = Field(default_factory=dict)
+    filters: dict[str, Any] = Field(default_factory=dict)
 
 
 def apply_recency_boost(
-    results: List[SearchResultItem],
-    conversation_updated_at: Dict[str, datetime],
+    results: list[SearchResultItem],
+    conversation_updated_at: dict[str, datetime],
     half_life_days: float = RECENCY_HALF_LIFE_DAYS,
     boost_strength: float = RECENCY_BOOST_STRENGTH,
-) -> List[SearchResultItem]:
+) -> list[SearchResultItem]:
     """
     Apply exponential decay recency boost to search results.
 
@@ -79,7 +79,7 @@ def apply_recency_boost(
     Formula: boosted_score = score * (1 + boost_strength * exp(-decay * days_old))
     where decay = ln(2) / half_life_days
     """
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     decay_rate = math.log(2) / half_life_days
 
     for item in results:
@@ -90,7 +90,7 @@ def apply_recency_boost(
         if updated:
             # Handle timezone-naive datetimes
             if updated.tzinfo is None:
-                updated = updated.replace(tzinfo=timezone.utc)
+                updated = updated.replace(tzinfo=UTC)
             days_old = (now - updated).total_seconds() / 86400
             boost = math.exp(-decay_rate * days_old) * boost_strength
             item.score = item.score * (1 + boost)
@@ -98,7 +98,7 @@ def apply_recency_boost(
     return sorted(results, key=lambda x: x.score, reverse=True)
 
 
-def deduplicate_by_hash(results: List[SearchResultItem]) -> List[SearchResultItem]:
+def deduplicate_by_hash(results: list[SearchResultItem]) -> list[SearchResultItem]:
     """
     Remove duplicate chunks by content_hash, keeping highest score.
 
@@ -106,8 +106,8 @@ def deduplicate_by_hash(results: List[SearchResultItem]) -> List[SearchResultIte
     """
     # Keep the best-scoring item per hash.
     # Avoid O(n^2) list removals when many near-duplicates are present.
-    best_by_hash: Dict[str, SearchResultItem] = {}
-    passthrough: List[SearchResultItem] = []
+    best_by_hash: dict[str, SearchResultItem] = {}
+    passthrough: list[SearchResultItem] = []
 
     for item in results:
         content_hash = item.content_hash or item.metadata.get("content_hash")
@@ -124,8 +124,8 @@ def deduplicate_by_hash(results: List[SearchResultItem]) -> List[SearchResultIte
 
 
 def downweight_quoted_history(
-    results: List[SearchResultItem], factor: float = QUOTED_HISTORY_DOWNWEIGHT_FACTOR
-) -> List[SearchResultItem]:
+    results: list[SearchResultItem], factor: float = QUOTED_HISTORY_DOWNWEIGHT_FACTOR
+) -> list[SearchResultItem]:
     """
     Down-weight results from quoted_history chunks.
 
@@ -185,18 +185,18 @@ def _merge_result_fields(
 
 
 def fuse_rrf(
-    fts_results: List[SearchResultItem],
-    vector_results: List[SearchResultItem],
+    fts_results: list[SearchResultItem],
+    vector_results: list[SearchResultItem],
     k: int = RRF_K_DEFAULT,
-) -> List[SearchResultItem]:
+) -> list[SearchResultItem]:
     """
     Reciprocal Rank Fusion of FTS and vector search results.
 
     Blueprint §8.7:
     RRF score = sum(1 / (k + rank_i)) for each ranking
     """
-    scores: Dict[str, float] = {}
-    items: Dict[str, SearchResultItem] = {}
+    scores: dict[str, float] = {}
+    items: dict[str, SearchResultItem] = {}
 
     # Score from FTS ranking
     for rank, item in enumerate(fts_results, start=1):
@@ -228,10 +228,10 @@ def fuse_rrf(
 
 
 def fuse_weighted_sum(
-    fts_results: List[SearchResultItem],
-    vector_results: List[SearchResultItem],
+    fts_results: list[SearchResultItem],
+    vector_results: list[SearchResultItem],
     alpha: float = WEIGHTED_SUM_ALPHA_DEFAULT,
-) -> List[SearchResultItem]:
+) -> list[SearchResultItem]:
     """Fuse rankings via weighted sum.
 
     We assume lexical and vector signals are already scaled to roughly [0, 1]
@@ -239,7 +239,7 @@ def fuse_weighted_sum(
     fusion stable without ad-hoc max-normalization.
     """
 
-    combined: Dict[str, SearchResultItem] = {}
+    combined: dict[str, SearchResultItem] = {}
 
     for i, item in enumerate(fts_results):
         key = item.chunk_id or item.content_hash or f"fts-unkeyed-{i}"
@@ -466,8 +466,8 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> Result[SearchResults, Retrieva
 
 
 def _get_conversation_timestamps(
-    session, conversation_ids: List[str], tenant_id: str
-) -> Dict[str, datetime]:
+    session, conversation_ids: list[str], tenant_id: str
+) -> dict[str, datetime]:
     """Fetch updated_at timestamps for conversations."""
     if not conversation_ids:
         return {}

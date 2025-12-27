@@ -4,13 +4,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from cortex.chunking import chunker  # noqa: E402
+from cortex.chunking import chunker
 
 
 class DummyTokenCounter:
     """Lightweight counter to avoid tiktoken/network dependencies in tests."""
 
-    def __init__(self, model: str = "cl100k_base") -> None:  # noqa: ARG002
+    def __init__(self, model: str = "cl100k_base") -> None:
         self.model = model
 
     def encode(self, text: str) -> list[str]:

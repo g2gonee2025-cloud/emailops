@@ -3,14 +3,11 @@ import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import numpy as np
 import pytest
 
 sys.path.append(str(Path(__file__).resolve().parents[3] / "backend/src"))
 
 from cortex.safety.grounding import (
-    ClaimAnalysis,
-    GroundingCheck,
     _cosine_similarity,
     check_grounding_embedding,
     extract_claims_simple,

@@ -11,7 +11,7 @@ import logging
 import re
 import uuid
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Type
+from typing import Any
 
 from cortex.config.loader import EmailOpsConfig
 from cortex.domain_models.facts_ledger import CriticReview, FactsLedger
@@ -48,9 +48,9 @@ from cortex.retrieval.query_classifier import (
     tool_classify_query,
 )
 from cortex.retrieval.results import SearchResults
+from cortex.safety import strip_injection_patterns
 from cortex.safety.guardrails_client import validate_with_repair
 from cortex.safety.policy_enforcer import check_action
-from cortex.safety import strip_injection_patterns
 from cortex.security.validators import sanitize_retrieved_content, validate_file_result
 from pydantic import BaseModel, Field, ValidationError
 from sqlalchemy import func, or_, select
@@ -62,13 +62,13 @@ logger = logging.getLogger(__name__)
 class DraftGenerationOutput(BaseModel):
     """Simplified schema for LLM draft generation."""
 
-    to: List[str] = Field(description="List of recipient email addresses")
-    cc: List[str] = Field(
+    to: list[str] = Field(description="List of recipient email addresses")
+    cc: list[str] = Field(
         default_factory=list, description="List of CC email addresses"
     )
     subject: str = Field(description="Email subject line")
     body_markdown: str = Field(description="Email body in Markdown format")
-    next_actions: List[Dict[str, Any]] = Field(
+    next_actions: list[dict[str, Any]] = Field(
         default_factory=list,
         description="List of next actions (description, owner, etc.)",
     )
@@ -76,8 +76,8 @@ class DraftGenerationOutput(BaseModel):
 
 def _complete_with_guardrails(
     prompt: str,
-    model_cls: Type[BaseModel],
-    correlation_id: Optional[str],
+    model_cls: type[BaseModel],
+    correlation_id: str | None,
 ):
     """Run structured completion with guardrails repair fallback."""
     schema = model_cls.model_json_schema()
@@ -102,7 +102,7 @@ def _extract_patterns(
     text: str,
     pattern: re.Pattern,
     seen: set[str],
-    mentions: List[str],
+    mentions: list[str],
     group: int = 1,
     min_len: int = 0,
 ) -> None:
@@ -121,7 +121,7 @@ def _extract_patterns(
             mentions.append(ref)
 
 
-def extract_document_mentions(text: str) -> List[str]:
+def extract_document_mentions(text: str) -> list[str]:
     """
     Extract filenames or document references from text.
 
@@ -140,7 +140,7 @@ def extract_document_mentions(text: str) -> List[str]:
     if not text:
         return []
 
-    mentions: List[str] = []
+    mentions: list[str] = []
     seen: set[str] = set()
 
     # Pattern 1: Common document extensions
@@ -190,7 +190,7 @@ def extract_document_mentions(text: str) -> List[str]:
     return mentions
 
 
-def _extract_entity_mentions(text: str) -> List[str]:
+def _extract_entity_mentions(text: str) -> list[str]:
     """Extract candidate entity mentions from query text."""
     if not text:
         return []
@@ -254,11 +254,11 @@ def _safe_stat_mb(path: Path) -> float:
 
 
 def _select_attachments_from_mentions(
-    context_snippets: List[Dict[str, Any]],
-    mentions: List[str],
+    context_snippets: list[dict[str, Any]],
+    mentions: list[str],
     *,
     max_attachments: int = 3,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Select attachments that were explicitly mentioned/extracted from text."""
     cfg = EmailOpsConfig.load()
     allowed_patterns = cfg.file_patterns.allowed_file_patterns
@@ -271,7 +271,7 @@ def _select_attachments_from_mentions(
         return []
 
     wanted = {m.strip().lower() for m in mentions if m and isinstance(m, str)}
-    out: List[Dict[str, Any]] = []
+    out: list[dict[str, Any]] = []
 
     for c in context_snippets or []:
         try:
@@ -311,14 +311,14 @@ def _select_attachments_from_mentions(
 
 
 def _select_all_available_attachments(
-    context_snippets: List[Dict[str, Any]], *, max_attachments: int = 3
-) -> List[Dict[str, Any]]:
+    context_snippets: list[dict[str, Any]], *, max_attachments: int = 3
+) -> list[dict[str, Any]]:
     """Select any valid attachments found in context (heuristic fallback)."""
     cfg = EmailOpsConfig.load()
     allowed_patterns = cfg.file_patterns.allowed_file_patterns
     attach_max_mb = float(cfg.security.max_attachment_size_mb or 25.0)
 
-    selected: List[Dict[str, Any]] = []
+    selected: list[dict[str, Any]] = []
 
     # Track seen paths to avoid dupes
     seen_paths = set()
@@ -364,7 +364,7 @@ def tool_email_get_thread(
     thread_id: uuid.UUID | str,
     tenant_id: str,
     include_attachments: bool = False,
-) -> Optional[ThreadContext]:
+) -> ThreadContext | None:
     """
     Fetch thread context from database.
 
@@ -413,7 +413,7 @@ def tool_email_get_thread(
                 return None
 
             # Build participants from conversation.participants JSONB
-            participants_dict: Dict[str, ThreadParticipant] = {}
+            participants_dict: dict[str, ThreadParticipant] = {}
             if conversation.participants:
                 for p in conversation.participants:
                     email = p.get("smtp", p.get("email", ""))
@@ -425,7 +425,7 @@ def tool_email_get_thread(
                         )
 
             # Build thread messages from conversation.messages JSONB
-            thread_messages: List[ThreadMessage] = []
+            thread_messages: list[ThreadMessage] = []
             if conversation.messages:
                 for msg in conversation.messages:
                     msg_id = msg.get("message_id", str(uuid.uuid4()))
@@ -496,7 +496,7 @@ def tool_email_get_thread(
 
 def _extract_evidence_from_answer(
     answer_text: str, retrieval_results: SearchResults | None
-) -> List[EvidenceItem]:
+) -> list[EvidenceItem]:
     """
     Extract evidence items by matching citations in answer text to retrieval results.
 
@@ -542,7 +542,7 @@ def _extract_evidence_from_answer(
 from cortex.audit import log_audit_event
 
 
-def node_handle_error(state: Dict[str, Any]) -> Dict[str, Any]:
+def node_handle_error(state: dict[str, Any]) -> dict[str, Any]:
     """
     Handle errors in graph execution.
 
@@ -577,7 +577,7 @@ def node_handle_error(state: Dict[str, Any]) -> Dict[str, Any]:
     return {"error": str(error)}
 
 
-def node_assemble_context(state: Dict[str, Any]) -> Dict[str, Any]:
+def node_assemble_context(state: dict[str, Any]) -> dict[str, Any]:
     """
     Assemble context from retrieval results.
 
@@ -606,7 +606,7 @@ def node_assemble_context(state: Dict[str, Any]) -> Dict[str, Any]:
     return {"assembled_context": "\n\n".join(context_parts)}
 
 
-def node_query_graph(state: Dict[str, Any]) -> Dict[str, Any]:
+def node_query_graph(state: dict[str, Any]) -> dict[str, Any]:
     """
     Query the knowledge graph for entities mentioned in the prompt.
 
@@ -642,8 +642,8 @@ def node_query_graph(state: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _fetch_graph_entities(
-    tenant_id: str, mentions: List[str]
-) -> tuple[List[Any], List[Any]]:
+    tenant_id: str, mentions: list[str]
+) -> tuple[list[Any], list[Any]]:
     """Fetch entity nodes and edges from the knowledge graph."""
     from cortex.db.models import EntityEdge, EntityNode
     from cortex.db.session import SessionLocal, set_session_tenant
@@ -698,9 +698,9 @@ def _fetch_graph_entities(
         return list(nodes), list(edges)
 
 
-def _build_graph_context_lines(nodes: List[Any], edges: List[Any]) -> List[str]:
+def _build_graph_context_lines(nodes: list[Any], edges: list[Any]) -> list[str]:
     """Build context lines from graph nodes and edges."""
-    context_lines: List[str] = []
+    context_lines: list[str] = []
 
     for node in nodes:
         if node.description:
@@ -723,7 +723,7 @@ def _build_graph_context_lines(nodes: List[Any], edges: List[Any]) -> List[str]:
     return context_lines
 
 
-def node_classify_query(state: Dict[str, Any]) -> Dict[str, Any]:
+def node_classify_query(state: dict[str, Any]) -> dict[str, Any]:
     """
     Classify the user query.
 
@@ -748,7 +748,7 @@ def node_classify_query(state: Dict[str, Any]) -> Dict[str, Any]:
         }
 
 
-def node_retrieve_context(state: Dict[str, Any]) -> Dict[str, Any]:
+def node_retrieve_context(state: dict[str, Any]) -> dict[str, Any]:
     """
     Retrieve context based on query and classification.
 
@@ -773,10 +773,10 @@ def node_retrieve_context(state: Dict[str, Any]) -> Dict[str, Any]:
         return {"retrieval_results": results}
     except Exception as e:
         logger.error(f"Retrieval failed: {e}")
-        return {"error": f"Retrieval failed: {str(e)}"}
+        return {"error": f"Retrieval failed: {e!s}"}
 
 
-def node_generate_answer(state: Dict[str, Any]) -> Dict[str, Any]:
+def node_generate_answer(state: dict[str, Any]) -> dict[str, Any]:
     """
     Generate answer using LLM and context.
 
@@ -815,7 +815,7 @@ def node_generate_answer(state: Dict[str, Any]) -> Dict[str, Any]:
 
         answer_text = complete_text(prompt)
 
-        retrieval_results: Optional[SearchResults] = state.get("retrieval_results")
+        retrieval_results: SearchResults | None = state.get("retrieval_results")
 
         # Extract evidence from answer text and retrieval results
         evidence = _extract_evidence_from_answer(answer_text, retrieval_results)
@@ -823,7 +823,7 @@ def node_generate_answer(state: Dict[str, Any]) -> Dict[str, Any]:
         # Calculate confidence based on evidence quality
         confidence = min(0.95, 0.5 + 0.1 * len(evidence)) if evidence else 0.6
 
-        diagnostics: List[RetrievalDiagnostics] = []
+        diagnostics: list[RetrievalDiagnostics] = []
         if retrieval_results and retrieval_results.results:
             for idx, item in enumerate(retrieval_results.results[:10]):
                 lex = item.lexical_score
@@ -853,10 +853,10 @@ def node_generate_answer(state: Dict[str, Any]) -> Dict[str, Any]:
         }
     except Exception as e:
         logger.error(f"Generation failed: {e}")
-        return {"error": f"Generation failed: {str(e)}"}
+        return {"error": f"Generation failed: {e!s}"}
 
 
-def node_prepare_draft_query(state: Dict[str, Any]) -> Dict[str, Any]:
+def node_prepare_draft_query(state: dict[str, Any]) -> dict[str, Any]:
     """
     Prepare query for drafting.
 
@@ -873,7 +873,7 @@ def node_prepare_draft_query(state: Dict[str, Any]) -> Dict[str, Any]:
     return {"query": explicit_query}
 
 
-def node_draft_email_initial(state: Dict[str, Any]) -> Dict[str, Any]:
+def node_draft_email_initial(state: dict[str, Any]) -> dict[str, Any]:
     """
     Generate initial email draft.
 
@@ -934,10 +934,10 @@ def node_draft_email_initial(state: Dict[str, Any]) -> Dict[str, Any]:
         return {"draft": draft}
     except Exception as e:
         logger.error(f"Drafting failed: {e}")
-        return {"error": f"Drafting failed: {str(e)}"}
+        return {"error": f"Drafting failed: {e!s}"}
 
 
-def node_critique_draft(state: Dict[str, Any]) -> Dict[str, Any]:
+def node_critique_draft(state: dict[str, Any]) -> dict[str, Any]:
     """
     Critique the draft.
 
@@ -964,10 +964,10 @@ def node_critique_draft(state: Dict[str, Any]) -> Dict[str, Any]:
         return {"critique": critique}
     except Exception as e:
         logger.error(f"Critique failed: {e}")
-        return {"error": f"Critique failed: {str(e)}"}
+        return {"error": f"Critique failed: {e!s}"}
 
 
-def node_improve_draft(state: Dict[str, Any]) -> Dict[str, Any]:
+def node_improve_draft(state: dict[str, Any]) -> dict[str, Any]:
     """
     Improve draft based on critique.
 
@@ -1019,10 +1019,10 @@ def node_improve_draft(state: Dict[str, Any]) -> Dict[str, Any]:
         return {"draft": new_draft, "iteration_count": iteration + 1}
     except Exception as e:
         logger.error(f"Improvement failed: {e}")
-        return {"error": f"Improvement failed: {str(e)}"}
+        return {"error": f"Improvement failed: {e!s}"}
 
 
-def node_select_attachments(state: Dict[str, Any]) -> Dict[str, Any]:
+def node_select_attachments(state: dict[str, Any]) -> dict[str, Any]:
     """
     Select attachments to include in the email.
 
@@ -1050,7 +1050,7 @@ def node_select_attachments(state: Dict[str, Any]) -> Dict[str, Any]:
                 }
             )
 
-    selected: List[Dict[str, str]] = []
+    selected: list[dict[str, str]] = []
 
     # Strategy 1: Explicit mentions in the generated draft body
     body_mentions = extract_document_mentions(draft.body_markdown)
@@ -1079,7 +1079,7 @@ def node_select_attachments(state: Dict[str, Any]) -> Dict[str, Any]:
     return {"draft": draft}
 
 
-def node_audit_draft(state: Dict[str, Any]) -> Dict[str, Any]:
+def node_audit_draft(state: dict[str, Any]) -> dict[str, Any]:
     """
     Audit draft for policy compliance and quality rubric.
 
@@ -1145,7 +1145,7 @@ def node_audit_draft(state: Dict[str, Any]) -> Dict[str, Any]:
             tone_fit=0.5,
             safety=0.5,
             overall=0.5,
-            feedback=f"Audit service unavailable (Error: {str(e)}). Validation skipped.",
+            feedback=f"Audit service unavailable (Error: {e!s}). Validation skipped.",
         )
         # Non-blocking failure for rubric, but policy passed
 
@@ -1160,7 +1160,7 @@ def node_audit_draft(state: Dict[str, Any]) -> Dict[str, Any]:
     return result
 
 
-def node_load_thread(state: Dict[str, Any]) -> Dict[str, Any]:
+def node_load_thread(state: dict[str, Any]) -> dict[str, Any]:
     """
     Load thread context from DB.
 
@@ -1193,7 +1193,7 @@ def node_load_thread(state: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def node_summarize_analyst(state: Dict[str, Any]) -> Dict[str, Any]:
+def node_summarize_analyst(state: dict[str, Any]) -> dict[str, Any]:
     """
     Analyst: Extract facts ledger.
 
@@ -1214,10 +1214,10 @@ def node_summarize_analyst(state: Dict[str, Any]) -> Dict[str, Any]:
         return {"facts_ledger": facts}
     except Exception as e:
         logger.error(f"Analyst failed: {e}")
-        return {"error": f"Analyst failed: {str(e)}"}
+        return {"error": f"Analyst failed: {e!s}"}
 
 
-def node_summarize_critic(state: Dict[str, Any]) -> Dict[str, Any]:
+def node_summarize_critic(state: dict[str, Any]) -> dict[str, Any]:
     """
     Critic: Review facts ledger.
 
@@ -1241,10 +1241,10 @@ def node_summarize_critic(state: Dict[str, Any]) -> Dict[str, Any]:
         return {"critique": critique}
     except Exception as e:
         logger.error(f"Critic failed: {e}")
-        return {"error": f"Critic failed: {str(e)}"}
+        return {"error": f"Critic failed: {e!s}"}
 
 
-def node_summarize_improver(state: Dict[str, Any]) -> Dict[str, Any]:
+def node_summarize_improver(state: dict[str, Any]) -> dict[str, Any]:
     """
     Improver: Refine facts ledger.
 
@@ -1280,10 +1280,10 @@ def node_summarize_improver(state: Dict[str, Any]) -> Dict[str, Any]:
         return {"facts_ledger": new_facts}
     except Exception as e:
         logger.error(f"Improver failed: {e}")
-        return {"error": f"Improver failed: {str(e)}"}
+        return {"error": f"Improver failed: {e!s}"}
 
 
-def node_summarize_final(state: Dict[str, Any]) -> Dict[str, Any]:
+def node_summarize_final(state: dict[str, Any]) -> dict[str, Any]:
     """
     Finalize summary.
 
@@ -1320,7 +1320,7 @@ def node_summarize_final(state: Dict[str, Any]) -> Dict[str, Any]:
         return {"summary": summary}
     except Exception as e:
         logger.error(f"Finalization failed: {e}")
-        return {"error": f"Finalization failed: {str(e)}"}
+        return {"error": f"Finalization failed: {e!s}"}
 
 
 def _merge_participants(facts: Any, thread_context_obj: Any) -> list[Any]:

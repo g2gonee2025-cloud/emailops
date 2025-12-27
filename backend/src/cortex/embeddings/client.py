@@ -6,7 +6,7 @@ Provides a stable interface for embedding operations.
 
 from __future__ import annotations
 
-from typing import Final, List
+from typing import Final
 
 from cortex.llm.client import embed_texts as _embed_texts
 
@@ -20,7 +20,7 @@ class EmbeddingsClient:
     Client for generating text embeddings.
     """
 
-    def embed(self, text: str) -> List[float]:
+    def embed(self, text: str) -> list[float]:
         """Embed a single text string."""
         result = self.embed_texts([text])
         if not result:
@@ -29,7 +29,7 @@ class EmbeddingsClient:
 
     BATCH_SIZE = 50
 
-    def embed_batch(self, texts: List[str]) -> List[List[float]]:
+    def embed_batch(self, texts: list[str]) -> list[list[float]]:
         """Embed a batch of text strings (alias for embed_texts)."""
         results = []
         for i in range(0, len(texts), self.BATCH_SIZE):
@@ -37,7 +37,7 @@ class EmbeddingsClient:
             results.extend(self.embed_texts(batch))
         return results
 
-    def embed_texts(self, texts: List[str]) -> List[List[float]]:
+    def embed_texts(self, texts: list[str]) -> list[list[float]]:
         """Embed a list of texts and return python lists."""
         if not texts:
             return []
@@ -47,7 +47,7 @@ class EmbeddingsClient:
         return result.tolist() if hasattr(result, "tolist") else list(result)
 
     @staticmethod
-    def cosine_similarity(vec_a: List[float], vec_b: List[float]) -> float:
+    def cosine_similarity(vec_a: list[float], vec_b: list[float]) -> float:
         """Compute cosine similarity between two python lists."""
         if not vec_a or not vec_b or len(vec_a) != len(vec_b):
             return 0.0
@@ -59,7 +59,7 @@ class EmbeddingsClient:
         return dot / (mag_a * mag_b)
 
 
-def get_embedding(text: str) -> List[float]:
+def get_embedding(text: str) -> list[float]:
     """
     Helper function to get embedding for a single text.
     """

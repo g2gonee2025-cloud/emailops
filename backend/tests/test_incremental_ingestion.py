@@ -1,6 +1,6 @@
 import unittest
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from unittest.mock import MagicMock, patch
 
 from cortex.ingestion.models import IngestJobSummary
@@ -22,7 +22,7 @@ class TestIncrementalIngestion(unittest.TestCase):
         processor = IngestionProcessor(tenant_id=tenant_id)
 
         # Mock folder with specific last_modified
-        base_time = datetime(2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+        base_time = datetime(2025, 1, 1, 12, 0, 0, tzinfo=UTC)
         folder = S3ConversationFolder(
             prefix="raw/test_folder/",
             name="test_folder",

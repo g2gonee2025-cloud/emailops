@@ -6,8 +6,9 @@ Implements §10.4 of the Canonical Blueprint - summarization models.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import datetime
-from typing import Any, Callable, List, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -16,8 +17,8 @@ class Ask(BaseModel):
     """An ask/request identified in the thread."""
 
     description: str
-    from_participant: Optional[str] = None
-    to_participant: Optional[str] = None
+    from_participant: str | None = None
+    to_participant: str | None = None
     status: Literal["open", "addressed", "declined"] = "open"
 
 
@@ -25,15 +26,15 @@ class Commitment(BaseModel):
     """A commitment made by a participant."""
 
     description: str
-    by_participant: Optional[str] = None
-    due_date: Optional[datetime] = None
+    by_participant: str | None = None
+    due_date: datetime | None = None
     status: Literal["pending", "fulfilled", "missed"] = "pending"
 
 
 class KeyDate(BaseModel):
     """A key date mentioned in the thread."""
 
-    date: Optional[datetime] = None
+    date: datetime | None = None
     description: str = ""
     relevance: str = ""
 
@@ -41,31 +42,32 @@ class KeyDate(BaseModel):
 class ParticipantAnalysis(BaseModel):
     """Analyst's view of a participant."""
 
-    name: Optional[str] = None
-    role: Optional[Literal["client", "broker", "underwriter", "internal", "other"]] = (
+    name: str | None = None
+    role: Literal["client", "broker", "underwriter", "internal", "other"] | None = (
         "other"
     )
-    tone: Optional[
+    tone: (
         Literal[
             "professional", "frustrated", "urgent", "friendly", "demanding", "neutral"
         ]
-    ] = "neutral"
-    stance: Optional[str] = None
-    email: Optional[str] = None
+        | None
+    ) = "neutral"
+    stance: str | None = None
+    email: str | None = None
 
 
 class FactsLedger(BaseModel):
     """Extracted facts from a thread - analyst output."""
 
-    asks: List[Ask] = Field(default_factory=list)
-    commitments: List[Commitment] = Field(default_factory=list)
-    key_dates: List[KeyDate] = Field(default_factory=list)
-    key_decisions: List[str] = Field(default_factory=list)
-    open_questions: List[str] = Field(default_factory=list)
-    risks_concerns: List[str] = Field(default_factory=list)
-    participants: List[ParticipantAnalysis] = Field(default_factory=list)
+    asks: list[Ask] = Field(default_factory=list)
+    commitments: list[Commitment] = Field(default_factory=list)
+    key_dates: list[KeyDate] = Field(default_factory=list)
+    key_decisions: list[str] = Field(default_factory=list)
+    open_questions: list[str] = Field(default_factory=list)
+    risks_concerns: list[str] = Field(default_factory=list)
+    participants: list[ParticipantAnalysis] = Field(default_factory=list)
 
-    def merge(self, other: "FactsLedger") -> "FactsLedger":
+    def merge(self, other: FactsLedger) -> FactsLedger:
         """
         Merge another ledger into this one.
         - Lists are unioned and deduplicated by value.
@@ -77,7 +79,7 @@ class FactsLedger(BaseModel):
         # 1. Merge simple lists (set-like union)
         # Helper to deduplicate potentially unhashable Pydantic models by comparing their normalized representation (e.g., dict), rather than relying on hashing or JSON serialization.
         def _merge_lists(
-            l1: List[Any], l2: List[Any], key_fn: Optional[Callable[[Any], Any]] = None
+            l1: list[Any], l2: list[Any], key_fn: Callable[[Any], Any] | None = None
         ):
             seen = set()
             out = []
@@ -170,7 +172,7 @@ class CriticReview(BaseModel):
     """Critic's review of the facts ledger."""
 
     completeness_score: float = 0.0
-    accuracy_concerns: List[str] = Field(default_factory=list)
-    missing_items: List[str] = Field(default_factory=list)
-    suggestions: List[str] = Field(default_factory=list)
+    accuracy_concerns: list[str] = Field(default_factory=list)
+    missing_items: list[str] = Field(default_factory=list)
+    suggestions: list[str] = Field(default_factory=list)
     overall_assessment: str = ""

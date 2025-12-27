@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import logging
 from concurrent.futures import ThreadPoolExecutor
-from typing import List
 from uuid import UUID
 
 from cortex.config.loader import get_config

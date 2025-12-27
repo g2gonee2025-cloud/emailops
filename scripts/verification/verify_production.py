@@ -11,8 +11,8 @@ except Exception:
     backend_src_real = None
 if backend_src_real and backend_src_real.is_dir():
     sys.path.append(str(backend_src_real))
-import unittest  # noqa: E402
-from pathlib import Path  # noqa: E402
+import unittest
+from pathlib import Path
 
 # Ensure backend/src is in path
 sys.path.append(str(Path("backend/src").resolve()))

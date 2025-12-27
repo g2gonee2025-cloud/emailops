@@ -7,7 +7,7 @@ Implements §6.8 of the Canonical Blueprint.
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Literal, Optional, Protocol, Tuple
+from typing import Any, Literal, Protocol
 
 from cortex.email_processing import clean_email_text
 from cortex.ingestion.constants import CLEANING_VERSION
@@ -26,8 +26,8 @@ class TextPreprocessor(Protocol):
         *,
         text_type: Literal["email", "attachment"],
         tenant_id: str,
-        metadata: Optional[Dict[str, Any]] = None,
-    ) -> Tuple[str, Dict[str, Any]]:
+        metadata: dict[str, Any] | None = None,
+    ) -> tuple[str, dict[str, Any]]:
         """
         Prepare text for indexing by cleaning and redacting PII.
 
@@ -63,8 +63,8 @@ class DefaultTextPreprocessor:
         *,
         text_type: Literal["email", "attachment"],
         tenant_id: str,
-        metadata: Optional[Dict[str, Any]] = None,
-    ) -> Tuple[str, Dict[str, Any]]:
+        metadata: dict[str, Any] | None = None,
+    ) -> tuple[str, dict[str, Any]]:
         """
         Clean and prepare text for indexing.
         """
@@ -110,7 +110,7 @@ class DefaultTextPreprocessor:
         return redact_pii(text)
 
 
-_preprocessor: Optional[TextPreprocessor] = None
+_preprocessor: TextPreprocessor | None = None
 
 
 def get_text_preprocessor() -> TextPreprocessor:

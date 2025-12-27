@@ -7,7 +7,7 @@ Implements §11.2 of the Canonical Blueprint.
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 from cortex.observability import trace_operation
 from cortex.safety.config import PolicyConfig
@@ -37,7 +37,7 @@ class PolicyDecision(BaseModel):
     decision: Literal["allow", "deny", "require_approval"]
     reason: str
     risk_level: Literal["low", "medium", "high"]
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 # -----------------------------------------------------------------------------
@@ -45,7 +45,7 @@ class PolicyDecision(BaseModel):
 # -----------------------------------------------------------------------------
 
 
-def _check_recipient_policy(metadata: Dict[str, Any]) -> Optional[str]:
+def _check_recipient_policy(metadata: dict[str, Any]) -> str | None:
     """Check recipient-related policies."""
     recipients = metadata.get("recipients", [])
 
@@ -69,7 +69,7 @@ def _check_recipient_policy(metadata: Dict[str, Any]) -> Optional[str]:
     return None
 
 
-def _check_content_policy(metadata: Dict[str, Any]) -> Optional[str]:
+def _check_content_policy(metadata: dict[str, Any]) -> str | None:
     """Check content-related policies."""
     content = metadata.get("content", "") or ""
     subject = metadata.get("subject", "") or ""
@@ -83,7 +83,7 @@ def _check_content_policy(metadata: Dict[str, Any]) -> Optional[str]:
     return None
 
 
-def _check_attachment_policy(metadata: Dict[str, Any]) -> Optional[str]:
+def _check_attachment_policy(metadata: dict[str, Any]) -> str | None:
     """Check attachment-related policies."""
     attachments = metadata.get("attachments", [])
 
@@ -129,7 +129,7 @@ def _determine_risk_level(action: str) -> Literal["low", "medium", "high"]:
 
 
 @trace_operation("check_action")
-def check_action(action: str, metadata: Dict[str, Any]) -> PolicyDecision:
+def check_action(action: str, metadata: dict[str, Any]) -> PolicyDecision:
     """
     Check if an action is allowed based on policies.
 
@@ -147,7 +147,7 @@ def check_action(action: str, metadata: Dict[str, Any]) -> PolicyDecision:
         PolicyDecision with allow/deny/require_approval
     """
     risk_level = _determine_risk_level(action)
-    violations: List[str] = []
+    violations: list[str] = []
 
     # Run policy checks (defaults to safe empty structures if keys missing)
     if recipient_issue := _check_recipient_policy(metadata or {}):

@@ -4,12 +4,11 @@ import argparse
 import logging
 import os
 import sys
-from pathlib import Path
-from typing import List, Dict
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
 
-from rich.console import Console
 from cortex.security.validators import is_dangerous_symlink
+from rich.console import Console
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +20,7 @@ PATCHES_DIR = Path("patches")
 # -----------------------------------------------------------------------------
 
 
-def _scan_for_insecure_symlinks(roots: List[Path]) -> int:
+def _scan_for_insecure_symlinks(roots: list[Path]) -> int:
     """Scan for and report insecure symlinks."""
     insecure_symlinks_found = 0
     allowed_roots = [r.resolve() for r in roots]
@@ -123,7 +122,7 @@ Output the unified diff now:
 
 
 def process_issue(
-    issue: dict, idx: int, model: str, base_url: str, headers: Dict[str, str]
+    issue: dict, idx: int, model: str, base_url: str, headers: dict[str, str]
 ) -> dict:
     """Generate a patch for a single issue."""
     file_path = issue.get("file", "")

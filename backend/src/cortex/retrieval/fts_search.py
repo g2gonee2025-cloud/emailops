@@ -8,13 +8,12 @@ Adapted for Conversation-based schema (conversation_id instead of thread_id/mess
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List
+from typing import Any
 
+from cortex.intelligence.query_expansion import expand_for_fts
 from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-
-from cortex.intelligence.query_expansion import expand_for_fts
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +47,7 @@ class FTSResult(BaseModel):
 
 def search_conversations_fts(
     session: Session, query: str, tenant_id: str, limit: int = 50
-) -> List[FTSResult]:
+) -> list[FTSResult]:
     """
     Perform FTS search on conversations.
 
@@ -127,7 +126,7 @@ class ChunkFTSResult(BaseModel):
     text: str
     is_attachment: bool = False
     attachment_id: str | None = None
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 def search_chunks_fts(
@@ -135,10 +134,10 @@ def search_chunks_fts(
     query: str,
     tenant_id: str,
     limit: int = 50,
-    conversation_ids: List[str] | None = None,
+    conversation_ids: list[str] | None = None,
     is_attachment: bool | None = None,
-    file_types: List[str] | None = None,
-) -> List[ChunkFTSResult]:
+    file_types: list[str] | None = None,
+) -> list[ChunkFTSResult]:
     """
     Perform FTS search on chunks.
 
@@ -155,8 +154,7 @@ def search_chunks_fts(
     expanded_query = expand_for_fts(query)
     logger.debug(f"Original FTS query: '{query}', Expanded: '{expanded_query}'")
 
-    conversation_filter_sql = ""
-    params: Dict[str, Any] = {
+    params: dict[str, Any] = {
         "query": expanded_query,
         "tenant_id": tenant_id,
         "limit": limit,

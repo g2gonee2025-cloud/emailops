@@ -1,6 +1,6 @@
 import logging
 import threading
-from typing import Any, List, Optional
+from typing import Any
 
 import numpy as np
 from cortex.llm.runtime import LLMRuntime
@@ -9,7 +9,7 @@ from cortex.retrieval.filter_resolution import _resolve_filter_conversation_ids
 from cortex.retrieval.results import SearchResultItem
 
 logger = logging.getLogger(__name__)
-_llm_runtime: Optional[LLMRuntime] = None
+_llm_runtime: LLMRuntime | None = None
 _runtime_lock = threading.Lock()
 
 
@@ -23,7 +23,7 @@ def _get_runtime() -> LLMRuntime:
     return _llm_runtime
 
 
-def _get_query_embedding(query: str, config: Any) -> Optional[np.ndarray]:
+def _get_query_embedding(query: str, config: Any) -> np.ndarray | None:
     """Helper: Get query embedding with cache fallback."""
     try:
         # Check cache first
@@ -51,12 +51,12 @@ def _get_query_embedding(query: str, config: Any) -> Optional[np.ndarray]:
 
 def _resolve_target_conversations(
     session, args: Any, search_query: str, limit: int, parsed_filters: Any
-) -> List[str]:
+) -> list[str]:
     """Helper: Resolve specific conversation IDs from navigation or filters."""
     from cortex.retrieval.fts_search import search_messages_fts
 
     # 2. Optional navigational narrowing
-    nav_conversation_ids: Optional[List[str]] = None
+    nav_conversation_ids: list[str] | None = None
     if args.classification and args.classification.type == "navigational":
         nav_hits = search_messages_fts(
             session,
@@ -74,7 +74,7 @@ def _resolve_target_conversations(
     )
 
     # Merge
-    final_ids: Optional[List[str]] = None
+    final_ids: list[str] | None = None
     if nav_conversation_ids is not None:
         final_ids = nav_conversation_ids
 
@@ -94,7 +94,7 @@ def _resolve_target_conversations(
     return final_ids if final_ids is not None else []
 
 
-def _convert_fts_to_items(fts_results: List[Any]) -> List[SearchResultItem]:
+def _convert_fts_to_items(fts_results: list[Any]) -> list[SearchResultItem]:
     """Helper: Convert FTS DB results to SearchResultItem."""
     items = []
     for res in fts_results:
@@ -120,7 +120,7 @@ def _convert_fts_to_items(fts_results: List[Any]) -> List[SearchResultItem]:
     return items
 
 
-def _convert_vector_to_items(vector_results: List[Any]) -> List[SearchResultItem]:
+def _convert_vector_to_items(vector_results: list[Any]) -> list[SearchResultItem]:
     """Helper: Convert Vector DB results to SearchResultItem."""
     items = []
     for res in vector_results:

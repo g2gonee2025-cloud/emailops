@@ -49,7 +49,7 @@ def test_run_grounding_check_fully_grounded(
     mock_tool_check_grounding, mock_console_and_table
 ):
     """Verify the CLI output for a fully grounded answer."""
-    mock_console, mock_table = mock_console_and_table
+    mock_console, _mock_table = mock_console_and_table
     # Arrange: Configure the mock to return a "grounded" result
     mock_result = GroundingCheck(
         answer_candidate="The sky is blue.",

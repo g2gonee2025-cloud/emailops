@@ -9,9 +9,9 @@ from sqlalchemy import func, select
 
 load_dotenv(".env")
 
-from cortex.db.models import Chunk  # noqa: E402
-from cortex.db.session import get_db_session  # noqa: E402
-from cortex.intelligence.graph import GraphExtractor  # noqa: E402
+from cortex.db.models import Chunk
+from cortex.db.session import get_db_session
+from cortex.intelligence.graph import GraphExtractor
 
 # --- Rich Console Initialization ---
 console = Console()

@@ -5,7 +5,6 @@ Implements §8.7 of the Canonical Blueprint.
 """
 
 import logging
-from typing import List, Optional
 
 import requests
 from cortex.retrieval.results import SearchResultItem
@@ -53,9 +52,9 @@ def _candidate_summary_text(item: SearchResultItem) -> str:
 
 
 def rerank_results(
-    results: List[SearchResultItem],
+    results: list[SearchResultItem],
     alpha: float,
-) -> List[SearchResultItem]:
+) -> list[SearchResultItem]:
     """
     Apply lightweight reranker blending lexical/vector evidence.
     Used when external reranker is disabled.
@@ -78,8 +77,8 @@ def rerank_results(
 
 
 def call_external_reranker(
-    endpoint: str, query: str, results: List[SearchResultItem], top_n: int = 50
-) -> List[SearchResultItem]:
+    endpoint: str, query: str, results: list[SearchResultItem], top_n: int = 50
+) -> list[SearchResultItem]:
     """
     Call external reranker API (vLLM with mxbai-rerank-large-v2).
     """
@@ -168,17 +167,17 @@ def _text_similarity(a: SearchResultItem, b: SearchResultItem) -> float:
 
 
 def apply_mmr(
-    results: List[SearchResultItem],
+    results: list[SearchResultItem],
     lambda_param: float,
-    limit: Optional[int] = None,
-) -> List[SearchResultItem]:
+    limit: int | None = None,
+) -> list[SearchResultItem]:
     """Apply Maximal Marginal Relevance to diversify top results."""
 
     if not results:
         return results
 
     limit = limit or len(results)
-    selected: List[SearchResultItem] = []
+    selected: list[SearchResultItem] = []
     candidates = results.copy()
 
     while candidates and len(selected) < limit:

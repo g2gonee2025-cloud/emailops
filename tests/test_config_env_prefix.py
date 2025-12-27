@@ -11,7 +11,7 @@ BACKEND_SRC = ROOT / "backend" / "src"
 if str(BACKEND_SRC) not in sys.path:
     sys.path.insert(0, str(BACKEND_SRC))
 
-from cortex.config.models import DatabaseConfig  # noqa: E402
+from cortex.config.models import DatabaseConfig
 
 
 def test_canonical_prefix_takes_precedence(monkeypatch):

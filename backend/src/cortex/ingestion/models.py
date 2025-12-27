@@ -5,7 +5,7 @@ Pydantic models for ingestion jobs and summaries.
 from __future__ import annotations
 
 import uuid
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -20,7 +20,7 @@ class IngestJobRequest(BaseModel):
     tenant_id: str
     source_type: Literal["s3", "sftp", "local_upload"]
     source_uri: str
-    options: Dict[str, Any] = Field(default_factory=dict)
+    options: dict[str, Any] = Field(default_factory=dict)
 
 
 class IngestJobSummary(BaseModel):
@@ -41,5 +41,5 @@ class IngestJobSummary(BaseModel):
     errors: int = 0
     skipped: int = 0
 
-    problems: List[Problem] = Field(default_factory=list)
-    aborted_reason: Optional[str] = None
+    problems: list[Problem] = Field(default_factory=list)
+    aborted_reason: str | None = None

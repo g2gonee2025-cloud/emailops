@@ -27,7 +27,7 @@ of `value` or `error`.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Generic, Literal, TypeAlias, TypeGuard, TypeVar, cast
 
@@ -103,7 +103,7 @@ class _ResultOps(Generic[T, E]):
         err = cast(Err[T, E], self).error
         raise ResultUnwrapError(f"{msg}: {err!r}")
 
-    def map(self, fn: Callable[[T], U]) -> "Result[U, E]":
+    def map(self, fn: Callable[[T], U]) -> Result[U, E]:
         """
         Transform the Ok value, preserving Err.
         """
@@ -111,7 +111,7 @@ class _ResultOps(Generic[T, E]):
             return Ok(fn(cast(Ok[T, E], self).value))
         return cast(Err[U, E], self)
 
-    def map_error(self, fn: Callable[[E], F]) -> "Result[T, F]":
+    def map_error(self, fn: Callable[[E], F]) -> Result[T, F]:
         """
         Transform the Err error, preserving Ok.
         """
@@ -119,7 +119,7 @@ class _ResultOps(Generic[T, E]):
             return cast(Ok[T, F], self)
         return Err(fn(cast(Err[T, E], self).error))
 
-    def and_then(self, fn: Callable[[T], "Result[U, E]"]) -> "Result[U, E]":
+    def and_then(self, fn: Callable[[T], Result[U, E]]) -> Result[U, E]:
         """
         Chain computations that themselves return Result (flatMap / bind).
         """
@@ -127,7 +127,7 @@ class _ResultOps(Generic[T, E]):
             return fn(cast(Ok[T, E], self).value)
         return cast(Err[U, E], self)
 
-    def or_else(self, fn: Callable[[E], "Result[T, E]"]) -> "Result[T, E]":
+    def or_else(self, fn: Callable[[E], Result[T, E]]) -> Result[T, E]:
         """
         Provide an alternative Result if this is Err.
         """
@@ -187,10 +187,10 @@ def is_err(r: Result[T, E]) -> TypeGuard[Err[T, E]]:
 
 
 __all__ = (
-    "Result",
-    "Ok",
     "Err",
+    "Ok",
+    "Result",
     "ResultUnwrapError",
-    "is_ok",
     "is_err",
+    "is_ok",
 )

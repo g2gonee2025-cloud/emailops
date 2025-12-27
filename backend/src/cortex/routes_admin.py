@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import os
-from typing import Any, Dict, List
+from typing import Any
 
 from cortex.config.loader import get_config
 from cortex.health import (
@@ -20,11 +20,11 @@ logger = logging.getLogger(__name__)
 
 class DoctorReport(BaseModel):
     overall_status: str  # "healthy", "degraded", "unhealthy"
-    checks: List[DoctorCheckResult]
+    checks: list[DoctorCheckResult]
 
 
 @router.get("/config")
-async def get_config_info() -> Dict[str, Any]:
+async def get_config_info() -> dict[str, Any]:
     """Get sanitized safe configuration."""
     config = get_config()
     # Safely access nested attributes
@@ -43,7 +43,7 @@ async def get_config_info() -> Dict[str, Any]:
 
 
 @router.get("/status")
-async def get_system_status() -> Dict[str, Any]:
+async def get_system_status() -> dict[str, Any]:
     """Get simple system status info."""
     return {
         "status": "online",
@@ -64,7 +64,7 @@ async def run_doctor() -> DoctorReport:
         probe_embeddings(config),
         check_reranker(config),
     ]
-    results: List[DoctorCheckResult] = await asyncio.gather(*tasks)
+    results: list[DoctorCheckResult] = await asyncio.gather(*tasks)
 
     # Determine overall status
     has_failure = any(check.status == "fail" for check in results)

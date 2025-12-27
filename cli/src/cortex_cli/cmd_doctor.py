@@ -16,10 +16,9 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import httpx
 from cortex.config.loader import get_config
@@ -58,7 +57,7 @@ def _get_api_url(config: Any) -> str:
     return f"http://{api_host}:{api_port}"
 
 
-def _print_report_human(report: Dict[str, Any]) -> None:
+def _print_report_human(report: dict[str, Any]) -> None:
     """Prints the doctor report in a human-readable format."""
     status_colors = {
         "healthy": "green",
@@ -449,7 +448,7 @@ def main() -> None:
         db_res = _run_db_check(args, config)
 
         # Index
-        idx_info, idx_err = _run_index_check(args, config, root)
+        _idx_info, idx_err = _run_index_check(args, config, root)
 
         # Ingest
         ing_res = _run_ingest_check(args, config, root)

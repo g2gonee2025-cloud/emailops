@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from cortex.safety.grounding import (
-    ClaimAnalysis,
     GroundingCheck,
     GroundingCheckInput,
     _cosine_similarity,

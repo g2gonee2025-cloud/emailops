@@ -6,7 +6,6 @@ import concurrent.futures
 import logging
 import random
 from collections import Counter
-from typing import List
 
 from cortex.db.models import Chunk
 from cortex.db.session import get_db_session
@@ -29,7 +28,7 @@ def discover_graph_schema(*, tenant_id: str, sample_size: int = 20) -> None:
 
     console = Console()
 
-    def get_sample_texts(db_session, *, tenant_id: str, sample_size: int) -> List[str]:
+    def get_sample_texts(db_session, *, tenant_id: str, sample_size: int) -> list[str]:
         """Fetch a random sample of conversation texts."""
         console.print(
             f"Fetching {sample_size} random conversations for tenant '{tenant_id}'..."
@@ -62,7 +61,7 @@ def discover_graph_schema(*, tenant_id: str, sample_size: int = 20) -> None:
             texts.append(full_text)
         return texts
 
-    def analyze_schema(texts: List[str]):
+    def analyze_schema(texts: list[str]):
         """Analyze the schema of the sampled texts."""
         extractor = GraphExtractor()
         node_types = Counter()

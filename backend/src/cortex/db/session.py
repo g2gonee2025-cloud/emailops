@@ -8,8 +8,9 @@ from __future__ import annotations
 
 import logging
 import time
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
-from typing import Any, Callable, Generator, Optional
+from typing import Any
 
 from cortex.common.exceptions import TransactionError
 from cortex.config.loader import get_config
@@ -71,7 +72,7 @@ class SafeDatabaseError(RuntimeError):
 def raise_sanitized(
     error_message: str = "Database operation failed",
     *,
-    cause: Optional[BaseException] = None,
+    cause: BaseException | None = None,
 ) -> None:
     if cause is None:
         raise SafeDatabaseError(error_message)
@@ -108,7 +109,7 @@ def get_db() -> Generator[Session, None, None]:
 
 
 @contextmanager
-def get_db_session(tenant_id: Optional[str] = None) -> Generator[Session, None, None]:
+def get_db_session(tenant_id: str | None = None) -> Generator[Session, None, None]:
     """
     Context manager for database sessions with optional RLS tenant context.
 

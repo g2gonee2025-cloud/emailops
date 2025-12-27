@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import numpy as np
 import requests
@@ -22,7 +22,7 @@ from sqlalchemy.orm import Session
 logger = logging.getLogger(__name__)
 
 
-def _validate_embedding(embedding: List[float], expected_dim: int) -> np.ndarray:
+def _validate_embedding(embedding: list[float], expected_dim: int) -> np.ndarray:
     """Validate embedding dimensions and values. Returns numpy array."""
     if len(embedding) != expected_dim:
         raise RetrievalError(
@@ -77,7 +77,7 @@ def _process_pgvector_row(row: Any) -> VectorResult:
     )
 
 
-def _process_qdrant_point(point: Dict[str, Any]) -> VectorResult:
+def _process_qdrant_point(point: dict[str, Any]) -> VectorResult:
     """Process a Qdrant point into a VectorResult."""
     payload_data = point.get("payload") or {}
     if not isinstance(payload_data, dict):
@@ -132,10 +132,10 @@ class VectorResult(BaseModel):
     is_attachment: bool = False
 
     # Raw distance can be useful for debugging/metrics.
-    distance: Optional[float] = None
+    distance: float | None = None
 
-    metadata: Dict[str, Any] = Field(default_factory=dict)
-    chunk_type: Optional[str] = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    chunk_type: str | None = None
 
     # Backward compat aliases (hybrid_search.py may reference these)
     @property
@@ -155,15 +155,15 @@ class VectorStore(ABC):
     @abstractmethod
     def search(
         self,
-        embedding: List[float],
+        embedding: list[float],
         tenant_id: str,
         limit: int = 50,
         *,
-        ef_search: Optional[int] = None,
-        conversation_ids: Optional[List[str]] = None,
-        is_attachment: Optional[bool] = None,
-        file_types: Optional[List[str]] = None,  # P1 Fix: file_types filter
-    ) -> List[VectorResult]:
+        ef_search: int | None = None,
+        conversation_ids: list[str] | None = None,
+        is_attachment: bool | None = None,
+        file_types: list[str] | None = None,  # P1 Fix: file_types filter
+    ) -> list[VectorResult]:
         """Search for similar vectors."""
 
 
@@ -176,15 +176,15 @@ class PgvectorStore(VectorStore):
 
     def search(
         self,
-        embedding: List[float],
+        embedding: list[float],
         tenant_id: str,
         limit: int = 50,
         *,
-        ef_search: Optional[int] = None,
-        conversation_ids: Optional[List[str]] = None,
-        is_attachment: Optional[bool] = None,
-        file_types: Optional[List[str]] = None,  # P1 Fix: file_types filter
-    ) -> List[VectorResult]:
+        ef_search: int | None = None,
+        conversation_ids: list[str] | None = None,
+        is_attachment: bool | None = None,
+        file_types: list[str] | None = None,  # P1 Fix: file_types filter
+    ) -> list[VectorResult]:
         # P2 Fix: Cap limit to prevent resource exhaustion
         limit = min(limit, 500)
         emb_array = _validate_embedding(embedding, self._output_dim)
@@ -194,7 +194,7 @@ class PgvectorStore(VectorStore):
 
         # Build query with optional conversation filter
         conversation_filter_sql = ""
-        params: Dict[str, Any] = {
+        params: dict[str, Any] = {
             "tenant_id": tenant_id,
             "query_vec": embedding_str,
             "limit": limit,
@@ -262,7 +262,7 @@ class QdrantVectorStore(VectorStore):
         self._config = config
         self._output_dim = output_dim
 
-    def _headers(self) -> Dict[str, str]:
+    def _headers(self) -> dict[str, str]:
         headers = {"Content-Type": "application/json"}
         if self._config.api_key:
             headers["api-key"] = self._config.api_key
@@ -270,20 +270,20 @@ class QdrantVectorStore(VectorStore):
 
     def search(
         self,
-        embedding: List[float],
+        embedding: list[float],
         tenant_id: str,
         limit: int = 50,
         *,
-        ef_search: Optional[int] = None,
-        conversation_ids: Optional[List[str]] = None,
-        is_attachment: Optional[bool] = None,
-        file_types: Optional[List[str]] = None,  # P1 Fix: file_types filter
-    ) -> List[VectorResult]:
+        ef_search: int | None = None,
+        conversation_ids: list[str] | None = None,
+        is_attachment: bool | None = None,
+        file_types: list[str] | None = None,  # P1 Fix: file_types filter
+    ) -> list[VectorResult]:
         # P2 Fix: Cap limit to prevent resource exhaustion
         limit = min(limit, 500)
         emb_array = _validate_embedding(embedding, self._output_dim)
 
-        must_filters: List[Dict[str, Any]] = [
+        must_filters: list[dict[str, Any]] = [
             {"key": "tenant_id", "match": {"value": tenant_id}},
         ]
         if conversation_ids is not None:
@@ -308,7 +308,7 @@ class QdrantVectorStore(VectorStore):
                 }
             )
 
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "vector": emb_array.tolist(),
             "limit": limit,
             "with_payload": True,

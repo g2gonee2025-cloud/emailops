@@ -9,7 +9,7 @@ SRC = ROOT / "backend" / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-import main  # noqa: E402
+import main
 
 
 @pytest.mark.asyncio

@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ EMAIL_PATTERN = re.compile(
 )
 
 
-def extract_participants_from_conversation_txt(text: str) -> List[Dict[str, Any]]:
+def extract_participants_from_conversation_txt(text: str) -> list[dict[str, Any]]:
     """
     The Single Source of Truth for extracting participants from raw text.
     Used by: Ingestion, Validation, and Backfills.
@@ -47,7 +47,7 @@ def extract_participants_from_conversation_txt(text: str) -> List[Dict[str, Any]
     if not text:
         return []
 
-    participants: Dict[str, Dict[str, Any]] = {}
+    participants: dict[str, dict[str, Any]] = {}
 
     # 1. Scan for header lines
     for line in HEADER_LINE_PATTERN.findall(text):
@@ -57,7 +57,7 @@ def extract_participants_from_conversation_txt(text: str) -> List[Dict[str, Any]
     return sorted(list(participants.values()), key=lambda x: x["smtp"])
 
 
-def _split_recipients(value: str) -> List[str]:
+def _split_recipients(value: str) -> list[str]:
     """
     Split recipient string by comma or semicolon, respecting quoted strings.
     E.g. '"Doe, John" <j@d.com>, Jane' -> ['"Doe, John" <j@d.com>', 'Jane']
@@ -135,7 +135,7 @@ def _extract_last_cn(dn: str) -> str:
     return seg.split("=", 1)[-1] if "=" in seg else seg
 
 
-def _parse_header_line(line: str, participants: Dict[str, Dict[str, Any]]) -> None:
+def _parse_header_line(line: str, participants: dict[str, dict[str, Any]]) -> None:
     """Parse a single header line and update participants dict."""
     for match in FIELD_PATTERN.finditer(line):
         role_raw, value = match.groups()
@@ -158,7 +158,7 @@ def _parse_header_line(line: str, participants: Dict[str, Dict[str, Any]]) -> No
                 }
 
 
-def _extract_email_and_name(raw: str) -> Tuple[str | None, str]:
+def _extract_email_and_name(raw: str) -> tuple[str | None, str]:
     """
     Extract clean email and display name from raw string.
     Handles: "Name <email>", "email", and Exchange DNs.

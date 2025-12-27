@@ -1,11 +1,9 @@
 import os
 from unittest.mock import patch
 
-import pytest
-
 from cortex.config.models import (
-    SensitiveConfig,
     RetryConfig,
+    SensitiveConfig,
     SummarizerConfig,
 )
 
@@ -29,6 +27,8 @@ def test_retry_config_api_max_retries():
 def test_summarizer_config_summarizer_version():
     """Test that SummarizerConfig correctly retrieves the summarizer version."""
     summarizer_version = "test_version"
-    with patch.dict(os.environ, {"OUTLOOKCORTEX_SUMMARIZER_VERSION": summarizer_version}):
+    with patch.dict(
+        os.environ, {"OUTLOOKCORTEX_SUMMARIZER_VERSION": summarizer_version}
+    ):
         config = SummarizerConfig()
         assert config.summarizer_version == summarizer_version

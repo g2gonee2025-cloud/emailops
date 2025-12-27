@@ -2,7 +2,6 @@ import argparse
 from unittest.mock import MagicMock, patch
 
 import httpx
-import pytest
 from cortex_cli.cmd_login import _run_login
 
 

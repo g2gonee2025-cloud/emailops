@@ -21,13 +21,13 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 # Python <3.11 compatibility
 try:
     from datetime import UTC  # type: ignore
 except ImportError:
-    UTC = timezone.utc  # type: ignore
+    UTC = UTC  # type: ignore
 
 
 @dataclass
@@ -39,24 +39,24 @@ class SearchFilters:
     """
 
     # Conversation/thread filtering
-    conv_ids: Optional[Set[str]] = None
+    conv_ids: set[str] | None = None
 
     # Participant filtering
-    from_emails: Optional[Set[str]] = None
-    to_emails: Optional[Set[str]] = None
-    cc_emails: Optional[Set[str]] = None
+    from_emails: set[str] | None = None
+    to_emails: set[str] | None = None
+    cc_emails: set[str] | None = None
 
     # Content filtering
-    subject_contains: Optional[List[str]] = None
-    exclude_terms: Optional[List[str]] = None
+    subject_contains: list[str] | None = None
+    exclude_terms: list[str] | None = None
 
     # Attachment filtering
-    has_attachment: Optional[bool] = None
-    file_types: Optional[Set[str]] = None  # {'pdf', 'docx', ...}
+    has_attachment: bool | None = None
+    file_types: set[str] | None = None  # {'pdf', 'docx', ...}
 
     # Date range filtering
-    date_from: Optional[datetime] = None
-    date_to: Optional[datetime] = None
+    date_from: datetime | None = None
+    date_to: datetime | None = None
 
     def is_empty(self) -> bool:
         """Check if no filters are set."""
@@ -73,9 +73,9 @@ class SearchFilters:
             and self.date_to is None
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
-        result: Dict[str, Any] = {}
+        result: dict[str, Any] = {}
         if self.conv_ids:
             result["conv_ids"] = list(self.conv_ids)
         if self.from_emails:
@@ -107,7 +107,7 @@ _FILTER_TOKEN_RE = re.compile(
 )
 
 
-def _parse_iso_date(s: str) -> Optional[datetime]:
+def _parse_iso_date(s: str) -> datetime | None:
     """Parse ISO date string to datetime."""
     s = s.strip()
     if not s:
@@ -230,7 +230,7 @@ def apply_filters_to_sql(
     filters: SearchFilters,
     table_alias: str = "c",
     conversation_table_alias: str = "conv",
-) -> tuple[str, Dict[str, Any]]:
+) -> tuple[str, dict[str, Any]]:
     """
     Generate SQL WHERE clause fragments and params for filters.
 
@@ -239,8 +239,8 @@ def apply_filters_to_sql(
     Note: This requires the query to join with conversations table
     if using from/to/cc/subject filters.
     """
-    conditions: List[str] = []
-    params: Dict[str, Any] = {}
+    conditions: list[str] = []
+    params: dict[str, Any] = {}
 
     # Date range filters (assuming chunk has related conversation with date)
     if filters.date_from:
@@ -285,9 +285,9 @@ def apply_filters_to_sql(
 
 
 def filter_results_post_query(
-    results: List[Dict[str, Any]],
+    results: list[dict[str, Any]],
     filters: SearchFilters,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Post-filter results that couldn't be filtered in SQL.
     Handles from/to/cc participant filtering using metadata.

@@ -1,17 +1,15 @@
 import logging
-from typing import List, Optional, Set
 
+from cortex.db.models import Conversation
+from cortex.retrieval.filters import SearchFilters
 from sqlalchemy import or_
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Query
 
-from cortex.db.models import Conversation
-from cortex.retrieval.filters import SearchFilters
-
 logger = logging.getLogger(__name__)
 
 
-def _add_email_filters(query: Query, emails: Set[str]) -> Query:
+def _add_email_filters(query: Query, emails: set[str]) -> Query:
     """Adds email filters to the query."""
     if not emails:
         return query
@@ -32,7 +30,7 @@ def _resolve_filter_conversation_ids(
     session,
     filters: SearchFilters,
     tenant_id: str,
-) -> Optional[List[str]]:
+) -> list[str] | None:
     """
     Resolve filters to a list of conversation IDs.
 

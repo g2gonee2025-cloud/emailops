@@ -46,7 +46,7 @@ WORKERS_SRC = PROJECT_ROOT / "workers" / "src"
 if WORKERS_SRC.exists() and str(WORKERS_SRC) not in sys.path:
     sys.path.append(str(WORKERS_SRC))
 
-from dotenv import load_dotenv  # noqa: E402
+from dotenv import load_dotenv
 
 # Load .env file BEFORE any environment variable access
 # This ensures OUTLOOKCORTEX_* vars are available for status/config commands
@@ -56,12 +56,11 @@ if _dotenv_path.exists():
 else:
     load_dotenv()  # Fall back to default dotenv discovery
 
-from cortex_cli import cmd_search
-from cortex_cli._config_helpers import (  # noqa: E402
+from cortex_cli._config_helpers import (
     _print_human_config,
     _print_json_config,
 )
-from cortex_cli.style import colorize as _colorize  # noqa: E402
+from cortex_cli.style import colorize as _colorize
 
 
 # Minimal protocol for the config object to satisfy static analysis when imports fail
@@ -111,7 +110,6 @@ if TYPE_CHECKING:
 else:
     EmailOpsConfig = EmailOpsConfigProto
 
-from cortex.observability import init_observability
 
 # Lazy import for heavy dependencies
 from cortex_cli.cmd_doctor import main as doctor_main
@@ -405,6 +403,7 @@ def _run_validate(
     Validate export folder structure (B1).
     """
     import json
+
     from cortex.security.validators import validate_directory_result
 
     validated_path = validate_directory_result(path, must_exist=True)
@@ -505,6 +504,7 @@ def _run_ingest(
     """
     import json
     import uuid
+
     from cortex.security.validators import validate_directory_result
 
     # Validate source path before use
@@ -711,6 +711,7 @@ def _run_index(
     Build or rebuild the search index with embeddings.
     """
     import json
+
     from cortex.security.validators import validate_directory_result
 
     validated_root = validate_directory_result(root, must_exist=True)
@@ -813,6 +814,7 @@ def _run_answer(
     Ask questions about your emails using RAG.
     """
     import json
+
     from cortex_cli.api_client import get_api_client
 
     if not json_output:
@@ -1035,7 +1037,6 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     from cortex_cli.cmd_backfill import setup_backfill_parser
     from cortex_cli.cmd_db import setup_db_parser
     from cortex_cli.cmd_embeddings import setup_embeddings_parser
-    from cortex_cli.cmd_fix import setup_fix_parser
     from cortex_cli.cmd_graph import app as graph_app
     from cortex_cli.cmd_grounding import setup_grounding_parser
     from cortex_cli.cmd_login import setup_login_parser
@@ -1043,35 +1044,18 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     from cortex_cli.cmd_queue import setup_queue_parser
     from cortex_cli.cmd_s3 import setup_s3_parser
     from cortex_cli.cmd_safety import setup_safety_parser
-    from cortex_cli.cmd_test import setup_test_parser
     from cortex_cli.cmd_search import setup_search_parser
+    from cortex_cli.cmd_test import setup_test_parser
     from rich.console import Console
-    from typer.core import TyperGroup
-    from typer.main import get_command_from_info
 
     # A bit of a hack to integrate Typer apps with argparse
     def setup_typer_command(subparsers, name, app, help_text=""):
         parser = subparsers.add_parser(name, help=help_text, add_help=False)
-        command_info = typer.main.get_command_info(
-            app,
-            name=name,
-            pretty_exceptions_short=False,
-            pretty_exceptions_show_locals=False,
-            rich_markup_mode="rich",
-        )
-        command = get_command_from_info(
-            command_info,
-            pretty_exceptions_short=False,
-            pretty_exceptions_show_locals=False,
-            rich_markup_mode="rich",
-        )
+        command = typer.main.get_command(app)
 
         def _run_typer(args):
             try:
-                if isinstance(command, TyperGroup):
-                    command(args.typer_args, standalone_mode=False)
-                else:
-                    command(standalone_mode=False)
+                command(args.typer_args, standalone_mode=False)
             except typer.Exit as e:
                 if e.code != 0:
                     console = Console()
@@ -1085,11 +1069,8 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
         # This is a simple way to pass through args. A more robust solution might be needed.
         parser.add_argument("typer_args", nargs="*")
 
-    from cortex_cli.cmd_index import setup_index_parser
     from cortex_cli.cmd_patch import setup_patch_parser
     from cortex_cli.cmd_schema import setup_schema_parser
-    from cortex_cli.cmd_test import setup_test_parser
-    from cortex_cli._config_helpers import _config
 
     setup_backfill_parser(subparsers)
     setup_db_parser(subparsers)
@@ -1107,7 +1088,6 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     )
     setup_patch_parser(subparsers)
     setup_schema_parser(subparsers)
-    setup_test_parser(subparsers)
 
     # Parse arguments
     parsed_args = parser.parse_args(args)
@@ -1379,7 +1359,6 @@ _DOCTOR_BOOL_FLAGS = [
 
 def _handle_doctor(args: argparse.Namespace) -> None:
     """Handle doctor command by forwarding args to cmd_doctor.main()."""
-    from cortex_cli.cmd_doctor import main as doctor_main
     from cortex.security.validators import validate_directory_result
 
     # Handle --all flag

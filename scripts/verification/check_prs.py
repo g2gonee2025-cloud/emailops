@@ -6,7 +6,7 @@ def run_git_command(cmd: list[str]) -> subprocess.CompletedProcess:
     """Execute a Git command and return the completed process result."""
     try:
         return subprocess.run(
-            ["git"] + cmd, capture_output=True, text=True, check=False
+            ["git", *cmd], capture_output=True, text=True, check=False
         )
     except OSError as e:
         print(f"Error running git: {e}", file=sys.stderr)

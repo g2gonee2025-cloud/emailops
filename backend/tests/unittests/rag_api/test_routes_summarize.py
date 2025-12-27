@@ -1,11 +1,9 @@
-
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from fastapi import HTTPException
-
 from cortex.rag_api.models import SummarizeThreadRequest
 from cortex.rag_api.routes_summarize import summarize_thread_endpoint
+from fastapi import HTTPException
 
 
 @pytest.mark.asyncio
@@ -30,14 +28,16 @@ async def test_summarize_thread_endpoint_graph_error():
     mock_user_ctx.get.return_value = "test_user"
 
     # Patch dependencies: context variables and the graph getter
-    with patch("cortex.rag_api.routes_summarize.tenant_id_ctx", new=mock_tenant_ctx), \
-         patch("cortex.rag_api.routes_summarize.user_id_ctx", new=mock_user_ctx), \
-         patch(
+    with (
+        patch("cortex.rag_api.routes_summarize.tenant_id_ctx", new=mock_tenant_ctx),
+        patch("cortex.rag_api.routes_summarize.user_id_ctx", new=mock_user_ctx),
+        patch(
             "cortex.rag_api.routes_summarize.get_summarize_graph",
             new_callable=AsyncMock,
             return_value=mock_graph,
-        ), \
-         patch("cortex.rag_api.routes_summarize.log_audit_event") as mock_audit:
+        ),
+        patch("cortex.rag_api.routes_summarize.log_audit_event") as mock_audit,
+    ):
 
         # Act & Assert
         with pytest.raises(HTTPException) as exc_info:

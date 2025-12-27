@@ -8,9 +8,9 @@ from __future__ import annotations
 
 import hashlib
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from cortex.ingestion.core_manifest import extract_metadata_lightweight, load_manifest
 from cortex.ingestion.models import Problem
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 class ManifestValidationReport(BaseModel):
-    schema_version: Dict[str, str] = Field(
+    schema_version: dict[str, str] = Field(
         default_factory=lambda: {"id": "manifest_validation_report", "version": "1"},
         alias="schema",
     )
@@ -29,7 +29,7 @@ class ManifestValidationReport(BaseModel):
     folders_scanned: int = 0
     manifests_created: int = 0
     manifests_updated: int = 0
-    problems: List[Problem] = Field(default_factory=list)
+    problems: list[Problem] = Field(default_factory=list)
 
 
 def scan_and_refresh(root: Path) -> ManifestValidationReport:
@@ -82,7 +82,7 @@ def scan_and_refresh(root: Path) -> ManifestValidationReport:
 
         # Load existing manifest if any
         manifest_path = conv_dir / "manifest.json"
-        existing_manifest: Dict[str, Any] = {}
+        existing_manifest: dict[str, Any] = {}
         manifest_issue = None
         if manifest_path.exists():
             try:
@@ -102,30 +102,38 @@ def scan_and_refresh(root: Path) -> ManifestValidationReport:
 
         # Build new manifest with idempotent timestamps derived from manifest -> convo text -> mtime
         started_at = _preserve_str(
-            existing_manifest.get("started_at_utc"), metadata.get("start_date") or mtime_iso
+            existing_manifest.get("started_at_utc"),
+            metadata.get("start_date") or mtime_iso,
         )
         ended_at = _preserve_str(
-            existing_manifest.get("ended_at_utc"), metadata.get("end_date") or started_at
+            existing_manifest.get("ended_at_utc"),
+            metadata.get("end_date") or started_at,
         )
 
         # Start with a copy to preserve 'messages', 'participants', etc.
         new_manifest = existing_manifest.copy()
-        all_participants = metadata.get("from", []) + metadata.get("to", []) + metadata.get("cc", [])
+        all_participants = (
+            metadata.get("from", []) + metadata.get("to", []) + metadata.get("cc", [])
+        )
         # Extract email (index 1 of tuple), filter out empty ones, ensure uniqueness, and sort
         participant_emails = sorted(
-            list(set(p[1] for p in all_participants if p and p[1])),
-            key=str.lower
+            list(set(p[1] for p in all_participants if p and p[1])), key=str.lower
         )
         new_manifest.update(
             {
                 "manifest_version": "1",
                 "folder": folder_rel,
                 "subject_label": _preserve_str(
-                    existing_manifest.get("subject_label"), metadata.get("subject") or folder_rel
+                    existing_manifest.get("subject_label"),
+                    metadata.get("subject") or folder_rel,
                 ),
                 "participants": participant_emails,
-                "last_from": (metadata.get("from")[-1] if metadata.get("from") else [("", "")])[-1][1],
-                "last_to": [p[1] for p in metadata.get("to", [])],
+                "last_from": (
+                    (metadata.get("from") or [("", "")])[-1][1]
+                    if metadata.get("from")
+                    else ""
+                ),
+                "last_to": [p[1] for p in (metadata.get("to") or [])],
                 "message_count": existing_manifest.get("message_count", 0),
                 "started_at_utc": started_at,
                 "ended_at_utc": ended_at,
@@ -183,21 +191,19 @@ def _calculate_conversation_hash(path: Path) -> str:
 
 def _now_iso() -> str:
     """Current UTC time in ISO format."""
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _file_mtime_iso(path: Path) -> str:
     """Stable ISO timestamp from file mtime (UTC)."""
     try:
         mtime = path.stat().st_mtime
-        return datetime.fromtimestamp(mtime, tz=timezone.utc).strftime(
-            "%Y-%m-%dT%H:%M:%SZ"
-        )
+        return datetime.fromtimestamp(mtime, tz=UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     except OSError:
         return _now_iso()
 
 
-def _manifests_differ(old: Dict[str, Any], new: Dict[str, Any]) -> bool:
+def _manifests_differ(old: dict[str, Any], new: dict[str, Any]) -> bool:
     """Check if relevant fields differ."""
     # Compare keys that we control/compute
     keys = [

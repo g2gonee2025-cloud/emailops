@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import List, Optional
 
 import numpy as np
 import requests
@@ -26,16 +25,16 @@ class GGUFProvider:
     KaLM-Embedding-Gemma3-12B-2511 GGUF model.
     """
 
-    _instance: Optional["GGUFProvider"] = None
+    _instance: GGUFProvider | None = None
 
-    def __new__(cls, endpoint: Optional[str] = None) -> "GGUFProvider":
+    def __new__(cls, endpoint: str | None = None) -> GGUFProvider:
         """Singleton pattern."""
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._instance._initialized = False
         return cls._instance
 
-    def __init__(self, endpoint: Optional[str] = None) -> None:
+    def __init__(self, endpoint: str | None = None) -> None:
         """
         Initialize the GGUF provider.
 
@@ -71,7 +70,7 @@ class GGUFProvider:
             os.getenv("LLAMA_SERVER_ENDPOINT", "http://127.0.0.1:8090"),
         )
 
-    def embed(self, texts: List[str]) -> np.ndarray:
+    def embed(self, texts: list[str]) -> np.ndarray:
         """
         Generate embeddings for texts via llama-server.
 
@@ -141,7 +140,7 @@ class GGUFProvider:
 
         return result
 
-    def embed_queries(self, queries: List[str]) -> np.ndarray:
+    def embed_queries(self, queries: list[str]) -> np.ndarray:
         """Alias for embed() - queries use same encoding as documents for KaLM."""
         return self.embed(queries)
 

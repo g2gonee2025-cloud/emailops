@@ -4,15 +4,13 @@ Finds oversized chunks and re-chunks them into smaller, valid chunks.
 """
 
 import logging
-from typing import Any, Callable
-
-from rich.progress import Progress
-from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from collections.abc import Callable
+from typing import Any
 
 from cortex.chunking.chunker import ChunkingInput, chunk_text
 from cortex.db.models import Chunk
 from cortex.db.session import SessionLocal
+from sqlalchemy import func, select
 
 logger = logging.getLogger(__name__)
 
@@ -37,9 +35,7 @@ def run_rechunk(
 
     try:
         # Find oversized chunks
-        stmt = select(Chunk).where(
-            func.length(Chunk.text) > chunk_size_limit
-        )
+        stmt = select(Chunk).where(func.length(Chunk.text) > chunk_size_limit)
         if tenant_id:
             stmt = stmt.where(Chunk.tenant_id == tenant_id)
 
@@ -90,7 +86,6 @@ def run_rechunk(
                         "new": total_new,
                     }
                 )
-
 
         results["new_chunks_created"] = total_new
 

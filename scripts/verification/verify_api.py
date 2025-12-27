@@ -3,15 +3,15 @@ from pathlib import Path
 
 root_dir = Path(__file__).resolve().parents[2]
 sys.path.append(str(root_dir / "backend" / "src"))
-from pathlib import Path  # noqa: E402
+from pathlib import Path
 
-from fastapi import FastAPI  # noqa: E402
-from fastapi.testclient import TestClient  # noqa: E402
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 
 sys.path.append(str(Path("backend/src").resolve()))
 
-from cortex.rag_api.routes_ingest import router as ingest_router  # noqa: E402
-from cortex.rag_api.routes_search import router as search_router  # noqa: E402
+from cortex.rag_api.routes_ingest import router as ingest_router
+from cortex.rag_api.routes_search import router as search_router
 
 app = FastAPI()
 app.include_router(ingest_router)

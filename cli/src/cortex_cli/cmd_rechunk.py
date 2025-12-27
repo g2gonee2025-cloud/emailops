@@ -5,13 +5,12 @@ CLI command for re-chunking oversized chunks.
 import argparse
 from typing import Any
 
+from cortex_cli.operations.rechunk import run_rechunk
 from rich import box
 from rich.console import Console
 from rich.live import Live
-from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.progress import Progress, TextColumn
 from rich.table import Table
-
-from cortex_cli.operations.rechunk import run_rechunk
 
 console = Console()
 
@@ -22,9 +21,7 @@ def cmd_db_rechunk(args: argparse.Namespace) -> None:
     progress_table.add_row(
         "[bold cyan]Re-chunking Progress[/bold cyan]",
     )
-    progress = Progress(
-        TextColumn("{task.description}"), transient=True
-    )
+    progress = Progress(TextColumn("{task.description}"), transient=True)
     progress_table.add_row(progress)
 
     results = {}
@@ -66,9 +63,7 @@ def setup_rechunk_parser(subparsers: Any) -> None:
         help="Re-chunk oversized chunks",
         description="Finds and re-chunks oversized chunks into smaller, valid chunks.",
     )
-    rechunk_parser.add_argument(
-        "--tenant-id", type=str, help="Filter by tenant ID"
-    )
+    rechunk_parser.add_argument("--tenant-id", type=str, help="Filter by tenant ID")
     rechunk_parser.add_argument(
         "--chunk-size-limit",
         type=int,

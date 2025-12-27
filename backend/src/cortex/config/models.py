@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Any, List, Literal, Optional, Set
+from typing import Any, Literal
 
 from pydantic import AnyHttpUrl, BaseModel, Field, field_validator
 
@@ -53,7 +53,7 @@ def _env(key: str, default: Any, value_type: type = str) -> Any:
         return default
 
 
-def _env_list(key: str, default: str = "") -> List[str]:
+def _env_list(key: str, default: str = "") -> list[str]:
     """Get a comma-separated env var as a list of trimmed strings."""
     raw = _env(key, default)
     if raw is None:
@@ -114,10 +114,10 @@ class StorageConfig(BaseModel):
         ),
         description="S3-compatible endpoint URL",
     )
-    access_key: Optional[str] = Field(
+    access_key: str | None = Field(
         default_factory=lambda: _env("S3_ACCESS_KEY", None), description="S3 access key"
     )
-    secret_key: Optional[str] = Field(
+    secret_key: str | None = Field(
         default_factory=lambda: _env("S3_SECRET_KEY", None), description="S3 secret key"
     )
     bucket_raw: str = Field(
@@ -204,7 +204,7 @@ class RedisConfig(BaseModel):
         default_factory=lambda: _env("REDIS_URL", "redis://localhost:6379"),
         description="Redis connection URL",
     )
-    host: Optional[str] = Field(
+    host: str | None = Field(
         default_factory=lambda: _env("REDIS_HOST", None),
         description="Redis host",
     )
@@ -212,7 +212,7 @@ class RedisConfig(BaseModel):
         default_factory=lambda: _env("REDIS_PORT", 6379, int),
         description="Redis port",
     )
-    password: Optional[str] = Field(
+    password: str | None = Field(
         default_factory=lambda: _env("REDIS_PASSWORD", None),
         description="Redis password",
     )
@@ -307,13 +307,13 @@ class EmbeddingConfig(BaseModel):
     # vertex_model: str = Field(...)
 
     # Generic option for other embedding models
-    generic_embed_model: Optional[str] = Field(
+    generic_embed_model: str | None = Field(
         default_factory=lambda: _env("GENERIC_EMBED_MODEL", None),
         description="Generic embedding model name for other providers (set via OUTLOOKCORTEX_GENERIC_EMBED_MODEL)",
     )
 
     # CPU fallback using GGUF quantized models
-    gguf_model_path: Optional[str] = Field(
+    gguf_model_path: str | None = Field(
         default_factory=lambda: _env("GGUF_MODEL_PATH", None),
         description="Path to GGUF quantized model for CPU fallback (e.g., models/kalm-12b-q4.gguf)",
     )
@@ -344,39 +344,39 @@ class EmbeddingConfig(BaseModel):
 class DigitalOceanScalerConfig(BaseModel):
     """Scaling controls for DigitalOcean Kubernetes GPU pools."""
 
-    token: Optional[str] = Field(
+    token: str | None = Field(
         default_factory=lambda: _env("DO_TOKEN", os.getenv("DIGITALOCEAN_TOKEN")),
         description="DigitalOcean API token (falls back to DIGITALOCEAN_TOKEN)",
     )
-    cluster_id: Optional[str] = Field(
+    cluster_id: str | None = Field(
         default_factory=lambda: _env("DO_CLUSTER_ID", None),
         description="Target DOKS cluster id (e.g., c-123)",
     )
-    cluster_name: Optional[str] = Field(
+    cluster_name: str | None = Field(
         default_factory=lambda: _env("DO_CLUSTER_NAME", None),
         description="Logical cluster name when provisioning",
     )
-    node_pool_id: Optional[str] = Field(
+    node_pool_id: str | None = Field(
         default_factory=lambda: _env("DO_NODE_POOL_ID", None),
         description="GPU node pool id controlled by the scaler",
     )
-    region: Optional[str] = Field(
+    region: str | None = Field(
         default_factory=lambda: _env("DO_REGION", None),
         description="DigitalOcean region slug for provisioning",
     )
-    kubernetes_version: Optional[str] = Field(
+    kubernetes_version: str | None = Field(
         default_factory=lambda: _env("DO_K8S_VERSION", None),
         description="Desired DOKS Kubernetes version (e.g., 1.29.1-do.0)",
     )
-    gpu_node_size: Optional[str] = Field(
+    gpu_node_size: str | None = Field(
         default_factory=lambda: _env("DO_GPU_NODE_SIZE", None),
         description="Droplet size slug for GPU nodes (e.g., g-2vcpu-24gb)",
     )
-    cluster_tags: List[str] = Field(
+    cluster_tags: list[str] = Field(
         default_factory=lambda: _env_list("DO_CLUSTER_TAGS"),
         description="Tags applied to the cluster when provisioning",
     )
-    node_tags: List[str] = Field(
+    node_tags: list[str] = Field(
         default_factory=lambda: _env_list("DO_GPU_NODE_TAGS"),
         description="Tags applied to the GPU node pool when provisioning",
     )
@@ -448,7 +448,7 @@ class DigitalOceanLLMModelConfig(BaseModel):
         gt=0,
         description="Total parameters in billions (MoE aware)",
     )
-    params_active: Optional[float] = Field(
+    params_active: float | None = Field(
         default_factory=lambda: _env("DO_LLM_PARAMS_ACTIVE", 10.0, float),
         description="Active parameters per token in billions (MoE)",
     )
@@ -471,12 +471,12 @@ class DigitalOceanLLMModelConfig(BaseModel):
         ge=32_768.0,
         description="KV cache bytes per token (default ~128KB/token)",
     )
-    tps_per_gpu: Optional[float] = Field(
+    tps_per_gpu: float | None = Field(
         default_factory=lambda: _env("DO_LLM_TPS_PER_GPU", 60.0, float),
         ge=0.0,
         description="Measured tokens/sec per GPU",
     )
-    max_concurrent_requests_per_gpu: Optional[int] = Field(
+    max_concurrent_requests_per_gpu: int | None = Field(
         default_factory=lambda: _env("DO_LLM_CONCURRENCY", 6, int),
         ge=1,
         description="Concurrent requests per GPU that meet latency SLOs",
@@ -500,7 +500,7 @@ class DigitalOceanLLMEndpointConfig(BaseModel):
         default_factory=lambda: _env("DO_LLM_EMBEDDINGS_PATH", "/v1/embeddings"),
         description="Relative path for embedding requests",
     )
-    api_key: Optional[str] = Field(
+    api_key: str | None = Field(
         default_factory=lambda: _env("DO_LLM_API_KEY", None),
         description="Bearer token forwarded to the gateway",
     )
@@ -688,7 +688,7 @@ class SearchConfig(BaseModel):
         le=1.0,
         description="Reranking alpha blending factor",
     )
-    reranker_endpoint: Optional[str] = Field(
+    reranker_endpoint: str | None = Field(
         default_factory=lambda: _env("RERANKER_ENDPOINT", None),
         description="External reranker endpoint (vLLM serving mxbai-rerank-large-v2)",
     )
@@ -724,7 +724,7 @@ class EmailConfig(BaseModel):
         default_factory=lambda: _env("SENDER_REPLY_TO", ""),
         description="Reply-To address",
     )
-    allowed_senders: Set[str] = Field(
+    allowed_senders: set[str] = Field(
         default_factory=lambda: {
             s.strip() for s in (_env("ALLOWED_SENDERS", "")).split(",") if s.strip()
         },
@@ -858,7 +858,7 @@ class SecurityConfig(BaseModel):
     force_renorm: bool = Field(
         default=False, description="Force re-normalization of embeddings"
     )
-    blocked_extensions: Set[str] = Field(
+    blocked_extensions: set[str] = Field(
         default_factory=lambda: {
             s.strip().lower()
             for s in _env(
@@ -904,34 +904,34 @@ class SensitiveConfig(BaseModel):
     WARNING: Never log these values!
     """
 
-    google_application_credentials: Optional[str] = Field(
+    google_application_credentials: str | None = Field(
         default_factory=lambda: _env("GOOGLE_APPLICATION_CREDENTIALS", None),
         description="Path to GCP credentials JSON",
     )
-    openai_api_key: Optional[str] = Field(
+    openai_api_key: str | None = Field(
         default_factory=lambda: _env("OPENAI_API_KEY", None),
         description="OpenAI API key",
     )
-    cohere_api_key: Optional[str] = Field(
+    cohere_api_key: str | None = Field(
         default_factory=lambda: _env("COHERE_API_KEY", None),
         description="Cohere API key",
     )
-    huggingface_api_key: Optional[str] = Field(
+    huggingface_api_key: str | None = Field(
         default_factory=lambda: _env("HUGGINGFACE_API_KEY", None),
         description="HuggingFace API key",
     )
-    qwen_api_key: Optional[str] = Field(
+    qwen_api_key: str | None = Field(
         default_factory=lambda: _env("QWEN_API_KEY", None), description="Qwen API key"
     )
-    qwen_base_url: Optional[str] = Field(
+    qwen_base_url: str | None = Field(
         default_factory=lambda: _env("QWEN_BASE_URL", None),
         description="Qwen API base URL",
     )
-    qwen_timeout: Optional[int] = Field(
+    qwen_timeout: int | None = Field(
         default_factory=lambda: _env("QWEN_TIMEOUT", None, int),
         description="Qwen API timeout",
     )
-    run_id: Optional[str] = Field(
+    run_id: str | None = Field(
         default_factory=lambda: _env("RUN_ID", None),
         description="Unique run identifier",
     )
@@ -947,7 +947,7 @@ class SensitiveConfig(BaseModel):
 class FilePatternsConfig(BaseModel):
     """File pattern matching configuration."""
 
-    allowed_file_patterns: List[str] = Field(
+    allowed_file_patterns: list[str] = Field(
         default_factory=lambda: [
             "*.pdf",
             "*.docx",
@@ -1034,7 +1034,7 @@ class QdrantConfig(BaseModel):
         default_factory=lambda: _env("QDRANT_URL", "http://localhost:6333"),
         description="Qdrant API URL",
     )
-    api_key: Optional[str] = Field(
+    api_key: str | None = Field(
         default_factory=lambda: _env("QDRANT_API_KEY", None),
         description="Qdrant API Key",
     )

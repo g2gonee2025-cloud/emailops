@@ -6,18 +6,16 @@ Implements §6.3 of the Canonical Blueprint.
 
 from __future__ import annotations
 
-from typing import List
-
 from cortex.chunking.chunker import Span
 
 
-def detect_quoted_spans(text: str) -> List[Span]:
+def detect_quoted_spans(text: str) -> list[Span]:
     """
     Identify quotes & signatures (Talon-like logic).
 
     Returns list of {start: int, end: int} spans.
     """
-    spans: List[Span] = []
+    spans: list[Span] = []
 
     lines = text.splitlines()
     current_span_start = None
@@ -26,8 +24,7 @@ def detect_quoted_spans(text: str) -> List[Span]:
         lines[i] = line.strip()
         is_quoted = (
             line.startswith(">")
-            or line.startswith("On ")
-            and line.endswith("wrote:")
+            or (line.startswith("On ") and line.endswith("wrote:"))
             or line == "--"
         )
 

@@ -11,8 +11,9 @@ from __future__ import annotations
 import logging
 import os
 import uuid
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Any, Callable, Dict, List, Set, Tuple
+from typing import Any
 
 import networkx as nx
 from cortex.db.models import Conversation, EntityEdge, EntityNode
@@ -118,7 +119,7 @@ class GraphExtractorWithFallback:
 # --- Database Operations ---
 def get_conversations_without_graphs(
     tenant_id: str | None, limit: int | None
-) -> List[Tuple[uuid.UUID, str, str]]:
+) -> list[tuple[uuid.UUID, str, str]]:
     """Fetch conversations with summaries but no graph edges in batches."""
     conversations = []
     offset = 0
@@ -155,10 +156,10 @@ def get_conversations_without_graphs(
 
 
 def process_conversation_batch(
-    batch: List[Tuple[uuid.UUID, str, str]],
+    batch: list[tuple[uuid.UUID, str, str]],
     extractor: GraphExtractorWithFallback,
     dry_run: bool,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Process a batch of conversations, optimizing DB lookups."""
     batch_results = {
         "nodes_created": 0,
@@ -192,10 +193,10 @@ def process_conversation_batch(
 
     # Step 2: Batch DB operations
     with SessionLocal() as session:
-        all_node_names: Set[str] = {
+        all_node_names: set[str] = {
             name for item in graphs_to_persist for name in item["graph"].nodes
         }
-        tenant_ids: Set[str] = {item["tenant_id"] for item in graphs_to_persist}
+        tenant_ids: set[str] = {item["tenant_id"] for item in graphs_to_persist}
 
         # Pre-fetch existing nodes for this batch
         existing_nodes_q = select(EntityNode).where(

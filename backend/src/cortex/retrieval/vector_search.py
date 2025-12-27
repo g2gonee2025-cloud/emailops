@@ -13,7 +13,6 @@ Per pgvector official docs:
 from __future__ import annotations
 
 import logging
-from typing import List, Optional
 
 from cortex.config.loader import get_config
 from cortex.retrieval.vector_store import PgvectorStore, QdrantVectorStore, VectorResult
@@ -24,16 +23,16 @@ logger = logging.getLogger(__name__)
 
 def search_chunks_vector(
     session: Session,
-    embedding: List[float],
+    embedding: list[float],
     tenant_id: str,
     limit: int = 50,
     *,
-    ef_search: Optional[int] = None,
-    conversation_ids: Optional[List[str]] = None,
-    is_attachment: Optional[bool] = None,
-    thread_ids: Optional[List[str]] = None,  # Backward compat alias
-    file_types: Optional[List[str]] = None,  # P1 Fix: Add file_types filter
-) -> List[VectorResult]:
+    ef_search: int | None = None,
+    conversation_ids: list[str] | None = None,
+    is_attachment: bool | None = None,
+    thread_ids: list[str] | None = None,  # Backward compat alias
+    file_types: list[str] | None = None,  # P1 Fix: Add file_types filter
+) -> list[VectorResult]:
     """
     Perform vector search on chunks using a pluggable vector store.
 

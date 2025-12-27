@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Any, Dict
+from typing import Any
 
 from cortex.config.loader import EmailOpsConfig
 from pydantic import BaseModel
@@ -19,7 +19,7 @@ class DoctorCheckResult(BaseModel):
     name: str
     status: str  # "pass", "fail", "warn"
     message: str | None = None
-    details: Dict[str, Any] | None = None
+    details: dict[str, Any] | None = None
 
 
 async def check_postgres(config: EmailOpsConfig) -> DoctorCheckResult:

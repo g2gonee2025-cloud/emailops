@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
-from typing import Any, List, Literal, Optional
+from typing import Any, Literal
 
 from cortex.audit import log_audit_event
 from cortex.config.loader import get_config
@@ -62,7 +62,7 @@ def get_summarize_graph(http_request: Request = None):
     return _summarize_graph
 
 
-def _trim_history(messages: List[ChatMessage], max_history: int) -> List[ChatMessage]:
+def _trim_history(messages: list[ChatMessage], max_history: int) -> list[ChatMessage]:
     if max_history <= 0:
         return []
     if len(messages) <= max_history:
@@ -70,11 +70,11 @@ def _trim_history(messages: List[ChatMessage], max_history: int) -> List[ChatMes
     return messages[-max_history:]
 
 
-def _format_history(messages: List[ChatMessage]) -> str:
+def _format_history(messages: list[ChatMessage]) -> str:
     return "\n".join(f"{msg.role}: {msg.content}" for msg in messages)
 
 
-def _latest_user_message(messages: List[ChatMessage]) -> Optional[str]:
+def _latest_user_message(messages: list[ChatMessage]) -> str | None:
     for msg in reversed(messages):
         if msg.role == "user" and msg.content.strip():
             return msg.content.strip()
@@ -82,7 +82,7 @@ def _latest_user_message(messages: List[ChatMessage]) -> Optional[str]:
 
 
 def _decide_action(
-    request: ChatRequest, history: List[ChatMessage], latest_user: str
+    request: ChatRequest, history: list[ChatMessage], latest_user: str
 ) -> ChatActionDecision:
     prompt = (
         "You are a routing assistant for EmailOps. Decide the next action.\n"
@@ -101,9 +101,9 @@ def _decide_action(
 
 
 def _build_retrieval_diagnostics(
-    retrieval_results: Optional[SearchResults],
-) -> List[RetrievalDiagnostics]:
-    diagnostics: List[RetrievalDiagnostics] = []
+    retrieval_results: SearchResults | None,
+) -> list[RetrievalDiagnostics]:
+    diagnostics: list[RetrievalDiagnostics] = []
     if retrieval_results and retrieval_results.results:
         for idx, item in enumerate(retrieval_results.results[:10]):
             lex = item.lexical_score
@@ -179,7 +179,7 @@ async def chat_endpoint(request: ChatRequest, http_request: Request) -> ChatResp
 
 def _validate_and_prepare_request(
     request: ChatRequest,
-) -> tuple[str, List[ChatMessage]]:
+) -> tuple[str, list[ChatMessage]]:
     """Validate request and prepare history."""
     if not request.messages:
         raise HTTPException(status_code=400, detail="messages are required")
@@ -203,7 +203,7 @@ def _log_chat_audit(
     user_id: str,
     request: ChatRequest,
     response: ChatResponse,
-    correlation_id: Optional[str],
+    correlation_id: str | None,
 ) -> None:
     """Log audit event for chat."""
     try:
@@ -227,8 +227,8 @@ def _log_chat_audit(
 
 async def _handle_summarize(
     request: ChatRequest,
-    history: List[ChatMessage],
-    correlation_id: Optional[str],
+    history: list[ChatMessage],
+    correlation_id: str | None,
     decision: ChatActionDecision,
     http_request: Request = None,  # P0 Fix: Pass for app.state graph access
 ) -> ChatResponse:
@@ -273,7 +273,7 @@ async def _handle_summarize(
 async def _handle_search(
     request: ChatRequest,
     latest_user: str,
-    correlation_id: Optional[str],
+    correlation_id: str | None,
     decision: ChatActionDecision,
 ) -> ChatResponse:
     classification = tool_classify_query(
@@ -303,9 +303,9 @@ async def _handle_search(
 
 async def _handle_answer(
     request: ChatRequest,
-    history: List[ChatMessage],
+    history: list[ChatMessage],
     latest_user: str,
-    correlation_id: Optional[str],
+    correlation_id: str | None,
     decision: ChatActionDecision,
 ) -> ChatResponse:
     classification = tool_classify_query(

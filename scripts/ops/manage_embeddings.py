@@ -18,8 +18,8 @@ from sqlalchemy.orm import sessionmaker
 root_dir = Path(__file__).resolve().parents[2]
 sys.path.append(str(root_dir / "backend" / "src"))
 
-from cortex.config.loader import get_config  # noqa: E402
-from cortex.embeddings.client import get_embedding  # noqa: E402
+from cortex.config.loader import get_config
+from cortex.embeddings.client import get_embedding
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger("embed_ops")

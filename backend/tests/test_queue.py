@@ -146,7 +146,7 @@ class TestRedisStreamsQueue:
         q.nack("job-123", error="oops")
 
         # Verify status reset to PENDING (no dead letter yet)
-        args, kwargs = mock_redis.hset.call_args
+        _, kwargs = mock_redis.hset.call_args
         assert kwargs["mapping"]["status"] == JobStatus.PENDING
 
     def test_nack_dead_letter(self, mock_redis):

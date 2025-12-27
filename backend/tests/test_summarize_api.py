@@ -11,10 +11,10 @@ BACKEND_SRC = PROJECT_ROOT / "backend" / "src"
 if str(BACKEND_SRC) not in sys.path:
     sys.path.insert(0, str(BACKEND_SRC))
 
-from cortex.domain_models.facts_ledger import FactsLedger  # noqa: E402
-from cortex.domain_models.rag import ThreadSummary  # noqa: E402
-from cortex.rag_api import routes_summarize  # noqa: E402
-from main import app  # noqa: E402
+from cortex.domain_models.facts_ledger import FactsLedger
+from cortex.domain_models.rag import ThreadSummary
+from cortex.rag_api import routes_summarize
+from main import app
 
 
 class DummyGraph:

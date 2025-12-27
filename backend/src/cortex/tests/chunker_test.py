@@ -1,6 +1,7 @@
-
 import unittest
-from cortex.chunking.chunker import ChunkingInput, chunk_text, Span
+
+from cortex.chunking.chunker import ChunkingInput, Span, chunk_text
+
 
 class ChunkerTest(unittest.TestCase):
     def test_empty_text(self):
@@ -28,7 +29,7 @@ class ChunkerTest(unittest.TestCase):
             max_tokens=5,
             min_tokens=3,
             overlap_tokens=2,
-            preserve_sentences=False
+            preserve_sentences=False,
         )
         chunks = chunk_text(inp)
 
@@ -46,27 +47,44 @@ class ChunkerTest(unittest.TestCase):
         self.assertEqual(chunks[2].char_start, 26)
         self.assertEqual(chunks[2].char_end, 43)
 
-
     def test_sentence_boundary(self):
         """Test that chunks are split at sentence boundaries when requested."""
         text = "This is sentence one. This is sentence two. This is the third sentence and it is longer."
-        inp = ChunkingInput(text=text, section_path="test", max_tokens=15, min_tokens=5, overlap_tokens=3, preserve_sentences=True)
+        inp = ChunkingInput(
+            text=text,
+            section_path="test",
+            max_tokens=15,
+            min_tokens=5,
+            overlap_tokens=3,
+            preserve_sentences=True,
+        )
         chunks = chunk_text(inp)
 
         self.assertEqual(len(chunks), 2)
-        self.assertEqual(chunks[0].text, "This is sentence one. This is sentence two. This is the third sentence")
+        self.assertEqual(
+            chunks[0].text,
+            "This is sentence one. This is sentence two. This is the third sentence",
+        )
         self.assertEqual(chunks[1].text, " the third sentence and it is longer.")
 
     def test_quoted_spans(self):
         """Test that chunks are correctly classified as 'quoted_history'."""
         text = "This is a normal sentence. [QUOTE] This is a quote. [/QUOTE]"
         quoted_spans = [Span(start=29, end=50)]
-        inp = ChunkingInput(text=text, section_path="test", max_tokens=8, min_tokens=2, overlap_tokens=2, quoted_spans=quoted_spans)
+        inp = ChunkingInput(
+            text=text,
+            section_path="test",
+            max_tokens=8,
+            min_tokens=2,
+            overlap_tokens=2,
+            quoted_spans=quoted_spans,
+        )
         chunks = chunk_text(inp)
 
         chunk_types = [c.chunk_type for c in chunks]
         self.assertIn("message_body", chunk_types)
         self.assertIn("quoted_history", chunk_types)
+
 
 if __name__ == "__main__":
     unittest.main()

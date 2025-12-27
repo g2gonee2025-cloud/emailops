@@ -11,7 +11,9 @@ class ApiClient:
     """A client for interacting with the Cortex API."""
 
     def __init__(self, base_url: str | None = None, token: str | None = None) -> None:
-        self.base_url = base_url or os.getenv("CORTEX_API_URL", "http://localhost:8000/api/v1")
+        self.base_url = base_url or os.getenv(
+            "CORTEX_API_URL", "http://localhost:8000/api/v1"
+        )
         self.token = token or os.getenv("CORTEX_API_TOKEN")
 
         headers = {
@@ -21,7 +23,9 @@ class ApiClient:
         if self.token:
             headers["Authorization"] = f"Bearer {self.token}"
 
-        self.client = httpx.Client(base_url=self.base_url, headers=headers, timeout=60.0)
+        self.client = httpx.Client(
+            base_url=self.base_url, headers=headers, timeout=60.0
+        )
 
     def post(self, endpoint: str, data: dict[str, Any]) -> dict[str, Any]:
         """Make a POST request to the API."""
@@ -36,7 +40,9 @@ class ApiClient:
 
     def answer(self, query: str, tenant_id: str, user_id: str) -> dict[str, Any]:
         """Get an answer from the RAG API."""
-        return self.post("/answer", data={"query": query, "tenant_id": tenant_id, "user_id": user_id})
+        return self.post(
+            "/answer", data={"query": query, "tenant_id": tenant_id, "user_id": user_id}
+        )
 
 
 def get_api_client() -> ApiClient:

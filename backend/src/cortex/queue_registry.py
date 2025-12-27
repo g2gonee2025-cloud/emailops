@@ -6,18 +6,16 @@ by the queueing system. This avoids hardcoding job type strings
 across different parts of the application.
 """
 
-from typing import List
-
 # List of all recognized job types
 # This list should be updated when new worker types are added.
-KNOWN_JOB_TYPES: List[str] = [
+KNOWN_JOB_TYPES: list[str] = [
     "ingest",
     "reindex",
     # Add new job types here
 ]
 
 
-def get_known_job_types() -> List[str]:
+def get_known_job_types() -> list[str]:
     """
     Returns a copy of the list of known job types.
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal
 
 from cortex.retrieval.hybrid_search import KBSearchInput as RetrievalKBSearchInput
 from pydantic import BaseModel, Field
@@ -14,9 +14,9 @@ class KBSearchInput(BaseModel):
     query: str
     limit: int = Field(default=10, ge=1, description="Number of results")
     fusion_strategy: Literal["rrf", "weighted_sum"] = "rrf"
-    tenant_id: Optional[str] = None
-    user_id: Optional[str] = None
-    filters: Dict[str, Any] = Field(default_factory=dict)
+    tenant_id: str | None = None
+    user_id: str | None = None
+    filters: dict[str, Any] = Field(default_factory=dict)
 
     def to_tool_input(self) -> RetrievalKBSearchInput:
         """Convert to the retrieval-layer input model."""

@@ -19,10 +19,9 @@ Classes:
 
 import logging
 import mimetypes
-import time
+from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Iterator, Tuple
 
 import boto3
 from botocore.client import BaseClient
@@ -93,7 +92,7 @@ class S3Uploader:
         content_type, _ = mimetypes.guess_type(str(file_path))
         return content_type or "application/octet-stream"
 
-    def _upload_file(self, local_path: Path, s3_key: str) -> Tuple[str, int]:
+    def _upload_file(self, local_path: Path, s3_key: str) -> tuple[str, int]:
         """
         Uploads a single file to S3.
         """
@@ -110,7 +109,7 @@ class S3Uploader:
 
     def upload_files(
         self, source_dir: Path, files_to_upload: list[Path], s3_prefix: str
-    ) -> Iterator[Tuple[bool, str]]:
+    ) -> Iterator[tuple[bool, str]]:
         """
         Uploads a list of files to S3.
 

@@ -10,8 +10,8 @@ sys.path.append("backend/src")
 # Configure logging
 logging.basicConfig(level=logging.ERROR)
 
-from cortex.config.loader import get_config  # noqa: E402
-from cortex.llm.runtime import LLMRuntime  # noqa: E402
+from cortex.config.loader import get_config
+from cortex.llm.runtime import LLMRuntime
 
 
 def mask(s):

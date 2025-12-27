@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Literal, Optional
+from typing import Literal
 
 import numpy as np
 import numpy.linalg as npla
@@ -400,7 +400,6 @@ _STOPWORDS = {
     "or",
     "so",
     "nor",
-    "for",
     "yet",
     "if",
     "because",
@@ -442,7 +441,7 @@ _STOPWORDS = {
 def check_grounding_llm(
     answer_candidate: str,
     facts: list[str],
-    claims: Optional[list[str]] = None,
+    claims: list[str] | None = None,
 ) -> GroundingCheck:
     """
     Use LLM to verify if answer is grounded in facts.
@@ -703,12 +702,12 @@ def get_unsupported_claims(answer: str, facts: list[str]) -> list[str]:
 
 __all__ = (
     "ClaimAnalysis",
-    "GroundingCheck",
     "GroundingAnalysisResult",
+    "GroundingCheck",
     "GroundingCheckInput",
-    "tool_check_grounding",
-    "is_answer_grounded",
-    "get_unsupported_claims",
-    "extract_claims_simple",
     "extract_claims_llm",
+    "extract_claims_simple",
+    "get_unsupported_claims",
+    "is_answer_grounded",
+    "tool_check_grounding",
 )

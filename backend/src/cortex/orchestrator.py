@@ -9,10 +9,7 @@ from __future__ import annotations
 
 import logging
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
-from typing import Optional
-from uuid import UUID
 
 from cortex.indexer import Indexer
 from cortex.ingestion.processor import IngestionProcessor
@@ -67,7 +64,7 @@ class PipelineOrchestrator:
         self.stats = PipelineStats()
 
     def run(
-        self, source_prefix: str = "Outlook/", limit: Optional[int] = None
+        self, source_prefix: str = "Outlook/", limit: int | None = None
     ) -> PipelineStats:
         """
         Run the full pipeline for a given S3 prefix.

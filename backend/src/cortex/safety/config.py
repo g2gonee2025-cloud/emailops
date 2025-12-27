@@ -5,7 +5,6 @@ Safety Configuration.
 from __future__ import annotations
 
 import re
-from typing import List, Set
 
 from pydantic import BaseModel, Field
 
@@ -16,7 +15,7 @@ class PolicyConfig(BaseModel):
     """
 
     # Risk levels for actions
-    low_risk_actions: Set[str] = Field(
+    low_risk_actions: set[str] = Field(
         default_factory=lambda: {
             "search",
             "read_thread",
@@ -26,7 +25,7 @@ class PolicyConfig(BaseModel):
             "answer_question",
         }
     )
-    medium_risk_actions: Set[str] = Field(
+    medium_risk_actions: set[str] = Field(
         default_factory=lambda: {
             "draft_email",
             "create_draft",
@@ -34,7 +33,7 @@ class PolicyConfig(BaseModel):
             "upload_attachment",
         }
     )
-    high_risk_actions: Set[str] = Field(
+    high_risk_actions: set[str] = Field(
         default_factory=lambda: {
             "send_email",
             "delete_message",
@@ -51,7 +50,7 @@ class PolicyConfig(BaseModel):
     max_recipients_auto_approve: int = 10
 
     # Sensitive content patterns (using more generic regex)
-    sensitive_patterns: List[str] = Field(
+    sensitive_patterns: list[str] = Field(
         default_factory=lambda: [
             r"\b(confidential|secret|private|internal only)\b",
             r"\b(password|credential|api.?key|token)\b",
@@ -61,12 +60,12 @@ class PolicyConfig(BaseModel):
     )
 
     # Attachment policies
-    dangerous_extensions: Set[str] = Field(
+    dangerous_extensions: set[str] = Field(
         default_factory=lambda: {".exe", ".bat", ".cmd", ".ps1", ".vbs", ".js"}
     )
     max_attachment_size_mb: int = 25
 
-    def get_sensitive_patterns(self) -> List[re.Pattern]:
+    def get_sensitive_patterns(self) -> list[re.Pattern]:
         """Compile and return sensitive patterns as regex objects."""
         return [re.compile(p, re.IGNORECASE) for p in self.sensitive_patterns]
 

@@ -8,14 +8,14 @@ BACKEND_SRC = REPO_ROOT / "backend" / "src"
 if str(BACKEND_SRC) not in sys.path:
     sys.path.insert(0, str(BACKEND_SRC))
 
-from cortex.config.loader import reset_config  # noqa: E402
+from cortex.config.loader import reset_config
 
 # Ensure the CLI package is importable when running tests from repo root
 CLI_SRC = REPO_ROOT / "cli" / "src"
 if str(CLI_SRC) not in sys.path:
     sys.path.insert(0, str(CLI_SRC))
 
-from cortex_cli import main as cli_main  # noqa: E402
+from cortex_cli import main as cli_main
 
 
 def test_show_config_uses_embedding_section(capsys, monkeypatch) -> None:

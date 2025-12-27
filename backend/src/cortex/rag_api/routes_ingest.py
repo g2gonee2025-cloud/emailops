@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import logging
 import uuid
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Literal, Optional
+from datetime import UTC, datetime
+from typing import Any, Literal
 
 from cortex.context import tenant_id_ctx
 from cortex.ingestion.s3_source import S3ConversationFolder, S3SourceHandler
@@ -31,7 +31,7 @@ class IngestFromS3Request(BaseModel):
     """Request to ingest conversations from S3/Spaces."""
 
     prefix: str = Field(default="Outlook/", description="S3 prefix to scan")
-    limit: Optional[int] = Field(default=None, description="Max folders to process")
+    limit: int | None = Field(default=None, description="Max folders to process")
     dry_run: bool = Field(
         default=False, description="If true, only list folders without ingesting"
     )
@@ -43,7 +43,7 @@ class IngestFromS3Response(BaseModel):
     job_id: str
     status: str
     folders_found: int
-    folders_to_process: List[str] = Field(default_factory=list)
+    folders_to_process: list[str] = Field(default_factory=list)
     message: str
 
 
@@ -65,28 +65,28 @@ class ListS3FoldersResponse(BaseModel):
     """Response listing S3 conversation folders."""
 
     prefix: str
-    folders: List[Dict[str, Any]]
+    folders: list[dict[str, Any]]
     count: int
 
 
 class PushDocument(BaseModel):
     """Document payload for push ingestion."""
 
-    document_id: Optional[str] = Field(
+    document_id: str | None = Field(
         default=None, description="External document ID for idempotent upserts"
     )
-    title: Optional[str] = Field(default=None, description="Optional document title")
-    source: Optional[str] = Field(
+    title: str | None = Field(default=None, description="Optional document title")
+    source: str | None = Field(
         default=None, description="Source identifier or storage URI"
     )
     text_type: Literal["email", "attachment"] = Field(
         default="attachment", description="Preprocessing profile for the document"
     )
-    section_path: Optional[str] = Field(
+    section_path: str | None = Field(
         default=None, description="Optional section path for chunk metadata"
     )
     text: str = Field(..., min_length=1, description="Document text to index")
-    metadata: Dict[str, Any] = Field(
+    metadata: dict[str, Any] = Field(
         default_factory=dict, description="Optional metadata to store with the document"
     )
 
@@ -94,19 +94,19 @@ class PushDocument(BaseModel):
 class PushIngestRequest(BaseModel):
     """Request to push documents into the index."""
 
-    documents: List[PushDocument] = Field(
+    documents: list[PushDocument] = Field(
         default_factory=list, description="Documents to index"
     )
     generate_embeddings: bool = Field(
         default=True, description="Generate embeddings for ingested chunks"
     )
-    chunk_size: Optional[int] = Field(
+    chunk_size: int | None = Field(
         default=None, ge=128, description="Override max tokens per chunk"
     )
-    chunk_overlap: Optional[int] = Field(
+    chunk_overlap: int | None = Field(
         default=None, ge=0, description="Override overlap tokens per chunk"
     )
-    min_tokens: Optional[int] = Field(
+    min_tokens: int | None = Field(
         default=None, ge=1, description="Override minimum tokens per chunk"
     )
 
@@ -119,7 +119,7 @@ class PushIngestResponse(BaseModel):
     documents_ingested: int
     chunks_created: int
     embeddings_generated: int
-    errors: List[str] = Field(default_factory=list)
+    errors: list[str] = Field(default_factory=list)
     message: str
 
 
@@ -127,7 +127,7 @@ class PushIngestResponse(BaseModel):
 # In-memory job tracking (for MVP - replace with Redis/DB in production)
 # -----------------------------------------------------------------------------
 
-_active_jobs: Dict[str, Dict[str, Any]] = {}
+_active_jobs: dict[str, dict[str, Any]] = {}
 
 
 # -----------------------------------------------------------------------------
@@ -169,9 +169,7 @@ def list_s3_folders(
         )
     except Exception as e:
         logger.error("Failed to list S3 folders: %s", e, exc_info=True)
-        raise HTTPException(
-            status_code=500, detail=f"Failed to list S3 folders: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to list S3 folders: {e!s}")
 
 
 @router.post("/s3/start", response_model=IngestFromS3Response)
@@ -214,7 +212,7 @@ def start_s3_ingestion(
         # Initialize job tracking
         _active_jobs[job_id] = {
             "status": "started",
-            "started_at": datetime.now(timezone.utc).isoformat(),
+            "started_at": datetime.now(UTC).isoformat(),
             "folders_found": len(folders),
             "folders_processed": 0,
             "threads_created": 0,
@@ -244,9 +242,7 @@ def start_s3_ingestion(
 
     except Exception as e:
         logger.error("Failed to start S3 ingestion: %s", e, exc_info=True)
-        raise HTTPException(
-            status_code=500, detail=f"Failed to start ingestion: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to start ingestion: {e!s}")
 
 
 @router.post("", response_model=PushIngestResponse)
@@ -298,7 +294,7 @@ async def get_ingestion_status(job_id: str):
 def _process_s3_folders_with_embeddings(
     job_id: str,
     tenant_id: str,
-    folders: List[S3ConversationFolder],
+    folders: list[S3ConversationFolder],
 ):
     """Process S3 folders with embedding generation."""
     from cortex.ingestion.processor import IngestionProcessor
@@ -322,7 +318,7 @@ def _process_s3_folders_with_embeddings(
                 "embeddings_generated": stats.embeddings_generated,
                 "errors": stats.errors,
                 "skipped": stats.skipped,
-                "completed_at": datetime.now(timezone.utc).isoformat(),
+                "completed_at": datetime.now(UTC).isoformat(),
                 "message": f"Processed {stats.folders_processed} folders, created {stats.chunks_created} chunks with embeddings",
             }
         )
@@ -337,7 +333,7 @@ def _process_s3_folders_with_embeddings(
             {
                 "status": "failed",
                 "error": str(e),
-                "message": f"Ingestion failed: {str(e)}",
+                "message": f"Ingestion failed: {e!s}",
             }
         )
 
@@ -360,7 +356,6 @@ def _process_push_ingest(
     from cortex.db.models import Chunk
     from cortex.db.session import SessionLocal, set_session_tenant
     from cortex.embeddings.client import EmbeddingsClient
-    from cortex.ingestion.models import IngestJobRequest
     from cortex.ingestion.text_preprocessor import get_text_preprocessor
     from cortex.ingestion.writer import ChunkRecord, DBWriter, ensure_chunk_metadata
     from sqlalchemy import delete
@@ -377,14 +372,14 @@ def _process_push_ingest(
     documents_ingested = 0
     chunks_created = 0
     embeddings_generated = 0
-    errors: List[str] = []
+    errors: list[str] = []
 
     tenant_ns = uuid.uuid5(uuid.NAMESPACE_DNS, f"tenant:{tenant_id}")
 
     # Data to be written in a single transaction
     conversations_to_write = []
     chunks_to_write = []
-    cleanup_info: Dict[uuid.UUID, List[uuid.UUID]] = {}
+    cleanup_info: dict[uuid.UUID, list[uuid.UUID]] = {}
 
     for document in request.documents:
         try:
@@ -414,7 +409,7 @@ def _process_push_ingest(
             )
 
             chunk_texts = [chunk.text for chunk in chunk_models]
-            embeddings: List[List[float]] = []
+            embeddings: list[list[float]] = []
             if embeddings_client and chunk_texts:
                 embeddings = embeddings_client.embed_batch(chunk_texts)
 

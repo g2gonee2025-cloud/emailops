@@ -10,9 +10,10 @@ from __future__ import annotations
 import logging
 import os
 import tempfile
+from collections.abc import Iterator
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional
+from typing import Any
 
 import boto3
 from botocore.config import Config
@@ -29,8 +30,8 @@ class S3ConversationFolder(BaseModel):
 
     prefix: str  # e.g., "outlook/EML-2024-12-01_ABC123 - Subject/"
     name: str  # e.g., "EML-2024-12-01_ABC123 - Subject"
-    files: List[str] = Field(default_factory=list)  # List of file keys in this folder
-    last_modified: Optional[datetime] = None  # Max mtime of files in folder
+    files: list[str] = Field(default_factory=list)  # List of file keys in this folder
+    last_modified: datetime | None = None  # Max mtime of files in folder
 
 
 class S3SourceHandler:
@@ -43,11 +44,11 @@ class S3SourceHandler:
 
     def __init__(
         self,
-        endpoint_url: Optional[str] = None,
-        region: Optional[str] = None,
-        access_key: Optional[str] = None,
-        secret_key: Optional[str] = None,
-        bucket: Optional[str] = None,
+        endpoint_url: str | None = None,
+        region: str | None = None,
+        access_key: str | None = None,
+        secret_key: str | None = None,
+        bucket: str | None = None,
     ):
         """Initialize S3 client with config or explicit params."""
         config = get_config()
@@ -58,7 +59,7 @@ class S3SourceHandler:
         self.secret_key = secret_key or config.storage.secret_key
         self.bucket = bucket or config.storage.bucket_raw
 
-        self._client: Optional[Any] = None
+        self._client: Any | None = None
 
     @property
     def client(self) -> Any:
@@ -86,7 +87,7 @@ class S3SourceHandler:
                 pass
             self._client = None
 
-    def __enter__(self) -> "S3SourceHandler":
+    def __enter__(self) -> S3SourceHandler:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
@@ -95,7 +96,7 @@ class S3SourceHandler:
     def list_conversation_folders(
         self,
         prefix: str = "Outlook/",
-        limit: Optional[int] = None,
+        limit: int | None = None,
     ) -> Iterator[S3ConversationFolder]:
         """
         List conversation folders under a prefix.
@@ -147,7 +148,7 @@ class S3SourceHandler:
                 if limit and folder_count >= limit:
                     return
 
-    def _list_folder_files(self, prefix: str) -> tuple[List[str], Optional[datetime]]:
+    def _list_folder_files(self, prefix: str) -> tuple[list[str], datetime | None]:
         """List all files in a folder (recursively) and find max mtime."""
         files = []
         max_mtime = None
@@ -166,7 +167,7 @@ class S3SourceHandler:
 
         return files, max_mtime
 
-    def list_files_in_folder(self, prefix: str) -> tuple[List[str], Optional[datetime]]:
+    def list_files_in_folder(self, prefix: str) -> tuple[list[str], datetime | None]:
         """Public method to list files in a folder."""
         return self._list_folder_files(prefix)
 
@@ -187,7 +188,7 @@ class S3SourceHandler:
     def download_conversation_folder(
         self,
         folder: S3ConversationFolder,
-        local_dir: Optional[Path] = None,
+        local_dir: Path | None = None,
     ) -> Path:
         """
         Download a conversation folder to local disk.
@@ -230,7 +231,7 @@ class S3SourceHandler:
         response = self.client.get_object(Bucket=self.bucket, Key=key)
         return response["Body"].read()
 
-    def get_json_object(self, key: str) -> Dict[str, Any]:
+    def get_json_object(self, key: str) -> dict[str, Any]:
         """Get and parse a JSON object from S3."""
         content = self.get_object_content(key)
         decoded = strip_control_chars(content.decode("utf-8-sig"))
@@ -260,7 +261,7 @@ class S3SourceHandler:
         except Exception:
             return False
 
-    def list_objects(self, prefix: str) -> Iterator[Dict[str, Any]]:
+    def list_objects(self, prefix: str) -> Iterator[dict[str, Any]]:
         """
         List all objects under a given prefix.
         Args:

@@ -9,8 +9,8 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-from datetime import datetime, timezone
-from typing import Any, Dict, Literal, Optional
+from datetime import UTC, datetime, timezone
+from typing import Any, Literal, Optional
 from uuid import uuid4
 
 from cortex.db.models import AuditLog
@@ -29,27 +29,27 @@ class AuditEntry(BaseModel):
     tenant_id: str
     user_or_agent: str
     action: str
-    input_snapshot: Dict[str, Any]
-    output_snapshot: Optional[Dict[str, Any]] = None
-    policy_decision: Optional[PolicyDecision] = None
+    input_snapshot: dict[str, Any]
+    output_snapshot: dict[str, Any] | None = None
+    policy_decision: PolicyDecision | None = None
     ts: datetime
-    correlation_id: Optional[str] = None
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    correlation_id: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 def log_audit_event(
     tenant_id: str,
     user_or_agent: str,
     action: str,
-    input_data: Optional[Any] = None,
-    output_data: Optional[Any] = None,
-    input_hash: Optional[str] = None,
-    output_hash: Optional[str] = None,
-    policy_decisions: Optional[Dict[str, Any]] = None,
+    input_data: Any | None = None,
+    output_data: Any | None = None,
+    input_hash: str | None = None,
+    output_hash: str | None = None,
+    policy_decisions: dict[str, Any] | None = None,
     risk_level: Literal["low", "medium", "high"] = "low",
-    correlation_id: Optional[str] = None,
-    metadata: Optional[Dict[str, Any]] = None,
-    db_session: Optional[SessionLocal] = None,
+    correlation_id: str | None = None,
+    metadata: dict[str, Any] | None = None,
+    db_session: SessionLocal | None = None,
 ) -> None:
     """
     Record an audit event to the database.
@@ -96,7 +96,7 @@ def log_audit_event(
         # Create record
         record = AuditLog(
             audit_id=uuid4(),
-            ts=datetime.now(timezone.utc),
+            ts=datetime.now(UTC),
             tenant_id=tenant_id,
             user_or_agent=user_or_agent,
             action=action,
@@ -124,12 +124,12 @@ def tool_audit_log(
     tenant_id: str,
     user_or_agent: str,
     action: str,
-    input_snapshot: Dict[str, Any],
-    output_snapshot: Optional[Dict[str, Any]] = None,
-    policy_decision: Optional[PolicyDecision] = None,
-    correlation_id: Optional[str] = None,
-    metadata: Optional[Dict[str, Any]] = None,
-    db_session: Optional[Any] = None,
+    input_snapshot: dict[str, Any],
+    output_snapshot: dict[str, Any] | None = None,
+    policy_decision: PolicyDecision | None = None,
+    correlation_id: str | None = None,
+    metadata: dict[str, Any] | None = None,
+    db_session: Any | None = None,
 ) -> AuditEntry:
     """
     Create and persist an audit log entry.
@@ -152,7 +152,7 @@ def tool_audit_log(
     Returns:
         AuditEntry with all recorded fields
     """
-    ts = datetime.now(timezone.utc)
+    ts = datetime.now(UTC)
 
     # Determine risk level from policy decision or default
     risk_level: Literal["low", "medium", "high"] = "low"
@@ -206,10 +206,10 @@ def tool_audit_log(
 
 def get_audit_trail(
     tenant_id: str,
-    action: Optional[str] = None,
-    user_or_agent: Optional[str] = None,
-    correlation_id: Optional[str] = None,
-    since: Optional[datetime] = None,
+    action: str | None = None,
+    user_or_agent: str | None = None,
+    correlation_id: str | None = None,
+    since: datetime | None = None,
     limit: int = 100,
 ) -> list[AuditLog]:
     """
@@ -253,10 +253,10 @@ def get_audit_trail(
 def get_audit_log_cli(
     tenant_id: str,
     limit: int = 100,
-    since: Optional[datetime] = None,
-    user_or_agent: Optional[str] = None,
-    action: Optional[str] = None,
-    correlation_id: Optional[str] = None,
+    since: datetime | None = None,
+    user_or_agent: str | None = None,
+    action: str | None = None,
+    correlation_id: str | None = None,
 ) -> None:
     """CLI-friendly audit log query."""
     from rich.console import Console

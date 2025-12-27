@@ -2,7 +2,7 @@
 Unit tests for Search Filters and Grammar Parser.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from cortex.retrieval.filters import (
     SearchFilters,
@@ -123,7 +123,7 @@ class TestParseFilterGrammar:
 
     def test_case_insensitive_keys(self):
         """Test that filter keys are case-insensitive."""
-        filters, clean = parse_filter_grammar("FROM:John@Test.com")
+        filters, _ = parse_filter_grammar("FROM:John@Test.com")
 
         assert filters.from_emails == {"john@test.com"}
 
@@ -148,7 +148,7 @@ class TestApplyFiltersToSql:
 
     def test_date_from_filter(self):
         """Test date_from generates correct SQL."""
-        f = SearchFilters(date_from=datetime(2024, 1, 1, tzinfo=timezone.utc))
+        f = SearchFilters(date_from=datetime(2024, 1, 1, tzinfo=UTC))
         clause, params = apply_filters_to_sql(f)
 
         assert "latest_date >= :date_from" in clause
@@ -211,6 +211,7 @@ class TestFilterResultsPostQuery:
         filtered = filter_results_post_query(results, f)
         assert len(filtered) == 1
         assert filtered[0]["id"] == "1"
+
     def test_participant_filters_no_match(self):
         """Test OR logic for participant filters (no match)."""
         results = [

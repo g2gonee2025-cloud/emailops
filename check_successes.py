@@ -8,7 +8,7 @@ def check_successes(report_path):
         return
 
     try:
-        with open(report_path, "r") as f:
+        with open(report_path) as f:
             results = json.load(f)
 
         # Determine structure

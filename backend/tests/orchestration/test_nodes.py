@@ -2,7 +2,6 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-
 from cortex.orchestration.nodes import _safe_stat_mb
 
 

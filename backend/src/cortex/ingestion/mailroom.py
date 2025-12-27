@@ -13,9 +13,9 @@ import shutil
 import stat
 import tempfile
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 from urllib.parse import urlparse
 
 from cortex.ingestion.core_manifest import resolve_subject
@@ -49,8 +49,8 @@ def process_job(job: IngestJobRequest) -> IngestJobSummary:
         if not job.source_uri:
             raise ValueError("Source URI is required")
 
-        local_convo_dir: Optional[Path] = None
-        temp_dir: Optional[Path] = None
+        local_convo_dir: Path | None = None
+        temp_dir: Path | None = None
 
         try:
             temp_dir, local_convo_dir = _resolve_source(job)
@@ -83,7 +83,7 @@ def _validate_local_path(path_str: str) -> Path:
     return path
 
 
-def _normalize_s3_prefix(source_uri: str, bucket: str) -> Tuple[str, Optional[str]]:
+def _normalize_s3_prefix(source_uri: str, bucket: str) -> tuple[str, str | None]:
     """Return prefix and optional bucket extracted from a URI or raw prefix."""
     parsed = urlparse(source_uri)
     if parsed.scheme in {"s3", "spaces"}:
@@ -92,7 +92,7 @@ def _normalize_s3_prefix(source_uri: str, bucket: str) -> Tuple[str, Optional[st
     return source_uri.lstrip("/"), None
 
 
-def _download_s3_source(source_uri: str) -> Tuple[Path, Path]:
+def _download_s3_source(source_uri: str) -> tuple[Path, Path]:
     from cortex.ingestion.s3_source import create_s3_source
 
     handler = create_s3_source()
@@ -115,8 +115,8 @@ def _download_s3_source(source_uri: str) -> Tuple[Path, Path]:
 
 
 def _download_sftp_source(
-    source_uri: str, options: Dict[str, Any]
-) -> Tuple[Path, Path]:
+    source_uri: str, options: dict[str, Any]
+) -> tuple[Path, Path]:
     parsed = urlparse(source_uri if "://" in source_uri else f"sftp://{source_uri}")
     if parsed.scheme and parsed.scheme != "sftp":
         raise ValueError(f"Invalid SFTP URI: {source_uri}")
@@ -287,11 +287,11 @@ def _ingest_conversation(
 
 def _prepare_conversation_data(
     convo_dir: Path,
-    convo_data: Dict[str, Any],
+    convo_data: dict[str, Any],
     conversation_id: uuid.UUID,
     job: IngestJobRequest,
     tenant_ns: uuid.UUID,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     from cortex.ingestion.conversation_parser import (
         extract_participants_from_conversation_txt,
     )
@@ -302,8 +302,8 @@ def _prepare_conversation_data(
     subject, subject_norm = resolve_subject(manifest, summary_json, convo_dir.name)
 
     # Parse dates
-    earliest_date = datetime.now(timezone.utc)
-    latest_date = datetime.now(timezone.utc)
+    earliest_date = datetime.now(UTC)
+    latest_date = datetime.now(UTC)
 
     if manifest.get("started_at_utc"):
         try:
@@ -344,13 +344,13 @@ def _prepare_conversation_data(
 
 
 def _process_body_and_attachments(
-    convo_data: Dict[str, Any],
+    convo_data: dict[str, Any],
     conversation_id: uuid.UUID,
     tenant_ns: uuid.UUID,
     tenant_id: str,
     preprocessor: Any,
     convo_dir: Path,
-) -> Tuple[str, List[Any], List[Dict[str, Any]]]:
+) -> tuple[str, list[Any], list[dict[str, Any]]]:
     from cortex.ingestion.attachments_log import parse_attachments_log
     from cortex.ingestion.quoted_masks import detect_quoted_spans
 
@@ -363,7 +363,7 @@ def _process_body_and_attachments(
 
     # Attachments
     att_log_meta = parse_attachments_log(convo_dir)
-    attachments_data: List[Dict[str, Any]] = []
+    attachments_data: list[dict[str, Any]] = []
     sorted_attachments = sorted(
         convo_data.get("attachments", []), key=lambda x: x["path"]
     )
@@ -405,16 +405,16 @@ def _process_body_and_attachments(
 
 def _create_chunks(
     cleaned_body: str,
-    attachments_data: List[Dict[str, Any]],
-    quoted_spans: List[Any],
+    attachments_data: list[dict[str, Any]],
+    quoted_spans: list[Any],
     conversation_id: uuid.UUID,
     tenant_ns: uuid.UUID,
     config: Any,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     from cortex.chunking.chunker import ChunkingInput, chunk_text
     from cortex.ingestion.writer import compute_content_hash
 
-    chunks_data: List[Dict[str, Any]] = []
+    chunks_data: list[dict[str, Any]] = []
 
     if cleaned_body:
         body_chunks = chunk_text(
@@ -493,16 +493,16 @@ def _create_chunks(
 
 
 def _process_intelligence(
-    chunks_data: List[Dict[str, Any]],
+    chunks_data: list[dict[str, Any]],
     conversation_id: uuid.UUID,
     tenant_ns: uuid.UUID,
     job: IngestJobRequest,
-) -> Tuple[Dict[str, Any], Optional[str]]:
+) -> tuple[dict[str, Any], str | None]:
     """
     Generate intelligence (summary, graph) and return (graph_data, summary_text).
     """
     graph_data = {"nodes": [], "edges": []}
-    summary_text_out: Optional[str] = None
+    summary_text_out: str | None = None
 
     if not chunks_data:
         return graph_data, None
@@ -587,7 +587,7 @@ def _process_intelligence(
 
 def _extract_graph(
     summary_context: str, conversation_id: uuid.UUID, tenant_id: str
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Extract graph nodes and edges from text.
     Returns dict with 'nodes' and 'edges' lists for deferred writing.
@@ -630,7 +630,7 @@ def _extract_graph(
     return graph_data
 
 
-def _resolve_source(job: IngestJobRequest) -> Tuple[Optional[Path], Optional[Path]]:
+def _resolve_source(job: IngestJobRequest) -> tuple[Path | None, Path | None]:
     """Resolve and download source based on job type."""
     if job.source_type == "local_upload":
         return None, _validate_local_path(job.source_uri)
@@ -643,10 +643,10 @@ def _resolve_source(job: IngestJobRequest) -> Tuple[Optional[Path], Optional[Pat
 
 
 def _write_results(
-    conversation_data: Dict[str, Any],
-    attachments_data: List[Dict[str, Any]],
-    chunks_data: List[Dict[str, Any]],
-    graph_data: Dict[str, Any],
+    conversation_data: dict[str, Any],
+    attachments_data: list[dict[str, Any]],
+    chunks_data: list[dict[str, Any]],
+    graph_data: dict[str, Any],
     tenant_id: str,
     job: IngestJobRequest,
 ) -> None:
@@ -654,7 +654,7 @@ def _write_results(
     from cortex.db.session import SessionLocal, set_session_tenant
     from cortex.ingestion.writer import DBWriter
 
-    results: Dict[str, Any] = {
+    results: dict[str, Any] = {
         "conversation": conversation_data,
         "attachments": attachments_data,
         "chunks": chunks_data,
