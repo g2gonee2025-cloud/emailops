@@ -1,8 +1,22 @@
 import requests
+import os
 
-SONAR_URL = "http://localhost:9000"
-AUTH = ("admin", "emailops-strong-password")
-PROJECT_KEY = "emailops-vertex-ai"
+# Try to load .env file for local development.
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    print("dotenv not installed, skipping loading .env file.")
+
+
+SONAR_URL = os.environ.get("SONAR_URL", "http://localhost:9000")
+SONAR_USER = os.environ.get("SONAR_USER", "admin")
+SONAR_PASSWORD = os.environ.get("SONAR_PASSWORD", "emailops-strong-password")
+AUTH = (SONAR_USER, SONAR_PASSWORD)
+PROJECT_KEY = os.environ.get("SONAR_PROJECT_KEY", "emailops-vertex-ai")
+
+if SONAR_URL == "http://localhost:9000":
+    print("Warning: SONAR_URL is not set, using default value.")
 
 
 def check_gate():
