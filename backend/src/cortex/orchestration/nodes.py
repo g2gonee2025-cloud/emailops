@@ -539,30 +539,41 @@ def node_handle_error(state: Dict[str, Any]) -> Dict[str, Any]:
     * logs via observability.get_logger
     * sets state.error
     """
-    error = state.get("error", "Unknown error")
+    error_detail = state.get("error", "Unknown error")
     obs_logger = get_logger(__name__)
 
+    # Sanitize error for external audit logging to prevent PII leakage
+    error_for_audit = "An internal error occurred during graph execution."
+
     obs_logger.error(
-        f"Graph execution error: {error}", extra={"tenant_id": state.get("tenant_id")}
+        f"Graph execution error: {error_detail}",
+        extra={"tenant_id": state.get("tenant_id")},
+        exc_info=True,
     )
 
-    # Record error to audit_log
+    # Record sanitized error to audit_log
     try:
+        query = state.get("query", "")
+        # Basic sanitization for query in case it's part of the error
+        safe_query_snippet = (
+            f"{query[:50]}..." if isinstance(query, str) and len(query) > 50 else query
+        )
+
         log_audit_event(
             tenant_id=state.get("tenant_id", "unknown"),
             user_or_agent=state.get("user_id", "system"),
             action="graph_error",
             risk_level="medium",
             metadata={
-                "error": str(error),
-                "query": state.get("query", ""),
+                "error": error_for_audit,
+                "query_snippet": safe_query_snippet,
                 "graph_type": state.get("_graph_type", "unknown"),
             },
         )
     except Exception as e:
         obs_logger.warning(f"Failed to log audit event: {e}")
 
-    return {"error": str(error)}
+    return {"error": error_for_audit}
 
 
 def node_assemble_context(state: Dict[str, Any]) -> Dict[str, Any]:
