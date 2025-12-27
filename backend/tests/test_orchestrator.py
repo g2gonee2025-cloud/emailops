@@ -1,4 +1,3 @@
-
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -26,6 +25,7 @@ class TestPipelineOrchestrator(unittest.TestCase):
         # Assert
         self.assertEqual(stats.folders_found, 2)
         self.assertEqual(orchestrator._process_single_folder.call_count, 2)
+
 
 if __name__ == "__main__":
     unittest.main()

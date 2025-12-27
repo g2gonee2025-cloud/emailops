@@ -1,11 +1,11 @@
-
-import pytest
-from unittest.mock import patch, MagicMock, ANY
 import argparse
 
 # Make imports work as if running from the project root
 import sys
 from pathlib import Path
+from unittest.mock import ANY, MagicMock, patch
+
+import pytest
 
 # Add backend and CLI source paths
 backend_src = str(Path(__file__).resolve().parents[2] / "backend/src")
@@ -15,11 +15,11 @@ if backend_src not in sys.path:
 if cli_src not in sys.path:
     sys.path.insert(0, cli_src)
 
+from cortex.safety.grounding import ClaimAnalysis, GroundingCheck
 from cortex_cli.cmd_grounding import run_grounding_check
-from cortex.safety.grounding import GroundingCheck, ClaimAnalysis
-
 
 # --- Mocks and Fixtures ---
+
 
 @pytest.fixture
 def mock_tool_check_grounding():
@@ -27,11 +27,14 @@ def mock_tool_check_grounding():
     with patch("cortex_cli.cmd_grounding.tool_check_grounding") as mock_tool:
         yield mock_tool
 
+
 @pytest.fixture
 def mock_console_and_table():
     """Fixture to mock both the Rich Console and Table."""
-    with patch("cortex_cli.cmd_grounding.Console") as mock_console_class, \
-         patch("cortex_cli.cmd_grounding.Table") as mock_table_class:
+    with (
+        patch("cortex_cli.cmd_grounding.Console") as mock_console_class,
+        patch("cortex_cli.cmd_grounding.Table") as mock_table_class,
+    ):
         mock_console_instance = MagicMock()
         mock_table_instance = MagicMock()
         mock_console_class.return_value = mock_console_instance
@@ -41,7 +44,10 @@ def mock_console_and_table():
 
 # --- Test Cases ---
 
-def test_run_grounding_check_fully_grounded(mock_tool_check_grounding, mock_console_and_table):
+
+def test_run_grounding_check_fully_grounded(
+    mock_tool_check_grounding, mock_console_and_table
+):
     """Verify the CLI output for a fully grounded answer."""
     mock_console, mock_table = mock_console_and_table
     # Arrange: Configure the mock to return a "grounded" result
@@ -80,12 +86,17 @@ def test_run_grounding_check_fully_grounded(mock_tool_check_grounding, mock_cons
     assert not call_args.use_llm
 
     # Check the console output
-    mock_console.print.assert_any_call("Overall Status: [bold green]GROUNDED[/bold green]")
+    mock_console.print.assert_any_call(
+        "Overall Status: [bold green]GROUNDED[/bold green]"
+    )
     mock_console.print.assert_any_call("Confidence: 0.95")
     # Check that a table was created for the claim analysis
-    mock_console.print.assert_any_call(ANY) # This would be the table object
+    mock_console.print.assert_any_call(ANY)  # This would be the table object
 
-def test_run_grounding_check_not_grounded(mock_tool_check_grounding, mock_console_and_table):
+
+def test_run_grounding_check_not_grounded(
+    mock_tool_check_grounding, mock_console_and_table
+):
     """Verify the CLI output for a non-grounded answer."""
     mock_console, mock_table = mock_console_and_table
     # Arrange
@@ -120,7 +131,9 @@ def test_run_grounding_check_not_grounded(mock_tool_check_grounding, mock_consol
     call_args = mock_tool_check_grounding.call_args[0][0]
     assert call_args.use_llm
 
-    mock_console.print.assert_any_call("Overall Status: [bold red]NOT GROUNDED[/bold red]")
+    mock_console.print.assert_any_call(
+        "Overall Status: [bold red]NOT GROUNDED[/bold red]"
+    )
     mock_console.print.assert_any_call("Confidence: 0.88")
 
     # Check that the table's row contains the unsupported icon '❌'
@@ -133,13 +146,15 @@ def test_run_grounding_check_not_grounded(mock_tool_check_grounding, mock_consol
     mock_console.print.assert_any_call(mock_table)
 
 
-def test_run_grounding_check_no_claims(mock_tool_check_grounding, mock_console_and_table):
+def test_run_grounding_check_no_claims(
+    mock_tool_check_grounding, mock_console_and_table
+):
     """Verify output when no verifiable claims are found."""
     mock_console, _ = mock_console_and_table
     # Arrange
     mock_result = GroundingCheck(
         answer_candidate="Hmm, I'm not sure.",
-        is_grounded=False, # Based on the corrected logic
+        is_grounded=False,  # Based on the corrected logic
         confidence=1.0,
         grounding_ratio=0.0,
         claim_analyses=[],
@@ -155,12 +170,17 @@ def test_run_grounding_check_no_claims(mock_tool_check_grounding, mock_console_a
     run_grounding_check(args)
 
     # Assert
-    mock_console.print.assert_any_call("Overall Status: [bold red]NOT GROUNDED[/bold red]")
+    mock_console.print.assert_any_call(
+        "Overall Status: [bold red]NOT GROUNDED[/bold red]"
+    )
     mock_console.print.assert_any_call(
         "\n[yellow]No verifiable claims were extracted from the answer.[/yellow]"
     )
 
-def test_run_grounding_check_handles_exception(mock_tool_check_grounding, mock_console_and_table):
+
+def test_run_grounding_check_handles_exception(
+    mock_tool_check_grounding, mock_console_and_table
+):
     """Verify graceful error handling on unexpected failure."""
     mock_console, _ = mock_console_and_table
     # Arrange
@@ -176,4 +196,6 @@ def test_run_grounding_check_handles_exception(mock_tool_check_grounding, mock_c
         run_grounding_check(args)
 
     assert e.value.code == 1
-    mock_console.print.assert_called_with(f"[bold red]An unexpected error occurred[/bold red]: {error_message}")
+    mock_console.print.assert_called_with(
+        f"[bold red]An unexpected error occurred[/bold red]: {error_message}"
+    )

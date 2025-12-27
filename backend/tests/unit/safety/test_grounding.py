@@ -1,22 +1,23 @@
-
-import pytest
-import numpy as np
-from unittest.mock import patch, MagicMock
-
 # Make imports work as if running from the project root
 import sys
 from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import numpy as np
+import pytest
+
 sys.path.append(str(Path(__file__).resolve().parents[3] / "backend/src"))
 
 from cortex.safety.grounding import (
+    ClaimAnalysis,
+    GroundingCheck,
     _cosine_similarity,
     check_grounding_embedding,
     extract_claims_simple,
-    ClaimAnalysis,
-    GroundingCheck,
 )
 
 # --- Fixtures ---
+
 
 @pytest.fixture
 def mock_embeddings_client():
@@ -43,7 +44,9 @@ def mock_embeddings_client():
         mock_client_class.return_value = mock_client_instance
         yield mock_client_instance
 
+
 # --- Test Cases ---
+
 
 def test_cosine_similarity():
     """Test the cosine similarity calculation."""
@@ -51,7 +54,10 @@ def test_cosine_similarity():
     assert _cosine_similarity([1, 0], [0, 1]) == pytest.approx(0.0)
     assert _cosine_similarity([1, 0], [-1, 0]) == pytest.approx(-1.0)
     assert _cosine_similarity([1, 2, 3], [4, 5, 6]) == pytest.approx(0.9746318)
-    assert _cosine_similarity([0, 0], [1, 1]) == 0.0, "Similarity with a zero vector should be 0"
+    assert (
+        _cosine_similarity([0, 0], [1, 1]) == 0.0
+    ), "Similarity with a zero vector should be 0"
+
 
 def test_extract_claims_simple():
     """Test the heuristic-based claim extraction."""
@@ -66,6 +72,7 @@ def test_extract_claims_simple():
         "This is a factual statement",
         "This is another supported fact",
     ]
+
 
 def test_grounding_no_claims_is_not_grounded(mock_embeddings_client):
     """
@@ -82,6 +89,7 @@ def test_grounding_no_claims_is_not_grounded(mock_embeddings_client):
     assert result.grounding_ratio == 0.0
     assert len(result.claim_analyses) == 0
 
+
 def test_grounding_with_claims_but_no_facts(mock_embeddings_client):
     """Test that an answer is not grounded if there are no facts to support it."""
     answer = "This is a fully supported statement."
@@ -90,23 +98,27 @@ def test_grounding_with_claims_but_no_facts(mock_embeddings_client):
     result = check_grounding_embedding(answer, facts)
 
     assert not result.is_grounded
-    assert result.confidence == 1.0 # Should be certain it's not grounded
+    assert result.confidence == 1.0  # Should be certain it's not grounded
     assert result.grounding_ratio == 0.0
     assert len(result.unsupported_claims) == 1
     assert result.unsupported_claims[0] == "This is a fully supported statement"
+
 
 def test_grounding_fully_supported(mock_embeddings_client):
     """Test a scenario where all claims are supported by facts."""
     answer = "This is a supported claim. This is also a supported statement."
     facts = ["Fact about a supported claim."]
 
-    result = check_grounding_embedding(answer, facts, support_threshold=0.9, grounding_threshold=0.7)
+    result = check_grounding_embedding(
+        answer, facts, support_threshold=0.9, grounding_threshold=0.7
+    )
 
     assert result.is_grounded
     assert result.confidence > 0.9
     assert result.grounding_ratio == 1.0
     assert len(result.unsupported_claims) == 0
     assert all(c.is_supported for c in result.claim_analyses)
+
 
 def test_grounding_fully_unsupported(mock_embeddings_client):
     """Test a scenario where no claims are supported."""
@@ -120,18 +132,22 @@ def test_grounding_fully_unsupported(mock_embeddings_client):
     assert result.grounding_ratio == 0.0
     assert len(result.unsupported_claims) == 1
 
+
 def test_grounding_partially_supported_and_grounded(mock_embeddings_client):
     """Test when enough claims are supported to pass the grounding threshold."""
     answer = "This is a supported claim. This is another supported one. This is an unsupported one."
     facts = ["Fact that is very much about a supported claim."]
     # Expect 3 claims to be extracted. 2 should be supported.
 
-    result = check_grounding_embedding(answer, facts, support_threshold=0.9, grounding_threshold=0.6)
+    result = check_grounding_embedding(
+        answer, facts, support_threshold=0.9, grounding_threshold=0.6
+    )
 
     assert result.is_grounded
     assert len(result.claim_analyses) == 3
     assert sum(1 for c in result.claim_analyses if c.is_supported) == 2
     assert len(result.unsupported_claims) == 1
+
 
 def test_grounding_partially_supported_and_not_grounded(mock_embeddings_client):
     """Test when not enough claims are supported to pass the grounding threshold."""
@@ -139,7 +155,9 @@ def test_grounding_partially_supported_and_not_grounded(mock_embeddings_client):
     facts = ["Fact that is very much about a supported claim."]
     # Expect 3 claims to be extracted. 1 should be supported.
 
-    result = check_grounding_embedding(answer, facts, support_threshold=0.9, grounding_threshold=0.7)
+    result = check_grounding_embedding(
+        answer, facts, support_threshold=0.9, grounding_threshold=0.7
+    )
 
     assert not result.is_grounded
     assert len(result.claim_analyses) == 3

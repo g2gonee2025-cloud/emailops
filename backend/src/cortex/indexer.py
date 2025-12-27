@@ -9,11 +9,10 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import List
 from uuid import UUID
 
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
-
 from cortex.config.loader import get_config
 from cortex.embeddings.client import EmbeddingsClient
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker
 
 logger = logging.getLogger(__name__)
 
@@ -47,12 +46,16 @@ class Indexer:
         try:
             with self.Session() as session:
                 rows = session.execute(
-                    text("SELECT chunk_id, text FROM chunks WHERE conversation_id = :conversation_id AND embedding IS NULL"),
+                    text(
+                        "SELECT chunk_id, text FROM chunks WHERE conversation_id = :conversation_id AND embedding IS NULL"
+                    ),
                     {"conversation_id": conversation_id},
                 ).fetchall()
 
                 if not rows:
-                    logger.info(f"No chunks to embed for conversation {conversation_id}")
+                    logger.info(
+                        f"No chunks to embed for conversation {conversation_id}"
+                    )
                     return
 
                 chunk_texts = [row.text for row in rows]
@@ -62,11 +65,15 @@ class Indexer:
 
                 for chunk_id, embedding in zip(chunk_ids, embeddings):
                     session.execute(
-                        text("UPDATE chunks SET embedding = :embedding WHERE chunk_id = :chunk_id"),
+                        text(
+                            "UPDATE chunks SET embedding = :embedding WHERE chunk_id = :chunk_id"
+                        ),
                         {"embedding": embedding, "chunk_id": chunk_id},
                     )
                 session.commit()
-                logger.info(f"Successfully embedded {len(rows)} chunks for conversation {conversation_id}")
+                logger.info(
+                    f"Successfully embedded {len(rows)} chunks for conversation {conversation_id}"
+                )
         except Exception as e:
             logger.exception(f"Error embedding conversation {conversation_id}: {e}")
 

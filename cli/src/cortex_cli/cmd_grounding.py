@@ -1,8 +1,9 @@
 """Grounding check CLI command."""
 
 import argparse
-import sys
 import json
+import sys
+
 from rich.console import Console
 from rich.table import Table
 
@@ -10,9 +11,9 @@ from rich.table import Table
 # This is a common pattern in this codebase.
 try:
     from cortex.safety.grounding import (
+        ClaimAnalysis,
         GroundingCheckInput,
         tool_check_grounding,
-        ClaimAnalysis,
     )
 except ImportError:
     # Add backend to sys.path to resolve import
@@ -21,9 +22,9 @@ except ImportError:
     backend_path = Path(__file__).resolve().parent.parent.parent.parent / "backend/src"
     sys.path.insert(0, str(backend_path))
     from cortex.safety.grounding import (
+        ClaimAnalysis,
         GroundingCheckInput,
         tool_check_grounding,
-        ClaimAnalysis,
     )
 
 
@@ -69,7 +70,11 @@ def run_grounding_check(args: argparse.Namespace):
         console.print("\n[bold]Grounding Check Results[/bold]")
         console.print("---")
 
-        status = "[bold green]GROUNDED[/bold green]" if result.is_grounded else "[bold red]NOT GROUNDED[/bold red]"
+        status = (
+            "[bold green]GROUNDED[/bold green]"
+            if result.is_grounded
+            else "[bold red]NOT GROUNDED[/bold red]"
+        )
         console.print(f"Overall Status: {status}")
         console.print(f"Confidence: {result.confidence:.2f}")
         console.print(f"Grounding Ratio: {result.grounding_ratio:.2f}")
@@ -92,8 +97,9 @@ def run_grounding_check(args: argparse.Namespace):
                 )
             console.print(table)
         else:
-            console.print("\n[yellow]No verifiable claims were extracted from the answer.[/yellow]")
-
+            console.print(
+                "\n[yellow]No verifiable claims were extracted from the answer.[/yellow]"
+            )
 
     except ImportError as e:
         console.print(f"[bold red]Error[/bold red]: {e}")
