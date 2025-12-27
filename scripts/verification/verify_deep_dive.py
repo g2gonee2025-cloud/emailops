@@ -12,7 +12,7 @@ logging.basicConfig(
 logger = logging.getLogger("DeepDive")
 
 # Add backend/src to path dynamically
-REPO_ROOT = Path(__file__).resolve().parent
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 BACKEND_SRC = (REPO_ROOT / "backend" / "src").resolve()
 if str(BACKEND_SRC) not in sys.path:
     sys.path.insert(0, str(BACKEND_SRC))
@@ -32,7 +32,7 @@ class MockEmbeddingsClient:
 sys.modules["cortex.embeddings.client"] = unittest.mock.Mock()
 sys.modules["cortex.embeddings.client"].EmbeddingsClient = MockEmbeddingsClient
 
-from cortex.db.models import Attachment, Message, Thread  # noqa: E402
+from cortex.db.models import Attachment, Conversation  # noqa: E402
 from cortex.db.session import SessionLocal  # noqa: E402
 
 # --- IMPORTS ---
@@ -42,33 +42,44 @@ from cortex.ingestion.processor import IngestionProcessor  # noqa: E402
 def analyze_db_results(tenant_id: str):
     print("\n--- DATABASE ANALYSIS ---")
     with SessionLocal() as session:
-        # 1. Threads
-        threads = session.query(Thread).filter(Thread.tenant_id == tenant_id).all()
-        print(f"Threads created: {len(threads)}")
+        # 1. Conversations
+        conversations = (
+            session.query(Conversation)
+            .filter(Conversation.tenant_id == tenant_id)
+            .all()
+        )
+        print(f"Conversations created: {len(conversations)}")
 
-        # 2. Messages
-        msgs = session.query(Message).filter(Message.tenant_id == tenant_id).all()
-        print(f"Messages created: {len(msgs)}")
+        # 2. Messages are within Conversations, so we can't query them directly anymore.
+        # We can count them by iterating through conversations.
+        total_messages = sum(len(c.messages) for c in conversations if c.messages)
+        print(f"Messages created: {total_messages}")
 
         # 3. Attachments
-        atts = session.query(Attachment).filter(Attachment.tenant_id == tenant_id).all()
+        atts = (
+            session.query(Attachment)
+            .join(Conversation)
+            .filter(Conversation.tenant_id == tenant_id)
+            .all()
+        )
         print(f"Attachments created: {len(atts)}")
 
-        # Analysis: Enriched Metadata
+        # Analysis: Enriched Metadata from Conversation
         enriched_count = 0
-        for att in atts:
-            meta = att.metadata_ or {}
-            if meta.get("sender") or meta.get("mail_subject"):
+        for conv in conversations:
+            if conv.extra_data and (
+                conv.extra_data.get("sender") or conv.extra_data.get("mail_subject")
+            ):
                 enriched_count += 1
 
-        print(f"Attachments with Enriched Metadata (from CSV): {enriched_count}")
+        print(f"Conversations with Enriched Metadata (from CSV): {enriched_count}")
 
-        if len(atts) > 0:
-            print(f"Enrichment Rate: {enriched_count / len(atts) * 100:.1f}%")
+        if len(conversations) > 0:
+            print(f"Enrichment Rate: {enriched_count / len(conversations) * 100:.1f}%")
 
-            print("\nSample Attachment Metadata:")
-            for att in atts[:5]:
-                print(f" - {att.filename}: {att.metadata_}")
+            print("\nSample Conversation Metadata:")
+            for conv in conversations[:5]:
+                print(f" - {conv.subject}: {conv.extra_data}")
 
 
 def run_deep_dive():
