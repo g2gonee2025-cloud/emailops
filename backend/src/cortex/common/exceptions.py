@@ -64,8 +64,7 @@ class EmbeddingError(CortexError):
     """
 
     def __init__(self, message: str, retryable: bool = False, **kwargs: Any) -> None:
-        kwargs.pop("retryable", None)
-        super().__init__(message, **kwargs)
+        super().__init__(message, retryable=retryable, **kwargs)
         self.retryable = retryable
 
 
@@ -78,8 +77,7 @@ class ProcessingError(CortexError):
         retryable: bool = False,
         **kwargs: Any,
     ) -> None:
-        kwargs.pop("retryable", None)
-        super().__init__(message, **kwargs)
+        super().__init__(message, retryable=retryable, **kwargs)
         self.retryable = retryable
 
 
@@ -95,7 +93,7 @@ class ValidationError(CortexError):
         rule: str | None = None,
         **kwargs: Any,
     ) -> None:
-        super().__init__(message, **kwargs)
+        super().__init__(message, field=field, rule=rule, **kwargs)
         self.field = field
         self.rule = rule
 
@@ -112,7 +110,7 @@ class ProviderError(CortexError):
         retryable: bool = False,
         **kwargs: Any,
     ) -> None:
-        super().__init__(message, **kwargs)
+        super().__init__(message, provider=provider, retryable=retryable, **kwargs)
         self.provider = provider
         self.retryable = retryable
 
@@ -129,7 +127,7 @@ class FileOperationError(CortexError):
         operation: str | None = None,
         **kwargs: Any,
     ) -> None:
-        super().__init__(message, **kwargs)
+        super().__init__(message, file_path=file_path, operation=operation, **kwargs)
         self.file_path = file_path
         self.operation = operation
 
@@ -145,7 +143,7 @@ class TransactionError(CortexError):
         transaction_id: str | None = None,
         **kwargs: Any,
     ) -> None:
-        super().__init__(message, **kwargs)
+        super().__init__(message, transaction_id=transaction_id, **kwargs)
         self.transaction_id = transaction_id
 
 
@@ -160,7 +158,7 @@ class SecurityError(CortexError):
         threat_type: str | None = None,
         **kwargs: Any,
     ) -> None:
-        super().__init__(message, **kwargs)
+        super().__init__(message, threat_type=threat_type, **kwargs)
         self.threat_type = threat_type
 
 
@@ -179,7 +177,13 @@ class LLMOutputSchemaError(CortexError):
         repair_attempts: int = 0,
         **kwargs: Any,
     ) -> None:
-        super().__init__(message, **kwargs)
+        super().__init__(
+            message,
+            schema_name=schema_name,
+            raw_output=raw_output,
+            repair_attempts=repair_attempts,
+            **kwargs,
+        )
         self.schema_name = schema_name
         self.raw_output = raw_output
         self.repair_attempts = repair_attempts
@@ -196,7 +200,7 @@ class RetrievalError(CortexError):
         query: str | None = None,
         **kwargs: Any,
     ) -> None:
-        super().__init__(message, **kwargs)
+        super().__init__(message, query=query, **kwargs)
         self.query = query
 
 
@@ -214,9 +218,13 @@ class RateLimitError(ProviderError):
         retry_after: float | None = None,
         **kwargs: Any,
     ) -> None:
-        kwargs.pop("retryable", None)
-        kwargs.pop("provider", None)
-        super().__init__(message, provider=provider, retryable=True, **kwargs)
+        super().__init__(
+            message,
+            provider=provider,
+            retryable=True,
+            retry_after=retry_after,
+            **kwargs,
+        )
         self.retry_after = retry_after
 
 
@@ -232,9 +240,13 @@ class CircuitBreakerOpenError(ProviderError):
         reset_at: float | None = None,
         **kwargs: Any,
     ) -> None:
-        kwargs.pop("retryable", None)
-        kwargs.pop("provider", None)
-        super().__init__(message, provider=provider, retryable=False, **kwargs)
+        super().__init__(
+            message,
+            provider=provider,
+            retryable=False,
+            reset_at=reset_at,
+            **kwargs,
+        )
         self.reset_at = reset_at
 
 
@@ -250,7 +262,12 @@ class PolicyViolationError(SecurityError):
         policy_name: str | None = None,
         **kwargs: Any,
     ) -> None:
-        kwargs.pop("threat_type", None)
-        super().__init__(message, threat_type="policy_violation", **kwargs)
+        super().__init__(
+            message,
+            threat_type="policy_violation",
+            action=action,
+            policy_name=policy_name,
+            **kwargs,
+        )
         self.action = action
         self.policy_name = policy_name
