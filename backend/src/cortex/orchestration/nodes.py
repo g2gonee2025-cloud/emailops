@@ -266,7 +266,11 @@ async def _select_attachments_from_mentions(
 ) -> List[Dict[str, Any]]:
     """Select attachments that were explicitly mentioned/extracted from text."""
     cfg = get_config()
-    base_dir = Path(cfg.directories.export_root) if cfg.directories.export_root else Path.cwd()
+    base_dir = (
+        Path(cfg.directories.export_root).resolve()
+        if cfg.directories.export_root
+        else Path.cwd()
+    )
     allowed_patterns = cfg.file_patterns.allowed_file_patterns
     attach_max_mb = float(cfg.limits.max_attachment_text_chars / (1024 * 1024))
     limit = max_attachments
@@ -311,7 +315,11 @@ async def _select_all_available_attachments(
 ) -> List[Dict[str, Any]]:
     """Select any valid attachments found in context (heuristic fallback)."""
     cfg = get_config()
-    base_dir = Path(cfg.directories.export_root) if cfg.directories.export_root else Path.cwd()
+    base_dir = (
+        Path(cfg.directories.export_root).resolve()
+        if cfg.directories.export_root
+        else Path.cwd()
+    )
     allowed_patterns = cfg.file_patterns.allowed_file_patterns
     attach_max_mb = float(cfg.limits.max_attachment_text_chars / (1024 * 1024))
 
@@ -376,14 +384,14 @@ def tool_email_get_thread(
     """
     from cortex.db.models import Conversation
     from cortex.db.session import SessionLocal
+    from sqlalchemy.exc import SQLAlchemyError
 
     # Ensure thread_id is a UUID
-    if isinstance(thread_id, str):
-        try:
-            thread_id = uuid.UUID(thread_id)
-        except ValueError:
-            logger.error(f"Invalid thread_id format: {thread_id}")
-            return None
+    try:
+        thread_uuid = uuid.UUID(str(thread_id))
+    except ValueError:
+        logger.warning("Invalid thread_id format: %s", thread_id)
+        return None
 
     try:
         with SessionLocal() as session:
@@ -395,14 +403,14 @@ def tool_email_get_thread(
             conversation = (
                 session.query(Conversation)
                 .filter(
-                    Conversation.conversation_id == thread_id,
+                    Conversation.conversation_id == thread_uuid,
                     Conversation.tenant_id == tenant_id,
                 )
                 .first()
             )
 
             if not conversation:
-                logger.warning(f"Conversation not found: {thread_id}")
+                logger.warning("Conversation not found: %s", thread_uuid)
                 return None
 
             # Build participants from conversation.participants JSONB
@@ -437,7 +445,7 @@ def tool_email_get_thread(
                             sent_at = datetime.fromisoformat(
                                 sent_at.replace("Z", "+00:00")
                             )
-                        except Exception:
+                        except ValueError:
                             sent_at = None
 
                     thread_messages.append(
@@ -463,7 +471,7 @@ def tool_email_get_thread(
                 # Fallback: create a placeholder message from summary
                 thread_messages.append(
                     ThreadMessage(
-                        message_id=str(thread_id),
+                        message_id=str(thread_uuid),
                         sent_at=conversation.latest_date,
                         recv_at=conversation.latest_date,
                         from_addr="",
@@ -476,14 +484,35 @@ def tool_email_get_thread(
                 )
 
             return ThreadContext(
-                thread_id=thread_id,
+                thread_id=thread_uuid,
                 subject=conversation.subject or "",
                 participants=list(participants_dict.values()),
                 messages=thread_messages,
             )
-
+    except SQLAlchemyError as e:
+        logger.error(
+            "Database error while fetching thread %s for tenant %s: %s",
+            thread_uuid,
+            tenant_id,
+            e,
+            exc_info=False,  # Keep log clean, stack is in Sentry
+        )
+        return None
+    except (TypeError, KeyError, AttributeError) as e:
+        logger.warning(
+            "Data integrity error parsing thread %s for tenant %s: %s",
+            thread_uuid,
+            tenant_id,
+            e,
+            exc_info=True,
+        )
+        return None
     except Exception as e:
-        logger.error(f"Failed to fetch thread {thread_id}: {e}", exc_info=True)
+        logger.exception(
+            "Unexpected error fetching thread %s for tenant %s",
+            thread_uuid,
+            tenant_id,
+        )
         return None
 
 
@@ -651,28 +680,23 @@ def _fetch_graph_entities(
     """Fetch entity nodes and edges from the knowledge graph."""
     from cortex.db.models import EntityEdge, EntityNode
     from cortex.db.session import SessionLocal, set_session_tenant
+    from sqlalchemy.dialects.postgresql import any_
 
     with SessionLocal() as session:
         set_session_tenant(session, tenant_id)
 
-        match_conditions = [
-            func.lower(EntityNode.name) == mention.lower() for mention in mentions
-        ]
+        # Perf: Use ILIKE ANY for efficient multi-pattern matching
+        patterns = {m for m in mentions}
+        patterns.update(f"%{m}%" for m in mentions if len(m) >= 4)
 
-        for mention in mentions:
-            if len(mention) >= 4:
-                match_conditions.append(
-                    func.lower(EntityNode.name).like(f"%{mention.lower()}%")
-                )
-
-        if not match_conditions:
+        if not patterns:
             return [], []
 
         nodes = (
             session.execute(
                 select(EntityNode).where(
                     EntityNode.tenant_id == tenant_id,
-                    or_(*match_conditions),
+                    EntityNode.name.ilike(any_(list(patterns))),
                 )
             )
             .scalars()
