@@ -44,8 +44,8 @@ GroundingMethod = Literal["llm", "embedding", "keyword", "not_applicable"]
 
 def _cosine_similarity(v1: list[float], v2: list[float]) -> float:
     """Calculate cosine similarity between two vectors."""
-    a = np.array(v1)
-    b = np.array(v2)
+    a = np.array(v1, dtype=np.float64)
+    b = np.array(v2, dtype=np.float64)
     norm_a = npla.norm(a)
     norm_b = npla.norm(b)
     if norm_a == 0 or norm_b == 0:
@@ -66,9 +66,7 @@ class ClaimAnalysis(BaseModel):
     confidence: float = Field(
         ..., ge=0.0, le=1.0, description="Confidence in the assessment"
     )
-    method: GroundingMethod = Field(
-        ..., description="The method used for verification"
-    )
+    method: GroundingMethod = Field(..., description="The method used for verification")
 
 
 class GroundingCheck(BaseModel):
@@ -236,16 +234,21 @@ def extract_claims_llm(text: str) -> list[str]:
 
         return result.get("claims", [])
     except ImportError as e:
-        logger.error(f"LLM dependencies not found for claim extraction: {e}. Install with `pip install cortex-llm`.")
+        logger.error(
+            f"LLM dependencies not found for claim extraction: {e}. Install with `pip install cortex-llm`."
+        )
         return extract_claims_simple(text)
     except Exception as e:
-        logger.warning(f"LLM claim extraction failed due to an API error: {e}. Using heuristics.")
+        logger.warning(
+            f"LLM claim extraction failed due to an API error: {e}. Using heuristics."
+        )
         return extract_claims_simple(text)
 
 
 # -----------------------------------------------------------------------------
 # Similarity Matching
 # -----------------------------------------------------------------------------
+
 
 def check_claim_against_facts_keyword(
     claim: str, facts: list[str]
@@ -303,6 +306,7 @@ def check_claim_against_facts_embedding(
     """
     try:
         from cortex.embeddings.client import EmbeddingsClient
+
         client = EmbeddingsClient()
 
         claim_embedding = client.embed(claim)
@@ -323,9 +327,16 @@ def check_claim_against_facts_embedding(
                 best_fact = fact
 
         is_supported = best_score >= threshold
-        return (is_supported, best_score, best_fact if is_supported else None, "embedding")
+        return (
+            is_supported,
+            best_score,
+            best_fact if is_supported else None,
+            "embedding",
+        )
     except ImportError as e:
-        logger.error(f"Embeddings client dependencies not found: {e}. Install with `pip install cortex-embeddings`.")
+        logger.error(
+            f"Embeddings client dependencies not found: {e}. Install with `pip install cortex-embeddings`."
+        )
         return check_claim_against_facts_keyword(claim, facts)
     except Exception as e:
         logger.warning(f"Embedding-based matching failed: {e}. Using keyword fallback.")
@@ -334,18 +345,92 @@ def check_claim_against_facts_embedding(
 
 _STOPWORDS = {
     # Articles, pronouns, prepositions
-    "the", "a", "an", "in", "on", "at", "for", "to", "of", "with", "by", "from",
-    "about", "as", "into", "like", "through", "after", "before", "between",
-    "out", "over", "under", "again", "further", "then", "once", "this", "that",
-    "these", "those", "i", "you", "he", "she", "it", "we", "they", "me", "him",
-    "her", "us", "them", "my", "your", "his", "its", "our", "their",
+    "the",
+    "a",
+    "an",
+    "in",
+    "on",
+    "at",
+    "for",
+    "to",
+    "of",
+    "with",
+    "by",
+    "from",
+    "about",
+    "as",
+    "into",
+    "like",
+    "through",
+    "after",
+    "before",
+    "between",
+    "out",
+    "over",
+    "under",
+    "again",
+    "further",
+    "then",
+    "once",
+    "this",
+    "that",
+    "these",
+    "those",
+    "i",
+    "you",
+    "he",
+    "she",
+    "it",
+    "we",
+    "they",
+    "me",
+    "him",
+    "her",
+    "us",
+    "them",
+    "my",
+    "your",
+    "his",
+    "its",
+    "our",
+    "their",
     # Conjunctions
-    "and", "but", "or", "so", "nor", "for", "yet", "if", "because", "while",
+    "and",
+    "but",
+    "or",
+    "so",
+    "nor",
+    "for",
+    "yet",
+    "if",
+    "because",
+    "while",
     # Verbs (auxiliary)
-    "is", "are", "was", "were", "be", "been", "being", "have", "has", "had",
-    "do", "does", "did", "will", "would", "should", "can", "could", "may", "might",
+    "is",
+    "are",
+    "was",
+    "were",
+    "be",
+    "been",
+    "being",
+    "have",
+    "has",
+    "had",
+    "do",
+    "does",
+    "did",
+    "will",
+    "would",
+    "should",
+    "can",
+    "could",
+    "may",
+    "might",
     # Common adverbs/adjectives
-    "not", "very", "just", "also",
+    "not",
+    "very",
+    "just",
+    "also",
 }
 
 
@@ -407,10 +492,14 @@ def check_grounding_llm(
             method="llm",
         )
     except ImportError as e:
-        logger.error(f"LLM dependencies not found for grounding check: {e}. Install with `pip install cortex-llm`.")
+        logger.error(
+            f"LLM dependencies not found for grounding check: {e}. Install with `pip install cortex-llm`."
+        )
         return check_grounding_embedding(answer_candidate, facts)
     except Exception as e:
-        logger.warning(f"LLM grounding check failed due to an API error: {e}. Using embedding fallback.")
+        logger.warning(
+            f"LLM grounding check failed due to an API error: {e}. Using embedding fallback."
+        )
         return check_grounding_embedding(answer_candidate, facts)
 
 
@@ -435,14 +524,16 @@ def check_grounding_embedding(
     claims = extract_claims_simple(answer_candidate)
 
     if not claims:
-        # No verifiable claims = grounded by default
+        # No verifiable claims = not grounded.
+        # This is a safety measure. An answer with no factual claims to verify
+        # cannot be considered "grounded".
         return GroundingCheck(
             answer_candidate=answer_candidate,
-            is_grounded=True,
+            is_grounded=False,
             confidence=1.0,
             unsupported_claims=[],
             claim_analyses=[],
-            grounding_ratio=1.0,
+            grounding_ratio=0.0,
             method="embedding",
         )
 
@@ -451,7 +542,7 @@ def check_grounding_embedding(
         return GroundingCheck(
             answer_candidate=answer_candidate,
             is_grounded=False,
-            confidence=0.5,
+            confidence=1.0,  # High confidence that it's not grounded
             unsupported_claims=claims,
             claim_analyses=[
                 ClaimAnalysis(
@@ -476,17 +567,26 @@ def check_grounding_embedding(
     if facts:
         try:
             from cortex.embeddings.client import EmbeddingsClient
+
             client = EmbeddingsClient()
             fact_embeddings = client.embed_batch(facts)
         except ImportError as e:
-            logger.error(f"Embeddings client dependencies not found: {e}. Keyword fallback will be used for claims.")
+            logger.error(
+                f"Embeddings client dependencies not found: {e}. Keyword fallback will be used for claims."
+            )
         except Exception as e:
-            logger.warning(f"Failed to pre-compute fact embeddings: {e}. Keyword fallback will be used for claims.")
-
+            logger.warning(
+                f"Failed to pre-compute fact embeddings: {e}. Keyword fallback will be used for claims."
+            )
 
     for claim in claims:
-        is_supported, confidence, supporting_fact, method = check_claim_against_facts_embedding(
-            claim, facts, threshold=support_threshold, fact_embeddings=fact_embeddings
+        is_supported, confidence, supporting_fact, method = (
+            check_claim_against_facts_embedding(
+                claim,
+                facts,
+                threshold=support_threshold,
+                fact_embeddings=fact_embeddings,
+            )
         )
 
         claim_analyses.append(
@@ -567,7 +667,11 @@ def tool_check_grounding(args: GroundingCheckInput) -> GroundingCheck:
 # -----------------------------------------------------------------------------
 
 
-def is_answer_grounded(answer: str, facts: list[str], threshold: float = DEFAULT_EMBEDDING_GROUNDING_THRESHOLD) -> bool:
+def is_answer_grounded(
+    answer: str,
+    facts: list[str],
+    threshold: float = DEFAULT_EMBEDDING_GROUNDING_THRESHOLD,
+) -> bool:
     """
     Quick check if answer is grounded (returns bool only).
 

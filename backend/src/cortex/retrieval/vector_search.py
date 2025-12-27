@@ -69,7 +69,6 @@ def search_chunks_vector(
         ef_search=ef_search,
         conversation_ids=conversation_ids,
         is_attachment=is_attachment,
-        thread_ids=None,  # Already merged
         file_types=file_types,
     )
 

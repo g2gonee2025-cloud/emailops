@@ -5,8 +5,10 @@ Authenticates with the Cortex API and stores the JWT locally.
 """
 
 import argparse
+
 import httpx
 from cortex_cli.style import colorize
+
 
 def setup_login_parser(subparsers: argparse._SubParsersAction) -> None:
     """Setup parser for the `login` command."""
@@ -37,6 +39,7 @@ def setup_login_parser(subparsers: argparse._SubParsersAction) -> None:
     )
     login_parser.set_defaults(func=_run_login)
 
+
 def _run_login(args: argparse.Namespace) -> None:
     """Execute the login command."""
     try:
@@ -50,6 +53,8 @@ def _run_login(args: argparse.Namespace) -> None:
             print(colorize("Login successful!", "green"))
             print(f"Access Token: {data['access_token']}")
     except httpx.HTTPStatusError as e:
-        print(colorize(f"Login failed: {e.response.status_code} {e.response.text}", "red"))
+        print(
+            colorize(f"Login failed: {e.response.status_code} {e.response.text}", "red")
+        )
     except httpx.RequestError as e:
         print(colorize(f"An error occurred while requesting {e.request.url!r}.", "red"))

@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 from uuid import UUID
 
+from cortex.indexer import Indexer
 from cortex.ingestion.processor import IngestionProcessor
 from cortex.ingestion.s3_source import S3SourceHandler
 
@@ -58,7 +59,11 @@ class PipelineOrchestrator:
         self.concurrency = concurrency
         self.dry_run = dry_run
         self.processor = IngestionProcessor(tenant_id=tenant_id)
-        self.s3_handler = S3SourceHandler()
+        if not self.dry_run:
+            self.s3_handler = S3SourceHandler()
+        else:
+            self.s3_handler = None
+        self.indexer = Indexer(concurrency=concurrency)
         self.stats = PipelineStats()
 
     def run(
@@ -72,9 +77,12 @@ class PipelineOrchestrator:
         )
 
         # 1. Discovery (Lazy iterator)
-        folders_iter = self.s3_handler.list_conversation_folders(
-            prefix=source_prefix, limit=limit
-        )
+        if self.dry_run:
+            folders_iter = []
+        else:
+            folders_iter = self.s3_handler.list_conversation_folders(
+                prefix=source_prefix, limit=limit
+            )
 
         # 2. Enqueueing
         logger.info("Pipeline: Discovering and enqueuing jobs...")
@@ -88,7 +96,8 @@ class PipelineOrchestrator:
                 self.stats.folders_failed += 1
 
         self.stats.folders_found = enqueued_count
-        self.stats.folders_processed = enqueued_count # For CLI output clarity
+        self.stats.folders_processed = enqueued_count  # For CLI output clarity
+
         total_time = self.stats.duration_seconds
         logger.info(f"Enqueued {enqueued_count} jobs in {total_time:.2f}s.")
         logger.info(
@@ -122,7 +131,7 @@ class PipelineOrchestrator:
             job_request = IngestJobRequest(
                 tenant_id=self.tenant_id,
                 source_uri=folder_name,
-                source_type="s3", # Assuming S3 source for now
+                source_type="s3",  # Assuming S3 source for now
                 auto_embed=self.auto_embed,
             )
 
@@ -131,7 +140,7 @@ class PipelineOrchestrator:
             job_id = queue.enqueue(
                 job_type="ingest",
                 payload=job_request.dict(),
-                priority=5, # Normal priority
+                priority=5,  # Normal priority
             )
             logger.info(f"Enqueued ingest job {job_id} for folder {folder_name}")
 

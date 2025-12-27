@@ -185,7 +185,7 @@ def apply_mmr(
         best_idx = 0
         best_score = float("-inf")
         for idx, candidate in enumerate(candidates):
-            relevance = candidate.score
+            relevance = candidate.score or 0.0
             if selected:
                 redundancy = max(
                     _text_similarity(candidate, chosen) for chosen in selected

@@ -2,8 +2,8 @@ import os
 import sys
 from unittest.mock import MagicMock, patch
 
+import pytest
 from cortex_cli.main import (
-    main,
     _print_usage,
     _print_version,
     _run_index,
@@ -52,7 +52,7 @@ class TestCliMainUtils:
         mock_report.problems = []
         mock_scan.return_value = mock_report
 
-        with patch("pathlib.Path.exists", return_value=True):
+        with patch("pathlib.Path.exists", return_value=True), patch("pathlib.Path.is_dir", return_value=True):
             _run_validate("some/path")
 
         captured = capsys.readouterr()
@@ -139,7 +139,12 @@ class TestCliMainUtils:
         r2 = MagicMock()
         r2.score = 0.85
         mock_result.results = [r1, r2]
-        mock_search_func.return_value = mock_result
+
+        # Mock the Ok wrapper
+        ok_result = MagicMock()
+        ok_result.is_err.return_value = False
+        ok_result.unwrap.return_value = mock_result
+        mock_search_func.return_value = ok_result
 
         mock_hybrid.KBSearchInput = mock_search_input
         mock_hybrid.tool_kb_search_hybrid = mock_search_func
@@ -162,11 +167,43 @@ class TestCliMainUtils:
 
         assert "Searching..." in captured.out
 
+    def test_run_search_error(self, capsys):
+        mock_hybrid = MagicMock()
+        mock_search_input = MagicMock()
+        mock_search_func = MagicMock()
+
+        # Mock the Err wrapper
+        err_result = MagicMock()
+        err_result.is_err.return_value = True
+        err_obj = MagicMock()
+        err_obj.message = "Test error"
+        err_result.unwrap_err.return_value = err_obj
+        mock_search_func.return_value = err_result
+
+        mock_hybrid.KBSearchInput = mock_search_input
+        mock_hybrid.tool_kb_search_hybrid = mock_search_func
+
+        with (
+            patch.dict(
+                sys.modules,
+                {
+                    "cortex": MagicMock(),
+                    "cortex.retrieval": MagicMock(),
+                    "cortex.retrieval.hybrid_search": mock_hybrid,
+                },
+            ),
+            pytest.raises(SystemExit),
+        ):
+            _run_search("query", json_output=False)
+
+        captured = capsys.readouterr()
+        assert "ERROR: Test error" in captured.out
+
     def test_show_status_human(self, capsys):
         with patch("pathlib.Path.cwd") as mock_cwd:
             mock_path = MagicMock()
             mock_path.exists.return_value = True
-            mock_cwd.return_value = mock_.path
+            mock_cwd.return_value = mock_path
             mock_path.__truediv__.return_value.exists.return_value = True
 
             _show_status(json_output=False)

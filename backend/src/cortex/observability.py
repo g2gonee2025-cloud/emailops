@@ -19,7 +19,6 @@ from cortex.config.loader import get_config
 # Optional OpenTelemetry imports
 try:
     from opentelemetry import metrics, trace
-    from opentelemetry.trace import StatusCode
     from opentelemetry.exporter.cloud_monitoring import CloudMonitoringMetricsExporter
     from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
     from opentelemetry.instrumentation.requests import RequestsInstrumentor
@@ -29,6 +28,7 @@ try:
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
     from opentelemetry.sdk.trace.sampling import TraceIdRatioBased
+    from opentelemetry.trace import StatusCode
 
     OTEL_AVAILABLE = True
 except ImportError:
