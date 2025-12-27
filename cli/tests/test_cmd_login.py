@@ -1,10 +1,10 @@
-
 import argparse
 from unittest.mock import MagicMock, patch
 
 import httpx
 import pytest
 from cortex_cli.cmd_login import _run_login
+
 
 @patch("httpx.Client")
 def test_run_login_success(mock_client):
@@ -27,6 +27,7 @@ def test_run_login_success(mock_client):
         _run_login(args)
         mock_print.assert_any_call("Login successful!")
         mock_print.assert_any_call("Access Token: test_token")
+
 
 @patch("httpx.Client")
 def test_run_login_failure(mock_client):
@@ -51,6 +52,7 @@ def test_run_login_failure(mock_client):
         _run_login(args)
         mock_print.assert_any_call("Login failed: 401 Invalid credentials")
 
+
 @patch("httpx.Client")
 def test_run_login_request_error(mock_client):
     """Test request error during login."""
@@ -69,4 +71,6 @@ def test_run_login_request_error(mock_client):
 
     with patch("builtins.print") as mock_print:
         _run_login(args)
-        mock_print.assert_any_call("An error occurred while requesting 'http://localhost:8000/auth/login'.")
+        mock_print.assert_any_call(
+            "An error occurred while requesting 'http://localhost:8000/auth/login'."
+        )

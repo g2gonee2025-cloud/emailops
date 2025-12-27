@@ -80,8 +80,7 @@ def discover_graph_schema(*, tenant_id: str, sample_size: int = 20) -> None:
                     data.get("type", "UNKNOWN") for _, data in G.nodes(data=True)
                 ]
                 rels = [
-                    data.get("relation", "UNKNOWN")
-                    for _, _, data in G.edges(data=True)
+                    data.get("relation", "UNKNOWN") for _, _, data in G.edges(data=True)
                 ]
                 names = list(G.nodes())
                 return {"types": n_types, "relations": rels, "names": names}

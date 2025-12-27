@@ -559,19 +559,19 @@ class RetryConfig(BaseModel):
     """
 
     max_retries: int = Field(
-        default_factory=lambda: _env("VERTEX_MAX_RETRIES", 3, int),
+        default_factory=lambda: _env("API_MAX_RETRIES", 3, int),
         ge=0,
         le=10,
         description="Maximum retry attempts",
     )
     initial_backoff_seconds: float = Field(
-        default_factory=lambda: _env("VERTEX_BACKOFF_INITIAL", 1.0, float),
+        default_factory=lambda: _env("API_BACKOFF_INITIAL", 1.0, float),
         ge=0.1,
         le=30.0,
         description="Initial backoff delay",
     )
     backoff_multiplier: float = Field(
-        default_factory=lambda: _env("VERTEX_BACKOFF_MULTIPLIER", 2.0, float),
+        default_factory=lambda: _env("API_BACKOFF_MULTIPLIER", 2.0, float),
         ge=1.0,
         le=5.0,
         description="Backoff multiplier",
@@ -743,7 +743,8 @@ class SummarizerConfig(BaseModel):
     """Thread summarization configuration."""
 
     summarizer_version: str = Field(
-        default="2.2-facts-ledger", description="Summarizer version"
+        default_factory=lambda: _env("SUMMARIZER_VERSION", "2.2-facts-ledger"),
+        description="Summarizer version",
     )
     summarizer_thread_max_chars: int = Field(
         default=16000, ge=1000, le=100000, description="Max thread chars"
@@ -915,13 +916,9 @@ class SensitiveConfig(BaseModel):
         default_factory=lambda: _env("COHERE_API_KEY", None),
         description="Cohere API key",
     )
-    hf_api_key: Optional[str] = Field(
-        default_factory=lambda: _env("HF_API_KEY", None),
-        description="HuggingFace API key",
-    )
     huggingface_api_key: Optional[str] = Field(
         default_factory=lambda: _env("HUGGINGFACE_API_KEY", None),
-        description="HuggingFace API key (alias)",
+        description="HuggingFace API key",
     )
     qwen_api_key: Optional[str] = Field(
         default_factory=lambda: _env("QWEN_API_KEY", None), description="Qwen API key"

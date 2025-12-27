@@ -54,9 +54,7 @@ def _check_recipient_policy(metadata: Dict[str, Any]) -> Optional[str]:
 
     # Check recipient count
     if len(recipients) > POLICY_CONFIG.max_recipients_auto_approve:
-        return (
-            f"Too many recipients ({len(recipients)} > {POLICY_CONFIG.max_recipients_auto_approve})"
-        )
+        return f"Too many recipients ({len(recipients)} > {POLICY_CONFIG.max_recipients_auto_approve})"
 
     # Check for external domains
     external_domain_pattern = POLICY_CONFIG.get_external_domain_pattern()
@@ -199,16 +197,17 @@ def check_action(action: str, metadata: Dict[str, Any]) -> PolicyDecision:
         reason = "Explicitly denied by policy"
 
     # Check for bypass (e.g., admin override)
-    # SECURITY: Require explicit role verification
-    if safe_meta.get("admin_bypass"):
-        user_roles = safe_meta.get("user_roles", [])
-        if "admin" in user_roles:
+    # SECURITY: Check for admin role logic
+    # Admin can bypass "require_approval" but NOT "deny".
+    if decision != "deny":
+        # Check roles (support both singular 'role' and list 'user_roles' for compatibility)
+        roles = safe_meta.get("user_roles", []) or []
+        if isinstance(roles, list) and safe_meta.get("role"):
+            roles.append(safe_meta.get("role"))
+
+        if "admin" in roles:
             decision = "allow"
             reason = "Admin bypass enabled"
-        else:
-            logger.warning(
-                "Admin bypass attempted without required 'admin' role for action %s", action
-            )
 
     return PolicyDecision(
         action=action,

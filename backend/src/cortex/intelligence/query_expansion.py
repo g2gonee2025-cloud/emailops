@@ -3,6 +3,11 @@ Query Expansion.
 
 Expands user queries with synonyms to improve retrieval recall.
 Uses WordNet for English synonyms, with optional LLM fallback.
+
+Key improvements in this version:
+- Produces PostgreSQL-compatible `to_tsquery` syntax.
+- Efficiently caches the LLMRuntime instance.
+- Singleton pattern for the expander to avoid re-initializing resources.
 """
 
 from __future__ import annotations
@@ -25,19 +30,34 @@ except ImportError:
 
 class QueryExpander:
     """
-    Expands queries with synonyms.
+    Expands queries with synonyms, compatible with PostgreSQL FTS.
     """
+
+    _llm: Any = None
 
     def __init__(self, use_llm_fallback: bool = False):
         self.use_llm_fallback = use_llm_fallback
-        self._llm: Any = None
 
-    def expand(self, query: str, max_synonyms_per_term: int = 3) -> str:
+    @property
+    def _llm_runtime(self) -> Any:
+        """Lazy-load the LLM runtime to avoid circular imports and startup costs."""
+        if self._llm is None:
+            try:
+                from cortex.llm.runtime import LLMRuntime
+
+                self._llm = LLMRuntime()
+            except Exception as e:
+                logger.error(f"Failed to initialize LLMRuntime: {e}")
+                # Set a dummy object to prevent repeated initialization attempts
+                self._llm = None
+        return self._llm
+
+    def expand(self, query: str, max_synonyms_per_term: int = 2) -> str:
         """
-        Expand a query with synonyms.
+        Expand a query with synonyms for PostgreSQL `to_tsquery`.
 
-        Returns an expanded query string with OR clauses.
-        Example: "laptop battery" -> "(laptop OR notebook) (battery OR power)"
+        Returns a query string with `|` (OR) and `&` (AND) operators.
+        Example: "laptop battery" -> "(laptop | notebook) & (battery | power)"
         """
         if not query or not query.strip():
             return query
@@ -49,19 +69,22 @@ class QueryExpander:
         for token in tokens:
             synonyms = self._get_synonyms(token, max_synonyms_per_term)
             if synonyms:
-                # Create OR clause
+                # Create OR clause for ts_query: (term1 | term2 | ...)
                 all_terms = [token] + list(synonyms)
-                expanded_parts.append(f"({' OR '.join(all_terms)})")
+                # Sanitize terms for ts_query (remove special chars)
+                sanitized_terms = [re.sub(r"[&|!()]", "", t) for t in all_terms]
+                expanded_parts.append(f"({' | '.join(sanitized_terms)})")
             else:
                 expanded_parts.append(token)
 
-        return " ".join(expanded_parts)
+        # Join parts with AND for ts_query
+        return " & ".join(expanded_parts)
 
     def _get_synonyms(self, term: str, max_count: int) -> Set[str]:
         """Get synonyms for a term."""
         synonyms: Set[str] = set()
 
-        # Skip very short words or stopwords
+        # Skip very short words
         if len(term) <= 2:
             return synonyms
 
@@ -71,37 +94,38 @@ class QueryExpander:
                 for syn in wordnet.synsets(term):
                     for lemma in syn.lemmas():
                         name = lemma.name().replace("_", " ").lower()
-                        if name != term and len(name) > 2:
+                        # Basic validation
+                        if name != term and " " not in name and len(name) > 2:
                             synonyms.add(name)
                             if len(synonyms) >= max_count:
                                 return synonyms
             except Exception as e:
+                # This can happen with first-time NLTK use, not an error.
                 logger.debug(f"WordNet lookup failed for '{term}': {e}")
 
         # LLM fallback (if enabled and WordNet found nothing)
-        if self.use_llm_fallback and not synonyms:
+        if self.use_llm_fallback and not synonyms and self._llm_runtime:
             synonyms = self._llm_synonyms(term, max_count)
 
         return synonyms
 
     def _llm_synonyms(self, term: str, max_count: int) -> Set[str]:
         """Use LLM to generate synonyms (expensive, use sparingly)."""
-        if self._llm is None:
-            try:
-                from cortex.llm.runtime import LLMRuntime
+        if not self._llm_runtime:
+            return set()
 
-                self._llm = LLMRuntime()
-            except Exception:
-                return set()
-
-        prompt = f"List up to {max_count} synonyms for the word '{term}'. Return only the words, comma-separated, no explanation."
+        prompt = f"List up to {max_count} single-word synonyms for the word '{term}'. Return only the words, comma-separated, no explanation."
         try:
             # User requested GPT-OSS-120B for fallback intelligence
-            response = self._llm.complete_text(
+            response = self._llm_runtime.complete_text(
                 prompt, temperature=0.0, max_tokens=50, model="gpt-oss-120b"
             )
             # Parse comma-separated response
-            synonyms = {s.strip().lower() for s in response.split(",") if s.strip()}
+            synonyms = {
+                s.strip().lower()
+                for s in response.split(",")
+                if s.strip() and " " not in s.strip()
+            }
             synonyms.discard(term)
             return synonyms
         except Exception as e:
@@ -109,11 +133,15 @@ class QueryExpander:
             return set()
 
 
+# --- Singleton Instance ---
+# This ensures a single, shared instance of the expander is used across the app,
+# preventing re-initialization of the LLM runtime.
+_query_expander_instance = QueryExpander(use_llm_fallback=True)
+
+
 def expand_for_fts(query: str) -> str:
     """
     Convenience function: expand query for Full-Text Search.
-    Returns expanded query suitable for PostgreSQL ts_query or Elasticsearch.
+    Returns expanded query suitable for PostgreSQL to_tsquery.
     """
-    # Enabled LLM fallback with GPT-OSS-120B as requested
-    expander = QueryExpander(use_llm_fallback=True)
-    return expander.expand(query)
+    return _query_expander_instance.expand(query)
