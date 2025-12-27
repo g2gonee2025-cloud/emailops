@@ -146,6 +146,7 @@ UTILITY_COMMANDS = [
 DATA_COMMANDS = [
     ("db", "Database management (stats, migrate)"),
     ("embeddings", "Embedding management (stats, backfill)"),
+    ("graph", "Knowledge Graph commands (discover-schema)"),
     ("s3", "S3/Spaces storage (list, ingest)"),
     ("maintenance", "System maintenance (resolve-entities)"),
 ]
@@ -1318,13 +1319,53 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     # Register plugin subcommand groups
     from cortex_cli.cmd_db import setup_db_parser
     from cortex_cli.cmd_embeddings import setup_embeddings_parser
+    from cortex_cli.cmd_graph import app as graph_app
     from cortex_cli.cmd_maintenance import setup_maintenance_parser
     from cortex_cli.cmd_s3 import setup_s3_parser
+    import typer
+    from typer.main import get_command_from_info
+    from typer.core import TyperGroup
+    from rich.console import Console
+
+    # A bit of a hack to integrate Typer apps with argparse
+    def setup_typer_command(subparsers, name, app, help_text=""):
+        parser = subparsers.add_parser(name, help=help_text, add_help=False)
+        command_info = typer.main.get_command_info(
+            app,
+            name=name,
+            pretty_exceptions_short=False,
+            pretty_exceptions_show_locals=False,
+            rich_markup_mode="rich",
+        )
+        command = get_command_from_info(command_info, pretty_exceptions_short=False, pretty_exceptions_show_locals=False, rich_markup_mode="rich")
+
+        def _run_typer(args):
+            try:
+                if isinstance(command, TyperGroup):
+                     command(args.typer_args, standalone_mode=False)
+                else:
+                    command(standalone_mode=False)
+
+            except typer.Exit as e:
+                if e.code != 0:
+                    console = Console()
+                    console.print(f"[bold red]Error:[/bold red] {e}")
+                # Do not exit process
+            except Exception as e:
+                console = Console()
+                console.print(f"[bold red]An unexpected error occurred:[/bold red] {e}")
+
+
+        parser.set_defaults(func=lambda args: _run_typer(args))
+        # This is a simple way to pass through args. A more robust solution might be needed.
+        parser.add_argument("typer_args", nargs="*")
+
 
     setup_db_parser(subparsers)
     setup_embeddings_parser(subparsers)
     setup_s3_parser(subparsers)
     setup_maintenance_parser(subparsers)
+    setup_typer_command(subparsers, "graph", graph_app, help_text="Knowledge Graph commands")
 
     # Parse arguments
     parsed_args = parser.parse_args(args)
