@@ -41,6 +41,20 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
     info: 'border-blue-500/30 bg-blue-500/10',
   };
 
+  const isDev = import.meta.env.DEV;
+  const isError = toast.type === 'error';
+
+  // Log the original error message in both dev and prod for debugging.
+  useEffect(() => {
+    if (isError) {
+      console.error(`Toast Error: ${toast.message}`);
+    }
+  }, [isError, toast.message]);
+
+  const displayMessage = isError && !isDev
+    ? "An unexpected error occurred. Please try again."
+    : toast.message;
+
   return (
     <div
       className={cn(
@@ -52,7 +66,7 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
       aria-live="polite"
     >
       {icons[toast.type]}
-      <p className="flex-1 text-sm text-white/90">{toast.message}</p>
+      <p className="flex-1 text-sm text-white/90">{displayMessage}</p>
       <button
         onClick={() => onRemove(toast.id)}
         className="p-1 rounded hover:bg-white/10 transition-colors"
@@ -64,13 +78,16 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
   );
 }
 
+const MAX_TOAST_DURATION = 15000;
+
 // Provider - only component export from this file
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   const addToast = useCallback((message: string, type: Toast['type'] = 'info', duration = 5000) => {
     const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    setToasts(prev => [...prev, { id, message, type, duration }]);
+    const cappedDuration = Math.min(duration, MAX_TOAST_DURATION);
+    setToasts(prev => [...prev, { id, message, type, duration: cappedDuration }]);
   }, []);
 
   const removeToast = useCallback((id: string) => {
