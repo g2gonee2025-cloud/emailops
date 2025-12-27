@@ -58,6 +58,7 @@ Each patch fixes exactly ONE issue, making them simpler and more reliable.
         func=lambda args: run_fixer(model=args.model, max_workers=args.max_workers)
     )
 
+
 def run_fixer(model: str, max_workers: int):
     """
     Main function to generate patches for issues.
@@ -66,7 +67,9 @@ def run_fixer(model: str, max_workers: int):
 
     # API Configuration (same as bulk_code_review.py)
     API_KEY = os.getenv("LLM_API_KEY") or os.getenv("DO_API_KEY")
-    BASE_URL = (os.getenv("LLM_ENDPOINT") or "https://inference.do-ai.run/v1").rstrip("/")
+    BASE_URL = (os.getenv("LLM_ENDPOINT") or "https://inference.do-ai.run/v1").rstrip(
+        "/"
+    )
 
     if not API_KEY:
         print("Missing API key. Set LLM_API_KEY or DO_API_KEY.")
@@ -116,6 +119,7 @@ def run_fixer(model: str, max_workers: int):
     print(f"Failed: {failed_count}")
     print(f"Output Directory: {PATCHES_DIR}")
     print("=" * 60)
+
 
 # Prompt for fixing a single issue
 FIX_PROMPT = """
@@ -212,7 +216,9 @@ def call_llm(prompt: str, model: str, base_url: str, headers: Dict[str, str]) ->
         return ""
 
 
-def process_issue(issue: dict, idx: int, model: str, base_url: str, headers: Dict[str, str]) -> dict:
+def process_issue(
+    issue: dict, idx: int, model: str, base_url: str, headers: Dict[str, str]
+) -> dict:
     """Generate a patch for a single issue."""
     file_path = issue.get("file", "")
     line = issue.get("line") or 1

@@ -56,12 +56,12 @@ if _dotenv_path.exists():
 else:
     load_dotenv()  # Fall back to default dotenv discovery
 
+from cortex_cli import cmd_search
 from cortex_cli._config_helpers import (  # noqa: E402
     _print_human_config,
     _print_json_config,
 )
 from cortex_cli.style import colorize as _colorize  # noqa: E402
-from cortex_cli import cmd_search
 
 
 # Minimal protocol for the config object to satisfy static analysis when imports fail
@@ -1334,21 +1334,21 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     _setup_utility_commands(subparsers)
 
     # Register plugin subcommand groups
+    import typer
     from cortex_cli.cmd_backfill import setup_backfill_parser
     from cortex_cli.cmd_db import setup_db_parser
     from cortex_cli.cmd_embeddings import setup_embeddings_parser
-    from cortex_cli.cmd_graph import app as graph_app
-    from cortex_cli.cmd_maintenance import setup_maintenance_parser
-    from cortex_cli.cmd_s3 import setup_s3_parser
-    from cortex_cli.cmd_test import setup_test_parser
-    from cortex_cli.cmd_safety import setup_safety_parser
-    from cortex_cli.cmd_queue import setup_queue_parser
     from cortex_cli.cmd_fix import setup_fix_parser
+    from cortex_cli.cmd_graph import app as graph_app
     from cortex_cli.cmd_login import setup_login_parser
-    import typer
-    from typer.main import get_command_from_info
-    from typer.core import TyperGroup
+    from cortex_cli.cmd_maintenance import setup_maintenance_parser
+    from cortex_cli.cmd_queue import setup_queue_parser
+    from cortex_cli.cmd_s3 import setup_s3_parser
+    from cortex_cli.cmd_safety import setup_safety_parser
+    from cortex_cli.cmd_test import setup_test_parser
     from rich.console import Console
+    from typer.core import TyperGroup
+    from typer.main import get_command_from_info
 
     # A bit of a hack to integrate Typer apps with argparse
     def setup_typer_command(subparsers, name, app, help_text=""):
@@ -1387,8 +1387,8 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
         # This is a simple way to pass through args. A more robust solution might be needed.
         parser.add_argument("typer_args", nargs="*")
 
-    from cortex_cli.cmd_patch import setup_patch_parser
     from cortex_cli.cmd_index import setup_index_parser
+    from cortex_cli.cmd_patch import setup_patch_parser
     from cortex_cli.cmd_schema import setup_schema_parser
     from cortex_cli.cmd_test import setup_test_parser
     from cortex_cli.config import _config

@@ -224,9 +224,7 @@ class TestRedisStreamsQueue:
         streams_arg = mock_redis.xreadgroup.call_args[0][2]
         assert "cortex:jobs:ingest:high" in streams_arg
 
-    def test_claim_stale_message_moves_to_dead_letter_on_max_retries(
-        self, mock_redis
-    ):
+    def test_claim_stale_message_moves_to_dead_letter_on_max_retries(self, mock_redis):
         q = RedisStreamsQueue(visibility_timeout=30, max_retries=3)
 
         # Mock pending to find an old message only in the high-prio stream

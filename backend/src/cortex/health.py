@@ -5,7 +5,6 @@ import os
 from dataclasses import dataclass
 from typing import Any, Dict
 
-
 # Library-safe logger
 logger = logging.getLogger(__name__)
 
@@ -31,7 +30,9 @@ def check_postgres(config: Any) -> CheckResult:
         engine = create_engine(config.database.url)
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
-        return CheckResult(name="PostgreSQL", success=True, details={"message": "Connected"})
+        return CheckResult(
+            name="PostgreSQL", success=True, details={"message": "Connected"}
+        )
     except Exception as e:
         return CheckResult(name="PostgreSQL", success=False, error=str(e))
 
@@ -57,8 +58,12 @@ def check_embeddings(config: Any) -> CheckResult:
         result = embed_texts(["test"])
         if result is not None and len(result) > 0:
             dim = result.shape[1] if hasattr(result, "shape") else len(result[0])
-            return CheckResult(name="Embeddings", success=True, details={"dimension": dim})
-        return CheckResult(name="Embeddings", success=False, error="Probe returned empty result")
+            return CheckResult(
+                name="Embeddings", success=True, details={"dimension": dim}
+            )
+        return CheckResult(
+            name="Embeddings", success=False, error="Probe returned empty result"
+        )
     except Exception as e:
         logger.warning("Embedding probe failed: %s", e)
         return CheckResult(name="Embeddings", success=False, error=str(e))
@@ -81,7 +86,9 @@ def check_reranker(config: Any) -> CheckResult:
         try:
             resp = httpx.get(health_url, timeout=5.0)
             if resp.status_code == 200:
-                return CheckResult(name="Reranker", success=True, details={"message": "Connected"})
+                return CheckResult(
+                    name="Reranker", success=True, details={"message": "Connected"}
+                )
             return CheckResult(
                 name="Reranker",
                 success=False,

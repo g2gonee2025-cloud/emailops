@@ -3,7 +3,6 @@ import sys
 from unittest.mock import MagicMock, patch
 
 from cortex_cli.main import (
-    main,
     _print_usage,
     _print_version,
     _run_index,

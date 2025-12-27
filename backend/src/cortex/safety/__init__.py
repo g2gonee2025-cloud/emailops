@@ -18,7 +18,6 @@ from cortex.safety.grounding import (
 from cortex.safety.policy_enforcer import PolicyDecision, check_action
 from cortex.security.injection_defense import strip_injection_patterns
 
-
 __all__ = [
     # Injection defense
     "strip_injection_patterns",

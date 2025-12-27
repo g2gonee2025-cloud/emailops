@@ -33,11 +33,10 @@ def cmd_db_stats(args: argparse.Namespace) -> None:
     """Show database statistics."""
     try:
         from cortex.db.session import engine
-        from sqlalchemy import text
-        from sqlalchemy.orm import Session
-
         from cortex_cli.config import get_config
         from cortex_cli.utils import _colorize
+        from sqlalchemy import text
+        from sqlalchemy.orm import Session
 
 
         config = get_config()

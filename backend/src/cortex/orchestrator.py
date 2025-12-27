@@ -88,7 +88,7 @@ class PipelineOrchestrator:
                 self.stats.folders_failed += 1
 
         self.stats.folders_found = enqueued_count
-        self.stats.folders_processed = enqueued_count # For CLI output clarity
+        self.stats.folders_processed = enqueued_count  # For CLI output clarity
         total_time = self.stats.duration_seconds
         logger.info(f"Enqueued {enqueued_count} jobs in {total_time:.2f}s.")
         logger.info(
@@ -122,7 +122,7 @@ class PipelineOrchestrator:
             job_request = IngestJobRequest(
                 tenant_id=self.tenant_id,
                 source_uri=folder_name,
-                source_type="s3", # Assuming S3 source for now
+                source_type="s3",  # Assuming S3 source for now
                 auto_embed=self.auto_embed,
             )
 
@@ -131,7 +131,7 @@ class PipelineOrchestrator:
             job_id = queue.enqueue(
                 job_type="ingest",
                 payload=job_request.dict(),
-                priority=5, # Normal priority
+                priority=5,  # Normal priority
             )
             logger.info(f"Enqueued ingest job {job_id} for folder {folder_name}")
 

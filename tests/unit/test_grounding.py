@@ -35,7 +35,9 @@ class TestGrounding(unittest.TestCase):
     def test_check_claim_against_facts_keyword(self):
         claim = "The sky is blue"
         facts = ["The sky has a blue color.", "The grass is green."]
-        is_supported, confidence, supporting_fact, method = check_claim_against_facts_keyword(claim, facts)
+        is_supported, confidence, supporting_fact, method = (
+            check_claim_against_facts_keyword(claim, facts)
+        )
         self.assertTrue(is_supported)
         self.assertGreater(confidence, 0.0)
         self.assertEqual(supporting_fact, "The sky has a blue color.")
@@ -49,7 +51,9 @@ class TestGrounding(unittest.TestCase):
 
         claim = "The sky is blue"
         facts = ["The sky has a blue color.", "The grass is green."]
-        is_supported, confidence, supporting_fact, method = check_claim_against_facts_embedding(claim, facts)
+        is_supported, confidence, supporting_fact, method = (
+            check_claim_against_facts_embedding(claim, facts)
+        )
 
         self.assertTrue(is_supported)
         self.assertGreaterEqual(confidence, 0.0)
@@ -82,7 +86,9 @@ class TestGrounding(unittest.TestCase):
         self.assertTrue(is_answer_grounded(answer, facts))
 
     def test_empty_answer(self):
-        result = tool_check_grounding(GroundingCheckInput(answer_candidate="", facts=["fact"]))
+        result = tool_check_grounding(
+            GroundingCheckInput(answer_candidate="", facts=["fact"])
+        )
         self.assertTrue(result.is_grounded)
         self.assertEqual(result.confidence, 1.0)
         self.assertEqual(result.method, "not_applicable")

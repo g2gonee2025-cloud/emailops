@@ -100,7 +100,7 @@ Actual Body"""
             "This communication is confidential and intended for the recipient only.",
             "Please consider the environment before printing this email.",
             "CAREERS.CHALHOUBGROUP.COM",
-            "Some Very Long Company Name Inc. | 123 Main Street, Suite 100, Anytown, CA 90210, USA | Tel: 555-1234", # Long address-like line
+            "Some Very Long Company Name Inc. | 123 Main Street, Suite 100, Anytown, CA 90210, USA | Tel: 555-1234",  # Long address-like line
             "http://www.example.com/some/long/url/that/is/just/a/url",
         ]
 
