@@ -7,14 +7,18 @@ Provides endpoints for triggering and monitoring ingestion jobs.
 
 from __future__ import annotations
 
+import json
 import logging
+import os
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Literal, Optional
 
 from cortex.context import tenant_id_ctx
 from cortex.ingestion.s3_source import S3ConversationFolder, S3SourceHandler
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
+from cortex.security.dependencies import get_current_user
+from cortex.utils.redis_client import get_redis_client
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field
 
@@ -123,11 +127,38 @@ class PushIngestResponse(BaseModel):
     message: str
 
 
+
+
 # -----------------------------------------------------------------------------
-# In-memory job tracking (for MVP - replace with Redis/DB in production)
+# Helpers
 # -----------------------------------------------------------------------------
 
-_active_jobs: Dict[str, Dict[str, Any]] = {}
+
+def _validate_s3_prefix(prefix: str) -> str:
+    """
+    Validate the S3 prefix to prevent directory traversal.
+
+    - Ensures the prefix does not start with '/'
+    - Normalizes './' and '../' patterns
+    - Collapses multiple slashes
+    """
+    if prefix.startswith("/"):
+        raise HTTPException(status_code=400, detail="S3 prefix cannot be absolute.")
+
+    # Normalize path to prevent traversal attacks
+    normalized_prefix = os.path.normpath(prefix)
+
+    # After normalization, a traversal attempt might result in '.' or start with '..'
+    if normalized_prefix == ".." or normalized_prefix.startswith("../"):
+        raise HTTPException(
+            status_code=400, detail="S3 prefix attempts directory traversal."
+        )
+
+    # Ensure the prefix ends with a slash for consistent folder listing
+    if not normalized_prefix.endswith("/"):
+        normalized_prefix += "/"
+
+    return normalized_prefix
 
 
 # -----------------------------------------------------------------------------
@@ -136,9 +167,10 @@ _active_jobs: Dict[str, Dict[str, Any]] = {}
 
 
 @router.get("/s3/folders", response_model=ListS3FoldersResponse)
-def list_s3_folders(
+async def list_s3_folders(
     prefix: str = Query(default="Outlook/", description="S3 prefix to list"),
     limit: int = Query(default=100, ge=1, le=1000, description="Max folders to return"),
+    current_user: dict = Depends(get_current_user),
 ):
     """
     List conversation folders in S3/Spaces.
@@ -146,26 +178,28 @@ def list_s3_folders(
     Returns a list of folders under the specified prefix that contain
     conversation data ready for ingestion.
     """
+    prefix = _validate_s3_prefix(prefix)
     try:
-        folders = []
-        with S3SourceHandler() as handler:
-            for folder in handler.list_conversation_folders(prefix=prefix, limit=limit):
-                folders.append(
-                    {
-                        "prefix": folder.prefix,
-                        "name": folder.name,
-                        "file_count": len(folder.files),
-                        "has_conversation": any(
-                            "conversation.txt" in f for f in folder.files
-                        ),
-                        "has_manifest": any("manifest.json" in f for f in folder.files),
-                    }
-                )
+        s3_handler = S3SourceHandler()
+        folders_iterator = await run_in_threadpool(
+            s3_handler.list_conversation_folders, prefix=prefix, limit=limit
+        )
+
+        folders_data = [
+            {
+                "prefix": folder.prefix,
+                "name": folder.name,
+                "file_count": len(folder.files),
+                "has_conversation": any("conversation.txt" in f for f in folder.files),
+                "has_manifest": any("manifest.json" in f for f in folder.files),
+            }
+            for folder in folders_iterator
+        ]
 
         return ListS3FoldersResponse(
             prefix=prefix,
-            folders=folders,
-            count=len(folders),
+            folders=folders_data,
+            count=len(folders_data),
         )
     except Exception as e:
         logger.error("Failed to list S3 folders: %s", e, exc_info=True)
@@ -175,9 +209,10 @@ def list_s3_folders(
 
 
 @router.post("/s3/start", response_model=IngestFromS3Response)
-def start_s3_ingestion(
+async def start_s3_ingestion(
     request: IngestFromS3Request,
     background_tasks: BackgroundTasks,
+    current_user: dict = Depends(get_current_user),
 ):
     """
     Start ingestion of conversations from S3/Spaces.
@@ -190,15 +225,13 @@ def start_s3_ingestion(
     Use dry_run=true to preview what would be ingested without actually processing.
     """
     job_id = str(uuid.uuid4())
+    prefix = _validate_s3_prefix(request.prefix)
 
     try:
-        with S3SourceHandler() as handler:
-            folders = list(
-                handler.list_conversation_folders(
-                    prefix=request.prefix,
-                    limit=request.limit,
-                )
-            )
+        s3_handler = S3SourceHandler()
+        folders = await run_in_threadpool(
+            s3_handler.list_conversation_folders, prefix=prefix, limit=request.limit
+        )
 
         folder_names = [f.name for f in folders]
 
@@ -211,8 +244,9 @@ def start_s3_ingestion(
                 message=f"Dry run: Found {len(folders)} folders to process",
             )
 
-        # Initialize job tracking
-        _active_jobs[job_id] = {
+        # Initialize job tracking in Redis
+        redis_client = get_redis_client()
+        job_data = {
             "status": "started",
             "started_at": datetime.now(timezone.utc).isoformat(),
             "folders_found": len(folders),
@@ -223,6 +257,7 @@ def start_s3_ingestion(
             "errors": 0,
             "skipped": 0,
         }
+        redis_client.set(f"ingest_job:{job_id}", json.dumps(job_data), ex=86400)  # 24h expiration
 
         tenant_id = tenant_id_ctx.get()
 
@@ -250,7 +285,9 @@ def start_s3_ingestion(
 
 
 @router.post("", response_model=PushIngestResponse)
-async def push_ingest(request: PushIngestRequest) -> PushIngestResponse:
+async def push_ingest(
+    request: PushIngestRequest, current_user: dict = Depends(get_current_user)
+) -> PushIngestResponse:
     """
     Push documents into the index.
 
@@ -258,6 +295,8 @@ async def push_ingest(request: PushIngestRequest) -> PushIngestResponse:
     """
     if not request.documents:
         raise HTTPException(status_code=400, detail="No documents provided")
+    if len(request.documents) > 100:
+        raise HTTPException(status_code=413, detail="Too many documents. Limit is 100.")
 
     job_id = str(uuid.uuid4())
     tenant_id = tenant_id_ctx.get()
@@ -271,12 +310,15 @@ async def push_ingest(request: PushIngestRequest) -> PushIngestResponse:
 
 
 @router.get("/status/{job_id}", response_model=IngestStatusResponse)
-async def get_ingestion_status(job_id: str):
+async def get_ingestion_status(job_id: str, current_user: dict = Depends(get_current_user)):
     """Get the status of an ingestion job."""
-    if job_id not in _active_jobs:
+    redis_client = get_redis_client()
+    job_data_raw = redis_client.get(f"ingest_job:{job_id}")
+
+    if not job_data_raw:
         raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
 
-    job_data = _active_jobs[job_id]
+    job_data = json.loads(job_data_raw)
     return IngestStatusResponse(
         job_id=job_id,
         status=job_data.get("status", "unknown"),
@@ -303,10 +345,12 @@ def _process_s3_folders_with_embeddings(
     """Process S3 folders with embedding generation."""
     from cortex.ingestion.processor import IngestionProcessor
 
-    job_data = _active_jobs.get(job_id)
-    if not job_data:
-        logger.error(f"Job {job_id} not found in active jobs")
+    redis_client = get_redis_client()
+    job_data_raw = redis_client.get(f"ingest_job:{job_id}")
+    if not job_data_raw:
+        logger.error(f"Job {job_id} not found in Redis for background processing.")
         return
+    job_data = json.loads(job_data_raw)
 
     try:
         processor = IngestionProcessor(tenant_id=tenant_id)
@@ -326,6 +370,7 @@ def _process_s3_folders_with_embeddings(
                 "message": f"Processed {stats.folders_processed} folders, created {stats.chunks_created} chunks with embeddings",
             }
         )
+        redis_client.set(f"ingest_job:{job_id}", json.dumps(job_data), ex=86400)
 
         logger.info(
             f"Ingestion job {job_id} completed: {stats.folders_processed} folders, {stats.chunks_created} chunks"
@@ -340,6 +385,7 @@ def _process_s3_folders_with_embeddings(
                 "message": f"Ingestion failed: {str(e)}",
             }
         )
+        redis_client.set(f"ingest_job:{job_id}", json.dumps(job_data), ex=86400)
 
 
 def _generate_stable_id(namespace: uuid.UUID, *args: str) -> uuid.UUID:
