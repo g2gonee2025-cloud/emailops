@@ -90,7 +90,25 @@ class Conversation(Base):
 
     __table_args__ = (
         Index("ix_conversations_tenant_folder", "tenant_id", "folder_name"),
+        Index(
+            "ix_conversations_participants_gin",
+            "participants",
+            postgresql_using="gin",
+        ),
     )
+
+    def __repr__(self) -> str:
+        """
+        Return a string representation of the Conversation, redacting PII.
+        """
+        return (
+            f"<Conversation(conversation_id='{self.conversation_id}', "
+            f"tenant_id='{self.tenant_id}', "
+            f"folder_name='{self.folder_name}', "
+            f"subject='[REDACTED]', "
+            f"smart_subject='[REDACTED]', "
+            f"participants='[REDACTED]')>"
+        )
 
 
 class Attachment(Base):
@@ -184,6 +202,7 @@ class Chunk(Base):
         Index("ix_chunks_is_attachment", "is_attachment"),
         # FTS Index
         Index("ix_chunks_tsv_text", "tsv_text", postgresql_using="gin"),
+        Index("ix_chunks_extra_data_gin", "extra_data", postgresql_using="gin"),
         # Vector Index (HNSW for high-dim halfvec)
         # Note: Created via migration 011
     )
@@ -213,7 +232,7 @@ class AuditLog(Base):
     risk_level: Mapped[str] = mapped_column(
         String(32), server_default="low", nullable=False
     )
-    metadata_: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB, nullable=True)
+    metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB, nullable=True)
 
 
 class EntityNode(Base):
