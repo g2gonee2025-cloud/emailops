@@ -198,9 +198,11 @@ class TestHybridSearch:
             user_id="u1",
             query="test query",
         )
-        results = tool_kb_search_hybrid(input_args)
+        result = tool_kb_search_hybrid(input_args)
 
         # Verification
+        assert result.is_ok()
+        results = result.unwrap()
         assert len(results.results) == 1
         assert results.results[0].chunk_id == "1"
         assert "rrf" in results.reranker

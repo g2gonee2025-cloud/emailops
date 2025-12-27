@@ -829,7 +829,17 @@ def _run_search(
         if not json_output:
             print(f"  {_colorize('⏳', 'yellow')} Searching...\n")
 
-        results: Any = tool_kb_search_hybrid(request)
+        result: Any = tool_kb_search_hybrid(request)
+
+        if result.is_err():
+            error = result.unwrap_err()
+            if json_output:
+                print(json.dumps({"error": error.message, "success": False}))
+            else:
+                print(f"\n  {_colorize('ERROR:', 'red')} {error.message}")
+            sys.exit(1)
+
+        results = result.unwrap()
 
         if json_output:
             # Convert results to JSON-serializable format
