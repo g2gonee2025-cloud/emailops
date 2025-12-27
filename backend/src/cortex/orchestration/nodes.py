@@ -358,14 +358,6 @@ def _select_all_available_attachments(
     return selected
 
 
-def _safe_stat_mb(path: Path) -> float:
-    """Safely get file size in MB."""
-    try:
-        return path.stat().st_size / (1024 * 1024) if path.exists() else 0.0
-    except Exception:
-        return 0.0
-
-
 @trace_operation("tool_email_get_thread")
 def tool_email_get_thread(
     thread_id: uuid.UUID | str,
