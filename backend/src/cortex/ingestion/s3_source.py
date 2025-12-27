@@ -166,6 +166,10 @@ class S3SourceHandler:
 
         return files, max_mtime
 
+    def list_files_in_folder(self, prefix: str) -> tuple[List[str], Optional[datetime]]:
+        """Public method to list files in a folder."""
+        return self._list_folder_files(prefix)
+
     def build_folder(self, prefix: str) -> S3ConversationFolder:
         """
         Build an S3ConversationFolder for an explicit prefix.
