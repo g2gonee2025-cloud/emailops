@@ -163,161 +163,167 @@ class DBWriter:
         self.session.merge(chunk)
         return chunk
 
+    def _write_conversation_and_attachments(
+        self, tenant_id: str, results: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
+        """Write conversation and attachment records."""
+        conv_data = results.get("conversation")
+        if not conv_data:
+            return None
+
+        self.write_conversation(
+            tenant_id=tenant_id,
+            conversation_id=conv_data["conversation_id"],
+            folder_name=conv_data.get("folder_name", ""),
+            subject=conv_data.get("subject"),
+            smart_subject=conv_data.get("smart_subject"),
+            summary_text=conv_data.get("summary_text"),
+            participants=conv_data.get("participants"),
+            messages=conv_data.get("messages"),
+            earliest_date=conv_data.get("earliest_date"),
+            latest_date=conv_data.get("latest_date"),
+            storage_uri=conv_data.get("storage_uri"),
+            extra_data=conv_data.get("extra_data"),
+        )
+
+        for att_data in results.get("attachments", []):
+            self.write_attachment(
+                attachment_id=att_data["attachment_id"],
+                conversation_id=att_data["conversation_id"],
+                filename=att_data.get("filename"),
+                content_type=att_data.get("content_type"),
+                size_bytes=att_data.get("size_bytes"),
+                storage_uri=att_data.get("storage_uri"),
+                status=att_data.get("status", "pending"),
+            )
+
+        return conv_data
+
+    def _synchronize_chunks(
+        self, tenant_id: str, conv_id: uuid.UUID, chunks_data: List[Dict[str, Any]]
+    ) -> None:
+        """Write new chunks and clean up stale ones."""
+        current_chunk_ids = []
+        for chunk_data in chunks_data:
+            source = chunk_data.get("source") or (
+                "attachment" if chunk_data.get("is_attachment") else "email_body"
+            )
+            chunk_data_with_meta = ensure_chunk_metadata(chunk_data, source=source)
+
+            record = ChunkRecord(
+                tenant_id=tenant_id,
+                chunk_id=chunk_data_with_meta["chunk_id"],
+                conversation_id=chunk_data_with_meta["conversation_id"],
+                text=chunk_data_with_meta["text"],
+                chunk_type=chunk_data_with_meta.get("chunk_type", "message_body"),
+                is_summary=chunk_data_with_meta.get("is_summary", False),
+                embedding=chunk_data_with_meta.get("embedding"),
+                position=chunk_data_with_meta.get("position", 0),
+                char_start=chunk_data_with_meta.get("char_start", 0),
+                char_end=chunk_data_with_meta.get("char_end", 0),
+                section_path=chunk_data_with_meta.get("section_path"),
+                is_attachment=chunk_data_with_meta.get("is_attachment", False),
+                attachment_id=chunk_data_with_meta.get("attachment_id"),
+                extra_data=chunk_data_with_meta.get("extra_data"),
+            )
+
+            self.write_chunk(record)
+            current_chunk_ids.append(record.chunk_id)
+
+        # Cleanup stale chunks
+        from sqlalchemy import delete
+
+        stmt = delete(Chunk).where(Chunk.conversation_id == conv_id)
+        if current_chunk_ids:
+            stmt = stmt.where(Chunk.chunk_id.notin_(current_chunk_ids))
+
+        deleted = self.session.execute(stmt)
+        if deleted.rowcount > 0:
+            logger.info(f"Cleaned up {deleted.rowcount} stale chunks for {conv_id}")
+
+    def _synchronize_graph(
+        self, tenant_id: str, conv_id: Optional[uuid.UUID], graph_data: Dict[str, Any]
+    ) -> None:
+        """Upsert graph nodes and atomically update edges."""
+        from sqlalchemy.dialects.postgresql import insert
+        from cortex.db.models import EntityEdge, EntityNode
+        from sqlalchemy import delete, select
+
+        nodes = graph_data.get("nodes", [])
+        edges = graph_data.get("edges", [])
+
+        if not nodes and not edges:
+            return
+
+        # 1. Atomically upsert nodes using INSERT ... ON CONFLICT
+        if nodes:
+            node_values = [
+                {
+                    "tenant_id": tenant_id,
+                    "name": n["name"],
+                    "type": n["type"],
+                    "description": f"Extracted from conversation {conv_id or 'unknown'}",
+                    "properties": n.get("properties", {}),
+                }
+                for n in nodes
+            ]
+
+            # This statement inserts new nodes and does nothing if a node with the
+            # same (tenant_id, name) already exists. It is atomic.
+            upsert_stmt = insert(EntityNode).values(node_values)
+            upsert_stmt = upsert_stmt.on_conflict_do_nothing(
+                index_elements=["tenant_id", "name"]
+            )
+            self.session.execute(upsert_stmt)
+
+        # 2. Fetch all required node IDs in a single query to build the map
+        node_names = [n["name"] for n in nodes]
+        stmt = select(EntityNode).where(
+            EntityNode.tenant_id == tenant_id, EntityNode.name.in_(node_names)
+        )
+        existing_nodes = self.session.execute(stmt).scalars().all()
+        node_map = {node.name: node.node_id for node in existing_nodes}
+
+        # 3. Atomically update edges for the conversation (delete all, then insert all)
+        if conv_id:
+            self.session.execute(
+                delete(EntityEdge).where(EntityEdge.conversation_id == conv_id)
+            )
+
+        new_edges = []
+        for edge in edges:
+            source_id = node_map.get(edge["source"])
+            target_id = node_map.get(edge["target"])
+            if source_id and target_id:
+                new_edges.append(EntityEdge(
+                    tenant_id=tenant_id,
+                    source_id=source_id,
+                    target_id=target_id,
+                    relation=edge["relation"],
+                    description=edge["description"],
+                    conversation_id=conv_id,
+                ))
+
+        if new_edges:
+            self.session.add_all(new_edges)
+
+        logger.info(f"Synchronized graph for conversation {conv_id}: upserted {len(nodes)} nodes, set {len(new_edges)} edges.")
+
     def write_job_results(self, job: IngestJobRequest, results: Dict[str, Any]) -> None:
         """
-        Write ingestion results to DB.
-
-        Expected results format:
-        {
-            "conversation": {...},
-            "attachments": [...],
-            "chunks": [...]
-        }
+        Write all ingestion results to the database in a single transaction.
         """
         try:
-            # 1. Write conversation
-            conv_data = results.get("conversation", {})
+            conv_data = self._write_conversation_and_attachments(job.tenant_id, results)
+
             if conv_data:
-                self.write_conversation(
-                    conversation_id=conv_data["conversation_id"],
-                    tenant_id=job.tenant_id,
-                    folder_name=conv_data.get("folder_name", ""),
-                    subject=conv_data.get("subject"),
-                    smart_subject=conv_data.get("smart_subject"),
-                    summary_text=conv_data.get("summary_text"),
-                    participants=conv_data.get("participants"),
-                    messages=conv_data.get("messages"),
-                    earliest_date=conv_data.get("earliest_date"),
-                    latest_date=conv_data.get("latest_date"),
-                    storage_uri=conv_data.get("storage_uri"),
-                    extra_data=conv_data.get("extra_data"),
+                conv_id = conv_data["conversation_id"]
+                self._synchronize_chunks(
+                    job.tenant_id, conv_id, results.get("chunks", [])
                 )
-
-            # 2. Write attachments
-            for att_data in results.get("attachments", []):
-                self.write_attachment(
-                    attachment_id=att_data["attachment_id"],
-                    conversation_id=att_data["conversation_id"],
-                    filename=att_data.get("filename"),
-                    content_type=att_data.get("content_type"),
-                    size_bytes=att_data.get("size_bytes"),
-                    storage_uri=att_data.get("storage_uri"),
-                    status=att_data.get("status", "pending"),
+                self._synchronize_graph(
+                    job.tenant_id, conv_id, results.get("graph", {})
                 )
-
-            # 3. Write chunks with metadata
-            current_chunk_ids = []
-            for chunk_data in results.get("chunks", []):
-                source = chunk_data.get("source") or (
-                    "attachment" if chunk_data.get("is_attachment") else "email_body"
-                )
-                chunk_data = ensure_chunk_metadata(chunk_data, source=source)
-
-                record = ChunkRecord(
-                    tenant_id=job.tenant_id,
-                    chunk_id=chunk_data["chunk_id"],
-                    conversation_id=chunk_data["conversation_id"],
-                    text=chunk_data["text"],
-                    chunk_type=chunk_data.get("chunk_type", "message_body"),
-                    is_summary=chunk_data.get("is_summary", False),
-                    embedding=chunk_data.get("embedding"),
-                    position=chunk_data.get("position", 0),
-                    char_start=chunk_data.get("char_start", 0),
-                    char_end=chunk_data.get("char_end", 0),
-                    section_path=chunk_data.get("section_path"),
-                    is_attachment=chunk_data.get("is_attachment", False),
-                    attachment_id=chunk_data.get("attachment_id"),
-                    extra_data=chunk_data.get("extra_data"),
-                )
-                self.write_chunk(record)
-                current_chunk_ids.append(chunk_data["chunk_id"])
-
-            # 4. Write Knowledge Graph (Nodes & Edges)
-            graph_data = results.get("graph", {})
-            nodes = graph_data.get("nodes", [])
-            edges = graph_data.get("edges", [])
-
-            # Track conversation ID for edge context
-            conv_id = conv_data.get("conversation_id") if conv_data else None
-
-            if nodes or edges:
-                from cortex.db.models import EntityEdge, EntityNode
-                from sqlalchemy import select
-
-                node_map = {}  # name -> db_id
-
-                # Upsert Nodes (Scoped to Tenant)
-                for node_dict in nodes:
-                    name = node_dict["name"]
-                    stmt = select(EntityNode).where(
-                        EntityNode.tenant_id == job.tenant_id, EntityNode.name == name
-                    )
-                    existing_node = self.session.execute(stmt).scalar_one_or_none()
-
-                    if not existing_node:
-                        new_node = EntityNode(
-                            tenant_id=job.tenant_id,
-                            name=name,
-                            type=node_dict["type"],
-                            description=f"Extracted from conversation {conv_id or 'unknown'}",
-                            properties=node_dict.get("properties", {}),
-                        )
-                        self.session.add(new_node)
-                        self.session.flush()  # flush to get ID
-                        node_map[name] = new_node.node_id
-                    else:
-                        node_map[name] = existing_node.node_id
-
-                # Write Edges (Scoped to Conversation)
-                for edge_dict in edges:
-                    src_id = node_map.get(edge_dict["source"])
-                    target_id = node_map.get(edge_dict["target"])
-
-                    if src_id and target_id:
-                        edge = EntityEdge(
-                            tenant_id=job.tenant_id,
-                            source_id=src_id,
-                            target_id=target_id,
-                            relation=edge_dict["relation"],
-                            description=edge_dict["description"],
-                            conversation_id=conv_id,
-                        )
-                        self.session.merge(edge)
-                        # Note: We don't have stable IDs for edges yet, so this merge implies
-                        # we rely on DB definition of PK. Assuming auto-increment or similar.
-                        # For now, we will just add them.
-                        # self.session.add(edge) # merge matches on PK
-
-                logger.info(f"Wrote {len(nodes)} nodes and {len(edges)} edges to graph")
-
-            # 5. Cleanup stale chunks
-            # If we processed the conversation, any existing chunks NOT in the new list should be removed.
-            # This handles cases where content changed (new hash -> new ID) or attachments were deleted.
-            if conv_data and "conversation_id" in conv_data:
-                cid = conv_data["conversation_id"]
-                from sqlalchemy import delete
-
-                # Delete chunks for this conversation that are NOT in the current set
-                if current_chunk_ids:
-                    stmt = delete(Chunk).where(
-                        Chunk.conversation_id == cid,
-                        Chunk.chunk_id.notin_(current_chunk_ids),
-                    )
-                else:
-                    # If no chunks produced (empty convo?), delete all existing chunks
-                    stmt = delete(Chunk).where(Chunk.conversation_id == cid)
-
-                deleted = self.session.execute(stmt)
-                logger.info(f"Cleaned up {deleted.rowcount} stale chunks for {cid}")
-
-                # Cleanup stale graph edges for this conversation?
-                # Ideally yes, but current Edge model doesn't make it easy without identifying 'stale'.
-                # For this iteration, we accept that edges accumulate or we wipe edges for this convo first.
-                # Wiping edges for this conversation is safer for atomicity.
-                # stmt_edges = delete(EntityEdge).where(EntityEdge.conversation_id == cid)
-                # self.session.execute(stmt_edges)
-                # But we just added new ones!
-                # Correct logic: Wipe FIRST, then Add.
 
             self.session.commit()
             logger.info(f"Successfully wrote job results for {job.job_id}")
@@ -340,24 +346,29 @@ class DBWriter:
         Returns:
             Tuple of (written_count, skipped_count)
         """
-        written = 0
-        skipped = 0
+        if not chunks:
+            return 0, 0
 
+        # Ensure all chunks have metadata and get content hashes
+        hashes = []
         for chunk_data in chunks:
             chunk_data = ensure_chunk_metadata(chunk_data, source=source)
+            hashes.append(chunk_data["extra_data"]["content_hash"])
+
+        # Performance: Bulk-fetch existing chunks to avoid N+1 query.
+        from sqlalchemy import select
+
+        stmt = select(Chunk.extra_data["content_hash"]).where(
+            Chunk.conversation_id == conversation_id,
+            Chunk.extra_data["content_hash"].astext.in_(hashes),
+        )
+        existing_hashes = {h for h, in self.session.execute(stmt)}
+
+        written = 0
+        for chunk_data in chunks:
             content_hash = chunk_data["extra_data"]["content_hash"]
-
-            # Check for existing chunk with same hash
-            existing = (
-                self.session.query(Chunk)
-                .filter(Chunk.conversation_id == conversation_id)
-                .filter(Chunk.extra_data["content_hash"].astext == content_hash)
-                .first()
-            )
-
-            if existing:
+            if content_hash in existing_hashes:
                 logger.debug(f"Skipping duplicate chunk: {content_hash[:16]}...")
-                skipped += 1
                 continue
 
             record = ChunkRecord(
@@ -376,6 +387,7 @@ class DBWriter:
             self.write_chunk(record)
             written += 1
 
+        skipped = len(chunks) - written
         self.session.commit()
         logger.info(f"Wrote {written} chunks, skipped {skipped} duplicates")
         return written, skipped
