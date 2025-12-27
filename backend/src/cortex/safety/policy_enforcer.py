@@ -240,16 +240,10 @@ def check_action(action: str, metadata: Dict[str, Any]) -> PolicyDecision:
         reason = "Explicitly denied by policy"
 
     # Check for bypass (e.g., admin override)
-    # SECURITY: Require explicit admin token/flag verification, not just existence
-    if safe_meta.get("admin_bypass") and decision != "deny":
-        # In a real system, verify the token. Here we check for a specific confirmation flag.
-        if safe_meta.get("admin_confirmed") is True:
-            decision = "allow"
-            reason = "Admin bypass enabled"
-        else:
-            logger.warning(
-                "Admin bypass attempted without confirmation for action %s", action
-            )
+    # SECURITY: Check for admin role from claims, not a flag.
+    if decision != "deny" and safe_meta.get("role") == "admin":
+        decision = "allow"
+        reason = "Admin bypass enabled"
 
     return PolicyDecision(
         action=action,
