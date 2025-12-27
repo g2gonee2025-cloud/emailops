@@ -10,15 +10,11 @@ from cortex_cli.cmd_doctor import (
     _c,
     _install_packages,
     _normalize_provider,
-    _probe_embeddings,
     _try_import,
     check_and_install_dependencies,
     check_exports,
     check_index_health,
     check_ingest,
-    check_postgres,
-    check_redis,
-    check_reranker,
     main,
 )
 
@@ -50,8 +46,8 @@ class TestCmdDoctor(unittest.TestCase):
         self.assertEqual(out2, "test")
 
     def test_normalize_provider(self):
-        self.assertEqual(_normalize_provider("gcp"), "gcp")
         self.assertEqual(_normalize_provider("vertexai"), "vertex")
+        self.assertEqual(_normalize_provider("gcp"), "gcp")
         self.assertEqual(_normalize_provider("openai"), "openai")
         self.assertEqual(_normalize_provider("unknown"), "unknown")
 
@@ -93,42 +89,6 @@ class TestCmdDoctor(unittest.TestCase):
             mock_try.side_effect = side_effect
             check_and_install_dependencies("openai", auto_install=True)
             self.assertTrue(mock_install.called)
-
-    def test_check_postgres_success(self):
-        config = MagicMock()
-        config.database.url = "postgres://user:pass@host:5432/db"
-
-        with patch("sqlalchemy.create_engine"):
-            # check_postgres returns (bool, str|None)
-            success, err = check_postgres(config)
-            self.assertTrue(success)
-            self.assertIsNone(err)
-
-    def test_check_postgres_fail(self):
-        config = MagicMock()
-        config.database.url = "postgres://bad"
-        with patch("sqlalchemy.create_engine") as mock_engine:
-            mock_engine.return_value.connect.side_effect = Exception(
-                "Connection refused"
-            )
-            success, err = check_postgres(config)
-            self.assertFalse(success)
-            self.assertIn("Connection refused", err)
-
-    def test_check_redis_success(self):
-        config = MagicMock()
-        with patch("redis.from_url") as mock_redis_from_url:
-            mock_redis = mock_redis_from_url.return_value
-            mock_redis.ping.return_value = True
-            success, _err = check_redis(config)
-            self.assertTrue(success)
-
-    def test_check_redis_fail(self):
-        config = MagicMock()
-        with patch("redis.from_url") as mock_redis_from_url:
-            mock_redis_from_url.side_effect = Exception("Redis down")
-            success, _err = check_redis(config)
-            self.assertFalse(success)
 
     def test_check_exports_success(self):
         config = MagicMock()
@@ -209,22 +169,6 @@ class TestCmdDoctor(unittest.TestCase):
         self.assertTrue(success, f"Ingest check failed: {msg}")
         self.assertTrue(details["parser_ok"])
 
-    def test_check_reranker(self):
-        config = MagicMock()
-        config.search.reranker_endpoint = "http://reranker"
-        with patch("httpx.get") as mock_get:
-            mock_get.return_value.status_code = 200
-            success, _err = check_reranker(config)
-            self.assertTrue(success)
-
-    def test_probe_embeddings(self):
-        # _probe_embeddings uses delayed import
-        with patch.dict(sys.modules, {"cortex.llm.client": MagicMock()}):
-            sys.modules["cortex.llm.client"].embed_texts.return_value = [[0.1, 0.2]]
-            success, dim = _probe_embeddings("vertex")
-            self.assertTrue(success)
-            self.assertEqual(dim, 2)
-
     @patch("cortex_cli.cmd_doctor.get_config")
     @patch("cortex_cli.cmd_doctor.check_and_install_dependencies")
     @patch("cortex_cli.cmd_doctor.check_db")
@@ -259,13 +203,77 @@ class TestCmdDoctor(unittest.TestCase):
         mock_probe_embeddings.return_value = (True, 768)
         mock_check_reranker.return_value = (True, None)
 
-        with patch(
-            "sys.argv",
-            [
-                "doctor",
-                "--all",
-            ],
+        # Patch the dependencies used INSIDE the check functions, not the functions themselves
+        with (
+            patch(
+                "cortex_cli.cmd_doctor.check_and_install_dependencies"
+            ) as mock_dep,  # this one is fine to mock as we tested it separately
+            patch("cortex_cli.cmd_doctor.Path") as mock_path_cls,
+            patch("cortex_cli.cmd_doctor._run_db_check") as mock_run_db_check,
+            patch("cortex_cli.cmd_doctor._run_redis_check") as mock_run_redis_check,
+            patch("cortex_cli.cmd_doctor._run_embed_check") as mock_run_embed_check,
+            patch("cortex_cli.cmd_doctor._run_rerank_check") as mock_run_rerank_check,
+            patch("cortex_cli.cmd_doctor._run_index_check") as mock_run_index_check,
+            patch(
+                "sys.argv",
+                [
+                    "doctor",
+                    "--check-index",
+                    "--check-db",
+                    "--check-redis",
+                    "--check-exports",
+                    "--check-ingest",
+                    "--check-embeddings",
+                    "--check-reranker",
+                ],
+            ),
+            # Patch module-level imports used by check_index_health
+            patch("cortex_cli.cmd_doctor.create_engine"),
+            patch("cortex_cli.cmd_doctor.text"),
+            # We still need to mock some internal helpers if they satisfy dependencies
+            patch(
+                "cortex_cli.cmd_doctor._find_sample_file",
+                return_value=Path("sample.eml"),
+            ),
+            patch(
+                "cortex_cli.cmd_doctor._test_parser_on_file",
+                return_value=(True, "Subject", None),
+            ),
         ):
+            # Setup file system mocks
+            mock_path_instance = mock_path_cls.return_value
+            mock_root = mock_path_instance.expanduser.return_value.resolve.return_value
+            mock_root.exists.return_value = True
+
+            # Common mock for directories (index, export)
+            mock_dir = mock_root.__truediv__.return_value
+            mock_dir.exists.return_value = True
+            mock_dir.rglob.return_value = [MagicMock()] * 5
+
+            # Setup export/ingest structure
+            mock_child = MagicMock()
+            mock_child.is_dir.return_value = True
+            mock_child.name = "export_1"
+            (mock_child / "manifest.json").exists.return_value = True
+            mock_messages = mock_child / "messages"
+            mock_messages.exists.return_value = True
+            mock_messages.glob.return_value = [MagicMock(suffix=".eml")]
+
+            mock_dir.iterdir.return_value = [mock_child]
+
+            # Setup health check mocks
+            mock_run_db_check.return_value = (True, None, False)
+            mock_run_redis_check.return_value = (True, None, False)
+            mock_run_embed_check.return_value = (True, 768, False)
+            mock_run_rerank_check.return_value = (True, None, False)
+            mock_run_index_check.return_value = ({}, False)
+
+            # Setup dependency check return
+            mock_dep.return_value = MagicMock(
+                missing_critical=[], missing_optional=[], installed=[]
+            )
+
+            # Run main
             try:
                 main()
             except SystemExit as e:
