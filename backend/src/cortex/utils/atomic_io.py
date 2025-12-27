@@ -2,6 +2,7 @@
 Atomic I/O utilities.
 """
 
+import asyncio
 import json
 import os
 import tempfile
@@ -12,31 +13,60 @@ from typing import Any
 FILE_PERMISSION_OWNER_RW = 0o600
 
 
-def atomic_write_json(path: Path | str, data: Any) -> None:
+def _validate_and_resolve_path(base_dir: Path, file_path: Path) -> Path:
     """
-    Write JSON data to a file atomically.
-
-    This function ensures that the file is either fully written or not at all,
-    preventing partial writes. It achieves this by writing to a temporary file
-    in the same directory and then atomically renaming it to the final destination.
-
-    1. Write to temp file with restricted permissions (owner read/write).
-    2. fsync the file to ensure it's written to disk.
-    3. Atomically rename the temp file to the target path.
-    4. fsync the parent directory to ensure the directory entry is durable.
+    Ensure the file path is within the sandboxed base directory.
 
     Args:
-        path: The destination file path.
+        base_dir: The secure base directory.
+        file_path: The untrusted file path.
+
+    Returns:
+        The resolved, validated absolute file path.
+
+    Raises:
+        PermissionError: If path traversal is detected.
+    """
+    resolved_base = base_dir.resolve()
+    # It is critical to resolve the base directory first.
+    resolved_path = (resolved_base / file_path).resolve()
+
+    # The most reliable way to check for path traversal is to see if the
+    # resolved base path is a parent of the resolved final path.
+    if resolved_base not in resolved_path.parents and resolved_path != resolved_base:
+        raise PermissionError(f"Path traversal attempt blocked: {resolved_path} is not within {resolved_base}")
+
+    return resolved_path
+
+
+def atomic_write_json(base_dir: Path | str, file_path: Path | str, data: Any) -> None:
+    """
+    Atomically and securely write JSON data to a file in a sandboxed directory.
+
+    This function prevents path traversal attacks by ensuring that the resolved
+    file path is strictly within the specified `base_dir`. It also ensures that
+    the file is either fully written or not at all by using an atomic move.
+
+    1. Validate the path is within the secure `base_dir`.
+    2. Write to temp file with restricted permissions (owner read/write).
+    3. fsync the file to ensure it's written to disk.
+    4. Atomically rename the temp file to the target path.
+    5. fsync the parent directory to ensure the directory entry is durable.
+
+    Args:
+        base_dir: The secure base directory where writes are allowed.
+        file_path: The relative file path within the base directory.
         data: The JSON-serializable data to write.
 
     Raises:
-        TypeError: If the path is None.
+        PermissionError: If the resolved path is outside the base directory.
+        TypeError: If paths are None.
         OSError: If file operations fail.
     """
-    if path is None:
-        raise TypeError("path must be a str or Path, not None")
+    if base_dir is None or file_path is None:
+        raise TypeError("base_dir and file_path must be a str or Path, not None")
 
-    path = Path(path)
+    path = _validate_and_resolve_path(Path(base_dir), Path(file_path))
     parent = path.parent
     parent.mkdir(parents=True, exist_ok=True)
 
@@ -80,3 +110,19 @@ def atomic_write_json(path: Path | str, data: Any) -> None:
         if temp_path and temp_path.exists():
             temp_path.unlink(missing_ok=True)
         raise
+
+
+async def atomic_write_json_async(base_dir: Path | str, file_path: Path | str, data: Any) -> None:
+    """
+    Asynchronously and securely write JSON data to a file in a sandboxed directory.
+
+    This function is a wrapper around `atomic_write_json` that runs the
+    synchronous, blocking file I/O operations in a separate thread to avoid
+    blocking the asyncio event loop.
+
+    Args:
+        base_dir: The secure base directory where writes are allowed.
+        file_path: The relative file path within the base directory.
+        data: The JSON-serializable data to write.
+    """
+    await asyncio.to_thread(atomic_write_json, base_dir, file_path, data)
