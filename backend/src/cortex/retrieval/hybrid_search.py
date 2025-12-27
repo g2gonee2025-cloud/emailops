@@ -11,6 +11,8 @@ import math
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Literal, Optional
 
+from cortex.common.exceptions import RetrievalError
+from cortex.common.types import Err, Ok, Result
 from cortex.retrieval._hybrid_helpers import (
     _convert_fts_to_items,
     _convert_vector_to_items,
@@ -259,7 +261,7 @@ def fuse_weighted_sum(
     return sorted(combined.values(), key=lambda i: i.fusion_score or 0.0, reverse=True)
 
 
-def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
+def tool_kb_search_hybrid(args: KBSearchInput) -> Result[SearchResults, RetrievalError]:
     """
     Perform hybrid search (FTS + Vector + RRF).
 
@@ -274,74 +276,65 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
     8. MMR (optional)
     9. Quoted history down-weighting
     """
-    from cortex.config.loader import get_config
-    from cortex.db.session import SessionLocal
-    from cortex.retrieval.fts_search import search_chunks_fts, search_conversations_fts
-    from cortex.retrieval.vector_search import search_chunks_vector
+    try:
+        from cortex.config.loader import get_config
+        from cortex.db.session import SessionLocal
+        from cortex.retrieval.fts_search import (
+            search_chunks_fts,
+            search_conversations_fts,
+        )
+        from cortex.retrieval.vector_search import search_chunks_vector
 
-    config = get_config()
-    k = args.k or config.search.k
-    fusion_method = args.fusion_method or config.search.fusion_strategy
+        config = get_config()
+        k = args.k or config.search.k
+        fusion_method = args.fusion_method or config.search.fusion_strategy
 
-    candidates_multiplier = config.search.candidates_multiplier
+        candidates_multiplier = config.search.candidates_multiplier
 
-    # 0. Parse filters from query (e.g., from:john@example.com subject:"budget")
-    parsed_filters, clean_query = parse_filter_grammar(args.query)
-    if not parsed_filters.is_empty():
-        logger.debug(f"Parsed filters: {parsed_filters.to_dict()}")
+        # 0. Parse filters from query (e.g., from:john@example.com subject:"budget")
+        parsed_filters, clean_query = parse_filter_grammar(args.query)
+        if not parsed_filters.is_empty():
+            logger.debug(f"Parsed filters: {parsed_filters.to_dict()}")
 
-    # Use cleaned query for embedding and FTS
-    search_query = clean_query if clean_query.strip() else args.query
+        # Use cleaned query for embedding and FTS
+        search_query = clean_query if clean_query.strip() else args.query
 
-    # 1. Embed query for vector search (with caching)
-    query_embedding = _get_query_embedding(search_query, config)
+        # 1. Embed query for vector search (with caching)
+        query_embedding = _get_query_embedding(search_query, config)
 
-    with SessionLocal() as session:
-        from cortex.db.session import set_session_tenant
+        with SessionLocal() as session:
+            from cortex.db.session import set_session_tenant
 
-        set_session_tenant(session, args.tenant_id)
+            set_session_tenant(session, args.tenant_id)
 
-        # 1.5. Summary-Awareness: Find highly relevant threads by summary
-        summary_boost_ids = set()
-        try:
-            summary_hits = search_conversations_fts(
-                session, search_query, args.tenant_id, limit=SUMMARY_SEARCH_LIMIT
+            # 1.5. Summary-Awareness: Find highly relevant threads by summary
+            summary_boost_ids = set()
+            try:
+                summary_hits = search_conversations_fts(
+                    session,
+                    search_query,
+                    args.tenant_id,
+                    limit=SUMMARY_SEARCH_LIMIT,
+                )
+                summary_boost_ids = {h.conversation_id for h in summary_hits}
+                if summary_boost_ids:
+                    logger.info(
+                        f"Summary boost active for threads: {summary_boost_ids}"
+                    )
+            except Exception as e:
+                logger.warning("Summary search failed: %s", e)
+
+            # 2. Resolve Conversations (Navigational + Filters)
+            final_conversation_ids = _resolve_target_conversations(
+                session, args, search_query, k * candidates_multiplier, parsed_filters
             )
-            summary_boost_ids = {h.conversation_id for h in summary_hits}
-            if summary_boost_ids:
-                logger.info(f"Summary boost active for threads: {summary_boost_ids}")
-        except Exception as e:
-            logger.warning("Summary search failed: %s", e)
 
-        # 2. Resolve Conversations (Navigational + Filters)
-        final_conversation_ids = _resolve_target_conversations(
-            session, args, search_query, k * candidates_multiplier, parsed_filters
-        )
-
-        # 3. Lexical search (FTS) on chunks
-        fts_chunk_results = search_chunks_fts(
-            session,
-            search_query,
-            args.tenant_id,
-            limit=k * candidates_multiplier,
-            conversation_ids=final_conversation_ids,
-            is_attachment=parsed_filters.has_attachment,
-            file_types=(
-                list(parsed_filters.file_types) if parsed_filters.file_types else None
-            ),  # P1 Fix
-        )
-
-        # 4. Vector search (if we have an embedding)
-        vector_results = []
-        if query_embedding is not None:
-            logger.info(f"Query embedding generated. Dim: {len(query_embedding)}")
-            hnsw_ef_search = getattr(config.search, "hnsw_ef_search", None)
-            vector_results = search_chunks_vector(
+            # 3. Lexical search (FTS) on chunks
+            fts_chunk_results = search_chunks_fts(
                 session,
-                query_embedding,
+                search_query,
                 args.tenant_id,
                 limit=k * candidates_multiplier,
-                ef_search=hnsw_ef_search,
                 conversation_ids=final_conversation_ids,
                 is_attachment=parsed_filters.has_attachment,
                 file_types=(
@@ -350,84 +343,119 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
                     else None
                 ),  # P1 Fix
             )
-            logger.info(f"Vector search returned {len(vector_results)} chunks")
-        else:
-            logger.warning("Query embedding is None, skipping vector search")
 
-        # Convert to SearchResultItem format
-        fts_items = _convert_fts_to_items(fts_chunk_results)
-        vector_items = _convert_vector_to_items(vector_results)
+            # 4. Vector search (if we have an embedding)
+            vector_results = []
+            if query_embedding is not None:
+                logger.info(f"Query embedding generated. Dim: {len(query_embedding)}")
+                hnsw_ef_search = getattr(config.search, "hnsw_ef_search", None)
+                vector_results = search_chunks_vector(
+                    session,
+                    query_embedding,
+                    args.tenant_id,
+                    limit=k * candidates_multiplier,
+                    ef_search=hnsw_ef_search,
+                    conversation_ids=final_conversation_ids,
+                    is_attachment=parsed_filters.has_attachment,
+                    file_types=(
+                        list(parsed_filters.file_types)
+                        if parsed_filters.file_types
+                        else None
+                    ),  # P1 Fix
+                )
+                logger.info(f"Vector search returned {len(vector_results)} chunks")
+            else:
+                logger.warning("Query embedding is None, skipping vector search")
 
-        # 5. Deduplication by content_hash
-        fts_deduped = deduplicate_by_hash(fts_items)
-        vector_deduped = deduplicate_by_hash(vector_items)
+            # Convert to SearchResultItem format
+            fts_items = _convert_fts_to_items(fts_chunk_results)
+            vector_items = _convert_vector_to_items(vector_results)
 
-        # 6. Fusion (configurable)
-        if fusion_method == "weighted_sum":
-            fused_results = fuse_weighted_sum(
-                fts_deduped, vector_deduped, alpha=config.search.rerank_alpha
+            # 5. Deduplication by content_hash
+            fts_deduped = deduplicate_by_hash(fts_items)
+            vector_deduped = deduplicate_by_hash(vector_items)
+
+            # 6. Fusion (configurable)
+            if fusion_method == "weighted_sum":
+                fused_results = fuse_weighted_sum(
+                    fts_deduped, vector_deduped, alpha=config.search.rerank_alpha
+                )
+            else:
+                fused_results = fuse_rrf(fts_deduped, vector_deduped, k=RRF_K_DEFAULT)
+
+            # 6.5. Apply Summary Boost
+            if summary_boost_ids:
+                for item in fused_results:
+                    if item.conversation_id in summary_boost_ids:
+                        # Boost score by 20%
+                        item.score *= SUMMARY_BOOST_FACTOR
+                        item.fusion_score = item.score
+
+                # Re-sort after boosting
+                fused_results = sorted(
+                    fused_results, key=lambda r: r.score, reverse=True
+                )
+
+            # 7. Reranking (External vs Lightweight)
+            if config.search.reranker_endpoint:
+                # Use Qwen/External Cross-Encoder
+                fused_results = call_external_reranker(
+                    config.search.reranker_endpoint,
+                    args.query,
+                    fused_results,
+                    top_n=50,  # Rerank top 50 candidates
+                )
+            else:
+                # Lightweight blending
+                fused_results = rerank_results(
+                    fused_results, alpha=config.search.rerank_alpha
+                )
+
+            # 8. Get conversation timestamps for recency boost
+            conversation_ids = list(
+                {r.conversation_id for r in fused_results if r.conversation_id}
             )
-        else:
-            fused_results = fuse_rrf(fts_deduped, vector_deduped, k=RRF_K_DEFAULT)
+            conversation_updated_at = _get_conversation_timestamps(
+                session, conversation_ids, args.tenant_id
+            )
 
-        # 6.5. Apply Summary Boost
-        if summary_boost_ids:
-            for item in fused_results:
-                if item.conversation_id in summary_boost_ids:
-                    # Boost score by 20%
-                    item.score *= SUMMARY_BOOST_FACTOR
-                    item.fusion_score = item.score
+            # 9. Apply recency boost
+            fused_results = apply_recency_boost(
+                fused_results,
+                conversation_updated_at,
+                half_life_days=config.search.half_life_days,
+                boost_strength=config.search.recency_boost_strength,
+            )
 
-            # Re-sort after boosting
+            # 10. Down-weight quoted_history (do this before diversification)
+            fused_results = downweight_quoted_history(
+                fused_results, factor=QUOTED_HISTORY_DOWNWEIGHT_FACTOR
+            )
             fused_results = sorted(fused_results, key=lambda r: r.score, reverse=True)
 
-        # 7. Reranking (External vs Lightweight)
-        if config.search.reranker_endpoint:
-            # Use Qwen/External Cross-Encoder
-            fused_results = call_external_reranker(
-                config.search.reranker_endpoint,
-                args.query,
+            # 11. MMR diversity for the final top-k list
+            fused_results = apply_mmr(
                 fused_results,
-                top_n=50,  # Rerank top 50 candidates
-            )
-        else:
-            # Lightweight blending
-            fused_results = rerank_results(
-                fused_results, alpha=config.search.rerank_alpha
+                lambda_param=config.search.mmr_lambda,
+                limit=min(len(fused_results), k),
             )
 
-        # 8. Get conversation timestamps for recency boost
-        conversation_ids = list(
-            {r.conversation_id for r in fused_results if r.conversation_id}
-        )
-        conversation_updated_at = _get_conversation_timestamps(
-            session, conversation_ids, args.tenant_id
-        )
-
-        # 9. Apply recency boost
-        fused_results = apply_recency_boost(
-            fused_results,
-            conversation_updated_at,
-            half_life_days=config.search.half_life_days,
-            boost_strength=config.search.recency_boost_strength,
-        )
-
-        # 10. Down-weight quoted_history (do this before diversification)
-        fused_results = downweight_quoted_history(
-            fused_results, factor=QUOTED_HISTORY_DOWNWEIGHT_FACTOR
-        )
-        fused_results = sorted(fused_results, key=lambda r: r.score, reverse=True)
-
-        # 11. MMR diversity for the final top-k list
-        fused_results = apply_mmr(
-            fused_results,
-            lambda_param=config.search.mmr_lambda,
-            limit=min(len(fused_results), k),
-        )
-
-        reranker_label = f"{fusion_method}|alpha={config.search.rerank_alpha:.2f}|mmr={config.search.mmr_lambda:.2f}"
-        return SearchResults(
-            query=args.query, reranker=reranker_label, results=fused_results[:k]
+            reranker_label = f"{fusion_method}|alpha={config.search.rerank_alpha:.2f}|mmr={config.search.mmr_lambda:.2f}"
+            return Ok(
+                SearchResults(
+                    query=args.query,
+                    reranker=reranker_label,
+                    results=fused_results[:k],
+                )
+            )
+    except Exception as e:
+        logger.exception("Hybrid search failed")
+        return Err(
+            RetrievalError(
+                f"Hybrid search failed: {e}",
+                query=args.query,
+                context={"original_exception": str(e)},
+            )
         )
 
 

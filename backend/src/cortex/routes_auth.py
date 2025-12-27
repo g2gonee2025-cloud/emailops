@@ -5,6 +5,7 @@ Provides a development-only login endpoint that issues JWTs.
 In production, this would be replaced by an external IdP (Keycloak, Auth0, etc.)
 """
 
+import secrets
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -60,10 +61,11 @@ async def login(request: LoginRequest) -> LoginResponse:
 
     # Validate credentials
     user_data = MOCK_USERS.get(request.username)
-    # Simple hash check for dev purposes (in prod, use argon2/bcrypt)
-    # This removes the hardcoded plain text password comparison
-    valid_password = user_data and user_data["password"] == request.password
-    if not valid_password:
+    # Securely compare passwords to prevent timing attacks in mock auth
+    password_match = user_data and secrets.compare_digest(
+        user_data["password"], request.password
+    )
+    if not password_match:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     # Create JWT payload

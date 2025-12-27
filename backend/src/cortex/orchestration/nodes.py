@@ -358,14 +358,6 @@ def _select_all_available_attachments(
     return selected
 
 
-def _safe_stat_mb(path: Path) -> float:
-    """Safely get file size in MB."""
-    try:
-        return path.stat().st_size / (1024 * 1024) if path.exists() else 0.0
-    except Exception:
-        return 0.0
-
-
 @trace_operation("tool_email_get_thread")
 def tool_email_get_thread(
     thread_id: uuid.UUID | str,
@@ -1086,12 +1078,15 @@ def node_audit_draft(state: Dict[str, Any]) -> Dict[str, Any]:
     * Policy Check (Blocker)
     * Quality/Safety Rubric (Scoring)
     """
+    from cortex.context import claims_ctx
+
     draft = state.get("draft")
     if not draft:
         return {}
 
     # 1. Hard Policy Check
     recipients = list(dict.fromkeys((draft.to or []) + (draft.cc or [])))
+    claims = claims_ctx.get({}) or {}
 
     metadata = {
         "recipients": recipients,
@@ -1099,6 +1094,7 @@ def node_audit_draft(state: Dict[str, Any]) -> Dict[str, Any]:
         "content": draft.body_markdown,
         "attachments": state.get("attachments", []),
         "check_external": True,
+        "role": claims.get("role"),
     }
 
     decision = check_action("draft_email", metadata)
