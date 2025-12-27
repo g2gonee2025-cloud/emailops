@@ -71,12 +71,10 @@ class ConversationSummarizer:
             return []
         try:
             embeddings = self.llm.embed_documents([summary])
-            if embeddings and len(embeddings) > 0:
+            if embeddings is not None and len(embeddings) > 0:
                 first_embedding = embeddings[0]
-                # Handle numpy array or list
-                if hasattr(first_embedding, "tolist"):
-                    return first_embedding.tolist()
-                return list(first_embedding)
+                # Ensure elements are native Python floats, not numpy floats
+                return [float(x) for x in first_embedding]
         except Exception as e:
             logger.error("Summary embedding failed: %s", e)
         return []
