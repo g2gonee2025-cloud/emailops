@@ -446,6 +446,19 @@ def cmd_s3_validate(args: argparse.Namespace) -> None:
         sys.exit(1)
 
 
+def cmd_s3_ls(args: argparse.Namespace) -> None:
+    """List S3/Spaces objects."""
+    try:
+        from cortex.ingestion.s3_source import S3SourceHandler
+
+        handler = S3SourceHandler()
+        for obj in handler.list_objects(prefix=args.prefix):
+            print(f"{obj['Key']} ({obj['Size']} bytes)")
+    except Exception as e:
+        print(f"{_colorize('ERROR:', 'red')} {e}")
+        sys.exit(1)
+
+
 def setup_s3_parser(subparsers: Any) -> None:
     """Add s3 subcommands to the CLI parser."""
     s3_parser = subparsers.add_parser(
@@ -468,6 +481,15 @@ def setup_s3_parser(subparsers: Any) -> None:
     )
     list_parser.add_argument("--json", action="store_true", help="Output as JSON")
     list_parser.set_defaults(func=cmd_s3_list)
+
+    # s3 ls
+    ls_parser = s3_subparsers.add_parser(
+        "ls",
+        help="List S3 objects",
+        description="List objects in S3/Spaces.",
+    )
+    ls_parser.add_argument("prefix", help="S3 prefix to filter")
+    ls_parser.set_defaults(func=cmd_s3_ls)
 
     # s3 ingest
     ingest_parser = s3_subparsers.add_parser(
