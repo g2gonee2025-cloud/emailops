@@ -1344,6 +1344,7 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     from cortex_cli.cmd_s3 import setup_s3_parser
     from cortex_cli.cmd_queue import setup_queue_parser
     from cortex_cli.cmd_fix import setup_fix_parser
+    from cortex_cli.cmd_login import setup_login_parser
     import typer
     from typer.main import get_command_from_info
     from typer.core import TyperGroup
@@ -1395,6 +1396,7 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     setup_maintenance_parser(subparsers)
     setup_queue_parser(subparsers)
     setup_fix_parser(subparsers)
+    setup_login_parser(subparsers)
     setup_typer_command(subparsers, "graph", graph_app, help_text="Knowledge Graph commands")
     setup_patch_parser(subparsers)
     setup_index_parser(subparsers)
