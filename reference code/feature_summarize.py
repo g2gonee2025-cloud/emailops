@@ -13,13 +13,13 @@ import re
 from collections.abc import Sequence
 
 # Python 3.10 compatibility for UTC
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Python <3.11 compatibility: datetime.UTC
 try:
     from datetime import UTC  # type: ignore
 except ImportError:  # pragma: no cover
-    UTC = UTC  # type: ignore
+    UTC = timezone.utc  # type: ignore
 from io import StringIO
 from pathlib import Path
 from typing import Any, cast
@@ -475,8 +475,8 @@ def _normalize_analysis(data: Any, catalog: Sequence[str] | None) -> JsonDict:
     next_actions_raw = d.get("next_actions")
     if isinstance(next_actions_raw, list):
         status_synonyms = {
-            "pending": "pending",
-            "acknowledged": "acknowledged",
+            "pending": "open",
+            "acknowledged": "open",
             "in_progress": "in_progress",
             "in-progress": "in_progress",
             "inprogress": "in_progress",
