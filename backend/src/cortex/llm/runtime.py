@@ -379,7 +379,7 @@ class VLLMProvider(BaseProvider):
                 intended_model,
                 base_url,
             )
-            self._llm_client = OpenAI(base_url=base_url, api_key=api_key)
+            self._llm_client = OpenAI(base_url=base_url, api_key=api_key, timeout=30.0)
             return self._llm_client
 
     # ------------- Embedding client (KaLM via vLLM API) -------------
@@ -416,7 +416,7 @@ class VLLMProvider(BaseProvider):
             api_key = os.getenv("EMBED_API_KEY", "EMPTY")
 
             logger.info("Initializing OpenAI client for Embeddings at %s", base_url)
-            self._embed_client = OpenAI(base_url=base_url, api_key=api_key)
+            self._embed_client = OpenAI(base_url=base_url, api_key=api_key, timeout=30.0)
             return self._embed_client
 
     def _ensure_embed_model(self) -> None:
@@ -1087,8 +1087,9 @@ def _extract_first_balanced_json_object(s: object) -> str | None:
 
                 if balance == 0 and i > 0:
                     return s[first_brace : first_brace + i + 1]
-    except Exception:
-        pass
+    except (TypeError, IndexError):
+        # Handle cases where s is not a string or slicing fails
+        return None
     return None
 
 
