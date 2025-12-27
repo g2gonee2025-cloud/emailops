@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from cortex.ingestion.core_manifest import load_manifest
+from cortex.ingestion.core_manifest import extract_metadata_lightweight, load_manifest
 from cortex.ingestion.models import Problem
 from cortex.utils.atomic_io import atomic_write_json
 from pydantic import BaseModel, Field
@@ -96,33 +96,36 @@ def scan_and_refresh(root: Path) -> ManifestValidationReport:
             if manifest_issue:
                 report.problems.append(Problem(folder=folder_rel, issue=manifest_issue))
 
-        conv_start, conv_end = _extract_conversation_time_range(conv_txt)
+        # Use the canonical metadata extractor
+        metadata = extract_metadata_lightweight(existing_manifest)
         mtime_iso = _file_mtime_iso(conv_txt)
-
-        # Extract participants from text as fallback/enrichment
-        participants = _extract_participants_from_txt(conv_txt)
-        last_from, last_to = _extract_last_message_participants(conv_txt)
 
         # Build new manifest with idempotent timestamps derived from manifest -> convo text -> mtime
         started_at = _preserve_str(
-            existing_manifest.get("started_at_utc"), conv_start or mtime_iso
+            existing_manifest.get("started_at_utc"), metadata.get("start_date") or mtime_iso
         )
         ended_at = _preserve_str(
-            existing_manifest.get("ended_at_utc"), conv_end or started_at
+            existing_manifest.get("ended_at_utc"), metadata.get("end_date") or started_at
         )
 
         # Start with a copy to preserve 'messages', 'participants', etc.
         new_manifest = existing_manifest.copy()
+        all_participants = metadata.get("from", []) + metadata.get("to", []) + metadata.get("cc", [])
+        # Extract email (index 1 of tuple), filter out empty ones, ensure uniqueness, and sort
+        participant_emails = sorted(
+            list(set(p[1] for p in all_participants if p and p[1])),
+            key=str.lower
+        )
         new_manifest.update(
             {
                 "manifest_version": "1",
                 "folder": folder_rel,
                 "subject_label": _preserve_str(
-                    existing_manifest.get("subject_label"), folder_rel
+                    existing_manifest.get("subject_label"), metadata.get("subject") or folder_rel
                 ),
-                "participants": participants,  # Explicitly added
-                "last_from": last_from,
-                "last_to": last_to,
+                "participants": participant_emails,
+                "last_from": (metadata.get("from")[-1] if metadata.get("from") else [("", "")])[-1][1],
+                "last_to": [p[1] for p in metadata.get("to", [])],
                 "message_count": existing_manifest.get("message_count", 0),
                 "started_at_utc": started_at,
                 "ended_at_utc": ended_at,
@@ -218,111 +221,3 @@ def _preserve_str(value: Any, fallback: str) -> str:
     if isinstance(value, str) and value.strip():
         return value
     return fallback
-
-
-def _extract_conversation_time_range(conv_txt: Path) -> tuple[str | None, str | None]:
-    """Extract min/max message timestamps from Conversation.txt content."""
-    try:
-        text = conv_txt.read_text(encoding="utf-8-sig", errors="replace")
-    except Exception:
-        return None, None
-
-    fmt_candidates = ["%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M"]
-    earliest: datetime | None = None
-    latest: datetime | None = None
-
-    for line in text.splitlines():
-        # Cheap scan: look for tokens that resemble timestamps (date and time separated by space or T)
-        tokens = line.replace("T", " ").split()
-        for token in tokens:
-            if len(token) < 16:
-                continue
-            for fmt in fmt_candidates:
-                try:
-                    if len(token) == 16 and fmt.endswith("%S"):
-                        continue
-                    dt = datetime.strptime(token, fmt).replace(tzinfo=timezone.utc)
-                    if earliest is None or dt < earliest:
-                        earliest = dt
-                    if latest is None or dt > latest:
-                        latest = dt
-                    break
-                except Exception:
-                    continue
-
-    def to_iso(dt: datetime | None) -> str | None:
-        if dt is None:
-            return None
-        return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
-
-    return to_iso(earliest), to_iso(latest)
-
-
-def _extract_participants_from_txt(conv_txt: Path) -> List[str]:
-    """
-    Extract participant names/emails from headers in Conversation.txt.
-
-    Delegates to the Single Source of Truth in conversation_parser.py.
-
-    Args:
-        conv_txt: Path to Conversation.txt
-
-    Returns:
-        List of distinct participant strings (sorted, plain email addresses)
-    """
-    try:
-        from cortex.ingestion.conversation_parser import (
-            extract_participants_from_conversation_txt,
-        )
-
-        text = conv_txt.read_text(encoding="utf-8-sig", errors="replace")
-        participants = extract_participants_from_conversation_txt(text)
-
-        # Validation manifest expects a flat list of plain email addresses
-        # Extract just the smtp field for backward compatibility
-        results = set()
-        for p in participants:
-            if p.get("smtp"):
-                results.add(p["smtp"])
-
-        return sorted(list(results), key=str.lower)
-
-    except Exception as e:
-        logger.warning(f"Failed to extract participants from {conv_txt}: {e}")
-        return []
-
-
-def _extract_last_message_participants(
-    conv_txt: Path,
-) -> tuple[Optional[str], List[str]]:
-    """Extract the sender (From) and recipients (To) of the last message in the conversation.
-
-    The Conversation.txt format typically contains lines like:
-        2024-10-07 14:43 | From: alice@example.com | To: bob@example.com; carol@example.com
-    This function finds the last such line and returns the From address and a list of To addresses.
-    """
-    import re
-
-    last_from: Optional[str] = None
-    last_to: List[str] = []
-    try:
-        text = conv_txt.read_text(encoding="utf-8-sig", errors="replace")
-        # Process lines in reverse to find the last line containing From and To
-        for line in reversed(text.splitlines()):
-            if "From:" in line and "To:" in line:
-                parts = [p.strip() for p in line.split("|")]
-                from_part = next((p for p in parts if p.startswith("From:")), None)
-                to_part = next((p for p in parts if p.startswith("To:")), None)
-                if from_part and to_part:
-                    last_from = from_part.split(":", 1)[1].strip()
-                    to_raw = to_part.split(":", 1)[1].strip()
-                    for addr in re.split(r"[;,]", to_raw):
-                        addr = addr.strip()
-                        if addr:
-                            last_to.append(addr)
-                break
-    except Exception as e:
-        logger.warning(
-            f"Failed to extract last message participants from {conv_txt}: {e}"
-        )
-    return last_from, last_to
