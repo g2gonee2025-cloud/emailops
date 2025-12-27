@@ -49,31 +49,18 @@ _BLANK_LINES = re.compile(r"^\s*$", re.MULTILINE)
 # Quoted reply lines (starts with >)
 _QUOTED_REPLY = re.compile(r"^>+\s?(.*)$", re.MULTILINE)
 
-# Header patterns to remove
-# Includes standard RFC 822 headers + Conversation.txt-specific formats + i18n
-_HEADER_PATTERNS = [
+# Consolidated header pattern for performance.
+# Matches common RFC 822 headers, i18n variants, and Conversation.txt format.
+# Removes the entire line plus the trailing newline to prevent blank lines.
+_CONSOLIDATED_HEADER_PATTERN = re.compile(
+    r"^(?:"
     # Conversation.txt-specific: "2024-10-07 14:43 | From: ..."
-    re.compile(
-        r"^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\s+\|\s+From:.*$",
-        re.MULTILINE | re.IGNORECASE,
-    ),
-    re.compile(r"^From:.*$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^To:.*$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^Cc:.*$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^Bcc:.*$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^Subject:.*$", re.MULTILINE | re.IGNORECASE),
-    # Chinese subject header
-    re.compile(r"^主题:.*$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^Date:.*$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^Sent:.*$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^Reply-To:.*$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^Message-ID:.*$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^In-Reply-To:.*$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^References:.*$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^Content-Type:.*$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^MIME-Version:.*$", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^X-[a-z-]+:.*$", re.MULTILINE | re.IGNORECASE),
-]
+    r"\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\s+\|\s+From:.*$|"
+    # Standard RFC 822 headers + i18n
+    r"(?:From|To|Cc|Bcc|Subject|主题|Date|Sent|Reply-To|Message-ID|In-Reply-To|References|Content-Type|MIME-Version|X-[a-z-]+):.*$"
+    r")\n?",
+    re.MULTILINE | re.IGNORECASE,
+)
 
 # Signature patterns (checked in last 2000 chars)
 _SIGNATURE_PATTERNS = [
@@ -124,14 +111,16 @@ _DOMAIN_NOISE = [
     "CAREERS.CHALHOUBGROUP.COM",
 ]
 
-# Forwarding separator patterns
-_FORWARDING_PATTERNS = [
-    re.compile(r"^-{3,}\s*Original Message\s*-{3,}", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^-{3,}\s*Forwarded Message\s*-{3,}", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^_{10,}", re.MULTILINE),  # Long underscore lines
-    re.compile(r"^Begin forwarded message:", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^On .+ wrote:$", re.MULTILINE),  # "On [date], [person] wrote:"
-]
+# Consolidated forwarding separator pattern.
+_CONSOLIDATED_FORWARDING_PATTERN = re.compile(
+    r"^(?:"
+    r"-{3,}\s*(?:Original|Forwarded) Message\s*-{3,}|"
+    r"_{10,}|"
+    r"Begin forwarded message:|"
+    r"On .+ wrote:$"  # Restored '$' anchor to prevent greedy matching
+    r")\n?",
+    re.MULTILINE | re.IGNORECASE,
+)
 
 
 def _is_boilerplate_line(line: str) -> bool:
@@ -211,16 +200,14 @@ def clean_email_text(text: str) -> str:
     if text.startswith("\ufeff"):
         text = text[1:]
 
-    # 2. Remove common headers
-    for pattern in _HEADER_PATTERNS:
-        text = pattern.sub("", text)
+    # 2. Remove common headers in a single pass
+    text = _CONSOLIDATED_HEADER_PATTERN.sub("", text)
 
     # 3. Strip signatures (check last 2000 chars)
     text = _strip_signature(text)
 
-    # 4. Remove forwarding separators
-    for pattern in _FORWARDING_PATTERNS:
-        text = pattern.sub("", text)
+    # 4. Remove forwarding separators in a single pass
+    text = _CONSOLIDATED_FORWARDING_PATTERN.sub("", text)
 
     # 5. Remove quoted reply markers (lines starting with >)
     # Note: We keep the content but remove the > markers for cleaner text
@@ -234,7 +221,13 @@ def clean_email_text(text: str) -> str:
     lines = [line for line in lines if not _is_boilerplate_line(line)]
     text = "\n".join(lines)
 
-    # 7. Normalize punctuation
+    # 7. Redact PII (emails, URLs)
+    # This is a critical security step to prevent data leakage.
+    text = _EMAIL_SEARCH_PATTERN.sub("[EMAIL_REDACTED]", text)
+    text = _URL_PATTERN.sub("[URL_REDACTED]", text)
+    text = _WWW_URL_SEARCH_PATTERN.sub("[URL_REDACTED]", text)
+
+    # 8. Normalize punctuation
     text = _EXCESSIVE_DOTS.sub("...", text)
     text = _EXCESSIVE_EXCLAIM.sub("!", text)
     text = _EXCESSIVE_QUESTION.sub("?", text)
