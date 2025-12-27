@@ -18,6 +18,7 @@ Supports filters:
 
 from __future__ import annotations
 
+import json
 import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -190,16 +191,24 @@ def parse_filter_grammar(raw_query: str) -> tuple[SearchFilters, str]:
             continue
 
         if key == "subject":
-            f.subject_contains = (f.subject_contains or []) + [val.lower()]
+            if f.subject_contains is None:
+                f.subject_contains = []
+            f.subject_contains.append(val.lower())
 
         elif key == "from":
-            f.from_emails = (f.from_emails or set()) | {val.lower()}
+            if f.from_emails is None:
+                f.from_emails = set()
+            f.from_emails.add(val.lower())
 
         elif key == "to":
-            f.to_emails = (f.to_emails or set()) | {val.lower()}
+            if f.to_emails is None:
+                f.to_emails = set()
+            f.to_emails.add(val.lower())
 
         elif key == "cc":
-            f.cc_emails = (f.cc_emails or set()) | {val.lower()}
+            if f.cc_emails is None:
+                f.cc_emails = set()
+            f.cc_emails.add(val.lower())
 
         elif key == "after":
             parsed = _parse_iso_date(val)
@@ -220,8 +229,13 @@ def parse_filter_grammar(raw_query: str) -> tuple[SearchFilters, str]:
 
         elif key == "type":
             # Support comma-separated extensions
-            exts = {e.strip().lower().lstrip(".") for e in val.split(",") if e.strip()}
-            f.file_types = (f.file_types or set()) | exts
+            raw_exts = {e.strip().lower().lstrip(".") for e in val.split(",") if e.strip()}
+            # SECURITY: Validate extensions to be simple alphanumeric strings to prevent path traversal
+            # or other injection attacks in downstream consumers.
+            valid_exts = {ext for ext in raw_exts if re.match(r"^[a-z0-9]+$", ext)}
+            if f.file_types is None:
+                f.file_types = set()
+            f.file_types.update(valid_exts)
 
     return f, cleaned
 
@@ -239,6 +253,13 @@ def apply_filters_to_sql(
     Note: This requires the query to join with conversations table
     if using from/to/cc/subject filters.
     """
+    # SECURITY: Prevent SQL injection by validating table aliases.
+    # Only allow simple alphanumeric aliases.
+    if not re.match(r"^[a-zA-Z0-9_]+$", table_alias):
+        raise ValueError(f"Invalid table alias: {table_alias}")
+    if not re.match(r"^[a-zA-Z0-9_]+$", conversation_table_alias):
+        raise ValueError(f"Invalid conversation table alias: {conversation_table_alias}")
+
     conditions: List[str] = []
     params: Dict[str, Any] = {}
 
@@ -256,6 +277,11 @@ def apply_filters_to_sql(
         conditions.append(f"{table_alias}.is_attachment = TRUE")
     elif filters.has_attachment is False:
         conditions.append(f"{table_alias}.is_attachment = FALSE")
+
+    # File type filter on chunk metadata
+    if filters.file_types:
+        conditions.append(f"lower({table_alias}.metadata->>'file_type') = ANY(:file_types)")
+        params["file_types"] = list(filters.file_types)
 
     # Subject contains (uses ILIKE for case-insensitive)
     if filters.subject_contains:
@@ -276,53 +302,27 @@ def apply_filters_to_sql(
         conditions.append(f"{table_alias}.conversation_id = ANY(:conv_ids)")
         params["conv_ids"] = list(filters.conv_ids)
 
-    # Note: from_emails, to_emails, cc_emails require parsing conversation.participants
-    # which is stored as JSONB. This is more complex and depends on schema.
-    # For now, these are handled via post-filtering or extended schema.
+    # Participant filters using JSONB subqueries for performance and security.
+    if filters.from_emails:
+        conditions.append(
+            f"EXISTS (SELECT 1 FROM jsonb_array_elements({conversation_table_alias}.participants) p "
+            "WHERE p->>'role' = 'sender' AND lower(p->>'smtp') = ANY(:from_emails))",
+        )
+        params["from_emails"] = [e.lower() for e in filters.from_emails]
+
+    if filters.to_emails:
+        conditions.append(
+            f"EXISTS (SELECT 1 FROM jsonb_array_elements({conversation_table_alias}.participants) p "
+            "WHERE p->>'role' = 'recipient' AND lower(p->>'smtp') = ANY(:to_emails))",
+        )
+        params["to_emails"] = [e.lower() for e in filters.to_emails]
+
+    if filters.cc_emails:
+        conditions.append(
+            f"EXISTS (SELECT 1 FROM jsonb_array_elements({conversation_table_alias}.participants) p "
+            "WHERE p->>'role' = 'cc' AND lower(p->>'smtp') = ANY(:cc_emails))",
+        )
+        params["cc_emails"] = [e.lower() for e in filters.cc_emails]
 
     where_clause = " AND ".join(conditions) if conditions else ""
     return where_clause, params
-
-
-def filter_results_post_query(
-    results: List[Dict[str, Any]],
-    filters: SearchFilters,
-) -> List[Dict[str, Any]]:
-    """
-    Post-filter results that couldn't be filtered in SQL.
-    Handles from/to/cc participant filtering using metadata.
-    """
-    # Quick exit if no relevant filters are set
-    if not any([filters.from_emails, filters.to_emails, filters.cc_emails]):
-        return results
-    filtered_results = []
-    for r in results:
-        metadata = r.get("metadata", {}) or {}
-        participants = metadata.get("participants", [])
-        if not isinstance(participants, list):
-            continue
-        # Create sets of emails for each role
-        senders = {
-            p.get("smtp", "").lower()
-            for p in participants
-            if isinstance(p, dict) and p.get("role") == "sender"
-        }
-        recipients = {
-            p.get("smtp", "").lower()
-            for p in participants
-            if isinstance(p, dict) and p.get("role") == "recipient"
-        }
-        cc_recipients = {
-            p.get("smtp", "").lower()
-            for p in participants
-            if isinstance(p, dict) and p.get("role") == "cc"
-        }
-        # Apply filters
-        if filters.from_emails and not (senders & filters.from_emails):
-            continue
-        if filters.to_emails and not (recipients & filters.to_emails):
-            continue
-        if filters.cc_emails and not (cc_recipients & filters.cc_emails):
-            continue
-        filtered_results.append(r)
-    return filtered_results
