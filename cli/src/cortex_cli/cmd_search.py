@@ -180,3 +180,5 @@ def _run_search_command(args: argparse.Namespace) -> None:
         else:
             print(f"\n  {colorize('ERROR:', 'red')} {e}")
             sys.exit(1)
+import contextlib
+import hashlib
