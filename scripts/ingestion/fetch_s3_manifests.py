@@ -40,9 +40,7 @@ def main(target: int, prefix: str):
         )
 
         paginator = client.get_paginator("list_objects_v2")
-        page_iterator = paginator.paginate(
-            Bucket=s3_config.bucket_raw, Prefix=prefix
-        )
+        page_iterator = paginator.paginate(Bucket=s3_config.bucket_raw, Prefix=prefix)
 
         found_count = 0
 
@@ -92,9 +90,7 @@ def main(target: int, prefix: str):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Scan S3 for multi-message manifests."
-    )
+    parser = argparse.ArgumentParser(description="Scan S3 for multi-message manifests.")
     parser.add_argument(
         "--target",
         type=int,

@@ -13,7 +13,7 @@ import asyncio
 import logging
 import time
 from collections import OrderedDict
-from typing import Any, Optional, Tuple
+from typing import Any, Optional
 
 import numpy as np
 

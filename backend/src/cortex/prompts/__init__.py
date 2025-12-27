@@ -9,7 +9,7 @@ Old, unsafe functions like `get_prompt` are deprecated and will be removed.
 New code should exclusively use `construct_prompt_messages`.
 """
 import warnings
-from typing import Any, Dict, List
+from typing import Any
 
 # =============================================================================
 # Core System Prompt
@@ -320,7 +320,9 @@ Context:
 def _with_base(body: str) -> str:
     """DEPRECATED: This function is part of an unsafe prompt construction pattern."""
     warnings.warn(
-        "_with_base is deprecated and will be removed.", DeprecationWarning, stacklevel=2
+        "_with_base is deprecated and will be removed.",
+        DeprecationWarning,
+        stacklevel=2,
     )
     return SYSTEM_PROMPT_BASE + body
 

@@ -35,7 +35,6 @@ BLOCKLIST_PATTERNS = [
     r"simulate a",
     r"you are a helpful assistant",
     r"your new persona is",
-
     # Sophisticated patterns
     # Detects character separators and noise, e.g., "i g n o r e"
     r"i\s*g\s*n\s*o\s*r\s*e",
@@ -87,5 +86,3 @@ def validate_for_injection(text: str):
     """
     if contains_injection(text):
         raise ValueError("Potential injection attack detected.")
-
-

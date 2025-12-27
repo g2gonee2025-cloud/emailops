@@ -64,7 +64,7 @@ class ChunkingInput(BaseModel):
     Blueprint §7.1:
     * text: str
     * section_path: str
-    * quoted_spans: List[Span]
+    * quoted_spans: list[Span]
     * max_tokens: int = 800
     * min_tokens: int = 25
     * overlap_tokens: int = 80
@@ -94,7 +94,7 @@ class ChunkModel(BaseModel):
     * char_start: int
     * char_end: int
     * chunk_type: Literal[...]
-    * metadata: Dict[str, Any]
+    * metadata: dict[str, Any]
     """
 
     text: str

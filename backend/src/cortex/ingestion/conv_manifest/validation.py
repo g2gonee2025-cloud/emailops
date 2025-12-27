@@ -11,7 +11,7 @@ import json
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from cortex.ingestion.core_manifest import extract_metadata_lightweight, load_manifest
 from cortex.ingestion.models import Problem
@@ -51,7 +51,7 @@ def scan_and_refresh(root: Path) -> ManifestValidationReport:
 
     config = get_config()
     try:
-        export_root = config.directories.export_root.resolve(strict=True)
+        export_root = Path(config.directories.export_root).resolve(strict=True)
         scan_root = root.resolve(strict=True)
         if not scan_root.is_relative_to(export_root):
             raise SecurityException("Path traversal attempt")
@@ -111,7 +111,10 @@ def scan_and_refresh(root: Path) -> ManifestValidationReport:
                 existing_manifest = load_manifest(conv_dir)
                 if not existing_manifest:
                     manifest_issue = "manifest_corrupt"
-            except (OSError, json.JSONDecodeError) as exc:  # pragma: no cover - defensive
+            except (
+                OSError,
+                json.JSONDecodeError,
+            ) as exc:  # pragma: no cover - defensive
                 logger.error("Failed to load manifest %s: %s", manifest_path, exc)
                 manifest_issue = "manifest_corrupt"
 
@@ -150,9 +153,7 @@ def scan_and_refresh(root: Path) -> ManifestValidationReport:
                     metadata.get("subject") or folder_rel,
                 ),
                 "participants": participant_emails,
-                "last_from": (
-                    metadata.get("from")[-1] if metadata.get("from") else [("", "")]
-                )[-1][1],
+                "last_from": ((metadata.get("from") or [("", "")])[-1][1]),
                 "last_to": [p[1] for p in metadata.get("to", [])],
                 "message_count": existing_manifest.get("message_count", 0),
                 "started_at_utc": started_at,
@@ -171,7 +172,9 @@ def scan_and_refresh(root: Path) -> ManifestValidationReport:
         # Check if update needed
         if _manifests_differ(existing_manifest, new_manifest):
             try:
-                atomic_write_json(manifest_path, new_manifest)
+                atomic_write_json(
+                    manifest_path.parent, manifest_path.name, new_manifest
+                )
                 if not existing_manifest:
                     report.manifests_created += 1
                     report.problems.append(
@@ -194,8 +197,10 @@ def scan_and_refresh(root: Path) -> ManifestValidationReport:
 
     # Write report
     try:
-        report_path = artifacts_dir / "validation_report.json"
-        atomic_write_json(report_path, report.model_dump(by_alias=True))
+        artifacts_dir / "validation_report.json"
+        atomic_write_json(
+            artifacts_dir, "validation_report.json", report.model_dump(by_alias=True)
+        )
     except OSError as e:
         logger.error("Failed to write validation report: %s", e)
 

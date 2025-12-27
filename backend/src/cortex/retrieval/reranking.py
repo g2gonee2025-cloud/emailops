@@ -7,7 +7,7 @@ Implements §8.7 of the Canonical Blueprint.
 import asyncio
 import ipaddress
 import logging
-from typing import List, Optional
+from typing import Optional
 from urllib.parse import urlparse
 
 import httpx
@@ -168,7 +168,7 @@ async def _validate_reranker_url(url: str) -> None:
         loop = asyncio.get_running_loop()
         addr_info = await loop.getaddrinfo(hostname, None)
 
-        for family, _, _, _, sockaddr in addr_info:
+        for _family, _, _, _, sockaddr in addr_info:
             ip_str = sockaddr[0]
             ip = ipaddress.ip_address(ip_str)
             if not ip.is_global:

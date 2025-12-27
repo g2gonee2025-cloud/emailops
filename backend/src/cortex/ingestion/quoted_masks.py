@@ -6,7 +6,6 @@ Implements §6.3 of the Canonical Blueprint.
 from __future__ import annotations
 
 import re
-from typing import List
 
 from cortex.chunking.chunker import Span
 

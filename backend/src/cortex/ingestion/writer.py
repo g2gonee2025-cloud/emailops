@@ -12,7 +12,7 @@ import logging
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from cortex.db.models import Attachment, Chunk, Conversation
 from cortex.ingestion.constants import CLEANING_VERSION

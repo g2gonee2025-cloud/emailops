@@ -10,10 +10,10 @@ from __future__ import annotations
 import logging
 import os
 import tempfile
+from collections.abc import Iterator
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
-from collections.abc import Iterator
+from typing import Any, Optional
 
 import boto3
 from botocore.config import Config

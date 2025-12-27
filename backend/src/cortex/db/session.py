@@ -33,7 +33,7 @@ class _RedactingExceptionFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         # Scrub exception info so that exception messages are not emitted.
         if record.exc_info:
-            exc_type, exc_value, tb = record.exc_info  # type: ignore[assignment]
+            exc_type, _exc_value, tb = record.exc_info  # type: ignore[assignment]
             # Replace the exception value with a new instance with no args/message.
             try:
                 sanitized_exc = exc_type()

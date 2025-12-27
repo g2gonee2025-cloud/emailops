@@ -3,7 +3,7 @@ import json
 import logging
 import os
 import time
-from typing import Any, Dict, List
+from typing import Any
 
 import aiohttp
 
@@ -36,7 +36,7 @@ if not JULES_API_KEY:
                 if line.startswith("JULES_API_KEY_ALT="):
                     JULES_API_KEY = line.strip().split("=", 1)[1]
                     break
-    except:
+    except Exception:
         pass
 
 if not JULES_API_KEY:
@@ -119,7 +119,7 @@ def get_completed_files():
                             if x.get("status") == "success"
                         }
                     )
-            except:
+            except Exception:
                 pass
     return completed
 

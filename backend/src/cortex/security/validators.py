@@ -11,7 +11,7 @@ import re
 import shlex
 import unicodedata
 from pathlib import Path
-from typing import List, Optional, Set
+from typing import Optional
 
 from cortex.common.types import Err, Ok, Result
 
@@ -153,7 +153,7 @@ def sanitize_retrieved_content(text: str) -> str:
     # Use a more robust split to handle different line endings
     lines = text.splitlines()
 
-    for i, line in enumerate(lines):
+    for _i, line in enumerate(lines):
         line_stripped_lower = line.strip().lower()
 
         if not line_stripped_lower:

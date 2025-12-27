@@ -31,10 +31,10 @@ import subprocess
 import sys
 import threading
 from collections import deque
+from collections.abc import Awaitable
 from datetime import datetime
 from pathlib import Path
 from typing import Any, TypeVar
-from collections.abc import Awaitable
 
 try:
     import streamlit as st
@@ -617,9 +617,7 @@ else:
         st.session_state.PROJECT_ROOT = str(PROJECT_ROOT)
     if "export_root" not in st.session_state:
         export_env = os.getenv("EMAILOPS_EXPORT_ROOT")
-        st.session_state.export_root = (
-            export_env.strip() if export_env else ""
-        )
+        st.session_state.export_root = export_env.strip() if export_env else ""
     if "index_root" not in st.session_state:
         index_env = os.getenv("EMAILOPS_INDEX_ROOT")
         if index_env:

@@ -1,6 +1,7 @@
 """
 Common data models for the Cortex API.
 """
+
 from pydantic import BaseModel
 
 
@@ -21,6 +22,5 @@ class SecureBaseModel(BaseModel):
             return args
 
         return [
-            (key, "*****" if key in self._PII_FIELDS else value)
-            for key, value in args
+            (key, "*****" if key in self._PII_FIELDS else value) for key, value in args
         ]

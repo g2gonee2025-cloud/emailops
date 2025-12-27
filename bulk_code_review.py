@@ -17,7 +17,7 @@ import sys
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Any
 
 import requests
 from dotenv import load_dotenv
@@ -106,8 +106,13 @@ class BulkCodeReviewer:
         self.models = models
         self.max_workers = max_workers
         self.api_key = os.getenv("LLM_API_KEY") or os.getenv("DO_API_KEY")
-        self.base_url = (os.getenv("LLM_ENDPOINT") or "https://inference.do-ai.run/v1").rstrip("/")
-        self.headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
+        self.base_url = (
+            os.getenv("LLM_ENDPOINT") or "https://inference.do-ai.run/v1"
+        ).rstrip("/")
+        self.headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
 
         if not self.api_key:
             logger.error("Missing API key. Set LLM_API_KEY or DO_API_KEY.")
@@ -203,7 +208,9 @@ class BulkCodeReviewer:
                     context_parts.append(f"--- {imp} ---\n" + "\n".join(lines))
                 except OSError as e:
                     logger.warning(f"Could not read import {resolved}: {e}")
-        return "\n\n".join(context_parts)[:4000] if context_parts else "(No local imports)"
+        return (
+            "\n\n".join(context_parts)[:4000] if context_parts else "(No local imports)"
+        )
 
     def _load_previous_report_data(self):
         """Loads report data into the cache. Must be called within a lock."""
@@ -236,7 +243,10 @@ class BulkCodeReviewer:
         if not findings:
             return "(No previous findings for this file)"
 
-        lines = [f"- [{f.get('category', '?')}] {f.get('description', '')[:150]}" for f in findings[:5]]
+        lines = [
+            f"- [{f.get('category', '?')}] {f.get('description', '')[:150]}"
+            for f in findings[:5]
+        ]
         return "\n".join(lines)
 
     def _call_llm(self, model: str, prompt: str) -> dict[str, Any]:
@@ -253,7 +263,9 @@ class BulkCodeReviewer:
             resp = self.session.post(url, json=payload, timeout=120)
             resp.raise_for_status()
             data = resp.json()
-            content = data.get("choices", [{}])[0].get("message", {}).get("content", "{}")
+            content = (
+                data.get("choices", [{}])[0].get("message", {}).get("content", "{}")
+            )
             content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL)
             return json.loads(content)
         except (requests.RequestException, json.JSONDecodeError) as e:
@@ -310,11 +322,16 @@ class BulkCodeReviewer:
                     result = future.result()
 
                     if result.get("skipped"):
-                        if file_key not in self.results_by_file and file_key not in self.skipped_files:
+                        if (
+                            file_key not in self.results_by_file
+                            and file_key not in self.skipped_files
+                        ):
                             self.skipped_files.add(file_key)
                     elif result.get("error"):
                         self.total_failed += 1
-                        logger.error(f"❌ {file_path.name} ({model}): {result.get('error')[:80]}")
+                        logger.error(
+                            f"❌ {file_path.name} ({model}): {result.get('error')[:80]}"
+                        )
                     else:
                         if file_key not in self.results_by_file:
                             self.results_by_file[file_key] = []
@@ -322,7 +339,9 @@ class BulkCodeReviewer:
                         issue_count = len(result.get("issues", []))
 
                         log_func = logger.warning if issue_count > 0 else logger.info
-                        log_func(f"{'⚠️' if issue_count > 0 else '✅'} {file_path.name} ({model}): {issue_count} issues")
+                        log_func(
+                            f"{'⚠️' if issue_count > 0 else '✅'} {file_path.name} ({model}): {issue_count} issues"
+                        )
 
                 except Exception as e:
                     self.total_failed += 1
@@ -377,7 +396,9 @@ class BulkCodeReviewer:
                     for i in cat_issues[:15]:
                         line = f":L{i['line']}" if i.get("line") else ""
                         model_tag = f"[{i.get('found_by', '?')[:10]}]"
-                        print(f"  {model_tag} {i['file']}{line}: {i['description'][:100]}")
+                        print(
+                            f"  {model_tag} {i['file']}{line}: {i['description'][:100]}"
+                        )
         else:
             print("\n✅ No issues found across all reviewed files!")
 
@@ -386,12 +407,12 @@ class BulkCodeReviewer:
 
 def main():
     """Main entry point for the script."""
-    print("="*80)
+    print("=" * 80)
     print(" Cortex Bulk Code Review Utility")
-    print("="*80)
+    print("=" * 80)
     print("WARNING: This script sends source code to a third-party API for analysis.")
     print("Ensure you are authorized to do so and trust the service provider.")
-    print("="*80)
+    print("=" * 80)
 
     parser = argparse.ArgumentParser(description="Bulk Code Review Script")
     parser.add_argument(

@@ -1,8 +1,9 @@
 """
 Security dependencies for FastAPI.
 """
+
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from cortex.security.auth import _extract_identity
 from fastapi import Depends, HTTPException, Request
@@ -10,6 +11,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 logger = logging.getLogger(__name__)
 auth_scheme = HTTPBearer()
+
 
 async def get_current_user(
     request: Request, token: HTTPAuthorizationCredentials = Depends(auth_scheme)
@@ -21,7 +23,7 @@ async def get_current_user(
         raise HTTPException(status_code=401, detail="Not authenticated")
 
     try:
-        tenant_id, user_id, claims = await _extract_identity(request)
+        _tenant_id, user_id, claims = await _extract_identity(request)
         if user_id == "anonymous":
             raise HTTPException(status_code=401, detail="Invalid token")
         return claims

@@ -171,6 +171,46 @@ def _create_dev_secret_decoder(
     return decode_verified_secret
 
 
+async def _extract_identity(request: Request) -> tuple[str, str, dict[str, Any]]:
+    """
+    Extract tenant_id, user_id, and claims from request.
+
+    Priority:
+    1. JWT token in Authorization header (if decoder configured)
+    2. X-Tenant-ID and X-User-ID headers (dev fallback)
+    3. Default values
+    """
+    tenant_id = "default"
+    user_id = "anonymous"
+    claims: dict[str, Any] = {}
+
+    # Try JWT first
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer ") and _jwt_decoder:
+        token = auth_header[7:]
+        try:
+            decoded = _jwt_decoder(token)
+            # Handle both sync and async decoders
+            if inspect.isawaitable(decoded):
+                claims = await decoded
+            else:
+                claims = decoded
+
+            # Extract standard claims
+            tenant_id = claims.get("tenant_id") or claims.get("tid") or tenant_id
+            user_id = claims.get("sub") or claims.get("user_id") or user_id
+        except Exception as e:
+            logger.warning("JWT decode failed: %s", e)
+
+    # Fallback to headers (dev mode)
+    if tenant_id == "default":
+        tenant_id = request.headers.get("X-Tenant-ID", "default")
+    if user_id == "anonymous":
+        user_id = request.headers.get("X-User-ID", "anonymous")
+
+    return tenant_id, user_id, claims
+
+
 logger = logging.getLogger(__name__)
 
 

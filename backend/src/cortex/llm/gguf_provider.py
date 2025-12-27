@@ -11,7 +11,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
-from typing import List, Optional
+from typing import Optional
 
 import httpx
 import numpy as np

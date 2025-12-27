@@ -4,14 +4,14 @@ import uuid
 from unittest.mock import patch
 
 import pytest
-from cortex.ingestion.models import IngestJobRequest, IngestJobSummary
 from cortex.ingestion.mailroom import (
-    _validate_local_path,
-    _normalize_s3_prefix,
     _generate_stable_id,
-    process_job,
+    _normalize_s3_prefix,
     _resolve_source,
+    _validate_local_path,
+    process_job,
 )
+from cortex.ingestion.models import IngestJobRequest, IngestJobSummary
 
 
 class TestMailroomHelpers:
@@ -20,14 +20,14 @@ class TestMailroomHelpers:
         test_dir = tmp_path / "test"
         test_dir.mkdir()
 
-        with patch.dict('os.environ', {'CORTEX_LOCAL_UPLOAD_DIR': str(tmp_path)}):
+        with patch.dict("os.environ", {"CORTEX_LOCAL_UPLOAD_DIR": str(tmp_path)}):
             result = _validate_local_path(str(test_dir))
         # Result could be Path or str
         assert str(result) == str(test_dir)
 
     def test_validate_local_path_invalid(self, tmp_path):
         with pytest.raises(ValueError):
-            with patch.dict('os.environ', {'CORTEX_LOCAL_UPLOAD_DIR': str(tmp_path)}):
+            with patch.dict("os.environ", {"CORTEX_LOCAL_UPLOAD_DIR": str(tmp_path)}):
                 _validate_local_path("/nonexistent/path/12345")
 
     def test_validate_local_path_traversal_attack(self, tmp_path):
@@ -40,8 +40,10 @@ class TestMailroomHelpers:
         # Create the file it's trying to access to ensure the check is based on path, not existence
         (tmp_path / "some_other_file.txt").touch()
 
-        with patch.dict('os.environ', {'CORTEX_LOCAL_UPLOAD_DIR': str(safe_dir)}):
-            with pytest.raises(ValueError, match="Path is outside of the allowed directory"):
+        with patch.dict("os.environ", {"CORTEX_LOCAL_UPLOAD_DIR": str(safe_dir)}):
+            with pytest.raises(
+                ValueError, match="Path is outside of the allowed directory"
+            ):
                 _validate_local_path(malicious_path_str)
 
     def test_normalize_s3_prefix_simple(self):
@@ -77,7 +79,9 @@ class TestProcessJob:
             source_uri=str(convo_dir),
             tenant_id="default",
         )
-        mock_ingest.return_value = IngestJobSummary(job_id=job.job_id, tenant_id=job.tenant_id)
+        mock_ingest.return_value = IngestJobSummary(
+            job_id=job.job_id, tenant_id=job.tenant_id
+        )
 
         summary = process_job(job)
 

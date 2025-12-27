@@ -23,7 +23,7 @@ import os
 import threading
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Protocol, cast
+from typing import Any, Optional, Protocol, cast
 
 import numpy as np
 from tenacity import (
@@ -1080,9 +1080,7 @@ class LLMRuntime:
 # =============================================================================
 # JSON helpers
 # =============================================================================
-def _validate_json_schema(
-    data: dict[str, Any], schema: dict[str, Any]
-) -> str | None:
+def _validate_json_schema(data: dict[str, Any], schema: dict[str, Any]) -> str | None:
     try:
         import jsonschema
 

@@ -1,9 +1,9 @@
 """Unit tests for cortex.utils.atomic_io module."""
 
 import json
-import pytest
 from pathlib import Path
 
+import pytest
 from cortex.utils.atomic_io import atomic_write_json, atomic_write_json_async
 
 
@@ -87,6 +87,7 @@ class TestAtomicWriteJson:
             atomic_write_json(tmp_path, file_path, data)
 
         assert not (tmp_path / file_path).resolve().exists()
+
 
 @pytest.mark.asyncio
 class TestAtomicWriteJsonAsync:

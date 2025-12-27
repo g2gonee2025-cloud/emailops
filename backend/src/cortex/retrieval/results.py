@@ -20,12 +20,12 @@ class SearchResultItem(BaseModel):
     * score: float
     * conversation_id: str (was thread_id)
     * attachment_id: Optional[UUID]
-    * highlights: List[str]
+    * highlights: list[str]
     * snippet: str
     * content: Optional[str]
     * source: Optional[str]
     * filename: Optional[str]
-    * metadata: Dict[str, Any]
+    * metadata: dict[str, Any]
     """
 
     chunk_id: str | None
@@ -62,7 +62,7 @@ class SearchResultItem(BaseModel):
 
     # Backward compatibility aliases
     @property
-    def thread_id(self) -> Optional[str]:
+    def thread_id(self) -> str | None:
         """Alias for conversation_id (backward compat)."""
         return self.conversation_id
 
@@ -94,7 +94,7 @@ class SearchResults(BaseModel):
     * type: Literal["search_results"]
     * query: str
     * reranker: Optional[str]
-    * results: List[SearchResultItem]
+    * results: list[SearchResultItem]
     """
 
     type: Literal["search_results"] = "search_results"

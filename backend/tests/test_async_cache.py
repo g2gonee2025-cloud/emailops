@@ -1,6 +1,7 @@
 """
 Unit tests for Query Embedding Cache.
 """
+
 import asyncio
 import time
 
@@ -147,7 +148,10 @@ class TestGlobalCacheFunctions:
         embedding = np.array([1.0, 2.0, 3.0], dtype=np.float32)
 
         # Initially not cached
-        assert await get_cached_query_embedding("unique_test_query_123", "test-model") is None
+        assert (
+            await get_cached_query_embedding("unique_test_query_123", "test-model")
+            is None
+        )
 
         # Cache it
         await cache_query_embedding("unique_test_query_123", embedding, "test-model")

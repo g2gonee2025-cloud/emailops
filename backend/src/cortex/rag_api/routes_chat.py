@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
-from typing import Any, List, Literal, Optional
+from typing import Any, Literal, Optional
 
 from cortex.audit import log_audit_event
 from cortex.config.loader import get_config

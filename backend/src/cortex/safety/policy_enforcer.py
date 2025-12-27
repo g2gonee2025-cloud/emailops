@@ -28,7 +28,7 @@ class PolicyDecision(BaseModel):
     * decision: Literal["allow", "deny", "require_approval"]
     * reason: str
     * risk_level: Literal["low", "medium", "high"]
-    * metadata: Dict[str, Any]
+    * metadata: dict[str, Any]
     """
 
     model_config = ConfigDict(extra="forbid")

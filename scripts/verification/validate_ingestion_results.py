@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path.cwd() / "backend" / "src"))
 
 
 from cortex.config.loader import get_config
-from sqlalchemy import create_engine, inspect, text, exc
+from sqlalchemy import create_engine, exc, inspect, text
 
 
 def validate_ingestion_results() -> bool:
@@ -139,7 +139,6 @@ def validate_ingestion_results() -> bool:
         print(f"❌ Error during schema validation: {e}")
         return False
 
-
     print("\n[6] Checking embeddings status...")
     try:
         with engine.connect() as conn:
@@ -186,12 +185,13 @@ def validate_ingestion_results() -> bool:
                 print(f"      Avg:    {stats[2]:,} chars")
                 print(f"      Median: {stats[3]:,} chars")
             else:
-                print("    ⚠️ Could not compute chunk size stats (table might be empty).")
+                print(
+                    "    ⚠️ Could not compute chunk size stats (table might be empty)."
+                )
 
     except exc.SQLAlchemyError as e:
         print(f"❌ Error checking chunk distribution: {e}")
         return False
-
 
     print("\n[8] Sampling data quality...")
     try:
@@ -237,7 +237,6 @@ def validate_ingestion_results() -> bool:
         match_pct = 100.0 if total_actual == 0 else 0.0
     else:
         match_pct = (total_actual / total_expected) * 100
-
 
     print(f"\n  Expected total records: {total_expected:,}")
     print(f"  Actual total records:   {total_actual:,}")

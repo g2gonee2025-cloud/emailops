@@ -14,7 +14,7 @@ from __future__ import annotations
 import logging
 import re
 from functools import lru_cache
-from typing import List, Literal
+from typing import Literal
 
 from cortex.observability import trace_operation
 from pydantic import BaseModel, Field

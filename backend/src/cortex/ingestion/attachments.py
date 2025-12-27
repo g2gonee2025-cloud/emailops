@@ -10,7 +10,7 @@ import asyncio
 import logging
 import uuid
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from cortex.config.loader import get_config
 from cortex.ingestion.text_preprocessor import get_text_preprocessor
@@ -43,8 +43,8 @@ class ExtractedAttachment(BaseModel):
 
     Blueprint §6.5:
     * text: str
-    * tables: List[Dict[str, Any]]
-    * metadata: Dict[str, Any]
+    * tables: list[dict[str, Any]]
+    * metadata: dict[str, Any]
     """
 
     text: str

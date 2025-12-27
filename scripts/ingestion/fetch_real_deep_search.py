@@ -57,17 +57,20 @@ def fetch_deep_real_manifest() -> None:
                         msgs = data.get("messages")
                         # Check strictly for list and non-empty
                         if isinstance(msgs, list) and len(msgs) > 0:
-                            print(f"\n\n✅ FOUND VALID MANIFEST IN BUCKET: {s3_config.bucket_raw}")
+                            print(
+                                f"\n\n✅ FOUND VALID MANIFEST IN BUCKET: {s3_config.bucket_raw}"
+                            )
                             print("=" * 60)
                             print(
                                 "Matching manifest found. Key omitted to prevent sensitive data exposure."
                             )
                             print("=" * 60)
                             return
-                        except Exception as e:
-                            logging.warning(f"Could not process manifest in bucket {s3_config.bucket_raw}: {e}")
+                    except Exception as e:
+                        logging.warning(
+                            f"Could not process manifest in bucket {s3_config.bucket_raw}: {e}"
+                        )
                         # Ignore individual read errors
-                        pass
 
             if count > 500:
                 print("\nStopped after checking 500 manifests.")

@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 import re
 import threading
-from typing import Any, Dict, Literal, Optional, Protocol, Tuple
+from typing import Any, Literal, Optional, Protocol
 
 from cortex.config.loader import get_config
 from cortex.email_processing import clean_email_text

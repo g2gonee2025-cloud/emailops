@@ -12,9 +12,9 @@ import logging
 import re
 import uuid
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Optional
 
-from cortex.config.loader import EmailOpsConfig
+from cortex.config.loader import EmailOpsConfig, get_config
 from cortex.domain_models.facts_ledger import CriticReview, FactsLedger
 from cortex.domain_models.rag import (
     Answer,
@@ -728,7 +728,7 @@ def _fetch_graph_entities(
         set_session_tenant(session, tenant_id)
 
         # Perf: Use ILIKE ANY for efficient multi-pattern matching
-        patterns = {m for m in mentions}
+        patterns = set(mentions)
         patterns.update(f"%{m}%" for m in mentions if len(m) >= 4)
 
         if not patterns:

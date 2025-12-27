@@ -54,7 +54,7 @@ class KBSearchInput(BaseModel):
     * classification: Optional[QueryClassification]
     * k: Optional[int]
     * fusion_method: Literal["rrf", "weighted_sum"]
-    * filters: Dict[str, Any]
+    * filters: dict[str, Any]
     """
 
     tenant_id: str

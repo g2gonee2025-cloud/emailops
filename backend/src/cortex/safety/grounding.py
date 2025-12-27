@@ -78,7 +78,7 @@ class GroundingCheck(BaseModel):
     * answer_candidate: str
     * is_grounded: bool
     * confidence: float
-    * unsupported_claims: List[str]
+    * unsupported_claims: list[str]
     """
 
     answer_candidate: str = Field(..., description="The answer being verified")

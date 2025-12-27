@@ -123,7 +123,7 @@ class TestParseFilterGrammar:
 
     def test_case_insensitive_keys(self):
         """Test that filter keys are case-insensitive."""
-        filters, clean = parse_filter_grammar("FROM:John@Test.com")
+        filters, _clean = parse_filter_grammar("FROM:John@Test.com")
 
         assert filters.from_emails == {"john@test.com"}
 
@@ -157,7 +157,7 @@ class TestApplyFiltersToSql:
     def test_has_attachment_filter(self):
         """Test has_attachment generates correct SQL."""
         f = SearchFilters(has_attachment=True)
-        clause, params = apply_filters_to_sql(f)
+        clause, _params = apply_filters_to_sql(f)
 
         assert "is_attachment = TRUE" in clause
 

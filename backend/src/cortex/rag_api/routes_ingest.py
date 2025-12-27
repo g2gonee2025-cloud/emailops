@@ -11,7 +11,7 @@ import json
 import logging
 import uuid
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal, Optional
 
 import redis.asyncio as redis
 from cortex.common.redis import get_redis
@@ -172,9 +172,7 @@ async def list_s3_folders(
         )
     except Exception as e:
         logger.error("Failed to list S3 folders: %s", e, exc_info=True)
-        raise HTTPException(
-            status_code=500, detail=f"Failed to list S3 folders: {e!s}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to list S3 folders: {e!s}")
 
 
 @router.post("/s3/start", response_model=IngestFromS3Response)
@@ -254,9 +252,7 @@ async def start_s3_ingestion(
 
     except Exception as e:
         logger.error("Failed to start S3 ingestion: %s", e, exc_info=True)
-        raise HTTPException(
-            status_code=500, detail=f"Failed to start ingestion: {e!s}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to start ingestion: {e!s}")
 
 
 @router.post("", response_model=PushIngestResponse)

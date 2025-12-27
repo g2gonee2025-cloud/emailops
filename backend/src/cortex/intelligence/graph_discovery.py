@@ -6,7 +6,6 @@ import asyncio
 import logging
 import random
 from collections import Counter
-from typing import List
 
 from cortex.db.models import Chunk
 from cortex.db.session import get_db_session

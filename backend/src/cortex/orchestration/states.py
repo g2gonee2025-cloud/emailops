@@ -7,7 +7,7 @@ Implements §3.6 and §10.1 of the Canonical Blueprint.
 from __future__ import annotations
 
 import uuid
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 from cortex.domain_models.facts_ledger import CriticReview, FactsLedger
 from cortex.domain_models.rag import Answer, DraftCritique, EmailDraft, ThreadSummary

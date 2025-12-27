@@ -1,4 +1,5 @@
 import os
+
 import psycopg2
 
 # --- Configuration ---
@@ -49,7 +50,8 @@ def analyze_tenant_data(tenant_id: str):
 
                 # 3. Attachments
                 att_count = fetch_count(
-                    "SELECT count(*) FROM attachments WHERE tenant_id = %s", (tenant_id,)
+                    "SELECT count(*) FROM attachments WHERE tenant_id = %s",
+                    (tenant_id,),
                 )
                 print(f"Attachments: {att_count}")
 
@@ -81,8 +83,12 @@ def analyze_tenant_data(tenant_id: str):
                 stats_result = cur.fetchone()
                 if stats_result:
                     avg_len, max_len, avg_span = stats_result
-                    print(f"Chunk Text Lengths - Avg: {avg_len or 0:.1f}, Max: {max_len or 0}")
-                    print(f"Chunk Spans (char_end - char_start) - Avg: {avg_span or 0:.1f}")
+                    print(
+                        f"Chunk Text Lengths - Avg: {avg_len or 0:.1f}, Max: {max_len or 0}"
+                    )
+                    print(
+                        f"Chunk Spans (char_end - char_start) - Avg: {avg_span or 0:.1f}"
+                    )
 
     except psycopg2.Error as e:
         print(f"Database error: {e}")

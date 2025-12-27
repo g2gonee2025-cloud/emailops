@@ -16,7 +16,7 @@ import tempfile
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional
 from urllib.parse import urlparse
 
 from cortex.ingestion.core_manifest import resolve_subject
@@ -377,7 +377,7 @@ def _process_body_and_attachments(
     from cortex.ingestion.quoted_masks import detect_quoted_spans
 
     raw_body = convo_data.get("conversation_txt", "")
-    cleaned_body, body_meta = preprocessor.prepare_for_indexing(
+    cleaned_body, _body_meta = preprocessor.prepare_for_indexing(
         raw_body, text_type="email", tenant_id=tenant_id
     )
 

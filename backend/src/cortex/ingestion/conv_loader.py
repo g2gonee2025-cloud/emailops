@@ -144,7 +144,10 @@ def load_conversation(
 
         # Check if the resolved path is within the export_root.
         # The .parents check and direct equality check handle all cases.
-        if export_root not in resolved_convo_dir.parents and resolved_convo_dir != export_root:
+        if (
+            export_root not in resolved_convo_dir.parents
+            and resolved_convo_dir != export_root
+        ):
             logger.error(
                 "Security risk: Attempted to access path '%s' outside of secure root '%s'.",
                 resolved_convo_dir,
@@ -168,7 +171,6 @@ def load_conversation(
     if not convo_dir.is_dir():
         logger.error("Path is not a directory: %s", convo_dir)
         return None
-
 
     config = get_config().limits
     max_total_attachment_text = (

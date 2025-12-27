@@ -10,7 +10,7 @@ import threading
 import time
 from contextlib import asynccontextmanager, contextmanager
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple, cast
+from typing import Any, Optional, cast
 from urllib.parse import urljoin
 
 import httpx

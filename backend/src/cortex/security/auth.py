@@ -1,8 +1,13 @@
 """
 Authentication & Authorization Dependencies.
 """
+
 from __future__ import annotations
+
 import inspect
+from typing import Any
+
+import jwt
 from cortex.common.exceptions import (
     CortexError,
     SecurityError,
@@ -11,12 +16,13 @@ from cortex.config.loader import get_config
 from cortex.context import user_id_ctx
 from cortex.security.validators import validate_email_format
 from fastapi import HTTPException, Request
-import jwt
 from jwt.exceptions import PyJWTError as JWTError
 
+# Reference to JWT decoder configured in main.py
+_jwt_decoder: Any = None
 
-async def get_current_user(
-):
+
+async def get_current_user():
     """
     FastAPI dependency to enforce user authentication.
 
@@ -32,6 +38,7 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user_id
+
 
 async def _extract_identity(request: Request) -> tuple[str, str, dict[str, Any]]:
     """Resolve tenant/user identity from JWT or headers."""

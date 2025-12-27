@@ -5,7 +5,7 @@ import os
 import re
 import socket
 import sys
-from typing import Any, List, Union
+from typing import Any, Union
 from urllib.parse import urlparse
 
 import httpx
@@ -18,7 +18,9 @@ def _redact_pii(data: str | dict | list) -> Any:
     if isinstance(data, list):
         return [_redact_pii(item) for item in data]
     if isinstance(data, str):
-        data = re.sub(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+", "[REDACTED_EMAIL]", data)
+        data = re.sub(
+            r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+", "[REDACTED_EMAIL]", data
+        )
         data = re.sub(r"https?://\S+", "[REDACTED_URL]", data)
         data = re.sub(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}", "[REDACTED_IP]", data)
     return data
@@ -39,7 +41,10 @@ async def validate_url_is_public(url: str) -> None:
             raise ValueError(f"URL resolves to a non-public IP address: {ip_addr}")
 
     except socket.gaierror:
-        print(f"Warning: Could not resolve hostname for {url}. Proceeding...", file=sys.stderr)
+        print(
+            f"Warning: Could not resolve hostname for {url}. Proceeding...",
+            file=sys.stderr,
+        )
     except ValueError as e:
         print(f"Error: Invalid SonarQube host URL. {e}", file=sys.stderr)
         sys.exit(1)
@@ -67,7 +72,9 @@ class SonarAnalyzer:
             base_params["p"] = page
             url = f"{self.sonar_host_url}{endpoint}"
             try:
-                r = await client.get(url, auth=self.auth, params=base_params, timeout=self.timeout)
+                r = await client.get(
+                    url, auth=self.auth, params=base_params, timeout=self.timeout
+                )
                 r.raise_for_status()
                 data = r.json()
 
@@ -87,13 +94,18 @@ class SonarAnalyzer:
                 print(f"HTTP error occurred: {e}", file=sys.stderr)
                 raise
             except httpx.RequestError as e:
-                print(f"An error occurred while requesting {e.request.url!r}.", file=sys.stderr)
+                print(
+                    f"An error occurred while requesting {e.request.url!r}.",
+                    file=sys.stderr,
+                )
                 raise
         return _redact_pii(all_results)
 
     async def get_hotspots(self, client: httpx.AsyncClient) -> list[Any]:
         params = {"projectKey": self.project_key, "status": "TO_REVIEW"}
-        return await self._get_paginated(client, "/api/hotspots/search", params, "hotspots")
+        return await self._get_paginated(
+            client, "/api/hotspots/search", params, "hotspots"
+        )
 
     async def get_coverage(self, client: httpx.AsyncClient) -> list[Any]:
         params = {
@@ -101,7 +113,9 @@ class SonarAnalyzer:
             "metricKeys": "new_coverage,new_lines_to_cover,new_uncovered_lines",
             "qualifiers": "FIL",
         }
-        return await self._get_paginated(client, "/api/measures/component_tree", params, "components")
+        return await self._get_paginated(
+            client, "/api/measures/component_tree", params, "components"
+        )
 
     async def get_issues(self, client: httpx.AsyncClient) -> list[Any]:
         params = {"componentKeys": self.project_key, "resolved": "false"}
@@ -141,13 +155,19 @@ class SonarAnalyzer:
                 if new_lines > 0:
                     cov = float(measures.get("new_coverage", 0))
                     if cov < 80.0:
-                        print(f"{comp.get('path', 'N/A')}: {cov}% (Lines to cover: {int(new_lines)})")
+                        print(
+                            f"{comp.get('path', 'N/A')}: {cov}% (Lines to cover: {int(new_lines)})"
+                        )
 
 
 async def main() -> None:
     parser = argparse.ArgumentParser(description="Analyze SonarQube results.")
-    parser.add_argument("--project-key", default="emailops-vertex-ai", help="SonarQube project key.")
-    parser.add_argument("--sonar-host-url", default="http://localhost:9000", help="SonarQube host URL.")
+    parser.add_argument(
+        "--project-key", default="emailops-vertex-ai", help="SonarQube project key."
+    )
+    parser.add_argument(
+        "--sonar-host-url", default="http://localhost:9000", help="SonarQube host URL."
+    )
     args = parser.parse_args()
 
     await validate_url_is_public(args.sonar_host_url)

@@ -11,7 +11,7 @@ import os
 import socket
 from ipaddress import ip_address
 from pathlib import Path
-from typing import Any, List, Literal, Optional, Set
+from typing import Any, Literal, Optional
 from urllib.parse import urlparse
 
 from pydantic import (
@@ -70,7 +70,7 @@ def _env_list(key: str, default: str = "") -> list[str]:
     return [part.strip() for part in str(raw).split(",") if part.strip()]
 
 
-def env_default(*args, **kwargs):
+def env_default(*args: Any, **kwargs: Any) -> Any:
     """
     Helper to create a zero-argument default_factory that defers to _env.
     Usage:
@@ -270,7 +270,7 @@ class ProcessingConfig(BaseModel):
 
     @field_validator("chunk_overlap")
     @classmethod
-    def overlap_less_than_size(cls, v: int, info) -> int:
+    def overlap_less_than_size(cls, v: int, info: Any) -> int:
         """Ensure overlap is less than chunk size."""
         chunk_size = info.data.get("chunk_size", 1600)
         if v >= chunk_size:

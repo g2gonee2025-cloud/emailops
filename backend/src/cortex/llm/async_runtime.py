@@ -17,7 +17,7 @@ import os
 import threading
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Protocol, Union, cast
+from typing import Any, Optional, Protocol, Union, cast
 
 import aiohttp
 import numpy as np
@@ -292,9 +292,13 @@ class AioHTTPVLLMProvider(AsyncBaseProvider):
                 or os.getenv("LLM_API_KEY")
                 or os.getenv("DO_LLM_API_KEY", os.getenv("KIMI_API_KEY", "EMPTY"))
             )
-            model_name = kwargs.get("model") or getattr(_config, "llm_model", None) or os.getenv(
-                "LLM_MODEL",
-                os.getenv("OUTLOOKCORTEX_LLM_MODEL", "openai-gpt-oss-120b"),
+            model_name = (
+                kwargs.get("model")
+                or getattr(_config, "llm_model", None)
+                or os.getenv(
+                    "LLM_MODEL",
+                    os.getenv("OUTLOOKCORTEX_LLM_MODEL", "openai-gpt-oss-120b"),
+                )
             )
 
             headers = {
@@ -316,7 +320,9 @@ class AioHTTPVLLMProvider(AsyncBaseProvider):
 
             async with session.post(url, headers=headers, json=req) as response:
                 if response.status != 200:
-                    raise ProviderError(f"LLM API request failed with status {response.status}: {await response.text()}")
+                    raise ProviderError(
+                        f"LLM API request failed with status {response.status}: {await response.text()}"
+                    )
 
                 resp_json = await response.json()
 
@@ -328,6 +334,7 @@ class AioHTTPVLLMProvider(AsyncBaseProvider):
                 return content
         except Exception as e:
             raise ProviderError(f"LLM failed: {e}") from e
+
 
 # =============================================================================
 # Runtime orchestrator
@@ -347,6 +354,7 @@ class AsyncLLMRuntime:
         """
         Execute `func` with resilience.
         """
+
         @retry(
             retry=retry_if_exception_type(
                 (ProviderError, RateLimitError, TimeoutError, ConnectionError)
@@ -375,13 +383,20 @@ class AsyncLLMRuntime:
                 ):
                     self.resilience.record_outcome(success=False)
                 raise
+
         return await _attempt()
 
     async def async_complete_text(self, prompt: str, **kwargs: Any) -> str:
-        if "messages" not in kwargs and (not isinstance(prompt, str) or not prompt.strip()):
-            raise ValidationError("prompt must be a non-empty string if 'messages' is not provided")
+        if "messages" not in kwargs and (
+            not isinstance(prompt, str) or not prompt.strip()
+        ):
+            raise ValidationError(
+                "prompt must be a non-empty string if 'messages' is not provided"
+            )
 
-        result = await self._execute("completion", self.primary.complete, prompt=prompt, **kwargs)
+        result = await self._execute(
+            "completion", self.primary.complete, prompt=prompt, **kwargs
+        )
 
         if not isinstance(result, str) or not result.strip():
             raise LLMOutputSchemaError(
@@ -406,7 +421,9 @@ class AsyncLLMRuntime:
         elif isinstance(prompt, list) and prompt:
             messages = [dict(m) for m in prompt]  # Create a mutable copy
         else:
-            raise ValidationError("prompt must be a non-empty string or list of messages")
+            raise ValidationError(
+                "prompt must be a non-empty string or list of messages"
+            )
 
         schema_json = json.dumps(schema, indent=2)
         json_instructions = (
@@ -443,14 +460,17 @@ class AsyncLLMRuntime:
             else:
                 current_prompt_messages = [
                     {"role": "system", "content": "You are a JSON correction expert."},
-                    {"role": "user", "content": (
-                        "The following JSON output is invalid. "
-                        "Fix it so it becomes valid JSON matching the schema.\n\n"
-                        f"Original error:\n{last_error}\n\n"
-                        f"Invalid JSON:\n{raw_output}\n\n"
-                        f"Required JSON Schema:\n{schema_json}\n\n"
-                        "Respond with ONLY the corrected JSON object."
-                    )}
+                    {
+                        "role": "user",
+                        "content": (
+                            "The following JSON output is invalid. "
+                            "Fix it so it becomes valid JSON matching the schema.\n\n"
+                            f"Original error:\n{last_error}\n\n"
+                            f"Invalid JSON:\n{raw_output}\n\n"
+                            f"Required JSON Schema:\n{schema_json}\n\n"
+                            "Respond with ONLY the corrected JSON object."
+                        ),
+                    },
                 ]
             raw_output = await _call_model_for_json(current_prompt_messages)
 
@@ -487,12 +507,11 @@ class AsyncLLMRuntime:
             error_code="JSON_SCHEMA_VALIDATION_FAILED",
         )
 
+
 # =============================================================================
 # JSON helpers
 # =============================================================================
-def _validate_json_schema(
-    data: dict[str, Any], schema: dict[str, Any]
-) -> str | None:
+def _validate_json_schema(data: dict[str, Any], schema: dict[str, Any]) -> str | None:
     try:
         import jsonschema
 
@@ -547,6 +566,7 @@ def _try_load_json(data: Any) -> dict[str, Any]:
         s = data.decode("utf-8")
     s = str(s).strip()
     import re
+
     s = re.sub(r"<think>.*?</think>", "", s, flags=re.DOTALL | re.IGNORECASE).strip()
     try:
         obj = json.loads(s)
@@ -555,6 +575,7 @@ def _try_load_json(data: Any) -> dict[str, Any]:
     except json.JSONDecodeError:
         pass
     import re
+
     fenced_matches = list(
         re.finditer(
             r"```(?:json|json5|hjson)?\\s*([\\s\\S]*?)\\s*```", s, flags=re.IGNORECASE

@@ -173,7 +173,6 @@ class TestNodeHandleError:
         assert "Something went wrong" not in metadata["error"]
         assert "internal error" in metadata["error"]
 
-
     @patch("cortex.orchestration.nodes.log_audit_event")
     def test_handle_error_default_error(self, mock_audit):
         """Test error handling with no error in state."""

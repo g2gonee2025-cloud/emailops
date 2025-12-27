@@ -21,7 +21,7 @@ if not JULES_API_KEY:
                 if line.startswith("JULES_API_KEY_ALT="):
                     JULES_API_KEY = line.strip().split("=", 1)[1]
                     break
-    except:
+    except Exception:
         pass
 
 

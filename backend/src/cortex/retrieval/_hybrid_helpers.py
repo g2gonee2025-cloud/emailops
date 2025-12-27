@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 import numpy as np
 from cortex.llm.runtime import LLMRuntime

@@ -69,7 +69,7 @@ def main():
         print(f"Error checking rclone version: {e.stderr}")
         return
 
-    for i, folder in enumerate(parsed_folders[:SAMPLE_LIMIT]):
+    for _i, folder in enumerate(parsed_folders[:SAMPLE_LIMIT]):
         print(f"Downloading '{folder}'...")
 
         src = f"{S3_BUCKET}/{folder}"

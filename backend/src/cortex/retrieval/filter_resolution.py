@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional, Set
+from typing import Optional
 
 from cortex.db.models import Conversation
 from cortex.retrieval.filters import SearchFilters

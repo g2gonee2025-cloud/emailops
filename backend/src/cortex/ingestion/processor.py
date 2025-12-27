@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 import uuid
 from dataclasses import dataclass
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 from cortex.config.loader import get_config
 from cortex.ingestion.mailroom import process_job

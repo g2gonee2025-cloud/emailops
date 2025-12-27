@@ -34,7 +34,9 @@ def _validate_and_resolve_path(base_dir: Path, file_path: Path) -> Path:
     # The most reliable way to check for path traversal is to see if the
     # resolved base path is a parent of the resolved final path.
     if resolved_base not in resolved_path.parents and resolved_path != resolved_base:
-        raise PermissionError(f"Path traversal attempt blocked: {resolved_path} is not within {resolved_base}")
+        raise PermissionError(
+            f"Path traversal attempt blocked: {resolved_path} is not within {resolved_base}"
+        )
 
     return resolved_path
 
@@ -112,7 +114,9 @@ def atomic_write_json(base_dir: Path | str, file_path: Path | str, data: Any) ->
         raise
 
 
-async def atomic_write_json_async(base_dir: Path | str, file_path: Path | str, data: Any) -> None:
+async def atomic_write_json_async(
+    base_dir: Path | str, file_path: Path | str, data: Any
+) -> None:
     """
     Asynchronously and securely write JSON data to a file in a sandboxed directory.
 
