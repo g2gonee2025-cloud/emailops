@@ -1,10 +1,12 @@
 from typing import Any
 
+
 def scrub_json_string(json_string: str) -> str:
     """
     Remove null characters from a JSON string.
     """
-    return json_string.replace('\\u0000', '')
+    return json_string.replace("\\u0000", "")
+
 
 def scrub_json(data: Any) -> Any:
     """

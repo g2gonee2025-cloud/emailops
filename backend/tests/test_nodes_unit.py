@@ -155,7 +155,7 @@ class TestExtractEntityMentions:
 class TestNodeHandleError:
     """Test error handling node."""
 
-    @patch("cortex.audit.log_audit_event")
+    @patch("cortex.orchestration.nodes.log_audit_event")
     def test_handle_error_logs_and_returns(self, mock_audit):
         """Test error handling logs and returns error state."""
         state = {
@@ -170,7 +170,7 @@ class TestNodeHandleError:
         assert result["error"] == "Something went wrong"
         mock_audit.assert_called_once()
 
-    @patch("cortex.audit.log_audit_event")
+    @patch("cortex.orchestration.nodes.log_audit_event")
     def test_handle_error_default_error(self, mock_audit):
         """Test error handling with no error in state."""
         state = {}  # No error provided
@@ -179,7 +179,7 @@ class TestNodeHandleError:
 
         assert result["error"] == "Unknown error"
 
-    @patch("cortex.audit.log_audit_event")
+    @patch("cortex.orchestration.nodes.log_audit_event")
     def test_handle_error_audit_failure_is_caught(self, mock_audit):
         """Test that audit logging failure doesn't crash the handler."""
         mock_audit.side_effect = Exception("Audit failed")

@@ -50,6 +50,7 @@ from cortex.retrieval.query_classifier import (
 from cortex.retrieval.results import SearchResults
 from cortex.safety.guardrails_client import validate_with_repair
 from cortex.safety.policy_enforcer import check_action
+from cortex.safety import strip_injection_patterns
 from cortex.security.validators import sanitize_retrieved_content, validate_file_result
 from pydantic import BaseModel, Field, ValidationError
 from sqlalchemy import func, or_, select
@@ -358,14 +359,6 @@ def _select_all_available_attachments(
     return selected
 
 
-def _safe_stat_mb(path: Path) -> float:
-    """Safely get file size in MB."""
-    try:
-        return path.stat().st_size / (1024 * 1024) if path.exists() else 0.0
-    except Exception:
-        return 0.0
-
-
 @trace_operation("tool_email_get_thread")
 def tool_email_get_thread(
     thread_id: uuid.UUID | str,
@@ -546,6 +539,9 @@ def _extract_evidence_from_answer(
     return evidence[:5]  # Limit to top 5 evidence items
 
 
+from cortex.audit import log_audit_event
+
+
 def node_handle_error(state: Dict[str, Any]) -> Dict[str, Any]:
     """
     Handle errors in graph execution.
@@ -555,8 +551,6 @@ def node_handle_error(state: Dict[str, Any]) -> Dict[str, Any]:
     * logs via observability.get_logger
     * sets state.error
     """
-    from cortex.audit import log_audit_event
-
     error = state.get("error", "Unknown error")
     obs_logger = get_logger(__name__)
 
@@ -736,7 +730,10 @@ def node_classify_query(state: Dict[str, Any]) -> Dict[str, Any]:
     Blueprint §8.1:
     * Determine intent (navigational, semantic, drafting)
     """
-    query = state.get("query", "")
+    query = strip_injection_patterns(state.get("query", ""))
+
+    # Update state with sanitized query
+    state["query"] = query
 
     try:
         args = QueryClassificationInput(query=query, use_llm=True)
@@ -866,7 +863,11 @@ def node_prepare_draft_query(state: Dict[str, Any]) -> Dict[str, Any]:
     Blueprint §10.3:
     * Combine explicit query and thread context
     """
-    explicit_query = state.get("explicit_query", "")
+    explicit_query = strip_injection_patterns(state.get("explicit_query", ""))
+
+    # Update state with sanitized query
+    state["explicit_query"] = explicit_query
+
     # If we had thread context, we would combine it here.
     # For now, just use explicit query as the search query.
     return {"query": explicit_query}
@@ -1086,12 +1087,15 @@ def node_audit_draft(state: Dict[str, Any]) -> Dict[str, Any]:
     * Policy Check (Blocker)
     * Quality/Safety Rubric (Scoring)
     """
+    from cortex.context import claims_ctx
+
     draft = state.get("draft")
     if not draft:
         return {}
 
     # 1. Hard Policy Check
     recipients = list(dict.fromkeys((draft.to or []) + (draft.cc or [])))
+    claims = claims_ctx.get({}) or {}
 
     metadata = {
         "recipients": recipients,
@@ -1099,6 +1103,7 @@ def node_audit_draft(state: Dict[str, Any]) -> Dict[str, Any]:
         "content": draft.body_markdown,
         "attachments": state.get("attachments", []),
         "check_external": True,
+        "role": claims.get("role"),
     }
 
     decision = check_action("draft_email", metadata)
@@ -1136,8 +1141,8 @@ def node_audit_draft(state: Dict[str, Any]) -> Dict[str, Any]:
         # Robustness: Fallback to neutral scores so pipeline continues
         draft.val_scores = DraftValidationScores(
             factuality=0.5,
-            citation=0.5,
-            tone=0.5,
+            citation_coverage=0.5,
+            tone_fit=0.5,
             safety=0.5,
             overall=0.5,
             feedback=f"Audit service unavailable (Error: {str(e)}). Validation skipped.",

@@ -87,14 +87,13 @@ class GraphExtractorWithFallback:
             node_type = node_data.get("type", "UNKNOWN").strip().upper()
             if node_type not in VALID_NODE_TYPES:
                 node_type = "UNKNOWN"
-            G.add_node(
-                name, type=node_type, properties=node_data.get("properties", {})
-            )
+            G.add_node(name, type=node_type, properties=node_data.get("properties", {}))
 
         for edge_data in data.get("edges", []):
-            src, tgt = edge_data.get("source", "").strip(), edge_data.get(
-                "target", ""
-            ).strip()
+            src, tgt = (
+                edge_data.get("source", "").strip(),
+                edge_data.get("target", "").strip(),
+            )
             if not src or not tgt:
                 continue
             if not G.has_node(src):
@@ -203,7 +202,8 @@ def process_conversation_batch(
             EntityNode.tenant_id.in_(tenant_ids), EntityNode.name.in_(all_node_names)
         )
         existing_nodes = {
-            (node.tenant_id, node.name): node for node in session.scalars(existing_nodes_q)
+            (node.tenant_id, node.name): node
+            for node in session.scalars(existing_nodes_q)
         }
 
         # Process each graph
@@ -288,9 +288,9 @@ def run_backfill_graph(
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         # Associate each future with its batch size for accurate error reporting
         futures = {
-            executor.submit(
-                process_conversation_batch, batch, extractor, dry_run
-            ): len(batch)
+            executor.submit(process_conversation_batch, batch, extractor, dry_run): len(
+                batch
+            )
             for batch in batches
         }
 

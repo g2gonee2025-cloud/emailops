@@ -190,76 +190,66 @@ def cmd_s3_list(args: argparse.Namespace) -> None:
 
 def cmd_s3_ingest(args: argparse.Namespace) -> None:
     """Ingest conversations from S3/Spaces."""
-    import uuid
+    import json
+
+    import requests
 
     try:
         from cortex.config.loader import get_config
-        from cortex.ingestion.mailroom import process_job
-        from cortex.ingestion.models import IngestJobRequest
-        from cortex.ingestion.s3_source import S3SourceHandler
 
         config = get_config()
-        handler = S3SourceHandler()
+        api_base = config.core.api_base_url.rstrip("/")
+        url = f"{api_base}/ingest/s3/start"
 
         print(f"\n{_colorize('S3/SPACES INGESTION', 'bold')}\n")
-        print(f"  Prefix:  {_colorize(args.prefix, 'cyan')}")
-        print(f"  Tenant:  {_colorize(args.tenant, 'dim')}")
+        print(f"  API Target: {_colorize(url, 'cyan')}")
+        print(f"  Prefix:     {_colorize(args.prefix, 'cyan')}")
+        print(f"  Tenant:     {_colorize(args.tenant, 'dim')}")
 
-        if args.dry_run:
-            # List what would be ingested
-            folders = list(handler.list_conversation_folders(prefix=args.prefix))
-            print(
-                f"\n  {_colorize('DRY RUN:', 'yellow')} Would ingest {len(folders)} folder(s):"
-            )
-            for f in folders[:10]:
-                print(f"    • {f.name}")
-            if len(folders) > 10:
-                print(f"    ... and {len(folders) - 10} more")
-            return
-
-        # Ingest
-        folders = list(handler.list_conversation_folders(prefix=args.prefix))
-        if not folders:
-            print(
-                f"\n  {_colorize('⚠', 'yellow')} No folders found with prefix: {args.prefix}"
-            )
-            return
+        headers = {"X-Tenant-ID": args.tenant, "Content-Type": "application/json"}
+        payload = {"prefix": args.prefix, "dry_run": args.dry_run}
 
         print(
-            f"\n  {_colorize('⏳', 'yellow')} Ingesting {len(folders)} folder(s)...\n"
+            f"\n  {_colorize('⏳', 'yellow')} Sending request to start ingestion job...\n"
         )
 
-        success = 0
-        failed = 0
+        response = requests.post(url, headers=headers, json=payload, timeout=30)
 
-        for i, folder in enumerate(folders, 1):
-            print(f"  [{i}/{len(folders)}] {folder.name}...", end=" ", flush=True)
-
-            job = IngestJobRequest(
-                job_id=uuid.uuid4(),
-                tenant_id=args.tenant,
-                source_type="s3",
-                source_uri=f"s3://{config.storage.bucket_raw}/{folder.prefix}",
-            )
-
-            try:
-                summary = process_job(job)
-                if summary.aborted_reason:
-                    print(f"{_colorize('FAILED', 'red')}")
-                    failed += 1
-                else:
+        if response.status_code == 200:
+            result = response.json()
+            if result.get("status") == "dry_run":
+                print(f"  {_colorize('DRY RUN', 'yellow')}: {result.get('message')}")
+                folders_to_process = result.get("folders_to_process", [])
+                print(f"  Folders to process: {len(folders_to_process)}")
+                for folder in folders_to_process[:10]:
+                    print(f"    - {folder}")
+                if len(folders_to_process) > 10:
+                    print(f"    ... and {len(folders_to_process) - 10} more.")
+            else:
+                print(f"  {_colorize('✔', 'green')} Job started successfully!")
+                print(f"  Job ID: {_colorize(result.get('job_id'), 'cyan')}")
+                job_id = result.get("job_id")
+                if job_id:
                     print(
-                        f"{_colorize('OK', 'green')} ({summary.messages_ingested} msg)"
+                        "  To check status, run: "
+                        f"{_colorize(f'cortex s3 status {job_id}', 'bold')}"
                     )
-                    success += 1
-            except Exception as e:
-                print(f"{_colorize('ERROR', 'red')}: {e}")
-                failed += 1
+        else:
+            print(
+                f"  {_colorize('ERROR:', 'red')} "
+                f"Failed to start ingestion job (HTTP {response.status_code})"
+            )
+            try:
+                error_detail = response.json()
+                print(json.dumps(error_detail, indent=2))
+            except json.JSONDecodeError:
+                print(response.text)
+            sys.exit(1)
 
-        print(f"\n{_colorize('═' * 40, 'cyan')}")
-        print(f"  Succeeded: {_colorize(str(success), 'green')}")
-        print(f"  Failed:    {_colorize(str(failed), 'red' if failed > 0 else 'dim')}")
-
+    except requests.exceptions.RequestException as e:
+        print(f"{_colorize('ERROR:', 'red')} API request failed: {e}")
+        print("  Please ensure the Cortex API server is running and accessible.")
+        sys.exit(1)
     except Exception as e:
         print(f"{_colorize('ERROR:', 'red')} {e}")
         sys.exit(1)
@@ -450,6 +440,68 @@ def cmd_s3_validate(args: argparse.Namespace) -> None:
         sys.exit(1)
 
 
+def cmd_s3_status(args: argparse.Namespace) -> None:
+    """Check the status of an S3 ingestion job."""
+    import json
+
+    import requests
+
+    try:
+        from cortex.config.loader import get_config
+
+        config = get_config()
+        api_base = config.core.api_base_url.rstrip("/")
+        url = f"{api_base}/ingest/status/{args.job_id}"
+
+        print(f"\n{_colorize('S3 INGESTION STATUS', 'bold')}\n")
+        print(f"  API Target: {_colorize(url, 'cyan')}")
+        print(f"  Job ID:     {_colorize(args.job_id, 'cyan')}")
+
+        headers = {"X-Tenant-ID": args.tenant}
+
+        print(f"\n  {_colorize('⏳', 'yellow')} Fetching job status...\n")
+
+        response = requests.get(url, headers=headers, timeout=15)
+
+        if response.status_code == 200:
+            status = response.json()
+            if args.json:
+                print(json.dumps(status, indent=2))
+                return
+
+            print(
+                f"  Status:     {_colorize(status.get('status', 'N/A').upper(), 'bold')}"
+            )
+            print(f"  Message:    {status.get('message', 'N/A')}")
+            print("-" * 30)
+            print(f"  Folders Processed: {status.get('folders_processed', 0)}")
+            print(f"  Chunks Created:    {status.get('chunks_created', 0)}")
+            print(f"  Embeddings:        {status.get('embeddings_generated', 0)}")
+            print(
+                f"  Errors:            {_colorize(str(status.get('errors', 0)), 'red' if status.get('errors') else 'dim')}"
+            )
+
+        elif response.status_code == 404:
+            print(f"  {_colorize('ERROR: Job not found', 'red')}")
+            sys.exit(1)
+        else:
+            print(
+                f"  {_colorize('ERROR:', 'red')} "
+                f"Failed to get job status (HTTP {response.status_code})"
+            )
+            try:
+                error_detail = response.json()
+                print(json.dumps(error_detail, indent=2))
+            except json.JSONDecodeError:
+                print(response.text)
+            sys.exit(1)
+
+    except requests.exceptions.RequestException as e:
+        print(f"{_colorize('ERROR:', 'red')} API request failed: {e}")
+        print("  Please ensure the Cortex API server is running and accessible.")
+        sys.exit(1)
+
+
 def cmd_s3_ls(args: argparse.Namespace) -> None:
     """List S3/Spaces objects."""
     try:
@@ -507,6 +559,19 @@ def setup_s3_parser(subparsers: Any) -> None:
         "--dry-run", "-n", action="store_true", help="Show what would be done"
     )
     ingest_parser.set_defaults(func=cmd_s3_ingest)
+
+    # s3 status
+    status_parser = s3_subparsers.add_parser(
+        "status",
+        help="Check status of an S3 ingestion job",
+        description="Check the status of a background S3 ingestion job.",
+    )
+    status_parser.add_argument(
+        "job_id", metavar="JOB_ID", help="Ingestion job ID to check"
+    )
+    status_parser.add_argument("--tenant", "-t", default="default", help="Tenant ID")
+    status_parser.add_argument("--json", action="store_true", help="Output as JSON")
+    status_parser.set_defaults(func=cmd_s3_status)
 
     # s3 validate
     validate_parser = s3_subparsers.add_parser(

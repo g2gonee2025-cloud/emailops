@@ -224,6 +224,7 @@ class InMemoryQueue(JobQueue):
                             0.1
                         )  # Prevent tight loop processing only non-matching jobs
             except Empty:
+                # Avoid busy-waiting if the queue is empty
                 time.sleep(0.1)
         return None
 
@@ -303,6 +304,7 @@ class RedisStreamsQueue(JobQueue):
     def __init__(
         self,
         redis_url: str = "redis://localhost:6379",
+        job_types: Optional[List[str]] = None,
         max_retries: int = 3,
         visibility_timeout: int = 300,  # 5 minutes
         block_timeout: int = 5000,  # 5 seconds in ms
@@ -315,6 +317,7 @@ class RedisStreamsQueue(JobQueue):
             max_retries: Maximum retry attempts before dead-letter
             visibility_timeout: Seconds before unacked job is reclaimed
             block_timeout: Milliseconds to block waiting for jobs
+            job_types: List of all known job types (optional)
         """
         try:
             import redis
@@ -330,9 +333,11 @@ class RedisStreamsQueue(JobQueue):
         self._block_timeout = block_timeout
         self._consumer_name = f"{socket.gethostname()}-{os.getpid()}"
         self._lock = threading.Lock()
+        self._job_types = job_types or []
 
         # Initialize consumer groups for known job types
-        self._ensure_consumer_groups(["ingest", "reindex"])
+        if self._job_types:
+            self._ensure_consumer_groups(self._job_types)
 
         logger.info(
             f"RedisStreamsQueue initialized with consumer: {self._consumer_name}"
@@ -407,9 +412,6 @@ class RedisStreamsQueue(JobQueue):
         self, job_types: List[str], timeout: int = 10
     ) -> Optional[Dict[str, Any]]:
         """Dequeue a job from Redis Streams."""
-        # Ensure consumer groups exist
-        self._ensure_consumer_groups(job_types)
-
         # Build list of streams to read from (in priority order)
         streams = {}
         for job_type in job_types:
@@ -609,7 +611,13 @@ class RedisStreamsQueue(JobQueue):
         logger.debug(f"Acknowledged job {job_id}")
 
     def nack(self, job_id: str, error: Optional[str] = None) -> None:
-        """Negative acknowledge (fail/retry)."""
+        """
+        Negative acknowledge (fail/retry).
+
+        If retries are exhausted, moves the job to the dead-letter queue.
+        Otherwise, the job remains in the pending queue to be re-claimed later.
+        The `_claim_stale_messages` logic handles re-delivery.
+        """
         status_key = f"{self.STATUS_PREFIX}{job_id}"
         status_data = self._redis.hgetall(status_key)
 
@@ -622,33 +630,47 @@ class RedisStreamsQueue(JobQueue):
         message_id = status_data.get("message_id")
 
         if attempts >= self._max_retries:
-            # Move to dead letter
+            # Move to dead letter queue
             if stream and message_id:
-                data = self._redis.xrange(stream, message_id, message_id)
+                # Retrieve the full job data to move it
+                # XCLAIM returns the message, but it might be simpler to just query it
+                # We assume the message is still in the stream.
+                data = self._redis.xrange(stream, min=message_id, max=message_id, count=1)
                 if data:
                     _, job_data = data[0]
                     self._move_to_dead_letter(job_id, stream, message_id, job_data)
+                else:
+                    # Fallback if message is gone for some reason
+                    logger.warning(f"Could not find message {message_id} in stream {stream} for job {job_id} to dead-letter.")
+                    self._redis.hset(
+                        status_key,
+                        mapping={
+                            "status": JobStatus.DEAD_LETTER,
+                            "error": error or "Max retries exceeded (message not found)",
+                        },
+                    )
             else:
+                # If we don't have stream/message info, we can't ACK, but we can update status
                 self._redis.hset(
                     status_key,
                     mapping={
                         "status": JobStatus.DEAD_LETTER,
-                        "error": error or "Max retries exceeded",
-                        "dead_letter_at": str(time.time()),
+                        "error": error or "Max retries exceeded (no stream info)",
                     },
                 )
         else:
-            # Update status for retry (message remains pending in stream)
+            # Job will be retried. Just update its status.
+            # It remains in the consumer group's pending list and will be
+            # picked up again by `_claim_stale_messages` after `visibility_timeout`.
             self._redis.hset(
                 status_key,
                 mapping={
-                    "status": JobStatus.PENDING,
+                    "status": JobStatus.PENDING, # Mark as pending for retry
                     "error": error or "",
                     "last_failed_at": str(time.time()),
                 },
             )
-
-        logger.debug(f"Nack job {job_id} (attempt {attempts})")
+            logger.debug(f"Nacked job {job_id} (attempt {attempts}). Will be retried.")
 
     def get_job_status(self, job_id: str) -> Optional[Dict[str, Any]]:
         """Get job status."""
@@ -692,7 +714,12 @@ class RedisStreamsQueue(JobQueue):
             pass
 
         # Count messages in job streams
-        for job_type in ["ingest", "reindex"]:
+        job_types_to_scan = self._job_types or []
+        if not job_types_to_scan:
+            logger.warning(
+                "Cannot get complete queue stats, job types not provided at init."
+            )
+        for job_type in job_types_to_scan:
             for priority in ["high", "normal", "low"]:
                 stream = f"{self.STREAM_PREFIX}{job_type}:{priority}"
                 try:
@@ -759,12 +786,17 @@ class CeleryQueue(JobQueue):
     task distribution and result tracking.
     """
 
-    def __init__(self, broker_url: str = "redis://localhost:6379/0"):
+    def __init__(
+        self,
+        broker_url: str = "redis://localhost:6379/0",
+        job_types: Optional[List[str]] = None,
+    ):
         """
         Initialize Celery queue.
 
         Args:
             broker_url: Celery broker URL (Redis, RabbitMQ, etc.)
+            job_types: List of job types to register as tasks
         """
         try:
             from celery import Celery
@@ -785,6 +817,8 @@ class CeleryQueue(JobQueue):
         )
         self._pending_jobs: Dict[str, Dict[str, Any]] = {}
         self._lock = threading.Lock()
+        self._job_types = job_types or []
+        self._task_map: Dict[str, Any] = {}
 
         # Register task handlers
         self._register_tasks()
@@ -794,30 +828,27 @@ class CeleryQueue(JobQueue):
     def _register_tasks(self) -> None:
         """Register Celery tasks for job types."""
 
-        @self._app.task(name="cortex.ingest", bind=True, max_retries=3)
-        def ingest_task(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-            return {"status": "completed", "payload": payload}
+        def create_task(name):
+            @self._app.task(name=f"cortex.{name}", bind=True, max_retries=3)
+            def generic_task(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+                # Worker-side logic would go here.
+                # For this abstraction, we just return a success marker.
+                return {"status": "completed", "payload": payload}
 
-        @self._app.task(name="cortex.reindex", bind=True, max_retries=3)
-        def reindex_task(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-            return {"status": "completed", "payload": payload}
+            return generic_task
 
-        self._ingest_task = ingest_task
-        self._reindex_task = reindex_task
+        for job_type in self._job_types:
+            self._task_map[job_type] = create_task(job_type)
 
     def enqueue(self, job_type: str, payload: Dict[str, Any], priority: int = 0) -> str:
         """Enqueue a job via Celery."""
         job_id = str(uuid.uuid4())
 
-        # Map job type to task
-        task_map = {
-            "ingest": self._ingest_task,
-            "reindex": self._reindex_task,
-        }
-
-        task = task_map.get(job_type)
+        task = self._task_map.get(job_type)
         if not task:
-            raise ValueError(f"Unknown job type: {job_type}")
+            raise ValueError(
+                f"Unknown or unregistered job type for Celery: {job_type}"
+            )
 
         # Calculate Celery priority (0-9, lower = higher priority)
         celery_priority = max(0, min(9, 5 - (priority // 2)))
@@ -844,20 +875,13 @@ class CeleryQueue(JobQueue):
         self, job_types: List[str], timeout: int = 10
     ) -> Optional[Dict[str, Any]]:
         """
-        Dequeue is handled by Celery workers automatically.
-        This method is for compatibility and returns pending jobs for status checking.
         """
-        # In Celery, dequeue is handled by workers
-        # This method can be used to get pending jobs for monitoring
-        with self._lock:
-            for job_id, job in self._pending_jobs.items():
-                if job["type"] in job_types:
-                    return {
-                        "id": job_id,
-                        "type": job["type"],
-                        "payload": job["payload"],
-                        "priority": job["priority"],
-                    }
+        Dequeue is handled by Celery workers automatically.
+        This method is not used in a Celery-based setup and is here for ABC compliance.
+        """
+        logger.debug("CeleryQueue.dequeue called but is a no-op; workers handle dequeuing.")
+        # Block for a short time to simulate waiting, but Celery workers operate independently.
+        time.sleep(timeout)
         return None
 
     def ack(self, job_id: str) -> None:
@@ -921,7 +945,7 @@ _queue_instance: Optional[JobQueue] = None
 _queue_lock = threading.Lock()
 
 
-def get_queue() -> JobQueue:
+def get_queue(job_types: Optional[List[str]] = None) -> JobQueue:
     """
     Get the configured queue instance.
 
@@ -929,14 +953,21 @@ def get_queue() -> JobQueue:
     - 'memory': InMemoryQueue (default for dev)
     - 'redis': RedisStreamsQueue (production)
     - 'celery': CeleryQueue (alternative production)
+
+    Args:
+        job_types (Optional[List[str]]): For Redis, a list of all job types to ensure
+                                         consumer groups are created. This is only
+                                         needed by worker processes.
     """
     global _queue_instance
 
     with _queue_lock:
         if _queue_instance is None:
             from cortex.config.loader import get_config
+            from cortex.queue_registry import get_known_job_types
 
             config = get_config()
+            job_types = get_known_job_types()
 
             # Check for queue type in config (default to memory)
             queue_type = getattr(config.system, "queue_type", "memory")
@@ -946,7 +977,11 @@ def get_queue() -> JobQueue:
                     redis_url = os.getenv(
                         "OUTLOOKCORTEX_REDIS_URL", "redis://localhost:6379"
                     )
-                    _queue_instance = RedisStreamsQueue(redis_url=redis_url)
+                    # For workers, this will create consumer groups. For producers, it can be an empty list.
+                    all_job_types = job_types or []
+                    _queue_instance = RedisStreamsQueue(
+                        redis_url=redis_url, job_types=all_job_types
+                    )
                     logger.info("Initialized Redis Streams queue")
                 except ImportError as e:
                     logger.warning(
@@ -964,7 +999,9 @@ def get_queue() -> JobQueue:
                     broker_url = os.getenv(
                         "OUTLOOKCORTEX_CELERY_BROKER", "redis://localhost:6379/0"
                     )
-                    _queue_instance = CeleryQueue(broker_url=broker_url)
+                    _queue_instance = CeleryQueue(
+                        broker_url=broker_url, job_types=job_types
+                    )
                     logger.info("Initialized Celery queue")
                 except ImportError as e:
                     logger.warning(
