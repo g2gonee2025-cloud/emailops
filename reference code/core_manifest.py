@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import re
-from datetime import UTC
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -16,13 +16,84 @@ This module provides THE SINGLE SOURCE OF TRUTH for:
 3. Extracting detailed participant information (for summarization)
 
 All other modules should import from here instead of duplicating logic.
-
-NOTE: This module returns plain Python dict/tuple structures for maximum compatibility.
 """
 
-logger = logging.getLogger(__name__)
 # Control character pattern
 _CONTROL_CHARS = re.compile(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]")
+
+# Subject normalization patterns
+_RE_FWD_PATTERN = re.compile(
+    r"^(?:re|fwd?|aw|sv|vs|antw|odp|回复|答复|轉寄):\s*", re.IGNORECASE
+)
+_BRACKET_PATTERN = re.compile(r"\[.*?\]")
+_WHITESPACE_PATTERN = re.compile(r"\s+")
+
+
+def _normalize_subject_helper(subject: str) -> str:
+    """
+    Normalize subject for threading.
+
+    - Remove Re:, Fwd:, FW:, etc. prefixes (in multiple languages)
+    - Remove [bracketed] content like [EXTERNAL]
+    - Collapse whitespace
+    - Lowercase
+    """
+    if not subject:
+        return ""
+
+    # Remove Re/Fwd prefixes iteratively
+    normalized = subject
+    while True:
+        new_val = _RE_FWD_PATTERN.sub("", normalized).strip()
+        if new_val == normalized:
+            break
+        normalized = new_val
+
+    # Remove bracketed content
+    normalized = _BRACKET_PATTERN.sub("", normalized)
+
+    # Collapse whitespace and lowercase
+    normalized = _WHITESPACE_PATTERN.sub(" ", normalized).strip().lower()
+
+    return normalized
+
+
+def normalize_subject(subject: str) -> str:
+    """Public helper that normalizes subjects consistently across modules."""
+    return _normalize_subject_helper(subject)
+
+
+logger = logging.getLogger(__name__)
+
+
+def parse_manifest_text(text: str, source: str = "<unknown>") -> dict[str, Any]:
+    """
+    Parse manifest JSON text with robust fallback strategies.
+
+    Args:
+        text: Raw JSON text (utf-8 decoded)
+        source: Source identifier for logging (e.g. filename/key)
+
+    Returns:
+        Parsed manifest dict, or {} if parsing fails
+    """
+    if not text:
+        return {}
+
+    # Aggressive sanitization
+    sanitized = _CONTROL_CHARS.sub("", text)
+
+    try:
+        # 1) Try strict JSON first
+        return dict(json.loads(sanitized))
+    except (json.JSONDecodeError, TypeError):
+        # 2) Apply backslash repair
+        repaired = re.sub(r'(?<!\\)\\(?!["\\/bfnrtu])', r"\\\\", sanitized)
+        try:
+            return dict(json.loads(repaired))
+        except json.JSONDecodeError as e:
+            logger.error("Failed to parse manifest from %s: %s", source, e)
+            return {}
 
 
 # ============================================================================
@@ -64,12 +135,12 @@ def load_manifest(convo_dir: Path) -> dict[str, Any]:
         sanitized = _CONTROL_CHARS.sub("", raw_text)
         # 1) Try strict JSON first (no repair)
         try:
-            return json.loads(sanitized)
-        except json.JSONDecodeError:
+            return dict(json.loads(sanitized))
+        except (json.JSONDecodeError, TypeError):
             # 2) Apply backslash repair then try JSON again
             repaired = re.sub(r'(?<!\\)\\(?!["\\/bfnrtu])', r"\\\\", sanitized)
             try:
-                return json.loads(repaired)
+                return dict(json.loads(repaired))
             except json.JSONDecodeError as e2:
                 logger.error(
                     "Failed to parse manifest for %s: %s. Using empty manifest.",
@@ -109,8 +180,34 @@ def extract_metadata_lightweight(manifest: dict[str, Any]) -> dict[str, Any]:
         Dict with keys: subject, from, to, cc, start_date, end_date
     """
     man = manifest or {}
-    subject = (man.get("smart_subject") or man.get("subject") or "").strip()
+    return {
+        "subject": _extract_subject_lightweight(man),
+        **_extract_participants_grouped(man),
+        **_extract_date_range(man),
+    }
 
+
+def _extract_subject_lightweight(manifest: dict[str, Any]) -> str:
+    raw = manifest.get("smart_subject")
+    if not isinstance(raw, str):
+        raw = manifest.get("subject")
+    if not isinstance(raw, str):
+        raw = ""
+    return raw.strip()
+
+
+def parse_manifest_core(man: dict[str, Any]) -> dict[str, Any]:
+    man = man or {}
+    return {
+        "subject": _extract_subject_lightweight(man),
+        **_extract_participants_grouped(man),
+        **_extract_date_range(man),
+    }
+
+
+def _extract_participants_grouped(
+    manifest: dict[str, Any],
+) -> dict[str, list[tuple[str, str]]]:
     from_list: list[tuple[str, str]] = []
     to_list: list[tuple[str, str]] = []
     cc_list: list[tuple[str, str]] = []
@@ -119,105 +216,130 @@ def extract_metadata_lightweight(manifest: dict[str, Any]) -> dict[str, Any]:
     seen_to: set[str] = set()
     seen_cc: set[str] = set()
 
-    def _add_pair(
-        out: list[tuple[str, str]], seen: set[str], name: str, email: str
-    ) -> None:
-        name_s = (name or "").strip()
-        email_s = (email or "").strip()
-        if not name_s and not email_s:
-            return
-        key = email_s.lower() if email_s else f"name:{_normalize_name(name_s)}"
-        if not key or key in seen:
-            return
-        seen.add(key)
-        out.append((name_s, email_s))
+    msgs = manifest.get("messages") or []
+    if not isinstance(msgs, list):
+        return {"from": [], "to": [], "cc": []}
 
-    # Aggregate from/to/cc across all messages (deduplicated)
-    try:
-        msgs = man.get("messages") or []
-        if isinstance(msgs, list):
-            for msg in msgs:
-                if not isinstance(msg, dict):
-                    continue
+    for msg in msgs:
+        if not isinstance(msg, dict):
+            continue
+        _process_message_participants(
+            msg, from_list, to_list, cc_list, seen_from, seen_to, seen_cc
+        )
 
-                f = msg.get("from")
-                if isinstance(f, dict):
-                    _add_pair(
-                        from_list, seen_from, f.get("name", ""), f.get("smtp", "")
-                    )
+    return {"from": from_list, "to": to_list, "cc": cc_list}
 
-                for rec in msg.get("to") or []:
-                    if isinstance(rec, dict):
-                        _add_pair(
-                            to_list, seen_to, rec.get("name", ""), rec.get("smtp", "")
-                        )
 
-                for rec in msg.get("cc") or []:
-                    if isinstance(rec, dict):
-                        _add_pair(
-                            cc_list, seen_cc, rec.get("name", ""), rec.get("smtp", "")
-                        )
-    except Exception:
-        pass
+def _process_message_participants(
+    msg: dict[str, Any],
+    from_list: list[tuple[str, str]],
+    to_list: list[tuple[str, str]],
+    cc_list: list[tuple[str, str]],
+    seen_from: set[str],
+    seen_to: set[str],
+    seen_cc: set[str],
+) -> None:
+    f = msg.get("from")
+    if isinstance(f, dict):
+        _add_pair(from_list, seen_from, f.get("name", ""), f.get("smtp", ""))
 
-    # Dates: best-effort min/max across messages (falls back to first/last)
+    for rec in msg.get("to") or []:
+        if isinstance(rec, dict):
+            _add_pair(to_list, seen_to, rec.get("name", ""), rec.get("smtp", ""))
+
+    for rec in msg.get("cc") or []:
+        if isinstance(rec, dict):
+            _add_pair(cc_list, seen_cc, rec.get("name", ""), rec.get("smtp", ""))
+
+
+def _add_pair(
+    out: list[tuple[str, str]], seen: set[str], name: str, email: str
+) -> None:
+    name_s = (name or "").strip()
+    email_s = (email or "").strip()
+    if not name_s and not email_s:
+        return
+    key = email_s.lower() if email_s else f"name:{_normalize_name(name_s)}"
+    if not key or key in seen:
+        return
+    seen.add(key)
+    out.append((name_s, email_s))
+
+
+def _extract_date_range(manifest: dict[str, Any]) -> dict[str, Any]:
     start_date = None
     end_date = None
     try:
-        msgs = man.get("messages") or []
+        msgs = manifest.get("messages") or []
         if isinstance(msgs, list) and msgs:
+            # Fallback to first/last if parsing fails or returns no valid dates
             raw_start = msgs[0].get("date") if isinstance(msgs[0], dict) else None
             raw_end = msgs[-1].get("date") if isinstance(msgs[-1], dict) else None
 
-            from datetime import datetime
-
-            def _parse_dt(v: Any) -> datetime | None:
-                if v is None:
-                    return None
-                if isinstance(v, (int, float)):
-                    try:
-                        return datetime.fromtimestamp(float(v), tz=UTC)
-                    except Exception:
-                        return None
-                if isinstance(v, str):
-                    s = v.strip()
-                    if not s:
-                        return None
-                    if s.endswith("Z"):
-                        s = s[:-1] + "+00:00"
-                    try:
-                        dt = datetime.fromisoformat(s)
-                        if dt.tzinfo is None:
-                            dt = dt.replace(tzinfo=UTC)
-                        return dt
-                    except Exception:
-                        return None
-                return None
-
-            dts: list[datetime] = []
-            for msg in msgs:
-                if isinstance(msg, dict) and msg.get("date") is not None:
-                    dt = _parse_dt(msg.get("date"))
-                    if dt is not None:
-                        dts.append(dt)
-
+            dts = _parse_all_dates(msgs)
             if dts:
-                start_date = min(dts).astimezone(UTC).isoformat()
-                end_date = max(dts).astimezone(UTC).isoformat()
+                start_date = min(dts).astimezone(timezone.utc).isoformat()
+                end_date = max(dts).astimezone(timezone.utc).isoformat()
             else:
                 start_date = raw_start
                 end_date = raw_end
     except Exception:
         pass
 
-    return {
-        "subject": subject,
-        "from": from_list,
-        "to": to_list,
-        "cc": cc_list,
-        "start_date": start_date,
-        "end_date": end_date,
-    }
+    return {"start_date": start_date, "end_date": end_date}
+
+
+def _parse_all_dates(msgs: list[Any]) -> list[Any]:
+    dts: list[datetime] = []
+    for msg in msgs:
+        if isinstance(msg, dict) and msg.get("date") is not None:
+            dt = _parse_dt(msg.get("date"))
+            if dt is not None:
+                dts.append(dt)
+    return dts
+
+
+def _parse_dt(v: Any) -> Any | None:
+    if v is None:
+        return None
+    if isinstance(v, (int, float)):
+        try:
+            return datetime.fromtimestamp(float(v), tz=timezone.utc)
+        except Exception:
+            return None
+    if isinstance(v, str):
+        s = v.strip()
+        if not s:
+            return None
+        if s.endswith("Z"):
+            s = s[:-1] + "+00:00"
+        try:
+            dt = datetime.fromisoformat(s)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            return dt
+        except Exception:
+            return None
+    return None
+
+
+# ============================================================================
+# Subject Resolution (Canonical)
+# ============================================================================
+def resolve_subject(
+    manifest: dict[str, Any], summary: dict[str, Any] | None, folder_name: str
+) -> tuple[str, str]:
+    """Resolve display and normalized subject from manifest/summary/folder."""
+
+    subject_display = (
+        (manifest or {}).get("smart_subject")
+        or (manifest or {}).get("subject_label")
+        or (manifest or {}).get("subject")
+        or (summary or {}).get("subject")
+        or folder_name
+    )
+    subject_norm = normalize_subject(subject_display)
+    return subject_display, subject_norm
 
 
 # ============================================================================
@@ -232,26 +354,20 @@ def extract_participants_detailed(
 ) -> list[dict[str, str]]:
     """
     Extract detailed participant information from manifest for summarization.
-
+    THIS CONSOLIDATES logic from:
+    - feature_summarize._participants_from_manifest()
     Returns rich participant schema with:
-      - name: Participant name
-      - email: Email address
-      - role: One of [client, broker, underwriter, internal, other]
-      - tone: One of [professional, frustrated, urgent, friendly, demanding, neutral]
-      - stance: Their position/attitude in the thread
-
-    Notes:
-      - Aggregates participants across all messages (sender + recipients).
-      - Deduplicates by email (preferred) or normalized name.
-      - Applies defaults; downstream summarization can refine role/tone/stance.
-
+    - name: Participant name
+    - email: Email address
+    - role: One of [client, broker, underwriter, internal, other]
+    - tone: One of [professional, frustrated, urgent, friendly, demanding, neutral]
+    - stance: Their position/attitude in the thread
     Args:
         manifest: Parsed manifest dict
         default_role: Default role when unknown (default: "other")
         default_tone: Default tone when unknown (default: "neutral")
         default_stance: Default stance when unknown (default: "N/A")
         max_participants: Maximum number to return (default: 25)
-
     Returns:
         List of participant dicts with full schema, deduplicated
     """
@@ -264,6 +380,7 @@ def extract_participants_detailed(
         return []
 
     def _mk(name: str, email: str, role: str = "other") -> dict[str, str]:
+        """Helper to create participant dict with defaults."""
         return {
             "name": _safe_str(name, 80),
             "role": role,
@@ -278,6 +395,7 @@ def extract_participants_detailed(
             logger.debug("extract_participants_detailed: No messages in manifest")
             return []
 
+        # Iterate over ALL messages to find participants
         for msg in messages:
             if not isinstance(msg, dict):
                 continue
@@ -294,6 +412,7 @@ def extract_participants_detailed(
                         _mk(rec.get("name", ""), rec.get("smtp", ""), role=default_role)
                     )
 
+            # Cc
             for rec in msg.get("cc") or []:
                 if isinstance(rec, dict):
                     out.append(
@@ -304,26 +423,24 @@ def extract_participants_detailed(
         logger.warning(
             "extract_participants_detailed: Error extracting participants: %s", e
         )
+        return []
     except Exception as e:
         logger.error("extract_participants_detailed: Unexpected error: %s", e)
-
+        return []
     # Deduplicate by lowercase email or normalized name; skip empty entries
     seen: set[str] = set()
     deduped: list[dict[str, str]] = []
-    for p_item in out:
-        email_key = (p_item.get("email") or "").lower()
-        name_key = _normalize_name(p_item.get("name", ""))
+    for p in out:
+        email_key = (p.get("email") or "").lower()
+        name_key = _normalize_name(p.get("name", ""))
         if not email_key and not name_key:
             continue
         key = email_key or f"name:{name_key}"
         if key in seen:
             continue
         seen.add(key)
-        deduped.append(p_item)
-        if len(deduped) >= max_participants:
-            break
-
-    return deduped
+        deduped.append(p)
+    return deduped[:max_participants]
 
 
 # ============================================================================
@@ -381,4 +498,6 @@ __all__ = (
     "extract_participants_detailed",
     "get_conversation_metadata",
     "load_manifest",
-]
+    "parse_manifest_text",
+    "resolve_subject",
+)

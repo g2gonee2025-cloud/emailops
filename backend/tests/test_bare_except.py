@@ -1,79 +1,86 @@
+
+import ast
 import sys
 from pathlib import Path
+from typing import List
+
+import pytest
+
+# Directories to scan for Python files
+DIRECTORIES_TO_SCAN = [
+    Path("backend/src"),
+    Path("cli/src"),
+]
+
+# Root-level scripts to check for bare excepts
+ROOT_SCRIPTS = [
+    "wait_for_pod.py",
+    "wait_for_node.py",
+    "fetch_schema_variations.py",
+    "fetch_real_s3.py",
+    "fetch_real_s3_simple.py",
+    "inspect_pgvector.py",
+]
 
 
-def test_no_bare_except_in_backend():
-    """Test that no Python files in backend/src have bare except clauses."""
-    backend_src = Path("backend/src")
+def get_python_files(paths: List[Path]) -> List[Path]:
+    """Find all Python files in the given paths."""
+    python_files = []
+    for path in paths:
+        if path.is_dir():
+            python_files.extend(sorted(path.rglob("*.py")))
+        elif path.is_file() and path.exists():
+            python_files.append(path)
+    return python_files
 
-    # Find all Python files
-    python_files = list(backend_src.rglob("*.py"))
 
+def find_bare_excepts(file_path: Path):
+    """
+    Check a single Python file for bare except clauses using the AST module.
+    Yields tuples of (line_number, line_content) for each bare except.
+    """
+    try:
+        with file_path.open("r", encoding="utf-8") as f:
+            content = f.read()
+            tree = ast.parse(content, filename=str(file_path))
+
+            for node in ast.walk(tree):
+                if isinstance(node, ast.ExceptHandler) and node.type is None:
+                    # Get the line content for better error reporting
+                    line_content = content.splitlines()[node.lineno - 1].strip()
+                    yield (node.lineno, line_content)
+
+    except (SyntaxError, UnicodeDecodeError) as e:
+        print(f"Warning: Could not parse {file_path}: {e}", file=sys.stderr)
+    except Exception as e:
+        print(f"Warning: Could not check {file_path}: {e}", file=sys.stderr)
+
+
+@pytest.mark.parametrize(
+    "paths_to_check",
+    [
+        pytest.param(DIRECTORIES_TO_SCAN, id="backend_and_cli_src"),
+        pytest.param([Path(p) for p in ROOT_SCRIPTS], id="root_scripts"),
+    ],
+)
+def test_no_bare_except_in_codebase(paths_to_check: List[Path]):
+    """
+    Test that no Python files in the specified paths have bare except clauses.
+    This test is parameterized to run on different sets of files.
+    """
+    all_python_files = get_python_files(paths_to_check)
     bare_except_violations = []
 
-    for py_file in python_files:
-        try:
-            with py_file.open("r", encoding="utf-8") as f:
-                lines = f.readlines()
-                for i, line in enumerate(lines, 1):
-                    stripped = line.strip()
-                    # Match bare except clauses (only "except:" or "except:" + whitespace)
-                    if stripped == "except:" or (
-                        stripped.startswith("except:") and len(stripped) <= 7
-                    ):
-                        bare_except_violations.append(f"{py_file}:{i}: {line.strip()}")
-        except Exception:
-            # Skip files we can't read
-            continue
+    for py_file in all_python_files:
+        bare_excepts = list(find_bare_excepts(py_file))
+        if bare_excepts:
+            for lineno, line in bare_excepts:
+                bare_except_violations.append(f"{py_file}:{lineno}: {line}")
 
     if bare_except_violations:
         error_msg = "Found bare except clauses in the following files:\n" + "\n".join(
             bare_except_violations
         )
-        error_msg += "\n\nPlease use specific exception types instead of bare except."
+        error_msg += "\n\nPlease use 'except Exception:' instead of a bare except."
         raise AssertionError(error_msg)
 
-
-def test_no_bare_except_in_root_scripts():
-    """Test that no root Python utility files have bare except clauses."""
-    root_files = [
-        "wait_for_pod.py",
-        "wait_for_node.py",
-        "fetch_schema_variations.py",
-        "fetch_real_s3.py",
-        "fetch_real_s3_simple.py",
-        "inspect_pgvector.py",
-    ]
-
-    bare_except_violations = []
-
-    for filename in root_files:
-        file_path = Path(filename)
-        if not file_path.exists():
-            continue
-
-        try:
-            with file_path.open("r", encoding="utf-8") as f:
-                lines = f.readlines()
-                for i, line in enumerate(lines, 1):
-                    stripped = line.strip()
-                    # Match bare except clauses (only "except:" or "except:" + whitespace)
-                    if stripped == "except:" or (
-                        stripped.startswith("except:") and len(stripped) <= 7
-                    ):
-                        bare_except_violations.append(f"{filename}:{i}: {line.strip()}")
-        except Exception as e:
-            print(f"Warning: Could not check {filename}: {e}", file=sys.stderr)
-
-    if bare_except_violations:
-        error_msg = "Found bare except clauses in root utility files:\n" + "\n".join(
-            bare_except_violations
-        )
-        error_msg += "\n\nPlease use specific exception types instead of bare except."
-        raise AssertionError(error_msg)
-
-
-def test_no_bare_except_in_files():
-    """Combined test to check for bare except clauses across the codebase."""
-    test_no_bare_except_in_backend()
-    test_no_bare_except_in_root_scripts()

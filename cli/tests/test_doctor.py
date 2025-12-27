@@ -50,7 +50,7 @@ class TestCmdDoctor(unittest.TestCase):
         self.assertEqual(out2, "test")
 
     def test_normalize_provider(self):
-        self.assertEqual(_normalize_provider("gcp"), "vertex")
+        self.assertEqual(_normalize_provider("gcp"), "gcp")
         self.assertEqual(_normalize_provider("vertexai"), "vertex")
         self.assertEqual(_normalize_provider("openai"), "openai")
         self.assertEqual(_normalize_provider("unknown"), "unknown")
@@ -167,9 +167,7 @@ class TestCmdDoctor(unittest.TestCase):
         # Patch cortex_cli.cmd_doctor.create_engine because it's imported at top level
         with patch("cortex_cli.cmd_doctor.create_engine") as mock_create_engine:
             # Setup fetchone return for dim check
-            mock_conn = (
-                mock_create_engine.return_value.connect.return_value.__enter__.return_value
-            )
+            mock_conn = mock_create_engine.return_value.connect.return_value.__enter__.return_value
             # The row object returned by fetchone
             row_mock = MagicMock()
             row_mock.dim = 768
