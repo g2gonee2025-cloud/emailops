@@ -8,13 +8,23 @@ Provides:
 
 import argparse
 import sys
+import time
+from pathlib import Path
 from typing import Any
 
+from cortex_cli._s3_uploader import S3Uploader
 from cortex_cli.style import colorize as _colorize
 
 try:
     from rich import box
     from rich.console import Console
+    from rich.progress import (
+        BarColumn,
+        Progress,
+        SpinnerColumn,
+        TextColumn,
+        TimeElapsedColumn,
+    )
     from rich.table import Table
 
     RICH_AVAILABLE = True
@@ -22,6 +32,108 @@ except ImportError:
     RICH_AVAILABLE = False
 
 console = Console() if RICH_AVAILABLE else None
+
+
+def cmd_s3_upload(args: argparse.Namespace) -> None:
+    """Upload a local directory to S3/Spaces."""
+    try:
+        from cortex.config.loader import get_config
+
+        config = get_config()
+        source_dir = Path(args.source_dir).resolve()
+        s3_prefix = args.s3_prefix
+
+        if not source_dir.is_dir():
+            print(
+                f"{_colorize('ERROR:', 'red')} Source '{source_dir}' is not a valid directory."
+            )
+            sys.exit(1)
+
+        print(f"\n{_colorize('S3/SPACES UPLOADER', 'bold')}\n")
+        print(f"  Endpoint:   {_colorize(config.storage.endpoint_url, 'cyan')}")
+        print(f"  Bucket:     {_colorize(config.storage.bucket_raw, 'cyan')}")
+        print(f"  Source dir: {_colorize(str(source_dir), 'cyan')}")
+        print(f"  S3 Prefix:  {_colorize(s3_prefix, 'dim')}\n")
+
+        # Instantiate uploader
+        uploader = S3Uploader(
+            endpoint_url=config.storage.endpoint_url,
+            region_name=config.storage.region,
+            access_key=config.storage.access_key,
+            secret_key=config.storage.secret_key,
+            bucket_name=config.storage.bucket_raw,
+            max_workers=args.max_workers,
+        )
+
+        files_to_upload = [p for p in source_dir.rglob("*") if p.is_file()]
+        total_files = len(files_to_upload)
+
+        if total_files == 0:
+            print(f"  {_colorize('○', 'yellow')} No files found to upload.")
+            return
+
+        if not args.yes:
+            try:
+                confirm = input(
+                    f"  {_colorize('?', 'yellow')} Found {total_files} files. "
+                    f"Proceed with upload? (y/N): "
+                )
+                if confirm.lower() != "y":
+                    print("  Upload cancelled.")
+                    return
+            except (KeyboardInterrupt, EOFError):
+                print("\n  Upload cancelled.")
+                return
+
+        # Upload files with progress
+        start_time = time.time()
+        uploaded_count = 0
+        failed_count = 0
+        failed_files = []
+
+        progress_columns = [
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+            TextColumn("({task.completed} of {task.total})"),
+            TimeElapsedColumn(),
+        ]
+
+        with Progress(*progress_columns, console=console) as progress:
+            task = progress.add_task("[cyan]Uploading...", total=total_files)
+            for success, result in uploader.upload_files(
+                source_dir, files_to_upload, s3_prefix
+            ):
+                if success:
+                    uploaded_count += 1
+                else:
+                    failed_count += 1
+                    failed_files.append(result)
+                progress.update(task, advance=1)
+
+        # Summary
+        elapsed = time.time() - start_time
+        print(f"\n{_colorize('═' * 40, 'cyan')}")
+        print(f"\n{_colorize('✓', 'green')} Upload complete!")
+        print(f"  Total files:    {total_files}")
+        print(f"  Uploaded:       {_colorize(str(uploaded_count), 'green')}")
+        failed_color = "red" if failed_count > 0 else "dim"
+        print(f"  Failed:         {_colorize(str(failed_count), failed_color)}")
+        print(f"  Time elapsed:   {elapsed:.1f} seconds")
+        if total_files > 0 and elapsed > 0:
+            print(f"  Average rate:   {total_files / elapsed:.1f} files/sec")
+
+        if failed_files:
+            print(f"\n{_colorize('Failed files (first 20):', 'red')}")
+            for f in failed_files[:20]:
+                print(f"  - {f}")
+            if len(failed_files) > 20:
+                print(f"  ... and {len(failed_files) - 20} more")
+
+    except Exception as e:
+        print(f"\n{_colorize('ERROR:', 'red')} {e}")
+        sys.exit(1)
 
 
 def cmd_s3_list(args: argparse.Namespace) -> None:
@@ -334,6 +446,19 @@ def cmd_s3_validate(args: argparse.Namespace) -> None:
         sys.exit(1)
 
 
+def cmd_s3_ls(args: argparse.Namespace) -> None:
+    """List S3/Spaces objects."""
+    try:
+        from cortex.ingestion.s3_source import S3SourceHandler
+
+        handler = S3SourceHandler()
+        for obj in handler.list_objects(prefix=args.prefix):
+            print(f"{obj['Key']} ({obj['Size']} bytes)")
+    except Exception as e:
+        print(f"{_colorize('ERROR:', 'red')} {e}")
+        sys.exit(1)
+
+
 def setup_s3_parser(subparsers: Any) -> None:
     """Add s3 subcommands to the CLI parser."""
     s3_parser = subparsers.add_parser(
@@ -356,6 +481,15 @@ def setup_s3_parser(subparsers: Any) -> None:
     )
     list_parser.add_argument("--json", action="store_true", help="Output as JSON")
     list_parser.set_defaults(func=cmd_s3_list)
+
+    # s3 ls
+    ls_parser = s3_subparsers.add_parser(
+        "ls",
+        help="List S3 objects",
+        description="List objects in S3/Spaces.",
+    )
+    ls_parser.add_argument("prefix", help="S3 prefix to filter")
+    ls_parser.set_defaults(func=cmd_s3_ls)
 
     # s3 ingest
     ingest_parser = s3_subparsers.add_parser(
@@ -401,6 +535,34 @@ def setup_s3_parser(subparsers: Any) -> None:
     validate_parser.add_argument("--json", action="store_true", help="Output as JSON")
     validate_parser.set_defaults(func=cmd_s3_validate)
 
+    # s3 upload
+    upload_parser = s3_subparsers.add_parser(
+        "upload",
+        help="Upload a local directory to S3/Spaces",
+        description="Recursively uploads all files from a local directory to S3/Spaces.",
+    )
+    upload_parser.add_argument(
+        "source_dir",
+        metavar="SOURCE_DIR",
+        help="Local directory to upload",
+    )
+    upload_parser.add_argument(
+        "--s3-prefix",
+        default="",
+        help="S3 prefix to prepend to uploaded files (default: none)",
+    )
+    upload_parser.add_argument(
+        "--max-workers",
+        "-w",
+        type=int,
+        default=10,
+        help="Number of concurrent upload workers (default: 10)",
+    )
+    upload_parser.add_argument(
+        "--yes", "-y", action="store_true", help="Skip confirmation prompt"
+    )
+    upload_parser.set_defaults(func=cmd_s3_upload)
+
     # s3 check-structure
     check_structure_parser = s3_subparsers.add_parser(
         "check-structure",
@@ -436,6 +598,7 @@ def setup_s3_parser(subparsers: Any) -> None:
 def cmd_s3_check_structure(args: argparse.Namespace) -> None:
     """Check S3 folder structure for correctness."""
     import json
+
     from cortex_cli.s3_check import check_s3_structure
 
     try:

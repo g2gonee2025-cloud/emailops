@@ -47,15 +47,11 @@ class CortexError(Exception):
 class ConfigurationError(CortexError):
     """Configuration issues: missing/invalid settings."""
 
-    pass
-
 
 class SearchIndexError(CortexError):
     """
     Search index issues: not found, corrupted, incompatible.
     """
-
-    pass
 
 
 class EmbeddingError(CortexError):
