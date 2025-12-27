@@ -1,0 +1,493 @@
+diff --git a/cli/src/cortex_cli/_s3_uploader.py b/cli/src/cortex_cli/_s3_uploader.py
+new file mode 100644
+index 00000000..991a4c89
+--- /dev/null
++++ b/cli/src/cortex_cli/_s3_uploader.py
+@@ -0,0 +1,147 @@
++"""
++S3/Spaces direct uploader module.
++
++This module provides a robust and efficient way to upload files to
++DigitalOcean Spaces or any S3-compatible storage. It is designed to be
++used by the Cortex CLI, but can also be used as a standalone module.
++
++Key features:
++- Concurrent uploads using a thread pool
++- Progress tracking with ETA calculation
++- Graceful error handling and detailed summary reporting
++- MIME type detection for proper Content-Type headers
++- Configurable S3 client with retry mechanism
++
++Classes:
++    S3Uploader: A class that encapsulates the upload logic.
++
++"""
++
++import logging
++import mimetypes
++import time
++from concurrent.futures import ThreadPoolExecutor, as_completed
++from pathlib import Path
++from typing import Iterator, Tuple
++
++import boto3
++from botocore.client import BaseClient
++from botocore.config import Config
++from botocore.exceptions import BotoCoreError, ClientError
++
++# Set up logging
++logger = logging.getLogger(__name__)
++
++
++class S3Uploader:
++    """
++    Handles uploading files to S3/Spaces with progress and error reporting.
++    """
++
++    def __init__(
++        self,
++        endpoint_url: str,
++        region_name: str,
++        access_key: str,
++        secret_key: str,
++        bucket_name: str,
++        max_workers: int = 10,
++    ):
++        """
++        Initializes the S3Uploader.
++
++        Args:
++            endpoint_url (str): The S3 endpoint URL.
++            region_name (str): The S3 region name.
++            access_key (str): The S3 access key.
++            secret_key (str): The S3 secret key.
++            bucket_name (str): The S3 bucket name.
++            max_workers (int): The maximum number of concurrent upload workers.
++        """
++        self.endpoint_url = endpoint_url
++        self.region_name = region_name
++        self.access_key = access_key
++        self.secret_key = secret_key
++        self.bucket_name = bucket_name
++        self.max_workers = max_workers
++        self._s3_client = None
++
++    def _get_s3_client(self) -> BaseClient:
++        """
++        Creates and returns an S3 client.
++        """
++        if self._s3_client is None:
++            self._s3_client = boto3.client(
++                "s3",
++                endpoint_url=self.endpoint_url,
++                region_name=self.region_name,
++                aws_access_key_id=self.access_key,
++                aws_secret_access_key=self.secret_key,
++                config=Config(
++                    signature_version="s3v4",
++                    retries={"max_attempts": 3, "mode": "adaptive"},
++                    connect_timeout=30,
++                    read_timeout=60,
++                ),
++            )
++        return self._s3_client
++
++    def _get_content_type(self, file_path: Path) -> str:
++        """
++        Determines the content type of a file based on its extension.
++        """
++        content_type, _ = mimetypes.guess_type(str(file_path))
++        return content_type or "application/octet-stream"
++
++    def _upload_file(self, local_path: Path, s3_key: str) -> Tuple[str, int]:
++        """
++        Uploads a single file to S3.
++        """
++        s3_client = self._get_s3_client()
++        content_type = self._get_content_type(local_path)
++        file_size = local_path.stat().st_size
++        s3_client.upload_file(
++            str(local_path),
++            self.bucket_name,
++            s3_key,
++            ExtraArgs={"ContentType": content_type},
++        )
++        return s3_key, file_size
++
++    def upload_files(
++        self, source_dir: Path, files_to_upload: list[Path], s3_prefix: str
++    ) -> Iterator[Tuple[bool, str]]:
++        """
++        Uploads a list of files to S3.
++
++        Args:
++            source_dir (Path): The root directory of the files.
++            files_to_upload (list[Path]): The list of file paths to upload.
++            s3_prefix (str): The prefix to use for S3 keys.
++
++        Yields:
++            Iterator[Tuple[bool, str]]: A tuple of (success, message).
++        """
++        s3_tasks = [
++            (p, f"{s3_prefix}{p.relative_to(source_dir).as_posix()}")
++            for p in files_to_upload
++        ]
++
++        if not s3_tasks:
++            return
++
++        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
++            futures = {
++                executor.submit(self._upload_file, local_path, s3_key): s3_key
++                for local_path, s3_key in s3_tasks
++            }
++
++            for future in as_completed(futures):
++                s3_key = futures[future]
++                try:
++                    _, file_size = future.result()
++                    yield True, f"{s3_key} ({file_size} bytes)"
++                except (ClientError, BotoCoreError) as e:
++                    yield False, f"{s3_key}: {e}"
++                except Exception as e:
++                    yield False, f"{s3_key}: An unexpected error occurred: {e}"
+diff --git a/cli/src/cortex_cli/cmd_s3.py b/cli/src/cortex_cli/cmd_s3.py
+index 8fc624a8..10cd3bf9 100644
+--- a/cli/src/cortex_cli/cmd_s3.py
++++ b/cli/src/cortex_cli/cmd_s3.py
+@@ -8,13 +8,23 @@
+ 
+ import argparse
+ import sys
++import time
++from pathlib import Path
+ from typing import Any
+ 
++from cortex_cli._s3_uploader import S3Uploader
+ from cortex_cli.style import colorize as _colorize
+ 
+ try:
+     from rich import box
+     from rich.console import Console
++    from rich.progress import (
++        BarColumn,
++        Progress,
++        SpinnerColumn,
++        TextColumn,
++        TimeElapsedColumn,
++    )
+     from rich.table import Table
+ 
+     RICH_AVAILABLE = True
+@@ -24,6 +34,108 @@
+ console = Console() if RICH_AVAILABLE else None
+ 
+ 
++def cmd_s3_upload(args: argparse.Namespace) -> None:
++    """Upload a local directory to S3/Spaces."""
++    try:
++        from cortex.config.loader import get_config
++
++        config = get_config()
++        source_dir = Path(args.source_dir).resolve()
++        s3_prefix = args.s3_prefix
++
++        if not source_dir.is_dir():
++            print(
++                f"{_colorize('ERROR:', 'red')} Source '{source_dir}' is not a valid directory."
++            )
++            sys.exit(1)
++
++        print(f"\n{_colorize('S3/SPACES UPLOADER', 'bold')}\n")
++        print(f"  Endpoint:   {_colorize(config.storage.endpoint_url, 'cyan')}")
++        print(f"  Bucket:     {_colorize(config.storage.bucket_raw, 'cyan')}")
++        print(f"  Source dir: {_colorize(str(source_dir), 'cyan')}")
++        print(f"  S3 Prefix:  {_colorize(s3_prefix, 'dim')}\n")
++
++        # Instantiate uploader
++        uploader = S3Uploader(
++            endpoint_url=config.storage.endpoint_url,
++            region_name=config.storage.region,
++            access_key=config.storage.access_key,
++            secret_key=config.storage.secret_key,
++            bucket_name=config.storage.bucket_raw,
++            max_workers=args.max_workers,
++        )
++
++        files_to_upload = [p for p in source_dir.rglob("*") if p.is_file()]
++        total_files = len(files_to_upload)
++
++        if total_files == 0:
++            print(f"  {_colorize('○', 'yellow')} No files found to upload.")
++            return
++
++        if not args.yes:
++            try:
++                confirm = input(
++                    f"  {_colorize('?', 'yellow')} Found {total_files} files. "
++                    f"Proceed with upload? (y/N): "
++                )
++                if confirm.lower() != "y":
++                    print("  Upload cancelled.")
++                    return
++            except (KeyboardInterrupt, EOFError):
++                print("\n  Upload cancelled.")
++                return
++
++        # Upload files with progress
++        start_time = time.time()
++        uploaded_count = 0
++        failed_count = 0
++        failed_files = []
++
++        progress_columns = [
++            SpinnerColumn(),
++            TextColumn("[progress.description]{task.description}"),
++            BarColumn(),
++            TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
++            TextColumn("({task.completed} of {task.total})"),
++            TimeElapsedColumn(),
++        ]
++
++        with Progress(*progress_columns, console=console) as progress:
++            task = progress.add_task("[cyan]Uploading...", total=total_files)
++            for success, result in uploader.upload_files(
++                source_dir, files_to_upload, s3_prefix
++            ):
++                if success:
++                    uploaded_count += 1
++                else:
++                    failed_count += 1
++                    failed_files.append(result)
++                progress.update(task, advance=1)
++
++        # Summary
++        elapsed = time.time() - start_time
++        print(f"\n{_colorize('═' * 40, 'cyan')}")
++        print(f"\n{_colorize('✓', 'green')} Upload complete!")
++        print(f"  Total files:    {total_files}")
++        print(f"  Uploaded:       {_colorize(str(uploaded_count), 'green')}")
++        failed_color = "red" if failed_count > 0 else "dim"
++        print(f"  Failed:         {_colorize(str(failed_count), failed_color)}")
++        print(f"  Time elapsed:   {elapsed:.1f} seconds")
++        if total_files > 0 and elapsed > 0:
++            print(f"  Average rate:   {total_files / elapsed:.1f} files/sec")
++
++        if failed_files:
++            print(f"\n{_colorize('Failed files (first 20):', 'red')}")
++            for f in failed_files[:20]:
++                print(f"  - {f}")
++            if len(failed_files) > 20:
++                print(f"  ... and {len(failed_files) - 20} more")
++
++    except Exception as e:
++        print(f"\n{_colorize('ERROR:', 'red')} {e}")
++        sys.exit(1)
++
++
+ def cmd_s3_list(args: argparse.Namespace) -> None:
+     """List S3/Spaces prefixes (conversation folders)."""
+     try:
+@@ -401,6 +513,34 @@ def setup_s3_parser(subparsers: Any) -> None:
+     validate_parser.add_argument("--json", action="store_true", help="Output as JSON")
+     validate_parser.set_defaults(func=cmd_s3_validate)
+ 
++    # s3 upload
++    upload_parser = s3_subparsers.add_parser(
++        "upload",
++        help="Upload a local directory to S3/Spaces",
++        description="Recursively uploads all files from a local directory to S3/Spaces.",
++    )
++    upload_parser.add_argument(
++        "source_dir",
++        metavar="SOURCE_DIR",
++        help="Local directory to upload",
++    )
++    upload_parser.add_argument(
++        "--s3-prefix",
++        default="",
++        help="S3 prefix to prepend to uploaded files (default: none)",
++    )
++    upload_parser.add_argument(
++        "--max-workers",
++        "-w",
++        type=int,
++        default=10,
++        help="Number of concurrent upload workers (default: 10)",
++    )
++    upload_parser.add_argument(
++        "--yes", "-y", action="store_true", help="Skip confirmation prompt"
++    )
++    upload_parser.set_defaults(func=cmd_s3_upload)
++
+     # Default: show list when no subcommand given
+     def _default_s3_handler(args: argparse.Namespace) -> None:
+         if not args.s3_command:
+diff --git a/requirements.txt b/requirements.txt
+index 259797ca..09f62a6a 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -72,6 +72,7 @@ requests>=2.31.0
+ # ---------------------------
+ # CLI & Utils
+ # ---------------------------
++boto3>=1.34.0
+ typer>=0.12.0
+ pyyaml>=6.0.0
+ tenacity>=8.2.0
+diff --git a/scripts/utils/upload_to_spaces_direct.py b/scripts/utils/upload_to_spaces_direct.py
+deleted file mode 100644
+index 86659ad5..00000000
+--- a/scripts/utils/upload_to_spaces_direct.py
++++ /dev/null
+@@ -1,150 +0,0 @@
+-#!/usr/bin/env python3
+-"""
+-Upload files from Desktop/Outlook to DigitalOcean Spaces.
+-
+-Uses boto3 with direct credential configuration and robust error handling.
+-"""
+-
+-import mimetypes
+-import os
+-import time
+-from concurrent.futures import ThreadPoolExecutor, as_completed
+-from pathlib import Path
+-
+-import boto3
+-from botocore.config import Config
+-
+-# Configuration
+-S3_ENDPOINT = "https://emailops-storage-tor1.tor1.digitaloceanspaces.com"
+-S3_REGION = "tor1"
+-S3_BUCKET = "emailops-storage-tor1"
+-S3_ACCESS_KEY = os.getenv("S3_ACCESS_KEY", "DO00XHY7KTQGELEBRGYV")
+-S3_SECRET_KEY = os.getenv(
+-    "S3_SECRET_KEY", "UjuF90LBXLVdJFH6mMvxL9+mkE7peuyP5RL1oVYiyNs"
+-)
+-
+-SOURCE_DIR = Path(r"C:\Users\ASUS\Desktop\Outlook")
+-BUCKET_PREFIX = "raw/outlook/"
+-MAX_WORKERS = 5  # Reduced from 10 to avoid rate limiting
+-
+-
+-def get_s3_client():
+-    """Create S3 client for DigitalOcean Spaces."""
+-    return boto3.client(
+-        "s3",
+-        endpoint_url=S3_ENDPOINT,
+-        region_name=S3_REGION,
+-        aws_access_key_id=S3_ACCESS_KEY,
+-        aws_secret_access_key=S3_SECRET_KEY,
+-        config=Config(
+-            signature_version="s3v4",
+-            retries={"max_attempts": 3, "mode": "adaptive"},
+-            connect_timeout=30,
+-            read_timeout=60,
+-        ),
+-    )
+-
+-
+-def get_content_type(file_path: Path) -> str:
+-    """Determine content type based on file extension."""
+-    content_type, _ = mimetypes.guess_type(str(file_path))
+-    return content_type or "application/octet-stream"
+-
+-
+-def upload_file(s3_client, local_path: Path, s3_key: str) -> tuple[bool, str]:
+-    """Upload a single file to S3. Returns (success, message)."""
+-    try:
+-        content_type = get_content_type(local_path)
+-        file_size = local_path.stat().st_size
+-        s3_client.upload_file(
+-            str(local_path),
+-            S3_BUCKET,
+-            s3_key,
+-            ExtraArgs={"ContentType": content_type},
+-        )
+-        return True, f"{s3_key} ({file_size} bytes)"
+-    except Exception as e:
+-        return False, f"{s3_key}: {e!s}"
+-
+-
+-def main():
+-    """Main upload function."""
+-    print(f"Scanning files in {SOURCE_DIR}...")
+-
+-    # Collect all files
+-    files_to_upload = []
+-    for root, _dirs, files in os.walk(SOURCE_DIR):
+-        for file in files:
+-            local_path = Path(root) / file
+-            relative_path = local_path.relative_to(SOURCE_DIR)
+-            s3_key = BUCKET_PREFIX + str(relative_path).replace("\\", "/")
+-            files_to_upload.append((local_path, s3_key))
+-
+-    total_files = len(files_to_upload)
+-    print(f"Found {total_files} files to upload")
+-
+-    if total_files == 0:
+-        print("No files to upload!")
+-        return
+-
+-    # Create S3 client
+-    s3_client = get_s3_client()
+-
+-    # Skip bucket check - proceed directly to upload
+-    print(f"Uploading to {S3_BUCKET} with prefix '{BUCKET_PREFIX}'")
+-    print(f"Using {MAX_WORKERS} concurrent workers...")
+-    print("-" * 60)
+-
+-    # Upload files with progress
+-    start_time = time.time()
+-    uploaded = 0
+-    failed = 0
+-    failed_files = []
+-
+-    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+-        futures = {
+-            executor.submit(upload_file, s3_client, local_path, s3_key): s3_key
+-            for local_path, s3_key in files_to_upload
+-        }
+-
+-        for future in as_completed(futures):
+-            success, result = future.result()
+-            if success:
+-                uploaded += 1
+-            else:
+-                failed += 1
+-                failed_files.append(result)
+-
+-            # Progress update every 50 files
+-            total_processed = uploaded + failed
+-            if total_processed % 50 == 0 or total_processed == total_files:
+-                elapsed = time.time() - start_time
+-                rate = total_processed / elapsed if elapsed > 0 else 0
+-                eta = (total_files - total_processed) / rate if rate > 0 else 0
+-                print(
+-                    f"Progress: {total_processed}/{total_files} ({100 * total_processed / total_files:.1f}%) | "
+-                    f"Uploaded: {uploaded} | Failed: {failed} | "
+-                    f"Rate: {rate:.1f}/s | ETA: {eta:.0f}s"
+-                )
+-
+-    # Summary
+-    elapsed = time.time() - start_time
+-    print("-" * 60)
+-    print("\n✓ Upload complete!")
+-    print(f"  Total files:    {total_files}")
+-    print(f"  Uploaded:       {uploaded}")
+-    print(f"  Failed:         {failed}")
+-    print(f"  Time elapsed:   {elapsed:.1f} seconds")
+-    if total_files > 0:
+-        print(f"  Average rate:   {total_files / elapsed:.1f} files/sec")
+-
+-    if failed_files:
+-        print("\nFailed files (first 20):")
+-        for f in failed_files[:20]:
+-            print(f"  - {f}")
+-        if len(failed_files) > 20:
+-            print(f"  ... and {len(failed_files) - 20} more")
+-
+-
+-if __name__ == "__main__":
+-    main()

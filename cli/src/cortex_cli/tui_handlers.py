@@ -299,11 +299,10 @@ def _interactive_search():
     console.print(f"[dim]Searching for '{query}'...[/dim]")
 
     try:
-        from cortex.models.api import SearchRequest
-        from cortex.retrieval.hybrid_search import hybrid_search
+        from cortex.retrieval.hybrid_search import KBSearchInput, tool_kb_search_hybrid
 
-        req = SearchRequest(query=query, top_k=top_k, tenant_id="default")
-        results = hybrid_search(req)
+        search_input = KBSearchInput(query=query, k=top_k, tenant_id="default", user_id="cli-user")
+        results = tool_kb_search_hybrid(search_input)
 
         if not results.results:
             console.print("[yellow]No results found.[/yellow]")

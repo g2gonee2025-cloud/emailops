@@ -72,23 +72,23 @@ def attempt_llm_repair(
     """
     # Format schema for repair prompt
     schema_json = target_model.model_json_schema()
-
-    # Format errors for repair prompt
-    errors_text = (
-        "\n".join(f"- {err}" for err in validation_errors)
-        or "- Unknown validation error"
-    )
-
-    full_prompt = get_prompt(
-        "GUARDRAILS_REPAIR",
-        error=errors_text,
-        invalid_json=json.dumps(invalid_json, indent=2),
-        target_schema=json.dumps(schema_json, indent=2),
-        validation_errors=errors_text,
-    )
-    full_prompt += "\n\nRespond with ONLY valid JSON that satisfies the schema."
+    current_validation_errors = validation_errors[:]
 
     for attempt in range(max_attempts):
+        # Format errors for repair prompt
+        errors_text = (
+            "\n".join(f"- {err}" for err in current_validation_errors)
+            or "- Unknown validation error"
+        )
+
+        full_prompt = get_prompt(
+            "GUARDRAILS_REPAIR",
+            error=errors_text,
+            invalid_json=json.dumps(invalid_json, indent=2),
+            target_schema=json.dumps(schema_json, indent=2),
+            validation_errors=errors_text,
+        )
+        full_prompt += "\n\nRespond with ONLY valid JSON that satisfies the schema."
         try:
             # Use JSON mode for repair
             repaired = complete_json(
@@ -111,7 +111,7 @@ def attempt_llm_repair(
                 extra={"errors": [str(err) for err in e.errors()]},
             )
             # Update errors for next attempt
-            validation_errors = [str(err) for err in e.errors()]
+            current_validation_errors = [str(err) for err in e.errors()]
         except Exception as e:
             logger.warning(f"Repair attempt {attempt + 1} failed with error: {e}")
 

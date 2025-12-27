@@ -11,11 +11,13 @@ from cortex.ingestion.s3_source import S3ConversationFolder
 class TestIncrementalIngestion(unittest.TestCase):
     @patch("cortex.ingestion.processor.process_job")
     @patch("cortex.db.session.SessionLocal")
+    @patch("cortex.ingestion.s3_source.get_config")
     @patch("cortex.ingestion.processor.get_config")
     def test_incremental_processing(
-        self, mock_config, mock_session_cls, mock_process_job
+        self, mock_processor_config, mock_s3_config, mock_session_cls, mock_process_job
     ):
         # Setup
+        mock_s3_config.return_value.storage.endpoint_url = "http://localhost:9000"
         tenant_id = "test_tenant"
         processor = IngestionProcessor(tenant_id=tenant_id)
 

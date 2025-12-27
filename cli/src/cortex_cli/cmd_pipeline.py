@@ -62,56 +62,42 @@ def cmd_pipeline_run(
         dry_run=dry_run,
     )
 
-    # Run the pipeline with progress bar
-    if not json_output and not verbose:
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            BarColumn(),
-            TaskProgressColumn(),
-            console=console,
-        ) as progress:
-            task = progress.add_task("[cyan]Processing folders...", total=None)
-            stats = orchestrator.run(source_prefix=source_prefix, limit=limit)
-            progress.update(task, completed=1, total=1)
-    else:
-        stats = orchestrator.run(source_prefix=source_prefix, limit=limit)
+    # Run the pipeline (now enqueues jobs)
+    stats = orchestrator.run(source_prefix=source_prefix, limit=limit)
 
     # Output results
     if not json_output:
         console.print()
-        table = Table(title="Pipeline Results")
+        table = Table(title="Pipeline Enqueueing Results")
         table.add_column("Metric", style="dim")
         table.add_column("Value", style="bold")
 
         table.add_row("Duration", f"{stats.duration_seconds:.2f}s")
         table.add_row("Folders Found", str(stats.folders_found))
-        table.add_row("Processed", f"[green]{stats.folders_processed}[/green]")
-        table.add_row("Skipped", f"[yellow]{stats.folders_skipped}[/yellow]")
-        table.add_row("Failed", f"[red]{stats.folders_failed}[/red]")
-        table.add_row("Chunks Created", str(stats.chunks_created))
-        if stats.embeddings_generated > 0:
-            table.add_row("Embeddings", str(stats.embeddings_generated))
+        table.add_row("Jobs Enqueued", f"[green]{stats.folders_processed}[/green]")
+        table.add_row("Failed to Enqueue", f"[red]{stats.folders_failed}[/red]")
 
         console.print(table)
 
         if stats.folders_failed > 0:
             console.print(
-                f"\n[yellow]⚠ {stats.folders_failed} folder(s) failed. Run with --verbose for details.[/yellow]"
+                f"\n[yellow]⚠ {stats.folders_failed} folder(s) failed to enqueue. Run with --verbose for details.[/yellow]"
             )
         elif stats.folders_processed > 0:
-            console.print("\n[green]✓ Pipeline completed successfully![/green]")
+            console.print(
+                f"\n[green]✓ {stats.folders_processed} ingestion job(s) enqueued successfully![/green]"
+            )
+            console.print("[dim]  Run worker processes to handle the jobs.[/dim]")
+        else:
+            console.print("\n[yellow]No new folders found to process.[/yellow]")
     else:
         output = {
             "success": stats.folders_failed == 0,
             "dry_run": dry_run,
             "duration_seconds": stats.duration_seconds,
             "folders_found": stats.folders_found,
-            "folders_processed": stats.folders_processed,
-            "folders_skipped": stats.folders_skipped,
-            "folders_failed": stats.folders_failed,
-            "chunks_created": stats.chunks_created,
-            "embeddings_generated": stats.embeddings_generated,
+            "jobs_enqueued": stats.folders_processed,
+            "enqueue_failures": stats.folders_failed,
             "errors": getattr(stats, "errors_list", []),
         }
         print(json.dumps(output))
