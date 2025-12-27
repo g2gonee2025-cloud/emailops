@@ -113,14 +113,13 @@ class TestTuiHandlers(unittest.TestCase):
         with patch.dict(
             sys.modules,
             {
-                "cortex.models.api": MagicMock(),
                 "cortex.retrieval.hybrid_search": MagicMock(),
             },
         ):
             mock_hs = sys.modules["cortex.retrieval.hybrid_search"]
             mock_res = MagicMock()
             mock_res.results = [MagicMock(score=0.9, text="foo", source="bar")]
-            mock_hs.hybrid_search.return_value = mock_res
+            mock_hs.tool_kb_search_hybrid.return_value = mock_res
 
             tui_handlers._handle_rag_menu()
-            mock_hs.hybrid_search.assert_called()
+            mock_hs.tool_kb_search_hybrid.assert_called()
