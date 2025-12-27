@@ -101,7 +101,7 @@ __all__ = (
     "save_index_metadata",
     "validate_index_compatibility",
     "write_mapping",
-]
+)
 
 # -----------------------------------------------------------------------------
 # Paths
@@ -554,7 +554,7 @@ def load_index_metadata(index_dir: str | Path) -> dict[str, Any] | None:
                     f"Metadata at {p} must be a JSON object, got {type(data).__name__}"
                 )
                 return None
-            return scrub_json(data)  # type: ignore[return-value]
+            return scrub_json(data)
         except Exception as e:
             last_exc = e
             # Exponential backoff, then retry
@@ -827,7 +827,7 @@ def read_mapping(index_dir: str | Path, strict: bool = True) -> list[dict[str, A
             data and not all(isinstance(x, dict) for x in data)
         ):
             raise ValueError("mapping.json must be a list of objects")
-        return scrub_json(data)  # type: ignore[return-value]
+        return scrub_json(data)
     except Exception as e:
         if strict:
             raise
