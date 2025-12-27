@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import GlassCard from './ui/GlassCard';
 import { StatusIndicator } from './ui/StatusIndicator';
-import { api } from '../lib/api';
-import type { S3Folder, IngestStatusResponse, PushDocument } from '../lib/api';
+import { api, S3Folder, IngestStatusResponse, PushDocument } from '../lib/api';
 import { cn } from '../lib/utils';
 import {
   FolderOpen,
@@ -16,12 +15,16 @@ import {
   Upload,
   Plus,
   Trash2,
-  CheckCircle
+  CheckCircle,
+  AlertTriangle
 } from 'lucide-react';
+import { logger } from '../lib/logger';
 
 interface ActiveJob {
   jobId: string;
   status: IngestStatusResponse;
+  // Indicates a failure to poll the job's status.
+  pollError?: boolean;
 }
 
 // Manual Upload Section Component
@@ -141,7 +144,7 @@ export function IngestionView() {
       const response = await api.listS3Folders('Outlook/', 100);
       setFolders(response.folders);
     } catch (error) {
-      console.error('Failed to list folders:', error);
+      logger.error('Failed to list folders:', error);
     } finally {
       setIsLoadingFolders(false);
     }
@@ -158,11 +161,16 @@ export function IngestionView() {
     const interval = setInterval(async () => {
       const updatedJobs = await Promise.all(
         activeJobs.map(async (job) => {
+          // If job is already completed or failed, don't poll again.
+          if (job.status.status === 'completed' || job.status.status === 'failed' || job.pollError) {
+            return job;
+          }
           try {
             const status = await api.getIngestionStatus(job.jobId);
             return { jobId: job.jobId, status };
-          } catch {
-            return job;
+          } catch (error) {
+            logger.error(`Failed to poll job ${job.jobId}:`, error);
+            return { ...job, pollError: true };
           }
         })
       );
@@ -193,16 +201,18 @@ export function IngestionView() {
         }]);
       }
     } catch (error) {
-      console.error('Failed to start ingestion:', error);
+      logger.error('Failed to start ingestion:', error);
     } finally {
       setIsStartingJob(false);
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
+  const getStatusColor = (job: ActiveJob): 'healthy' | 'warning' | 'critical' | 'inactive' => {
+    if (job.pollError) return 'critical';
+    switch (job.status.status) {
       case 'completed': return 'healthy';
       case 'running': return 'warning';
+      case 'started': return 'warning';
       case 'failed': return 'critical';
       default: return 'inactive';
     }
@@ -262,7 +272,7 @@ export function IngestionView() {
                 <GlassCard key={job.jobId} className="p-5">
                   <div className="flex items-center justify-between mb-4">
                     <span className="font-mono text-sm text-white/60">{job.jobId.substring(0, 8)}...</span>
-                    <StatusIndicator status={getStatusColor(job.status.status) as 'healthy' | 'warning' | 'critical' | 'inactive'} />
+                    <StatusIndicator status={getStatusColor(job)} />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -296,9 +306,10 @@ export function IngestionView() {
                     </div>
                   </div>
 
-                  {job.status.errors > 0 && (
-                    <div className="mt-4 p-2 rounded bg-red-500/10 border border-red-500/20 text-sm text-red-400">
-                      {job.status.errors} errors encountered
+                  {(job.status.errors > 0 || job.pollError) && (
+                    <div className="mt-4 p-2 rounded bg-red-500/10 border border-red-500/20 text-sm text-red-400 flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4" />
+                      {job.pollError ? 'Failed to get job status' : `${job.status.errors} errors encountered`}
                     </div>
                   )}
                 </GlassCard>

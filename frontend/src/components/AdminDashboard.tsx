@@ -1,74 +1,88 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import GlassCard from './ui/GlassCard';
 import { StatusIndicator } from './ui/StatusIndicator';
-import { api } from '../lib/api';
+import { api, DoctorReport, SystemStatus, SystemConfig } from '../lib/api';
 import { Activity, Server, Settings, Play, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { logger } from '../lib/logger';
 
-interface DoctorCheck {
-  name: string;
-  status: 'pass' | 'fail' | 'warn';
-  message?: string;
-  details?: Record<string, unknown>;
-}
+// Keywords that indicate a config value is sensitive and should be redacted.
+const SENSITIVE_KEYWORDS = ['key', 'secret', 'token', 'password', 'url', 'dsn'];
 
-interface DoctorReport {
-  overall_status: 'healthy' | 'degraded' | 'unhealthy';
-  checks: DoctorCheck[];
-}
+/**
+ * Renders a configuration value safely.
+ * Redacts sensitive values and formats others for display.
+ */
+const renderConfigValue = (key: string, value: unknown): string => {
+  const lowerKey = key.toLowerCase();
+  if (SENSITIVE_KEYWORDS.some(keyword => lowerKey.includes(keyword))) {
+    return '••••••••••••';
+  }
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  if (value === null || value === undefined) {
+    return 'Not Set';
+  }
+  return JSON.stringify(value);
+};
 
-interface StatusData {
-    env: string;
-    service: string;
-    status: string;
-}
 
 export function AdminDashboard() {
   const [doctorReport, setDoctorReport] = useState<DoctorReport | null>(null);
   const [isRunningDoctor, setIsRunningDoctor] = useState(false);
-  const [status, setStatus] = useState<StatusData | null>(null);
-  const [config, setConfig] = useState<Record<string, unknown> | null>(null);
+  const [status, setStatus] = useState<SystemStatus | null>(null);
+  const [config, setConfig] = useState<SystemConfig | null>(null);
 
   useEffect(() => {
     loadInitialData();
   }, []);
 
   const loadInitialData = async () => {
-    const [statusData, configData] = await Promise.all([
-      api.fetchStatus(),
-      api.fetchConfig()
-    ]);
-    setStatus(statusData as StatusData);
-    setConfig(configData as unknown as Record<string, unknown>);
+    try {
+      const [statusData, configData] = await Promise.all([
+        api.fetchStatus(),
+        api.fetchConfig()
+      ]);
+      setStatus(statusData);
+      setConfig(configData);
+    } catch (error) {
+      logger.error('Failed to load initial admin data', error);
+    }
   };
 
   const runDiagnostics = async () => {
     setIsRunningDoctor(true);
     try {
         const report = await api.runDoctor();
-        setDoctorReport(report as DoctorReport);
+        setDoctorReport(report);
+    } catch (error) {
+        logger.error('Failed to run diagnostics', error);
     } finally {
         setIsRunningDoctor(false);
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: 'pass' | 'fail' | 'warn') => {
     switch (status) {
       case 'pass': return 'text-green-400';
       case 'fail': return 'text-red-400';
       case 'warn': return 'text-yellow-400';
-      default: return 'text-gray-400';
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: 'pass' | 'fail' | 'warn') => {
     switch (status) {
       case 'pass': return <CheckCircle className="w-5 h-5 text-green-400" />;
       case 'fail': return <XCircle className="w-5 h-5 text-red-400" />;
       case 'warn': return <AlertTriangle className="w-5 h-5 text-yellow-400" />;
-      default: return null;
     }
   };
+
+  const displayedConfig = useMemo(() => {
+    if (!config) return [];
+    return Object.entries(config).sort(([a], [b]) => a.localeCompare(b));
+  }, [config]);
 
   return (
     <div className="p-8 space-y-8 animate-fade-in pb-24">
@@ -193,11 +207,11 @@ export function AdminDashboard() {
                 </div>
                 {config ? (
                     <div className="space-y-4">
-                        {Object.entries(config).map(([key, value]) => (
+                        {displayedConfig.map(([key, value]) => (
                              <div key={key} className="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
                                 <span className="text-white/60 capitalize">{key.replace(/_/g, ' ')}</span>
                                 <span className="font-mono text-sm px-2 py-0.5 rounded bg-white/10">
-                                    {String(value)}
+                                    {renderConfigValue(key, value)}
                                 </span>
                              </div>
                         ))}
