@@ -8,12 +8,14 @@ from __future__ import annotations
 
 import hashlib
 import logging
+from typing import Any, Dict
 
 from cortex.audit import log_audit_event
 from cortex.common.exceptions import CortexError
 from cortex.context import tenant_id_ctx, user_id_ctx
-from cortex.observability import trace_operation  # P2 Fix: Enable tracing
+from cortex.observability import trace_operation
 from cortex.rag_api.models import DraftEmailRequest, DraftEmailResponse
+from cortex.security.dependencies import get_current_user
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 logger = logging.getLogger(__name__)
@@ -37,11 +39,12 @@ def get_draft_graph(http_request: Request):
 
 
 @router.post("/draft-email", response_model=DraftEmailResponse)
-@trace_operation("api_draft_email")  # P2 Fix: Enable request tracing
+@trace_operation("api_draft_email")
 async def draft_endpoint(
     request: DraftEmailRequest,
     http_request: Request,
     graph=Depends(get_draft_graph),
+    current_user: Dict[str, Any] = Depends(get_current_user),
 ) -> DraftEmailResponse:
     """
     Draft email endpoint.
@@ -76,29 +79,48 @@ async def draft_endpoint(
         # Invoke graph
         final_state = await graph.ainvoke(initial_state)
 
-        # Check for errors
+        # Check for errors from the graph execution
         if final_state.get("error"):
-            raise HTTPException(status_code=500, detail=final_state["error"])
+            logger.error(
+                f"Draft generation failed with error: {final_state['error']}",
+                extra={"correlation_id": correlation_id},
+            )
+            raise HTTPException(
+                status_code=500, detail="Internal server error: Failed to generate draft"
+            )
 
         # Return draft
         draft = final_state.get("draft")
         if not draft:
-            raise HTTPException(status_code=500, detail="No draft generated")
+            logger.error(
+                "Draft generation completed without a draft.",
+                extra={"correlation_id": correlation_id},
+            )
+            raise HTTPException(
+                status_code=500, detail="Internal server error: No draft was generated"
+            )
 
-        # Audit log - P2 Fix: Use context vars (authoritative) not request body
+        # Audit log
         try:
-            input_str = request.model_dump_json()
+            # Create a PII-free representation of the input for hashing.
+            # Hashing the raw instruction would be a PII leak.
+            pii_free_input = {
+                "thread_id": str(request.thread_id) if request.thread_id else None,
+                "reply_to_message_id": request.reply_to_message_id,
+                "tone": request.tone,
+            }
+            input_str = str(pii_free_input)
             input_hash = hashlib.sha256(input_str.encode()).hexdigest()
 
             log_audit_event(
-                tenant_id=tenant_id_ctx.get(),  # P2 Fix: Use context
-                user_or_agent=user_id_ctx.get(),  # P2 Fix: Use context
+                tenant_id=tenant_id_ctx.get(),
+                user_or_agent=user_id_ctx.get(),
                 action="draft_email",
                 input_hash=input_hash,
                 risk_level="medium",
                 correlation_id=correlation_id,
                 metadata={
-                    "query": request.instruction,
+                    "query": "[REDACTED]",  # Redact PII
                     "thread_id": str(request.thread_id) if request.thread_id else None,
                     "iterations": final_state.get("iteration_count", 0),
                 },
@@ -113,9 +135,14 @@ async def draft_endpoint(
         )
 
     except CortexError as e:
+        # Handle domain-specific errors with a 400 status code
         raise HTTPException(status_code=400, detail=e.to_dict())
     except HTTPException:
+        # Re-raise exceptions we've already handled
         raise
-    except Exception as e:
-        logger.exception("Draft failed")
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        # Obfuscate unexpected errors to prevent implementation leakage
+        logger.exception("Draft failed due to an unexpected error")
+        raise HTTPException(
+            status_code=500, detail="Internal server error"
+        )
