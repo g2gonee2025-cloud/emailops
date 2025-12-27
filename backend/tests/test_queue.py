@@ -349,7 +349,7 @@ class TestCeleryQueue:
     def test_enqueue(self, mock_celery):
         from cortex.queue import CeleryQueue
 
-        q = CeleryQueue()
+        q = CeleryQueue(job_types=["ingest", "reindex"])
         job_id = q.enqueue("ingest", {"foo": "bar"}, priority=5)
 
         assert job_id
@@ -363,7 +363,7 @@ class TestCeleryQueue:
     def test_ack(self, mock_celery):
         from cortex.queue import CeleryQueue
 
-        q = CeleryQueue()
+        q = CeleryQueue(job_types=["ingest", "reindex"])
         job_id = q.enqueue("ingest", {"foo": "bar"})
         q.ack(job_id)
 
