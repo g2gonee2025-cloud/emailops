@@ -22,12 +22,6 @@ class SearchRequest(BaseModel):
 
     query: str = Field(..., description="Search query text")
     k: int = Field(default=10, ge=1, le=500, description="Number of results")
-    tenant_id: Optional[str] = Field(
-        default=None, description="Tenant ID (auto-filled from context)"
-    )
-    user_id: Optional[str] = Field(
-        default=None, description="User ID (auto-filled from context)"
-    )
     filters: Dict[str, Any] = Field(
         default_factory=dict, description="Optional filters"
     )
@@ -61,8 +55,6 @@ class AnswerRequest(BaseModel):
     )
     k: int = Field(default=10, ge=1, le=20, description="Number of context chunks")
     debug: bool = Field(default=False, description="Enable debug info")
-    tenant_id: Optional[str] = None
-    user_id: Optional[str] = None
 
 
 class AnswerResponse(BaseModel):
@@ -91,9 +83,9 @@ class DraftEmailRequest(BaseModel):
     reply_to_message_id: Optional[str] = Field(
         default=None, description="Message to reply to"
     )
-    tone: str = Field(default="professional", description="Email tone")
-    tenant_id: Optional[str] = None
-    user_id: Optional[str] = None
+    tone: Literal["professional", "casual", "direct"] = Field(
+        default="professional", description="Email tone"
+    )
 
 
 class DraftEmailResponse(BaseModel):
@@ -119,8 +111,6 @@ class SummarizeThreadRequest(BaseModel):
     max_length: int = Field(
         default=500, ge=50, le=2000, description="Max summary length in words"
     )
-    tenant_id: Optional[str] = None
-    user_id: Optional[str] = None
 
 
 class SummarizeThreadResponse(BaseModel):

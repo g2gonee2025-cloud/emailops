@@ -16,6 +16,7 @@ from cortex.context import tenant_id_ctx, user_id_ctx
 from cortex.domain_models.rag import Answer
 from cortex.observability import trace_operation
 from cortex.rag_api.models import AnswerRequest, AnswerResponse
+from cortex.security.defenses import sanitize_user_input
 from fastapi import APIRouter, Depends, HTTPException, Request
 from langgraph.graph import StateGraph
 
@@ -43,11 +44,12 @@ async def answer_api(
     graph: StateGraph = Depends(get_answer_graph),
 ):
     correlation_id = getattr(http_request.state, "correlation_id", None)
-    query_hash = hashlib.sha256(request.query.encode()).hexdigest()
+    sanitized_query = sanitize_user_input(request.query)
+    query_hash = hashlib.sha256(sanitized_query.encode()).hexdigest()
 
     try:
         initial_state = {
-            "query": request.query,
+            "query": sanitized_query,
             "tenant_id": tenant_id_ctx.get(),
             "user_id": user_id_ctx.get(),
             "thread_id": request.thread_id,

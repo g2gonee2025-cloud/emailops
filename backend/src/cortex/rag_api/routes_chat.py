@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import os
 from typing import Any, List, Literal, Optional
 
 from cortex.audit import log_audit_event
@@ -37,6 +38,8 @@ from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+IS_DEV_MODE = os.getenv("ENVIRONMENT") == "dev"
 
 
 class ChatActionDecision(BaseModel):
@@ -74,7 +77,7 @@ def _latest_user_message(messages: List[ChatMessage]) -> Optional[str]:
     return None
 
 
-def _decide_action(
+async def _decide_action(
     request: ChatRequest, history: List[ChatMessage], latest_user: str
 ) -> ChatActionDecision:
     prompt = (
@@ -149,7 +152,7 @@ async def chat_endpoint(
     latest_user, history = _validate_and_prepare_request(request)
 
     try:
-        decision = _decide_action(request, history, latest_user)
+        decision = await _decide_action(request, history, latest_user)
 
         if decision.action == "summarize":
             response = await _handle_summarize(
@@ -187,7 +190,7 @@ def _validate_and_prepare_request(
     if not latest_user:
         raise HTTPException(status_code=400, detail="No user message provided")
 
-    latest_user = sanitize_user_input(latest_user)
+    sanitized_latest_user = sanitize_user_input(latest_user)
 
     config = get_config()
     max_history = (
@@ -196,7 +199,7 @@ def _validate_and_prepare_request(
         else config.unified.max_chat_history
     )
     history = _trim_history(request.messages, max_history)
-    return latest_user, history
+    return sanitized_latest_user, history
 
 
 def _log_chat_audit(
@@ -265,12 +268,19 @@ async def _handle_summarize(
         summary = ThreadSummary(summary_markdown=summary_text, key_points=[])
         reply = summary_text
 
+    debug_info = None
+    if request.debug:
+        if IS_DEV_MODE:
+            debug_info = {"reason": decision.reason}
+        else:
+            logger.warning("Debug mode requested in non-dev environment.")
+
     return ChatResponse(
         correlation_id=correlation_id,
         action="summarize",
         reply=reply,
         summary=summary,
-        debug_info={"reason": decision.reason} if request.debug else None,
+        debug_info=debug_info,
     )
 
 
@@ -297,12 +307,20 @@ async def _handle_search(
         f"Search results:\n{snippets}"
     )
     reply = await run_in_threadpool(complete_text, reply_prompt)
+
+    debug_info = None
+    if request.debug:
+        if IS_DEV_MODE:
+            debug_info = {"reason": decision.reason}
+        else:
+            logger.warning("Debug mode requested in non-dev environment.")
+
     return ChatResponse(
         correlation_id=correlation_id,
         action="search",
         reply=reply,
         search_results=results_dicts,
-        debug_info={"reason": decision.reason} if request.debug else None,
+        debug_info=debug_info,
     )
 
 
@@ -359,10 +377,17 @@ async def _handle_answer(
             retrieval_diagnostics=_build_retrieval_diagnostics(results),
         )
 
+    debug_info = None
+    if request.debug:
+        if IS_DEV_MODE:
+            debug_info = {"reason": decision.reason}
+        else:
+            logger.warning("Debug mode requested in non-dev environment.")
+
     return ChatResponse(
         correlation_id=correlation_id,
         action="answer",
         reply=answer.answer_markdown,
         answer=answer,
-        debug_info={"reason": decision.reason} if request.debug else None,
+        debug_info=debug_info,
     )

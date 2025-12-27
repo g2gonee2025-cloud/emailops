@@ -14,6 +14,7 @@ from cortex.common.exceptions import CortexError
 from cortex.context import tenant_id_ctx, user_id_ctx
 from cortex.observability import trace_operation  # P2 Fix: Enable tracing
 from cortex.rag_api.models import DraftEmailRequest, DraftEmailResponse
+from cortex.security.defenses import sanitize_user_input
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 logger = logging.getLogger(__name__)
@@ -62,7 +63,7 @@ async def draft_endpoint(
             "thread_id": str(request.thread_id) if request.thread_id else None,
             "tone": request.tone,
             "reply_to_message_id": request.reply_to_message_id,
-            "explicit_query": request.instruction,
+            "explicit_query": sanitize_user_input(request.instruction),
             "draft_query": None,
             "retrieval_results": None,
             "assembled_context": None,
