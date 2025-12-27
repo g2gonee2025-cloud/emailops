@@ -6,6 +6,7 @@ Implements §10.2 of the Canonical Blueprint.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import re
@@ -245,15 +246,19 @@ def _extract_entity_mentions(text: str) -> List[str]:
     ]
 
 
-def _safe_stat_mb(path: Path) -> float:
+async def _safe_stat_mb(path: Path) -> float:
     """Safely get file size in MB."""
     try:
-        return path.stat().st_size / (1024 * 1024) if path.exists() else 0.0
+        # Use to_thread to avoid blocking the event loop with sync file I/O
+        if await asyncio.to_thread(path.exists):
+            stat_result = await asyncio.to_thread(path.stat)
+            return stat_result.st_size / (1024 * 1024)
+        return 0.0
     except Exception:
         return 0.0
 
 
-def _select_attachments_from_mentions(
+async def _select_attachments_from_mentions(
     context_snippets: List[Dict[str, Any]],
     mentions: List[str],
     *,
@@ -287,7 +292,7 @@ def _select_attachments_from_mentions(
                     continue
 
                 validated_path = result.value
-                if _safe_stat_mb(validated_path) > attach_max_mb:
+                if await _safe_stat_mb(validated_path) > attach_max_mb:
                     continue
 
                 if not any(validated_path.match(pattern) for pattern in allowed_patterns):
@@ -301,7 +306,7 @@ def _select_attachments_from_mentions(
     return out
 
 
-def _select_all_available_attachments(
+async def _select_all_available_attachments(
     context_snippets: List[Dict[str, Any]], *, max_attachments: int = 3
 ) -> List[Dict[str, Any]]:
     """Select any valid attachments found in context (heuristic fallback)."""
@@ -334,7 +339,7 @@ def _select_all_available_attachments(
             if not any(validated_path.match(pattern) for pattern in allowed_patterns):
                 continue
 
-            if _safe_stat_mb(validated_path) > attach_max_mb:
+            if await _safe_stat_mb(validated_path) > attach_max_mb:
                 continue
 
             selected.append({"path": str(validated_path), "filename": validated_path.name})
@@ -722,7 +727,7 @@ def node_classify_query(state: Dict[str, Any]) -> Dict[str, Any]:
     try:
         validate_for_injection(query)
     except ValueError:
-        logger.error("Potential injection attack detected in query.", query=query)
+        logger.error("Potential injection attack detected in query.")
         return {"error": "Invalid input detected."}
 
     try:
@@ -857,10 +862,7 @@ def node_prepare_draft_query(state: Dict[str, Any]) -> Dict[str, Any]:
     try:
         validate_for_injection(explicit_query)
     except ValueError:
-        logger.error(
-            "Potential injection attack detected in explicit_query.",
-            query=explicit_query,
-        )
+        logger.error("Potential injection attack detected in explicit_query.")
         return {"error": "Invalid input detected."}
 
     # If we had thread context, we would combine it here.
@@ -1017,7 +1019,7 @@ def node_improve_draft(state: Dict[str, Any]) -> Dict[str, Any]:
         return {"error": f"Improvement failed: {str(e)}"}
 
 
-def node_select_attachments(state: Dict[str, Any]) -> Dict[str, Any]:
+async def node_select_attachments(state: Dict[str, Any]) -> Dict[str, Any]:
     """
     Select attachments to include in the email.
 
@@ -1050,7 +1052,9 @@ def node_select_attachments(state: Dict[str, Any]) -> Dict[str, Any]:
     # Strategy 1: Explicit mentions in the generated draft body
     body_mentions = extract_document_mentions(draft.body_markdown)
     if body_mentions:
-        selected.extend(_select_attachments_from_mentions(snippets, body_mentions))
+        selected.extend(
+            await _select_attachments_from_mentions(snippets, body_mentions)
+        )
 
     # Strategy 2: If user explicitly asked in query "attach the report", etc.
     # (We rely on retrieval having found it and put it in snippets)
@@ -1059,7 +1063,7 @@ def node_select_attachments(state: Dict[str, Any]) -> Dict[str, Any]:
     if query_mentions:
         # Avoid duplicates
         current_names = {s["filename"] for s in selected}
-        from_query = _select_attachments_from_mentions(snippets, query_mentions)
+        from_query = await _select_attachments_from_mentions(snippets, query_mentions)
         for f in from_query:
             if f["filename"] not in current_names:
                 selected.append(f)
@@ -1067,7 +1071,9 @@ def node_select_attachments(state: Dict[str, Any]) -> Dict[str, Any]:
     # Strategy 3: Heuristic - if query has "attach" but no specific file named,
     # grab most relevant attachment from context
     if "attach" in query.lower() and not selected:
-        selected.extend(_select_all_available_attachments(snippets, max_attachments=1))
+        selected.extend(
+            await _select_all_available_attachments(snippets, max_attachments=1)
+        )
 
     # Update draft in state
     draft.attachments = selected
