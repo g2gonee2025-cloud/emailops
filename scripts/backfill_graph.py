@@ -89,6 +89,86 @@ def get_conversation_context(session, conversation_id: uuid.UUID) -> str:
     return "\n\n".join(parts)
 
 
+def get_or_create_nodes(
+    session, node_dicts: list[dict], tenant_id: str, conversation_id: str
+) -> tuple[dict[str, uuid.UUID], int, int]:
+    """
+    Bulk get or create nodes to improve performance and prevent race conditions.
+
+    Args:
+        session: The SQLAlchemy session.
+        node_dicts: A list of node dictionaries from the graph extractor.
+        tenant_id: The tenant ID.
+        conversation_id: The conversation ID for logging/provenance.
+
+    Returns:
+        A tuple containing:
+        - A map from node name to node ID.
+        - The number of new nodes created.
+        - The number of existing nodes reused.
+    """
+    from cortex.db.models import EntityNode
+
+    node_names = [n["name"] for n in node_dicts]
+    if not node_names:
+        return {}, 0, 0
+
+    # 1. Bulk fetch existing nodes
+    existing_nodes_stmt = select(EntityNode).where(
+        EntityNode.tenant_id == tenant_id, EntityNode.name.in_(node_names)
+    )
+    existing_nodes = session.execute(existing_nodes_stmt).scalars().all()
+    node_map = {node.name: node.node_id for node in existing_nodes}
+    nodes_reused = len(existing_nodes)
+
+    # 2. Identify new nodes
+    new_node_dicts = [n for n in node_dicts if n["name"] not in node_map]
+    nodes_new = 0
+
+    # 3. Bulk insert new nodes if any
+    if new_node_dicts:
+        new_nodes = []
+        for node_dict in new_node_dicts:
+            new_nodes.append(
+                EntityNode(
+                    tenant_id=tenant_id,
+                    name=node_dict["name"],
+                    type=node_dict["type"],
+                    description=f"Extracted from conversation {conversation_id}",
+                    properties=node_dict.get("properties", {}),
+                )
+            )
+        session.add_all(new_nodes)
+        # We must flush to get IDs for edge creation.
+        # A try-except block handles the race condition where another thread
+        # might have inserted a node after our initial check.
+        try:
+            session.flush()
+        except Exception:
+            # If a race condition occurs (e.g., unique constraint violation),
+            # rollback the partial flush and fetch all nodes again to be safe.
+            session.rollback()
+            existing_nodes = (
+                session.execute(
+                    select(EntityNode).where(
+                        EntityNode.tenant_id == tenant_id,
+                        EntityNode.name.in_(node_names),
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            node_map = {node.name: node.node_id for node in existing_nodes}
+            return node_map, 0, len(node_map)
+
+        # Update node_map with newly created node IDs
+        for node in new_nodes:
+            node_map[node.name] = node.node_id
+        nodes_new = len(new_nodes)
+
+    return node_map, nodes_new, nodes_reused
+
+
 def process_conversation(
     conversation_id: uuid.UUID,
     tenant_id: str,
@@ -105,115 +185,102 @@ def process_conversation(
         "error": None,
     }
 
+    session = SessionLocal()
     try:
-        with SessionLocal() as session:
-            # 1. Get conversation context (matches mailroom.py approach)
-            context = get_conversation_context(session, conversation_id)
-            if not context or len(context.strip()) < 50:
-                result["error"] = "Text too short"
-                return result
+        # 1. Get conversation context (matches mailroom.py approach)
+        context = get_conversation_context(session, conversation_id)
+        if not context or len(context.strip()) < 50:
+            logger.info(f"Skipping {conversation_id}: Text too short or no content.")
+            result["error"] = "Text too short"
+            return result
 
-            # 2. Extract graph using existing GraphExtractor
-            G = extractor.extract_graph(context)
-            if G.number_of_nodes() == 0:
-                result["error"] = "No nodes extracted"
-                return result
+        # 2. Extract graph using existing GraphExtractor
+        G = extractor.extract_graph(context)
+        if G.number_of_nodes() == 0:
+            logger.info(f"Skipping {conversation_id}: No graph nodes extracted.")
+            result["error"] = "No nodes extracted"
+            return result
 
-            # 3. Format graph data (matches mailroom.py _extract_graph())
-            graph_data = {"nodes": [], "edges": []}
-            for node_name, attrs in G.nodes(data=True):
-                graph_data["nodes"].append(
-                    {
-                        "name": node_name,
-                        "type": attrs.get("type", "UNKNOWN"),
-                        "properties": {},
-                    }
-                )
+        # 3. Format graph data (matches mailroom.py _extract_graph())
+        graph_data = {"nodes": [], "edges": []}
+        for node_name, attrs in G.nodes(data=True):
+            graph_data["nodes"].append(
+                {
+                    "name": node_name,
+                    "type": attrs.get("type", "UNKNOWN"),
+                    "properties": {},
+                }
+            )
 
-            for src, dst, edge_attrs in G.edges(data=True):
-                graph_data["edges"].append(
-                    {
-                        "source": src,
-                        "target": dst,
-                        "relation": edge_attrs.get("relation", "RELATED_TO"),
-                        "description": edge_attrs.get("description", ""),
-                    }
-                )
+        for src, dst, edge_attrs in G.edges(data=True):
+            graph_data["edges"].append(
+                {
+                    "source": src,
+                    "target": dst,
+                    "relation": edge_attrs.get("relation", "RELATED_TO"),
+                    "description": edge_attrs.get("description", ""),
+                }
+            )
 
-            result["nodes_created"] = len(graph_data["nodes"])
-            result["edges_created"] = len(graph_data["edges"])
+        result["nodes_created"] = len(graph_data["nodes"])
+        result["edges_created"] = len(graph_data["edges"])
 
-            if dry_run:
-                result["success"] = True
-                return result
+        if dry_run:
+            result["success"] = True
+            return result
 
-            # 4. Use existing DBWriter to persist graph
-            # Note: We use direct DB operations here instead of writer for efficiency
+        # 4. Persist graph using bulk-safe method
+        from cortex.db.models import EntityEdge
 
-            # Use DBWriter's graph writing logic directly
-            from cortex.db.models import EntityEdge, EntityNode
+        (
+            node_map,
+            nodes_new,
+            nodes_reused,
+        ) = get_or_create_nodes(
+            session, graph_data["nodes"], tenant_id, str(conversation_id)
+        )
 
-            node_map = {}
-            nodes_new = 0
-            nodes_reused = 0
-
-            for node_dict in graph_data["nodes"]:
-                name = node_dict["name"]
-                existing = session.execute(
-                    select(EntityNode).where(
-                        EntityNode.tenant_id == tenant_id, EntityNode.name == name
-                    )
-                ).scalar_one_or_none()
-
-                if not existing:
-                    new_node = EntityNode(
-                        tenant_id=tenant_id,
-                        name=name,
-                        type=node_dict["type"],
-                        description=f"Extracted from conversation {conversation_id}",
-                        properties=node_dict.get("properties", {}),
-                    )
-                    session.add(new_node)
-                    session.flush()
-                    node_map[name] = new_node.node_id
-                    nodes_new += 1
-                else:
-                    node_map[name] = existing.node_id
-                    nodes_reused += 1
-
-            edges_created = 0
+        edges_created = 0
+        if node_map:
+            edges_to_create = []
             for edge_dict in graph_data["edges"]:
                 src_id = node_map.get(edge_dict["source"])
                 target_id = node_map.get(edge_dict["target"])
 
                 if src_id and target_id:
-                    edge = EntityEdge(
-                        tenant_id=tenant_id,
-                        source_id=src_id,
-                        target_id=target_id,
-                        relation=edge_dict["relation"],
-                        description=edge_dict["description"],
-                        conversation_id=conversation_id,
-                        weight=1.0,
+                    edges_to_create.append(
+                        EntityEdge(
+                            tenant_id=tenant_id,
+                            source_id=src_id,
+                            target_id=target_id,
+                            relation=edge_dict["relation"],
+                            description=edge_dict["description"],
+                            conversation_id=conversation_id,
+                            weight=1.0,
+                        )
                     )
-                    session.add(edge)
-                    edges_created += 1
+            if edges_to_create:
+                session.add_all(edges_to_create)
+                edges_created = len(edges_to_create)
 
-            session.commit()
+        session.commit()
 
-            result["nodes_created"] = nodes_new
-            result["nodes_reused"] = nodes_reused
-            result["edges_created"] = edges_created
-            result["success"] = True
+        result["nodes_created"] = nodes_new
+        result["nodes_reused"] = nodes_reused
+        result["edges_created"] = edges_created
+        result["success"] = True
 
-            logger.info(
-                f"Processed {conversation_id}: {nodes_new} new nodes, "
-                f"{nodes_reused} reused, {edges_created} edges"
-            )
+        logger.info(
+            f"Processed {conversation_id}: {nodes_new} new nodes, "
+            f"{nodes_reused} reused, {edges_created} edges"
+        )
 
     except Exception as e:
+        session.rollback()
         result["error"] = str(e)
         logger.error(f"Failed to process {conversation_id}: {e}")
+    finally:
+        session.close()
 
     return result
 

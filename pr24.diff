@@ -1,0 +1,228 @@
+diff --git a/cli/src/cortex_cli/cmd_index.py b/cli/src/cortex_cli/cmd_index.py
+new file mode 100644
+index 00000000..c3c0cd8b
+--- /dev/null
++++ b/cli/src/cortex_cli/cmd_index.py
+@@ -0,0 +1,78 @@
++"""
++Index subcommands for Cortex CLI.
++Provides:
++- `cortex index stats` - Show index statistics
++"""
++
++import argparse
++import sys
++from typing import Any
++
++from cortex_cli.style import colorize as _colorize
++from .indexing.metadata import get_index_info
++
++def cmd_index_stats(args: argparse.Namespace) -> None:
++    """Show index statistics."""
++    try:
++        import json as json_module
++
++        index_dir = args.index_dir
++        info = get_index_info(index_dir, show_faiss_count=True)
++
++        if getattr(args, "json", False):
++            print(json_module.dumps(info, indent=2))
++        else:
++            print(f"\n{_colorize('INDEX STATISTICS', 'bold')}\n")
++            print(f"  Index Directory: {_colorize(index_dir, 'cyan')}")
++
++            metadata = info.get('metadata', {})
++            if metadata == "unknown":
++                print(f"  Metadata: {_colorize('Not found', 'red')}")
++            else:
++                print(f"  Provider: {_colorize(metadata.get('provider', 'N/A'), 'cyan')}")
++                print(f"  Model: {_colorize(metadata.get('model', 'N/A'), 'cyan')}")
++                print(f"  Dimensions: {_colorize(str(metadata.get('dimensions')), 'cyan')}")
++                print(f"  Actual Dimensions: {_colorize(str(metadata.get('actual_dimensions')), 'cyan')}")
++                print(f"  Documents: {_colorize(str(metadata.get('num_documents')), 'cyan')}")
++
++            dimensions = info.get('dimensions', {})
++            print(f"\n{_colorize('Detected Properties', 'bold')}\n")
++            print(f"  Index Type: {_colorize(info.get('index_type', 'N/A'), 'cyan')}")
++            print(f"  Embeddings Dimensions: {_colorize(str(dimensions.get('embeddings')), 'cyan')}")
++            print(f"  FAISS Dimensions: {_colorize(str(dimensions.get('faiss')), 'cyan')}")
++            if 'faiss_vector_count' in info:
++                print(f"  FAISS Vector Count: {_colorize(str(info['faiss_vector_count']), 'cyan')}")
++
++    except Exception as e:
++        print(f"{_colorize('ERROR:', 'red')} {e}")
++        sys.exit(1)
++
++
++def setup_index_parser(subparsers: Any) -> None:
++    """Add index subcommands to the CLI parser."""
++    index_parser = subparsers.add_parser(
++        "index",
++        help="Index management commands",
++        description="Manage file-based indexes: view stats, etc.",
++    )
++
++    index_subparsers = index_parser.add_subparsers(
++        dest="index_command", title="Index Commands"
++    )
++
++    # index stats
++    stats_parser = index_subparsers.add_parser(
++        "stats",
++        help="Show index statistics",
++        description="Display index metadata and properties.",
++    )
++    stats_parser.add_argument("index_dir", help="Path to the index directory.")
++    stats_parser.add_argument("--json", action="store_true", help="Output as JSON")
++    stats_parser.set_defaults(func=cmd_index_stats)
++
++    # Default: show help when no subcommand given
++    def _default_index_handler(args: argparse.Namespace) -> None:
++        if not args.index_command:
++            index_parser.print_help()
++
++    index_parser.set_defaults(func=_default_index_handler)
+diff --git a/cli/src/cortex_cli/indexing/__init__.py b/cli/src/cortex_cli/indexing/__init__.py
+new file mode 100644
+index 00000000..e69de29b
+diff --git a/reference code/indexing_metadata.py b/cli/src/cortex_cli/indexing/metadata.py
+similarity index 99%
+rename from reference code/indexing_metadata.py
+rename to cli/src/cortex_cli/indexing/metadata.py
+index ba5684e0..fb4767d2 100644
+--- a/reference code/indexing_metadata.py	
++++ b/cli/src/cortex_cli/indexing/metadata.py
+@@ -101,7 +101,7 @@
+     "save_index_metadata",
+     "validate_index_compatibility",
+     "write_mapping",
+-]
++)
+ 
+ # -----------------------------------------------------------------------------
+ # Paths
+@@ -554,7 +554,7 @@ def load_index_metadata(index_dir: str | Path) -> dict[str, Any] | None:
+                     f"Metadata at {p} must be a JSON object, got {type(data).__name__}"
+                 )
+                 return None
+-            return scrub_json(data)  # type: ignore[return-value]
++            return scrub_json(data)
+         except Exception as e:
+             last_exc = e
+             # Exponential backoff, then retry
+@@ -827,7 +827,7 @@ def read_mapping(index_dir: str | Path, strict: bool = True) -> list[dict[str, A
+             data and not all(isinstance(x, dict) for x in data)
+         ):
+             raise ValueError("mapping.json must be a list of objects")
+-        return scrub_json(data)  # type: ignore[return-value]
++        return scrub_json(data)
+     except Exception as e:
+         if strict:
+             raise
+diff --git a/cli/src/cortex_cli/indexing/utils.py b/cli/src/cortex_cli/indexing/utils.py
+new file mode 100644
+index 00000000..1969ec2f
+--- /dev/null
++++ b/cli/src/cortex_cli/indexing/utils.py
+@@ -0,0 +1,19 @@
++from typing import Any
++
++def scrub_json_string(json_string: str) -> str:
++    """
++    Remove null characters from a JSON string.
++    """
++    return json_string.replace('\\u0000', '')
++
++def scrub_json(data: Any) -> Any:
++    """
++    Recursively remove null characters from JSON data.
++    """
++    if isinstance(data, dict):
++        return {k: scrub_json(v) for k, v in data.items()}
++    if isinstance(data, list):
++        return [scrub_json(elem) for elem in data]
++    if isinstance(data, str):
++        return scrub_json_string(data)
++    return data
+diff --git a/cli/src/cortex_cli/main.py b/cli/src/cortex_cli/main.py
+index e0d85de3..cb5e7d9e 100644
+--- a/cli/src/cortex_cli/main.py
++++ b/cli/src/cortex_cli/main.py
+@@ -1320,11 +1320,13 @@ def main(args: list[str] | None = None) -> None:
+     from cortex_cli.cmd_embeddings import setup_embeddings_parser
+     from cortex_cli.cmd_maintenance import setup_maintenance_parser
+     from cortex_cli.cmd_s3 import setup_s3_parser
++    from cortex_cli.cmd_index import setup_index_parser
+ 
+     setup_db_parser(subparsers)
+     setup_embeddings_parser(subparsers)
+     setup_s3_parser(subparsers)
+     setup_maintenance_parser(subparsers)
++    setup_index_parser(subparsers)
+ 
+     # Parse arguments
+     parsed_args = parser.parse_args(args)
+diff --git a/cli/tests/test_cmd_index.py b/cli/tests/test_cmd_index.py
+new file mode 100644
+index 00000000..a2520612
+--- /dev/null
++++ b/cli/tests/test_cmd_index.py
+@@ -0,0 +1,58 @@
++import argparse
++from unittest.mock import MagicMock, patch
++
++import pytest
++from cortex_cli.cmd_index import cmd_index_stats
++
++@pytest.fixture
++def mock_get_index_info():
++    with patch('cortex_cli.cmd_index.get_index_info') as mock:
++        yield mock
++
++def test_cmd_index_stats_json_output(mock_get_index_info):
++    mock_get_index_info.return_value = {
++        "metadata": {
++            "provider": "test_provider",
++            "model": "test_model",
++            "dimensions": 128,
++            "actual_dimensions": 128,
++            "num_documents": 10,
++        },
++        "dimensions": {
++            "embeddings": 128,
++            "faiss": 128,
++            "detected": 128,
++        },
++        "index_type": "faiss",
++        "faiss_vector_count": 10,
++    }
++
++    args = argparse.Namespace(index_dir="/fake/dir", json=True)
++
++    with patch('builtins.print') as mock_print:
++        cmd_index_stats(args)
++        mock_print.assert_called_once()
++
++def test_cmd_index_stats_human_readable_output(mock_get_index_info):
++    mock_get_index_info.return_value = {
++        "metadata": {
++            "provider": "test_provider",
++            "model": "test_model",
++            "dimensions": 128,
++            "actual_dimensions": 128,
++            "num_documents": 10,
++        },
++        "dimensions": {
++            "embeddings": 128,
++            "faiss": 128,
++            "detected": 128,
++        },
++        "index_type": "faiss",
++        "faiss_vector_count": 10,
++    }
++
++    args = argparse.Namespace(index_dir="/fake/dir", json=False)
++
++    with patch('builtins.print') as mock_print:
++        cmd_index_stats(args)
++        assert mock_print.call_count > 1
