@@ -778,147 +778,6 @@ def _run_index(
         sys.exit(1)
 
 
-<<<<<<< HEAD
-=======
-def _run_search(
-    query: str,
-    top_k: int = 10,
-    tenant_id: str = "default",
-    fusion: str = "rrf",
-    debug: bool = False,
-    json_output: bool = False,
-) -> None:
-    """
-    Search indexed emails with natural language queries.
-
-    Supports Hybrid Search (Vector + FTS + RRF/Weighted).
-    """
-    import json
-
-    if not json_output:
-        _print_banner()
-        print(f"{_colorize('▶ SEARCH', 'bold')}\n")
-        print(f"  Query:   {_colorize(query, 'cyan')}")
-        print(f"  Top K:   {_colorize(str(top_k), 'dim')}")
-        print(f"  Fusion:  {_colorize(fusion, 'dim')}")
-        if debug:
-            print(f"  {_colorize('DEBUG MODE', 'yellow')}")
-        print()
-
-    try:
-        from cortex.retrieval.hybrid_search import (
-            KBSearchInput as _KBSearchInput,  # type: ignore[import]
-        )
-        from cortex.retrieval.hybrid_search import (
-            tool_kb_search_hybrid as _tool_kb_search_hybrid,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
-        )
-
-        _KBSearchInput = cast(Any, _KBSearchInput)
-        _tool_kb_search_hybrid = cast(Any, _tool_kb_search_hybrid)
-        KBSearchInput: type[Any] = cast(type[Any], _KBSearchInput)
-        tool_kb_search_hybrid: Callable[[Any], Any] = cast(
-            Callable[[Any], Any], _tool_kb_search_hybrid
-        )
-
-        request: Any = KBSearchInput(
-            tenant_id=tenant_id,
-            user_id="cli-user",
-            query=query,
-            k=top_k,
-            fusion_method=fusion,  # type: ignore
-        )
-
-        if not json_output:
-            print(f"  {_colorize('⏳', 'yellow')} Searching...\n")
-
-        result: Any = tool_kb_search_hybrid(request)
-
-        if result.is_err():
-            error = result.unwrap_err()
-            if json_output:
-                print(json.dumps({"error": error.message, "success": False}))
-            else:
-                print(f"\n  {_colorize('ERROR:', 'red')} {error.message}")
-            sys.exit(1)
-
-        results = result.unwrap()
-
-        if json_output:
-            # Convert results to JSON-serializable format
-            output: dict[str, Any] = {
-                "success": True,
-                "query": query,
-                "results": (
-                    [r.model_dump() for r in results.results]
-                    if hasattr(results, "results")
-                    else []
-                ),
-                "total": len(results.results) if hasattr(results, "results") else 0,
-            }
-            print(json.dumps(output, indent=2, default=str))
-        else:
-            if hasattr(results, "results") and results.results:
-                print(
-                    f"  {_colorize('✓', 'green')} Found {len(results.results)} result(s):\n"
-                )
-                for i, r in enumerate(results.results[:top_k], 1):
-                    score = getattr(r, "score", 0)
-                    # P1 Fix: Use correct field names from SearchResultItem
-                    content = getattr(r, "content", "") or ""
-                    highlights = getattr(r, "highlights", [])
-                    text = (
-                        content[:200]
-                        if content
-                        else (highlights[0][:200] if highlights else "")
-                    )
-                    chunk_id = getattr(r, "chunk_id", None) or getattr(
-                        r, "message_id", "unknown"
-                    )
-                    chunk_type = (
-                        r.metadata.get("chunk_type", "unknown")
-                        if hasattr(r, "metadata")
-                        else "unknown"
-                    )
-
-                    # Score display
-                    score_str = f"{score:.4f}"
-                    if debug:
-                        fusion_score = getattr(r, "fusion_score", None) or 0
-                        vec_score = getattr(r, "vector_score", None) or 0
-                        lex_score = getattr(r, "lexical_score", None) or 0
-                        score_str += f" (F:{fusion_score:.3f} V:{vec_score:.3f} L:{lex_score:.3f})"
-
-                    print(
-                        f"  {_colorize(f'[{i}]', 'bold')} Score: {_colorize(score_str, 'cyan')}"
-                    )
-                    print(
-                        f"      Source: {_colorize(str(chunk_id), 'dim')} ({chunk_type})"
-                    )
-                    print(f"      {text.replace(chr(10), ' ')}...")
-                    if debug and highlights:
-                        print(f"      Highlights: {highlights[:2]}")
-                    print()
-            else:
-                print(f"  {_colorize('○', 'yellow')} No results found for: {query}")
-            print()
-
-    except ImportError as e:
-        msg = f"Could not load search module: {e}"
-        if json_output:
-            print(json.dumps({"error": msg, "success": False}))
-        else:
-            print(f"\n  {_colorize('ERROR:', 'red')} {msg}")
-            print(f"  Make sure you have run {_colorize('cortex index', 'cyan')} first")
-        sys.exit(1)
-    except Exception as e:
-        if json_output:
-            print(json.dumps({"error": str(e), "success": False}))
-        else:
-            print(f"\n  {_colorize('ERROR:', 'red')} {e}")
-        sys.exit(1)
->>>>>>> origin/main
-
-
 # =============================================================================
 # RAG COMMANDS: answer, draft, summarize
 # =============================================================================
@@ -952,19 +811,17 @@ def _run_answer(
         answer = response.get("answer")
 
         if json_output:
-            print(
-                json.dumps(answer if answer else {}, indent=2, default=str)
-            )
+            print(json.dumps(answer if answer else {}, indent=2, default=str))
         else:
             if answer:
                 print(f"\n{_colorize('ANSWER:', 'bold')}")
                 print(f"{answer.get('answer_markdown', '')}\n")
 
-                evidence = answer.get('evidence', [])
+                evidence = answer.get("evidence", [])
                 if evidence:
                     print(f"{_colorize('SOURCES:', 'dim')}")
                     for i, ev in enumerate(evidence, 1):
-                        snippet = ev.get('snippet') or ev.get('text') or ""
+                        snippet = ev.get("snippet") or ev.get("text") or ""
                         print(f"  {i}. {snippet}")
             else:
                 print(f"  {_colorize('⚠', 'yellow')} No answer generated.")
@@ -1213,7 +1070,7 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     from cortex_cli.cmd_patch import setup_patch_parser
     from cortex_cli.cmd_schema import setup_schema_parser
     from cortex_cli.cmd_test import setup_test_parser
-    from cortex_cli.config import _config
+    from cortex_cli._config_helpers import _config
 
     setup_backfill_parser(subparsers)
     setup_db_parser(subparsers)
@@ -1221,12 +1078,10 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     setup_s3_parser(subparsers)
     setup_maintenance_parser(subparsers)
     setup_test_parser(subparsers)
-<<<<<<< HEAD
     setup_search_parser(subparsers)
-=======
     setup_grounding_parser(subparsers)
     setup_safety_parser(subparsers)
-    setup_queue_parser(subparsers)x_parser(subparsers)
+    setup_queue_parser(subparsers)
     setup_login_parser(subparsers)
     setup_typer_command(
         subparsers, "graph", graph_app, help_text="Knowledge Graph commands"
@@ -1236,8 +1091,6 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     setup_schema_parser(subparsers)
     if "sqlite" not in _config.database.url:
         setup_test_parser(subparsers)
->>>>>>> origin/main
->>>>>>> origin/main
 
     # Parse arguments
     parsed_args = parser.parse_args(args)
@@ -1379,75 +1232,6 @@ Examples:
         help="Output results as JSON",
     )
     pipeline_parser.set_defaults(func=lambda args: _run_pipeline(args))
-
-    # Index command
-    index_parser = subparsers.add_parser(
-        "index",
-        help="Build/rebuild search index with embeddings",
-        description="""
-Build or rebuild the search index.
-
-This command:
-  1. Scans conversation folders for content
-  2. Chunks text into embedding-friendly segments
-  3. Generates embeddings using the configured provider
-  4. Saves index for fast retrieval
-
-Uses parallel workers for faster processing.
-        """,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    index_parser.add_argument(
-        "--root",
-        "-r",
-        default=".",
-        metavar="DIR",
-        help="Root directory containing conversations (default: current)",
-    )
-    index_parser.add_argument(
-        "--provider",
-        type=str,
-        default="digitalocean",
-        choices=["digitalocean"],
-        help="Embedding provider",
-    )
-    index_parser.add_argument(
-        "--workers",
-        "-w",
-        type=int,
-        default=4,
-        metavar="N",
-        help="Number of parallel workers (default: 4)",
-    )
-    index_parser.add_argument(
-        "--limit",
-        "-l",
-        type=int,
-        default=None,
-        metavar="N",
-        help="Limit number of conversations to index (for testing)",
-    )
-    index_parser.add_argument(
-        "--force",
-        "-f",
-        action="store_true",
-        help="Force full reindex (ignore existing)",
-    )
-    index_parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Output results as JSON",
-    )
-    index_parser.set_defaults(
-        func=lambda args: _run_index(
-            root=args.root,
-            provider=args.provider,
-            workers=args.workers,
-            limit=args.limit,
-            force=args.force,
-            json_output=args.json,
-        )
-    )
 
     # Validate command
     validate_parser = subparsers.add_parser(

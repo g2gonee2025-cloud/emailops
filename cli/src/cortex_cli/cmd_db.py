@@ -84,39 +84,17 @@ def cmd_db_stats(args: argparse.Namespace) -> None:
         with_emb = stats.get("Chunks (With Embedding)", 0)
         if isinstance(total, int) and isinstance(with_emb, int) and total > 0:
             pct = (with_emb / total) * 100
-            print(
-                f"\n  Embedding Coverage: {_colorize(f'{pct:.1f}%', 'green' if pct > 90 else 'yellow')}"
-            )
+            if not args.json:
+                print(
+                    f"\n  Embedding Coverage: {_colorize(f'{pct:.1f}%', 'green' if pct > 90 else 'yellow')}"
+                )
 
     except ImportError as e:
-        console.print(f"[red]Error:[/] Could not import database modules: {e}")
+        if console:
+            console.print(f"[red]Error:[/] Could not import database modules: {e}")
+        else:
+            print(f"Error: Could not import database modules: {e}")
         sys.exit(1)
-
-    with Session(engine) as session:
-        queries = {
-            "Conversations": "SELECT COUNT(*) FROM conversations",
-            "Attachments": "SELECT COUNT(*) FROM attachments",
-            "Chunks": "SELECT COUNT(*) FROM chunks",
-            "Entity Nodes": "SELECT COUNT(*) FROM entity_nodes",
-            "Entity Edges": "SELECT COUNT(*) FROM entity_edges",
-        }
-        stats = {
-            label: session.execute(text(query)).scalar_one_or_none() or 0
-            for label, query in queries.items()
-        }
-
-    if args.json:
-        import json
-
-        print(json.dumps(stats, indent=2))
-        return
-
-    table = Table(title="Database Statistics", box=box.ROUNDED)
-    table.add_column("Metric", style="cyan")
-    table.add_column("Count", style="bold", justify="right")
-    for k, v in stats.items():
-        table.add_row(k, f"{v:,}")
-    console.print(table)
 
 
 def cmd_db_backfill_graph(args: argparse.Namespace) -> None:

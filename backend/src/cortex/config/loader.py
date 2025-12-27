@@ -94,39 +94,8 @@ class EmailOpsConfig(BaseModel):
 
     def save(self, path: Path) -> None:
         """Save the configuration to a file."""
-
-        def convert_for_json(obj: Any) -> Any:
-            """Recursively convert objects for JSON serialization."""
-            if isinstance(obj, Path):
-                return str(obj)
-            elif isinstance(obj, set):
-                obj_set = cast(set[Any], obj)
-                converted = [convert_for_json(item) for item in obj_set]
-                try:
-                    return sorted(converted)
-                except TypeError:
-                    return sorted(
-                        converted,
-                        key=lambda v: (
-                            json.dumps(v, sort_keys=True)
-                            if isinstance(v, (dict, list))
-                            else repr(v)
-                        ),
-                    )
-            elif isinstance(obj, dict):
-                obj_dict = cast(Dict[Any, Any], obj)
-                return {str(k): convert_for_json(v) for k, v in obj_dict.items()}
-            elif isinstance(obj, list):
-                obj_list = cast(List[Any], obj)
-                return [convert_for_json(item) for item in obj_list]
-            else:
-                return obj
-
         with path.open("w") as f:
-            # Use model_dump for Pydantic models
-            data = self.model_dump()
-            data = convert_for_json(data)
-            json.dump(data, f, indent=2, default=str)
+            f.write(self.model_dump_json(indent=2))
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization/GUI display."""
@@ -198,9 +167,6 @@ class EmailOpsConfig(BaseModel):
         os.environ["INDEX_DIRNAME"] = self.directories.index_dirname
         os.environ["CHUNK_DIRNAME"] = self.directories.chunk_dirname
 
-        # GCP region settings
-        os.environ["GCP_REGION"] = self.gcp.gcp_region
-
         # Storage settings
         os.environ["S3_ENDPOINT"] = self.storage.endpoint_url
         os.environ["S3_BUCKET_RAW"] = self.storage.bucket_raw
@@ -213,33 +179,6 @@ class EmailOpsConfig(BaseModel):
         # System settings
         os.environ["LOG_LEVEL"] = self.system.log_level
         os.environ["OUTLOOKCORTEX_DB_URL"] = self.database.url
-        # Persist default configuration if no config file existed
-        try:
-            cfg_path_attr = (
-                getattr(self, "path", None)
-                or getattr(self, "config_path", None)
-                or getattr(self, "config_file", None)
-            )
-            if cfg_path_attr:
-                cfg_path = Path(cfg_path_attr)
-                if not cfg_path.exists():
-                    if hasattr(self, "save") and callable(getattr(self, "save")):
-                        self.save(cfg_path)
-                    else:
-                        cfg_path.parent.mkdir(parents=True, exist_ok=True)
-                        if hasattr(self, "to_json") and callable(
-                            getattr(self, "to_json")
-                        ):
-                            cfg_path.write_text(self.to_json(), encoding="utf-8")
-                        elif hasattr(self, "to_dict") and callable(
-                            getattr(self, "to_dict")
-                        ):
-                            cfg_path.write_text(
-                                json.dumps(self.to_dict(), indent=2), encoding="utf-8"
-                            )
-        except Exception:
-            # Do not block startup on persistence errors
-            pass
 
         # Credential file discovery removed
         # (Vertex AI dependencies removed)
@@ -267,24 +206,7 @@ class EmailOpsConfig(BaseModel):
         try:
             with path.open("r") as f:
                 data = json.load(f)
-
-            # Override with environment variables (canonical OUTLOOKCORTEX_ prefix)
-            for key in list(data.keys()):
-                canonical_env = f"OUTLOOKCORTEX_{key.upper()}"
-                legacy_env = f"EMAILOPS_{key.upper()}"
-
-                if canonical_env in os.environ:
-                    data[key] = os.environ[canonical_env]
-                elif legacy_env in os.environ:
-                    logger.warning(
-                        "Deprecated env var '%s' found. Use '%s' instead.",
-                        legacy_env,
-                        canonical_env,
-                    )
-                    data[key] = os.environ[legacy_env]
-
             return cls.model_validate(data)
-
         except json.JSONDecodeError:
             logger.warning(
                 "Corrupt JSON file at %s. Renaming and recreating with defaults.", path
