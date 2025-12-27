@@ -11,8 +11,10 @@ import json
 import logging
 import re
 import threading
+import warnings
 from typing import Any, Dict, List, Optional, Type, TypeVar
 
+from cortex.common.exceptions import LLMOutputSchemaError
 from cortex.llm.client import complete_json
 from cortex.observability import trace_operation
 from cortex.prompts import get_prompt
@@ -72,23 +74,23 @@ def attempt_llm_repair(
     """
     # Format schema for repair prompt
     schema_json = target_model.model_json_schema()
-
-    # Format errors for repair prompt
-    errors_text = (
-        "\n".join(f"- {err}" for err in validation_errors)
-        or "- Unknown validation error"
-    )
-
-    full_prompt = get_prompt(
-        "GUARDRAILS_REPAIR",
-        error=errors_text,
-        invalid_json=json.dumps(invalid_json, indent=2),
-        target_schema=json.dumps(schema_json, indent=2),
-        validation_errors=errors_text,
-    )
-    full_prompt += "\n\nRespond with ONLY valid JSON that satisfies the schema."
+    current_validation_errors = validation_errors[:]
 
     for attempt in range(max_attempts):
+        # Format errors for repair prompt
+        errors_text = (
+            "\n".join(f"- {err}" for err in current_validation_errors)
+            or "- Unknown validation error"
+        )
+
+        full_prompt = get_prompt(
+            "GUARDRAILS_REPAIR",
+            error=errors_text,
+            invalid_json=json.dumps(invalid_json, indent=2),
+            target_schema=json.dumps(schema_json, indent=2),
+            validation_errors=errors_text,
+        )
+        full_prompt += "\n\nRespond with ONLY valid JSON that satisfies the schema."
         try:
             # Use JSON mode for repair
             repaired = complete_json(
@@ -111,7 +113,7 @@ def attempt_llm_repair(
                 extra={"errors": [str(err) for err in e.errors()]},
             )
             # Update errors for next attempt
-            validation_errors = [str(err) for err in e.errors()]
+            current_validation_errors = [str(err) for err in e.errors()]
         except Exception as e:
             logger.warning(f"Repair attempt {attempt + 1} failed with error: {e}")
 
@@ -126,6 +128,7 @@ def validate_with_repair(
     raw_output: str,
     target_model: Type[T],
     correlation_id: str,
+    max_attempts: int = 1,
 ) -> T:
     """
     Validate LLM output with single repair attempt.
@@ -147,8 +150,6 @@ def validate_with_repair(
     Raises:
         LLMOutputSchemaError: If validation fails after repair
     """
-    from cortex.common.exceptions import LLMOutputSchemaError
-
     # Step 1: Parse JSON
     try:
         parsed = json.loads(raw_output)
@@ -180,7 +181,7 @@ def validate_with_repair(
             invalid_json=parsed,
             target_model=target_model,
             validation_errors=validation_errors,
-            max_attempts=1,  # Blueprint specifies single attempt
+            max_attempts=max_attempts,
         )
 
         if repair_result.success and repair_result.repaired_json:
@@ -208,7 +209,7 @@ def validate_with_repair(
 # -----------------------------------------------------------------------------
 
 
-class GuardrailsClient:
+class GuardrailsClient:  # DEPRECATED
     """
     Client for interacting with guardrails.
 
@@ -220,6 +221,12 @@ class GuardrailsClient:
     Note: For new code, prefer using validate_with_repair() directly.
     """
 
+    def __init__(self):
+        """Initialize the client and warn about its deprecation."""
+        warnings.warn(
+            "GuardrailsClient is deprecated.", DeprecationWarning, stacklevel=2
+        )
+
     def validate_output(
         self,
         output: Any,
@@ -228,75 +235,46 @@ class GuardrailsClient:
         correlation_id: Optional[str] = None,
     ) -> Optional[T]:
         """
-        Validate LLM output against schema with repair attempts.
+        Validate LLM output against a schema, with repair attempts.
+
+        This method is a wrapper around `validate_with_repair` and is maintained
+        for backward compatibility. It catches all exceptions and returns None
+        on failure.
 
         Args:
-            output: The output to validate (dict, string, or model instance)
-            schema: The Pydantic model to validate against
-            max_retries: Number of repair attempts (default 1)
-            correlation_id: Optional correlation ID for logging
+            output: The output to validate (dict, string, or model instance).
+            schema: The Pydantic model to validate against.
+            max_retries: Number of repair attempts.
+            correlation_id: Optional correlation ID for logging.
 
         Returns:
-            Validated model instance or None if validation fails
+            A validated model instance, or None if validation fails.
         """
-        try:
-            # If already validated instance
-            if isinstance(output, schema):
-                return output
+        if isinstance(output, schema):
+            return output
 
-            # If dict, validate directly
-            if isinstance(output, dict):
-                try:
-                    return schema.model_validate(output)
-                except ValidationError as e:
-                    if max_retries > 0:
-                        return self._attempt_repair(output, schema, e, max_retries)
-                    return None
-
-            # If string, try to parse and validate
-            if isinstance(output, str):
-                try:
-                    return validate_with_repair(
-                        output, schema, correlation_id or "unknown"
-                    )
-                except Exception as e:
-                    logger.warning(f"String validation failed: {e}")
-                    return None
-
-            # Try generic validation
-            return schema.model_validate(output)
-
-        except (ValidationError, ValueError, TypeError) as e:
-            logger.warning(f"Validation failed with specific error: {e}")
-            return None
-        except Exception as e:
-            logger.warning(f"Validation failed: {e}")
-            return None
-
-    def _attempt_repair(
-        self,
-        invalid_data: Dict[str, Any],
-        schema: Type[T],
-        error: ValidationError,
-        retries: int,
-    ) -> Optional[T]:
-        """Attempt to repair invalid data."""
-        validation_errors = [str(err) for err in error.errors()]
-
-        repair_result = attempt_llm_repair(
-            invalid_json=invalid_data,
-            target_model=schema,
-            validation_errors=validation_errors,
-            max_attempts=retries,
-        )
-
-        if repair_result.success and repair_result.repaired_json:
+        raw_output = ""
+        if isinstance(output, str):
+            raw_output = output
+        elif isinstance(output, dict):
+            raw_output = json.dumps(output)
+        else:
             try:
-                return schema.model_validate(repair_result.repaired_json)
-            except ValidationError:
+                raw_output = json.dumps(output)
+            except (TypeError, ValueError):
+                logger.warning(f"Could not serialize output of type {type(output)}")
                 return None
 
-        return None
+        try:
+            return validate_with_repair(
+                raw_output,
+                schema,
+                correlation_id=correlation_id or "unknown",
+                max_attempts=max_retries,
+            )
+        except LLMOutputSchemaError as e:
+            logger.warning(f"Validation failed after repair: {e.details}")
+            return None
 
 
 # Singleton instance for convenience
@@ -304,8 +282,11 @@ _guardrails_client: Optional[GuardrailsClient] = None
 _client_lock = threading.Lock()
 
 
-def get_guardrails_client() -> GuardrailsClient:
+def get_guardrails_client() -> GuardrailsClient:  # DEPRECATED
     """Get or create the guardrails client singleton."""
+    warnings.warn(
+        "get_guardrails_client is deprecated.", DeprecationWarning, stacklevel=2
+    )
     global _guardrails_client
     if _guardrails_client is None:
         with _client_lock:
