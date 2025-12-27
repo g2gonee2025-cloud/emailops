@@ -114,12 +114,16 @@ def build_answer_graph() -> StateGraph:
     return workflow
 
 
+# Max iterations for improvement loop
+MAX_ITERATIONS = 3
+
+
 def should_improve(state: DraftEmailState) -> str:
     """Determine if draft needs improvement."""
     critique = state.critique
     iteration = state.iteration_count
 
-    if iteration >= 3:  # Max iterations
+    if iteration >= MAX_ITERATIONS:  # Max iterations
         return "audit"
 
     if not critique:
@@ -172,22 +176,57 @@ def build_draft_graph() -> StateGraph:
     workflow.add_node("handle_error", node_handle_error)
 
     # Edges
-    # Flow: load_thread -> prepare_query -> retrieve ...
     workflow.set_entry_point("load_thread")
-    workflow.add_edge("load_thread", "prepare_query")
-    workflow.add_edge("prepare_query", "retrieve")
-    workflow.add_edge("retrieve", "assemble")
-    workflow.add_edge("assemble", "draft_initial")
-    workflow.add_edge("draft_initial", "critique")
 
-    # Conditional edge for loop
+    # Define edges with error handling
+    workflow.add_conditional_edges(
+        "load_thread",
+        _check_error,
+        {"continue": "prepare_query", "handle_error": "handle_error"},
+    )
+    workflow.add_conditional_edges(
+        "prepare_query",
+        _check_error,
+        {"continue": "retrieve", "handle_error": "handle_error"},
+    )
+    workflow.add_conditional_edges(
+        "retrieve",
+        _check_error,
+        {"continue": "assemble", "handle_error": "handle_error"},
+    )
+    workflow.add_conditional_edges(
+        "assemble",
+        _check_error,
+        {"continue": "draft_initial", "handle_error": "handle_error"},
+    )
+    workflow.add_conditional_edges(
+        "draft_initial",
+        _check_error,
+        {"continue": "critique", "handle_error": "handle_error"},
+    )
+
+    # Conditional edge for improvement loop
     workflow.add_conditional_edges(
         "critique", should_improve, {"improve": "improve", "audit": "audit"}
     )
 
-    workflow.add_edge("improve", "critique")
-    workflow.add_edge("audit", "select_attachments")
-    workflow.add_edge("select_attachments", END)
+    workflow.add_conditional_edges(
+        "improve",
+        _check_error,
+        {"continue": "critique", "handle_error": "handle_error"},
+    )
+    workflow.add_conditional_edges(
+        "audit",
+        _check_error,
+        {"continue": "select_attachments", "handle_error": "handle_error"},
+    )
+    workflow.add_conditional_edges(
+        "select_attachments",
+        _check_error,
+        {"continue": END, "handle_error": "handle_error"},
+    )
+
+    workflow.add_edge("handle_error", END)
 
     return workflow
 
@@ -216,11 +255,31 @@ def build_summarize_graph() -> StateGraph:
 
     # Edges
     workflow.set_entry_point("load_thread")
-    workflow.add_edge("load_thread", "analyst")
-    workflow.add_edge("analyst", "critic")
-    workflow.add_edge("critic", "improver")
-    workflow.add_edge("improver", "finalize")
-    workflow.add_edge("finalize", END)
+    workflow.add_conditional_edges(
+        "load_thread",
+        _check_error,
+        {"continue": "analyst", "handle_error": "handle_error"},
+    )
+    workflow.add_conditional_edges(
+        "analyst",
+        _check_error,
+        {"continue": "critic", "handle_error": "handle_error"},
+    )
+    workflow.add_conditional_edges(
+        "critic",
+        _check_error,
+        {"continue": "improver", "handle_error": "handle_error"},
+    )
+    workflow.add_conditional_edges(
+        "improver",
+        _check_error,
+        {"continue": "finalize", "handle_error": "handle_error"},
+    )
+    workflow.add_conditional_edges(
+        "finalize", _check_error, {"continue": END, "handle_error": "handle_error"}
+    )
+
+    workflow.add_edge("handle_error", END)
 
     return workflow
 

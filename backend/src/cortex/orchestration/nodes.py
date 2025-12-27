@@ -546,6 +546,9 @@ def _extract_evidence_from_answer(
     return evidence[:5]  # Limit to top 5 evidence items
 
 
+from cortex.audit import log_audit_event
+
+
 def node_handle_error(state: Dict[str, Any]) -> Dict[str, Any]:
     """
     Handle errors in graph execution.
@@ -555,8 +558,6 @@ def node_handle_error(state: Dict[str, Any]) -> Dict[str, Any]:
     * logs via observability.get_logger
     * sets state.error
     """
-    from cortex.audit import log_audit_event
-
     error = state.get("error", "Unknown error")
     obs_logger = get_logger(__name__)
 
