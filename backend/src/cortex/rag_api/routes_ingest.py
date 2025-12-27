@@ -362,7 +362,7 @@ def _process_push_ingest(
     from cortex.embeddings.client import EmbeddingsClient
     from cortex.ingestion.models import IngestJobRequest
     from cortex.ingestion.text_preprocessor import get_text_preprocessor
-    from cortex.ingestion.writer import DBWriter, ChunkRecord, ensure_chunk_metadata
+    from cortex.ingestion.writer import ChunkRecord, DBWriter, ensure_chunk_metadata
     from sqlalchemy import delete
 
     config = get_config()

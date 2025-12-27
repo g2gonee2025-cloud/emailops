@@ -5,8 +5,8 @@ Provides a development-only login endpoint that issues JWTs.
 In production, this would be replaced by an external IdP (Keycloak, Auth0, etc.)
 """
 
-from datetime import datetime, timedelta
 import secrets
+from datetime import datetime, timedelta
 from typing import Any
 
 import jwt

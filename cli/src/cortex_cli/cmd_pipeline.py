@@ -84,7 +84,9 @@ def cmd_pipeline_run(
                 f"\n[yellow]⚠ {stats.folders_failed} folder(s) failed to enqueue. Run with --verbose for details.[/yellow]"
             )
         elif stats.folders_processed > 0:
-            console.print(f"\n[green]✓ {stats.folders_processed} ingestion job(s) enqueued successfully![/green]")
+            console.print(
+                f"\n[green]✓ {stats.folders_processed} ingestion job(s) enqueued successfully![/green]"
+            )
             console.print("[dim]  Run worker processes to handle the jobs.[/dim]")
         else:
             console.print("\n[yellow]No new folders found to process.[/yellow]")

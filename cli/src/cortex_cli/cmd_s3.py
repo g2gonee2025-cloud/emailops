@@ -187,6 +187,7 @@ def cmd_s3_list(args: argparse.Namespace) -> None:
 def cmd_s3_ingest(args: argparse.Namespace) -> None:
     """Ingest conversations from S3/Spaces."""
     import json
+
     import requests
 
     try:
@@ -438,6 +439,7 @@ def cmd_s3_validate(args: argparse.Namespace) -> None:
 def cmd_s3_status(args: argparse.Namespace) -> None:
     """Check the status of an S3 ingestion job."""
     import json
+
     import requests
 
     try:

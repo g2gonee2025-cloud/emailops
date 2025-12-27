@@ -3,8 +3,6 @@ import os
 from typing import Any, Dict, List
 
 from cortex.config.loader import get_config
-from fastapi import APIRouter
-from pydantic import BaseModel
 
 # Import new health check functions
 from cortex.health import (
@@ -14,6 +12,8 @@ from cortex.health import (
     check_redis,
     check_reranker,
 )
+from fastapi import APIRouter
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 logger = logging.getLogger(__name__)

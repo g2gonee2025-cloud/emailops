@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import contextlib
@@ -21,10 +20,10 @@ from typing import Any, Generic, TypeVar
 
 import numpy as np
 import typer
+from cortex.config.loader import EmailOpsConfig
 from rich import print
 from rich.table import Table
 
-from cortex.config.loader import EmailOpsConfig
 from ._config_helpers import resolve_index_dir, resolve_sender
 
 # Assuming these are or will be in the cortex_cli package
@@ -41,18 +40,27 @@ except ImportError:
         "[bold yellow]Warning:[/bold yellow] Could not import backend LLM modules. Using dummy functions."
     )
     T = TypeVar("T")
+
     def _dummy_embed(texts: list[str], provider: str = "") -> np.ndarray:
         print(f"DUMMY: Embedding {len(texts)} texts with {provider}")
         return np.random.rand(len(texts), 768).astype("float32")
 
     def _dummy_complete_text(
-        system: str, user: str, max_output_tokens: int, temperature: float, stop_sequences: list[str]
+        system: str,
+        user: str,
+        max_output_tokens: int,
+        temperature: float,
+        stop_sequences: list[str],
     ) -> str:
         print("DUMMY: Completing text")
         return "This is a dummy response."
 
     def _dummy_complete_json(
-        system: str, user: str, max_output_tokens: int, temperature: float, response_schema: dict
+        system: str,
+        user: str,
+        max_output_tokens: int,
+        temperature: float,
+        response_schema: dict,
     ) -> str:
         print("DUMMY: Completing JSON")
         return json.dumps({"email_draft": "Dummy email draft.", "citations": []})
@@ -87,6 +95,7 @@ except ImportError:
     # Dummy fallbacks for core functions to allow basic CLI to load
     INDEX_DIRNAME_DEFAULT = "_index"
     T = TypeVar("T")
+
     def read_mapping(path: Path) -> list:
         return []
 
@@ -130,9 +139,12 @@ except ImportError:
         class DummyArray:
             def __enter__(self):
                 return np.array([])
+
             def __exit__(self, exc_type, exc_val, exc_tb):
                 pass
+
         return DummyArray()
+
 
 logger = logging.getLogger(__name__)
 # Python <3.11 compatibility: datetime.UTC
@@ -224,28 +236,65 @@ EMAIL_PATTERN = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
 # P0-7 FIX: Comprehensive prompt injection patterns (based on research + OWASP)
 INJECTION_PATTERNS = [
     # Classic jailbreak attempts
-    "ignore previous instruction", "disregard earlier instruction", "override these rules",
-    "forget all previous", "disregard all prior", "new instructions:", "updated instructions:",
+    "ignore previous instruction",
+    "disregard earlier instruction",
+    "override these rules",
+    "forget all previous",
+    "disregard all prior",
+    "new instructions:",
+    "updated instructions:",
     # System prompt manipulation
-    "system prompt:", "system:", "assistant:", "### instruction", "### system",
+    "system prompt:",
+    "system:",
+    "assistant:",
+    "### instruction",
+    "### system",
     # Identity confusion
-    "you are chatgpt", "you are now", "act as", "pretend you are", "as an ai language model",
+    "you are chatgpt",
+    "you are now",
+    "act as",
+    "pretend you are",
+    "as an ai language model",
     "as a large language model",
     # Code execution attempts
-    "run code:", "execute:", "eval(", "exec(", "import os", "import sys", "subprocess", "__import__",
+    "run code:",
+    "execute:",
+    "eval(",
+    "exec(",
+    "import os",
+    "import sys",
+    "subprocess",
+    "__import__",
     # Mode switching
-    "developer mode", "jailbreak", "debug mode", "admin mode", "god mode", "dan mode",
+    "developer mode",
+    "jailbreak",
+    "debug mode",
+    "admin mode",
+    "god mode",
+    "dan mode",
     # Prompt leaking
-    "show me your prompt", "what are your instructions", "reveal your system prompt",
+    "show me your prompt",
+    "what are your instructions",
+    "reveal your system prompt",
     "print your instructions",
     # Context injection
-    "{{", "${", "<!--", "<script", "javascript:",
+    "{{",
+    "${",
+    "<!--",
+    "<script",
+    "javascript:",
     # Role confusion
-    "user:", "human:", "assistant:",
+    "user:",
+    "human:",
+    "assistant:",
     # Base64/encoding tricks
-    "base64", "decode(", "atob(",
+    "base64",
+    "decode(",
+    "atob(",
     # Instruction termination
-    "stop output", "end instructions", "ignore above",
+    "stop output",
+    "end instructions",
+    "ignore above",
 ]
 
 # Compiled regex patterns for performance
@@ -262,6 +311,8 @@ AUDIT_RUBRIC = {
     "citation_quality": "Citations present for facts and are appropriate in scope.",
 }
 AUDIT_TARGET_MIN_SCORE = int(os.getenv("AUDIT_TARGET_MIN_SCORE", "8"))
+
+
 # ------------------------------ Utilities ------------------------------ #
 def _parse_date_any(date_str: str | None) -> datetime | None:
     if not date_str:
@@ -279,6 +330,7 @@ def _parse_date_any(date_str: str | None) -> datetime | None:
         return dt if dt.tzinfo else dt.replace(tzinfo=UTC)
     except Exception:
         return None
+
 
 def _ensure_embeddings_ready(
     ix_dir: Path, mapping: list[dict[str, Any]]
@@ -313,11 +365,14 @@ def _ensure_embeddings_ready(
     except Exception as e:
         logger.warning(
             "Failed to load embeddings from %s: %s (index may need rebuild)",
-            emb_path, e
+            emb_path,
+            e,
         )
         import gc
+
         gc.collect()
         return None
+
 
 def _normalize_email_field(v: Any) -> str:
     if not v:
@@ -332,6 +387,7 @@ def _normalize_email_field(v: Any) -> str:
         return ""
     _, addr = parseaddr(str(v))
     return addr.strip().lower()
+
 
 def _window_text_around_query(
     text: str, query: str, window: int = 1000, max_chars: int = 1600
@@ -362,6 +418,7 @@ def _window_text_around_query(
     end = min(len(text), pos + window)
     return text[start:end][:max_chars]
 
+
 def _bidirectional_expand_text(
     text: str, start_pos: int, end_pos: int, max_chars: int
 ) -> str:
@@ -379,6 +436,7 @@ def _bidirectional_expand_text(
         start = max(0, start - (end_pos + expand_right - len(text)))
     return text[start:end]
 
+
 def _hard_strip_injection(text: str) -> str:
     """Heuristic prompt injection scrubber over raw file text slices."""
     if not text:
@@ -389,6 +447,7 @@ def _hard_strip_injection(text: str) -> str:
             continue
         out.append(line)
     return "\n".join(out)
+
 
 def _line_is_injectionish(_l: str) -> bool:
     ll = _l.strip().lower()
@@ -402,6 +461,7 @@ def _line_is_injectionish(_l: str) -> bool:
             ("system:", "assistant:", "user:", "instruction:", "### instruction", "```")
         )
     )
+
 
 # ------------------------------ Filters (typed spec + simple grammar) ------------------------------ #
 @dataclass
@@ -417,10 +477,12 @@ class SearchFilters:
     date_to: datetime | None = None
     exclude_terms: list[str] | None = None
 
+
 _FILTER_TOKEN_RE = re.compile(
     r'(?P<key>subject|from|to|cc|after|before|has|type):(?P<value>"[^"]+"|\S+)',
     re.IGNORECASE,
 )
+
 
 def parse_filter_grammar(raw_query: str) -> tuple[SearchFilters, str]:
     """
@@ -472,6 +534,7 @@ def parse_filter_grammar(raw_query: str) -> tuple[SearchFilters, str]:
             exts = {e.strip().lower().lstrip(".") for e in val.split(",") if e.strip()}
             f.types = (f.types or set()) | exts
     return f, cleaned
+
 
 def apply_filters(mapping: list[dict[str, Any]], f: SearchFilters | None) -> list[int]:
     if not f:
@@ -527,7 +590,10 @@ def apply_filters(mapping: list[dict[str, Any]], f: SearchFilters | None) -> lis
                 continue
         idx.append(i)
     return idx
+
+
 # ------------------------------ Search Logic ------------------------------ #
+
 
 def search(
     ix_dir: Path,
@@ -541,6 +607,7 @@ def search(
     # ... (implementation to be filled in)
     return []
 
+
 # ------------------------------ CLI App ------------------------------ #
 
 app = typer.Typer(
@@ -552,9 +619,13 @@ app = typer.Typer(
 
 @app.command(name="query", help="Run a search query against the index.")
 def query_cmd(
-    query: str = typer.Argument(..., help="Search query with optional filters like 'subject:foo'"),
+    query: str = typer.Argument(
+        ..., help="Search query with optional filters like 'subject:foo'"
+    ),
     k: int = typer.Option(10, "--k", "-k", help="Number of results to return."),
-    provider: str = typer.Option("vertex", help="LLM provider (only vertex is supported)."),
+    provider: str = typer.Option(
+        "vertex", help="LLM provider (only vertex is supported)."
+    ),
     root_dir: Path = typer.Option(
         None,
         "--root",
@@ -564,11 +635,15 @@ def query_cmd(
     ),
     from_filter: str = typer.Option(None, "--from", help="Filter by sender email."),
     to_filter: str = typer.Option(None, "--to", help="Filter by recipient email."),
-    subject_filter: str = typer.Option(None, "--subject", help="Filter by subject line."),
+    subject_filter: str = typer.Option(
+        None, "--subject", help="Filter by subject line."
+    ),
 ):
     ix_dir = resolve_index_dir(root_dir)
     if not ix_dir.exists():
-        err_console.print(f"[bold red]Error:[/bold red] Index not found at '{ix_dir}'. Please run indexing first.")
+        err_console.print(
+            f"[bold red]Error:[/bold red] Index not found at '{ix_dir}'. Please run indexing first."
+        )
         raise typer.Exit(1)
 
     cli_filters = SearchFilters()
@@ -644,11 +719,19 @@ def list_conversations(
             if subj and not by_conv[cid]["subject"]:
                 by_conv[cid]["subject"] = subj
 
-    convs = sorted(list(by_conv.values()), key=lambda r: (r["last_date"] or datetime(1970, 1, 1, tzinfo=UTC)), reverse=True)
+    convs = sorted(
+        list(by_conv.values()),
+        key=lambda r: (r["last_date"] or datetime(1970, 1, 1, tzinfo=UTC)),
+        reverse=True,
+    )
 
     for c in convs:
-        date_str = c['last_date'].strftime('%Y-%m-%d %H:%M') if c['last_date'] else 'N/A'
-        print(f"[cyan]{c['conv_id']}[/cyan] ({c['count']} items) - [bold]{c['subject']}[/bold] (last activity: {date_str})")
+        date_str = (
+            c["last_date"].strftime("%Y-%m-%d %H:%M") if c["last_date"] else "N/A"
+        )
+        print(
+            f"[cyan]{c['conv_id']}[/cyan] ({c['count']} items) - [bold]{c['subject']}[/bold] (last activity: {date_str})"
+        )
 
 
 if __name__ == "__main__":
