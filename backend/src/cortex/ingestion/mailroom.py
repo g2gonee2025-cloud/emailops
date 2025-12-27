@@ -606,7 +606,7 @@ def _extract_graph(
                     {
                         "name": node_name,
                         "type": attrs.get("type", "UNKNOWN"),
-                        "properties": {},
+                        "properties": attrs.get("properties", {}),
                     }
                 )
 

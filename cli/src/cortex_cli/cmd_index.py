@@ -9,7 +9,9 @@ import sys
 from typing import Any
 
 from cortex_cli.style import colorize as _colorize
+
 from .indexing.metadata import get_index_info
+
 
 def cmd_index_stats(args: argparse.Namespace) -> None:
     """Show index statistics."""
@@ -25,23 +27,37 @@ def cmd_index_stats(args: argparse.Namespace) -> None:
             print(f"\n{_colorize('INDEX STATISTICS', 'bold')}\n")
             print(f"  Index Directory: {_colorize(index_dir, 'cyan')}")
 
-            metadata = info.get('metadata', {})
+            metadata = info.get("metadata", {})
             if metadata == "unknown":
                 print(f"  Metadata: {_colorize('Not found', 'red')}")
             else:
-                print(f"  Provider: {_colorize(metadata.get('provider', 'N/A'), 'cyan')}")
+                print(
+                    f"  Provider: {_colorize(metadata.get('provider', 'N/A'), 'cyan')}"
+                )
                 print(f"  Model: {_colorize(metadata.get('model', 'N/A'), 'cyan')}")
-                print(f"  Dimensions: {_colorize(str(metadata.get('dimensions')), 'cyan')}")
-                print(f"  Actual Dimensions: {_colorize(str(metadata.get('actual_dimensions')), 'cyan')}")
-                print(f"  Documents: {_colorize(str(metadata.get('num_documents')), 'cyan')}")
+                print(
+                    f"  Dimensions: {_colorize(str(metadata.get('dimensions')), 'cyan')}"
+                )
+                print(
+                    f"  Actual Dimensions: {_colorize(str(metadata.get('actual_dimensions')), 'cyan')}"
+                )
+                print(
+                    f"  Documents: {_colorize(str(metadata.get('num_documents')), 'cyan')}"
+                )
 
-            dimensions = info.get('dimensions', {})
+            dimensions = info.get("dimensions", {})
             print(f"\n{_colorize('Detected Properties', 'bold')}\n")
             print(f"  Index Type: {_colorize(info.get('index_type', 'N/A'), 'cyan')}")
-            print(f"  Embeddings Dimensions: {_colorize(str(dimensions.get('embeddings')), 'cyan')}")
-            print(f"  FAISS Dimensions: {_colorize(str(dimensions.get('faiss')), 'cyan')}")
-            if 'faiss_vector_count' in info:
-                print(f"  FAISS Vector Count: {_colorize(str(info['faiss_vector_count']), 'cyan')}")
+            print(
+                f"  Embeddings Dimensions: {_colorize(str(dimensions.get('embeddings')), 'cyan')}"
+            )
+            print(
+                f"  FAISS Dimensions: {_colorize(str(dimensions.get('faiss')), 'cyan')}"
+            )
+            if "faiss_vector_count" in info:
+                print(
+                    f"  FAISS Vector Count: {_colorize(str(info['faiss_vector_count']), 'cyan')}"
+                )
 
     except Exception as e:
         print(f"{_colorize('ERROR:', 'red')} {e}")

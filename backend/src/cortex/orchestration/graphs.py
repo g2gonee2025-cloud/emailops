@@ -278,9 +278,7 @@ def build_summarize_graph() -> StateGraph:
     workflow.add_conditional_edges(
         "finalize", _check_error, {"continue": END, "handle_error": "handle_error"}
     )
-
     workflow.add_edge("handle_error", END)
-
     return workflow
 
 

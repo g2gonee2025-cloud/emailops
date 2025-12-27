@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from unittest.mock import Mock, patch
 
+import numpy as np
 import pytest
 
 # Import the correct return types
@@ -124,7 +125,7 @@ class TestHybridSearch:
 
     @patch("cortex.config.loader.get_config")
     @patch("cortex.db.session.SessionLocal")
-    @patch("cortex.retrieval._hybrid_helpers._embedding_client")
+    @patch("cortex.retrieval._hybrid_helpers._get_runtime")
     @patch("cortex.retrieval.fts_search.search_chunks_fts")
     @patch("cortex.retrieval.vector_search.search_chunks_vector")
     @patch("cortex.retrieval.cache.get_cached_query_embedding")
@@ -135,7 +136,7 @@ class TestHybridSearch:
         mock_get_cache,
         mock_search_vector,
         mock_search_fts,
-        mock_client,
+        mock_get_runtime,
         mock_session_cls,
         mock_get_config,
     ):
@@ -157,10 +158,12 @@ class TestHybridSearch:
         # Setup Components
         mock_session = Mock()
         mock_session_cls.return_value.__enter__.return_value = mock_session
+        mock_runtime = Mock()
+        mock_get_runtime.return_value = mock_runtime
 
-        # Setup Cache miss then Embed
+        # Setup Cache miss then Embed via mocked runtime
         mock_get_cache.return_value = None
-        mock_client.embed.return_value = [0.1, 0.2, 0.3]
+        mock_runtime.embed_queries.return_value = np.array([[0.1, 0.2, 0.3]])
 
         # Setup Results with correct types
         # FTS returns ChunkFTSResult
@@ -194,15 +197,17 @@ class TestHybridSearch:
             user_id="u1",
             query="test query",
         )
-        results = tool_kb_search_hybrid(input_args)
+        result = tool_kb_search_hybrid(input_args)
 
         # Verification
+        assert result.is_ok()
+        results = result.unwrap()
         assert len(results.results) == 1
         assert results.results[0].chunk_id == "1"
         assert "rrf" in results.reranker
 
         # Check calls
-        mock_client.embed.assert_called_once_with("test query")
+        mock_runtime.embed_queries.assert_called_once_with(["test query"])
         mock_search_fts.assert_called_once()
         mock_search_vector.assert_called_once()
         mock_timestamps.assert_called_once()
@@ -250,8 +255,10 @@ class TestHybridSearch:
             ),
         )
 
-        with patch("cortex.retrieval._hybrid_helpers._embedding_client") as mock_client:
-            mock_client.embed.return_value = [0.1]
+        with patch("cortex.retrieval._hybrid_helpers._get_runtime") as mock_get_runtime:
+            mock_runtime = Mock()
+            mock_runtime.embed_queries.return_value = np.array([[0.1]])
+            mock_get_runtime.return_value = mock_runtime
             tool_kb_search_hybrid(input_args)
 
         # Verify message search was called
