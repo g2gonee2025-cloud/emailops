@@ -77,6 +77,7 @@ _tracer = None
 _meter = None
 _metric_instruments: dict[tuple[str, str], Any] = {}
 _initialized = False
+_init_lock = threading.Lock()
 
 
 def _init_tracing(service_name: str, sample_rate: float, config: Any) -> Any:
@@ -169,29 +170,41 @@ def _init_structured_logging() -> None:
         return
 
     try:
+        # Standard structlog processing chain
         structlog.configure(
             processors=[
                 structlog.contextvars.merge_contextvars,
-                structlog.processors.add_log_level,
+                structlog.stdlib.add_logger_name,
+                structlog.stdlib.add_log_level,
+                structlog.processors.TimeStamper(fmt="iso", utc=True),
                 structlog.processors.StackInfoRenderer(),
                 structlog.processors.format_exc_info,
-                structlog.processors.TimeStamper(fmt="iso"),
+                # Add trace context to all log records
+                _bind_trace_context,
+                # Use JSON for machine-readable logs
                 structlog.processors.JSONRenderer(),
             ],
-            wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
-            context_class=dict,
-            logger_factory=structlog.PrintLoggerFactory(),
+            logger_factory=structlog.stdlib.LoggerFactory(),
+            wrapper_class=structlog.stdlib.BoundLogger,
             cache_logger_on_first_use=True,
         )
-
         logging.info("✓ Structured logging initialized")
 
     except Exception as e:
         logging.warning("Failed to initialize structured logging: %s", e)
 
 
+def _bind_trace_context(logger, method_name, event_dict):
+    """A structlog processor to inject the current trace context into log records."""
+    ctx = _trace_context.get()
+    if ctx:
+        event_dict["trace_id"] = ctx.get("trace_id")
+        event_dict["span_id"] = ctx.get("span_id")
+    return event_dict
+
+
 def init_observability(
-    service_name: str = "emailops",
+    service_name: str = "cortex",
     enable_tracing: bool = True,
     enable_metrics: bool = True,
     enable_structured_logging: bool = True,
@@ -206,24 +219,25 @@ def init_observability(
     """
     global _tracer, _meter, _initialized
 
-    if _initialized:
-        return
+    with _init_lock:
+        if _initialized:
+            return
 
-    config = get_config()
+        config = get_config()
 
-    # Guardrails for invalid sampling values
-    sample_rate = max(0.0, min(sample_rate, 1.0))
+        # Guardrails for invalid sampling values
+        sample_rate = max(0.0, min(sample_rate, 1.0))
 
-    if enable_tracing:
-        _tracer = _init_tracing(service_name, sample_rate, config)
+        if enable_tracing:
+            _tracer = _init_tracing(service_name, sample_rate, config)
 
-    if enable_metrics:
-        _meter = _init_metrics(service_name, config)
+        if enable_metrics:
+            _meter = _init_metrics(service_name, config)
 
-    if enable_structured_logging:
-        _init_structured_logging()
+        if enable_structured_logging:
+            _init_structured_logging()
 
-    _initialized = True
+        _initialized = True
 
 
 def trace_operation(operation_name: str, **span_attributes):
@@ -379,22 +393,14 @@ def record_metric(
 
 def get_logger(name: str) -> Any:
     """
-    Get structured logger with trace correlation.
+    Get a logger.
 
-    Blueprint §12.3:
-    * Automatically binds trace context
+    If structlog is available, returns a structured logger that will automatically
+    include trace context. Otherwise, returns a standard library logger.
     """
     if STRUCTLOG_AVAILABLE and structlog is not None:
-        logger = structlog.get_logger(name)
-        # Bind trace context if available
-        ctx = _trace_context.get() or {}
-        if ctx:
-            logger = logger.bind(
-                trace_id=ctx.get("trace_id"), span_id=ctx.get("span_id")
-            )
-        return logger
-    else:
-        return logging.getLogger(name)
+        return structlog.get_logger(name)
+    return logging.getLogger(name)
 
 
 def get_trace_context() -> dict[str, str]:

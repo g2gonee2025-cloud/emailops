@@ -110,6 +110,8 @@ if TYPE_CHECKING:
 else:
     EmailOpsConfig = EmailOpsConfigProto
 
+from cortex.observability import init_observability
+
 # Lazy import for heavy dependencies
 # from cortex_cli.cmd_doctor import main as doctor_main
 
@@ -1260,6 +1262,10 @@ def main(args: list[str] | None = None) -> None:
 
     A user-friendly command-line interface for managing EmailOps Cortex.
     """
+    # Initialize observability tools (tracing, metrics, structured logging)
+    # This should be one of the first things to run.
+    init_observability(service_name="cortex-cli")
+
     if args is None:
         args = sys.argv[1:]
 

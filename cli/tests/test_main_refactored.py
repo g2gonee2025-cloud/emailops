@@ -1,7 +1,9 @@
+import os
 import sys
 from unittest.mock import MagicMock, patch
 
 from cortex_cli.main import (
+    main,
     _print_usage,
     _print_version,
     _run_index,
@@ -176,7 +178,9 @@ class TestCliMainUtils:
         from cortex_cli.main import main
 
         # Test help
-        with patch("sys.argv", ["cortex", "--help"]), contextlib.suppress(SystemExit):
+        with patch.dict(os.environ, {"OUTLOOKCORTEX_DB_URL": "sqlite:///:memory:"}), patch(
+            "sys.argv", ["cortex", "--help"]
+        ), contextlib.suppress(SystemExit):
             main()
         captured = capsys.readouterr()
         assert "Usage:" in captured.out or "USAGE:" in captured.out
@@ -187,11 +191,29 @@ class TestCliMainUtils:
         from cortex_cli.main import main
 
         # Test 'version' command
-        with (
-            patch("sys.argv", ["cortex", "version"]),
-            patch("importlib.metadata.version", return_value="1.0.0"),
-            contextlib.suppress(SystemExit),
+        with patch.dict(os.environ, {"OUTLOOKCORTEX_DB_URL": "sqlite:///:memory:"}), patch(
+            "sys.argv", ["cortex", "version"]
+        ), patch("importlib.metadata.version", return_value="1.0.0"), contextlib.suppress(
+            SystemExit
         ):
             main()
         captured = capsys.readouterr()
         assert "Version:" in captured.out
+
+
+    @patch("cortex_cli.main.init_observability")
+    def test_main_initializes_observability(self, mock_init_obs):
+        """Test that the main function calls init_observability."""
+        with patch.dict(os.environ, {"OUTLOOKCORTEX_DB_URL": "sqlite:///:memory:"}), patch(
+            "sys.argv", ["cortex", "version"]
+        ), patch("importlib.metadata.version", return_value="1.0.0"), patch(
+            "cortex_cli.main._print_version"
+        ):
+            try:
+                main()
+            except SystemExit:
+                pass  # We expect a SystemExit
+            except Exception as e:
+                print(f"main() raised an unexpected exception: {e}")
+
+        mock_init_obs.assert_called_once_with(service_name="cortex-cli")
