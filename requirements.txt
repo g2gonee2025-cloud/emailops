@@ -88,3 +88,4 @@ pandas>=2.0.0
 mcp==1.23.0
 langgraph
 python-dotenv
+tiktoken==0.7.0

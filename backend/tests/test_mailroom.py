@@ -63,7 +63,8 @@ class TestMailroomHelpers:
 class TestProcessJob:
     @patch("cortex.ingestion.mailroom._resolve_source")
     @patch("cortex.ingestion.mailroom._ingest_conversation")
-    def test_process_job_local_source(self, mock_ingest, mock_resolve, tmp_path):
+    @pytest.mark.asyncio
+    async def test_process_job_local_source(self, mock_ingest, mock_resolve, tmp_path):
         # Setup
         convo_dir = tmp_path / "conv1"
         convo_dir.mkdir()
@@ -79,12 +80,13 @@ class TestProcessJob:
         )
         mock_ingest.return_value = IngestJobSummary(job_id=job.job_id, tenant_id=job.tenant_id)
 
-        summary = process_job(job)
+        summary = await process_job(job)
 
         assert isinstance(summary, IngestJobSummary)
 
     @patch("cortex.ingestion.mailroom._resolve_source")
-    def test_process_job_no_conversations(self, mock_resolve, tmp_path):
+    @pytest.mark.asyncio
+    async def test_process_job_no_conversations(self, mock_resolve, tmp_path):
         # Empty directory - no conversation folders
         mock_resolve.return_value = (tmp_path, tmp_path)
 
@@ -95,7 +97,7 @@ class TestProcessJob:
             tenant_id="default",
         )
 
-        summary = process_job(job)
+        summary = await process_job(job)
 
         # Should complete
         assert isinstance(summary, IngestJobSummary)
@@ -103,7 +105,8 @@ class TestProcessJob:
 
 class TestResolveSource:
     @patch("cortex.ingestion.mailroom._download_s3_source")
-    def test_resolve_source_s3(self, mock_download, tmp_path):
+    @pytest.mark.asyncio
+    async def test_resolve_source_s3(self, mock_download, tmp_path):
         mock_download.return_value = (tmp_path, tmp_path)
 
         job = IngestJobRequest(
@@ -113,7 +116,7 @@ class TestResolveSource:
             tenant_id="default",
         )
 
-        result = _resolve_source(job)
+        result = await _resolve_source(job)
 
         mock_download.assert_called()
         assert result == (tmp_path, tmp_path)

@@ -18,6 +18,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
+from fastapi.concurrency import run_in_threadpool
+
 from cortex.ingestion.core_manifest import resolve_subject
 from cortex.ingestion.models import IngestJobRequest, IngestJobSummary, Problem
 from cortex.ingestion.pii import PIIInitError
@@ -28,7 +30,7 @@ IngestJob = IngestJobRequest
 logger = logging.getLogger(__name__)
 
 
-def process_job(job: IngestJobRequest) -> IngestJobSummary:
+async def process_job(job: IngestJobRequest) -> IngestJobSummary:
     """
     Process an ingestion job.
 
@@ -53,9 +55,9 @@ def process_job(job: IngestJobRequest) -> IngestJobSummary:
         temp_dir: Optional[Path] = None
 
         try:
-            temp_dir, local_convo_dir = _resolve_source(job)
+            temp_dir, local_convo_dir = await _resolve_source(job)
 
-            summary = _ingest_conversation(local_convo_dir, job, summary)
+            summary = await _ingest_conversation(local_convo_dir, job, summary)
 
         finally:
             if temp_dir and temp_dir.exists():
@@ -217,7 +219,7 @@ def _generate_stable_id(namespace: uuid.UUID, *args: str) -> uuid.UUID:
     return uuid.uuid5(namespace, joined)
 
 
-def _ingest_conversation(
+async def _ingest_conversation(
     convo_dir: Path, job: IngestJobRequest, summary: IngestJobSummary
 ) -> IngestJobSummary:
     """
@@ -271,7 +273,7 @@ def _ingest_conversation(
     )
 
     # 4. Intelligence (Summary + Graph)
-    graph_data, summary_text = _process_intelligence(
+    graph_data, summary_text = await _process_intelligence(
         chunks_data, conversation_id, tenant_ns, job
     )
 
@@ -502,7 +504,7 @@ def _create_chunks(
     return chunks_data
 
 
-def _process_intelligence(
+async def _process_intelligence(
     chunks_data: List[Dict[str, Any]],
     conversation_id: uuid.UUID,
     tenant_ns: uuid.UUID,
@@ -551,11 +553,11 @@ def _process_intelligence(
         if summary_context.strip():
             # 1. Summarization
             summarizer = ConversationSummarizer()
-            summary_text = summarizer.generate_summary(summary_context)
+            summary_text = await summarizer.generate_summary(summary_context)
 
             if summary_text:
                 summary_text_out = summary_text
-                summary_embedding = summarizer.embed_summary(summary_text)
+                summary_embedding = await summarizer.embed_summary(summary_text)
                 # P1 Fix: Handle empty embedding due to API failure so DB write doesn't fail
                 final_embedding = (
                     summary_embedding
@@ -640,14 +642,14 @@ def _extract_graph(
     return graph_data
 
 
-def _resolve_source(job: IngestJobRequest) -> Tuple[Optional[Path], Optional[Path]]:
+async def _resolve_source(job: IngestJobRequest) -> Tuple[Optional[Path], Optional[Path]]:
     """Resolve and download source based on job type."""
     if job.source_type == "local_upload":
-        return None, _validate_local_path(job.source_uri)
+        return None, await run_in_threadpool(_validate_local_path, job.source_uri)
     elif job.source_type == "s3":
-        return _download_s3_source(job.source_uri)
+        return await run_in_threadpool(_download_s3_source, job.source_uri)
     elif job.source_type == "sftp":
-        return _download_sftp_source(job.source_uri, job.options)
+        return await run_in_threadpool(_download_sftp_source, job.source_uri, job.options)
     else:
         raise ValueError(f"Unsupported source type: {job.source_type}")
 
