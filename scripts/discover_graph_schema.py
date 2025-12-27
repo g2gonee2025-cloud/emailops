@@ -13,14 +13,10 @@ from pathlib import Path
 def main():
     """Run the `cortex graph discover-schema` command."""
     # Construct the path to the CLI entrypoint
-    cli_path = (
-        Path(__file__).parent.parent / "cli/src/cortex_cli/main.py"
-    ).resolve()
+    cli_path = (Path(__file__).parent.parent / "cli/src/cortex_cli/main.py").resolve()
 
     if not cli_path.exists():
-        print(
-            f"Error: Could not find CLI entrypoint at {cli_path}", file=sys.stderr
-        )
+        print(f"Error: Could not find CLI entrypoint at {cli_path}", file=sys.stderr)
         sys.exit(1)
 
     # Forward all arguments to the CLI

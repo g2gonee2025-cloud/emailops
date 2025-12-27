@@ -233,8 +233,6 @@ class PgvectorStore(VectorStore):
             params["ef_search"] = str(int(ef_search))
             hnsw_settings_cte = "WITH settings AS (SELECT set_config('hnsw.ef_search', :ef_search, true))"
 
-        # Use cosine distance directly on vector type (no halfvec needed for 3840 dims
-        # since it's within pgvector's vector limit for exact search)
         stmt = text(
             f"""
             {hnsw_settings_cte}
@@ -311,7 +309,14 @@ class QdrantVectorStore(VectorStore):
             )
         # P1 Fix: file_types filter for Qdrant
         if file_types:
-            must_filters.append({"key": "file_type", "match": {"any": file_types}})
+            must_filters.append(
+                {
+                    "should": [
+                        {"key": "file_type", "match": {"any": file_types}},
+                        {"key": "source_type", "match": {"any": file_types}},
+                    ]
+                }
+            )
 
         payload: Dict[str, Any] = {
             "vector": emb_array.tolist(),

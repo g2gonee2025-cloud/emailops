@@ -358,14 +358,6 @@ def _select_all_available_attachments(
     return selected
 
 
-def _safe_stat_mb(path: Path) -> float:
-    """Safely get file size in MB."""
-    try:
-        return path.stat().st_size / (1024 * 1024) if path.exists() else 0.0
-    except Exception:
-        return 0.0
-
-
 @trace_operation("tool_email_get_thread")
 def tool_email_get_thread(
     thread_id: uuid.UUID | str,
@@ -546,6 +538,9 @@ def _extract_evidence_from_answer(
     return evidence[:5]  # Limit to top 5 evidence items
 
 
+from cortex.audit import log_audit_event
+
+
 def node_handle_error(state: Dict[str, Any]) -> Dict[str, Any]:
     """
     Handle errors in graph execution.
@@ -555,8 +550,6 @@ def node_handle_error(state: Dict[str, Any]) -> Dict[str, Any]:
     * logs via observability.get_logger
     * sets state.error
     """
-    from cortex.audit import log_audit_event
-
     error = state.get("error", "Unknown error")
     obs_logger = get_logger(__name__)
 
@@ -1086,12 +1079,15 @@ def node_audit_draft(state: Dict[str, Any]) -> Dict[str, Any]:
     * Policy Check (Blocker)
     * Quality/Safety Rubric (Scoring)
     """
+    from cortex.context import claims_ctx
+
     draft = state.get("draft")
     if not draft:
         return {}
 
     # 1. Hard Policy Check
     recipients = list(dict.fromkeys((draft.to or []) + (draft.cc or [])))
+    claims = claims_ctx.get({}) or {}
 
     metadata = {
         "recipients": recipients,
@@ -1099,6 +1095,7 @@ def node_audit_draft(state: Dict[str, Any]) -> Dict[str, Any]:
         "content": draft.body_markdown,
         "attachments": state.get("attachments", []),
         "check_external": True,
+        "role": claims.get("role"),
     }
 
     decision = check_action("draft_email", metadata)
@@ -1136,8 +1133,8 @@ def node_audit_draft(state: Dict[str, Any]) -> Dict[str, Any]:
         # Robustness: Fallback to neutral scores so pipeline continues
         draft.val_scores = DraftValidationScores(
             factuality=0.5,
-            citation=0.5,
-            tone=0.5,
+            citation_coverage=0.5,
+            tone_fit=0.5,
             safety=0.5,
             overall=0.5,
             feedback=f"Audit service unavailable (Error: {str(e)}). Validation skipped.",

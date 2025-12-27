@@ -1,7 +1,9 @@
 """CLI for graph-related commands."""
 
 import typer
-from cortex.intelligence.graph_discovery import discover_graph_schema as discover_schema_logic
+from cortex.intelligence.graph_discovery import (
+    discover_graph_schema as discover_schema_logic,
+)
 
 app = typer.Typer(
     name="graph",

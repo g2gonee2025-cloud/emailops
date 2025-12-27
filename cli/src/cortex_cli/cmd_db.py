@@ -33,12 +33,10 @@ def cmd_db_stats(args: argparse.Namespace) -> None:
     """Show database statistics."""
     try:
         from cortex.db.session import engine
-        from sqlalchemy import text
-        from sqlalchemy.orm import Session
-
         from cortex_cli.config import get_config
         from cortex_cli.utils import _colorize
-
+        from sqlalchemy import text
+        from sqlalchemy.orm import Session
 
         config = get_config()
 
@@ -90,7 +88,6 @@ def cmd_db_stats(args: argparse.Namespace) -> None:
                 f"\n  Embedding Coverage: {_colorize(f'{pct:.1f}%', 'green' if pct > 90 else 'yellow')}"
             )
 
->>>>>>> origin/main
     except ImportError as e:
         console.print(f"[red]Error:[/] Could not import database modules: {e}")
         sys.exit(1)
@@ -133,9 +130,7 @@ def cmd_db_backfill_graph(args: argparse.Namespace) -> None:
         "[bold cyan]Total Progress[/bold cyan]",
         "[bold magenta]Batch Progress[/bold magenta]",
     )
-    total_progress = Progress(
-        TextColumn("{task.description}"), transient=True
-    )
+    total_progress = Progress(TextColumn("{task.description}"), transient=True)
     batch_progress = Progress(SpinnerColumn(), TextColumn("{task.description}"))
     progress_table.add_row(total_progress, batch_progress)
 
@@ -181,7 +176,9 @@ def cmd_db_migrate(args: argparse.Namespace) -> None:
     migrations_dir = backend_dir / "migrations"
 
     if not migrations_dir.exists():
-        print(f"{_colorize('ERROR:', 'red')} Migrations directory not found: {migrations_dir}")
+        print(
+            f"{_colorize('ERROR:', 'red')} Migrations directory not found: {migrations_dir}"
+        )
         sys.exit(1)
 
     cmd = ["alembic", "-c", "migrations/alembic.ini", "upgrade", "head"]
@@ -189,9 +186,7 @@ def cmd_db_migrate(args: argparse.Namespace) -> None:
         cmd.extend(["--sql"])
 
     console.print(f"Running command: [cyan]{' '.join(cmd)}[/cyan]")
-    result = subprocess.run(
-        cmd, cwd=str(backend_dir), capture_output=True, text=True
-    )
+    result = subprocess.run(cmd, cwd=str(backend_dir), capture_output=True, text=True)
 
     if result.returncode == 0:
         console.print("[green]✓ Migrations applied successfully.[/green]")
@@ -235,10 +230,14 @@ def cmd_db_cleanup(args: argparse.Namespace) -> None:
         if process.returncode == 0:
             print(f"\n{_colorize('✓', 'green')} Cleanup script finished successfully.")
         else:
-            print(f"\n{_colorize('✗', 'red')} Cleanup script failed (exit code {process.returncode}).")
+            print(
+                f"\n{_colorize('✗', 'red')} Cleanup script failed (exit code {process.returncode})."
+            )
             sys.exit(process.returncode)
     except FileNotFoundError:
-        print(f"{_colorize('ERROR:', 'red')} Could not execute Python at: {sys.executable}")
+        print(
+            f"{_colorize('ERROR:', 'red')} Could not execute Python at: {sys.executable}"
+        )
         sys.exit(1)
     except Exception as e:
         print(f"{_colorize('ERROR:', 'red')} An unexpected error occurred: {e}")
@@ -256,16 +255,12 @@ def setup_db_parser(subparsers: Any) -> None:
     db_subparsers = db_parser.add_subparsers(dest="db_command", title="DB Commands")
 
     # db stats
-    stats_parser = db_subparsers.add_parser(
-        "stats", help="Show database statistics"
-    )
+    stats_parser = db_subparsers.add_parser("stats", help="Show database statistics")
     stats_parser.add_argument("--json", action="store_true", help="Output as JSON")
     stats_parser.set_defaults(func=cmd_db_stats)
 
     # db migrate
-    migrate_parser = db_subparsers.add_parser(
-        "migrate", help="Run Alembic migrations"
-    )
+    migrate_parser = db_subparsers.add_parser("migrate", help="Run Alembic migrations")
     migrate_parser.add_argument(
         "--dry-run", action="store_true", help="Show SQL without executing"
     )

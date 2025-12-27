@@ -50,6 +50,8 @@ class SearchResultItem(BaseModel):
     # Backward compatibility aliases
     @property
     def thread_id(self) -> str:
+        # TODO: This should be Optional[str] to match conversation_id.
+        # This requires updating consumers to handle `None`.
         """Alias for conversation_id (backward compat)."""
         return self.conversation_id
 

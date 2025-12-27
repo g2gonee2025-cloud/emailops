@@ -14,6 +14,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from cortex.intelligence.query_expansion import expand_for_fts
+
 logger = logging.getLogger(__name__)
 
 
@@ -57,6 +59,10 @@ def search_conversations_fts(
     query = (query or "").strip()
     if not query:
         return []
+
+    # Expand query with synonyms for better recall.
+    expanded_query = expand_for_fts(query)
+    logger.debug(f"Original FTS query: '{query}', Expanded: '{expanded_query}'")
 
     # Search conversations by subject (weight A) and summary (weight B)
     stmt = text(
@@ -145,8 +151,13 @@ def search_chunks_fts(
     if not query:
         return []
 
+    # Expand query with synonyms for better recall.
+    expanded_query = expand_for_fts(query)
+    logger.debug(f"Original FTS query: '{query}', Expanded: '{expanded_query}'")
+
+    conversation_filter_sql = ""
     params: Dict[str, Any] = {
-        "query": query,
+        "query": expanded_query,
         "tenant_id": tenant_id,
         "limit": limit,
         "cfg": _FTS_CONFIG,
@@ -156,7 +167,9 @@ def search_chunks_fts(
     where_clauses = ["c.tenant_id = :tenant_id", "c.tsv_text @@ q.tsq"]
 
     if conversation_ids:
-        where_clauses.append("c.conversation_id = ANY(CAST(:conversation_ids AS UUID[]))")
+        where_clauses.append(
+            "c.conversation_id = ANY(CAST(:conversation_ids AS UUID[]))"
+        )
         params["conversation_ids"] = conversation_ids
 
     # Attachment filter
