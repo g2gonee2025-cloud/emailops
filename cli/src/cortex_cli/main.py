@@ -1279,6 +1279,15 @@ def main(args: list[str] | None = None) -> None:
 
     A user-friendly command-line interface for managing EmailOps Cortex.
     """
+    # Initialize observability §12.3
+    # This should be one of the first things to run
+    try:
+        from cortex.observability import init_observability
+
+        init_observability(service_name="cortex-cli")
+    except ImportError:
+        # If cortex backend is not installed, CLI should still function
+        pass
     if args is None:
         args = sys.argv[1:]
 
