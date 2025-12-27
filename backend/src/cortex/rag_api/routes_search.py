@@ -48,6 +48,7 @@ async def search_endpoint(
             query=request.query,
             k=request.k,
             filters=request.filters,
+            fusion_method=request.fusion_method,
         )
 
         # Call retrieval tool

@@ -216,12 +216,30 @@ def build_summarize_graph() -> StateGraph:
 
     # Edges
     workflow.set_entry_point("load_thread")
-    workflow.add_edge("load_thread", "analyst")
-    workflow.add_edge("analyst", "critic")
-    workflow.add_edge("critic", "improver")
-    workflow.add_edge("improver", "finalize")
-    workflow.add_edge("finalize", END)
-
+    workflow.add_conditional_edges(
+        "load_thread",
+        _check_error,
+        {"continue": "analyst", "handle_error": "handle_error"},
+    )
+    workflow.add_conditional_edges(
+        "analyst",
+        _check_error,
+        {"continue": "critic", "handle_error": "handle_error"},
+    )
+    workflow.add_conditional_edges(
+        "critic",
+        _check_error,
+        {"continue": "improver", "handle_error": "handle_error"},
+    )
+    workflow.add_conditional_edges(
+        "improver",
+        _check_error,
+        {"continue": "finalize", "handle_error": "handle_error"},
+    )
+    workflow.add_conditional_edges(
+        "finalize", _check_error, {"continue": END, "handle_error": "handle_error"}
+    )
+    workflow.add_edge("handle_error", END)
     return workflow
 
 

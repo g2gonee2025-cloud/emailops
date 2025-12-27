@@ -14,6 +14,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from cortex.intelligence.query_expansion import expand_for_fts
+
 logger = logging.getLogger(__name__)
 
 
@@ -58,11 +60,15 @@ def search_conversations_fts(
     if not query:
         return []
 
+    # Expand query with synonyms for better recall.
+    expanded_query = expand_for_fts(query)
+    logger.debug(f"Original FTS query: '{query}', Expanded: '{expanded_query}'")
+
     # Search conversations by subject (weight A) and summary (weight B)
     stmt = text(
         """
         WITH q AS (
-            SELECT websearch_to_tsquery(:cfg, :query) AS tsq
+            SELECT to_tsquery(:cfg, :query) AS tsq
         )
         SELECT
             conv.conversation_id,
@@ -145,9 +151,13 @@ def search_chunks_fts(
     if not query:
         return []
 
+    # Expand query with synonyms for better recall.
+    expanded_query = expand_for_fts(query)
+    logger.debug(f"Original FTS query: '{query}', Expanded: '{expanded_query}'")
+
     conversation_filter_sql = ""
     params: Dict[str, Any] = {
-        "query": query,
+        "query": expanded_query,
         "tenant_id": tenant_id,
         "limit": limit,
         "cfg": _FTS_CONFIG,
@@ -179,7 +189,7 @@ def search_chunks_fts(
     stmt = text(
         f"""
         WITH q AS (
-            SELECT websearch_to_tsquery(:cfg, :query) AS tsq
+            SELECT to_tsquery(:cfg, :query) AS tsq
         )
         SELECT
             c.chunk_id,
