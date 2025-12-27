@@ -73,6 +73,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]  # Adjusted for new path
 
 _PROVIDER_ALIASES: dict[str, str] = {
     "hf": "huggingface",
+    "do": "digitalocean",
     "gcp": "vertex",
     "vertexai": "vertex",
 }

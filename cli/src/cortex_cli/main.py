@@ -61,6 +61,7 @@ from cortex_cli._config_helpers import (  # noqa: E402
     _print_json_config,
 )
 from cortex_cli.style import colorize as _colorize  # noqa: E402
+from cortex_cli import cmd_search
 
 
 # Minimal protocol for the config object to satisfy static analysis when imports fail

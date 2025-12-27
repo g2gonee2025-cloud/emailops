@@ -43,7 +43,6 @@ def _print_human_config(config: Any, section: str | None = None) -> None:
         "DigitalOcean LLM": "digitalocean_llm",
         "Core": "core",
         "Embeddings": "embedding",
-        "Email": "email",
         "Search": "search",
         "Processing": "processing",
         "Database": "database",
@@ -69,8 +68,6 @@ def _print_human_config(config: Any, section: str | None = None) -> None:
             if hasattr(attr, "model_dump"):
                 for k, v in attr.model_dump().items():
                     print(f"    {k:<20} {v}")
-        else:
-            print(f"{_colorize('ERROR:', 'red')} Section '{section}' not found")
 
     # If we are here and not looking for a section, we printed summary above.
 
