@@ -111,7 +111,7 @@ else:
     EmailOpsConfig = EmailOpsConfigProto
 
 # Lazy import for heavy dependencies
-# from cortex_cli.cmd_doctor import main as doctor_main
+from cortex_cli.cmd_doctor import main as doctor_main
 
 # ANSI color codes for terminal output
 
@@ -141,14 +141,24 @@ UTILITY_COMMANDS = [
     ("status", "Show current environment and configuration"),
     ("config", "View, validate, or export configuration"),
     ("version", "Display version information"),
+    ("autofix", "Automatically fix common code issues"),
 ]
 
 DATA_COMMANDS = [
     ("db", "Database management (stats, migrate)"),
     ("embeddings", "Embedding management (stats, backfill)"),
+<<<<<<< HEAD
     ("graph", "Knowledge Graph commands (discover-schema)"),
     ("s3", "S3/Spaces storage (list, ingest)"),
+=======
+    ("s3", "S3/Spaces storage (list, ingest, check-structure)"),
+>>>>>>> origin/main
     ("maintenance", "System maintenance (resolve-entities)"),
+<<<<<<< HEAD
+    ("patch", "Fix malformed patch files"),
+=======
+    ("schema", "Graph schema analysis tools"),
+>>>>>>> origin/main
 ]
 
 COMMON_OPTIONS = [
@@ -1317,6 +1327,7 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     _setup_utility_commands(subparsers)
 
     # Register plugin subcommand groups
+    from cortex_cli.cmd_backfill import setup_backfill_parser
     from cortex_cli.cmd_db import setup_db_parser
     from cortex_cli.cmd_embeddings import setup_embeddings_parser
     from cortex_cli.cmd_graph import app as graph_app
@@ -1360,12 +1371,23 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
         # This is a simple way to pass through args. A more robust solution might be needed.
         parser.add_argument("typer_args", nargs="*")
 
+    from cortex_cli.cmd_patch import setup_patch_parser
+    from cortex_cli.cmd_index import setup_index_parser
+    from cortex_cli.cmd_schema import setup_schema_parser
+    from cortex_cli.cmd_test import setup_test_parser
+    from cortex_cli.config import _config
 
+    setup_backfill_parser(subparsers)
     setup_db_parser(subparsers)
     setup_embeddings_parser(subparsers)
     setup_s3_parser(subparsers)
     setup_maintenance_parser(subparsers)
     setup_typer_command(subparsers, "graph", graph_app, help_text="Knowledge Graph commands")
+    setup_patch_parser(subparsers)
+    setup_index_parser(subparsers)
+    setup_schema_parser(subparsers)
+    if "sqlite" not in _config.database.url:
+        setup_test_parser(subparsers)
 
     # Parse arguments
     parsed_args = parser.parse_args(args)
@@ -1983,6 +2005,20 @@ Run comprehensive system diagnostics including:
         help="Display version information",
     )
     version_parser.set_defaults(func=lambda _: _print_version())
+
+    autofix_parser = subparsers.add_parser(
+        "autofix",
+        help="Automatically fix common code issues",
+        description="Run the auto-fix script to resolve low-hanging fruit issues.",
+    )
+    autofix_parser.set_defaults(func=lambda _: _run_autofix())
+
+
+def _run_autofix():
+    """Run the autofix script."""
+    from cortex_cli.cmd_autofix import main as autofix_main
+
+    autofix_main()
 
 
 if __name__ == "__main__":

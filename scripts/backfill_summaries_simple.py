@@ -28,7 +28,7 @@ load_dotenv(PROJECT_ROOT / ".env")
 from cortex.db.models import Chunk, Conversation  # noqa: E402
 from cortex.db.session import SessionLocal  # noqa: E402
 from cortex.intelligence.summarizer import ConversationSummarizer  # noqa: E402
-from sqlalchemy import select  # noqa: E402
+from sqlalchemy import func, select  # noqa: E402
 from tqdm import tqdm  # noqa: E402
 
 logging.basicConfig(
@@ -42,8 +42,21 @@ logging.getLogger("cortex.llm").setLevel(logging.WARNING)
 logger = logging.getLogger("summary_backfill")
 
 
-def get_missing_conversations(limit: int | None = None) -> list[tuple[uuid.UUID, str]]:
-    """Get conversations without summaries."""
+def count_missing_conversations(tenant_id: str | None = None) -> int:
+    """Count conversations without summaries."""
+    with SessionLocal() as session:
+        stmt = select(func.count(Conversation.conversation_id)).where(
+            (Conversation.summary_text.is_(None)) | (Conversation.summary_text == "")
+        )
+        if tenant_id:
+            stmt = stmt.where(Conversation.tenant_id == tenant_id)
+        return session.execute(stmt).scalar_one()
+
+
+def stream_missing_conversations(
+    limit: int | None = None, tenant_id: str | None = None
+) -> list[tuple[uuid.UUID, str]]:
+    """Stream conversations without summaries."""
     with SessionLocal() as session:
         stmt = select(
             Conversation.conversation_id,
@@ -51,10 +64,13 @@ def get_missing_conversations(limit: int | None = None) -> list[tuple[uuid.UUID,
         ).where(
             (Conversation.summary_text.is_(None)) | (Conversation.summary_text == "")
         )
+        if tenant_id:
+            stmt = stmt.where(Conversation.tenant_id == tenant_id)
         if limit:
             stmt = stmt.limit(limit)
-        results = session.execute(stmt).all()
-        return [(r[0], r[1]) for r in results]
+
+        for row in session.execute(stmt).yield_per(100):
+            yield row
 
 
 def generate_summary(
@@ -65,6 +81,8 @@ def generate_summary(
 
     try:
         with SessionLocal() as session:
+            from cortex.db.session import set_session_tenant
+            set_session_tenant(session, tenant_id)
             # Get conversation with chunks
             convo = session.execute(
                 select(Conversation).where(
@@ -121,13 +139,19 @@ def main():
     parser = argparse.ArgumentParser(
         description="Simple Summary Backfill (no embedding)"
     )
+    parser.add_argument("--tenant-id", type=str, default=None, help="Tenant ID to process")
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--workers", type=int, default=5)
     args = parser.parse_args()
 
-    convos = get_missing_conversations(args.limit)
-    total = len(convos)
-    logger.info(f"Found {total} conversations without summaries")
+    total = count_missing_conversations(args.tenant_id)
+    if args.limit:
+        total = min(total, args.limit)
+
+    if args.tenant_id:
+        logger.info(f"Found {total} conversations for tenant '{args.tenant_id}' without summaries")
+    else:
+        logger.info(f"Found {total} conversations without summaries")
 
     if total == 0:
         logger.info("Nothing to do!")
@@ -137,21 +161,25 @@ def main():
     success = 0
     failed = 0
 
-    with ThreadPoolExecutor(max_workers=args.workers) as executor:
+    with ThreadPoolExecutor(max_workers=args.workers) as executor, tqdm(
+        total=total, desc="Generating summaries"
+    ) as pbar:
         futures = {
             executor.submit(generate_summary, cid, tid, summarizer): cid
-            for cid, tid in convos
+            for cid, tid in stream_missing_conversations(args.limit, args.tenant_id)
         }
 
-        with tqdm(total=total, desc="Generating summaries") as pbar:
-            for future in as_completed(futures):
-                result = future.result()
-                if result["success"]:
-                    success += 1
-                else:
-                    failed += 1
-                pbar.update(1)
-                pbar.set_postfix(ok=success, fail=failed)
+        for future in as_completed(futures):
+            result = future.result()
+            if result["success"]:
+                success += 1
+            else:
+                failed += 1
+                logger.warning(
+                    f"Failed conversation {result['conversation_id']}: {result['error']}"
+                )
+            pbar.update(1)
+            pbar.set_postfix(ok=success, fail=failed)
 
     logger.info(f"Done: {success} success, {failed} failed")
 
