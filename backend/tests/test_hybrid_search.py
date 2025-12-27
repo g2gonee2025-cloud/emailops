@@ -159,6 +159,7 @@ class TestHybridSearch:
         mock_session = Mock()
         mock_session_cls.return_value.__enter__.return_value = mock_session
 
+<<<<<<< HEAD
         # Setup Cache miss then Embed via mocked runtime
         mock_get_cache.return_value = None
         mock_runtime = Mock()
@@ -197,9 +198,11 @@ class TestHybridSearch:
             user_id="u1",
             query="test query",
         )
-        results = tool_kb_search_hybrid(input_args)
+        result = tool_kb_search_hybrid(input_args)
 
         # Verification
+        assert result.is_ok()
+        results = result.unwrap()
         assert len(results.results) == 1
         assert results.results[0].chunk_id == "1"
         assert "rrf" in results.reranker
@@ -253,9 +256,8 @@ class TestHybridSearch:
             ),
         )
 
-        with patch(
-            "cortex.retrieval._hybrid_helpers._get_runtime"
-        ) as mock_get_runtime:
+<<<<<<< HEAD
+        with patch("cortex.retrieval._hybrid_helpers._get_runtime") as mock_get_runtime:
             mock_runtime = Mock()
             mock_runtime.embed_queries.return_value = np.array([[0.1]])
             mock_get_runtime.return_value = mock_runtime
