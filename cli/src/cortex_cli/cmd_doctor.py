@@ -484,35 +484,35 @@ def check_ingest(config: Any, root: Path) -> tuple[bool, dict[str, Any], str | N
     """
     details: dict[str, Any] = {
         "sample_found": False,
-        "parser_ok": False,
+        "loader_ok": False,
         "preprocessor_ok": False,
     }
 
     try:
         export_root = root / config.directories.export_root
-        sample_file = _find_sample_file(export_root)
+        sample_dir = _find_sample_conversation_dir(export_root)
 
-        if not sample_file:
+        if not sample_dir:
             return (
                 True,
                 details,
-                "No sample messages found (checked *.eml, *.json in messages/)",
+                "No sample conversation directories found in export root",
             )
 
         details["sample_found"] = True
 
-        # Test parser
-        parser_ok, parsed_subject, parser_error = _test_parser_on_file(sample_file)
-        if parser_error:
-            details["parser_ok"] = False
-            return False, details, parser_error
+        # Test loader
+        loader_ok, loaded_subject, loader_error = _test_loader_on_dir(sample_dir)
+        if loader_error:
+            details["loader_ok"] = False
+            return False, details, loader_error
 
-        details["parser_ok"] = parser_ok
-        if parsed_subject:
-            details["parsed_subject"] = parsed_subject
+        details["loader_ok"] = loader_ok
+        if loaded_subject:
+            details["loaded_subject"] = loaded_subject
 
-        if not parser_ok:
-            return False, details, "Parser returned empty result"
+        if not loader_ok:
+            return False, details, "Loader returned empty result"
 
         # Test preprocessor
         preproc_ok, preproc_error = _test_preprocessor_import()
@@ -525,8 +525,8 @@ def check_ingest(config: Any, root: Path) -> tuple[bool, dict[str, Any], str | N
         return False, details, str(e)
 
 
-def _find_sample_file(export_root: Path) -> Path | None:
-    """Find a sample .eml or .json message file."""
+def _find_sample_conversation_dir(export_root: Path) -> Path | None:
+    """Find a sample conversation directory."""
     if not export_root.exists():
         return None
 
@@ -534,48 +534,37 @@ def _find_sample_file(export_root: Path) -> Path | None:
         if not folder.is_dir():
             continue
 
-        messages_dir = folder / "messages"
-        if not messages_dir.exists():
-            continue
-
-        # Try .eml first
-        for msg_file in messages_dir.glob("*.eml"):
-            return msg_file
-
-        # Fallback to .json
-        for msg_file in messages_dir.glob("*.json"):
-            return msg_file
+        # A valid conversation folder has a manifest.json
+        manifest_path = folder / "manifest.json"
+        if manifest_path.exists():
+            return folder
 
     return None
 
 
-def _test_parser_on_file(sample_file: Path) -> tuple[bool, str | None, str | None]:
+def _test_loader_on_dir(
+    sample_dir: Path,
+) -> tuple[bool, str | None, str | None]:
     """
-    Test parsing the sample file.
+    Test loading the sample conversation directory.
     Returns: (success, parsed_subject, error_message)
     """
     try:
-        from cortex.archive.parser_email import parse_eml_file
+        from cortex.ingestion.conv_loader import load_conversation
+        from cortex.ingestion.core_manifest import resolve_subject
 
-        if sample_file.suffix.lower() == ".json":
-            import json
-
-            with sample_file.open() as f:
-                try:
-                    json.load(f)
-                    return True, "N/A (JSON export)", None
-                except json.JSONDecodeError:
-                    return False, None, "Invalid JSON sample"
-        else:
-            parsed = parse_eml_file(sample_file)
-            if parsed and parsed.message_id:
-                return True, parsed.subject, None
-            return False, None, None
+        convo_data = load_conversation(sample_dir)
+        if convo_data:
+            manifest = convo_data.get("manifest", {})
+            summary_json = convo_data.get("summary", {})
+            subject, _ = resolve_subject(manifest, summary_json, sample_dir.name)
+            return True, subject, None
+        return False, None, "load_conversation returned no data"
 
     except ImportError:
-        return False, None, "Failed to import email parser"
+        return False, None, "Failed to import conversation loader"
     except Exception as e:
-        return False, None, f"Parser failed on sample: {e}"
+        return False, None, f"Loader failed on sample: {e}"
 
 
 def _test_preprocessor_import() -> tuple[bool, str | None]:
@@ -884,13 +873,13 @@ def _print_ingest_result(
 
     print(f"  {_c('✓', 'green')} Ingest capability OK")
     if details.get("sample_found"):
-        print(f"    Sample message found: {_c('✓', 'green')}")
-    if details.get("parser_ok"):
-        print(f"    Email parser:         {_c('✓', 'green')}")
-        if details.get("parsed_subject"):
-            print(f"      Subject: {_c(details['parsed_subject'][:40] + '...', 'dim')}")
+        print(f"    Sample conversation found: {_c('✓', 'green')}")
+    if details.get("loader_ok"):
+        print(f"    Conversation loader:       {_c('✓', 'green')}")
+        if details.get("loaded_subject"):
+            print(f"      Subject: {_c(details['loaded_subject'][:40] + '...', 'dim')}")
     if details.get("preprocessor_ok"):
-        print(f"    Text preprocessor:    {_c('✓', 'green')}")
+        print(f"    Text preprocessor:         {_c('✓', 'green')}")
     if error:
         print(f"    {_c(error, 'dim')}")
 

@@ -2,8 +2,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from cortex_cli.cmd_doctor import (
-    _find_sample_file,
-    _test_parser_on_file,
+    _find_sample_conversation_dir,
+    _test_loader_on_dir,
     _test_preprocessor_import,
 )
 
@@ -15,77 +15,62 @@ class TestCmdDoctorHelpers:
         root.mkdir()
         return root
 
-    def test_find_sample_file_no_root(self, tmp_path):
-        assert _find_sample_file(tmp_path / "nonexistent") is None
+    def test_find_sample_conversation_dir_no_root(self, tmp_path):
+        assert _find_sample_conversation_dir(tmp_path / "nonexistent") is None
 
-    def test_find_sample_file_eml(self, mock_export_root):
+    def test_find_sample_conversation_dir_success(self, mock_export_root):
         folder = mock_export_root / "folder1"
-        messages = folder / "messages"
-        messages.mkdir(parents=True)
-        eml = messages / "test.eml"
-        eml.touch()
+        folder.mkdir()
+        manifest = folder / "manifest.json"
+        manifest.touch()
 
-        found = _find_sample_file(mock_export_root)
-        assert found == eml
+        found = _find_sample_conversation_dir(mock_export_root)
+        assert found == folder
 
-    def test_find_sample_file_json_fallback(self, mock_export_root):
+    def test_find_sample_conversation_dir_none(self, mock_export_root):
         folder = mock_export_root / "folder1"
-        messages = folder / "messages"
-        messages.mkdir(parents=True)
-        json_file = messages / "test.json"
-        json_file.touch()
+        folder.mkdir()
+        # No manifest.json
+        assert _find_sample_conversation_dir(mock_export_root) is None
 
-        found = _find_sample_file(mock_export_root)
-        assert found == json_file
+    @patch("cortex.ingestion.conv_loader.load_conversation")
+    @patch("cortex.ingestion.core_manifest.resolve_subject")
+    def test_test_loader_on_dir_success(
+        self, mock_resolve_subject, mock_load_conversation, tmp_path
+    ):
+        sample_dir = tmp_path / "sample_convo"
+        sample_dir.mkdir()
+        mock_load_conversation.return_value = {
+            "manifest": {"subject": "Test"},
+            "summary": {},
+        }
+        mock_resolve_subject.return_value = ("Test Subject", "test subject")
 
-    def test_find_sample_file_none(self, mock_export_root):
-        folder = mock_export_root / "folder1"
-        messages = folder / "messages"
-        messages.mkdir(parents=True)
-        # Empty messages dir
-        assert _find_sample_file(mock_export_root) is None
-
-    @patch("cortex.archive.parser_email.parse_eml_file")
-    def test_test_parser_on_file_eml_success(self, mock_parse, tmp_path):
-        eml = tmp_path / "test.eml"
-        eml.touch()
-        mock_msg = MagicMock()
-        mock_msg.message_id = "123"
-        mock_msg.subject = "Test Subject"
-        mock_parse.return_value = mock_msg
-
-        success, subject, error = _test_parser_on_file(eml)
+        success, subject, error = _test_loader_on_dir(sample_dir)
         assert success is True
         assert subject == "Test Subject"
         assert error is None
+        mock_load_conversation.assert_called_once_with(sample_dir)
+        mock_resolve_subject.assert_called_once()
 
-    @patch("cortex.archive.parser_email.parse_eml_file")
-    def test_test_parser_on_file_eml_fail(self, mock_parse, tmp_path):
-        eml = tmp_path / "test.eml"
-        eml.touch()
-        mock_parse.return_value = None  # Parse failed
+    @patch("cortex.ingestion.conv_loader.load_conversation")
+    def test_test_loader_on_dir_fail_load(self, mock_load_conversation, tmp_path):
+        sample_dir = tmp_path / "sample_convo"
+        sample_dir.mkdir()
+        mock_load_conversation.return_value = None  # Loader failed
 
-        success, subject, error = _test_parser_on_file(eml)
+        success, subject, error = _test_loader_on_dir(sample_dir)
         assert success is False
         assert subject is None
-        assert error is None  # Returns False, None, None explicitly in code
+        assert error == "load_conversation returned no data"
 
-    def test_test_parser_on_file_json_success(self, tmp_path):
-        json_file = tmp_path / "test.json"
-        json_file.write_text('{"foo": "bar"}')
-
-        success, subject, error = _test_parser_on_file(json_file)
-        assert success is True
-        assert subject == "N/A (JSON export)"
-        assert error is None
-
-    def test_test_parser_on_file_json_fail(self, tmp_path):
-        json_file = tmp_path / "test.json"
-        json_file.write_text("invalid json")
-
-        success, subject, error = _test_parser_on_file(json_file)
-        assert success is False
-        assert error == "Invalid JSON sample"
+    def test_test_loader_on_dir_import_error(self, tmp_path):
+        sample_dir = tmp_path / "sample_convo"
+        sample_dir.mkdir()
+        with patch.dict("sys.modules", {"cortex.ingestion.conv_loader": None}):
+            success, subject, error = _test_loader_on_dir(sample_dir)
+            assert success is False
+            assert error == "Failed to import conversation loader"
 
     def test_test_preprocessor_import_success(self):
         with patch.dict(
@@ -96,17 +81,7 @@ class TestCmdDoctorHelpers:
             assert error is None
 
     def test_test_preprocessor_import_fail(self):
-        with patch.dict("sys.modules", {}):
-            with patch("builtins.__import__", side_effect=ImportError("Fail")):
-                # We need to ensure import fails.
-                # Actually _test_preprocessor_import does explicit import inside.
-                # Patching sys.modules might be tricky if it's already imported.
-                # We'll rely on the fact that if we patch the function to raise ImportError it works,
-                # but we want to test the function itself.
-                # Let's use patch.dict to remove it from sys.modules and side_effect on import.
-                pass
-                # Simpler: just call it. If environment is valid, it returns True.
-                # We want to verified coverage, so happy path is fine.
-                success, error = _test_preprocessor_import()
-                # Should be True in this env
-                assert success or error  # Just ensure it runs
+        with patch.dict("sys.modules", {"cortex.ingestion.text_preprocessor": None}):
+            success, error = _test_preprocessor_import()
+            assert success is False
+            assert error == "Failed to import text preprocessor"
