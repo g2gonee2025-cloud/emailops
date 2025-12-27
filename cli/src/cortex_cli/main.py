@@ -912,8 +912,8 @@ def _run_answer(
     """
     Ask questions about your emails using RAG.
     """
-    import asyncio
     import json
+    from cortex_cli.api_client import get_api_client
 
     if not json_output:
         _print_banner()
@@ -922,62 +922,28 @@ def _run_answer(
         print()
 
     try:
-        from cortex.orchestration.graphs import (
-            build_answer_graph as _build_answer_graph,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
-        )
-
-        _build_answer_graph = cast(Any, _build_answer_graph)
-        build_answer_graph: Callable[[], Any]
-        build_answer_graph = cast(Callable[[], Any], _build_answer_graph)
-
         if not json_output:
             print(f"  {_colorize('⏳', 'yellow')} Thinking...")
 
-        async def _execute() -> Any:
-            graph = build_answer_graph().compile()
-            initial_state: dict[str, Any] = {
-                "query": query,
-                "tenant_id": tenant_id,
-                "user_id": user_id,
-                "classification": None,
-                "retrieval_results": None,
-                "assembled_context": None,
-                "answer": None,
-                "error": None,
-            }
-            result = await graph.ainvoke(initial_state)
-            return result
+        api_client = get_api_client()
+        response = api_client.answer(query=query, tenant_id=tenant_id, user_id=user_id)
 
-        final_state: Any = asyncio.run(_execute())
-
-        # Handle both dict and object-like state access
-        error = (
-            final_state.get("error")
-            if isinstance(final_state, dict)
-            else getattr(final_state, "error", None)
-        )
-        if error:
-            raise Exception(error)
-
-        answer: Any | None = (
-            final_state.get("answer")
-            if isinstance(final_state, dict)
-            else getattr(final_state, "answer", None)
-        )
+        answer = response.get("answer")
 
         if json_output:
             print(
-                json.dumps(answer.model_dump() if answer else {}, indent=2, default=str)
+                json.dumps(answer if answer else {}, indent=2, default=str)
             )
         else:
             if answer:
                 print(f"\n{_colorize('ANSWER:', 'bold')}")
-                print(f"{answer.answer_markdown}\n")
+                print(f"{answer.get('answer_markdown', '')}\n")
 
-                if answer.evidence:
+                evidence = answer.get('evidence', [])
+                if evidence:
                     print(f"{_colorize('SOURCES:', 'dim')}")
-                    for i, ev in enumerate(answer.evidence, 1):
-                        snippet = ev.snippet or ev.text or ""
+                    for i, ev in enumerate(evidence, 1):
+                        snippet = ev.get('snippet') or ev.get('text') or ""
                         print(f"  {i}. {snippet}")
             else:
                 print(f"  {_colorize('⚠', 'yellow')} No answer generated.")
