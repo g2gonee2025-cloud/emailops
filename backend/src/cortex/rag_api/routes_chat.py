@@ -84,17 +84,17 @@ def _latest_user_message(messages: List[ChatMessage]) -> Optional[str]:
 def _decide_action(
     request: ChatRequest, history: List[ChatMessage], latest_user: str
 ) -> ChatActionDecision:
+    # P2 Fix: Use a structured prompt with clear delimiters to mitigate injection
     prompt = (
         "You are a routing assistant for EmailOps. Decide the next action.\n"
         "Choose one of: answer, search, summarize.\n"
-        "- Use summarize when the user requests a summary of an email thread or the conversation.\n"
-        "- Use search when you need to look up documents or knowledge base results.\n"
-        "- Otherwise answer directly using available context.\n\n"
-        f"Thread ID: {request.thread_id or 'none'}\n"
-        f"Latest user message: <user_input>{latest_user}</user_input>\n\n"
-        "Conversation history:\n"
-        f"{_format_history(history)}\n\n"
-        "Return JSON with fields: action, reason."
+        "- Use 'summarize' when the user requests a summary of an email thread or the conversation.\n"
+        "- Use 'search' when you need to look up documents or knowledge base results.\n"
+        "- Otherwise, 'answer' directly using available context.\n\n"
+        f"<thread_id>{request.thread_id or 'none'}</thread_id>\n"
+        f"<user_input>{latest_user}</user_input>\n\n"
+        f"<conversation_history>\n{_format_history(history)}\n</conversation_history>\n\n"
+        "Return JSON with fields: 'action' and 'reason'."
     )
     raw = complete_json(prompt=prompt, schema=ChatActionDecision.model_json_schema())
     return ChatActionDecision.model_validate(raw)
@@ -150,7 +150,16 @@ async def chat_endpoint(request: ChatRequest, http_request: Request) -> ChatResp
     latest_user, history = _validate_and_prepare_request(request)
 
     try:
-        decision = _decide_action(request, history, latest_user)
+        decision = await run_in_threadpool(
+            _decide_action, request, history, latest_user
+        )
+
+        classification = None
+        if decision.action in ["search", "answer"]:
+            classification = await run_in_threadpool(
+                tool_classify_query,
+                QueryClassificationInput(query=latest_user, use_llm=True),
+            )
 
         if decision.action == "summarize":
             response = await _handle_summarize(
@@ -158,11 +167,11 @@ async def chat_endpoint(request: ChatRequest, http_request: Request) -> ChatResp
             )
         elif decision.action == "search":
             response = await _handle_search(
-                request, latest_user, correlation_id, decision
+                request, latest_user, correlation_id, decision, classification
             )
         else:
             response = await _handle_answer(
-                request, history, latest_user, correlation_id, decision
+                request, history, latest_user, correlation_id, decision, classification
             )
 
         _log_chat_audit(
@@ -207,8 +216,18 @@ def _log_chat_audit(
 ) -> None:
     """Log audit event for chat."""
     try:
-        input_str = request.model_dump_json()
+        # P1 Fix: Avoid logging entire request (PII)
+        # Create a dictionary with only the necessary, non-sensitive data
+        audit_input = {
+            "thread_id": request.thread_id,
+            "messages": [
+                {"role": m.role, "content": f"<len={len(m.content or '')}>"}
+                for m in request.messages
+            ],
+        }
+        input_str = str(audit_input)
         input_hash = hashlib.sha256(input_str.encode()).hexdigest()
+
         log_audit_event(
             tenant_id=tenant_id,
             user_or_agent=user_id,
@@ -275,10 +294,9 @@ async def _handle_search(
     latest_user: str,
     correlation_id: Optional[str],
     decision: ChatActionDecision,
+    classification: QueryClassification,
 ) -> ChatResponse:
-    classification = tool_classify_query(
-        QueryClassificationInput(query=latest_user, use_llm=True)
-    )
+    # P1 Fix: Avoid blocking event loop with synchronous code
     results = await _run_search(latest_user, request.k, classification)
     results_dicts = [r.model_dump() for r in results.results] if results.results else []
     snippets = "\n".join(
@@ -307,10 +325,9 @@ async def _handle_answer(
     latest_user: str,
     correlation_id: Optional[str],
     decision: ChatActionDecision,
+    classification: QueryClassification,
 ) -> ChatResponse:
-    classification = tool_classify_query(
-        QueryClassificationInput(query=latest_user, use_llm=True)
-    )
+    # P1 Fix: Avoid blocking event loop with synchronous code
     results = await _run_search(latest_user, request.k, classification)
     context_state = {
         "retrieval_results": results,
