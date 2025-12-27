@@ -10,13 +10,29 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List
 
+from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from cortex.intelligence.query_expansion import expand_for_fts
+from sqlalchemy.engine import Row
+from cortex.db.session import SessionLocal, set_session_tenant
 
 logger = logging.getLogger(__name__)
+
+
+def _execute_query_in_thread(
+    stmt: Any, params: Dict[str, Any], tenant_id: str
+) -> List[Row]:
+    """
+    Executes a read-only SQLAlchemy query in a new session, suitable for a thread pool.
+    This is thread-safe as it creates and tears down a session for each call.
+    """
+    with SessionLocal() as session:
+        set_session_tenant(session, tenant_id)
+        result = session.execute(stmt, params)
+        return result.fetchall()
 
 
 # -----------------------------------------------------------------------------
@@ -46,8 +62,8 @@ class FTSResult(BaseModel):
     snippet: str
 
 
-def search_conversations_fts(
-    session: Session, query: str, tenant_id: str, limit: int = 50
+async def search_conversations_fts(
+    query: str, tenant_id: str, limit: int = 50
 ) -> List[FTSResult]:
     """
     Perform FTS search on conversations.
@@ -61,8 +77,7 @@ def search_conversations_fts(
         return []
 
     # Expand query with synonyms for better recall.
-    expanded_query = expand_for_fts(query)
-    logger.debug(f"Original FTS query: '{query}', Expanded: '{expanded_query}'")
+    expanded_query = await run_in_threadpool(expand_for_fts, query)
 
     # Search conversations by subject (weight A) and summary (weight B)
     stmt = text(
@@ -94,16 +109,14 @@ def search_conversations_fts(
     """
     )
 
-    results = session.execute(
-        stmt,
-        {
-            "query": query,
-            "tenant_id": tenant_id,
-            "limit": limit,
-            "cfg": _FTS_CONFIG,
-            "headline_opts": _HEADLINE_OPTIONS,
-        },
-    ).fetchall()
+    params = {
+        "query": expanded_query,
+        "tenant_id": tenant_id,
+        "limit": limit,
+        "cfg": _FTS_CONFIG,
+        "headline_opts": _HEADLINE_OPTIONS,
+    }
+    rows = await run_in_threadpool(_execute_query_in_thread, stmt, params, tenant_id)
 
     return [
         FTSResult(
@@ -112,7 +125,7 @@ def search_conversations_fts(
             score=float(row.score or 0.0),
             snippet=str(row.snippet or ""),
         )
-        for row in results
+        for row in rows
     ]
 
 
@@ -130,8 +143,7 @@ class ChunkFTSResult(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
-def search_chunks_fts(
-    session: Session,
+async def search_chunks_fts(
     query: str,
     tenant_id: str,
     limit: int = 50,
@@ -152,8 +164,7 @@ def search_chunks_fts(
         return []
 
     # Expand query with synonyms for better recall.
-    expanded_query = expand_for_fts(query)
-    logger.debug(f"Original FTS query: '{query}', Expanded: '{expanded_query}'")
+    expanded_query = await run_in_threadpool(expand_for_fts, query)
 
     conversation_filter_sql = ""
     params: Dict[str, Any] = {
@@ -178,6 +189,7 @@ def search_chunks_fts(
         params["is_attachment"] = is_attachment
 
     # File types filter (e.g., type:pdf returns only PDF chunks)
+    # PERFORMANCE: This requires a GIN index on extra_data.
     if file_types:
         where_clauses.append("c.extra_data->>'file_type' = ANY(:file_types)")
         params["file_types"] = file_types
@@ -209,7 +221,7 @@ def search_chunks_fts(
 
     stmt = text(query_str)
 
-    results = session.execute(stmt, params).fetchall()
+    rows = await run_in_threadpool(_execute_query_in_thread, stmt, params, tenant_id)
 
     return [
         ChunkFTSResult(
@@ -223,7 +235,7 @@ def search_chunks_fts(
             attachment_id=str(row.attachment_id) if row.attachment_id else None,
             metadata=dict(row.extra_data) if row.extra_data else {},
         )
-        for row in results
+        for row in rows
     ]
 
 

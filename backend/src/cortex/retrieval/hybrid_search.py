@@ -303,7 +303,7 @@ async def tool_kb_search_hybrid(args: KBSearchInput) -> Result[SearchResults, Re
         search_query = clean_query if clean_query.strip() else args.query
 
         # 1. Embed query for vector search (with caching)
-        query_embedding = _get_query_embedding(search_query, config)
+        query_embedding = await _get_query_embedding(search_query, config)
 
         with SessionLocal() as session:
             from cortex.db.session import set_session_tenant
@@ -313,8 +313,7 @@ async def tool_kb_search_hybrid(args: KBSearchInput) -> Result[SearchResults, Re
             # 1.5. Summary-Awareness: Find highly relevant threads by summary
             summary_boost_ids = set()
             try:
-                summary_hits = search_conversations_fts(
-                    session,
+                summary_hits = await search_conversations_fts(
                     search_query,
                     args.tenant_id,
                     limit=SUMMARY_SEARCH_LIMIT,
@@ -328,13 +327,12 @@ async def tool_kb_search_hybrid(args: KBSearchInput) -> Result[SearchResults, Re
                 logger.warning("Summary search failed: %s", e)
 
             # 2. Resolve Conversations (Navigational + Filters)
-            final_conversation_ids = _resolve_target_conversations(
+            final_conversation_ids = await _resolve_target_conversations(
                 session, args, search_query, k * candidates_multiplier, parsed_filters
             )
 
             # 3. Lexical search (FTS) on chunks
-            fts_chunk_results = search_chunks_fts(
-                session,
+            fts_chunk_results = await search_chunks_fts(
                 search_query,
                 args.tenant_id,
                 limit=k * candidates_multiplier,

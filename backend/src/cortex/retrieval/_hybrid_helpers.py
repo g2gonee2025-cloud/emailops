@@ -23,22 +23,28 @@ def _get_runtime() -> LLMRuntime:
     return _llm_runtime
 
 
-def _get_query_embedding(query: str, config: Any) -> Optional[np.ndarray]:
+from fastapi.concurrency import run_in_threadpool
+
+
+async def _get_query_embedding(query: str, config: Any) -> Optional[np.ndarray]:
     """Helper: Get query embedding with cache fallback."""
     try:
         # Check cache first
-        cached = get_cached_query_embedding(query, model=config.embedding.model_name)
+        cached = await run_in_threadpool(
+            get_cached_query_embedding, query, model=config.embedding.model_name
+        )
         if cached is not None:
             logger.debug("Using cached query embedding for: %s", query[:50])
             return cached
 
         # Use LLMRuntime which has CPU fallback logic
         runtime = _get_runtime()
-        embedding_array = runtime.embed_queries([query])
+        embedding_array = await run_in_threadpool(runtime.embed_queries, [query])
         embedding = embedding_array[0]
 
         # Cache the embedding
-        cache_query_embedding(
+        await run_in_threadpool(
+            cache_query_embedding,
             query,
             embedding,
             model=config.embedding.model_name,
@@ -49,7 +55,7 @@ def _get_query_embedding(query: str, config: Any) -> Optional[np.ndarray]:
         return None
 
 
-def _resolve_target_conversations(
+async def _resolve_target_conversations(
     session, args: Any, search_query: str, limit: int, parsed_filters: Any
 ) -> List[str]:
     """Helper: Resolve specific conversation IDs from navigation or filters."""
@@ -58,8 +64,7 @@ def _resolve_target_conversations(
     # 2. Optional navigational narrowing
     nav_conversation_ids: Optional[List[str]] = None
     if args.classification and args.classification.type == "navigational":
-        nav_hits = search_messages_fts(
-            session,
+        nav_hits = await search_messages_fts(
             search_query,
             args.tenant_id,
             limit=min(limit, 200),
