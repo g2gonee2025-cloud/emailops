@@ -2,12 +2,12 @@
 Unit tests for Search Filters and Grammar Parser.
 """
 
+import pytest
 from datetime import datetime, timezone
 
 from cortex.retrieval.filters import (
     SearchFilters,
     apply_filters_to_sql,
-    filter_results_post_query,
     parse_filter_grammar,
 )
 
@@ -170,61 +170,45 @@ class TestApplyFiltersToSql:
         assert "subject_term_0" in params
         assert "subject_term_1" in params
 
+    def test_from_emails_filter(self):
+        """Test from_emails generates correct JSONB SQL."""
+        f = SearchFilters(from_emails={"test@example.com"})
+        clause, params = apply_filters_to_sql(f)
+        assert "p->>'role' = 'sender'" in clause
+        assert "lower(p->>'smtp') = ANY(:from_emails)" in clause
+        assert params["from_emails"] == ["test@example.com"]
 
-class TestFilterResultsPostQuery:
-    """Tests for post-query filtering."""
+    def test_to_emails_filter(self):
+        """Test to_emails generates correct JSONB SQL."""
+        f = SearchFilters(to_emails={"test@example.com"})
+        clause, params = apply_filters_to_sql(f)
+        assert "p->>'role' = 'recipient'" in clause
+        assert "lower(p->>'smtp') = ANY(:to_emails)" in clause
+        assert params["to_emails"] == ["test@example.com"]
 
-    def test_empty_filters_returns_all(self):
-        """Test that empty filters return all results."""
-        results = [
-            {"id": "1", "text": "test"},
-            {"id": "2", "text": "test2"},
-        ]
-        f = SearchFilters()
+    def test_cc_emails_filter(self):
+        """Test cc_emails generates correct JSONB SQL."""
+        f = SearchFilters(cc_emails={"test@example.com"})
+        clause, params = apply_filters_to_sql(f)
+        assert "p->>'role' = 'cc'" in clause
+        assert "lower(p->>'smtp') = ANY(:cc_emails)" in clause
+        assert params["cc_emails"] == ["test@example.com"]
 
-        filtered = filter_results_post_query(results, f)
+    def test_file_types_filter(self):
+        """Test file_types generates correct SQL."""
+        f = SearchFilters(file_types={"pdf", "docx"})
+        clause, params = apply_filters_to_sql(f)
+        assert "metadata->>'file_type'" in clause
+        assert ":file_types" in clause
+        # Order is not guaranteed in set, so check for presence
+        assert "pdf" in params["file_types"]
+        assert "docx" in params["file_types"]
 
-        assert len(filtered) == 2
+    def test_sql_injection_invalid_alias(self):
+        """Test that invalid table aliases raise ValueError."""
+        f = SearchFilters(has_attachment=True)
+        with pytest.raises(ValueError):
+            apply_filters_to_sql(f, table_alias="c; DROP TABLE users;")
 
-    def test_from_email_filter(self):
-        """Test filtering by from_emails using metadata."""
-        results = [
-            {
-                "id": "1",
-                "metadata": {
-                    "participants": [
-                        {"smtp": "john@test.com", "role": "sender"},
-                        {"smtp": "jane@test.com", "role": "recipient"},
-                    ]
-                },
-            },
-            {
-                "id": "2",
-                "metadata": {
-                    "participants": [
-                        {"smtp": "jane@test.com", "role": "sender"},
-                    ]
-                },
-            },
-        ]
-        f = SearchFilters(from_emails={"john@test.com"})
-        filtered = filter_results_post_query(results, f)
-        assert len(filtered) == 1
-        assert filtered[0]["id"] == "1"
-    def test_participant_filters_no_match(self):
-        """Test OR logic for participant filters (no match)."""
-        results = [
-            {
-                "id": "1",
-                "metadata": {
-                    "participants": [
-                        {"smtp": "john@test.com", "role": "sender"},
-                        {"smtp": "jane@test.com", "role": "recipient"},
-                    ]
-                },
-            }
-        ]
-        # Looking for sender that doesn't exist
-        f = SearchFilters(from_emails={"nonexistent@test.com"})
-        filtered = filter_results_post_query(results, f)
-        assert len(filtered) == 0
+        with pytest.raises(ValueError):
+            apply_filters_to_sql(f, conversation_table_alias="conv; --")
