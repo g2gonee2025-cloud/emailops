@@ -357,11 +357,13 @@ def _process_push_ingest(
 ) -> PushIngestResponse:
     from cortex.chunking.chunker import ChunkingInput, chunk_text
     from cortex.config.loader import get_config
+    from cortex.db.models import Chunk
     from cortex.db.session import SessionLocal, set_session_tenant
     from cortex.embeddings.client import EmbeddingsClient
     from cortex.ingestion.models import IngestJobRequest
     from cortex.ingestion.text_preprocessor import get_text_preprocessor
-    from cortex.ingestion.writer import DBWriter
+    from cortex.ingestion.writer import DBWriter, ChunkRecord, ensure_chunk_metadata
+    from sqlalchemy import delete
 
     config = get_config()
     preprocessor = get_text_preprocessor()
@@ -379,13 +381,19 @@ def _process_push_ingest(
 
     tenant_ns = uuid.uuid5(uuid.NAMESPACE_DNS, f"tenant:{tenant_id}")
 
+    # Data to be written in a single transaction
+    conversations_to_write = []
+    chunks_to_write = []
+    cleanup_info: Dict[uuid.UUID, List[uuid.UUID]] = {}
+
     for document in request.documents:
         try:
             doc_key = document.document_id or str(uuid.uuid4())
-            if document.document_id:
-                conversation_id = _generate_stable_id(tenant_ns, "document", doc_key)
-            else:
-                conversation_id = uuid.uuid4()
+            conversation_id = (
+                _generate_stable_id(tenant_ns, "document", doc_key)
+                if document.document_id
+                else uuid.uuid4()
+            )
 
             cleaned_text, cleaning_meta = preprocessor.prepare_for_indexing(
                 document.text,
@@ -410,7 +418,7 @@ def _process_push_ingest(
             if embeddings_client and chunk_texts:
                 embeddings = embeddings_client.embed_batch(chunk_texts)
 
-            chunks_data = []
+            current_chunk_ids = []
             for idx, chunk in enumerate(chunk_models):
                 content_hash = chunk.metadata.get("content_hash", "")
                 chunk_id = _generate_stable_id(
@@ -420,6 +428,8 @@ def _process_push_ingest(
                     str(chunk.position),
                     content_hash,
                 )
+                current_chunk_ids.append(chunk_id)
+
                 extra_data = {
                     **chunk.metadata,
                     "document_id": doc_key,
@@ -429,10 +439,8 @@ def _process_push_ingest(
                 chunk_data = {
                     "chunk_id": chunk_id,
                     "conversation_id": conversation_id,
-                    "is_attachment": False,
-                    "is_summary": False,
-                    "chunk_type": chunk.chunk_type,
                     "text": chunk.text,
+                    "chunk_type": chunk.chunk_type,
                     "position": chunk.position,
                     "char_start": chunk.char_start,
                     "char_end": chunk.char_end,
@@ -441,13 +449,14 @@ def _process_push_ingest(
                     "source": "external",
                 }
                 if embeddings:
-                    first_embedding = embeddings[idx]
-                    if hasattr(first_embedding, "tolist"):
-                        chunk_data["embedding"] = first_embedding.tolist()
-                    else:
-                        chunk_data["embedding"] = list(first_embedding)
+                    embedding_list = embeddings[idx]
+                    chunk_data["embedding"] = (
+                        embedding_list.tolist()
+                        if hasattr(embedding_list, "tolist")
+                        else list(embedding_list)
+                    )
 
-                chunks_data.append(chunk_data)
+                chunks_to_write.append(chunk_data)
 
             conversation_extra = {
                 "document_id": doc_key,
@@ -460,6 +469,7 @@ def _process_push_ingest(
 
             conversation_data = {
                 "conversation_id": conversation_id,
+                "tenant_id": tenant_id,
                 "folder_name": document.document_id
                 or document.title
                 or str(conversation_id),
@@ -467,29 +477,11 @@ def _process_push_ingest(
                 "storage_uri": document.source,
                 "extra_data": conversation_extra,
             }
-
-            job_request = IngestJobRequest(
-                job_id=uuid.uuid4(),
-                tenant_id=tenant_id,
-                source_type="local_upload",
-                source_uri=document.source or "push",
-                options={"document_id": doc_key, "ingest_job_id": job_id},
-            )
-
-            with SessionLocal() as session:
-                set_session_tenant(session, tenant_id)
-                writer = DBWriter(session)
-                writer.write_job_results(
-                    job_request,
-                    {
-                        "conversation": conversation_data,
-                        "attachments": [],
-                        "chunks": chunks_data,
-                    },
-                )
+            conversations_to_write.append(conversation_data)
+            cleanup_info[conversation_id] = current_chunk_ids
 
             documents_ingested += 1
-            chunks_created += len(chunks_data)
+            chunks_created += len(chunk_models)
             if embeddings:
                 embeddings_generated += len(embeddings)
 
@@ -500,11 +492,49 @@ def _process_push_ingest(
                 "Push ingestion failed for %s: %s", error_ref, exc, exc_info=True
             )
 
-    message = (
-        f"Ingested {documents_ingested}/{len(request.documents)} documents "
-        f"into the index"
-    )
+    if documents_ingested > 0:
+        try:
+            with SessionLocal() as session:
+                set_session_tenant(session, tenant_id)
+                writer = DBWriter(session)
 
+                for conv_data in conversations_to_write:
+                    writer.write_conversation(**conv_data)
+
+                for chunk_data in chunks_to_write:
+                    source = chunk_data.get("source", "attachment")
+                    chunk_data = ensure_chunk_metadata(chunk_data, source=source)
+                    record = ChunkRecord(
+                        tenant_id=tenant_id,
+                        chunk_id=chunk_data["chunk_id"],
+                        conversation_id=chunk_data["conversation_id"],
+                        text=chunk_data["text"],
+                        chunk_type=chunk_data.get("chunk_type", "message_body"),
+                        embedding=chunk_data.get("embedding"),
+                        position=chunk_data.get("position", 0),
+                        char_start=chunk_data.get("char_start", 0),
+                        char_end=chunk_data.get("char_end", 0),
+                        section_path=chunk_data.get("section_path"),
+                        extra_data=chunk_data.get("extra_data"),
+                    )
+                    writer.write_chunk(record)
+
+                for cid, cids in cleanup_info.items():
+                    stmt = (
+                        delete(Chunk).where(Chunk.conversation_id == cid)
+                        if not cids
+                        else delete(Chunk).where(
+                            Chunk.conversation_id == cid, Chunk.chunk_id.notin_(cids)
+                        )
+                    )
+                    session.execute(stmt)
+                session.commit()
+        except Exception as exc:
+            errors.append(f"Database transaction failed: {exc}")
+            logger.error("Push ingestion DB transaction failed: %s", exc, exc_info=True)
+            documents_ingested = chunks_created = embeddings_generated = 0
+
+    message = f"Ingested {documents_ingested}/{len(request.documents)} documents"
     return PushIngestResponse(
         job_id=job_id,
         documents_received=len(request.documents),
