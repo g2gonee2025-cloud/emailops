@@ -3,7 +3,6 @@ from unittest.mock import MagicMock, patch
 
 from cortex.ingestion.backfill import (
     _get_chunks_without_embeddings,
-    _get_missing_embeddings_count,
     _process_embedding_batch,
     backfill_embeddings,
     get_openai_client,
@@ -37,20 +36,17 @@ class TestBackfill(unittest.TestCase):
 
     @patch("cortex.ingestion.backfill.SessionLocal")
     @patch("cortex.ingestion.backfill.get_openai_client")
-    @patch("cortex.ingestion.backfill._get_missing_embeddings_count")
     @patch("cortex.ingestion.backfill._get_chunks_without_embeddings")
     @patch("cortex.ingestion.backfill._process_embedding_batch")
     def test_backfill_flow(
         self,
         mock_process,
         mock_get_chunks,
-        mock_count,
         mock_client_factory,
         mock_session,
     ):
         client = MagicMock()
         mock_client_factory.return_value = client
-        mock_count.return_value = 10
 
         # Determine chunks returned
         chunk = MagicMock()
@@ -65,12 +61,6 @@ class TestBackfill(unittest.TestCase):
         backfill_embeddings(limit=None)
 
         mock_process.assert_called()
-
-    def test_get_missing_embeddings_count(self):
-        session = MagicMock()
-        session.execute.return_value.scalar.return_value = 5
-        res = _get_missing_embeddings_count(session)
-        self.assertEqual(res, 5)
 
     def test_get_chunks_without_embeddings(self):
         session = MagicMock()
