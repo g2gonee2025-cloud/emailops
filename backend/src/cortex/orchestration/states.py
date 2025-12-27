@@ -11,9 +11,10 @@ from typing import Any, List, Optional
 
 from cortex.domain_models.facts_ledger import CriticReview, FactsLedger
 from cortex.domain_models.rag import Answer, DraftCritique, EmailDraft, ThreadSummary
+from cortex.orchestration.redacted import Redacted
 from cortex.retrieval.query_classifier import QueryClassification
 from cortex.retrieval.results import SearchResults
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, SecretStr
 
 # Default configuration constants
 DEFAULT_RETRIEVAL_K = 10  # Number of chunks to retrieve
@@ -22,12 +23,23 @@ DEFAULT_SUMMARY_MAX_LENGTH = 500  # Max summary length in words
 
 class GraphState(BaseModel):
     """Base class that exposes dict-like helpers for LangGraph nodes."""
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     # Internal metadata
     _graph_type: str = "unknown"
 
     def get(self, key: str, default: Any | None = None) -> Any | None:
         return getattr(self, key, default)
+
+    def __repr__(self) -> str:
+        """Return a redacted representation of the state."""
+        field_reprs = []
+        for field_name, field_value in self:
+            if isinstance(field_value, (Redacted, SecretStr)):
+                field_reprs.append(f"{field_name}='REDACTED'")
+            else:
+                field_reprs.append(f"{field_name}={field_value!r}")
+        return f"{self.__class__.__name__}({', '.join(field_reprs)})"
 
 
 class AnswerQuestionState(GraphState):
@@ -46,7 +58,7 @@ class AnswerQuestionState(GraphState):
     * error: Optional[str]
     """
 
-    query: str
+    query: SecretStr
     tenant_id: str
     user_id: str
     thread_id: Optional[str] = None
@@ -54,8 +66,8 @@ class AnswerQuestionState(GraphState):
     debug: bool = False
     classification: Optional[QueryClassification] = None
     retrieval_results: Optional[SearchResults] = None
-    assembled_context: Optional[str] = None
-    graph_context: Optional[str] = None
+    assembled_context: Optional[Redacted] = None
+    graph_context: Optional[Redacted] = None
     answer: Optional[Answer] = None
     error: Optional[str] = None
     correlation_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -74,17 +86,17 @@ class DraftEmailState(GraphState):
 
     tenant_id: str
     user_id: str
-    to: List[str] = Field(default_factory=list)
-    cc: List[str] = Field(default_factory=list)
+    to: List[SecretStr] = Field(default_factory=list)
+    cc: List[SecretStr] = Field(default_factory=list)
     subject: Optional[str] = None
     tone: Optional[str] = None
     reply_to_message_id: Optional[str] = None
     thread_id: Optional[str] = None
-    thread_context: Optional[str] = None  # Loaded from DB if thread_id is present
-    explicit_query: Optional[str] = None
-    draft_query: Optional[str] = None
+    thread_context: Optional[Redacted] = None  # Loaded from DB if thread_id is present
+    explicit_query: Optional[SecretStr] = None
+    draft_query: Optional[SecretStr] = None
     retrieval_results: Optional[SearchResults] = None
-    assembled_context: Optional[str] = None
+    assembled_context: Optional[Redacted] = None
     draft: Optional[EmailDraft] = None
     critique: Optional[DraftCritique] = None
     iteration_count: int = 0
@@ -105,7 +117,7 @@ class SummarizeThreadState(GraphState):
     user_id: str
     thread_id: str
     max_length: int = DEFAULT_SUMMARY_MAX_LENGTH
-    thread_context: Optional[str] = None  # Raw text of thread
+    thread_context: Optional[Redacted] = None  # Raw text of thread
     facts_ledger: Optional[FactsLedger] = None
     critique: Optional[CriticReview] = None
     iteration_count: int = 0
