@@ -8,13 +8,14 @@ from __future__ import annotations
 
 import logging
 import time
-from contextlib import contextmanager
-from typing import Any, Callable, Generator, Optional
+from contextlib import asynccontextmanager, contextmanager
+from typing import Any, AsyncGenerator, Callable, Generator, Optional
 
 from cortex.common.exceptions import TransactionError
 from cortex.config.loader import get_config
 from cortex.observability import trace_operation
 from sqlalchemy import create_engine, event, text
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 # Constants
@@ -95,6 +96,29 @@ engine = create_engine(
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
+# Async Engine and Session
+async_engine_args = engine_args.copy()
+async_url = _config.database.url.replace("postgresql://", "postgresql+asyncpg://")
+
+async_engine = create_async_engine(
+    async_url,
+    **async_engine_args,
+)
+
+AsyncSessionLocal = sessionmaker(
+    autocommit=False, autoflush=False, bind=async_engine, class_=AsyncSession
+)
+
+
+async def get_async_db() -> AsyncGenerator[AsyncSession, None]:
+    """
+    Dependency for getting an async database session.
+    Yields a SQLAlchemy AsyncSession and ensures it's closed after use.
+    """
+    async with AsyncSessionLocal() as session:
+        yield session
+
+
 def get_db() -> Generator[Session, None, None]:
     """
     Dependency for getting a database session.
@@ -105,6 +129,30 @@ def get_db() -> Generator[Session, None, None]:
         yield db
     finally:
         db.close()
+
+
+@asynccontextmanager
+async def get_async_db_session(
+    tenant_id: Optional[str] = None,
+) -> AsyncGenerator[AsyncSession, None]:
+    """
+    Context manager for async database sessions with optional RLS tenant context.
+    """
+    session = AsyncSessionLocal()
+    try:
+        if tenant_id:
+            await set_async_session_tenant(session, tenant_id)
+        yield session
+        await session.commit()
+    except Exception as e:
+        await session.rollback()
+        raise TransactionError(
+            message=f"Database transaction failed: {e}",
+            error_code="TRANSACTION_FAILED",
+            context={"original_error": str(e)},
+        ) from e
+    finally:
+        await session.close()
 
 
 @contextmanager
@@ -153,6 +201,36 @@ def get_db_session(tenant_id: Optional[str] = None) -> Generator[Session, None, 
 
     finally:
         session.close()
+
+
+async def set_async_session_tenant(session: AsyncSession, tenant_id: str) -> None:
+    """
+    Set the RLS tenant context for an async session.
+    """
+    import re
+
+    if not tenant_id:
+        raise TransactionError(
+            message="tenant_id is required for RLS",
+            error_code="RLS_TENANT_REQUIRED",
+        )
+    if not re.match(r"^[a-zA-Z0-9_-]+$", tenant_id):
+        raise TransactionError(
+            message=f"Invalid tenant_id format: {tenant_id}",
+            error_code="RLS_TENANT_INVALID",
+        )
+
+    try:
+        await session.execute(
+            text("SET app.current_tenant = :tenant_id"), {"tenant_id": tenant_id}
+        )
+        logger.debug(f"Set RLS tenant context: {tenant_id}")
+    except Exception as e:
+        raise TransactionError(
+            message=f"Failed to set RLS tenant: {e}",
+            error_code="RLS_SET_FAILED",
+            context={"tenant_id": tenant_id},
+        ) from e
 
 
 def set_session_tenant(session: Session, tenant_id: str) -> None:

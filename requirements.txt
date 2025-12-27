@@ -89,3 +89,4 @@ mcp==1.23.0
 langgraph
 python-dotenv
 thefuzz
+asyncpg

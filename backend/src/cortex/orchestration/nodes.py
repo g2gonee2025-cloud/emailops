@@ -530,7 +530,7 @@ def _extract_evidence_from_answer(
 from cortex.audit import log_audit_event
 
 
-def node_handle_error(state: Dict[str, Any]) -> Dict[str, Any]:
+async def node_handle_error(state: Dict[str, Any]) -> Dict[str, Any]:
     """
     Handle errors in graph execution.
 
@@ -548,7 +548,7 @@ def node_handle_error(state: Dict[str, Any]) -> Dict[str, Any]:
 
     # Record error to audit_log
     try:
-        log_audit_event(
+        await log_audit_event(
             tenant_id=state.get("tenant_id", "unknown"),
             user_or_agent=state.get("user_id", "system"),
             action="graph_error",
@@ -738,7 +738,7 @@ def node_classify_query(state: Dict[str, Any]) -> Dict[str, Any]:
         }
 
 
-def node_retrieve_context(state: Dict[str, Any]) -> Dict[str, Any]:
+async def node_retrieve_context(state: Dict[str, Any]) -> Dict[str, Any]:
     """
     Retrieve context based on query and classification.
 
@@ -759,7 +759,7 @@ def node_retrieve_context(state: Dict[str, Any]) -> Dict[str, Any]:
             classification=classification,
             k=k,
         )
-        results = tool_kb_search_hybrid(args)
+        results = await tool_kb_search_hybrid(args)
         return {"retrieval_results": results}
     except Exception as e:
         logger.error(f"Retrieval failed: {e}")

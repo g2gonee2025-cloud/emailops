@@ -37,7 +37,7 @@ async def test_summarize_thread_endpoint_graph_error():
             new_callable=AsyncMock,
             return_value=mock_graph,
         ), \
-         patch("cortex.rag_api.routes_summarize.log_audit_event") as mock_audit:
+         patch("cortex.rag_api.routes_summarize.log_audit_event", new_callable=AsyncMock) as mock_audit:
 
         # Act & Assert
         with pytest.raises(HTTPException) as exc_info:

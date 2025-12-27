@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from cortex.orchestration.nodes import (
     _extract_entity_mentions,
@@ -155,8 +155,8 @@ class TestExtractEntityMentions:
 class TestNodeHandleError:
     """Test error handling node."""
 
-    @patch("cortex.orchestration.nodes.log_audit_event")
-    def test_handle_error_logs_and_returns(self, mock_audit):
+    @patch("cortex.orchestration.nodes.log_audit_event", new_callable=AsyncMock)
+    async def test_handle_error_logs_and_returns(self, mock_audit):
         """Test error handling logs and returns error state."""
         state = {
             "error": "Something went wrong",
@@ -165,29 +165,29 @@ class TestNodeHandleError:
             "query": "test query",
         }
 
-        result = node_handle_error(state)
+        result = await node_handle_error(state)
 
         assert result["error"] == "Something went wrong"
         mock_audit.assert_called_once()
 
-    @patch("cortex.orchestration.nodes.log_audit_event")
-    def test_handle_error_default_error(self, mock_audit):
+    @patch("cortex.orchestration.nodes.log_audit_event", new_callable=AsyncMock)
+    async def test_handle_error_default_error(self, mock_audit):
         """Test error handling with no error in state."""
         state = {}  # No error provided
 
-        result = node_handle_error(state)
+        result = await node_handle_error(state)
 
         assert result["error"] == "Unknown error"
 
-    @patch("cortex.orchestration.nodes.log_audit_event")
-    def test_handle_error_audit_failure_is_caught(self, mock_audit):
+    @patch("cortex.orchestration.nodes.log_audit_event", new_callable=AsyncMock)
+    async def test_handle_error_audit_failure_is_caught(self, mock_audit):
         """Test that audit logging failure doesn't crash the handler."""
         mock_audit.side_effect = Exception("Audit failed")
 
         state = {"error": "original error"}
 
         # Should not raise, should still return
-        result = node_handle_error(state)
+        result = await node_handle_error(state)
         assert result["error"] == "original error"
 
 
@@ -340,8 +340,8 @@ class TestNodeQueryGraph:
 class TestNodeRetrieveContext:
     """Test node_retrieve_context function."""
 
-    @patch("cortex.orchestration.nodes.tool_kb_search_hybrid")
-    def test_node_retrieve_context_success(self, mock_search):
+    @patch("cortex.orchestration.nodes.tool_kb_search_hybrid", new_callable=AsyncMock)
+    async def test_node_retrieve_context_success(self, mock_search):
         """Test successful retrieval."""
         from cortex.orchestration.nodes import node_retrieve_context
 
@@ -358,11 +358,11 @@ class TestNodeRetrieveContext:
             "tenant_id": "test",
             "user_id": "user1",
         }
-        result = node_retrieve_context(state)
+        result = await node_retrieve_context(state)
         assert "retrieval_results" in result
 
-    @patch("cortex.orchestration.nodes.tool_kb_search_hybrid")
-    def test_node_retrieve_context_error(self, mock_search):
+    @patch("cortex.orchestration.nodes.tool_kb_search_hybrid", new_callable=AsyncMock)
+    async def test_node_retrieve_context_error(self, mock_search):
         """Test retrieval error handling."""
         from cortex.orchestration.nodes import node_retrieve_context
 
@@ -374,7 +374,7 @@ class TestNodeRetrieveContext:
             "tenant_id": "test",
             "user_id": "user1",
         }
-        result = node_retrieve_context(state)
+        result = await node_retrieve_context(state)
         assert "error" in result
 
 
