@@ -186,13 +186,13 @@ class PIIEngine:
                 logger.info(
                     f"PIIEngine initialized with Presidio. Entities: {len(self.entities)}"
                 )
-            except Exception as e:
+            except (ValueError, TypeError, ImportError) as e:
                 if strict:
                     raise PIIInitError(
                         f"Failed to initialize Presidio in strict mode: {e}"
                     ) from e
                 logger.error(
-                    "Failed to initialize Presidio: %s. Using regex fallback.", e
+                    "Failed to initialize Presidio. Using regex fallback. Error: %s", type(e).__name__
                 )
                 self.analyzer = None
                 self.anonymizer = None
@@ -218,6 +218,45 @@ class PIIEngine:
             "replace", {"new_value": ENTITY_PLACEHOLDERS["DEFAULT"]}
         )
 
+    def _merge_pii_entities(
+        self, presidio_entities: list[PIIEntity], regex_entities: list[PIIEntity]
+    ) -> list[PIIEntity]:
+        """Merge PII entities from Presidio and regex, removing overlaps."""
+        # Add a temporary 'source' attribute to handle precedence
+        all_entities = [(ent, "presidio") for ent in presidio_entities] + [
+            (ent, "regex") for ent in regex_entities
+        ]
+
+        # Sort by start pos, then by source precedence (presidio > regex), then by length descending
+        def sort_key(item):
+            ent, source = item
+            source_precedence = 0 if source == "presidio" else 1
+            return (ent.start, source_precedence, -(ent.end - ent.start))
+
+        all_entities.sort(key=sort_key)
+
+        if not all_entities:
+            return []
+
+        merged = []
+        last_entity_item = all_entities[0]
+
+        for current_entity_item in all_entities[1:]:
+            last_entity, _ = last_entity_item
+            current_entity, _ = current_entity_item
+
+            # If current entity starts after or at the same point as the last one ends, no overlap.
+            if current_entity.start >= last_entity.end:
+                merged.append(last_entity)
+                last_entity_item = current_entity_item
+            # Otherwise, there is an overlap. Because of the sort order, we keep `last_entity`
+            # and discard `current_entity`.
+            else:
+                pass
+
+        merged.append(last_entity_item[0])
+        return merged
+
     def detect(self, text: str) -> list[PIIEntity]:
         """
         Detect PII entities in text without redacting.
@@ -233,13 +272,13 @@ class PIIEngine:
 
         if self.analyzer:
             try:
-                results = self.analyzer.analyze(
+                presidio_results = self.analyzer.analyze(
                     text=text,
                     entities=self.entities,
                     language=self.language,
                     score_threshold=self.score_threshold,
                 )
-                return [
+                presidio_entities = [
                     PIIEntity(
                         entity_type=r.entity_type,
                         text=text[r.start : r.end],
@@ -247,10 +286,12 @@ class PIIEngine:
                         end=r.end,
                         score=r.score,
                     )
-                    for r in results
-                ] + self._fallback.detect(text)
-            except Exception as e:
-                logger.warning(f"Presidio detection failed: {e}. Using fallback.")
+                    for r in presidio_results
+                ]
+                regex_entities = self._fallback.detect(text)
+                return self._merge_pii_entities(presidio_entities, regex_entities)
+            except (ValueError, TypeError) as e:
+                logger.warning("Presidio detection failed. Using fallback. Error: %s", type(e).__name__)
 
         # Use regex fallback
         return self._fallback.detect(text)
@@ -293,14 +334,28 @@ class PIIEngine:
         if self.analyzer and self.anonymizer:
             try:
                 # Presidio-based redaction
-                results = self.analyzer.analyze(
+                presidio_results = self.analyzer.analyze(
                     text=text,
                     entities=self.entities,
                     language=self.language,
                     score_threshold=self.score_threshold,
                 )
 
-                if not results:
+                presidio_entities = [
+                    PIIEntity(
+                        entity_type=r.entity_type,
+                        text=text[r.start:r.end],
+                        start=r.start,
+                        end=r.end,
+                        score=r.score,
+                    )
+                    for r in presidio_results
+                ]
+                regex_entities = self._fallback.detect(text)
+                merged_entities = self._merge_pii_entities(presidio_entities, regex_entities)
+
+
+                if not merged_entities:
                     return PIIDetectionResult(
                         original_text=text,
                         redacted_text=text,
@@ -309,48 +364,39 @@ class PIIEngine:
                         was_modified=False,
                     )
 
-                # Merge with regex fallback
-                regex_entities = self._fallback.detect(text)
-                for ent in regex_entities:
-                    # Check for overlap with existing results
-                    overlap = False
-                    for r in results:
-                        if (ent.start < r.end) and (ent.end > r.start):
-                            overlap = True
-                            break
-
-                    if not overlap and _RecognizerResult:
-                        results.append(
-                            _RecognizerResult(
-                                entity_type=ent.entity_type,
-                                start=ent.start,
-                                end=ent.end,
-                                score=ent.score,
-                            )
-                        )
+                # Convert back to RecognizerResult for anonymizer
+                merged_recognizer_results = [
+                    _RecognizerResult(
+                        entity_type=ent.entity_type,
+                        start=ent.start,
+                        end=ent.end,
+                        score=ent.score,
+                    )
+                    for ent in merged_entities
+                ]
 
                 # Count entities
                 entities_count = {}
-                for r in results:
+                for r in merged_recognizer_results:
                     entities_count[r.entity_type] = (
                         entities_count.get(r.entity_type, 0) + 1
                     )
 
                 # Anonymize
                 anonymized = self.anonymizer.anonymize(
-                    text=text, analyzer_results=results, operators=self._operators
+                    text=text, analyzer_results=merged_recognizer_results, operators=self._operators
                 )
 
                 return PIIDetectionResult(
                     original_text=text,
                     redacted_text=anonymized.text,
                     entities_found=entities_count,
-                    total_entities=len(results),
+                    total_entities=len(merged_recognizer_results),
                     was_modified=True,
                 )
 
-            except Exception as e:
-                logger.error(f"PII redaction error: {e}")
+            except (ValueError, TypeError) as e:
+                logger.error("PII redaction error: %s", type(e).__name__)
 
         # Regex fallback redaction
         entities = self._fallback.detect(text)
@@ -395,17 +441,22 @@ class PIIEngine:
 
 
 # Module-level singleton
+import threading
+
 _engine: PIIEngine | None = None
+_engine_lock = threading.Lock()
 
 
 def get_pii_engine() -> PIIEngine:
     """Get the singleton PII engine instance."""
     global _engine
     if _engine is None:
-        config = get_config()
-        strict_cfg = getattr(config, "pii", None)
-        strict_mode = strict_cfg.strict if strict_cfg is not None else True
-        _engine = PIIEngine(strict=strict_mode)
+        with _engine_lock:
+            if _engine is None:
+                config = get_config()
+                strict_cfg = getattr(config, "pii", None)
+                strict_mode = strict_cfg.strict if strict_cfg is not None else True
+                _engine = PIIEngine(strict=strict_mode)
     return _engine
 
 
