@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import logging
 import re
+import threading
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -396,16 +397,19 @@ class PIIEngine:
 
 # Module-level singleton
 _engine: PIIEngine | None = None
+_pii_engine_lock = threading.Lock()
 
 
 def get_pii_engine() -> PIIEngine:
     """Get the singleton PII engine instance."""
     global _engine
     if _engine is None:
-        config = get_config()
-        strict_cfg = getattr(config, "pii", None)
-        strict_mode = strict_cfg.strict if strict_cfg is not None else True
-        _engine = PIIEngine(strict=strict_mode)
+        with _pii_engine_lock:
+            if _engine is None:
+                config = get_config()
+                strict_cfg = getattr(config, "pii", None)
+                strict_mode = strict_cfg.strict if strict_cfg is not None else True
+                _engine = PIIEngine(strict=strict_mode)
     return _engine
 
 
