@@ -224,7 +224,6 @@ class TestCmdDoctor(unittest.TestCase):
                     "--check-exports",
                     "--check-ingest",
                     "--check-embeddings",
-                    "--check-reranker",
                 ],
             ),
             # Patch module-level imports used by check_index_health
@@ -239,7 +238,24 @@ class TestCmdDoctor(unittest.TestCase):
                 "cortex_cli.cmd_doctor._test_parser_on_file",
                 return_value=(True, "Subject", None),
             ),
+            patch("cortex_cli.cmd_doctor.check_reranker", return_value=(True, None)),
         ):
+            # Setup DB mock
+            # Link module-level mock to the same engine mock configuration
+            mock_create_engine_mod.return_value = mock_engine.return_value
+
+            mock_conn = MagicMock()
+            mock_engine.return_value.connect.return_value.__enter__.return_value = (
+                mock_conn
+            )
+            mock_result = MagicMock()
+            mock_conn.execute.return_value = mock_result
+
+            # Helper for sequential calls to execute/fetchone
+            mock_result.scalar.return_value = 1
+            # check_index_health calls fetchone() expecting an object with .dim
+            # check_db is not called by main() in this flow, so we don't need migration response
+            mock_result.fetchone.return_value = MagicMock(dim=768, name="test")
             # Setup file system mocks
             mock_path_instance = mock_path_cls.return_value
             mock_root = mock_path_instance.expanduser.return_value.resolve.return_value
