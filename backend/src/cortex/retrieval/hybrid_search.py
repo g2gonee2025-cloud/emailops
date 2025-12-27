@@ -264,7 +264,10 @@ def fuse_weighted_sum(
     return sorted(combined.values(), key=lambda i: i.fusion_score or 0.0, reverse=True)
 
 
-async def tool_kb_search_hybrid(args: KBSearchInput) -> Result[SearchResults, RetrievalError]:
+async def tool_kb_search_hybrid(
+    args: KBSearchInput,
+    llm_runtime: "LLMRuntime",
+) -> Result[SearchResults, RetrievalError]:
     """
     Perform hybrid search (FTS + Vector + RRF).
 
@@ -303,7 +306,7 @@ async def tool_kb_search_hybrid(args: KBSearchInput) -> Result[SearchResults, Re
         search_query = clean_query if clean_query.strip() else args.query
 
         # 1. Embed query for vector search (with caching)
-        query_embedding = _get_query_embedding(search_query, config)
+        query_embedding = _get_query_embedding(search_query, config, llm_runtime)
 
         with SessionLocal() as session:
             from cortex.db.session import set_session_tenant

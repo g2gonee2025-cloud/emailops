@@ -124,20 +124,19 @@ class TestHybridSearch:
         assert fused[0].lexical_score == pytest.approx(0.5)
         assert fused[0].vector_score == pytest.approx(0.8)
 
+    @pytest.mark.asyncio
     @patch("cortex.config.loader.get_config")
     @patch("cortex.db.session.SessionLocal")
-    @patch("cortex.retrieval._hybrid_helpers._get_runtime")
     @patch("cortex.retrieval.fts_search.search_chunks_fts")
     @patch("cortex.retrieval.vector_search.search_chunks_vector")
     @patch("cortex.retrieval.cache.get_cached_query_embedding")
     @patch("cortex.retrieval.hybrid_search._get_conversation_timestamps")
-    def test_tool_kb_search_hybrid_flow(
+    async def test_tool_kb_search_hybrid_flow(
         self,
         mock_timestamps,
         mock_get_cache,
         mock_search_vector,
         mock_search_fts,
-        mock_get_runtime,
         mock_session_cls,
         mock_get_config,
     ):
@@ -160,7 +159,6 @@ class TestHybridSearch:
         mock_session = Mock()
         mock_session_cls.return_value.__enter__.return_value = mock_session
         mock_runtime = Mock()
-        mock_get_runtime.return_value = mock_runtime
 
         # Setup Cache miss then Embed via mocked runtime
         mock_get_cache.return_value = None
@@ -198,7 +196,9 @@ class TestHybridSearch:
             user_id="u1",
             query="test query",
         )
-        result = tool_kb_search_hybrid(input_args)
+
+        with patch("cortex.llm.runtime.LLMRuntime", return_value=mock_runtime):
+            result = await tool_kb_search_hybrid(input_args, mock_runtime)
 
         # Verification
         assert result.is_ok()
@@ -213,12 +213,13 @@ class TestHybridSearch:
         mock_search_vector.assert_called_once()
         mock_timestamps.assert_called_once()
 
+    @pytest.mark.asyncio
     @patch("cortex.config.loader.get_config")
     @patch("cortex.db.session.SessionLocal")
     @patch("cortex.retrieval.fts_search.search_messages_fts")
     @patch("cortex.retrieval.fts_search.search_chunks_fts")
     @patch("cortex.retrieval.vector_search.search_chunks_vector")
-    def test_navigational_search(
+    async def test_navigational_search(
         self, mock_vector, mock_fts, mock_msg_fts, mock_session_cls, mock_config
     ):
         """Test navigational search logic triggers message search."""
@@ -256,11 +257,10 @@ class TestHybridSearch:
             ),
         )
 
-        with patch("cortex.retrieval._hybrid_helpers._get_runtime") as mock_get_runtime:
-            mock_runtime = Mock()
-            mock_runtime.embed_queries.return_value = np.array([[0.1]])
-            mock_get_runtime.return_value = mock_runtime
-            tool_kb_search_hybrid(input_args)
+        mock_runtime = Mock()
+        mock_runtime.embed_queries.return_value = np.array([[0.1]])
+        with patch("cortex.llm.runtime.LLMRuntime", return_value=mock_runtime):
+            await tool_kb_search_hybrid(input_args, mock_runtime)
 
         # Verify message search was called
         mock_msg_fts.assert_called_once()
@@ -271,11 +271,12 @@ class TestHybridSearch:
         assert "c_nav" in kwargs["conversation_ids"]
 
 
+    @pytest.mark.asyncio
     @patch("cortex.config.loader.get_config")
     @patch("cortex.db.session.SessionLocal")
     @patch("cortex.retrieval.fts_search.search_chunks_fts")
     @patch("cortex.retrieval.vector_search.search_chunks_vector")
-    def test_sql_injection_through_file_types(
+    async def test_sql_injection_through_file_types(
         self, mock_vector, mock_fts, mock_session_cls, mock_config
     ):
         """Test that file_types filter is not vulnerable to SQL injection."""
@@ -303,12 +304,11 @@ class TestHybridSearch:
             query=malicious_query,
         )
 
-        with patch("cortex.retrieval._hybrid_helpers._get_runtime") as mock_get_runtime:
-            mock_runtime = Mock()
-            # Simulate embedding for the cleaned query part, which is empty
-            mock_runtime.embed_queries.return_value = np.array([[]])
-            mock_get_runtime.return_value = mock_runtime
-            tool_kb_search_hybrid(input_args)
+        mock_runtime = Mock()
+        # Simulate embedding for the cleaned query part, which is empty
+        mock_runtime.embed_queries.return_value = np.array([[]])
+        with patch("cortex.llm.runtime.LLMRuntime", return_value=mock_runtime):
+            await tool_kb_search_hybrid(input_args, mock_runtime)
 
         # Verify that search_chunks_fts was called
         mock_fts.assert_called_once()

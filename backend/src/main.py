@@ -550,6 +550,18 @@ async def lifespan(app: FastAPI):
 
     logger.info(f"Starting {APP_NAME} v{APP_VERSION} ({config.core.env})")
 
+    # Initialize LLMRuntime
+    try:
+        from cortex.llm.runtime import LLMRuntime
+
+        logger.info("Initializing LLMRuntime...")
+        app.state.llm_runtime = LLMRuntime()
+        logger.info("✓ LLMRuntime initialized")
+    except Exception as e:
+        logger.error(f"Failed to initialize LLMRuntime: {e}", exc_info=True)
+        # Depending on desired behavior, you might want to exit if this fails
+        app.state.llm_runtime = None
+
     # P0 Fix: Pre-compile LangGraph instances for thread-safety
     # Prevents race conditions from concurrent lazy compilation
     try:
@@ -561,8 +573,10 @@ async def lifespan(app: FastAPI):
 
         logger.info("Pre-compiling LangGraph instances...")
         compiled_graphs = {
-            "answer": build_answer_graph().compile(),
-            "draft": build_draft_graph().compile(),
+            "answer": build_answer_graph(
+                llm_runtime=app.state.llm_runtime
+            ).compile(),
+            "draft": build_draft_graph(llm_runtime=app.state.llm_runtime).compile(),
             "summarize": build_summarize_graph().compile(),
         }
         app.state.graphs = compiled_graphs

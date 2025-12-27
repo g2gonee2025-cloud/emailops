@@ -14,8 +14,9 @@ from cortex.retrieval.results import SearchResults
 RetrievalKBSearchInput = HybridSearchInput
 
 
-def tool_kb_search_hybrid(
+async def tool_kb_search_hybrid(
     args: Union[KBSearchInput, RetrievalKBSearchInput],
+    llm_runtime: "LLMRuntime",
 ) -> SearchResults:
     """Run hybrid search using the retrieval tool."""
 
@@ -24,4 +25,4 @@ def tool_kb_search_hybrid(
     tool_input = (
         args if isinstance(args, RetrievalKBSearchInput) else args.to_tool_input()
     )
-    return retrieval_tool_kb_search_hybrid(tool_input)
+    return await retrieval_tool_kb_search_hybrid(tool_input, llm_runtime)

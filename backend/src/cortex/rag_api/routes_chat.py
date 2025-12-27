@@ -74,7 +74,7 @@ def _latest_user_message(messages: List[ChatMessage]) -> Optional[str]:
     return None
 
 
-def _decide_action(
+async def _decide_action(
     request: ChatRequest, history: List[ChatMessage], latest_user: str
 ) -> ChatActionDecision:
     prompt = (
@@ -118,7 +118,10 @@ def _build_retrieval_diagnostics(
     return diagnostics
 
 
-async def _run_search(query: str, k: int, classification: Any) -> SearchResults:
+async def _run_search(
+    query: str, k: int, classification: Any, llm_runtime: Any
+) -> SearchResults:
+    """Run search and handle Result object."""
     tool_input = KBSearchInput(
         tenant_id=tenant_id_ctx.get(),
         user_id=user_id_ctx.get(),
@@ -126,7 +129,17 @@ async def _run_search(query: str, k: int, classification: Any) -> SearchResults:
         k=k,
         classification=classification,
     )
-    return await run_in_threadpool(tool_kb_search_hybrid, tool_input)
+    # The tool is async, so it should be awaited directly, not in a thread pool.
+    # This also fixes a bug where the coroutine was not awaited.
+    result = await tool_kb_search_hybrid(tool_input, llm_runtime)
+
+    if not result.is_ok():
+        err = result.unwrap_err()
+        logger.error(f"Hybrid search failed during chat: {err}")
+        # Re-raise as HTTPException to be caught by the main error handler
+        raise HTTPException(status_code=500, detail="Search operation failed.")
+
+    return result.unwrap()
 
 
 @router.post("/chat", response_model=ChatResponse)
@@ -149,7 +162,7 @@ async def chat_endpoint(
     latest_user, history = _validate_and_prepare_request(request)
 
     try:
-        decision = _decide_action(request, history, latest_user)
+        decision = await _decide_action(request, history, latest_user)
 
         if decision.action == "summarize":
             response = await _handle_summarize(
@@ -157,11 +170,11 @@ async def chat_endpoint(
             )
         elif decision.action == "search":
             response = await _handle_search(
-                request, latest_user, correlation_id, decision
+                request, latest_user, correlation_id, decision, http_request
             )
         else:
             response = await _handle_answer(
-                request, history, latest_user, correlation_id, decision
+                request, history, latest_user, correlation_id, decision, http_request
             )
 
         _log_chat_audit(
@@ -279,12 +292,14 @@ async def _handle_search(
     latest_user: str,
     correlation_id: Optional[str],
     decision: ChatActionDecision,
+    http_request: Request,
 ) -> ChatResponse:
+    llm_runtime = http_request.app.state.llm_runtime
     classification = await run_in_threadpool(
         tool_classify_query,
         QueryClassificationInput(query=latest_user, use_llm=True),
     )
-    results = await _run_search(latest_user, request.k, classification)
+    results = await _run_search(latest_user, request.k, classification, llm_runtime)
     results_dicts = [r.model_dump() for r in results.results] if results.results else []
     snippets = "\n".join(
         f"{idx + 1}. {item.highlights[0] if item.highlights else ''}"
@@ -312,12 +327,14 @@ async def _handle_answer(
     latest_user: str,
     correlation_id: Optional[str],
     decision: ChatActionDecision,
+    http_request: Request,
 ) -> ChatResponse:
+    llm_runtime = http_request.app.state.llm_runtime
     classification = await run_in_threadpool(
         tool_classify_query,
         QueryClassificationInput(query=latest_user, use_llm=True),
     )
-    results = await _run_search(latest_user, request.k, classification)
+    results = await _run_search(latest_user, request.k, classification, llm_runtime)
     context_state = {
         "retrieval_results": results,
     }

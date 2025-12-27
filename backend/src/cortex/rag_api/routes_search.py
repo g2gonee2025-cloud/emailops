@@ -51,8 +51,11 @@ async def search_endpoint(
             fusion_method=request.fusion_method,
         )
 
+        # Get LLM runtime from application state
+        llm_runtime = http_request.app.state.llm_runtime
+
         # Call retrieval tool
-        results = await tool_kb_search_hybrid(tool_input)
+        results = await tool_kb_search_hybrid(tool_input, llm_runtime)
 
         query_time_ms = (time.perf_counter() - start_time) * 1000
 

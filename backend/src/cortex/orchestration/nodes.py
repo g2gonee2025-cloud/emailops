@@ -753,7 +753,6 @@ def node_classify_query(state: Dict[str, Any]) -> Dict[str, Any]:
 def node_retrieve_context(state: Dict[str, Any]) -> Dict[str, Any]:
     """
     Retrieve context based on query and classification.
-
     Blueprint §8.3:
     * Call Hybrid Search
     """
@@ -762,6 +761,10 @@ def node_retrieve_context(state: Dict[str, Any]) -> Dict[str, Any]:
     tenant_id = state.get("tenant_id")
     user_id = state.get("user_id")
     k = state.get("k", 10)
+    llm_runtime = state.get("llm_runtime")
+
+    if not llm_runtime:
+        return {"error": "LLMRuntime not available in graph state"}
 
     try:
         args = KBSearchInput(
@@ -771,7 +774,17 @@ def node_retrieve_context(state: Dict[str, Any]) -> Dict[str, Any]:
             classification=classification,
             k=k,
         )
-        results = tool_kb_search_hybrid(args)
+        # Since langgraph runs nodes in a thread pool, we need to handle the async call
+        # correctly. We can create a new event loop for this thread.
+        import asyncio
+
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+
+        results = loop.run_until_complete(tool_kb_search_hybrid(args, llm_runtime))
         return {"retrieval_results": results}
     except Exception as e:
         logger.error(f"Retrieval failed: {e}")

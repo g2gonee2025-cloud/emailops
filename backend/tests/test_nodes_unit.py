@@ -1,4 +1,6 @@
 from unittest.mock import MagicMock, patch
+import pytest
+from fastapi.concurrency import run_in_threadpool
 
 from cortex.orchestration.nodes import (
     _extract_entity_mentions,
@@ -340,8 +342,9 @@ class TestNodeQueryGraph:
 class TestNodeRetrieveContext:
     """Test node_retrieve_context function."""
 
-    @patch("cortex.orchestration.nodes.tool_kb_search_hybrid")
-    def test_node_retrieve_context_success(self, mock_search):
+    @pytest.mark.asyncio
+    @patch("cortex.orchestration.nodes.tool_kb_search_hybrid", new_callable=MagicMock)
+    async def test_node_retrieve_context_success(self, mock_search):
         """Test successful retrieval."""
         from cortex.orchestration.nodes import node_retrieve_context
 
@@ -350,31 +353,40 @@ class TestNodeRetrieveContext:
             results=[SearchResultItem(chunk_id="c1", highlights=["data"], score=0.9)],
             reranker="test",
         )
-        mock_search.return_value = mock_results
+        # Since the tool is async, the mock should be awaitable
+        async def async_mock_search(*args, **kwargs):
+            return mock_results
+        mock_search.side_effect = async_mock_search
 
         state = {
             "query": "test query",
             "classification": None,
             "tenant_id": "test",
             "user_id": "user1",
+            "llm_runtime": MagicMock(),
         }
-        result = node_retrieve_context(state)
+        result = await run_in_threadpool(node_retrieve_context, state)
         assert "retrieval_results" in result
+        assert result["retrieval_results"] == mock_results
 
-    @patch("cortex.orchestration.nodes.tool_kb_search_hybrid")
-    def test_node_retrieve_context_error(self, mock_search):
+    @pytest.mark.asyncio
+    @patch("cortex.orchestration.nodes.tool_kb_search_hybrid", new_callable=MagicMock)
+    async def test_node_retrieve_context_error(self, mock_search):
         """Test retrieval error handling."""
         from cortex.orchestration.nodes import node_retrieve_context
 
-        mock_search.side_effect = Exception("Search failed")
+        async def async_mock_search(*args, **kwargs):
+            raise Exception("Search failed")
+        mock_search.side_effect = async_mock_search
 
         state = {
             "query": "test query",
             "classification": None,
             "tenant_id": "test",
             "user_id": "user1",
+            "llm_runtime": MagicMock(),
         }
-        result = node_retrieve_context(state)
+        result = await run_in_threadpool(node_retrieve_context, state)
         assert "error" in result
 
 

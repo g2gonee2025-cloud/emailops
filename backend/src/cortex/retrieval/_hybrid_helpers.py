@@ -9,21 +9,13 @@ from cortex.retrieval.filter_resolution import _resolve_filter_conversation_ids
 from cortex.retrieval.results import SearchResultItem
 
 logger = logging.getLogger(__name__)
-_llm_runtime: Optional[LLMRuntime] = None
-_runtime_lock = threading.Lock()
 
 
-def _get_runtime() -> LLMRuntime:
-    """Get or create LLMRuntime singleton."""
-    global _llm_runtime
-    if _llm_runtime is None:
-        with _runtime_lock:
-            if _llm_runtime is None:
-                _llm_runtime = LLMRuntime()
-    return _llm_runtime
-
-
-def _get_query_embedding(query: str, config: Any) -> Optional[np.ndarray]:
+def _get_query_embedding(
+    query: str,
+    config: Any,
+    llm_runtime: LLMRuntime,
+) -> Optional[np.ndarray]:
     """Helper: Get query embedding with cache fallback."""
     try:
         # Check cache first
@@ -33,8 +25,7 @@ def _get_query_embedding(query: str, config: Any) -> Optional[np.ndarray]:
             return cached
 
         # Use LLMRuntime which has CPU fallback logic
-        runtime = _get_runtime()
-        embedding_array = runtime.embed_queries([query])
+        embedding_array = llm_runtime.embed_queries([query])
         embedding = embedding_array[0]
 
         # Cache the embedding
