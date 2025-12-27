@@ -16,7 +16,8 @@ from cortex.context import tenant_id_ctx, user_id_ctx
 from cortex.observability import trace_operation  # P2 Fix: Enable tracing
 from cortex.rag_api.models import SearchRequest, SearchResponse
 from cortex.retrieval.hybrid_search import KBSearchInput, tool_kb_search_hybrid
-from fastapi import APIRouter, HTTPException, Request
+from cortex.security.dependencies import CurrentUser, get_current_user
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -25,7 +26,9 @@ router = APIRouter()
 @router.post("/search", response_model=SearchResponse)
 @trace_operation("api_search")  # P2 Fix: Enable request tracing
 async def search_endpoint(
-    request: SearchRequest, http_request: Request
+    request: SearchRequest,
+    http_request: Request,
+    current_user: CurrentUser = Depends(get_current_user),
 ) -> SearchResponse:
     """
     Search endpoint.

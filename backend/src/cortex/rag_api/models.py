@@ -54,7 +54,7 @@ class AnswerRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     query: str = Field(
-        ..., description="Question to answer", min_length=1, max_length=2000
+        ..., description="Question to answer", min_length=1, max_length=500
     )
     thread_id: Optional[str] = Field(
         default=None, description="Optional thread context"

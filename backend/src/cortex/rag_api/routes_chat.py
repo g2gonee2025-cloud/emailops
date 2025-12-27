@@ -29,7 +29,8 @@ from cortex.retrieval.query_classifier import (
     tool_classify_query,
 )
 from cortex.retrieval.results import SearchResults
-from fastapi import APIRouter, HTTPException, Request
+from cortex.security.dependencies import CurrentUser, get_current_user
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
@@ -136,7 +137,11 @@ async def _run_search(query: str, k: int, classification: Any) -> SearchResults:
 
 @router.post("/chat", response_model=ChatResponse)
 @trace_operation("api_chat")  # P2 Fix: Enable request tracing
-async def chat_endpoint(request: ChatRequest, http_request: Request) -> ChatResponse:
+async def chat_endpoint(
+    request: ChatRequest,
+    http_request: Request,
+    current_user: CurrentUser = Depends(get_current_user),
+) -> ChatResponse:
     """
     Conversational chat endpoint with tool routing.
 

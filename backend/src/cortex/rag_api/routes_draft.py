@@ -14,6 +14,7 @@ from cortex.common.exceptions import CortexError
 from cortex.context import tenant_id_ctx, user_id_ctx
 from cortex.observability import trace_operation  # P2 Fix: Enable tracing
 from cortex.rag_api.models import DraftEmailRequest, DraftEmailResponse
+from cortex.security.dependencies import CurrentUser, get_current_user
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 logger = logging.getLogger(__name__)
@@ -42,6 +43,7 @@ async def draft_endpoint(
     request: DraftEmailRequest,
     http_request: Request,
     graph=Depends(get_draft_graph),
+    current_user: CurrentUser = Depends(get_current_user),
 ) -> DraftEmailResponse:
     """
     Draft email endpoint.

@@ -93,3 +93,6 @@ strict = true
 ignore_missing_imports = true
 mypy_path = ["backend/src"]
 explicit_package_bases = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

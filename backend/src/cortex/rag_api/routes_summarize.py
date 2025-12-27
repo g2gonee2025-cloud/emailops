@@ -15,7 +15,8 @@ from cortex.context import tenant_id_ctx, user_id_ctx
 from cortex.observability import trace_operation  # P2 Fix: Enable tracing
 from cortex.orchestration.graphs import build_summarize_graph
 from cortex.rag_api.models import SummarizeThreadRequest, SummarizeThreadResponse
-from fastapi import APIRouter, HTTPException, Request
+from cortex.security.dependencies import CurrentUser, get_current_user
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -47,7 +48,9 @@ async def get_summarize_graph(http_request: Request = None):
 @router.post("/summarize", response_model=SummarizeThreadResponse)
 @trace_operation("api_summarize")
 async def summarize_thread_endpoint(
-    request: SummarizeThreadRequest, http_request: Request
+    request: SummarizeThreadRequest,
+    http_request: Request,
+    current_user: CurrentUser = Depends(get_current_user),
 ) -> SummarizeThreadResponse:
     # ... (docstring same)
     correlation_id = getattr(http_request.state, "correlation_id", None)

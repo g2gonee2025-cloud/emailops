@@ -55,7 +55,10 @@ def test_summarize_endpoint_returns_graph_summary(monkeypatch):
             app.state.graphs = {}
         app.state.graphs["summarize"] = dummy_graph
 
-        response = client.post("/api/v1/summarize", json={"thread_id": thread_id})
+        headers = {"X-User-ID": "testuser@emailops.ai"}
+        response = client.post(
+            "/api/v1/summarize", json={"thread_id": thread_id}, headers=headers
+        )
 
     assert response.status_code == 200
     payload = response.json()

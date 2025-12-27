@@ -17,7 +17,8 @@ from cortex.domain_models.rag import Answer
 from cortex.observability import trace_operation  # P2 Fix: Enable tracing
 from cortex.orchestration.graphs import build_answer_graph
 from cortex.rag_api.models import AnswerRequest, AnswerResponse
-from fastapi import APIRouter, HTTPException, Request
+from cortex.security.dependencies import CurrentUser, get_current_user
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -48,7 +49,11 @@ async def get_answer_graph(http_request: Optional[Request] = None):
 
 @router.post("/answer", response_model=AnswerResponse)
 @trace_operation("api_answer")
-async def answer_api(request: AnswerRequest, http_request: Request):
+async def answer_api(
+    request: AnswerRequest,
+    http_request: Request,
+    current_user: CurrentUser = Depends(get_current_user),
+):
     # ... (docstring same)
     correlation_id = getattr(http_request.state, "correlation_id", None)
 
