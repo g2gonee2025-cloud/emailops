@@ -315,13 +315,18 @@ def validate_directory_result(
         return Err("Parent traversal (..) not allowed")
 
     try:
-        p = Path(path).expanduser().resolve()
+        # Create path object but don't resolve yet to allow symlink check
+        p_unresolved = Path(path).expanduser()
 
+        # Perform symlink check on the unresolved path
         if check_symlinks and is_dangerous_symlink(
-            p,
-            allowed_roots=allowed_roots,  # P2 Fix: Use resolved path
+            p_unresolved,
+            allowed_roots=allowed_roots,
         ):
             return Err(f"Dangerous symlink detected: {path}")
+
+        # Now resolve the path for existence/type checks
+        p = p_unresolved.resolve()
 
         if must_exist:
             if not p.exists():
@@ -367,13 +372,17 @@ def validate_file_result(
         return Err("Parent traversal (..) not allowed")
 
     try:
-        p = Path(path).expanduser().resolve()
+        # Create path object but don't resolve yet to allow symlink check
+        p_unresolved = Path(path).expanduser()
 
         if check_symlinks and is_dangerous_symlink(
-            p,
-            allowed_roots=allowed_roots,  # P2 Fix: Use resolved path
+            p_unresolved,
+            allowed_roots=allowed_roots,
         ):
             return Err(f"Dangerous symlink detected: {path}")
+
+        # Now resolve the path for existence/type checks
+        p = p_unresolved.resolve()
 
         # Check extension if whitelist provided
         if allowed_extensions is not None:

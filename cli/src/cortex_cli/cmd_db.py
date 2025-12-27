@@ -90,7 +90,6 @@ def cmd_db_stats(args: argparse.Namespace) -> None:
                 f"\n  Embedding Coverage: {_colorize(f'{pct:.1f}%', 'green' if pct > 90 else 'yellow')}"
             )
 
->>>>>>> origin/main
     except ImportError as e:
         console.print(f"[red]Error:[/] Could not import database modules: {e}")
         sys.exit(1)
