@@ -1350,13 +1350,13 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     from cortex_cli.cmd_embeddings import setup_embeddings_parser
     from cortex_cli.cmd_fix import setup_fix_parser
     from cortex_cli.cmd_graph import app as graph_app
+    from cortex_cli.cmd_grounding import setup_grounding_parser
     from cortex_cli.cmd_login import setup_login_parser
     from cortex_cli.cmd_maintenance import setup_maintenance_parser
     from cortex_cli.cmd_queue import setup_queue_parser
     from cortex_cli.cmd_s3 import setup_s3_parser
     from cortex_cli.cmd_safety import setup_safety_parser
     from cortex_cli.cmd_test import setup_test_parser
-    from cortex_cli.cmd_grounding import setup_grounding_parser
     from rich.console import Console
     from typer.core import TyperGroup
     from typer.main import get_command_from_info

@@ -1,10 +1,10 @@
 import json
-from unittest.mock import MagicMock, patch, ANY
+from unittest.mock import ANY, MagicMock, patch
 
 import httpx
 import pytest
-from cortex_cli.cmd_doctor import main
 from cortex.health import DoctorCheckResult
+from cortex_cli.cmd_doctor import main
 
 
 @pytest.fixture
@@ -37,9 +37,10 @@ def test_doctor_healthy_human_output(mock_gather, mock_httpx_client, capsys):
     mock_response.json.return_value = report
     mock_httpx_client.post.return_value = mock_response
 
-    with patch("sys.argv", ["cortex_cli/cmd_doctor.py"]), pytest.raises(
-        SystemExit
-    ) as e:
+    with (
+        patch("sys.argv", ["cortex_cli/cmd_doctor.py"]),
+        pytest.raises(SystemExit) as e,
+    ):
         main()
 
     assert e.value.code == 0
@@ -70,9 +71,10 @@ def test_doctor_degraded_human_output(mock_httpx_client, capsys):
     mock_response.json.return_value = report
     mock_httpx_client.post.return_value = mock_response
 
-    with patch("sys.argv", ["cortex_cli/cmd_doctor.py"]), pytest.raises(
-        SystemExit
-    ) as e:
+    with (
+        patch("sys.argv", ["cortex_cli/cmd_doctor.py"]),
+        pytest.raises(SystemExit) as e,
+    ):
         main()
 
     assert e.value.code == 1
@@ -95,9 +97,10 @@ def test_doctor_unhealthy_json_output(mock_httpx_client, capsys):
     mock_response.json.return_value = report
     mock_httpx_client.post.return_value = mock_response
 
-    with patch("sys.argv", ["cortex_cli/cmd_doctor.py", "--json"]), pytest.raises(
-        SystemExit
-    ) as e:
+    with (
+        patch("sys.argv", ["cortex_cli/cmd_doctor.py", "--json"]),
+        pytest.raises(SystemExit) as e,
+    ):
         main()
 
     assert e.value.code == 2
@@ -112,9 +115,10 @@ def test_doctor_connection_error(mock_httpx_client, capsys):
     """Test the doctor command when it fails to connect to the API."""
     mock_httpx_client.post.side_effect = httpx.RequestError("Connection failed")
 
-    with patch("sys.argv", ["cortex_cli/cmd_doctor.py"]), pytest.raises(
-        SystemExit
-    ) as e:
+    with (
+        patch("sys.argv", ["cortex_cli/cmd_doctor.py"]),
+        pytest.raises(SystemExit) as e,
+    ):
         main()
 
     assert e.value.code == 2

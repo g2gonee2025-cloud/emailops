@@ -20,7 +20,6 @@ import sys
 from typing import Any, Dict, List
 
 import httpx
-
 from cortex.config.loader import get_config
 
 # Library-safe logger
@@ -157,9 +156,13 @@ def main() -> None:
             print("Please ensure the backend service is running.")
         sys.exit(2)
     except httpx.HTTPStatusError as e:
-        logger.error(f"API returned an error: {e.response.status_code} {e.response.text}")
+        logger.error(
+            f"API returned an error: {e.response.status_code} {e.response.text}"
+        )
         if not args.json:
-            print(f"\n{_c('Error:', 'red')} The API returned a status code of {e.response.status_code}.")
+            print(
+                f"\n{_c('Error:', 'red')} The API returned a status code of {e.response.status_code}."
+            )
             print("Response:", e.response.text)
         sys.exit(2)
     except Exception as e:
