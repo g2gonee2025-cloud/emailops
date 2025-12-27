@@ -17,6 +17,8 @@ from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
+from cortex.embeddings.client import get_embeddings_client
+
 
 # -----------------------------------------------------------------------------
 # Constants
@@ -305,17 +307,15 @@ def check_claim_against_facts_embedding(
         (is_supported, confidence, supporting_fact, method)
     """
     try:
-        from cortex.embeddings.client import EmbeddingsClient
-
-        client = EmbeddingsClient()
+        client = get_embeddings_client()
 
         claim_embedding = client.embed(claim)
         if not facts:
             return (False, 0.0, None, "embedding")
 
         if fact_embeddings is None:
-            # Use embed_batch for efficiency
-            fact_embeddings = client.embed_batch(facts)
+            # Use embed_texts for efficiency
+            fact_embeddings = client.embed_texts(facts)
 
         best_score = 0.0
         best_fact = None
@@ -566,10 +566,8 @@ def check_grounding_embedding(
     fact_embeddings = None
     if facts:
         try:
-            from cortex.embeddings.client import EmbeddingsClient
-
-            client = EmbeddingsClient()
-            fact_embeddings = client.embed_batch(facts)
+            client = get_embeddings_client()
+            fact_embeddings = client.embed_texts(facts)
         except ImportError as e:
             logger.error(
                 f"Embeddings client dependencies not found: {e}. Keyword fallback will be used for claims."

@@ -22,7 +22,7 @@ from cortex.safety.grounding import (
 @pytest.fixture
 def mock_embeddings_client():
     """Mocks the EmbeddingsClient to avoid actual model loading and API calls."""
-    with patch("cortex.safety.grounding.EmbeddingsClient") as mock_client_class:
+    with patch("cortex.safety.grounding.get_embeddings_client") as mock_get_client:
         mock_client_instance = MagicMock()
 
         # Simple embedding function for predictable testing
@@ -36,12 +36,12 @@ def mock_embeddings_client():
                 return [0.8, 0.2, 0.0]
             return [0.0, 0.0, 1.0]  # Default vector
 
-        def mock_embed_batch(texts: list[str]) -> list[list[float]]:
+        def mock_embed_texts(texts: list[str]) -> list[list[float]]:
             return [mock_embed(text) for text in texts]
 
         mock_client_instance.embed.side_effect = mock_embed
-        mock_client_instance.embed_batch.side_effect = mock_embed_batch
-        mock_client_class.return_value = mock_client_instance
+        mock_client_instance.embed_texts.side_effect = mock_embed_texts
+        mock_get_client.return_value = mock_client_instance
         yield mock_client_instance
 
 
