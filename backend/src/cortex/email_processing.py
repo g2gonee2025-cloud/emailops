@@ -234,12 +234,7 @@ def clean_email_text(text: str) -> str:
     lines = [line for line in lines if not _is_boilerplate_line(line)]
     text = "\n".join(lines)
 
-    # 7. Redact emails and URLs
-    text = _EMAIL_SEARCH_PATTERN.sub("[email]", text)
-    text = _URL_PATTERN.sub("[URL]", text)
-    text = _WWW_URL_SEARCH_PATTERN.sub("[URL]", text)
-
-    # 8. Normalize punctuation
+    # 7. Normalize punctuation
     text = _EXCESSIVE_DOTS.sub("...", text)
     text = _EXCESSIVE_EXCLAIM.sub("!", text)
     text = _EXCESSIVE_QUESTION.sub("?", text)
@@ -247,11 +242,11 @@ def clean_email_text(text: str) -> str:
     text = _EXCESSIVE_DASHES.sub("---", text)
     text = _EXCESSIVE_UNDERSCORES.sub("", text)
 
-    # 9. Normalize whitespace
+    # 8. Normalize whitespace
     text = _MULTIPLE_SPACES.sub(" ", text)
     text = _MULTIPLE_NEWLINES.sub("\n\n", text)
 
-    # 10. Final trim
+    # 9. Final trim
     return text.strip()
 
 
