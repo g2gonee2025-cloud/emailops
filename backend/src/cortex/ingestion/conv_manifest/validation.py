@@ -11,6 +11,7 @@ import logging
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+import json
 
 from cortex.ingestion.core_manifest import extract_metadata_lightweight, load_manifest
 from cortex.ingestion.models import Problem
@@ -18,6 +19,10 @@ from cortex.utils.atomic_io import atomic_write_json
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
+
+
+class SecurityException(Exception):
+    """Custom exception for security-related errors."""
 
 
 class ManifestValidationReport(BaseModel):
@@ -42,10 +47,25 @@ def scan_and_refresh(root: Path) -> ManifestValidationReport:
     Returns:
         ManifestValidationReport with statistics and problems
     """
+    from cortex.config.loader import get_config
+
+    config = get_config()
+    try:
+        export_root = config.directories.export_root.resolve(strict=True)
+        scan_root = root.resolve(strict=True)
+        if not scan_root.is_relative_to(export_root):
+            raise SecurityException("Path traversal attempt")
+
+    except (SecurityException, FileNotFoundError) as e:
+        logger.error("Path validation failed for provided root path: %s", e)
+        report = ManifestValidationReport(root=str(root))
+        report.problems.append(Problem(folder=str(root), issue="path_validation_failed"))
+        return report
+
     report = ManifestValidationReport(root=str(root.absolute()))
 
     if not root.exists():
-        logger.error(f"Export root not found: {root}")
+        logger.error("Export root not found: %s", root)
         return report
 
     # Ensure artifacts directory exists
@@ -75,8 +95,8 @@ def scan_and_refresh(root: Path) -> ManifestValidationReport:
         # Calculate SHA256 of Conversation.txt (normalized)
         try:
             sha256 = _calculate_conversation_hash(conv_txt)
-        except Exception as e:
-            logger.error(f"Failed to hash {conv_txt}: {e}")
+        except IOError as e:
+            logger.error("Failed to hash %s: %s", conv_txt.relative_to(root), e)
             report.problems.append(Problem(folder=folder_rel, issue="hash_failure"))
             continue
 
@@ -89,7 +109,7 @@ def scan_and_refresh(root: Path) -> ManifestValidationReport:
                 existing_manifest = load_manifest(conv_dir)
                 if not existing_manifest:
                     manifest_issue = "manifest_corrupt"
-            except Exception as exc:  # pragma: no cover - defensive
+            except (IOError, json.JSONDecodeError) as exc:  # pragma: no cover - defensive
                 logger.error("Failed to load manifest %s: %s", manifest_path, exc)
                 manifest_issue = "manifest_corrupt"
 
@@ -129,7 +149,7 @@ def scan_and_refresh(root: Path) -> ManifestValidationReport:
                 "message_count": existing_manifest.get("message_count", 0),
                 "started_at_utc": started_at,
                 "ended_at_utc": ended_at,
-                "attachment_count": len(list(attachments_dir.iterdir())),
+                "attachment_count": sum(1 for _ in attachments_dir.iterdir()),
                 "paths": {
                     "conversation_txt": "Conversation.txt",
                     "attachments_dir": "attachments/",
@@ -154,8 +174,12 @@ def scan_and_refresh(root: Path) -> ManifestValidationReport:
                     report.problems.append(
                         Problem(folder=folder_rel, issue="manifest_written:updated")
                     )
-            except Exception as e:
-                logger.error(f"Failed to write manifest {manifest_path}: {e}")
+            except IOError as e:
+                logger.error(
+                    "Failed to write manifest %s: %s",
+                    manifest_path.relative_to(root),
+                    e,
+                )
                 report.problems.append(
                     Problem(folder=folder_rel, issue="manifest_write_failed")
                 )
@@ -164,20 +188,18 @@ def scan_and_refresh(root: Path) -> ManifestValidationReport:
     try:
         report_path = artifacts_dir / "validation_report.json"
         atomic_write_json(report_path, report.model_dump(by_alias=True))
-    except Exception as e:
-        logger.error(f"Failed to write validation report: {e}")
+    except IOError as e:
+        logger.error("Failed to write validation report: %s", e)
 
     return report
 
 
 def _calculate_conversation_hash(path: Path) -> str:
-    """Calculate SHA256 of file with CRLF->LF normalization."""
+    """Calculate SHA256 of file with CRLF->LF normalization, reading in chunks."""
     sha256 = hashlib.sha256()
     with path.open("rb") as f:
-        content = f.read()
-        # Normalize line endings to LF
-        content = content.replace(b"\r\n", b"\n")
-        sha256.update(content)
+        while chunk := f.read(65536):  # 64k chunks
+            sha256.update(chunk.replace(b"\r\n", b"\n"))
     return sha256.hexdigest()
 
 
@@ -188,13 +210,8 @@ def _now_iso() -> str:
 
 def _file_mtime_iso(path: Path) -> str:
     """Stable ISO timestamp from file mtime (UTC)."""
-    try:
-        mtime = path.stat().st_mtime
-        return datetime.fromtimestamp(mtime, tz=timezone.utc).strftime(
-            "%Y-%m-%dT%H:%M:%SZ"
-        )
-    except OSError:
-        return _now_iso()
+    mtime = path.stat().st_mtime
+    return datetime.fromtimestamp(mtime, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _manifests_differ(old: Dict[str, Any], new: Dict[str, Any]) -> bool:
