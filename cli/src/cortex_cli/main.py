@@ -998,165 +998,6 @@ def _run_answer(
         sys.exit(1)
 
 
-def _run_draft(
-    instructions: str,
-    thread_id: str | None = None,
-    tenant_id: str = "default",
-    user_id: str = "cli-user",
-    json_output: bool = False,
-) -> None:
-    """Draft email replies based on context."""
-
-    if not json_output:
-        _print_banner()
-        print(f"{_colorize('▶ DRAFT EMAIL', 'bold')}\n")
-        print(f"  Instructions: {_colorize(instructions, 'cyan')}")
-        if thread_id:
-            print(f"  Thread ID:    {_colorize(thread_id, 'dim')}")
-        print()
-
-    try:
-        from cortex.orchestration.graphs import build_draft_graph as _build_draft_graph
-
-        _build_draft_graph = cast(Any, _build_draft_graph)
-        build_draft_graph: Callable[[], Any] = cast(
-            Callable[[], Any], _build_draft_graph
-        )
-
-        if not json_output:
-            print(f"  {_colorize('⏳', 'yellow')} Drafting...")
-
-        final_state = _execute_draft_graph(
-            build_draft_graph, tenant_id, user_id, thread_id, instructions
-        )
-
-        # Handle both dict and object-like state access
-        error = (
-            final_state.get("error")
-            if isinstance(final_state, dict)
-            else getattr(final_state, "error", None)
-        )
-        if error:
-            raise Exception(error)
-
-        draft = (
-            final_state.get("draft")
-            if isinstance(final_state, dict)
-            else getattr(final_state, "draft", None)
-        )
-        _output_draft_result(draft, json_output)
-
-    except ImportError as e:
-        _handle_import_error(e, json_output)
-    except Exception as e:
-        _handle_generic_error(e, json_output)
-
-
-def _execute_draft_graph(
-    build_draft_graph: Callable[[], Any],
-    tenant_id: str,
-    user_id: str,
-    thread_id: str | None,
-    instructions: str,
-) -> Any:
-    """Execute the draft graph and return final state."""
-    import asyncio
-
-    async def _execute() -> Any:
-        graph = build_draft_graph().compile()
-        initial_state: dict[str, Any] = {
-            "tenant_id": tenant_id,
-            "user_id": user_id,
-            "thread_id": thread_id,
-            "explicit_query": instructions,
-            "draft_query": None,
-            "retrieval_results": None,
-            "assembled_context": None,
-            "draft": None,
-            "critique": None,
-            "iteration_count": 0,
-            "error": None,
-        }
-        return await graph.ainvoke(initial_state)
-
-    return asyncio.run(_execute())
-
-
-def _output_draft_result(draft: Any | None, json_output: bool) -> None:
-    """Output draft result in JSON or human-readable format."""
-    import json
-
-    if json_output:
-        print(json.dumps(draft.model_dump() if draft else {}, indent=2, default=str))
-        return
-
-    if not draft:
-        print(f"  {_colorize('⚠', 'yellow')} No draft generated.")
-        print()
-        return
-
-    print(f"\n{_colorize('DRAFT:', 'bold')}")
-    print(f"Subject: {draft.subject}")
-    print(f"To: {', '.join(draft.to)}")
-    print("-" * 40)
-    print(f"{draft.body_markdown}\n")
-
-    if draft.next_actions:
-        _print_next_actions(draft.next_actions)
-    print()
-
-
-def _print_next_actions(next_actions: list[Any]) -> None:
-    """Print next actions from a draft."""
-    print(f"{_colorize('NEXT ACTIONS:', 'dim')}")
-    for i, action in enumerate(next_actions, 1):
-        description = getattr(action, "description", None)
-        owner = getattr(action, "owner", None)
-        due_date = getattr(action, "due_date", None)
-
-        if description is None and isinstance(action, dict):
-            description = action.get("description")
-            owner = owner or action.get("owner")
-            due_date = due_date or action.get("due_date")
-
-        if description is None:
-            description = str(action)
-
-        extras = " · ".join(
-            item
-            for item in (
-                f"Owner: {owner}" if owner else None,
-                f"Due: {due_date}" if due_date else None,
-            )
-            if item
-        )
-        suffix = f" ({extras})" if extras else ""
-        print(f"  {i}. {description}{suffix}")
-
-
-def _handle_import_error(e: ImportError, json_output: bool) -> None:
-    """Handle ImportError for RAG module loading."""
-    import json
-
-    msg = f"Could not load RAG module: {e}"
-    if json_output:
-        print(json.dumps({"error": msg, "success": False}))
-    else:
-        print(f"\n  {_colorize('ERROR:', 'red')} {msg}")
-    sys.exit(1)
-
-
-def _handle_generic_error(e: Exception, json_output: bool) -> None:
-    """Handle generic exceptions."""
-    import json
-
-    if json_output:
-        print(json.dumps({"error": str(e), "success": False}))
-    else:
-        print(f"\n  {_colorize('ERROR:', 'red')} {e}")
-    sys.exit(1)
-
-
 def _run_summarize(
     thread_id: str,
     tenant_id: str = "default",
@@ -1632,6 +1473,9 @@ This command:
     )
 
 
+from cortex_cli.cmd_draft import setup_draft_parser
+
+
 def _setup_rag_commands(subparsers: Any) -> None:
     """Setup RAG CLI commands: answer, draft, summarize."""
     # Answer command
@@ -1672,49 +1516,7 @@ The system will:
     )
 
     # Draft command
-    draft_parser = subparsers.add_parser(
-        "draft",
-        help="Draft email replies based on context",
-        description="""
-Draft an email reply based on instructions and optional thread context.
-
-The system will:
-  1. Retrieve relevant context (if thread ID provided)
-  2. Follow your instructions
-  3. Generate a professional email draft
-        """,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    draft_parser.add_argument(
-        "instructions",
-        metavar="INSTRUCTIONS",
-        help="Instructions for the draft (e.g. 'Reply politely declining')",
-    )
-    draft_parser.add_argument(
-        "--thread-id",
-        metavar="UUID",
-        help="ID of the thread to reply to",
-    )
-    draft_parser.add_argument(
-        "--tenant",
-        "-t",
-        default="default",
-        metavar="ID",
-        help="Tenant ID (default: 'default')",
-    )
-    draft_parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Output results as JSON",
-    )
-    draft_parser.set_defaults(
-        func=lambda args: _run_draft(
-            instructions=args.instructions,
-            thread_id=args.thread_id,
-            tenant_id=args.tenant,
-            json_output=args.json,
-        )
-    )
+    setup_draft_parser(subparsers)
 
     # Summarize command
     summarize_parser = subparsers.add_parser(
