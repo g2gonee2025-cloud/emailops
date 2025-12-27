@@ -162,7 +162,6 @@ class VectorStore(ABC):
         ef_search: Optional[int] = None,
         conversation_ids: Optional[List[str]] = None,
         is_attachment: Optional[bool] = None,
-        thread_ids: Optional[List[str]] = None,
         file_types: Optional[List[str]] = None,  # P1 Fix: file_types filter
     ) -> List[VectorResult]:
         """Search for similar vectors."""
@@ -184,7 +183,6 @@ class PgvectorStore(VectorStore):
         ef_search: Optional[int] = None,
         conversation_ids: Optional[List[str]] = None,
         is_attachment: Optional[bool] = None,
-        thread_ids: Optional[List[str]] = None,
         file_types: Optional[List[str]] = None,  # P1 Fix: file_types filter
     ) -> List[VectorResult]:
         # P2 Fix: Cap limit to prevent resource exhaustion
@@ -193,10 +191,6 @@ class PgvectorStore(VectorStore):
 
         # Convert embedding to pgvector text format
         embedding_str = "[" + ",".join(repr(float(v)) for v in emb_array.tolist()) + "]"
-
-        # Handle backward compat: thread_ids -> conversation_ids
-        if thread_ids and not conversation_ids:
-            conversation_ids = thread_ids
 
         # Build query with optional conversation filter
         conversation_filter_sql = ""
@@ -283,15 +277,11 @@ class QdrantVectorStore(VectorStore):
         ef_search: Optional[int] = None,
         conversation_ids: Optional[List[str]] = None,
         is_attachment: Optional[bool] = None,
-        thread_ids: Optional[List[str]] = None,
         file_types: Optional[List[str]] = None,  # P1 Fix: file_types filter
     ) -> List[VectorResult]:
         # P2 Fix: Cap limit to prevent resource exhaustion
         limit = min(limit, 500)
         emb_array = _validate_embedding(embedding, self._output_dim)
-
-        if thread_ids and not conversation_ids:
-            conversation_ids = thread_ids
 
         must_filters: List[Dict[str, Any]] = [
             {"key": "tenant_id", "match": {"value": tenant_id}},
