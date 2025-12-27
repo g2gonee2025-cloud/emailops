@@ -770,132 +770,6 @@ def _run_index(
         sys.exit(1)
 
 
-def _run_search(
-    query: str,
-    top_k: int = 10,
-    tenant_id: str = "default",
-    fusion: str = "rrf",
-    debug: bool = False,
-    json_output: bool = False,
-) -> None:
-    """
-    Search indexed emails with natural language queries.
-
-    Supports Hybrid Search (Vector + FTS + RRF/Weighted).
-    """
-    import json
-
-    if not json_output:
-        _print_banner()
-        print(f"{_colorize('▶ SEARCH', 'bold')}\n")
-        print(f"  Query:   {_colorize(query, 'cyan')}")
-        print(f"  Top K:   {_colorize(str(top_k), 'dim')}")
-        print(f"  Fusion:  {_colorize(fusion, 'dim')}")
-        if debug:
-            print(f"  {_colorize('DEBUG MODE', 'yellow')}")
-        print()
-
-    try:
-        from cortex.retrieval.hybrid_search import (
-            KBSearchInput as _KBSearchInput,  # type: ignore[import]
-        )
-        from cortex.retrieval.hybrid_search import (
-            tool_kb_search_hybrid as _tool_kb_search_hybrid,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
-        )
-
-        _KBSearchInput = cast(Any, _KBSearchInput)
-        _tool_kb_search_hybrid = cast(Any, _tool_kb_search_hybrid)
-        KBSearchInput: type[Any] = cast(type[Any], _KBSearchInput)
-        tool_kb_search_hybrid: Callable[[Any], Any] = cast(
-            Callable[[Any], Any], _tool_kb_search_hybrid
-        )
-
-        request: Any = KBSearchInput(
-            tenant_id=tenant_id,
-            user_id="cli-user",
-            query=query,
-            k=top_k,
-            fusion_method=fusion,  # type: ignore
-        )
-
-        if not json_output:
-            print(f"  {_colorize('⏳', 'yellow')} Searching...\n")
-
-        results: Any = tool_kb_search_hybrid(request)
-
-        if json_output:
-            # Convert results to JSON-serializable format
-            output: dict[str, Any] = {
-                "success": True,
-                "query": query,
-                "results": (
-                    [r.model_dump() for r in results.results]
-                    if hasattr(results, "results")
-                    else []
-                ),
-                "total": len(results.results) if hasattr(results, "results") else 0,
-            }
-            print(json.dumps(output, indent=2, default=str))
-        else:
-            if hasattr(results, "results") and results.results:
-                print(
-                    f"  {_colorize('✓', 'green')} Found {len(results.results)} result(s):\n"
-                )
-                for i, r in enumerate(results.results[:top_k], 1):
-                    score = getattr(r, "score", 0)
-                    # P1 Fix: Use correct field names from SearchResultItem
-                    content = getattr(r, "content", "") or ""
-                    highlights = getattr(r, "highlights", [])
-                    text = (
-                        content[:200]
-                        if content
-                        else (highlights[0][:200] if highlights else "")
-                    )
-                    chunk_id = getattr(r, "chunk_id", None) or getattr(
-                        r, "message_id", "unknown"
-                    )
-                    chunk_type = (
-                        r.metadata.get("chunk_type", "unknown")
-                        if hasattr(r, "metadata")
-                        else "unknown"
-                    )
-
-                    # Score display
-                    score_str = f"{score:.4f}"
-                    if debug:
-                        fusion_score = getattr(r, "fusion_score", None) or 0
-                        vec_score = getattr(r, "vector_score", None) or 0
-                        lex_score = getattr(r, "lexical_score", None) or 0
-                        score_str += f" (F:{fusion_score:.3f} V:{vec_score:.3f} L:{lex_score:.3f})"
-
-                    print(
-                        f"  {_colorize(f'[{i}]', 'bold')} Score: {_colorize(score_str, 'cyan')}"
-                    )
-                    print(
-                        f"      Source: {_colorize(str(chunk_id), 'dim')} ({chunk_type})"
-                    )
-                    print(f"      {text.replace(chr(10), ' ')}...")
-                    if debug and highlights:
-                        print(f"      Highlights: {highlights[:2]}")
-                    print()
-            else:
-                print(f"  {_colorize('○', 'yellow')} No results found for: {query}")
-            print()
-
-    except ImportError as e:
-        msg = f"Could not load search module: {e}"
-        if json_output:
-            print(json.dumps({"error": msg, "success": False}))
-        else:
-            print(f"\n  {_colorize('ERROR:', 'red')} {msg}")
-            print(f"  Make sure you have run {_colorize('cortex index', 'cyan')} first")
-        sys.exit(1)
-    except Exception as e:
-        if json_output:
-            print(json.dumps({"error": str(e), "success": False}))
-        else:
-            print(f"\n  {_colorize('ERROR:', 'red')} {e}")
-        sys.exit(1)
 
 
 # =============================================================================
@@ -1322,12 +1196,14 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     from cortex_cli.cmd_maintenance import setup_maintenance_parser
     from cortex_cli.cmd_s3 import setup_s3_parser
     from cortex_cli.cmd_test import setup_test_parser
+    from cortex_cli.cmd_search import setup_search_parser
 
     setup_db_parser(subparsers)
     setup_embeddings_parser(subparsers)
     setup_s3_parser(subparsers)
     setup_maintenance_parser(subparsers)
     setup_test_parser(subparsers)
+    setup_search_parser(subparsers)
 
     # Parse arguments
     parsed_args = parser.parse_args(args)
@@ -1535,69 +1411,6 @@ Uses parallel workers for faster processing.
             workers=args.workers,
             limit=args.limit,
             force=args.force,
-            json_output=args.json,
-        )
-    )
-
-    # Search command
-    search_parser = subparsers.add_parser(
-        "search",
-        help="Search indexed emails with natural language",
-        description="""
-Search your indexed emails using natural language queries.
-
-Examples:
-  cortex search "contract renewal terms"
-  cortex search "emails from John about budget" --top-k 20
-  cortex search "attachments mentioning quarterly report"
-
-Uses hybrid search (vector + full-text) for best results.
-        """,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    search_parser.add_argument(
-        "query",
-        metavar="QUERY",
-        help="Natural language search query",
-    )
-    search_parser.add_argument(
-        "--top-k",
-        "-k",
-        type=int,
-        default=10,
-        metavar="N",
-        help="Number of results to return (default: 10)",
-    )
-    search_parser.add_argument(
-        "--tenant",
-        "-t",
-        default="default",
-        metavar="ID",
-        help="Tenant ID (default: 'default')",
-    )
-    search_parser.add_argument(
-        "--fusion",
-        choices=["rrf", "weighted_sum"],
-        default="rrf",
-        help="Fusion method: rrf (default) or weighted_sum",
-    )
-    search_parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="Show detailed score breakdown (F/V/L)",
-    )
-    search_parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Output results as JSON",
-    )
-    search_parser.set_defaults(
-        func=lambda args: _run_search(
-            query=args.query,
-            top_k=args.top_k,
-            tenant_id=args.tenant,
-            fusion=args.fusion,
-            debug=args.debug,
             json_output=args.json,
         )
     )
