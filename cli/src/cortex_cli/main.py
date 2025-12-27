@@ -111,6 +111,8 @@ if TYPE_CHECKING:
 else:
     EmailOpsConfig = EmailOpsConfigProto
 
+from cortex.observability import init_observability
+
 # Lazy import for heavy dependencies
 from cortex_cli.cmd_doctor import main as doctor_main
 
@@ -148,26 +150,13 @@ UTILITY_COMMANDS = [
 DATA_COMMANDS = [
     ("db", "Database management (stats, migrate)"),
     ("embeddings", "Embedding management (stats, backfill)"),
-<<<<<<< HEAD
     ("graph", "Knowledge Graph commands (discover-schema)"),
-    ("s3", "S3/Spaces storage (list, ingest)"),
-=======
     ("s3", "S3/Spaces storage (list, ingest, check-structure)"),
->>>>>>> origin/main
     ("maintenance", "System maintenance (resolve-entities)"),
-<<<<<<< HEAD
     ("queue", "Job queue management (stats)"),
-=======
-<<<<<<< HEAD
     ("fix-issues", "Generate patches for SonarQube issues"),
-=======
-<<<<<<< HEAD
     ("patch", "Fix malformed patch files"),
-=======
     ("schema", "Graph schema analysis tools"),
->>>>>>> origin/main
->>>>>>> origin/main
->>>>>>> origin/main
 ]
 
 COMMON_OPTIONS = [
@@ -1371,12 +1360,17 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
             pretty_exceptions_show_locals=False,
             rich_markup_mode="rich",
         )
-        command = get_command_from_info(command_info, pretty_exceptions_short=False, pretty_exceptions_show_locals=False, rich_markup_mode="rich")
+        command = get_command_from_info(
+            command_info,
+            pretty_exceptions_short=False,
+            pretty_exceptions_show_locals=False,
+            rich_markup_mode="rich",
+        )
 
         def _run_typer(args):
             try:
                 if isinstance(command, TyperGroup):
-                     command(args.typer_args, standalone_mode=False)
+                    command(args.typer_args, standalone_mode=False)
                 else:
                     command(standalone_mode=False)
 
@@ -1388,7 +1382,6 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
             except Exception as e:
                 console = Console()
                 console.print(f"[bold red]An unexpected error occurred:[/bold red] {e}")
-
 
         parser.set_defaults(func=lambda args: _run_typer(args))
         # This is a simple way to pass through args. A more robust solution might be needed.
@@ -1409,7 +1402,9 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     setup_queue_parser(subparsers)
     setup_fix_parser(subparsers)
     setup_login_parser(subparsers)
-    setup_typer_command(subparsers, "graph", graph_app, help_text="Knowledge Graph commands")
+    setup_typer_command(
+        subparsers, "graph", graph_app, help_text="Knowledge Graph commands"
+    )
     setup_patch_parser(subparsers)
     setup_index_parser(subparsers)
     setup_schema_parser(subparsers)
