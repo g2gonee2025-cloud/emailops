@@ -76,6 +76,8 @@ _PROVIDER_ALIASES: dict[str, str] = {
     "vertexai": "vertex",
     "hf": "huggingface",
     "do": "digitalocean",
+    "gcp": "vertex",
+    "vertexai": "vertex",
 }
 
 
@@ -187,6 +189,8 @@ def _packages_for_provider(provider: str) -> tuple[list[str], list[str]]:
     elif provider == "openai" or provider == "digitalocean":
         critical = ["openai"]
         optional = ["tiktoken"]
+    elif provider == "vertex":
+        critical = ["google-genai"]
     elif provider == "cohere":
         critical = ["cohere"]
     elif provider == "huggingface":
@@ -196,6 +200,8 @@ def _packages_for_provider(provider: str) -> tuple[list[str], list[str]]:
     elif provider == "local":
         critical = ["sentence-transformers"]
         optional = ["torch", "transformers"]
+    elif provider == "vertex":
+        critical = ["google-genai"]
 
     # Common optional packages
     optional.extend(
