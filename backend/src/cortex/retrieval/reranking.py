@@ -5,9 +5,12 @@ Implements §8.7 of the Canonical Blueprint.
 """
 
 import logging
+import asyncio
+import ipaddress
 from typing import List, Optional
+from urllib.parse import urlparse
 
-import requests
+import httpx
 from cortex.retrieval.results import SearchResultItem
 
 logger = logging.getLogger(__name__)
@@ -26,7 +29,10 @@ def _candidate_summary_text(item: SearchResultItem) -> str:
 
     This helps the model resolve navigational intent (dates, people) within the content.
     """
-    meta = item.metadata or {}
+    if item.metadata is None:
+        item.metadata = {}
+
+    meta = item.metadata
     parts = []
 
     # Extract metadata fields (normalized by ingestion)
@@ -40,10 +46,6 @@ def _candidate_summary_text(item: SearchResultItem) -> str:
         parts.append(f"Date: {date}")
     if subject:
         parts.append(f"Subject: {subject}")
-
-    # Ensure metadata dict exists for downstream annotations (e.g., rerank_score)
-    if getattr(item, "metadata", None) is None:
-        item.metadata = {}
 
     # Content is the most important part
     content = item.content or item.snippet or ""
@@ -77,7 +79,7 @@ def rerank_results(
     return sorted(results, key=lambda itm: itm.score, reverse=True)
 
 
-def call_external_reranker(
+async def call_external_reranker(
     endpoint: str, query: str, results: List[SearchResultItem], top_n: int = 50
 ) -> List[SearchResultItem]:
     """
@@ -108,16 +110,19 @@ def call_external_reranker(
         if not rerank_url.endswith("/v1/rerank"):
             rerank_url = f"{rerank_url}/v1/rerank"
 
-        resp = requests.post(
-            rerank_url,
-            json={
-                "model": "mixedbread-ai/mxbai-rerank-large-v2",
-                "query": query,
-                "documents": documents,
-            },
-            timeout=RERANK_TIMEOUT_SECONDS,  # Allow time for cross-encoder inference
-        )
-        resp.raise_for_status()
+        await _validate_reranker_url(rerank_url)
+
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                rerank_url,
+                json={
+                    "model": "mixedbread-ai/mxbai-rerank-large-v2",
+                    "query": query,
+                    "documents": documents,
+                },
+                timeout=RERANK_TIMEOUT_SECONDS,  # Allow time for cross-encoder inference
+            )
+            resp.raise_for_status()
 
         # Response is {"results": [{"index": int, "relevance_score": float}, ...]}
         response_data = resp.json()
@@ -147,6 +152,33 @@ def call_external_reranker(
         return results
 
 
+async def _validate_reranker_url(url: str) -> None:
+    """
+    Validate the reranker URL to prevent SSRF vulnerabilities.
+    """
+    try:
+        parsed = urlparse(url)
+        if not parsed.scheme or parsed.scheme.lower() not in ["https", "http"]:
+            raise ValueError(f"Invalid URL scheme: {parsed.scheme}")
+
+        hostname = parsed.hostname
+        if not hostname:
+            raise ValueError("Missing hostname")
+
+        loop = asyncio.get_running_loop()
+        addr_info = await loop.getaddrinfo(hostname, None)
+
+        for family, _, _, _, sockaddr in addr_info:
+            ip_str = sockaddr[0]
+            ip = ipaddress.ip_address(ip_str)
+            if not ip.is_global:
+                raise ValueError(f"Resolved IP is not global: {ip_str}")
+
+    except Exception as e:
+        logger.error(f"Invalid reranker URL '{url}': {e}")
+        raise ValueError(f"Invalid reranker URL: {url}") from e
+
+
 def _tokenize_for_similarity(text: str) -> set[str]:
     tokens = [t.lower() for t in text.split() if t]
     return set(tokens)
@@ -158,8 +190,8 @@ def _text_similarity(a: SearchResultItem, b: SearchResultItem) -> float:
     text_b = b.content or b.snippet or ""
     if not text_a or not text_b:
         return 0.0
-    tokens_a = _tokenize_for_similarity(text_a)
-    tokens_b = _tokenize_for_similarity(text_b)
+    tokens_a = _tokenize_for_similarity(text_a[:RERANK_TRUNCATION_CHARS])
+    tokens_b = _tokenize_for_similarity(text_b[:RERANK_TRUNCATION_CHARS])
     if not tokens_a or not tokens_b:
         return 0.0
     intersection = len(tokens_a & tokens_b)

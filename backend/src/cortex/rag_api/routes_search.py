@@ -52,9 +52,7 @@ async def search_endpoint(
         )
 
         # Call retrieval tool
-        from fastapi.concurrency import run_in_threadpool
-
-        results = await run_in_threadpool(tool_kb_search_hybrid, tool_input)
+        results = await tool_kb_search_hybrid(tool_input)
 
         query_time_ms = (time.perf_counter() - start_time) * 1000
 
