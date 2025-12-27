@@ -658,7 +658,10 @@ def create_app() -> FastAPI:
         routes_summarize,
     )
 
-    app.include_router(routes_auth.router, prefix="/api/v1")  # Auth (no JWT required)
+    # Conditionally include the mock auth router only in dev environments
+    if config.core.env == "dev":
+        app.include_router(routes_auth.router, prefix="/api/v1")
+
     app.include_router(routes_admin.router, prefix="/api/v1")
     app.include_router(routes_search.router, prefix="/api/v1", tags=["search"])
     app.include_router(routes_answer.router, prefix="/api/v1", tags=["answer"])
