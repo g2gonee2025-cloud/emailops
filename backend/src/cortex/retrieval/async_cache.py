@@ -9,8 +9,8 @@ Ported from reference code feature_search_draft.py.
 
 from __future__ import annotations
 
+import asyncio
 import logging
-import threading
 import time
 from collections import OrderedDict
 from typing import Any, Optional, Tuple
@@ -30,13 +30,12 @@ DEFAULT_MAX_CACHE_SIZE = 100
 
 class QueryEmbeddingCache:
     """
-    Thread-safe LRU cache for query embeddings with TTL expiration.
+    Async-safe LRU cache for query embeddings with time-to-idle expiration.
 
     Features:
-    - TTL-based expiration (default 5 minutes)
+    - Time-to-idle expiration (default 5 minutes): TTL resets on access.
     - LRU eviction when max size exceeded
-    - Thread-safe access via lock
-    - Automatic cleanup of expired entries
+    - Async-safe access via lock
     """
 
     def __init__(
@@ -46,7 +45,7 @@ class QueryEmbeddingCache:
     ):
         # Use OrderedDict for O(1) LRU
         self._cache: OrderedDict[str, Tuple[float, np.ndarray]] = OrderedDict()
-        self._lock = threading.Lock()
+        self._lock = asyncio.Lock()
         self._ttl = ttl_seconds
         self._max_size = max_size
 
@@ -54,14 +53,14 @@ class QueryEmbeddingCache:
         """Create cache key from query and model name."""
         return f"{model}::{query}"
 
-    def get(self, query: str, model: str = "") -> Optional[np.ndarray]:
+    async def get(self, query: str, model: str = "") -> Optional[np.ndarray]:
         """
         Get cached embedding if available and not expired.
 
         Returns None if not found or expired.
         """
         key = self._make_key(query, model)
-        with self._lock:
+        async with self._lock:
             if key not in self._cache:
                 return None
 
@@ -76,19 +75,19 @@ class QueryEmbeddingCache:
 
             # Move to end (most recently used)
             self._cache.move_to_end(key)
-            # Update timestamp
+            # Update timestamp to refresh TTL on access
             self._cache[key] = (time.time(), embedding)
             logger.debug("Cache hit: query=%s", query[:LOG_QUERY_TRUNCATE_LEN])
             return embedding.copy()
 
-    def put(self, query: str, embedding: np.ndarray, model: str = "") -> None:
+    async def put(self, query: str, embedding: np.ndarray, model: str = "") -> None:
         """
         Cache an embedding with current timestamp.
 
         If max size exceeded, evicts oldest entry.
         """
         key = self._make_key(query, model)
-        with self._lock:
+        async with self._lock:
             # If exists, move to end
             if key in self._cache:
                 self._cache.move_to_end(key)
@@ -105,14 +104,14 @@ class QueryEmbeddingCache:
                     len(self._cache),
                 )
 
-    def clear(self) -> None:
+    async def clear(self) -> None:
         """Clear all cached entries."""
-        with self._lock:
+        async with self._lock:
             self._cache.clear()
 
-    def stats(self) -> dict[str, Any]:
+    async def stats(self) -> dict[str, Any]:
         """Return cache statistics."""
-        with self._lock:
+        async with self._lock:
             now = time.time()
             valid_count = sum(
                 1 for ts, _ in self._cache.values() if (now - ts) < self._ttl
@@ -127,31 +126,34 @@ class QueryEmbeddingCache:
 
 # Global singleton instance
 _query_cache: Optional[QueryEmbeddingCache] = None
-_cache_lock = threading.Lock()
+_cache_lock = asyncio.Lock()
 
 
-def get_query_cache() -> QueryEmbeddingCache:
+async def get_query_cache() -> QueryEmbeddingCache:
     """Get or create the global query embedding cache."""
+
     global _query_cache
     if _query_cache is None:
-        with _cache_lock:
+        async with _cache_lock:
             if _query_cache is None:
                 _query_cache = QueryEmbeddingCache()
     return _query_cache
 
 
-def get_cached_query_embedding(
+async def get_cached_query_embedding(
     query: str,
     model: str = "",
 ) -> Optional[np.ndarray]:
     """Convenience function to get cached embedding."""
-    return get_query_cache().get(query, model)
+    cache = await get_query_cache()
+    return await cache.get(query, model)
 
 
-def cache_query_embedding(
+async def cache_query_embedding(
     query: str,
     embedding: np.ndarray,
     model: str = "",
 ) -> None:
     """Convenience function to cache an embedding."""
-    get_query_cache().put(query, embedding, model)
+    cache = await get_query_cache()
+    await cache.put(query, embedding, model)
