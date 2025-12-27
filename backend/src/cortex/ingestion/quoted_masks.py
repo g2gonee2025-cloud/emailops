@@ -1,85 +1,64 @@
 """
 Quoted text masking.
-
 Implements §6.3 of the Canonical Blueprint.
 """
 
 from __future__ import annotations
 
+import re
+from typing import List
+
 from cortex.chunking.chunker import Span
+
+# Regex to detect quoted lines, forwarded messages, and signatures.
+# This is a single, efficient regex that can identify multiple patterns at once.
+# - `^>.*$`: Matches lines starting with ">" (standard email quote).
+# - `^On .* wrote:$`: Matches lines like "On {date}, {person} wrote:".
+# - `^--\s*$`: Matches signature separators like "--" or "-- ".
+# - `^-----Original Message-----$`: Matches forwarded message headers.
+# - `From: .*@.*`: Matches "From:" lines that likely contain an email address (stricter).
+# - `Sent: .*$`: Matches "Sent:" lines.
+# - `To: .*@.*$`: Matches "To:" lines that likely contain an email address (stricter).
+# - `Subject: .*$`: Matches "Subject:" lines.
+QUOTE_PATTERNS = re.compile(
+    r"^(>.*|On .* wrote:|--\s*|-----Original Message-----|From: .*@.*|Sent: .*|To: .*@.*|Subject: .*)$",
+    re.MULTILINE | re.IGNORECASE,
+)
 
 
 def detect_quoted_spans(text: str) -> list[Span]:
     """
-    Identify quotes & signatures (Talon-like logic).
-
-    Returns list of {start: int, end: int} spans.
+    Identifies and merges quoted text, forwarded messages, and signatures
+    in an email body using a single-pass regex.
+    Returns a list of `Span` objects with start and end character offsets.
     """
-    spans: list[Span] = []
+    spans = [
+        Span(start=match.start(), end=match.end())
+        for match in QUOTE_PATTERNS.finditer(text)
+    ]
+    if not spans:
+        return []
 
-    lines = text.splitlines()
-    current_span_start = None
+    # Merge overlapping or adjacent spans
+    merged_spans: list[Span] = []
+    current_span = spans[0]
 
-    for i, line in enumerate(lines):
-        lines[i] = line.strip()
-        is_quoted = (
-            line.startswith(">")
-            or (line.startswith("On ") and line.endswith("wrote:"))
-            or line == "--"
-        )
-
-        if is_quoted:
-            if current_span_start is None:
-                # Start of a new span
-                # Calculate character offset (approximate, as splitlines consumes newlines)
-                # A robust implementation would track character indices.
-                # For now, we'll use a simplified line-based approach or just return empty if complex.
-                # Let's try to be reasonably accurate by reconstructing text up to this line.
-                # This is slow O(N^2) for large texts, but acceptable for emails.
-                # Optimization: Keep running length.
-                pass
-
-    # Re-implementation with character tracking
-    char_idx = 0
-    in_quote = False
-
-    # Common quote headers
-    # On [Date], [Name] wrote:
-    # -----Original Message-----
-    # From: ...
-
-    lines_with_endings = text.splitlines(keepends=True)
-
-    for line in lines_with_endings:
-        stripped = line.strip()
-        is_quote_line = (
-            stripped.startswith(">")
-            or (stripped.startswith("On ") and stripped.endswith("wrote:"))
-            or stripped == "--"
-            or stripped.startswith("-----Original Message-----")
-            or (stripped.startswith("From: ") and "@" in stripped)  # Stricter heuristic
-        )
-
-        line_len = len(line)
-
-        if is_quote_line:
-            if not in_quote:
-                in_quote = True
-                current_span_start = char_idx
+    for next_span in spans[1:]:
+        gap_text = text[current_span.end : next_span.start]
+        if not gap_text.strip():  # If the gap is only whitespace
+            current_span.end = max(current_span.end, next_span.end)
         else:
-            if in_quote:
-                # End of quote span?
-                # Often quotes are blocks. A single non-quote line might be a wrap.
-                # Strict mode: end span.
-                # Relaxed mode: allow some gaps.
-                # Let's use strict for now.
-                in_quote = False
-                spans.append(Span(start=current_span_start, end=char_idx))
-                current_span_start = None
+            merged_spans.append(current_span)
+            current_span = next_span
 
-        char_idx += line_len
+    merged_spans.append(current_span)
 
-    if in_quote and current_span_start is not None:
-        spans.append(Span(start=current_span_start, end=char_idx))
+    # After merging, greedily consume all trailing whitespace for each span block
+    # to ensure the entire quoted section is included.
+    for span in merged_spans:
+        end = span.end
+        while end < len(text) and text[end].isspace():
+            end += 1
+        span.end = end
 
-    return spans
+    return merged_spans

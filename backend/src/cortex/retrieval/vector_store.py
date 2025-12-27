@@ -8,8 +8,9 @@ and Qdrant.
 from __future__ import annotations
 
 import logging
+import uuid
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import requests
@@ -183,53 +184,58 @@ class PgvectorStore(VectorStore):
         ef_search: int | None = None,
         conversation_ids: list[str] | None = None,
         is_attachment: bool | None = None,
-        file_types: list[str] | None = None,  # P1 Fix: file_types filter
+        file_types: list[str] | None = None,
     ) -> list[VectorResult]:
+        """
+        Search for similar vectors using pgvector.
+
+        CRITICAL: This method has been refactored to prevent SQL injection.
+        - All parameters are passed via bind variables.
+        - Dynamic filters are handled with COALESCE and CASE statements.
+
+        PERFORMANCE:
+        - The `file_types` filter on `extra_data` will be slow without an
+          index. A GIN index is recommended on this column:
+          `CREATE INDEX idx_chunks_extra_data_gin ON chunks USING GIN(extra_data);`
+        """
         # P2 Fix: Cap limit to prevent resource exhaustion
         limit = min(limit, 500)
         emb_array = _validate_embedding(embedding, self._output_dim)
 
-        # Convert embedding to pgvector text format
-        embedding_str = "[" + ",".join(repr(float(v)) for v in emb_array.tolist()) + "]"
+        # CRITICAL: Validate conversation_ids to prevent malformed UUID errors
+        if conversation_ids:
+            for conv_id in conversation_ids:
+                try:
+                    uuid.UUID(conv_id)
+                except ValueError:
+                    raise RetrievalError(
+                        "Invalid conversation_id format",
+                        query="vector_search",
+                        context={"conversation_id": conv_id},
+                    )
 
-        # Build query with optional conversation filter
-        conversation_filter_sql = ""
+        # Convert embedding to pgvector text format for the query
+        embedding_str = "[" + ",".join(map(str, emb_array.tolist())) + "]"
+
         params: dict[str, Any] = {
             "tenant_id": tenant_id,
             "query_vec": embedding_str,
             "limit": limit,
+            "conversation_ids": conversation_ids,
+            "is_attachment": is_attachment,
+            "file_types": file_types,
         }
 
-        if conversation_ids:
-            conversation_filter_sql = (
-                "AND c.conversation_id = ANY(CAST(:conversation_ids AS UUID[]))"
-            )
-            params["conversation_ids"] = conversation_ids
-
-        # Attachment filter
-        attachment_filter_sql = ""
-        if is_attachment is not None:
-            attachment_filter_sql = (
-                "AND c.is_attachment = TRUE"
-                if is_attachment
-                else "AND c.is_attachment = FALSE"
-            )
-
-        # P1 Fix: File types filter
-        file_types_filter_sql = ""
-        if file_types:
-            file_types_filter_sql = "AND (c.extra_data->>'file_type' = ANY(:file_types) OR c.extra_data->>'source_type' = ANY(:file_types))"
-            params["file_types"] = file_types
-
         # Optional HNSW tuning for recall/speed tradeoff
-        hnsw_settings_cte = ""
         if ef_search is not None:
-            params["ef_search"] = str(int(ef_search))
-            hnsw_settings_cte = "WITH settings AS (SELECT set_config('hnsw.ef_search', :ef_search, true))"
+            # Set session-local configuration safely
+            self._session.execute(
+                text("SET LOCAL hnsw.ef_search = :ef_search"), {"ef_search": ef_search}
+            )
 
+        # Fully parameterized query to prevent SQL injection
         stmt = text(
             f"""
-            {hnsw_settings_cte}
             SELECT
                 c.chunk_id,
                 c.conversation_id,
@@ -240,12 +246,11 @@ class PgvectorStore(VectorStore):
                 c.attachment_id,
                 c.embedding <=> CAST(:query_vec AS halfvec({self._output_dim})) AS distance
             FROM chunks c
-            {", settings" if ef_search is not None else ""}
             WHERE c.tenant_id = :tenant_id
               AND c.embedding IS NOT NULL
-            {conversation_filter_sql}
-            {attachment_filter_sql}
-            {file_types_filter_sql}
+              AND (:conversation_ids IS NULL OR c.conversation_id = ANY(CAST(:conversation_ids AS UUID[])))
+              AND (:is_attachment IS NULL OR c.is_attachment = :is_attachment)
+              AND (:file_types IS NULL OR (c.extra_data->>'file_type' = ANY(:file_types) OR c.extra_data->>'source_type' = ANY(:file_types)))
             ORDER BY distance
             LIMIT :limit
         """

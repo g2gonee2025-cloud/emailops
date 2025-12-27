@@ -8,10 +8,19 @@ All configuration models use Pydantic for validation benefits.
 from __future__ import annotations
 
 import os
+import socket
+from ipaddress import ip_address
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, List, Literal, Optional, Set
+from urllib.parse import urlparse
 
-from pydantic import AnyHttpUrl, BaseModel, Field, field_validator
+from pydantic import (
+    AnyHttpUrl,
+    BaseModel,
+    Field,
+    field_validator,
+    model_validator,
+)
 
 # -----------------------------------------------------------------------------
 # Environment Variable Helper
@@ -184,12 +193,14 @@ class DatabaseConfig(BaseModel):
         description="Maximum pool overflow",
     )
 
-    def model_post_init(self, _context: object) -> None:
+    @model_validator(mode="after")
+    def validate_db_url(self) -> DatabaseConfig:
         """Validate that required configuration is present."""
         if not self.url:
             raise ValueError(
                 "Database URL is required. Set OUTLOOKCORTEX_DB_URL or DB_URL environment variable."
             )
+        return self
 
 
 # -----------------------------------------------------------------------------
@@ -380,7 +391,7 @@ class DigitalOceanScalerConfig(BaseModel):
         default_factory=lambda: _env_list("DO_GPU_NODE_TAGS"),
         description="Tags applied to the GPU node pool when provisioning",
     )
-    api_base_url: str = Field(
+    api_base_url: AnyHttpUrl = Field(
         default_factory=lambda: _env(
             "DO_API_BASE_URL", "https://api.digitalocean.com/v2"
         ),
@@ -432,6 +443,24 @@ class DigitalOceanScalerConfig(BaseModel):
         default_factory=lambda: _env("DO_GPU_DRY_RUN", False, bool),
         description="If true, scaler logs actions without mutating the API",
     )
+
+    @field_validator("api_base_url")
+    @classmethod
+    def validate_api_base_url(cls, v: AnyHttpUrl) -> AnyHttpUrl:
+        """Validate that the URL does not resolve to a private IP."""
+        if not v:
+            return v
+        try:
+            hostname = v.host
+            if not hostname:
+                raise ValueError("URL must have a valid hostname")
+
+            ip = ip_address(socket.gethostbyname(hostname))
+            if ip.is_private or ip.is_loopback or ip.is_reserved:
+                raise ValueError(f"URL resolves to a non-public IP address: {ip}")
+        except (socket.gaierror, ValueError) as e:
+            raise ValueError(f"URL validation failed: {e}") from e
+        return v
 
     model_config = {"extra": "forbid"}
 
@@ -935,6 +964,16 @@ class SensitiveConfig(BaseModel):
         default_factory=lambda: _env("RUN_ID", None),
         description="Unique run identifier",
     )
+
+    def __repr__(self) -> str:
+        """Return a PII-redacted representation of the sensitive config."""
+        return (
+            f"SensitiveConfig(google_application_credentials=REDACTED, "
+            f"openai_api_key=REDACTED, cohere_api_key=REDACTED, "
+            f"huggingface_api_key=REDACTED, qwen_api_key=REDACTED, "
+            f"qwen_base_url='{self.qwen_base_url}', "
+            f"qwen_timeout={self.qwen_timeout}, run_id='{self.run_id}')"
+        )
 
     model_config = {"extra": "forbid"}
 

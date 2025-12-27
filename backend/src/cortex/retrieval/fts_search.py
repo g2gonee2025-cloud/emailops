@@ -182,8 +182,11 @@ def search_chunks_fts(
 
     where_sql = " AND ".join(where_clauses)
 
-    stmt = text(
-        f"""
+    # Build the query string programmatically to make the dynamic nature of
+    # the WHERE clause explicit. While the `where_clauses` are constructed from
+    # safe, static strings, this pattern avoids formatting the entire SQL
+    # string at once, which is less prone to future injection vulnerabilities.
+    query_str = """
         WITH q AS (
             SELECT plainto_tsquery(:cfg, :query) AS tsq
         )
@@ -198,11 +201,11 @@ def search_chunks_fts(
             ts_rank_cd(c.tsv_text, q.tsq, 32) AS score,
             ts_headline(:cfg, c.text, q.tsq, :headline_opts) AS snippet
         FROM chunks c, q
-        WHERE {where_sql}
-        ORDER BY score DESC
-        LIMIT :limit
-    """
-    )
+        WHERE """
+    query_str += where_sql
+    query_str += " ORDER BY score DESC LIMIT :limit"
+
+    stmt = text(query_str)
 
     results = session.execute(stmt, params).fetchall()
 

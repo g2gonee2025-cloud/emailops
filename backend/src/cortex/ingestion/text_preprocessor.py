@@ -7,8 +7,11 @@ Implements §6.8 of the Canonical Blueprint.
 from __future__ import annotations
 
 import logging
-from typing import Any, Literal, Protocol
+import re
+import threading
+from typing import Any, Dict, Literal, Optional, Protocol, Tuple
 
+from cortex.config.loader import get_config
 from cortex.email_processing import clean_email_text
 from cortex.ingestion.constants import CLEANING_VERSION
 from cortex.ingestion.pii import redact_pii
@@ -79,7 +82,7 @@ class DefaultTextPreprocessor:
             cleaned = clean_email_text(cleaned)
         elif text_type == "attachment":
             # Basic whitespace normalization for docs
-            cleaned = " ".join(cleaned.split())
+            cleaned = re.sub(r"\s+", " ", cleaned).strip()
 
         # 3. PII Redaction (§6.4)
         cleaned = self._redact_pii(cleaned)
@@ -101,8 +104,6 @@ class DefaultTextPreprocessor:
         """
         Redact PII from text using the centralized PII engine.
         """
-        from cortex.config.loader import get_config
-
         config = get_config()
         if not config.pii.enabled:
             return text
@@ -113,9 +114,14 @@ class DefaultTextPreprocessor:
 _preprocessor: TextPreprocessor | None = None
 
 
+_preprocessor_lock = threading.Lock()
+
+
 def get_text_preprocessor() -> TextPreprocessor:
     """Get the global TextPreprocessor instance."""
     global _preprocessor
     if _preprocessor is None:
-        _preprocessor = DefaultTextPreprocessor()
+        with _preprocessor_lock:
+            if _preprocessor is None:
+                _preprocessor = DefaultTextPreprocessor()
     return _preprocessor

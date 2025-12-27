@@ -13,7 +13,8 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Literal
+from functools import lru_cache
+from typing import List, Literal
 
 from cortex.observability import trace_operation
 from pydantic import BaseModel, Field
@@ -186,18 +187,46 @@ def classify_query_llm(query: str) -> QueryClassification:
         QueryClassification with type and flags
     """
     try:
+        from cortex.common.exceptions import (
+            CircuitBreakerOpenError,
+            LLMOutputSchemaError,
+            ProviderError,
+            RateLimitError,
+        )
         from cortex.llm.client import complete_json
-        from cortex.prompts import PROMPT_QUERY_CLASSIFY
+        from cortex.prompts import (
+            SYSTEM_QUERY_CLASSIFY,
+            USER_QUERY_CLASSIFY,
+            construct_prompt_messages,
+        )
+        from cortex.security.defenses import sanitize_user_input
 
-        prompt = f"{PROMPT_QUERY_CLASSIFY}\n\nQuery: {query}"
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_QUERY_CLASSIFY,
+            user_prompt_template=USER_QUERY_CLASSIFY,
+            query=sanitize_user_input(query),
+        )
+
+        # Reconstruct prompt for the deprecated `complete_json` function.
+        system_content = messages[0]["content"]
+        user_content = messages[1]["content"]
+        reconstructed_prompt = f"{system_content}\n\n{user_content}"
 
         schema = QueryClassification.model_json_schema()
-        result = complete_json(prompt, schema)
+        result = complete_json(reconstructed_prompt, schema)
 
         return QueryClassification(**result)
 
-    except Exception as e:
+    except (
+        ProviderError,
+        RateLimitError,
+        CircuitBreakerOpenError,
+        LLMOutputSchemaError,
+    ) as e:
         logger.warning(f"LLM classification failed: {e}. Using fast fallback.")
+        return classify_query_fast(query)
+    except Exception as e:
+        logger.error(f"Unexpected error during LLM classification: {e}", exc_info=True)
         return classify_query_fast(query)
 
 
@@ -207,7 +236,8 @@ def classify_query_llm(query: str) -> QueryClassification:
 
 
 @trace_operation("tool_classify_query")
-def tool_classify_query(args: QueryClassificationInput) -> QueryClassification:
+@lru_cache(maxsize=128)
+def tool_classify_query(query: str, use_llm: bool = False) -> QueryClassification:
     """
     Classify a user query for routing to appropriate retrieval strategy.
 
@@ -224,12 +254,12 @@ def tool_classify_query(args: QueryClassificationInput) -> QueryClassification:
     Returns:
         QueryClassification with type and flags
     """
-    query = args.query.strip()
+    query = query.strip()
 
     if not query:
         return QueryClassification(query=query or "", type="semantic", flags=[])
 
-    if args.use_llm:
+    if use_llm:
         return classify_query_llm(query)
 
     return classify_query_fast(query)
@@ -242,35 +272,28 @@ def tool_classify_query(args: QueryClassificationInput) -> QueryClassification:
 
 def is_navigational(query: str) -> bool:
     """Quick check if query is navigational (specific lookup)."""
-    classification = tool_classify_query(
-        QueryClassificationInput(query=query, use_llm=False)
-    )
+    classification = tool_classify_query(query, use_llm=False)
     return classification.type == "navigational"
 
 
 def is_drafting(query: str) -> bool:
     """Quick check if query is a drafting request."""
-    classification = tool_classify_query(
-        QueryClassificationInput(query=query, use_llm=False)
-    )
+    classification = tool_classify_query(query, use_llm=False)
     return classification.type == "drafting"
 
 
 def requires_grounding_check(query: str) -> bool:
     """Check if query involves compliance/legal content requiring grounding."""
-    classification = tool_classify_query(
-        QueryClassificationInput(query=query, use_llm=False)
-    )
+    classification = tool_classify_query(query, use_llm=False)
     return "requires_grounding_check" in classification.flags
 
 
 __all__ = [
     "QueryClassification",
-    "QueryClassificationInput",
+    "tool_classify_query",
     "classify_query_fast",
     "classify_query_llm",
-    "is_drafting",
     "is_navigational",
+    "is_drafting",
     "requires_grounding_check",
-    "tool_classify_query",
 ]

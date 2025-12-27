@@ -176,6 +176,9 @@ export interface LoginResponse {
 let authToken: string | null = null;
 
 const handleResponse = async <T>(response: Response): Promise<T> => {
+  if (response.status === 401) {
+    window.dispatchEvent(new Event('unauthorized'));
+  }
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
     throw new Error(error.detail || `HTTP ${response.status}`);

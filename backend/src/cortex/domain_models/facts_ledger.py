@@ -6,9 +6,9 @@ Implements §10.4 of the Canonical Blueprint - summarization models.
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from datetime import datetime
-from typing import Any, Literal
+from typing import Any, List, Literal, Optional
+from collections.abc import Callable
 
 from pydantic import BaseModel, Field
 
@@ -46,14 +46,13 @@ class ParticipantAnalysis(BaseModel):
     role: Literal["client", "broker", "underwriter", "internal", "other"] | None = (
         "other"
     )
-    tone: (
-        Literal[
-            "professional", "frustrated", "urgent", "friendly", "demanding", "neutral"
-        ]
-        | None
-    ) = "neutral"
+    tone: Literal["professional", "frustrated", "urgent", "friendly", "demanding", "neutral"] | None = "neutral"
     stance: str | None = None
     email: str | None = None
+
+    def __repr__(self) -> str:
+        """Redacts PII."""
+        return f"ParticipantAnalysis(name='[REDACTED]', role='{self.role}', email='[REDACTED]')"
 
 
 class FactsLedger(BaseModel):
@@ -69,93 +68,78 @@ class FactsLedger(BaseModel):
 
     def merge(self, other: FactsLedger) -> FactsLedger:
         """
-        Merge another ledger into this one.
-        - Lists are unioned and deduplicated by value.
-        - Participants are merged by email/name.
+        Merge another ledger into this one with improved performance and correctness.
+        - Lists are unioned and deduplicated efficiently.
+        - Participants are merged robustly, prioritizing non-default values.
         """
         if not other:
             return self
 
-        # 1. Merge simple lists (set-like union)
-        # Helper to deduplicate potentially unhashable Pydantic models by comparing their normalized representation (e.g., dict), rather than relying on hashing or JSON serialization.
-        def _merge_lists(
-            l1: list[Any], l2: list[Any], key_fn: Callable[[Any], Any] | None = None
-        ):
+        # Helper for deduplicating lists of Pydantic models based on a key
+        def _deduplicate_models(
+            items: list[Any], key_fn: Callable[[Any], Any]
+        ) -> list[Any]:
             seen = set()
             out = []
-            for item in l1 + l2:
-                # Use key_fn if provided, otherwise invalid JSON for complex objects
-                k = key_fn(item) if key_fn else item
-                if isinstance(k, BaseModel):
-                    k = k.model_dump_json()
-                elif isinstance(k, (dict, list)):
-                    # Fallback for unhashable: stringify
-                    k = str(k)
-
-                if k not in seen:
-                    seen.add(k)
+            for item in items:
+                key = key_fn(item)
+                if key not in seen:
+                    seen.add(key)
                     out.append(item)
             return out
 
-        asks = _merge_lists(
-            self.asks,
-            other.asks,
+        # 1. Merge lists of Pydantic models efficiently
+        asks = _deduplicate_models(
+            self.asks + other.asks,
             lambda x: (x.description, x.from_participant, x.to_participant),
         )
-        commitments = _merge_lists(
-            self.commitments,
-            other.commitments,
+        commitments = _deduplicate_models(
+            self.commitments + other.commitments,
             lambda x: (x.description, x.by_participant),
         )
-        key_dates = _merge_lists(
-            self.key_dates, other.key_dates, lambda x: (x.date, x.description)
+        key_dates = _deduplicate_models(
+            self.key_dates + other.key_dates, lambda x: (x.date, x.description)
         )
-        key_decisions = _merge_lists(self.key_decisions, other.key_decisions)
-        open_questions = _merge_lists(self.open_questions, other.open_questions)
-        risks_concerns = _merge_lists(self.risks_concerns, other.risks_concerns)
 
-        # 2. Merge participants (Keyed by Email or Name)
-        # Logic: Existing participant data is preserved, 'other' fills gaps.
-        # But 'other' might be 'newer/better', so we actually want to UNION info.
-        # For simplicity in this port: we index by email (if present) or name.
-        p_map = {}
+        # 2. Merge simple string lists using sets for performance and deterministic order
+        key_decisions = sorted(list(set(self.key_decisions + other.key_decisions)))
+        open_questions = sorted(list(set(self.open_questions + other.open_questions)))
+        risks_concerns = sorted(list(set(self.risks_concerns + other.risks_concerns)))
 
-        def _get_key(p: ParticipantAnalysis):
+        # 3. Merge participants with a robust, deterministic strategy
+        def get_participant_key(p: ParticipantAnalysis) -> str | None:
+            """Generates a unique key for a participant, prioritizing email."""
             if p.email:
-                return f"email:{p.email.lower()}"
+                return f"email:{p.email.strip().lower()}"
             if p.name:
-                return f"name:{p.name.lower()}"
+                return f"name:{p.name.strip().lower()}"
             return None
 
-        # Process ALL participants (self + other)
-        # Later entries override earlier ones for scalar fields if they are 'more complete'?
-        # Actually, let's treat 'other' as 'new info' that refines 'self'.
+        # Start with the participants from this ledger
+        participant_map: dict[str, ParticipantAnalysis] = {
+            key: p.model_copy()
+            for p in self.participants
+            if (key := get_participant_key(p))
+        }
 
-        all_participants = self.participants + other.participants
-
-        merged_participants = []
-        for p in all_participants:
-            k = _get_key(p)
-            if not k:
+        # Merge in participants from the other ledger
+        for other_p in other.participants:
+            key = get_participant_key(other_p)
+            if not key:
                 continue
 
-            if k not in p_map:
-                p_map[k] = p.model_copy()
-                merged_participants.append(p_map[k])
+            if key not in participant_map:
+                participant_map[key] = other_p.model_copy()
             else:
-                existing = p_map[k]
-                # Update scalars if new one is present/better.
-                # e.g. if existing role is "other" and new is "broker", take "broker".
-                if p.name and not existing.name:
-                    existing.name = p.name
-                if p.email and not existing.email:
-                    existing.email = p.email
-                if p.role != "other" and existing.role == "other":
-                    existing.role = p.role
-                if p.tone != "neutral" and existing.tone == "neutral":
-                    existing.tone = p.tone
-                if p.stance and not existing.stance:
-                    existing.stance = p.stance
+                # Merge `other_p` into the existing record (`p`)
+                p = participant_map[key]
+                p.name = p.name or other_p.name
+                p.email = p.email or other_p.email
+                if p.role == "other":
+                    p.role = other_p.role
+                if p.tone == "neutral":
+                    p.tone = other_p.tone
+                p.stance = p.stance or other_p.stance
 
         return FactsLedger(
             asks=asks,
@@ -164,7 +148,7 @@ class FactsLedger(BaseModel):
             key_decisions=key_decisions,
             open_questions=open_questions,
             risks_concerns=risks_concerns,
-            participants=merged_participants,
+            participants=list(participant_map.values()),
         )
 
 

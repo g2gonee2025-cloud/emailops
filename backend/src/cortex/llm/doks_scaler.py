@@ -2,16 +2,18 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import math
 import os
 import threading
 import time
-from contextlib import contextmanager
+from contextlib import asynccontextmanager, contextmanager
 from dataclasses import dataclass
-from typing import Any, cast
+from typing import Any, Dict, List, Optional, Tuple, cast
 from urllib.parse import urljoin
 
+import httpx
 import numpy as np
 import requests
 from cortex.common.exceptions import ConfigurationError, ProviderError
@@ -405,7 +407,7 @@ class DigitalOceanClusterManager:
         self.model = _model_profile_from_config(config.model)
         self.api = DOApiClient(
             token=self.scaling.token,
-            BASE_URL=self.scaling.api_base_url,
+            base_url=self.scaling.api_base_url,
             dry_run=self.scaling.dry_run,
         )
         self.scaler = ClusterScaler(
@@ -473,7 +475,7 @@ class DigitalOceanLLMService:
 
         self._api_client = DOApiClient(
             token=self.scaling.token,
-            BASE_URL=self.scaling.api_base_url,
+            base_url=self.scaling.api_base_url,
             dry_run=self.scaling.dry_run,
         )
         self._scaler = ClusterScaler(
@@ -484,10 +486,21 @@ class DigitalOceanLLMService:
         )
         self._last_scale_time: float | None = None
         self._inflight = 0
-        self._inflight_lock = threading.Lock()
-        self._http_session = self._build_session()
+        self._inflight_lock = asyncio.Lock()
+        retry_strategy = httpx.Limits(
+            max_keepalives=5,
+            max_connections=20,
+        )
+        transport = httpx.AsyncHTTPTransport(
+            retries=3,
+            limits=retry_strategy,
+        )
+        self._http_session = httpx.AsyncClient(
+            transport=transport,
+            verify=self.endpoint.verify_tls,
+        )
 
-    def embed_texts(
+    async def embed_texts(
         self, texts: list[str], expected_dim: int | None = None
     ) -> np.ndarray:
         if not texts:
@@ -498,12 +511,12 @@ class DigitalOceanLLMService:
             "model": self.endpoint.default_embedding_model,
             "input": texts,
         }
-        with self._tracked_request():
-            response = self._post(self.endpoint.embedding_path, payload)
+        async with self._tracked_request():
+            response = await self._post(self.endpoint.embedding_path, payload)
         vectors = self._parse_embeddings(response)
         return np.array(vectors, dtype=np.float32)
 
-    def generate_text(
+    async def generate_text(
         self,
         prompt: str,
         temperature: float = 0.2,
@@ -523,8 +536,8 @@ class DigitalOceanLLMService:
         if extra_payload:
             payload.update(extra_payload)
 
-        with self._tracked_request():
-            response = self._post(self.endpoint.completion_path, payload)
+        async with self._tracked_request():
+            response = await self._post(self.endpoint.completion_path, payload)
         return self._extract_completion_text(response)
 
     def plan_node_pool(self) -> tuple[int, int]:
@@ -534,59 +547,50 @@ class DigitalOceanLLMService:
             max_nodes=self.scaling.max_nodes,
         )
 
-    @contextmanager
-    def _tracked_request(self):
-        depth = self._increment_inflight()
-        self._maybe_scale(depth)
+    @asynccontextmanager
+    async def _tracked_request(self):
+        depth = await self._increment_inflight()
+        await self._maybe_scale(depth)
         try:
             yield
         finally:
-            self._decrement_inflight()
+            await self._decrement_inflight()
 
-    def _increment_inflight(self) -> int:
-        with self._inflight_lock:
+    async def _increment_inflight(self) -> int:
+        async with self._inflight_lock:
             self._inflight += 1
             return self._inflight
 
-    def _decrement_inflight(self) -> None:
-        with self._inflight_lock:
+    async def _decrement_inflight(self) -> None:
+        async with self._inflight_lock:
             self._inflight = max(0, self._inflight - 1)
 
-    def _maybe_scale(self, queued_requests: int) -> None:
+    async def _maybe_scale(self, queued_requests: int) -> None:
         if not self.scaling.cluster_id or not self.scaling.node_pool_id:
             return
-        try:
-            self._scaler.scale_to_match_load(
-                cluster_id=self.scaling.cluster_id,
-                node_pool_id=self.scaling.node_pool_id,
-                queued_requests=queued_requests,
-                model=self.model,
-                min_nodes=self.scaling.min_nodes,
-                max_nodes=self.scaling.max_nodes,
-                max_scale_factor=self.scaling.max_scale_factor,
-                last_scale_time=self._last_scale_time,
-                min_downscale_interval_s=self.scaling.min_downscale_interval_s,
-                incoming_tokens_per_second=None,
-                target_gpu_utilization=self.scaling.target_gpu_utilization,
-            )
-            self._last_scale_time = time.time()
-        except ProviderError as exc:
-            logger.warning("DigitalOcean scaling failed: %s", exc)
 
-    def _build_session(self) -> Session:
-        session = Session()
-        retry_strategy = Retry(
-            total=3,
-            backoff_factor=1.5,
-            status_forcelist=[408, 409, 429, 500, 502, 503, 504],
-            allowed_methods=["POST"],
-        )
-        adapter = HTTPAdapter(max_retries=retry_strategy)
-        session.mount("https://", adapter)
-        session.mount("http://", adapter)
-        return session
+        def _do_scale() -> None:
+            try:
+                self._scaler.scale_to_match_load(
+                    cluster_id=self.scaling.cluster_id,
+                    node_pool_id=self.scaling.node_pool_id,
+                    queued_requests=queued_requests,
+                    model=self.model,
+                    min_nodes=self.scaling.min_nodes,
+                    max_nodes=self.scaling.max_nodes,
+                    max_scale_factor=self.scaling.max_scale_factor,
+                    last_scale_time=self._last_scale_time,
+                    min_downscale_interval_s=self.scaling.min_downscale_interval_s,
+                    incoming_tokens_per_second=None,
+                    target_gpu_utilization=self.scaling.target_gpu_utilization,
+                )
+                self._last_scale_time = time.time()
+            except ProviderError as exc:
+                logger.warning("DigitalOcean scaling failed: %s", exc)
 
-    def _post(self, path: str, payload: dict[str, Any]) -> dict[str, Any]:
+        await asyncio.to_thread(_do_scale)
+
+    async def _post(self, path: str, payload: dict[str, Any]) -> dict[str, Any]:
         if not self.endpoint.BASE_URL:
             raise ConfigurationError(
                 "digitalocean.endpoint.BASE_URL is not configured",
@@ -601,20 +605,24 @@ class DigitalOceanLLMService:
             headers.update(self.endpoint.extra_headers)
 
         try:
-            resp = self._http_session.post(
+            resp = await self._http_session.post(
                 url,
                 json=payload,
                 timeout=self.endpoint.request_timeout_seconds,
-                verify=self.endpoint.verify_tls,
+                headers=headers,
             )
             if resp.status_code >= 400:
+                # We do not log resp.text here to avoid leaking PII from prompts.
+                logger.warning(
+                    "DigitalOcean LLM gateway returned status %d", resp.status_code
+                )
                 raise ProviderError(
-                    f"DigitalOcean LLM gateway error {resp.status_code}: {resp.text}",
+                    f"DigitalOcean LLM gateway error {resp.status_code}",
                     provider="digitalocean",
                     retryable=resp.status_code >= 500,
                 )
             return resp.json()
-        except requests.exceptions.RequestException as exc:
+        except httpx.RequestError as exc:
             raise ProviderError(
                 f"DigitalOcean LLM gateway unreachable: {exc}",
                 provider="digitalocean",

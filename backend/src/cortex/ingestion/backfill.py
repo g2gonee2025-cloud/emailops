@@ -47,8 +47,11 @@ def get_gguf_provider():
         else:
             logger.error("llama-server not available at %s", provider._endpoint)
             return None
-    except Exception as e:
-        logger.error(f"Failed to initialize GGUF provider: {e}")
+    except Exception:
+        logger.error(
+            "Failed to initialize GGUF provider: PII-redacted exception.",
+            exc_info=False,
+        )
         return None
 
 
@@ -73,17 +76,12 @@ def backfill_embeddings(
     model_name = os.getenv("EMBED_MODEL", "tencent/KaLM-Embedding-Gemma3-12B-2511")
 
     with SessionLocal() as session:
-        total_missing = _get_missing_embeddings_count(session)
-        logger.info(f"Total chunks missing embeddings: {total_missing}")
-
-        if total_missing == 0:
-            return {"processed": 0, "failed": 0}
-
         processed = 0
         failed = 0
         while not (limit and processed >= limit):
             chunks = _get_chunks_without_embeddings(session, batch_size)
             if not chunks:
+                logger.info("No more chunks to process.")
                 break
 
             texts = [c.text for c in chunks]
@@ -101,26 +99,11 @@ def backfill_embeddings(
             processed += batch_processed
             failed += batch_failed
             logger.info(
-                f"Processed {processed}/{total_missing} chunks (failed: {failed})."
+                f"Processed batch. Total processed: {processed}, Total failed: {failed}."
             )
 
     logger.info("Backfill complete!")
     return {"processed": processed, "failed": failed}
-
-
-def _get_missing_embeddings_count(session) -> int:
-    """Get count of chunks missing embeddings."""
-    stmt = (
-        select(func.count(Chunk.chunk_id))
-        .where(Chunk.embedding.is_(None))
-        .where(
-            or_(
-                Chunk.extra_data.is_(None),
-                Chunk.extra_data.op("->>")("skipped").is_(None),
-            )
-        )
-    )
-    return session.execute(stmt).scalar()
 
 
 def _get_chunks_without_embeddings(session, batch_size: int) -> list:
@@ -156,34 +139,58 @@ def _process_embedding_batch(client, session, chunks, texts, model_name) -> int:
         logger.info(f"Batch took {duration:.2f}s")
         return len(chunks)
 
-    except Exception as e:
-        logger.warning(f"Batch failed with error: {e}. Retrying chunks serially...")
+    except Exception:
+        logger.warning(
+            "Batch failed. Retrying chunks serially. PII-redacted exception.",
+            exc_info=False,
+        )
         return _process_chunks_serially(client, session, chunks, model_name)
 
 
 def _process_chunks_serially(client, session, chunks, model_name) -> int:
-    """Process chunks one by one after batch failure."""
-    processed = 0
+    """
+    Process chunks one by one after batch failure.
+    Uses a single commit at the end for efficiency.
+    """
+    processed_count = 0
     for chunk in chunks:
         try:
             resp = client.embeddings.create(
                 input=[chunk.text], model=model_name, encoding_format="float"
             )
             chunk.embedding = resp.data[0].embedding
-            session.commit()
-            processed += 1
-        except Exception as inner_e:
-            logger.warning(f"Skipping bad chunk {chunk.chunk_id}: {inner_e}")
+            processed_count += 1
+        except Exception:
+            logger.warning(
+                f"Skipping bad chunk {chunk.chunk_id}: PII-redacted exception.",
+                exc_info=False,
+            )
             ed = dict(chunk.extra_data) if chunk.extra_data else {}
             ed["skipped"] = True
-            ed["error"] = str(inner_e)[:200]
+            ed["error"] = "embedding_failed"
             chunk.extra_data = ed
-            session.commit()
-    return processed
+
+    if processed_count > 0 or any(c.extra_data for c in chunks):
+        session.commit()
+
+    return processed_count
+
+
+def _mark_chunks_as_skipped(session, chunks, error_message: str):
+    """Mark a list of chunks as skipped in a single transaction."""
+    for chunk in chunks:
+        ed = dict(chunk.extra_data) if chunk.extra_data else {}
+        ed["skipped"] = True
+        ed["error"] = error_message
+        chunk.extra_data = ed
+    session.commit()
 
 
 def _process_embedding_batch_cpu(provider, session, chunks, texts) -> tuple[int, int]:
-    """Process a batch of embeddings using CPU GGUF provider."""
+    """
+    Process a batch of embeddings using CPU GGUF provider.
+    Handles batch failures gracefully and uses a single commit.
+    """
     import numpy as np
 
     start_time = time.time()
@@ -215,13 +222,14 @@ def _process_embedding_batch_cpu(provider, session, chunks, texts) -> tuple[int,
                 else:
                     chunk.embedding = emb
                     processed += 1
-            except Exception as e:
+            except Exception:
                 logger.warning(
-                    f"Failed to save embedding for chunk {chunk.chunk_id}: {e}"
+                    f"Failed to save embedding for chunk {chunk.chunk_id}: PII-redacted exception.",
+                    exc_info=False,
                 )
                 ed = dict(chunk.extra_data) if chunk.extra_data else {}
                 ed["skipped"] = True
-                ed["error"] = str(e)[:200]
+                ed["error"] = "embedding_save_failed"
                 chunk.extra_data = ed
                 failed += 1
 
@@ -229,8 +237,12 @@ def _process_embedding_batch_cpu(provider, session, chunks, texts) -> tuple[int,
         duration = time.time() - start_time
         logger.info(f"CPU batch took {duration:.2f}s ({processed} ok, {failed} failed)")
 
-    except Exception as e:
-        logger.error(f"CPU batch embedding failed: {e}")
+    except Exception:
+        logger.error(
+            "CPU batch embedding failed: PII-redacted exception.", exc_info=False
+        )
+        _mark_chunks_as_skipped(session, chunks, "batch_embedding_failed")
+        processed = 0
         failed = len(chunks)
 
     return processed, failed

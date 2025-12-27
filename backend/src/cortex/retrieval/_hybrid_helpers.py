@@ -1,44 +1,49 @@
+import asyncio
 import logging
-import threading
-from typing import Any
+from typing import Any, List, Optional
 
 import numpy as np
 from cortex.llm.runtime import LLMRuntime
-from cortex.retrieval.cache import cache_query_embedding, get_cached_query_embedding
+from cortex.retrieval.async_cache import (
+    cache_query_embedding,
+    get_cached_query_embedding,
+)
 from cortex.retrieval.filter_resolution import _resolve_filter_conversation_ids
 from cortex.retrieval.results import SearchResultItem
 
 logger = logging.getLogger(__name__)
 _llm_runtime: LLMRuntime | None = None
-_runtime_lock = threading.Lock()
+_runtime_lock = asyncio.Lock()
 
 
-def _get_runtime() -> LLMRuntime:
+async def _get_runtime() -> LLMRuntime:
     """Get or create LLMRuntime singleton."""
     global _llm_runtime
     if _llm_runtime is None:
-        with _runtime_lock:
+        async with _runtime_lock:
             if _llm_runtime is None:
                 _llm_runtime = LLMRuntime()
     return _llm_runtime
 
 
-def _get_query_embedding(query: str, config: Any) -> np.ndarray | None:
+async def _get_query_embedding(query: str, config: Any) -> np.ndarray | None:
     """Helper: Get query embedding with cache fallback."""
     try:
         # Check cache first
-        cached = get_cached_query_embedding(query, model=config.embedding.model_name)
+        cached = await get_cached_query_embedding(
+            query, model=config.embedding.model_name
+        )
         if cached is not None:
             logger.debug("Using cached query embedding for: %s", query[:50])
             return cached
 
         # Use LLMRuntime which has CPU fallback logic
-        runtime = _get_runtime()
-        embedding_array = runtime.embed_queries([query])
+        runtime = await _get_runtime()
+        embedding_array = await runtime.embed_queries([query])
         embedding = embedding_array[0]
 
         # Cache the embedding
-        cache_query_embedding(
+        await cache_query_embedding(
             query,
             embedding,
             model=config.embedding.model_name,

@@ -24,16 +24,19 @@ export function ThreadView({ threadId, onBack, onAskAbout, onDraft }: ThreadView
   const [summary, setSummary] = useState<ThreadSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSummarizing, setIsSummarizing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadThreadContent = async () => {
       setIsLoading(true);
+      setError(null);
       try {
         // Search for all chunks related to this thread
         const response = await api.search(`thread:${threadId}`, 50);
         setChunks(response.results);
       } catch (error) {
         console.error('Failed to load thread:', error);
+        setError('Failed to load thread content. Please try again later.');
       } finally {
         setIsLoading(false);
       }
@@ -66,7 +69,6 @@ export function ThreadView({ threadId, onBack, onAskAbout, onDraft }: ThreadView
           </button>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Thread Details</h1>
-            <p className="text-white/40 font-mono text-sm">{threadId}</p>
           </div>
         </div>
 
@@ -164,8 +166,17 @@ export function ThreadView({ threadId, onBack, onAskAbout, onDraft }: ThreadView
           </section>
         )}
 
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-20">
+            <FileText className="w-12 h-12 text-red-500/50 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-red-500/80 mb-2">An Error Occurred</h3>
+            <p className="text-white/40">{error}</p>
+          </div>
+        )}
+
         {/* Empty State */}
-        {!isLoading && chunks.length === 0 && (
+        {!isLoading && !error && chunks.length === 0 && (
           <div className="text-center py-20">
             <FileText className="w-12 h-12 text-white/20 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-white/60 mb-2">No Content Found</h3>

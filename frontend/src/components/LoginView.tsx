@@ -17,7 +17,7 @@ export function LoginView() {
     setIsLoading(true);
 
     try {
-      await login(username, password);
+      await login(username.trim(), password.trim());
       navigate('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
@@ -107,12 +107,6 @@ export function LoginView() {
             </button>
           </form>
 
-          {/* Dev Credentials Hint */}
-          <div className="mt-6 pt-6 border-t border-white/5">
-            <p className="text-xs text-white/30 text-center">
-              Dev credentials: <code className="text-blue-400">admin/admin</code>, <code className="text-blue-400">user/user</code>, <code className="text-blue-400">demo/demo</code>
-            </p>
-          </div>
         </div>
       </div>
     </div>

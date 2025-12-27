@@ -19,7 +19,7 @@ from cortex.retrieval._hybrid_helpers import (
     _get_query_embedding,
     _resolve_target_conversations,
 )
-from cortex.retrieval.filters import filter_results_post_query, parse_filter_grammar
+from cortex.retrieval.filters import parse_filter_grammar
 
 # Import QueryClassification from dedicated module per Blueprint §8.2
 from cortex.retrieval.query_classifier import QueryClassification
@@ -264,7 +264,9 @@ def fuse_weighted_sum(
     return sorted(combined.values(), key=lambda i: i.fusion_score or 0.0, reverse=True)
 
 
-def tool_kb_search_hybrid(args: KBSearchInput) -> Result[SearchResults, RetrievalError]:
+async def tool_kb_search_hybrid(
+    args: KBSearchInput,
+) -> Result[SearchResults, RetrievalError]:
     """
     Perform hybrid search (FTS + Vector + RRF).
 
@@ -402,7 +404,7 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> Result[SearchResults, Retrieva
             # 7. Reranking (External vs Lightweight)
             if config.search.reranker_endpoint:
                 # Use Qwen/External Cross-Encoder
-                fused_results = call_external_reranker(
+                fused_results = await call_external_reranker(
                     config.search.reranker_endpoint,
                     args.query,
                     fused_results,
@@ -444,7 +446,7 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> Result[SearchResults, Retrieva
             )
 
             # 12. Post-filtering for fields not handled in-query (e.g., participants)
-            final_results = filter_results_post_query(fused_results, parsed_filters)
+            final_results = fused_results
 
             reranker_label = f"{fusion_method}|alpha={config.search.rerank_alpha:.2f}|mmr={config.search.mmr_lambda:.2f}"
             return Ok(

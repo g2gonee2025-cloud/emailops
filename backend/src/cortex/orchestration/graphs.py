@@ -7,6 +7,7 @@ Implements §10.1 of the Canonical Blueprint.
 from __future__ import annotations
 
 import logging
+from typing import Optional, Protocol
 
 from cortex.orchestration.nodes import (
     node_assemble_context,
@@ -37,27 +38,32 @@ from langgraph.graph import END, StateGraph
 logger = logging.getLogger(__name__)
 
 
-def _check_error(state: dict) -> str:
+class ErrorState(Protocol):
+    """Protocol for states that have an 'error' field."""
+
+    error: str | None
+
+
+def _check_error(state: ErrorState) -> str:
     """Check if state has error and route accordingly."""
-    if state.get("error"):
+    if state.error:
         return "handle_error"
     return "continue"
 
 
-def _route_by_classification(state: dict) -> str:
+def _route_by_classification(state: AnswerQuestionState) -> str:
     """Route based on query classification."""
-    if state.get("error"):
+    if state.error:
         return "handle_error"
 
-    classification = state.get("classification")
+    classification = state.classification
     if not classification:
         return "retrieve"
 
     # Route based on classification type
     # NOTE: Currently all valid classifications use retrieval, but structure
     # allows future specialization (e.g., navigational -> direct lookup)
-    classification_type = getattr(classification, "query_type", None)
-    if classification_type == "error":
+    if classification.query_type == "error":
         return "handle_error"
 
     return "retrieve"
@@ -120,19 +126,21 @@ MAX_ITERATIONS = 3
 
 def should_improve(state: DraftEmailState) -> str:
     """Determine if draft needs improvement."""
+    if state.error:
+        return "handle_error"
+
     critique = state.critique
     iteration = state.iteration_count
 
-    if iteration >= MAX_ITERATIONS:  # Max iterations
+    if iteration >= MAX_ITERATIONS:
         return "audit"
 
-    if not critique:
+    if not critique or not critique.issues:
         return "audit"
 
     # Check if there are major issues
     has_major_issues = any(
-        issue.severity in ["major", "critical"]
-        for issue in (getattr(critique, "issues", None) or [])
+        issue.severity in ["major", "critical"] for issue in critique.issues
     )
 
     if has_major_issues:

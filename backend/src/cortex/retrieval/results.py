@@ -47,11 +47,22 @@ class SearchResultItem(BaseModel):
     rerank_score: float | None = None
     content_hash: str | None = None
 
+    def __repr__(self) -> str:
+        """Build a string representation with redacted content for secure logging."""
+        fields = self.model_dump()
+        # Redact sensitive fields
+        if "content" in fields:
+            fields["content"] = "[REDACTED]"
+        if "snippet" in fields:
+            fields["snippet"] = "[REDACTED]"
+
+        # Create a string of key-value pairs
+        field_strings = [f"{key}={value!r}" for key, value in fields.items()]
+        return f"SearchResultItem({', '.join(field_strings)})"
+
     # Backward compatibility aliases
     @property
-    def thread_id(self) -> str:
-        # TODO: This should be Optional[str] to match conversation_id.
-        # This requires updating consumers to handle `None`.
+    def thread_id(self) -> Optional[str]:
         """Alias for conversation_id (backward compat)."""
         return self.conversation_id
 

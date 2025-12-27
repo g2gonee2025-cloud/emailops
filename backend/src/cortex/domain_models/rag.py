@@ -7,23 +7,34 @@ Implements §10 of the Canonical Blueprint - data models for orchestration.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Literal
+from typing import Any, Dict, List, Literal, Optional
 from uuid import UUID
 
+from cortex.common.models import SecureBaseModel
 from cortex.domain_models.facts_ledger import FactsLedger, ParticipantAnalysis
 from pydantic import BaseModel, Field
 
 
-class ThreadParticipant(BaseModel):
+class ThreadParticipant(SecureBaseModel):
     """Participant in an email thread."""
+
+    _PII_FIELDS: set[str] = {"email", "name"}
 
     email: str
     name: str | None = None
     role: Literal["sender", "recipient", "cc"] = "recipient"
 
 
-class ThreadMessage(BaseModel):
+class ThreadMessage(SecureBaseModel):
     """Single message in a thread."""
+
+    _PII_FIELDS: set[str] = {
+        "from_addr",
+        "to_addrs",
+        "cc_addrs",
+        "subject",
+        "body_markdown",
+    }
 
     message_id: UUID | None = None
     sent_at: datetime | None = None
@@ -36,7 +47,7 @@ class ThreadMessage(BaseModel):
     is_inbound: bool = False
 
 
-class ThreadContext(BaseModel):
+class ThreadContext(SecureBaseModel):
     """Full context for an email thread."""
 
     thread_id: UUID | None = None
@@ -45,8 +56,10 @@ class ThreadContext(BaseModel):
     messages: list[ThreadMessage] = Field(default_factory=list)
 
 
-class EvidenceItem(BaseModel):
+class EvidenceItem(SecureBaseModel):
     """Evidence item from retrieval results."""
+
+    _PII_FIELDS: set[str] = {"text"}
 
     chunk_id: str
     text: str = ""
@@ -63,8 +76,10 @@ class RetrievalDiagnostics(BaseModel):
     reranker: str | None = None
 
 
-class Answer(BaseModel):
+class Answer(SecureBaseModel):
     """Generated answer with evidence."""
+
+    _PII_FIELDS: set[str] = {"query", "answer_markdown"}
 
     query: str
     answer_markdown: str = ""
@@ -81,8 +96,10 @@ class ToneStyle(BaseModel):
     tone: str = "professional"
 
 
-class DraftValidationScores(BaseModel):
+class DraftValidationScores(SecureBaseModel):
     """Validation scores for a draft."""
+
+    _PII_FIELDS: set[str] = {"feedback"}
 
     factuality: float = 0.0
     citation_coverage: float = 0.0
@@ -93,16 +110,20 @@ class DraftValidationScores(BaseModel):
     feedback: str | None = None
 
 
-class NextAction(BaseModel):
+class NextAction(SecureBaseModel):
     """Next action item extracted from email."""
+
+    _PII_FIELDS: set[str] = {"description", "owner"}
 
     description: str
     owner: str | None = None
     due_date: str | None = None
 
 
-class EmailDraft(BaseModel):
+class EmailDraft(SecureBaseModel):
     """Generated email draft."""
+
+    _PII_FIELDS: set[str] = {"to", "cc", "subject", "body_markdown"}
 
     to: list[str] = Field(default_factory=list)
     cc: list[str] = Field(default_factory=list)
@@ -117,13 +138,17 @@ class EmailDraft(BaseModel):
     )
 
 
-class Issue(BaseModel):
+class Issue(SecureBaseModel):
+    """Critique issue of a draft email."""
+
+    _PII_FIELDS: set[str] = {"description"}
+
     description: str
     severity: str = "medium"
     category: str = "general"
 
 
-class DraftCritique(BaseModel):
+class DraftCritique(SecureBaseModel):
     """Critique of a draft email."""
 
     overall_rating: float = 0.0
@@ -134,8 +159,10 @@ class DraftCritique(BaseModel):
     issues: list[Issue] = Field(default_factory=list)
 
 
-class ThreadSummary(BaseModel):
+class ThreadSummary(SecureBaseModel):
     """Summary of an email thread."""
+
+    _PII_FIELDS: set[str] = {"summary_markdown"}
 
     type: Literal["thread_summary"] = "thread_summary"
     thread_id: UUID | None = None

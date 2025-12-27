@@ -8,11 +8,14 @@ sliding window chunking and graph merging for long contexts.
 
 from __future__ import annotations
 
+import asyncio
 import logging
-from typing import Any
+from collections import defaultdict
+from typing import Any, Dict, List
 
 import networkx as nx
-from cortex.llm.runtime import LLMRuntime
+from cortex.llm.async_runtime import AsyncLLMRuntime
+from thefuzz import fuzz, process
 
 # Constants
 DEFAULT_CHUNK_SIZE = 8000
@@ -142,6 +145,12 @@ Example: "Invoice from Acme Corp for $5,000, due Dec 15. - Sarah"
 </text>
 """
 
+SYSTEM_PROMPT = """
+You are an expert Data Analyst specializing in Email Operations for insurance and corporate communications.
+Extract a structured Knowledge Graph from the provided email conversation text.
+Identify key entities (Nodes) and their specific relationships (Edges).
+"""
+
 GRAPH_SCHEMA = {
     "type": "object",
     "properties": {
@@ -212,11 +221,11 @@ class GraphExtractor:
     """
 
     def __init__(self) -> None:
-        self.llm = LLMRuntime()
+        self.llm = AsyncLLMRuntime()
         self.chunk_size = 8000  # Conservative chunk size for reasoning models (leaving room for output)
         self.overlap = 500
 
-    def extract_graph(self, text: str) -> nx.DiGraph:
+    async def extract_graph(self, text: str) -> nx.DiGraph:
         """
         Extract entities and relations from text and return a NetworkX graph.
         Handles long text via chunking and merging.
@@ -226,17 +235,17 @@ class GraphExtractor:
 
         # 1. Chunking Strategy
         chunks = self._chunk_text(text)
-        sub_graphs = []
 
         logger.info(f"Extracting graph from {len(text)} chars (Chunks: {len(chunks)})")
 
-        # 2. Extract Sub-Graphs
-        for i, chunk in enumerate(chunks):
-            sub_G = self._process_chunk(chunk, i)
-            sub_graphs.append(sub_G)
+        # 2. Extract Sub-Graphs concurrently
+        tasks = [self._process_chunk(chunk, i) for i, chunk in enumerate(chunks)]
+        sub_graphs = await asyncio.gather(*tasks)
 
         # 3. Merge Graphs
-        final_G = self._merge_graphs(sub_graphs)
+        # Run the CPU-bound merge operation in a thread pool to avoid blocking the event loop.
+        loop = asyncio.get_running_loop()
+        final_G = await loop.run_in_executor(None, self._merge_graphs, sub_graphs)
         return final_G
 
     def _chunk_text(self, text: str) -> list[str]:
@@ -261,13 +270,19 @@ class GraphExtractor:
             start = end - self.overlap
         return chunks
 
-    def _process_chunk(self, chunk_text: str, index: int) -> nx.DiGraph:
+    async def _process_chunk(self, chunk_text: str, index: int) -> nx.DiGraph:
         """Call LLM for a single chunk."""
-        prompt = GRAPH_EXTRACTION_PROMPT.format(input_text=chunk_text)
+        messages = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {
+                "role": "user",
+                "content": GRAPH_EXTRACTION_PROMPT.format(input_text=chunk_text),
+            },
+        ]
 
         try:
-            response_json = self.llm.complete_json(
-                prompt,
+            response_json = await self.llm.async_complete_json(
+                prompt=messages,
                 schema=GRAPH_SCHEMA,
                 temperature=0.1,
                 max_tokens=4000,
@@ -320,42 +335,86 @@ class GraphExtractor:
         return G
 
     def _merge_graphs(self, graphs: list[nx.DiGraph]) -> nx.DiGraph:
-        """Merges multiple subgraphs into one master graph."""
+        """
+        Merges multiple subgraphs into one master graph using an optimized
+        clustering approach for fuzzy node matching.
+        """
         if not graphs:
             return nx.DiGraph()
 
+        # 1. Collect all unique nodes and their attributes from all subgraphs
+        all_nodes = {}
+        for G in graphs:
+            for node, attrs in G.nodes(data=True):
+                if node not in all_nodes:
+                    all_nodes[node] = attrs
+                else:
+                    # Merge attributes, prioritizing specific types over UNKNOWN
+                    existing_attrs = all_nodes[node]
+                    if (
+                        existing_attrs.get("type", "UNKNOWN") == "UNKNOWN"
+                        and attrs.get("type", "UNKNOWN") != "UNKNOWN"
+                    ):
+                        existing_attrs["type"] = attrs.get("type")
+
+                    existing_props = existing_attrs.get("properties", {})
+                    new_props = attrs.get("properties", {})
+                    existing_props.update(new_props)
+                    existing_attrs["properties"] = existing_props
+
+        # 2. Efficiently cluster nodes using a blocking strategy to avoid O(N^2)
+        node_names = list(all_nodes.keys())
+        blocks = defaultdict(list)
+        for name in node_names:
+            # Use a simple blocking key (e.g., first word, case-insensitive)
+            key = name.split()[0].lower() if name else ""
+            blocks[key].append(name)
+
+        node_map = {}  # Maps each node to its canonical representative
+        processed_nodes = set()
+
+        for block_nodes in blocks.values():
+            for node in block_nodes:
+                if node in processed_nodes:
+                    continue
+
+                # Find similar nodes only within the smaller block
+                matches = process.extractBests(node, block_nodes, score_cutoff=80)
+                if not matches:
+                    processed_nodes.add(node)
+                    node_map[node] = node
+                    continue
+
+                cluster = [match[0] for match in matches]
+                canonical = max(cluster, key=len)
+                for member in cluster:
+                    node_map[member] = canonical
+                    processed_nodes.add(member)
+
+        # 3. Build the final graph
         final_G = nx.DiGraph()
 
+        # Add canonical nodes to the graph
+        for canonical_name in set(node_map.values()):
+            final_G.add_node(canonical_name, **all_nodes[canonical_name])
+
+        # Add and remap edges
         for G in graphs:
-            # Merge Nodes
-            for node, attrs in G.nodes(data=True):
-                if not final_G.has_node(node):
-                    final_G.add_node(node, **attrs)
-                else:
-                    # Update type if UNKNOWN -> something specific
-                    current_type = final_G.nodes[node].get("type", "UNKNOWN")
-                    new_type = attrs.get("type", "UNKNOWN")
-                    if current_type == "UNKNOWN" and new_type != "UNKNOWN":
-                        final_G.nodes[node]["type"] = new_type
-
-                    # Merge properties dictionaries
-                    current_props = final_G.nodes[node].get("properties", {})
-                    new_props = attrs.get("properties", {})
-                    if new_props:
-                        current_props.update(new_props)
-                        final_G.nodes[node]["properties"] = current_props
-
-            # Merge Edges
             for u, v, attrs in G.edges(data=True):
-                if final_G.has_edge(u, v):
-                    # Combine descriptions
-                    existing_desc = final_G[u][v].get("description", "")
+                src = node_map.get(u, u)
+                tgt = node_map.get(v, v)
+
+                if src == tgt:  # Avoid self-loops from merging
+                    continue
+
+                if final_G.has_edge(src, tgt):
+                    existing_desc = final_G[src][tgt].get("description", "")
                     new_desc = attrs.get("description", "")
                     if new_desc not in existing_desc:
-                        final_G[u][v]["description"] = (
-                            existing_desc + "; " + new_desc
+                        final_G[src][tgt]["description"] = (
+                            f"{existing_desc}; {new_desc}"
                         ).strip("; ")
                 else:
-                    final_G.add_edge(u, v, **attrs)
+                    final_G.add_edge(src, tgt, **attrs)
 
         return final_G

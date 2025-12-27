@@ -5,6 +5,7 @@ Provides a development-only login endpoint that issues JWTs.
 In production, this would be replaced by an external IdP (Keycloak, Auth0, etc.)
 """
 
+import logging
 import secrets
 from datetime import datetime, timedelta
 from typing import Any
@@ -18,7 +19,20 @@ from pydantic import BaseModel, Field
 SECONDS_PER_DAY = 86400
 
 
+# Initialize logger
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/auth", tags=["auth"])
+config = get_config()
+
+# CRITICAL: This entire router should be disabled in production.
+# The mock login endpoint is a security risk if exposed.
+if config.core.env != "dev":
+    logger.warning(
+        "Disabling mock auth router in non-dev environment (%s)", config.core.env
+    )
+    # This prevents the routes from being registered with the FastAPI app
+    router = APIRouter()
 
 
 class LoginRequest(BaseModel):

@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
+from cortex.embeddings.client import get_embeddings_client
 
 # -----------------------------------------------------------------------------
 # Constants
@@ -213,12 +214,26 @@ def extract_claims_llm(text: str) -> list[str]:
     """
     try:
         from cortex.llm.client import complete_json
-        from cortex.prompts import PROMPT_EXTRACT_CLAIMS
+        from cortex.prompts import (
+            SYSTEM_EXTRACT_CLAIMS,
+            USER_EXTRACT_CLAIMS,
+            construct_prompt_messages,
+        )
+        from cortex.security.defenses import sanitize_user_input
 
-        prompt = PROMPT_EXTRACT_CLAIMS.format(text=text)
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_EXTRACT_CLAIMS,
+            user_prompt_template=USER_EXTRACT_CLAIMS,
+            text=sanitize_user_input(text),
+        )
+
+        # Reconstruct prompt for the deprecated `complete_json`
+        system_content = messages[0]["content"]
+        user_content = messages[1]["content"]
+        reconstructed_prompt = f"{system_content}\n\n{user_content}"
 
         result = complete_json(
-            prompt=prompt,
+            prompt=reconstructed_prompt,
             schema={
                 "type": "object",
                 "properties": {
@@ -305,17 +320,15 @@ def check_claim_against_facts_embedding(
         (is_supported, confidence, supporting_fact, method)
     """
     try:
-        from cortex.embeddings.client import EmbeddingsClient
-
-        client = EmbeddingsClient()
+        client = get_embeddings_client()
 
         claim_embedding = client.embed(claim)
         if not facts:
             return (False, 0.0, None, "embedding")
 
         if fact_embeddings is None:
-            # Use embed_batch for efficiency
-            fact_embeddings = client.embed_batch(facts)
+            # Use embed_texts for efficiency
+            fact_embeddings = client.embed_texts(facts)
 
         best_score = 0.0
         best_fact = None
@@ -450,24 +463,38 @@ def check_grounding_llm(
     """
     try:
         from cortex.llm.client import complete_json
-        from cortex.prompts import PROMPT_GROUNDING_CHECK
+        from cortex.prompts import (
+            SYSTEM_GROUNDING_CHECK,
+            USER_GROUNDING_CHECK,
+            construct_prompt_messages,
+        )
+        from cortex.security.defenses import sanitize_user_input
 
-        facts_text = "\n".join(f"- {fact}" for fact in facts)
+        facts_text = "\n".join(f"- {sanitize_user_input(fact)}" for fact in facts)
 
+        claims_to_check = claims or []
         claims_text = (
-            "\n".join(f"- {claim}" for claim in (claims or []))
-            if claims
+            "\n".join(f"- {sanitize_user_input(claim)}" for claim in claims_to_check)
+            if claims_to_check
             else "(no verifiable claims detected)"
         )
 
-        prompt = PROMPT_GROUNDING_CHECK.format(
-            answer=answer_candidate,
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_GROUNDING_CHECK,
+            user_prompt_template=USER_GROUNDING_CHECK,
+            answer=sanitize_user_input(answer_candidate),
             facts=facts_text,
             claims=claims_text,
         )
 
+        # Reconstruct prompt for the deprecated `complete_json`
+        system_content = messages[0]["content"]
+        user_content = messages[1]["content"]
+        reconstructed_prompt = f"{system_content}\n\n{user_content}"
+
         result = complete_json(
-            prompt=prompt, schema=GroundingAnalysisResult.model_json_schema()
+            prompt=reconstructed_prompt,
+            schema=GroundingAnalysisResult.model_json_schema(),
         )
 
         analysis = GroundingAnalysisResult(**result)
@@ -565,10 +592,8 @@ def check_grounding_embedding(
     fact_embeddings = None
     if facts:
         try:
-            from cortex.embeddings.client import EmbeddingsClient
-
-            client = EmbeddingsClient()
-            fact_embeddings = client.embed_batch(facts)
+            client = get_embeddings_client()
+            fact_embeddings = client.embed_texts(facts)
         except ImportError as e:
             logger.error(
                 f"Embeddings client dependencies not found: {e}. Keyword fallback will be used for claims."

@@ -17,7 +17,7 @@ import time
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -111,7 +111,9 @@ class JobQueue(ABC):
         pass
 
     @abstractmethod
-    def dequeue(self, job_types: list[str], timeout: int = 10) -> dict[str, Any] | None:
+    def dequeue(
+        self, job_types: list[str], timeout: int = 10
+    ) -> dict[str, Any] | None:
         """
         Dequeue a job.
 
@@ -199,7 +201,9 @@ class InMemoryQueue(JobQueue):
         logger.debug(f"Enqueued job {job_id} of type {job_type}")
         return job_id
 
-    def dequeue(self, job_types: list[str], timeout: int = 10) -> dict[str, Any] | None:
+    def dequeue(
+        self, job_types: list[str], timeout: int = 10
+    ) -> dict[str, Any] | None:
         from queue import Empty
 
         start = time.time()
@@ -404,7 +408,9 @@ class RedisStreamsQueue(JobQueue):
         logger.debug(f"Enqueued job {job_id} to stream {stream}")
         return job_id
 
-    def dequeue(self, job_types: list[str], timeout: int = 10) -> dict[str, Any] | None:
+    def dequeue(
+        self, job_types: list[str], timeout: int = 10
+    ) -> dict[str, Any] | None:
         """Dequeue a job from Redis Streams."""
         # Build list of streams to read from (in priority order)
         streams = {}
@@ -868,7 +874,9 @@ class CeleryQueue(JobQueue):
         logger.debug(f"Enqueued Celery task {job_id} of type {job_type}")
         return job_id
 
-    def dequeue(self, job_types: list[str], timeout: int = 10) -> dict[str, Any] | None:
+    def dequeue(
+        self, job_types: list[str], timeout: int = 10
+    ) -> dict[str, Any] | None:
         """
         Dequeue is handled by Celery workers automatically.
         This method is not used in a Celery-based setup and is here for ABC compliance.
@@ -1017,7 +1025,7 @@ def get_queue(job_types: list[str] | None = None) -> JobQueue:
 
 
 def reset_queue() -> None:
-    # Reset the queue instance (useful for testing).
+    """Reset the queue instance (useful for testing)."""
     global _queue_instance
     with _queue_lock:
         _queue_instance = None

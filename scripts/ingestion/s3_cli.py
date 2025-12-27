@@ -12,6 +12,7 @@ from pathlib import Path
 
 import boto3
 from botocore.client import Config
+from botocore.exceptions import ClientError
 
 # Add backend/src to path (depth 2: scripts/ingestion/s3_cli.py)
 root_dir = Path(__file__).resolve().parents[2]
@@ -23,14 +24,30 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger("s3_cli")
 
 
+PII_KEYS = {"subject", "from", "to", "body", "sender", "recipient", "name", "email"}
+
+
+def redact_pii(data):
+    """Recursively redact sensitive data in a dictionary or list."""
+    if isinstance(data, dict):
+        for key, value in data.items():
+            if key in PII_KEYS:
+                data[key] = "[REDACTED]"
+            else:
+                redact_pii(value)
+    elif isinstance(data, list):
+        for item in data:
+            redact_pii(item)
+    return data
+
+
 def get_s3_client(config):
+    """Initialize S3 client using secure credentials."""
     s3_config = config.storage
     return boto3.client(
         "s3",
         region_name=s3_config.region,
         endpoint_url=s3_config.endpoint_url,
-        aws_access_key_id=s3_config.access_key,
-        aws_secret_access_key=s3_config.secret_key,
         config=Config(signature_version="s3v4"),
     )
 
@@ -69,7 +86,14 @@ def fetch_sample(args):
     max_scan = args.max_scan
 
     # Ensure the max-scan limit applies to total objects examined, not just manifests
-    pagination_kwargs = {"Bucket": bucket, "PaginationConfig": {"PageSize": 50}}
+    pagination_kwargs = {
+        "Bucket": bucket,
+        "PaginationConfig": {"PageSize": 50},
+    }
+    if args.prefix:
+        pagination_kwargs["Prefix"] = args.prefix
+        print(f"Scanning with prefix: {args.prefix}...")
+
     if max_scan:
         pagination_kwargs["PaginationConfig"]["MaxItems"] = max_scan
     for page in paginator.paginate(**pagination_kwargs):
@@ -90,15 +114,20 @@ def fetch_sample(args):
                     if is_multi or args.any:
                         print(f"\n✅ FOUND REAL DATA: {key}")
                         print("=" * 60)
-                        print(json.dumps(data, indent=2))
+                        redacted_data = redact_pii(data)
+                        print(json.dumps(redacted_data, indent=2))
                         print("=" * 60)
                         return
                     else:
                         sys.stdout.write(".")
                         sys.stdout.flush()
 
+                except ClientError as e:
+                    logger.warning(f"S3 client error for '{key}': {e}")
+                except json.JSONDecodeError:
+                    logger.warning(f"Corrupt manifest JSON in '{key}'")
                 except Exception as e:
-                    logger.warning(f"Failed to read {key}: {e}")
+                    logger.error(f"Unexpected error processing '{key}': {e}")
 
             if scanned >= max_scan:
                 print(f"\nStopped after {scanned} manifests.")
@@ -121,6 +150,9 @@ def main():
         "--any",
         action="store_true",
         help="Return first manifest found (ignore multi-message req)",
+    )
+    p_sample.add_argument(
+        "--prefix", type=str, default="", help="S3 prefix to narrow the scan"
     )
 
     args = parser.parse_args()

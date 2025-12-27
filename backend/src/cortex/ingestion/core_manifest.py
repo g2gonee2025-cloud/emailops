@@ -196,15 +196,6 @@ def _extract_subject_lightweight(manifest: dict[str, Any]) -> str:
     return raw.strip()
 
 
-def parse_manifest_core(man: dict[str, Any]) -> dict[str, Any]:
-    man = man or {}
-    return {
-        "subject": _extract_subject_lightweight(man),
-        **_extract_participants_grouped(man),
-        **_extract_date_range(man),
-    }
-
-
 def _extract_participants_grouped(
     manifest: dict[str, Any],
 ) -> dict[str, list[tuple[str, str]]]:
@@ -283,8 +274,13 @@ def _extract_date_range(manifest: dict[str, Any]) -> dict[str, Any]:
             else:
                 start_date = raw_start
                 end_date = raw_end
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(
+            "Failed to extract date range for manifest '%s': %s",
+            manifest.get("thread_id", "N/A"),
+            e,
+            exc_info=True,
+        )
 
     return {"start_date": start_date, "end_date": end_date}
 
@@ -371,7 +367,6 @@ def extract_participants_detailed(
     Returns:
         List of participant dicts with full schema, deduplicated
     """
-    out: list[dict[str, str]] = []
     if not isinstance(manifest, dict):
         logger.warning(
             "extract_participants_detailed: Non-dict manifest type: %s",
@@ -379,15 +374,34 @@ def extract_participants_detailed(
         )
         return []
 
-    def _mk(name: str, email: str, role: str = "other") -> dict[str, str]:
-        """Helper to create participant dict with defaults."""
-        return {
-            "name": _safe_str(name, 80),
-            "role": role,
-            "email": _safe_str(email, 120),
-            "tone": default_tone,
-            "stance": default_stance,
-        }
+    seen: set[str] = set()
+    deduped: list[dict[str, str]] = []
+
+    def _add_participant(name: str, email: str, role: str) -> None:
+        """Deduplicate and add a participant if they haven't been seen."""
+        if len(deduped) >= max_participants:
+            return
+
+        email_key = (email or "").strip().lower()
+        name_key = _normalize_name((name or "").strip())
+
+        if not email_key and not name_key:
+            return
+
+        key = email_key or f"name:{name_key}"
+        if key in seen:
+            return
+
+        seen.add(key)
+        deduped.append(
+            {
+                "name": _safe_str(name, 80),
+                "role": role,
+                "email": _safe_str(email, 120),
+                "tone": default_tone,
+                "stance": default_stance,
+            }
+        )
 
     try:
         messages = manifest.get("messages")
@@ -397,50 +411,40 @@ def extract_participants_detailed(
 
         # Iterate over ALL messages to find participants
         for msg in messages:
+            if len(deduped) >= max_participants:
+                break
             if not isinstance(msg, dict):
                 continue
 
             # Sender
             f = msg.get("from")
             if isinstance(f, dict):
-                out.append(_mk(f.get("name", ""), f.get("smtp", ""), role=default_role))
+                _add_participant(
+                    f.get("name", ""), f.get("smtp", ""), role=default_role
+                )
 
             # Recipients
             for rec in msg.get("to") or []:
                 if isinstance(rec, dict):
-                    out.append(
-                        _mk(rec.get("name", ""), rec.get("smtp", ""), role=default_role)
+                    _add_participant(
+                        rec.get("name", ""), rec.get("smtp", ""), role=default_role
                     )
 
             # Cc
             for rec in msg.get("cc") or []:
                 if isinstance(rec, dict):
-                    out.append(
-                        _mk(rec.get("name", ""), rec.get("smtp", ""), role=default_role)
+                    _add_participant(
+                        rec.get("name", ""), rec.get("smtp", ""), role=default_role
                     )
 
     except (TypeError, AttributeError, KeyError) as e:
         logger.warning(
             "extract_participants_detailed: Error extracting participants: %s", e
         )
-        return []
     except Exception as e:
         logger.error("extract_participants_detailed: Unexpected error: %s", e)
-        return []
-    # Deduplicate by lowercase email or normalized name; skip empty entries
-    seen: set[str] = set()
-    deduped: list[dict[str, str]] = []
-    for p in out:
-        email_key = (p.get("email") or "").lower()
-        name_key = _normalize_name(p.get("name", ""))
-        if not email_key and not name_key:
-            continue
-        key = email_key or f"name:{name_key}"
-        if key in seen:
-            continue
-        seen.add(key)
-        deduped.append(p)
-    return deduped[:max_participants]
+
+    return deduped
 
 
 # ============================================================================

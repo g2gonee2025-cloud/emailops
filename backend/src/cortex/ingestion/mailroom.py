@@ -7,15 +7,16 @@ Updated for Conversation-based schema.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 import shutil
 import stat
 import tempfile
 import uuid
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
 from cortex.ingestion.core_manifest import resolve_subject
@@ -55,7 +56,7 @@ def process_job(job: IngestJobRequest) -> IngestJobSummary:
         try:
             temp_dir, local_convo_dir = _resolve_source(job)
 
-            summary = _ingest_conversation(local_convo_dir, job, summary)
+            summary = asyncio.run(_ingest_conversation(local_convo_dir, job, summary))
 
         finally:
             if temp_dir and temp_dir.exists():
@@ -75,6 +76,19 @@ def process_job(job: IngestJobRequest) -> IngestJobSummary:
 
 
 def _validate_local_path(path_str: str) -> Path:
+    upload_dir = os.getenv("CORTEX_LOCAL_UPLOAD_DIR")
+    if not upload_dir:
+        raise ValueError(
+            "CORTEX_LOCAL_UPLOAD_DIR is not set, insecure local upload disabled."
+        )
+
+    safe_base_dir = Path(upload_dir).resolve()
+
+    # Security: Prevent path traversal attacks.
+    resolved_path = Path(path_str).resolve()
+    if not str(resolved_path).startswith(str(safe_base_dir)):
+        raise ValueError(f"Path is outside of the allowed directory: {path_str}")
+
     path = Path(path_str)
     if not path.exists():
         raise ValueError(f"Local path does not exist: {path_str}")
@@ -152,10 +166,24 @@ def _download_sftp_source(
 
     pkey = None
     if pkey_path:
-        pkey = paramiko.RSAKey.from_private_key_file(pkey_path)
+        # Try loading the key with common formats to avoid breaking existing integrations.
+        for key_class in (
+            paramiko.Ed25519Key,
+            paramiko.RSAKey,
+            paramiko.ECDSAKey,
+            paramiko.DSSKey,
+        ):
+            try:
+                pkey = key_class.from_private_key_file(pkey_path)
+                break
+            except paramiko.ssh_exception.SSHException:
+                continue
+        if not pkey:
+            raise ValueError(
+                f"Failed to load private key from {pkey_path}. Unsupported format."
+            )
 
-    sftp = None
-    try:
+    with client:
         client.connect(
             hostname=host,
             port=port,
@@ -165,24 +193,18 @@ def _download_sftp_source(
             timeout=30,
         )
 
-        sftp = client.open_sftp()
+        with client.open_sftp() as sftp:
+            temp_dir = Path(tempfile.mkdtemp(prefix="cortex_sftp_"))
+            remote_root = Path(remote_path)
+            root_name = (
+                remote_root.name or remote_root.parent.name or "sftp_conversation"
+            )
+            local_root = temp_dir / root_name
+            local_root.mkdir(parents=True, exist_ok=True)
 
-        temp_dir = Path(tempfile.mkdtemp(prefix="cortex_sftp_"))
-        remote_root = Path(remote_path)
-        root_name = remote_root.name or remote_root.parent.name or "sftp_conversation"
-        local_root = temp_dir / root_name
-        local_root.mkdir(parents=True, exist_ok=True)
+            _download_sftp_tree(sftp, str(remote_root), local_root)
 
-        _download_sftp_tree(sftp, str(remote_root), local_root)
-
-        return temp_dir, local_root
-    finally:
-        if sftp is not None:
-            try:
-                sftp.close()
-            except Exception:
-                pass
-        client.close()
+            return temp_dir, local_root
 
 
 def _download_sftp_tree(sftp: Any, remote_path: str, local_path: Path) -> None:
@@ -207,7 +229,7 @@ def _generate_stable_id(namespace: uuid.UUID, *args: str) -> uuid.UUID:
     return uuid.uuid5(namespace, joined)
 
 
-def _ingest_conversation(
+async def _ingest_conversation(
     convo_dir: Path, job: IngestJobRequest, summary: IngestJobSummary
 ) -> IngestJobSummary:
     """
@@ -261,7 +283,7 @@ def _ingest_conversation(
     )
 
     # 4. Intelligence (Summary + Graph)
-    graph_data, summary_text = _process_intelligence(
+    graph_data, summary_text = await _process_intelligence(
         chunks_data, conversation_id, tenant_ns, job
     )
 
@@ -302,8 +324,8 @@ def _prepare_conversation_data(
     subject, subject_norm = resolve_subject(manifest, summary_json, convo_dir.name)
 
     # Parse dates
-    earliest_date = datetime.now(UTC)
-    latest_date = datetime.now(UTC)
+    earliest_date = datetime.now(timezone.utc)
+    latest_date = datetime.now(timezone.utc)
 
     if manifest.get("started_at_utc"):
         try:
@@ -362,7 +384,8 @@ def _process_body_and_attachments(
     quoted_spans = detect_quoted_spans(cleaned_body)
 
     # Attachments
-    att_log_meta = parse_attachments_log(convo_dir)
+    # The conversation directory's parent is assumed to be the secure upload root.
+    att_log_meta = parse_attachments_log(convo_dir.parent, convo_dir.name)
     attachments_data: list[dict[str, Any]] = []
     sorted_attachments = sorted(
         convo_data.get("attachments", []), key=lambda x: x["path"]
@@ -384,8 +407,11 @@ def _process_body_and_attachments(
             raw_att_text, text_type="attachment", tenant_id=tenant_id
         )
 
-        if filename in att_log_meta:
-            att_meta.update(att_log_meta[filename])
+        if att_log_meta.get(filename):
+            # The log can have multiple entries for the same filename.
+            # Use the metadata from the first occurrence as a reasonable default.
+            first_occurrence_meta = att_log_meta[filename][0]
+            att_meta.update(first_occurrence_meta)
 
         attachments_data.append(
             {
@@ -492,7 +518,7 @@ def _create_chunks(
     return chunks_data
 
 
-def _process_intelligence(
+async def _process_intelligence(
     chunks_data: list[dict[str, Any]],
     conversation_id: uuid.UUID,
     tenant_ns: uuid.UUID,
@@ -577,7 +603,9 @@ def _process_intelligence(
                 )
 
             # 2. Graph Extraction
-            graph_data = _extract_graph(summary_context, conversation_id, job.tenant_id)
+            graph_data = await _extract_graph(
+                summary_context, conversation_id, job.tenant_id
+            )
 
     except Exception as e:
         logger.warning(f"Intelligence processing failed: {e}")
@@ -585,7 +613,7 @@ def _process_intelligence(
     return graph_data, summary_text_out
 
 
-def _extract_graph(
+async def _extract_graph(
     summary_context: str, conversation_id: uuid.UUID, tenant_id: str
 ) -> dict[str, Any]:
     """
@@ -597,7 +625,7 @@ def _extract_graph(
         from cortex.intelligence.graph import GraphExtractor
 
         graph_extractor = GraphExtractor()
-        G = graph_extractor.extract_graph(summary_context)
+        G = await graph_extractor.extract_graph(summary_context)
 
         if G.number_of_nodes() > 0:
             # Format for writer

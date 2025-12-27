@@ -2,10 +2,11 @@
 Standalone library for discovering graph schema from conversation data.
 """
 
-import concurrent.futures
+import asyncio
 import logging
 import random
 from collections import Counter
+from typing import List
 
 from cortex.db.models import Chunk
 from cortex.db.session import get_db_session
@@ -61,7 +62,7 @@ def discover_graph_schema(*, tenant_id: str, sample_size: int = 20) -> None:
             texts.append(full_text)
         return texts
 
-    def analyze_schema(texts: list[str]):
+    async def analyze_schema(texts: list[str]):
         """Analyze the schema of the sampled texts."""
         extractor = GraphExtractor()
         node_types = Counter()
@@ -69,12 +70,12 @@ def discover_graph_schema(*, tenant_id: str, sample_size: int = 20) -> None:
         entity_names = []
 
         console.print(
-            f"Starting graph extraction on {len(texts)} texts with ThreadPool..."
+            f"Starting graph extraction on {len(texts)} texts with asyncio..."
         )
 
-        def process_text(text: str) -> dict:
+        async def process_text(text: str) -> dict:
             try:
-                G = extractor.extract_graph(text)
+                G = await extractor.extract_graph(text)
                 n_types = [
                     data.get("type", "UNKNOWN") for _, data in G.nodes(data=True)
                 ]
@@ -88,10 +89,10 @@ def discover_graph_schema(*, tenant_id: str, sample_size: int = 20) -> None:
                 return {"types": [], "relations": [], "names": []}
 
         try:
-            with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-                results = list(executor.map(process_text, texts))
+            tasks = [process_text(text) for text in texts]
+            results = await asyncio.gather(*tasks)
         except Exception as e:
-            logger.critical(f"ThreadPoolExecutor failed: {e}")
+            logger.critical(f"Asyncio gather failed: {e}")
             return
 
         for res in results:
@@ -127,4 +128,4 @@ def discover_graph_schema(*, tenant_id: str, sample_size: int = 20) -> None:
     with get_db_session() as session:
         texts = get_sample_texts(session, tenant_id=tenant_id, sample_size=sample_size)
         if texts:
-            analyze_schema(texts)
+            asyncio.run(analyze_schema(texts))

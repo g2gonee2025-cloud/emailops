@@ -6,12 +6,13 @@ Implements §10.2 of the Canonical Blueprint.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import re
 import uuid
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List, Optional, Type
 
 from cortex.config.loader import EmailOpsConfig
 from cortex.domain_models.facts_ledger import CriticReview, FactsLedger
@@ -29,13 +30,28 @@ from cortex.domain_models.rag import (
     ThreadSummary,
     ToneStyle,
 )
-from cortex.llm.client import complete_json, complete_text
+from cortex.llm.client import complete_json, complete_messages, complete_text
 from cortex.observability import get_logger, trace_operation
 from cortex.prompts import (
-    PROMPT_ANSWER_QUESTION,
-    PROMPT_SUMMARIZE_ANALYST,
-    PROMPT_SUMMARIZE_CRITIC,
-    PROMPT_SUMMARIZE_FINAL,
+    SYSTEM_ANSWER_QUESTION,
+    SYSTEM_CRITIQUE_EMAIL,
+    SYSTEM_DRAFT_EMAIL_AUDIT,
+    SYSTEM_DRAFT_EMAIL_IMPROVE,
+    SYSTEM_DRAFT_EMAIL_INITIAL,
+    SYSTEM_SUMMARIZE_ANALYST,
+    SYSTEM_SUMMARIZE_CRITIC,
+    SYSTEM_SUMMARIZE_FINAL,
+    SYSTEM_SUMMARIZE_IMPROVER,
+    USER_ANSWER_QUESTION,
+    USER_CRITIQUE_EMAIL,
+    USER_DRAFT_EMAIL_AUDIT,
+    USER_DRAFT_EMAIL_IMPROVE,
+    USER_DRAFT_EMAIL_INITIAL,
+    USER_SUMMARIZE_ANALYST,
+    USER_SUMMARIZE_CRITIC,
+    USER_SUMMARIZE_FINAL,
+    USER_SUMMARIZE_IMPROVER,
+    construct_prompt_messages,
     get_prompt,
 )
 from cortex.retrieval.hybrid_search import (
@@ -48,9 +64,10 @@ from cortex.retrieval.query_classifier import (
     tool_classify_query,
 )
 from cortex.retrieval.results import SearchResults
-from cortex.safety import strip_injection_patterns
 from cortex.safety.guardrails_client import validate_with_repair
 from cortex.safety.policy_enforcer import check_action
+from cortex.security.defenses import sanitize_user_input
+from cortex.security.injection_defense import validate_for_injection
 from cortex.security.validators import sanitize_retrieved_content, validate_file_result
 from pydantic import BaseModel, Field, ValidationError
 from sqlalchemy import func, or_, select
@@ -75,13 +92,29 @@ class DraftGenerationOutput(BaseModel):
 
 
 def _complete_with_guardrails(
-    prompt: str,
+    messages: list[dict[str, str]],
     model_cls: type[BaseModel],
     correlation_id: str | None,
 ):
     """Run structured completion with guardrails repair fallback."""
     schema = model_cls.model_json_schema()
-    raw = complete_json(prompt=prompt, schema=schema)
+
+    # The `complete_json` function is deprecated. We should be moving towards
+    # a pattern where the model is guided to produce JSON via system prompts
+    # and we parse the result from `complete_messages`.
+    # For now, we adapt to what `complete_json` expects.
+    if not messages:
+        raise ValueError("Cannot perform completion with empty messages.")
+
+    # Reconstruct a single "prompt" string for the deprecated function.
+    # This is a temporary measure during the security transition.
+    # The `system` message provides the instructions and JSON schema info.
+    # The `user` message provides the data.
+    system_content = next((m["content"] for m in messages if m["role"] == "system"), "")
+    user_content = next((m["content"] for m in messages if m["role"] == "user"), "")
+    reconstructed_prompt = f"{system_content}\n\n{user_content}"
+
+    raw = complete_json(prompt=reconstructed_prompt, schema=schema)
     try:
         return model_cls.model_validate(raw)
     except ValidationError:
@@ -245,27 +278,34 @@ def _extract_entity_mentions(text: str) -> list[str]:
     ]
 
 
-def _safe_stat_mb(path: Path) -> float:
+async def _safe_stat_mb(path: Path) -> float:
     """Safely get file size in MB."""
     try:
-        return path.stat().st_size / (1024 * 1024) if path.exists() else 0.0
+        # Use to_thread to avoid blocking the event loop with sync file I/O
+        if await asyncio.to_thread(path.exists):
+            stat_result = await asyncio.to_thread(path.stat)
+            return stat_result.st_size / (1024 * 1024)
+        return 0.0
     except Exception:
         return 0.0
 
 
-def _select_attachments_from_mentions(
+async def _select_attachments_from_mentions(
     context_snippets: list[dict[str, Any]],
     mentions: list[str],
     *,
     max_attachments: int = 3,
 ) -> list[dict[str, Any]]:
     """Select attachments that were explicitly mentioned/extracted from text."""
-    cfg = EmailOpsConfig.load()
+    cfg = get_config()
+    base_dir = (
+        Path(cfg.directories.export_root).resolve()
+        if cfg.directories.export_root
+        else Path.cwd()
+    )
     allowed_patterns = cfg.file_patterns.allowed_file_patterns
-    # Load limits from config (blueprint §11.2)
-    # Default to 25MB if not configured
-    attach_max_mb = float(cfg.security.max_attachment_size_mb or 25.0)
-    limit = max_attachments  # use arg or config default could go here
+    attach_max_mb = float(cfg.limits.max_attachment_text_chars / (1024 * 1024))
+    limit = max_attachments
 
     if not mentions:
         return []
@@ -275,34 +315,32 @@ def _select_attachments_from_mentions(
 
     for c in context_snippets or []:
         try:
-            # Check doc_type if available (from search results)
-            if str(c.get("doc_type") or "").lower() not in ("attachment", "file"):
-                # Also check if it looks like a file path
-                path_str = str(c.get("path") or "")
-                if not path_str or not Path(path_str).suffix:
-                    continue
+            path_str = str(c.get("path") or "")
+            if not path_str or not Path(path_str).suffix:
+                continue
 
-            name = str(
-                c.get("attachment_name") or Path(str(c.get("path") or "")).name
-            ).lower()
+            name = str(c.get("attachment_name") or Path(path_str).name).lower()
 
-            # Check if name contains any wanted mention
             if name and any(w in name for w in wanted):
-                p = Path(str(c.get("path") or ""))
-                # Security check
+                p = Path(path_str)
                 result = validate_file_result(
-                    str(p), must_exist=True, allow_parent_traversal=False
+                    str(p), base_directory=base_dir, must_exist=True
                 )
                 if not result.is_ok():
                     continue
 
-                if _safe_stat_mb(p) > attach_max_mb:
+                validated_path = result.value
+                if await _safe_stat_mb(validated_path) > attach_max_mb:
                     continue
 
-                if not any(p.match(pattern) for pattern in allowed_patterns):
+                if not any(
+                    validated_path.match(pattern) for pattern in allowed_patterns
+                ):
                     continue
 
-                out.append({"path": str(p), "filename": p.name})
+                out.append(
+                    {"path": str(validated_path), "filename": validated_path.name}
+                )
                 if len(out) >= int(limit):
                     break
         except Exception:
@@ -310,17 +348,20 @@ def _select_attachments_from_mentions(
     return out
 
 
-def _select_all_available_attachments(
+async def _select_all_available_attachments(
     context_snippets: list[dict[str, Any]], *, max_attachments: int = 3
 ) -> list[dict[str, Any]]:
     """Select any valid attachments found in context (heuristic fallback)."""
-    cfg = EmailOpsConfig.load()
+    cfg = get_config()
+    base_dir = (
+        Path(cfg.directories.export_root).resolve()
+        if cfg.directories.export_root
+        else Path.cwd()
+    )
     allowed_patterns = cfg.file_patterns.allowed_file_patterns
-    attach_max_mb = float(cfg.security.max_attachment_size_mb or 25.0)
+    attach_max_mb = float(cfg.limits.max_attachment_text_chars / (1024 * 1024))
 
     selected: list[dict[str, Any]] = []
-
-    # Track seen paths to avoid dupes
     seen_paths = set()
 
     for c in context_snippets or []:
@@ -330,27 +371,29 @@ def _select_all_available_attachments(
                 continue
 
             p = Path(path_str)
-            if not p.suffix:  # Must have extension
+            if not p.suffix:
                 continue
 
             if str(p) in seen_paths:
                 continue
 
-            # Security check
             result = validate_file_result(
-                str(p), must_exist=True, allow_parent_traversal=False
+                str(p), base_directory=base_dir, must_exist=True
             )
             if not result.is_ok():
                 continue
 
-            if not any(p.match(pattern) for pattern in allowed_patterns):
+            validated_path = result.value
+            if not any(validated_path.match(pattern) for pattern in allowed_patterns):
                 continue
 
-            if _safe_stat_mb(p) > attach_max_mb:
+            if await _safe_stat_mb(validated_path) > attach_max_mb:
                 continue
 
-            selected.append({"path": str(p), "filename": p.name})
-            seen_paths.add(str(p))
+            selected.append(
+                {"path": str(validated_path), "filename": validated_path.name}
+            )
+            seen_paths.add(str(validated_path))
 
             if len(selected) >= int(max_attachments):
                 break
@@ -383,14 +426,14 @@ def tool_email_get_thread(
     """
     from cortex.db.models import Conversation
     from cortex.db.session import SessionLocal
+    from sqlalchemy.exc import SQLAlchemyError
 
     # Ensure thread_id is a UUID
-    if isinstance(thread_id, str):
-        try:
-            thread_id = uuid.UUID(thread_id)
-        except ValueError:
-            logger.error(f"Invalid thread_id format: {thread_id}")
-            return None
+    try:
+        thread_uuid = uuid.UUID(str(thread_id))
+    except ValueError:
+        logger.warning("Invalid thread_id format: %s", thread_id)
+        return None
 
     try:
         with SessionLocal() as session:
@@ -402,14 +445,14 @@ def tool_email_get_thread(
             conversation = (
                 session.query(Conversation)
                 .filter(
-                    Conversation.conversation_id == thread_id,
+                    Conversation.conversation_id == thread_uuid,
                     Conversation.tenant_id == tenant_id,
                 )
                 .first()
             )
 
             if not conversation:
-                logger.warning(f"Conversation not found: {thread_id}")
+                logger.warning("Conversation not found: %s", thread_uuid)
                 return None
 
             # Build participants from conversation.participants JSONB
@@ -444,7 +487,7 @@ def tool_email_get_thread(
                             sent_at = datetime.fromisoformat(
                                 sent_at.replace("Z", "+00:00")
                             )
-                        except Exception:
+                        except ValueError:
                             sent_at = None
 
                     thread_messages.append(
@@ -470,7 +513,7 @@ def tool_email_get_thread(
                 # Fallback: create a placeholder message from summary
                 thread_messages.append(
                     ThreadMessage(
-                        message_id=str(thread_id),
+                        message_id=str(thread_uuid),
                         sent_at=conversation.latest_date,
                         recv_at=conversation.latest_date,
                         from_addr="",
@@ -483,14 +526,35 @@ def tool_email_get_thread(
                 )
 
             return ThreadContext(
-                thread_id=thread_id,
+                thread_id=thread_uuid,
                 subject=conversation.subject or "",
                 participants=list(participants_dict.values()),
                 messages=thread_messages,
             )
-
-    except Exception as e:
-        logger.error(f"Failed to fetch thread {thread_id}: {e}", exc_info=True)
+    except SQLAlchemyError as e:
+        logger.error(
+            "Database error while fetching thread %s for tenant %s: %s",
+            thread_uuid,
+            tenant_id,
+            e,
+            exc_info=False,  # Keep log clean, stack is in Sentry
+        )
+        return None
+    except (TypeError, KeyError, AttributeError) as e:
+        logger.warning(
+            "Data integrity error parsing thread %s for tenant %s: %s",
+            thread_uuid,
+            tenant_id,
+            e,
+            exc_info=True,
+        )
+        return None
+    except Exception:
+        logger.exception(
+            "Unexpected error fetching thread %s for tenant %s",
+            thread_uuid,
+            tenant_id,
+        )
         return None
 
 
@@ -551,30 +615,41 @@ def node_handle_error(state: dict[str, Any]) -> dict[str, Any]:
     * logs via observability.get_logger
     * sets state.error
     """
-    error = state.get("error", "Unknown error")
+    error_detail = state.get("error", "Unknown error")
     obs_logger = get_logger(__name__)
 
+    # Sanitize error for external audit logging to prevent PII leakage
+    error_for_audit = "An internal error occurred during graph execution."
+
     obs_logger.error(
-        f"Graph execution error: {error}", extra={"tenant_id": state.get("tenant_id")}
+        f"Graph execution error: {error_detail}",
+        extra={"tenant_id": state.get("tenant_id")},
+        exc_info=True,
     )
 
-    # Record error to audit_log
+    # Record sanitized error to audit_log
     try:
+        query = state.get("query", "")
+        # Basic sanitization for query in case it's part of the error
+        safe_query_snippet = (
+            f"{query[:50]}..." if isinstance(query, str) and len(query) > 50 else query
+        )
+
         log_audit_event(
             tenant_id=state.get("tenant_id", "unknown"),
             user_or_agent=state.get("user_id", "system"),
             action="graph_error",
             risk_level="medium",
             metadata={
-                "error": str(error),
-                "query": state.get("query", ""),
+                "error": error_for_audit,
+                "query_snippet": safe_query_snippet,
                 "graph_type": state.get("_graph_type", "unknown"),
             },
         )
     except Exception as e:
         obs_logger.warning(f"Failed to log audit event: {e}")
 
-    return {"error": str(error)}
+    return {"error": error_for_audit}
 
 
 def node_assemble_context(state: dict[str, Any]) -> dict[str, Any]:
@@ -647,28 +722,23 @@ def _fetch_graph_entities(
     """Fetch entity nodes and edges from the knowledge graph."""
     from cortex.db.models import EntityEdge, EntityNode
     from cortex.db.session import SessionLocal, set_session_tenant
+    from sqlalchemy.dialects.postgresql import any_
 
     with SessionLocal() as session:
         set_session_tenant(session, tenant_id)
 
-        match_conditions = [
-            func.lower(EntityNode.name) == mention.lower() for mention in mentions
-        ]
+        # Perf: Use ILIKE ANY for efficient multi-pattern matching
+        patterns = {m for m in mentions}
+        patterns.update(f"%{m}%" for m in mentions if len(m) >= 4)
 
-        for mention in mentions:
-            if len(mention) >= 4:
-                match_conditions.append(
-                    func.lower(EntityNode.name).like(f"%{mention.lower()}%")
-                )
-
-        if not match_conditions:
+        if not patterns:
             return [], []
 
         nodes = (
             session.execute(
                 select(EntityNode).where(
                     EntityNode.tenant_id == tenant_id,
-                    or_(*match_conditions),
+                    EntityNode.name.ilike(any_(list(patterns))),
                 )
             )
             .scalars()
@@ -730,10 +800,12 @@ def node_classify_query(state: dict[str, Any]) -> dict[str, Any]:
     Blueprint §8.1:
     * Determine intent (navigational, semantic, drafting)
     """
-    query = strip_injection_patterns(state.get("query", ""))
-
-    # Update state with sanitized query
-    state["query"] = query
+    query = state.get("query", "")
+    try:
+        validate_for_injection(query)
+    except ValueError:
+        logger.error("Potential injection attack detected in query.")
+        return {"error": "Invalid input detected."}
 
     try:
         args = QueryClassificationInput(query=query, use_llm=True)
@@ -808,12 +880,14 @@ def node_generate_answer(state: dict[str, Any]) -> dict[str, Any]:
         # to get the EvidenceItem UUIDs right without very specific prompting.
         # For now, let's get the text answer and construct a basic Answer object.
 
-        prompt = (
-            PROMPT_ANSWER_QUESTION
-            + f"\n\nContext:\n{combined_context}\n\nQuestion: {query}"
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_ANSWER_QUESTION,
+            user_prompt_template=USER_ANSWER_QUESTION,
+            context=sanitize_user_input(combined_context),
+            query=sanitize_user_input(query),
         )
 
-        answer_text = complete_text(prompt)
+        answer_text = complete_messages(messages)
 
         retrieval_results: SearchResults | None = state.get("retrieval_results")
 
@@ -863,10 +937,12 @@ def node_prepare_draft_query(state: dict[str, Any]) -> dict[str, Any]:
     Blueprint §10.3:
     * Combine explicit query and thread context
     """
-    explicit_query = strip_injection_patterns(state.get("explicit_query", ""))
-
-    # Update state with sanitized query
-    state["explicit_query"] = explicit_query
+    explicit_query = state.get("explicit_query", "")
+    try:
+        validate_for_injection(explicit_query)
+    except ValueError:
+        logger.error("Potential injection attack detected in explicit_query.")
+        return {"error": "Invalid input detected."}
 
     # If we had thread context, we would combine it here.
     # For now, just use explicit query as the search query.
@@ -891,21 +967,22 @@ def node_draft_email_initial(state: dict[str, Any]) -> dict[str, Any]:
     sender_email = config.email.sender_locked_email or "user@example.com"
 
     try:
-        prompt = get_prompt(
-            "DRAFT_EMAIL_INITIAL",
-            mode=state.get("mode", "fresh"),
-            thread_context=state.get("thread_context", ""),
-            query=query,
-            context=context or "[no retrieved context]",
-            sender_name=sender_name,
-            sender_email=sender_email,
-            to=", ".join(state.get("to") or []),
-            cc=", ".join(state.get("cc") or []),
-            subject=state.get("subject") or "",
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_DRAFT_EMAIL_INITIAL,
+            user_prompt_template=USER_DRAFT_EMAIL_INITIAL,
+            mode=sanitize_user_input(state.get("mode", "fresh")),
+            thread_context=sanitize_user_input(state.get("thread_context", "")),
+            query=sanitize_user_input(query),
+            context=sanitize_user_input(context) or "[no retrieved context]",
+            sender_name=sender_name,  # Assumed safe from config
+            sender_email=sender_email,  # Assumed safe from config
+            to=sanitize_user_input(", ".join(state.get("to") or [])),
+            cc=sanitize_user_input(", ".join(state.get("cc") or [])),
+            subject=sanitize_user_input(state.get("subject") or ""),
         )
 
         draft_structured = _complete_with_guardrails(
-            prompt,
+            messages,
             DraftGenerationOutput,
             state.get("correlation_id"),
         )
@@ -949,15 +1026,16 @@ def node_critique_draft(state: dict[str, Any]) -> dict[str, Any]:
         return {"error": "No draft to critique"}
 
     try:
-        prompt = get_prompt(
-            "DRAFT_EMAIL_CRITIQUE",
-            draft_subject=draft.subject,
-            draft_body=draft.body_markdown,
-            context=state.get("assembled_context", ""),
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_CRITIQUE_EMAIL,
+            user_prompt_template=USER_CRITIQUE_EMAIL,
+            draft_subject=sanitize_user_input(draft.subject),
+            draft_body=sanitize_user_input(draft.body_markdown),
+            context=sanitize_user_input(state.get("assembled_context", "")),
         )
 
         critique = _complete_with_guardrails(
-            prompt,
+            messages,
             DraftCritique,
             state.get("correlation_id"),
         )
@@ -982,15 +1060,16 @@ def node_improve_draft(state: dict[str, Any]) -> dict[str, Any]:
         return {}
 
     try:
-        prompt = get_prompt(
-            "DRAFT_EMAIL_IMPROVE",
-            original_draft=draft.body_markdown,
-            critique=critique.model_dump_json(indent=2),
-            context=state.get("assembled_context", ""),
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_DRAFT_EMAIL_IMPROVE,
+            user_prompt_template=USER_DRAFT_EMAIL_IMPROVE,
+            original_draft=sanitize_user_input(draft.body_markdown),
+            critique=critique.model_dump_json(indent=2),  # Assumed safe from system
+            context=sanitize_user_input(state.get("assembled_context", "")),
         )
 
         draft_structured = _complete_with_guardrails(
-            prompt,
+            messages,
             DraftGenerationOutput,
             state.get("correlation_id"),
         )
@@ -1022,7 +1101,7 @@ def node_improve_draft(state: dict[str, Any]) -> dict[str, Any]:
         return {"error": f"Improvement failed: {e!s}"}
 
 
-def node_select_attachments(state: dict[str, Any]) -> dict[str, Any]:
+async def node_select_attachments(state: dict[str, Any]) -> dict[str, Any]:
     """
     Select attachments to include in the email.
 
@@ -1055,7 +1134,9 @@ def node_select_attachments(state: dict[str, Any]) -> dict[str, Any]:
     # Strategy 1: Explicit mentions in the generated draft body
     body_mentions = extract_document_mentions(draft.body_markdown)
     if body_mentions:
-        selected.extend(_select_attachments_from_mentions(snippets, body_mentions))
+        selected.extend(
+            await _select_attachments_from_mentions(snippets, body_mentions)
+        )
 
     # Strategy 2: If user explicitly asked in query "attach the report", etc.
     # (We rely on retrieval having found it and put it in snippets)
@@ -1064,7 +1145,7 @@ def node_select_attachments(state: dict[str, Any]) -> dict[str, Any]:
     if query_mentions:
         # Avoid duplicates
         current_names = {s["filename"] for s in selected}
-        from_query = _select_attachments_from_mentions(snippets, query_mentions)
+        from_query = await _select_attachments_from_mentions(snippets, query_mentions)
         for f in from_query:
             if f["filename"] not in current_names:
                 selected.append(f)
@@ -1072,7 +1153,9 @@ def node_select_attachments(state: dict[str, Any]) -> dict[str, Any]:
     # Strategy 3: Heuristic - if query has "attach" but no specific file named,
     # grab most relevant attachment from context
     if "attach" in query.lower() and not selected:
-        selected.extend(_select_all_available_attachments(snippets, max_attachments=1))
+        selected.extend(
+            await _select_all_available_attachments(snippets, max_attachments=1)
+        )
 
     # Update draft in state
     draft.attachments = selected
@@ -1116,15 +1199,16 @@ def node_audit_draft(state: dict[str, Any]) -> dict[str, Any]:
 
     # 2. LLM Rubric Audit
     try:
-        prompt = get_prompt(
-            "DRAFT_EMAIL_AUDIT",
-            subject=draft.subject,
-            body=draft.body_markdown,
-            context=state.get("assembled_context", ""),
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_DRAFT_EMAIL_AUDIT,
+            user_prompt_template=USER_DRAFT_EMAIL_AUDIT,
+            subject=sanitize_user_input(draft.subject),
+            body=sanitize_user_input(draft.body_markdown),
+            context=sanitize_user_input(state.get("assembled_context", "")),
         )
 
         scores = _complete_with_guardrails(
-            prompt,
+            messages,
             DraftValidationScores,
             state.get("correlation_id"),
         )
@@ -1205,9 +1289,13 @@ def node_summarize_analyst(state: dict[str, Any]) -> dict[str, Any]:
         return {}
 
     try:
-        prompt = PROMPT_SUMMARIZE_ANALYST + f"\n\nThread:\n{thread_context}"
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_SUMMARIZE_ANALYST,
+            user_prompt_template=USER_SUMMARIZE_ANALYST,
+            thread_context=sanitize_user_input(thread_context),
+        )
         facts = _complete_with_guardrails(
-            prompt,
+            messages,
             FactsLedger,
             state.get("correlation_id"),
         )
@@ -1229,12 +1317,13 @@ def node_summarize_critic(state: dict[str, Any]) -> dict[str, Any]:
         return {}
 
     try:
-        prompt = (
-            PROMPT_SUMMARIZE_CRITIC
-            + f"\n\nFacts Ledger:\n{facts.model_dump_json(indent=2)}"
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_SUMMARIZE_CRITIC,
+            user_prompt_template=USER_SUMMARIZE_CRITIC,
+            facts_ledger_json=facts.model_dump_json(indent=2),
         )
         critique = _complete_with_guardrails(
-            prompt,
+            messages,
             CriticReview,
             state.get("correlation_id"),
         )
@@ -1259,15 +1348,16 @@ def node_summarize_improver(state: dict[str, Any]) -> dict[str, Any]:
         return {}
 
     try:
-        prompt = get_prompt(
-            "SUMMARIZE_IMPROVER",
-            thread_context=thread_context or "",
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_SUMMARIZE_IMPROVER,
+            user_prompt_template=USER_SUMMARIZE_IMPROVER,
+            thread_context=sanitize_user_input(thread_context or ""),
             ledger=facts.model_dump_json(),
             critique=critique.model_dump_json(),
         )
 
         new_facts = _complete_with_guardrails(
-            prompt,
+            messages,
             FactsLedger,
             state.get("correlation_id"),
         )
@@ -1298,13 +1388,14 @@ def node_summarize_final(state: dict[str, Any]) -> dict[str, Any]:
 
     try:
         max_len = state.get("max_length", 500)
-        prompt = (
-            PROMPT_SUMMARIZE_FINAL
-            + f"\n\nConstraint: Keep summary under {max_len} words."
-            + f"\n\nFacts Ledger:\n{facts.model_dump_json()}"
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_SUMMARIZE_FINAL,
+            user_prompt_template=USER_SUMMARIZE_FINAL,
+            max_len=max_len,
+            ledger=facts.model_dump_json(),
         )
 
-        summary_text = complete_text(prompt)
+        summary_text = complete_messages(messages)
 
         # Prepare participant analysis by merging DB context with LLM inference
         thread_context_obj = state.get("_thread_context_obj")
