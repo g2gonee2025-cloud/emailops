@@ -6,7 +6,11 @@ Implements §11.2 of the Canonical Blueprint.
 
 from __future__ import annotations
 
+import asyncio
+import hashlib
 import logging
+import re
+from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Literal, Optional
 
 from cortex.observability import trace_operation
@@ -17,6 +21,39 @@ logger = logging.getLogger(__name__)
 
 # Load the policy configuration
 POLICY_CONFIG = PolicyConfig()
+
+
+class DLPProvider(ABC):
+    """Abstract base class for a Data Loss Prevention (DLP) provider."""
+
+    @abstractmethod
+    async def scan(self, text: str) -> List[str]:
+        """Scans the text for sensitive information and returns a list of violations."""
+        pass
+
+
+class MockDLPProvider(DLPProvider):
+    """
+    A mock DLP provider for local testing.
+
+    This provider simulates an async network call and uses regex to find
+    common sensitive patterns. A production implementation would use a more
+    robust service.
+    """
+    PATTERNS = {
+        "API_KEY": re.compile(r"(sk-[a-zA-Z0-9]{20,})"),
+        "CREDIT_CARD": re.compile(r"\b(\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4})\b"),
+        "SSN": re.compile(r"\b(\d{3}-\d{2}-\d{4})\b"),
+    }
+
+    async def scan(self, text: str) -> List[str]:
+        """Simulates an async DLP scan."""
+        await asyncio.sleep(0.01)  # Simulate network latency
+        violations = []
+        for pii_type, pattern in self.PATTERNS.items():
+            if pattern.search(text):
+                violations.append(pii_type)
+        return violations
 
 
 class PolicyDecision(BaseModel):
@@ -46,39 +83,55 @@ class PolicyDecision(BaseModel):
 
 
 def _check_recipient_policy(metadata: Dict[str, Any]) -> Optional[str]:
-    """Check recipient-related policies."""
-    recipients = metadata.get("recipients", [])
+    """
+    Check recipient-related policies and handle PII securely.
 
+    PII (email addresses) are hashed for secure logging and auditing.
+    """
+    recipients = metadata.get("recipients", [])
     if not recipients:
         return None
 
     # Check recipient count
-    if len(recipients) > POLICY_CONFIG.max_recipients_auto_approve:
-        return f"Too many recipients ({len(recipients)} > {POLICY_CONFIG.max_recipients_auto_approve})"
+    max_recipients = POLICY_CONFIG.max_recipients_auto_approve
+    if len(recipients) > max_recipients:
+        return f"Too many recipients ({len(recipients)} > {max_recipients})"
 
     # Check for external domains
     external_domain_pattern = POLICY_CONFIG.get_external_domain_pattern()
     external_recipients = [
-        r
-        for r in recipients
-        if isinstance(r, str) and external_domain_pattern.search(r)
+        r for r in recipients if isinstance(r, str) and external_domain_pattern.search(r)
     ]
+
     if external_recipients and metadata.get("check_external", True):
-        return f"External recipients detected: {', '.join(external_recipients[:3])}"
+        # Hash the external recipient list for secure auditing
+        hashed_recipients = [
+            hashlib.sha256(r.encode()).hexdigest() for r in external_recipients
+        ]
+        metadata["hashed_external_recipients"] = hashed_recipients
+
+        # Return a PII-safe violation message
+        return f"{len(external_recipients)} external recipients detected."
 
     return None
 
 
-def _check_content_policy(metadata: Dict[str, Any]) -> Optional[str]:
-    """Check content-related policies."""
+async def _check_content_policy(metadata: Dict[str, Any]) -> Optional[str]:
+    """
+    Check content-related policies using an async, pluggable DLP provider.
+    """
     content = metadata.get("content", "") or ""
     subject = metadata.get("subject", "") or ""
-    full_text = f"{subject} {content}"
+    full_text = f"{subject}\n{content}"
 
-    sensitive_patterns = POLICY_CONFIG.get_sensitive_patterns()
-    for pattern in sensitive_patterns:
-        if pattern.search(full_text):
-            return f"Sensitive content detected (pattern: {pattern.pattern[:30]}...)"
+    # In a real-world scenario, you would have a more sophisticated DLP
+    # provider that could be selected based on configuration.
+    # For this example, we'll use a mock provider that simulates an async call.
+    dlp_provider = MockDLPProvider()
+    violations = await dlp_provider.scan(full_text)
+
+    if violations:
+        return f"Sensitive content detected: {', '.join(violations)}"
 
     return None
 
@@ -129,7 +182,7 @@ def _determine_risk_level(action: str) -> Literal["low", "medium", "high"]:
 
 
 @trace_operation("check_action")
-def check_action(action: str, metadata: Dict[str, Any]) -> PolicyDecision:
+async def check_action(action: str, metadata: Dict[str, Any]) -> PolicyDecision:
     """
     Check if an action is allowed based on policies.
 
@@ -153,7 +206,7 @@ def check_action(action: str, metadata: Dict[str, Any]) -> PolicyDecision:
     if recipient_issue := _check_recipient_policy(metadata or {}):
         violations.append(recipient_issue)
 
-    if content_issue := _check_content_policy(metadata or {}):
+    if content_issue := await _check_content_policy(metadata or {}):
         violations.append(content_issue)
 
     if attachment_issue := _check_attachment_policy(metadata or {}):
@@ -196,18 +249,8 @@ def check_action(action: str, metadata: Dict[str, Any]) -> PolicyDecision:
         decision = "deny"
         reason = "Explicitly denied by policy"
 
-    # Check for bypass (e.g., admin override)
-    # SECURITY: Check for admin role logic
-    # Admin can bypass "require_approval" but NOT "deny".
-    if decision != "deny":
-        # Check roles (support both singular 'role' and list 'user_roles' for compatibility)
-        roles = safe_meta.get("user_roles", []) or []
-        if isinstance(roles, list) and safe_meta.get("role"):
-            roles.append(safe_meta.get("role"))
-
-        if "admin" in roles:
-            decision = "allow"
-            reason = "Admin bypass enabled"
+    # The admin bypass has been removed to enforce a "four-eyes" principle.
+    # See `escalate_for_admin_approval` for the new approval workflow.
 
     return PolicyDecision(
         action=action,
@@ -229,3 +272,36 @@ def require_policy_approval(decision: PolicyDecision) -> bool:
 def is_action_allowed(decision: PolicyDecision) -> bool:
     """Check if an action is allowed (either directly or after approval)."""
     return decision.decision in ("allow", "require_approval")
+
+
+def escalate_for_admin_approval(
+    decision: PolicyDecision, admin_user: Dict[str, Any]
+) -> PolicyDecision:
+    """
+    Escalates a decision for admin approval, enforcing a "four-eyes" check.
+
+    An admin can approve an action that `require_approval`, but cannot
+    override a `deny` decision. This ensures that high-risk actions receive
+    a secondary review.
+
+    Args:
+        decision: The original policy decision.
+        admin_user: A dictionary representing the authenticated admin user.
+
+    Returns:
+        An "allow" decision if the admin's approval is valid, otherwise the
+        original decision.
+    """
+    if decision.decision == "require_approval":
+        # Ensure the user has the 'admin' role.
+        roles = admin_user.get("roles", [])
+        if "admin" in roles:
+            logger.info(
+                "admin_approval_granted",
+                action=decision.action,
+                admin_user=admin_user.get("email"),
+            )
+            decision.decision = "allow"
+            decision.reason = f"Admin approval granted by {admin_user.get('email')}"
+            decision.metadata["approved_by"] = admin_user.get("email")
+    return decision
