@@ -83,9 +83,7 @@ _config = get_config()
 engine_args = {
     "pool_pre_ping": True,
 }
-
-# Add connection pooling arguments only if not using SQLite
-if not _config.database.url.startswith("sqlite"):
+if "sqlite" not in _config.database.url:
     engine_args["pool_size"] = _config.database.pool_size
     engine_args["max_overflow"] = _config.database.max_overflow
 

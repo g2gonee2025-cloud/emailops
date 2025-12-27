@@ -1,5 +1,5 @@
 import time
-from unittest.mock import MagicMock, patch
+from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 from cortex.queue import InMemoryQueue, JobStatus, RedisStreamsQueue
@@ -196,6 +196,89 @@ class TestRedisStreamsQueue:
         # Check that xclaim was called
         mock_redis.xclaim.assert_called()
 
+    def test_dequeue_respects_priority(self, mock_redis):
+        q = RedisStreamsQueue()
+
+        # Mock xreadgroup to return nothing for high prio, but a job for normal
+        mock_redis.xreadgroup.return_value = [
+            (
+                "cortex:jobs:ingest:normal",
+                [
+                    (
+                        "msg-id-normal",
+                        {
+                            "id": "job-normal",
+                            "type": "ingest",
+                            "payload": '{"p": "v"}',
+                            "priority": "0",
+                        },
+                    )
+                ],
+            )
+        ]
+
+        job = q.dequeue(["ingest"])
+        assert job is not None
+        assert job["id"] == "job-normal"
+        # Verify it tried to read from high-priority streams first
+        streams_arg = mock_redis.xreadgroup.call_args[0][2]
+        assert "cortex:jobs:ingest:high" in streams_arg
+
+    def test_claim_stale_message_moves_to_dead_letter_on_max_retries(
+        self, mock_redis
+    ):
+        q = RedisStreamsQueue(visibility_timeout=30, max_retries=3)
+
+        # Mock pending to find an old message only in the high-prio stream
+        def xpending_side_effect(stream, group, **kwargs):
+            if stream == "cortex:jobs:ingest:high":
+                return [{"message_id": "msg-old", "time_since_delivered": 35000}]
+            return []
+
+        mock_redis.xpending_range.side_effect = xpending_side_effect
+
+        # Mock claim to successfully grab it
+        mock_redis.xclaim.return_value = [
+            ("msg-old", {"id": "job-stale", "payload": "{}", "type": "ingest"})
+        ]
+        # Mock status lookup finding max attempts
+        mock_redis.hget.return_value = "3"
+
+        # Mock xreadgroup to return nothing so it doesn't interfere
+        mock_redis.xreadgroup.return_value = []
+        # Call dequeue, which should trigger the claim
+        job = q.dequeue(["ingest"])
+
+        assert job is None  # Should not return the dead-lettered job
+        # Verify it was moved to DLQ
+        mock_redis.xadd.assert_called_with(q.DEAD_LETTER_STREAM, ANY)
+        # Verify original was acked on the correct stream
+        mock_redis.xack.assert_called_with(
+            "cortex:jobs:ingest:high", q.CONSUMER_GROUP, "msg-old"
+        )
+
+    def test_nack_moves_to_dead_letter_after_max_retries(self, mock_redis):
+        q = RedisStreamsQueue(max_retries=2)
+
+        # Simulate 3 failures
+        for i in range(3):
+            # Update mock for each attempt
+            mock_redis.hgetall.return_value = {
+                "attempts": str(i + 1),
+                "status": JobStatus.PROCESSING,
+                "stream": "s",
+                "message_id": "m",
+            }
+            # Mock the xrange call needed for dead-lettering payload
+            mock_redis.xrange.return_value = [("m", {"payload": "{}"})]
+            q.nack("job-123")
+
+        # After 3rd nack (since max_retries=2), it should go to dead letter
+        mock_redis.xadd.assert_called_with(q.DEAD_LETTER_STREAM, ANY)
+        # Verify status was updated to DEAD_LETTER
+        _, kwargs = mock_redis.hset.call_args
+        assert kwargs["mapping"]["status"] == JobStatus.DEAD_LETTER
+
     def test_queue_stats(self, mock_redis):
         q = RedisStreamsQueue(job_types=["ingest", "reindex"])
         mock_redis.xinfo_stream.return_value = {"length": 5}
@@ -228,3 +311,100 @@ class TestRedisStreamsQueue:
 
         assert cleaned == 1
         mock_redis.delete.assert_called_with("status:1")
+
+
+class TestCeleryQueue:
+    @pytest.fixture
+    def mock_celery(self):
+        """Mock the Celery library and its submodules."""
+        mock_celery_module = MagicMock()
+        mock_celery_class = MagicMock()
+        mock_app = MagicMock()
+        mock_celery_class.return_value = mock_app
+        mock_celery_module.Celery = mock_celery_class
+
+        # Mock task registration
+        mock_ingest_task = MagicMock()
+        mock_reindex_task = MagicMock()
+        # When the mock tasks are used as decorators, they should return themselves
+        mock_ingest_task.return_value = mock_ingest_task
+        mock_reindex_task.return_value = mock_reindex_task
+        mock_app.task.side_effect = [mock_ingest_task, mock_reindex_task]
+
+        mock_result_module = MagicMock()
+        mock_async_result = MagicMock()
+        mock_result_module.AsyncResult = mock_async_result
+
+        modules_to_patch = {
+            "celery": mock_celery_module,
+            "celery.result": mock_result_module,
+        }
+
+        with patch.dict("sys.modules", modules_to_patch):
+            yield {
+                "app": mock_app,
+                "ingest_task": mock_ingest_task,
+                "reindex_task": mock_reindex_task,
+                "AsyncResult": mock_async_result,
+            }
+
+    def test_enqueue(self, mock_celery):
+        from cortex.queue import CeleryQueue
+
+        q = CeleryQueue()
+        job_id = q.enqueue("ingest", {"foo": "bar"}, priority=5)
+
+        assert job_id
+        # Verify correct task was called
+        mock_celery["ingest_task"].apply_async.assert_called_once()
+        # Verify priority was translated
+        _, kwargs = mock_celery["ingest_task"].apply_async.call_args
+        assert "priority" in kwargs
+        assert isinstance(kwargs["priority"], int)
+
+    def test_ack(self, mock_celery):
+        from cortex.queue import CeleryQueue
+
+        q = CeleryQueue()
+        job_id = q.enqueue("ingest", {"foo": "bar"})
+        q.ack(job_id)
+
+        # In-memory pending jobs should be cleared
+        assert job_id not in q._pending_jobs
+
+    def test_nack(self, mock_celery):
+        from cortex.queue import CeleryQueue
+
+        q = CeleryQueue()
+        # Nack is basically a no-op for Celery as retries are automatic
+        q.nack("job-123", error="test error")
+        # No crash is a pass
+
+    def test_get_job_status_completed(self, mock_celery):
+        from cortex.queue import CeleryQueue
+
+        # Mock result object
+        mock_result = MagicMock()
+        mock_result.status = "SUCCESS"
+        mock_result.ready.return_value = True
+        mock_result.result = {"output": "data"}
+        mock_celery["AsyncResult"].return_value = mock_result
+
+        q = CeleryQueue()
+        status = q.get_job_status("job-123")
+
+        assert status["status"] == JobStatus.COMPLETED
+        assert status["result"] == {"output": "data"}
+
+    def test_get_job_status_pending(self, mock_celery):
+        from cortex.queue import CeleryQueue
+
+        mock_result = MagicMock()
+        mock_result.status = "PENDING"
+        mock_result.ready.return_value = False
+        mock_celery["AsyncResult"].return_value = mock_result
+
+        q = CeleryQueue()
+        status = q.get_job_status("job-123")
+
+        assert status["status"] == JobStatus.PENDING

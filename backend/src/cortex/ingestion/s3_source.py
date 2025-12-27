@@ -260,6 +260,19 @@ class S3SourceHandler:
         except Exception:
             return False
 
+    def list_objects(self, prefix: str) -> Iterator[Dict[str, Any]]:
+        """
+        List all objects under a given prefix.
+        Args:
+            prefix: S3 prefix to search under.
+        Yields:
+            Object dictionaries from boto3.
+        """
+        paginator = self.client.get_paginator("list_objects_v2")
+        for page in paginator.paginate(Bucket=self.bucket, Prefix=prefix):
+            for content in page.get("Contents", []):
+                yield content
+
 
 def create_s3_source() -> S3SourceHandler:
     """Factory function to create S3 source handler from config."""
