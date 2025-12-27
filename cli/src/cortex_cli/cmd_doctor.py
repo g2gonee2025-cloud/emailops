@@ -36,7 +36,12 @@ from typing import Any
 from cortex.config.loader import get_config
 
 # Lazy loaded inside functions:
-# from cortex.llm.client import embed_texts
+from cortex.health import (
+    check_embeddings,
+    check_postgres,
+    check_redis,
+    check_reranker,
+)
 from sqlalchemy import create_engine, text
 
 # Library-safe logger
@@ -72,6 +77,8 @@ REPO_ROOT = Path(__file__).resolve().parents[3]  # Adjusted for new path
 # -------------------------
 
 _PROVIDER_ALIASES: dict[str, str] = {
+    "gcp": "vertex",
+    "vertexai": "vertex",
     "hf": "huggingface",
     "do": "digitalocean",
     "gcp": "vertex",
@@ -91,6 +98,8 @@ def _normalize_provider(provider: str) -> str:
 _PKG_IMPORT_MAP: dict[str, str] = {
     # Always
     "numpy": "numpy",
+    # GCP
+    "google-cloud-aiplatform": "google.cloud.aiplatform",
     # Other providers used by llm_client
     "openai": "openai",
     "cohere": "cohere",
@@ -180,9 +189,13 @@ def _packages_for_provider(provider: str) -> tuple[list[str], list[str]]:
     critical: list[str] = []
     optional: list[str] = []
 
-    if provider == "openai" or provider == "digitalocean":
+    if provider == "vertex":
+        critical = ["google-cloud-aiplatform"]
+    elif provider == "openai" or provider == "digitalocean":
         critical = ["openai"]
         optional = ["tiktoken"]
+    elif provider == "vertex":
+        critical = ["google-genai"]
     elif provider == "cohere":
         critical = ["cohere"]
     elif provider == "huggingface":
@@ -306,83 +319,6 @@ def check_and_install_dependencies(
 # -------------------------
 # Index & Environment Checks
 # -------------------------
-
-
-def _probe_embeddings(_provider: str) -> tuple[bool, int | None]:
-    """Test embedding functionality with the configured provider."""
-    try:
-        from cortex.llm.client import embed_texts
-
-        # The runtime uses the configured provider from config, not a parameter
-        result = embed_texts(["test"])
-        if result is not None and len(result) > 0:
-            dim = result.shape[1] if hasattr(result, "shape") else len(result[0])
-            return True, dim
-        return False, None
-    except Exception as e:
-        logger.warning("Embedding probe failed: %s", e)
-        return False, None
-
-
-# -------------------------
-# Database & Cache Checks
-# -------------------------
-
-
-def check_postgres(config: Any) -> tuple[bool, str | None]:
-    """Check PostgreSQL connectivity."""
-    try:
-        from sqlalchemy import create_engine, text
-
-        engine = create_engine(config.database.url)
-        with engine.connect() as conn:
-            conn.execute(text("SELECT 1"))
-        return True, None
-    except Exception as e:
-        return False, str(e)
-
-
-def check_redis(_config: Any) -> tuple[bool, str | None]:
-    """Check Redis connectivity."""
-    try:
-        import redis
-
-        # Assuming Redis URL is in env or default
-        redis_url = os.getenv("OUTLOOKCORTEX_REDIS_URL", DEFAULT_REDIS_URL)
-        r = redis.from_url(redis_url)
-        r.ping()
-        return True, None
-    except Exception as e:
-        return False, str(e)
-
-
-def check_reranker(config: Any) -> tuple[bool, str | None]:
-    """Check reranker endpoint connectivity."""
-    try:
-        import httpx
-
-        reranker_endpoint = getattr(config.search, "reranker_endpoint", None)
-        if not reranker_endpoint:
-            return (
-                False,
-                "No reranker endpoint configured (OUTLOOKCORTEX_RERANKER_ENDPOINT)",
-            )
-
-        # Test health endpoint
-        health_url = f"{reranker_endpoint.rstrip('/')}/health"
-        try:
-            resp = httpx.get(health_url, timeout=5.0)
-            if resp.status_code == 200:
-                return True, None
-            return False, f"Reranker returned status {resp.status_code}"
-        except httpx.ConnectError:
-            return False, f"Cannot connect to reranker at {reranker_endpoint}"
-        except httpx.TimeoutException:
-            return False, f"Reranker timeout at {reranker_endpoint}"
-    except ImportError:
-        return False, "httpx not installed (pip install httpx)"
-    except Exception as e:
-        return False, str(e)
 
 
 # -------------------------
@@ -717,14 +653,14 @@ def _run_db_check(args: Any, config: Any) -> tuple[bool | None, str | None, bool
                 )
                 print(f"  DEBUG: Config DB URL: {config.database.url}")
 
-        success, error = check_postgres(config)
-        success_ret = success
-        error_msg = error
+        result = check_postgres(config)
+        success_ret = result.success
+        error_msg = result.error
 
-        if not success:
+        if not result.success:
             error_flag = True
             if not args.json:
-                print(f"  {_c('✗', 'red')} Database check failed: {error}")
+                print(f"  {_c('✗', 'red')} Database check failed: {result.error}")
         else:
             if not args.json:
                 print(f"  {_c('✓', 'green')} Database connected")
@@ -739,21 +675,21 @@ def _run_redis_check(args: Any, config: Any) -> tuple[bool | None, str | None, b
         if not args.json:
             print(f"\n{_c('▶ Checking Redis...', 'cyan')}")
 
-        success, error = check_redis(config)
-        success_ret = success
-        error_msg = error
+        result = check_redis(config)
+        success_ret = result.success
+        error_msg = result.error
 
-        if not success:
+        if not result.success:
             error_flag = True
             if not args.json:
-                print(f"  {_c('✗', 'red')} Redis check failed: {error}")
+                print(f"  {_c('✗', 'red')} Redis check failed: {result.error}")
         else:
             if not args.json:
                 print(f"  {_c('✓', 'green')} Redis connected")
     return success_ret, error_msg, error_flag
 
 
-def _run_embed_check(args: Any, provider: str) -> tuple[bool | None, int | None, bool]:
+def _run_embed_check(args: Any, config: Any) -> tuple[bool | None, int | None, bool]:
     success_ret = None
     dim_ret = None
     error_flag = False
@@ -761,8 +697,9 @@ def _run_embed_check(args: Any, provider: str) -> tuple[bool | None, int | None,
         if not args.json:
             print(f"\n{_c('▶ Testing embeddings...', 'cyan')}")
 
-        success, dim = _probe_embeddings(provider)
-        success_ret, dim_ret = success, dim
+        result = check_embeddings(config)
+        success_ret = result.success
+        dim_ret = result.details.get("dimension") if result.details else None
 
         embed_endpoint = (
             os.environ.get("EMBED_ENDPOINT")
@@ -772,10 +709,10 @@ def _run_embed_check(args: Any, provider: str) -> tuple[bool | None, int | None,
         if not embed_endpoint.endswith("/v1"):
             embed_endpoint = f"{embed_endpoint.rstrip('/')}/v1"
 
-        if not success:
+        if not result.success:
             error_flag = True
             if not args.json:
-                print(f"  {_c('✗', 'red')} Embedding test failed")
+                print(f"  {_c('✗', 'red')} Embedding test failed: {result.error}")
                 print(f"    Endpoint: {_c(embed_endpoint, 'dim')}")
                 print(f"\n  {_c('TROUBLESHOOTING:', 'yellow')}")
                 print(f"    • Ensure embedding server is running at: {embed_endpoint}")
@@ -787,7 +724,7 @@ def _run_embed_check(args: Any, provider: str) -> tuple[bool | None, int | None,
             if not args.json:
                 print(f"  {_c('✓', 'green')} Embeddings working")
                 print(f"    Endpoint:  {_c(embed_endpoint, 'dim')}")
-                print(f"    Dimension: {_c(str(dim), 'bold')}")
+                print(f"    Dimension: {_c(str(dim_ret), 'bold')}")
     return success_ret, dim_ret, error_flag
 
 
@@ -799,14 +736,14 @@ def _run_rerank_check(args: Any, config: Any) -> tuple[bool | None, str | None, 
         if not args.json:
             print(f"\n{_c('▶ Testing reranker...', 'cyan')}")
 
-        success, error = check_reranker(config)
-        success_ret = success
-        error_msg = error
+        result = check_reranker(config)
+        success_ret = result.success
+        error_msg = result.error
 
-        if not success:
+        if not result.success:
             error_flag = True
             if not args.json:
-                print(f"  {_c('✗', 'red')} Reranker check failed: {error}")
+                print(f"  {_c('✗', 'red')} Reranker check failed: {result.error}")
         else:
             if not args.json:
                 print(f"  {_c('✓', 'green')} Reranker endpoint OK")
@@ -1093,7 +1030,7 @@ Examples:
     index_info, index_error = _run_index_check(args, config, root)
     db_success, db_err_msg, db_error = _run_db_check(args, config)
     redis_success, redis_err_msg, redis_error = _run_redis_check(args, config)
-    embed_success, embed_dim, embed_error = _run_embed_check(args, provider)
+    embed_success, embed_dim, embed_error = _run_embed_check(args, config)
     rerank_success, rerank_err_msg, rerank_error = _run_rerank_check(args, config)
     exp_success, exp_folders, exp_err_msg, exp_warning = _run_export_check(
         args, config, root
