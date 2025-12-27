@@ -868,6 +868,10 @@ class SecurityConfig(BaseModel):
         },
         description="Blocked file extensions",
     )
+    jwt_algorithm: str = Field(
+        default_factory=lambda: _env("JWT_ALGORITHM", "HS256"),
+        description="JWT signing algorithm",
+    )
 
     model_config = {"extra": "forbid"}
 
