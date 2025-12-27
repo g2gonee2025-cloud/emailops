@@ -9,8 +9,9 @@ from __future__ import annotations
 
 import logging
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Optional
 from uuid import UUID
 
 from cortex.ingestion.processor import IngestionProcessor
@@ -70,18 +71,36 @@ class PipelineOrchestrator:
             f"Pipeline started for tenant={self.tenant_id} prefix={source_prefix}"
         )
 
-        # 1. Discovery
-        folders = list(
-            self.s3_handler.list_conversation_folders(prefix=source_prefix, limit=limit)
+        # 1. Discovery (Lazy iterator)
+        folders_iter = self.s3_handler.list_conversation_folders(
+            prefix=source_prefix, limit=limit
         )
-        self.stats.folders_found = len(folders)
-        logger.info(f"Pipeline: Found {len(folders)} folders to process")
 
-        # 2. Sequential Processing (Atomic Batches)
-        # TODO: Future enhancement - Parallelize this loop with ThreadPoolExecutor
-        # For now, sequential is safer for "Atomic Batch" integrity and debugging.
-        for folder in folders:
-            self._process_single_folder(folder)
+        # 2. Parallel Processing
+        logger.info(
+            f"Pipeline: Starting parallel processing (concurrency={self.concurrency})"
+        )
+
+        with ThreadPoolExecutor(max_workers=self.concurrency) as executor:
+            # Submit tasks lazily as we iterate (or fill queue)
+            # Note: For strict lazy submission, we'd need bounded semaphore or map;
+            # here we verify S3 iterator doesn't block "too much" before submitting.
+            # Dict comprehension here consumes iterator, but that's fine if tasks submitted.
+            future_to_folder = {
+                executor.submit(self._process_single_folder, folder): folder
+                for folder in folders_iter
+            }
+
+            # Process results as they complete
+            for future in as_completed(future_to_folder):
+                folder = future_to_folder[future]
+                try:
+                    future.result()  # _process_single_folder handles exceptions/stats internally?
+                except Exception as e:
+                    logger.exception(
+                        f"Pipeline: Error processing folder '{folder}': {e}"
+                    )
+                    # Not incrementing folders_failed here; _process_single_folder already handles it.
 
         total_time = self.stats.duration_seconds
         logger.info(
@@ -92,11 +111,15 @@ class PipelineOrchestrator:
         )
         return self.stats
 
-    def _process_single_folder(self, folder: Any) -> None:
+    def _process_single_folder(self, folder: str) -> None:
         """
         Process a single conversation folder atomically.
         """
-        folder_name = folder.name if hasattr(folder, "name") else folder.prefix
+        folder_name = (
+            getattr(folder, "name", None)
+            or getattr(folder, "prefix", None)
+            or str(folder)
+        )
 
         # Dry-run mode: log and skip
         if self.dry_run:
@@ -132,8 +155,9 @@ class PipelineOrchestrator:
             self.stats.chunks_created += summary.chunks_created
 
             # Step B: Auto-Embedding
-            if self.auto_embed and summary.conversation_id:
-                self._trigger_embedding(summary.conversation_id, summary.chunks_created)
+            conv_id = getattr(summary, "conversation_id", None)
+            if self.auto_embed and conv_id:
+                self._trigger_embedding(conv_id, summary.chunks_created)
 
         except Exception as e:
             self.stats.folders_failed += 1

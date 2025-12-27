@@ -28,6 +28,8 @@ def main() -> None:
     prefix = "raw/outlook/"
     paginator = client.get_paginator("list_objects_v2")
     folders: list[str] = []
+    if not bucket:
+        raise ValueError("S3 bucket is not specified; cannot paginate objects.")
     for page in paginator.paginate(Bucket=bucket, Prefix=prefix, Delimiter="/"):
         folders.extend(cp["Prefix"] for cp in page.get("CommonPrefixes", []))
         if len(folders) >= 10:
@@ -48,7 +50,11 @@ def main() -> None:
                     continue
                 target = dest / rel
                 target.parent.mkdir(parents=True, exist_ok=True)
-                client.download_file(bucket, obj["Key"], str(target))
+                try:
+                    client.download_file(bucket, obj["Key"], str(target))
+                except Exception as e:
+                    # Do not abort the entire batch on a single object failure
+                    print(f"Failed to download {obj['Key']}: {e}")
         return dest
 
     local_folders = [download_folder(f) for f in folders]

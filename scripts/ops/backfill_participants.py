@@ -5,6 +5,7 @@ Backfill participants for existing conversations.
 Parses Conversation.txt from S3 for each conversation and updates
 the participants JSONB column with deduplicated From/To/Cc addresses.
 """
+
 import logging
 import sys
 from pathlib import Path
@@ -44,17 +45,20 @@ def backfill_participants(limit: int | None = None, dry_run: bool = False):
             WHERE participants IS NULL OR participants = '[]'::jsonb
             ORDER BY created_at
         """
-        if limit:
-            query += f" LIMIT {limit}"
+        if limit is not None:
+            # Safe because limit is typed as int
+            query += f" LIMIT {int(limit)}"
 
-        rows = conn.execute(text(query)).fetchall()
-        logger.info(f"Found {len(rows)} conversations to backfill")
+        result_proxy = conn.execution_options(stream_results=True).execute(text(query))
 
         updated = 0
         skipped = 0
         errors = 0
 
-        for conv_id, folder_name in rows:
+        import json
+
+        for row in result_proxy:
+            conv_id, folder_name = row
             try:
                 # Build S3 prefix
                 prefix = f"Outlook/{folder_name}/"
@@ -97,8 +101,6 @@ def backfill_participants(limit: int | None = None, dry_run: bool = False):
                     )
                 else:
                     # Update the database using raw psycopg2-style params
-                    import json
-
                     stmt = text(
                         """
                         UPDATE conversations
@@ -141,5 +143,9 @@ if __name__ == "__main__":
     )
     parser.add_argument("--dry-run", action="store_true", help="Don't write to DB")
     args = parser.parse_args()
+
+    if args.limit is not None and args.limit < 0:
+        print("Limit must be positive")
+        sys.exit(1)  # Changed to sys.exit(1) for proper exit code
 
     backfill_participants(limit=args.limit, dry_run=args.dry_run)

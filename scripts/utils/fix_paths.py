@@ -3,6 +3,19 @@ from pathlib import Path
 
 
 def fix_file(path: Path):
+    """
+    Normalize hard-coded sys.path manipulations in a Python source file.
+
+    Parameters
+    ----------
+    path : Path
+        Path to the file to process.
+
+    Side effects
+    ------------
+    Reads the file, applies regex-based replacements to known sys.path-append
+    patterns, and overwrites the file if any changes are made.
+    """
     content = path.read_text(encoding="utf-8")
 
     # Pattern 1: Common os.getcwd() pattern
@@ -22,10 +35,11 @@ def fix_file(path: Path):
         print(f"Fixing {path}")
 
         # Ensure pathlib is imported
-        if (
-            "from pathlib import Path" not in content
-            and "import pathlib" not in content
-        ):
+        if not re.search(
+            r"^\s*from\s+pathlib\s+import\s+(\*|(?:[^#\n]*\bPath\b(?!\s+as)))",
+            content,
+            re.M,
+        ) and not re.search(r"^\s*import\s+pathlib\b(?!\s+as\b)", content, re.M):
             # Add import after first import or at top
             if "import os" in content:
                 content = content.replace(
@@ -41,6 +55,7 @@ def fix_file(path: Path):
 
 
 def main():
+    """Iterate predefined subdirectories from this script's directory and fix paths."""
     root = Path(__file__).parent
     # Iterate over subdirectories
     for cat in ["verification", "ingestion", "ops", "search", "legacy"]:

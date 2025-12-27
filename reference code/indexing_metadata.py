@@ -84,7 +84,7 @@ TIMESTAMP_FILENAME = "last_run.txt"
 FILE_TIMES_FILENAME = "file_times.json"
 INDEX_DIRNAME_DEFAULT = os.getenv("INDEX_DIRNAME", "_index")
 
-__all__ = [
+__all__ = (
     "EMBEDDINGS_FILENAME",
     "FAISS_INDEX_FILENAME",
     "FILE_TIMES_FILENAME",

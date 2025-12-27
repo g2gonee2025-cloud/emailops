@@ -3,7 +3,7 @@ import sys
 import time
 
 
-def check_nodes():
+def check_nodes() -> None:
     print("Waiting for pool-gpu-h200 to join...")
     start = time.time()
     while time.time() - start < 600:  # 10 min timeout
@@ -24,6 +24,9 @@ def check_nodes():
         except subprocess.CalledProcessError as e:
             # Log kubectl command failures for debugging
             print(f"Warning: kubectl command failed: {e}", file=sys.stderr)
+        except (KeyboardInterrupt, SystemExit):
+            # Allow termination signals to propagate
+            raise
         except Exception as e:
             # Log unexpected errors but continue retrying
             print(f"Warning: Unexpected error in node check: {e}", file=sys.stderr)

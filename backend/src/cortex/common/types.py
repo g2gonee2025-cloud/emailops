@@ -247,7 +247,7 @@ def traverse_results(
     return Ok(successes)
 
 
-__all__ = [
+__all__ = (
     "Result",
     "Ok",
     "Err",
@@ -257,4 +257,4 @@ __all__ = [
     "collect_results",
     "sequence_results",
     "traverse_results",
-]
+)

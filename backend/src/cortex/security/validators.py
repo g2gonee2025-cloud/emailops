@@ -19,6 +19,134 @@ logger = logging.getLogger(__name__)
 # Basic email regex (can be replaced with a more robust library if needed)
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
 
+# -----------------------------------------------------------------------------
+# Prompt Injection Defense (§11.4)
+# -----------------------------------------------------------------------------
+
+# Comprehensive prompt injection patterns based on OWASP + real-world attacks
+INJECTION_PATTERNS: list[str] = [
+    # Classic jailbreak attempts
+    "ignore previous instruction",
+    "disregard earlier instruction",
+    "override these rules",
+    "forget all previous",
+    "disregard all prior",
+    "new instructions:",
+    "updated instructions:",
+    # System prompt manipulation
+    "system prompt:",
+    "### instruction",
+    "### system",
+    # Identity confusion
+    "you are chatgpt",
+    "you are now",
+    "pretend you are",
+    "as an ai language model",
+    "as a large language model",
+    # Code execution attempts
+    "run code:",
+    "execute:",
+    "eval(",
+    "exec(",
+    "import os",
+    "import sys",
+    "subprocess",
+    "__import__",
+    # Mode switching
+    "developer mode",
+    "jailbreak",
+    "debug mode",
+    "admin mode",
+    "god mode",
+    "dan mode",
+    # Prompt leaking
+    "show me your prompt",
+    "what are your instructions",
+    "reveal your system prompt",
+    "print your instructions",
+    # Context injection
+    "{{",
+    "${",
+    "<!--",
+    "<script",
+    "javascript:",
+    # Role confusion markers
+    "user:",
+    "human:",
+    "assistant:",
+    # Base64/encoding tricks
+    "base64",
+    "decode(",
+    "atob(",
+    # Instruction termination
+    "stop output",
+    "end instructions",
+    "ignore above",
+]
+
+# Compiled regex for performance
+_INJECTION_PATTERN_RE = re.compile(
+    "|".join(re.escape(p) for p in INJECTION_PATTERNS), re.IGNORECASE
+)
+
+
+def is_prompt_injection(text: str) -> bool:
+    """
+    Check if text contains potential prompt injection patterns.
+
+    Args:
+        text: Text to check
+
+    Returns:
+        True if injection pattern detected
+    """
+    if not text:
+        return False
+    return bool(_INJECTION_PATTERN_RE.search(text))
+
+
+def sanitize_retrieved_content(text: str) -> str:
+    """
+    Sanitize retrieved content before sending to LLM.
+
+    Removes lines that contain potential prompt injection patterns.
+    This is defense-in-depth for content retrieved from user documents.
+
+    Args:
+        text: Raw retrieved text (email body, attachment content, etc.)
+
+    Returns:
+        Sanitized text with injection-like lines removed
+    """
+    if not text:
+        return ""
+
+    safe_lines: list[str] = []
+    for line in text.splitlines():
+        line_lower = line.strip().lower()
+
+        # Skip empty lines (keep them for formatting)
+        if not line_lower:
+            safe_lines.append(line)
+            continue
+
+        # Check for injection patterns
+        if _INJECTION_PATTERN_RE.search(line_lower):
+            logger.debug("Removed injection-like line: %s", line[:50])
+            continue
+
+        # Skip lines that look like system/role markers
+        if line_lower.startswith(
+            ("system:", "assistant:", "user:", "instruction:", "### instruction", "```")
+        ):
+            logger.debug("Removed role-marker line: %s", line[:50])
+            continue
+
+        safe_lines.append(line)
+
+    return "\n".join(safe_lines)
+
+
 # Safe path characters (alphanumeric, dots, underscores, hyphens, slashes, colons for Windows)
 _SAFE_PATH_CHARS = re.compile(r"[^a-zA-Z0-9._\-/\\: ]")
 
@@ -190,7 +318,8 @@ def validate_directory_result(
         p = Path(path).expanduser().resolve()
 
         if check_symlinks and is_dangerous_symlink(
-            Path(path), allowed_roots=allowed_roots
+            p,
+            allowed_roots=allowed_roots,  # P2 Fix: Use resolved path
         ):
             return Err(f"Dangerous symlink detected: {path}")
 
@@ -241,7 +370,8 @@ def validate_file_result(
         p = Path(path).expanduser().resolve()
 
         if check_symlinks and is_dangerous_symlink(
-            Path(path), allowed_roots=allowed_roots
+            p,
+            allowed_roots=allowed_roots,  # P2 Fix: Use resolved path
         ):
             return Err(f"Dangerous symlink detected: {path}")
 
@@ -375,40 +505,3 @@ def validate_environment_variable(
         return Err("Environment variable value contains null byte")
 
     return Ok((name, value))
-
-
-# -----------------------------------------------------------------------------
-# GCP Project ID Validation
-# -----------------------------------------------------------------------------
-
-_GCP_PROJECT_REGEX = re.compile(r"^[a-z][a-z0-9-]{4,28}[a-z0-9]$")
-
-
-def validate_project_id(project_id: str) -> Result[str, str]:
-    """
-    Validate a GCP project ID.
-
-    Requirements:
-    * 6-30 characters
-    * Starts with lowercase letter
-    * Only lowercase letters, numbers, hyphens
-    * Cannot end with hyphen
-
-    Args:
-        project_id: GCP project ID to validate
-
-    Returns:
-        Result containing validated project ID or error message
-    """
-    if not project_id:
-        return Err("Project ID cannot be empty")
-
-    if not _GCP_PROJECT_REGEX.match(project_id):
-        return Err(
-            f"Invalid GCP project ID: {project_id}. "
-            "Must be 6-30 chars, start with lowercase letter, "
-            "contain only lowercase letters/numbers/hyphens, "
-            "and not end with hyphen."
-        )
-
-    return Ok(project_id)

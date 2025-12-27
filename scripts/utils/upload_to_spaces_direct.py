@@ -122,7 +122,7 @@ def main():
                 rate = total_processed / elapsed if elapsed > 0 else 0
                 eta = (total_files - total_processed) / rate if rate > 0 else 0
                 print(
-                    f"Progress: {total_processed}/{total_files} ({100*total_processed/total_files:.1f}%) | "
+                    f"Progress: {total_processed}/{total_files} ({100 * total_processed / total_files:.1f}%) | "
                     f"Uploaded: {uploaded} | Failed: {failed} | "
                     f"Rate: {rate:.1f}/s | ETA: {eta:.0f}s"
                 )
@@ -136,7 +136,7 @@ def main():
     print(f"  Failed:         {failed}")
     print(f"  Time elapsed:   {elapsed:.1f} seconds")
     if total_files > 0:
-        print(f"  Average rate:   {total_files/elapsed:.1f} files/sec")
+        print(f"  Average rate:   {total_files / elapsed:.1f} files/sec")
 
     if failed_files:
         print("\nFailed files (first 20):")

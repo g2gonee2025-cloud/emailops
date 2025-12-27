@@ -60,18 +60,18 @@ def generate_secrets_yaml():
                 type: Opaque
                 data:
                     # Database connection
-                    OUTLOOKCORTEX_DB_URL: {encoded_data['OUTLOOKCORTEX_DB_URL']}
+                    OUTLOOKCORTEX_DB_URL: {encoded_data["OUTLOOKCORTEX_DB_URL"]}
 
                     # Valkey cache connection
-                    REDIS_URL: {encoded_data['REDIS_URL']}
+                    REDIS_URL: {encoded_data["REDIS_URL"]}
 
                     # S3/Spaces Access Keys
-                    S3_ACCESS_KEY: {encoded_data['S3_ACCESS_KEY']}
-                    S3_SECRET_KEY: {encoded_data['S3_SECRET_KEY']}
+                    S3_ACCESS_KEY: {encoded_data["S3_ACCESS_KEY"]}
+                    S3_SECRET_KEY: {encoded_data["S3_SECRET_KEY"]}
 
                     # AI Provider Keys
-                    DO_LLM_API_KEY: {encoded_data['DO_LLM_API_KEY']}
-                    DO_TOKEN: {encoded_data['DO_TOKEN']}
+                    DO_LLM_API_KEY: {encoded_data["DO_LLM_API_KEY"]}
+                    DO_TOKEN: {encoded_data["DO_TOKEN"]}
                 """
         )
 

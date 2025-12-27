@@ -2,4 +2,4 @@
 
 from cortex.domain.models import KBSearchInput
 
-__all__ = ["KBSearchInput"]
+__all__ = ("KBSearchInput",)

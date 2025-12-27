@@ -8,7 +8,9 @@ Downloads conversation folders from DigitalOcean Spaces for processing.
 from __future__ import annotations
 
 import logging
+import os
 import tempfile
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional
 
@@ -20,9 +22,6 @@ from cortex.ingestion.text_utils import strip_control_chars
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
-
-
-from datetime import datetime  # noqa: E402
 
 
 class S3ConversationFolder(BaseModel):
@@ -77,6 +76,21 @@ class S3SourceHandler:
                 ),
             )
         return self._client
+
+    def close(self) -> None:
+        """Close the S3 client."""
+        if self._client:
+            try:
+                self._client.close()
+            except Exception:
+                pass
+            self._client = None
+
+    def __enter__(self) -> "S3SourceHandler":
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        self.close()
 
     def list_conversation_folders(
         self,
@@ -193,7 +207,10 @@ class S3SourceHandler:
 
         for file_key in folder.files:
             # Get relative path within folder
-            relative_path = file_key[len(folder.prefix) :]
+            raw_rel = file_key[len(folder.prefix) :].replace("\\", "/")
+            relative_path = os.path.normpath("/" + raw_rel).lstrip("/\\")
+            if relative_path.startswith(".."):
+                relative_path = os.path.basename(relative_path)
             if not relative_path:
                 continue
 

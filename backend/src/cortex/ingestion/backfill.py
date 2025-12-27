@@ -35,12 +35,40 @@ def get_openai_client():
     return OpenAI(base_url=base_url, api_key=api_key)
 
 
+def get_gguf_provider():
+    """Get GGUF provider for CPU-based embeddings."""
+    try:
+        from cortex.llm.gguf_provider import GGUFProvider
+
+        provider = GGUFProvider()
+        if provider.is_available():
+            logger.info("Using GGUF CPU embedding via llama-server")
+            return provider
+        else:
+            logger.error("llama-server not available at %s", provider._endpoint)
+            return None
+    except Exception as e:
+        logger.error(f"Failed to initialize GGUF provider: {e}")
+        return None
+
+
 def backfill_embeddings(
     tenant_id: str = "default", batch_size: int = BATCH_SIZE, limit: int = None
 ):
-    client = get_openai_client()
-    if not client:
-        return
+    embed_mode = os.getenv("OUTLOOKCORTEX_EMBED_MODE", os.getenv("EMBED_MODE", "gpu"))
+    use_cpu = embed_mode.lower() == "cpu"
+
+    if use_cpu:
+        provider = get_gguf_provider()
+        if not provider:
+            logger.error("CPU mode requested but GGUF provider not available")
+            return {"processed": 0, "failed": 0, "error": "GGUF provider not available"}
+        client = None
+    else:
+        client = get_openai_client()
+        if not client:
+            return {"processed": 0, "failed": 0, "error": "OpenAI client not available"}
+        provider = None
 
     model_name = os.getenv("EMBED_MODEL", "tencent/KaLM-Embedding-Gemma3-12B-2511")
 
@@ -49,22 +77,35 @@ def backfill_embeddings(
         logger.info(f"Total chunks missing embeddings: {total_missing}")
 
         if total_missing == 0:
-            return
+            return {"processed": 0, "failed": 0}
 
         processed = 0
+        failed = 0
         while not (limit and processed >= limit):
             chunks = _get_chunks_without_embeddings(session, batch_size)
             if not chunks:
                 break
 
             texts = [c.text for c in chunks]
-            batch_processed = _process_embedding_batch(
-                client, session, chunks, texts, model_name
-            )
+
+            if use_cpu:
+                batch_processed, batch_failed = _process_embedding_batch_cpu(
+                    provider, session, chunks, texts
+                )
+            else:
+                batch_processed = _process_embedding_batch(
+                    client, session, chunks, texts, model_name
+                )
+                batch_failed = len(chunks) - batch_processed
+
             processed += batch_processed
-            logger.info(f"Processed {processed}/{total_missing} chunks.")
+            failed += batch_failed
+            logger.info(
+                f"Processed {processed}/{total_missing} chunks (failed: {failed})."
+            )
 
     logger.info("Backfill complete!")
+    return {"processed": processed, "failed": failed}
 
 
 def _get_missing_embeddings_count(session) -> int:
@@ -139,6 +180,60 @@ def _process_chunks_serially(client, session, chunks, model_name) -> int:
             chunk.extra_data = ed
             session.commit()
     return processed
+
+
+def _process_embedding_batch_cpu(provider, session, chunks, texts) -> tuple[int, int]:
+    """Process a batch of embeddings using CPU GGUF provider."""
+    import numpy as np
+
+    start_time = time.time()
+    processed = 0
+    failed = 0
+
+    try:
+        # GGUF provider handles batching internally
+        embeddings = provider.embed(texts)
+
+        for i, chunk in enumerate(chunks):
+            try:
+                emb = (
+                    embeddings[i].tolist()
+                    if isinstance(embeddings[i], np.ndarray)
+                    else embeddings[i]
+                )
+
+                # Validate embedding
+                if emb is None or len(emb) == 0 or all(v == 0 for v in emb[:10]):
+                    logger.warning(
+                        f"Empty embedding for chunk {chunk.chunk_id}, skipping"
+                    )
+                    ed = dict(chunk.extra_data) if chunk.extra_data else {}
+                    ed["skipped"] = True
+                    ed["error"] = "empty_embedding"
+                    chunk.extra_data = ed
+                    failed += 1
+                else:
+                    chunk.embedding = emb
+                    processed += 1
+            except Exception as e:
+                logger.warning(
+                    f"Failed to save embedding for chunk {chunk.chunk_id}: {e}"
+                )
+                ed = dict(chunk.extra_data) if chunk.extra_data else {}
+                ed["skipped"] = True
+                ed["error"] = str(e)[:200]
+                chunk.extra_data = ed
+                failed += 1
+
+        session.commit()
+        duration = time.time() - start_time
+        logger.info(f"CPU batch took {duration:.2f}s ({processed} ok, {failed} failed)")
+
+    except Exception as e:
+        logger.error(f"CPU batch embedding failed: {e}")
+        failed = len(chunks)
+
+    return processed, failed
 
 
 if __name__ == "__main__":

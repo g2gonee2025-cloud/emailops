@@ -22,8 +22,8 @@ class KBSearchInput(BaseModel):
         """Convert to the retrieval-layer input model."""
 
         return RetrievalKBSearchInput(
-            tenant_id=self.tenant_id or "default",
-            user_id=self.user_id or "cli-user",
+            tenant_id=self.tenant_id if self.tenant_id is not None else "default",
+            user_id=self.user_id if self.user_id is not None else "cli-user",
             query=self.query,
             k=self.limit,
             fusion_method=self.fusion_strategy,

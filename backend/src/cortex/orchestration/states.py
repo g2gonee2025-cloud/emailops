@@ -15,6 +15,10 @@ from cortex.retrieval.query_classifier import QueryClassification
 from cortex.retrieval.results import SearchResults
 from pydantic import BaseModel, Field
 
+# Default configuration constants
+DEFAULT_RETRIEVAL_K = 10  # Number of chunks to retrieve
+DEFAULT_SUMMARY_MAX_LENGTH = 500  # Max summary length in words
+
 
 class GraphState(BaseModel):
     """Base class that exposes dict-like helpers for LangGraph nodes."""
@@ -46,7 +50,7 @@ class AnswerQuestionState(GraphState):
     tenant_id: str
     user_id: str
     thread_id: Optional[str] = None
-    k: int = 10
+    k: int = DEFAULT_RETRIEVAL_K
     debug: bool = False
     classification: Optional[QueryClassification] = None
     retrieval_results: Optional[SearchResults] = None
@@ -93,14 +97,14 @@ class SummarizeThreadState(GraphState):
     State for graph_summarize_thread.
 
     Blueprint §10.4:
-    * thread_id: UUID
+    * thread_id: str (UUID string)
     * ...
     """
 
     tenant_id: str
     user_id: str
     thread_id: str
-    max_length: int = 500
+    max_length: int = DEFAULT_SUMMARY_MAX_LENGTH
     thread_context: Optional[str] = None  # Raw text of thread
     facts_ledger: Optional[FactsLedger] = None
     critique: Optional[CriticReview] = None

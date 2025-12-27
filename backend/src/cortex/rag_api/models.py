@@ -38,8 +38,8 @@ class SearchResponse(BaseModel):
 
     correlation_id: Optional[str] = None
     results: List[Dict[str, Any]] = Field(default_factory=list)
-    total_count: int = 0
-    query_time_ms: float = 0.0
+    total_count: int = Field(0, ge=0)
+    query_time_ms: float = Field(0.0, ge=0.0)
 
 
 # -----------------------------------------------------------------------------
@@ -50,11 +50,13 @@ class AnswerRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    query: str = Field(..., description="Question to answer")
+    query: str = Field(
+        ..., description="Question to answer", min_length=1, max_length=2000
+    )
     thread_id: Optional[str] = Field(
         default=None, description="Optional thread context"
     )
-    k: int = Field(default=10, description="Number of context chunks")
+    k: int = Field(default=10, ge=1, le=20, description="Number of context chunks")
     debug: bool = Field(default=False, description="Enable debug info")
     tenant_id: Optional[str] = None
     user_id: Optional[str] = None
@@ -67,7 +69,9 @@ class AnswerResponse(BaseModel):
 
     correlation_id: Optional[str] = None
     answer: Answer
-    confidence: float = 0.0
+    confidence: float = Field(
+        default=0.0, ge=0.0, le=1.0, description="Confidence score (0-1)"
+    )
     debug_info: Optional[Dict[str, Any]] = None
 
 
@@ -96,8 +100,8 @@ class DraftEmailResponse(BaseModel):
 
     correlation_id: Optional[str] = None
     draft: EmailDraft
-    confidence: float = 0.0
-    iterations: int = 0
+    confidence: float = Field(0.0, ge=0.0, le=1.0)
+    iterations: int = Field(0, ge=0)
 
 
 # -----------------------------------------------------------------------------
@@ -109,7 +113,9 @@ class SummarizeThreadRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     thread_id: str = Field(..., description="Thread to summarize")
-    max_length: int = Field(default=500, description="Max summary length in words")
+    max_length: int = Field(
+        default=500, ge=50, le=2000, description="Max summary length in words"
+    )
     tenant_id: Optional[str] = None
     user_id: Optional[str] = None
 
@@ -130,7 +136,7 @@ class ChatMessage(BaseModel):
     """Chat message payload."""
 
     role: Literal["system", "user", "assistant"]
-    content: str
+    content: str = Field(..., max_length=10000)
 
 
 class ChatRequest(BaseModel):
@@ -140,14 +146,13 @@ class ChatRequest(BaseModel):
     thread_id: Optional[str] = Field(
         default=None, description="Optional thread context"
     )
-    k: int = Field(default=10, description="Number of context chunks")
-    max_length: int = Field(default=500, description="Max summary length in words")
-    max_history: Optional[int] = Field(
-        default=None, description="Max chat history entries"
+    k: int = Field(default=10, ge=1, le=20, description="Number of context chunks")
+    max_length: int = Field(
+        default=500, ge=50, le=2000, description="Max summary length in words"
     )
-    debug: bool = Field(default=False, description="Enable debug info")
-    tenant_id: Optional[str] = None
-    user_id: Optional[str] = None
+    max_history: Optional[int] = Field(
+        default=None, ge=0, le=50, description="Max chat history entries"
+    )
 
 
 class ChatResponse(BaseModel):

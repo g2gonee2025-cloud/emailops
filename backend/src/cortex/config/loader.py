@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import threading
 from pathlib import Path
 from typing import Any, Dict, List, cast
@@ -25,7 +26,6 @@ from .models import (
     EmailConfig,
     EmbeddingConfig,
     FilePatternsConfig,
-    GcpConfig,
     LimitsConfig,
     PiiConfig,
     ProcessingConfig,
@@ -43,12 +43,6 @@ from .models import (
 
 load_dotenv()
 
-try:
-    from google.oauth2 import service_account
-except ImportError:
-    service_account = None
-
-service_account = cast(Any, service_account)
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +61,7 @@ class EmailOpsConfig(BaseModel):
     redis: RedisConfig = Field(default_factory=RedisConfig)
     processing: ProcessingConfig = Field(default_factory=ProcessingConfig)
     embedding: EmbeddingConfig = Field(default_factory=EmbeddingConfig)
-    gcp: GcpConfig = Field(default_factory=GcpConfig)
+
     digitalocean: DigitalOceanLLMConfig = Field(default_factory=DigitalOceanLLMConfig)
     qdrant: QdrantConfig = Field(default_factory=QdrantConfig)
     retry: RetryConfig = Field(default_factory=RetryConfig)
@@ -86,7 +80,15 @@ class EmailOpsConfig(BaseModel):
     model_config = {"extra": "forbid"}
 
     @property
-    def s3(self) -> StorageConfig:
+    def SECRET_KEY(self) -> str:
+        """JWT secret key for token signing (dev fallback provided)."""
+        return (
+            os.environ.get("OUTLOOKCORTEX_SECRET_KEY")
+            or "dev-secret-key-change-in-production"
+        )
+
+    @property
+    def object_storage(self) -> StorageConfig:
         """Alias for storage config (S3/Spaces)."""
         return self.storage
 
@@ -99,7 +101,18 @@ class EmailOpsConfig(BaseModel):
                 return str(obj)
             elif isinstance(obj, set):
                 obj_set = cast(set[Any], obj)
-                return [convert_for_json(item) for item in sorted(obj_set)]
+                converted = [convert_for_json(item) for item in obj_set]
+                try:
+                    return sorted(converted)
+                except TypeError:
+                    return sorted(
+                        converted,
+                        key=lambda v: (
+                            json.dumps(v, sort_keys=True)
+                            if isinstance(v, (dict, list))
+                            else repr(v)
+                        ),
+                    )
             elif isinstance(obj, dict):
                 obj_dict = cast(Dict[Any, Any], obj)
                 return {str(k): convert_for_json(v) for k, v in obj_dict.items()}
@@ -121,12 +134,7 @@ class EmailOpsConfig(BaseModel):
 
     def update_environment(self) -> None:
         """Update environment variables from config (for child processes)."""
-        # GCP settings
-        if self.gcp.gcp_project:
-            os.environ["GCP_PROJECT"] = self.gcp.gcp_project
-            os.environ["GOOGLE_CLOUD_PROJECT"] = self.gcp.gcp_project
-        if self.gcp.vertex_location:
-            os.environ["VERTEX_LOCATION"] = self.gcp.vertex_location
+        # GCP settings removed
 
         # Core settings
         if self.core.provider:
@@ -136,7 +144,7 @@ class EmailOpsConfig(BaseModel):
         os.environ["EMBED_MODEL"] = self.embedding.model_name
         os.environ["EMBED_DIM"] = str(self.embedding.output_dimensionality)
         os.environ["VERTEX_EMBED_MODEL"] = self.embedding.model_name
-        os.environ["VERTEX_MODEL"] = self.embedding.vertex_model
+        # VERTEX_MODEL env var mapping removed
 
         # DigitalOcean LLM controls
         if self.digitalocean.scaling.token:
@@ -147,14 +155,36 @@ class EmailOpsConfig(BaseModel):
             os.environ["DO_LLM_BASE_URL"] = str(self.digitalocean.endpoint.BASE_URL)
         if self.digitalocean.endpoint.api_key:
             os.environ["DO_LLM_API_KEY"] = self.digitalocean.endpoint.api_key
-        os.environ[
-            "DO_LLM_COMPLETION_MODEL"
-        ] = self.digitalocean.endpoint.default_completion_model
-        os.environ[
-            "DO_LLM_EMBEDDING_MODEL"
-        ] = self.digitalocean.endpoint.default_embedding_model
+        os.environ["DO_LLM_COMPLETION_MODEL"] = (
+            self.digitalocean.endpoint.default_completion_model
+        )
+        os.environ["DO_LLM_EMBEDDING_MODEL"] = (
+            self.digitalocean.endpoint.default_embedding_model
+        )
 
-        # Processing settings
+        # Processing settings (apply environment overrides with type conversion)
+        def _coerce_int(name: str, current: int) -> int:
+            raw = os.getenv(name)
+            if raw is None or raw == "":
+                return current
+            try:
+                return int(raw)
+            except (TypeError, ValueError):
+                return current
+
+        self.processing.batch_size = _coerce_int(
+            "EMBED_BATCH", self.processing.batch_size
+        )
+        self.processing.num_workers = _coerce_int(
+            "NUM_WORKERS", self.processing.num_workers
+        )
+        self.processing.chunk_size = _coerce_int(
+            "CHUNK_SIZE", self.processing.chunk_size
+        )
+        self.processing.chunk_overlap = _coerce_int(
+            "CHUNK_OVERLAP", self.processing.chunk_overlap
+        )
+
         os.environ["EMBED_BATCH"] = str(self.processing.batch_size)
         os.environ["NUM_WORKERS"] = str(self.processing.num_workers)
         os.environ["CHUNK_SIZE"] = str(self.processing.chunk_size)
@@ -163,7 +193,6 @@ class EmailOpsConfig(BaseModel):
         # Email settings
         os.environ["SENDER_LOCKED_NAME"] = self.email.sender_locked_name
         os.environ["SENDER_LOCKED_EMAIL"] = self.email.sender_locked_email
-        os.environ["MESSAGE_ID_DOMAIN"] = self.email.message_id_domain
 
         # Directory settings
         os.environ["INDEX_DIRNAME"] = self.directories.index_dirname
@@ -184,24 +213,36 @@ class EmailOpsConfig(BaseModel):
         # System settings
         os.environ["LOG_LEVEL"] = self.system.log_level
         os.environ["OUTLOOKCORTEX_DB_URL"] = self.database.url
+        # Persist default configuration if no config file existed
+        try:
+            cfg_path_attr = (
+                getattr(self, "path", None)
+                or getattr(self, "config_path", None)
+                or getattr(self, "config_file", None)
+            )
+            if cfg_path_attr:
+                cfg_path = Path(cfg_path_attr)
+                if not cfg_path.exists():
+                    if hasattr(self, "save") and callable(getattr(self, "save")):
+                        self.save(cfg_path)
+                    else:
+                        cfg_path.parent.mkdir(parents=True, exist_ok=True)
+                        if hasattr(self, "to_json") and callable(
+                            getattr(self, "to_json")
+                        ):
+                            cfg_path.write_text(self.to_json(), encoding="utf-8")
+                        elif hasattr(self, "to_dict") and callable(
+                            getattr(self, "to_dict")
+                        ):
+                            cfg_path.write_text(
+                                json.dumps(self.to_dict(), indent=2), encoding="utf-8"
+                            )
+        except Exception:
+            # Do not block startup on persistence errors
+            pass
 
-        # Credential file discovery
-        cred_file = self.get_credential_file()
-        if cred_file:
-            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(cred_file)
-            if not self.gcp.gcp_project:
-                try:
-                    with cred_file.open("r", encoding="utf-8") as f:
-                        data = json.load(f)
-                    proj = str(data.get("project_id") or "").strip()
-                    if proj:
-                        # Note: Can't directly modify Pydantic model after creation
-                        # Set environment variables instead
-                        os.environ["GCP_PROJECT"] = proj
-                        os.environ["GOOGLE_CLOUD_PROJECT"] = proj
-                        os.environ["VERTEX_PROJECT"] = proj
-                except Exception:
-                    pass
+        # Credential file discovery removed
+        # (Vertex AI dependencies removed)
 
     @classmethod
     def load(cls, path: Path | None = None) -> EmailOpsConfig:
@@ -263,7 +304,7 @@ class EmailOpsConfig(BaseModel):
             try:
                 default_config.save(path)
                 logger.info("Created new default configuration file at %s.", path)
-            except Exception as e:
+            except OSError as e:
                 logger.error(
                     "Failed to save new default configuration at %s: %s", path, e
                 )
@@ -286,107 +327,7 @@ class EmailOpsConfig(BaseModel):
 
         return self.directories.secrets_dir.resolve()
 
-    def discover_credential_files(self) -> list[Path]:
-        """Dynamically discover all valid GCP service account JSON files in secrets directory."""
-        secrets_dir = self.get_secrets_dir()
-        if not secrets_dir.exists():
-            return []
-
-        json_files = list(secrets_dir.glob("*.json"))
-        if not json_files:
-            return []
-
-        valid_files: List[Path] = []
-        for json_file in sorted(json_files):
-            if self._is_valid_service_account_json(json_file):
-                valid_files.append(json_file)
-        return valid_files
-
-    @staticmethod
-    def _is_valid_service_account_json(p: Path) -> bool:
-        """Strictly validate that a JSON file looks like a GCP service-account key."""
-        try:
-            with p.open("r", encoding="utf-8") as f:
-                data = json.load(f)
-
-            if not isinstance(data, dict):
-                return False
-
-            data_dict = cast(Dict[str, Any], data)
-
-            required = {
-                "type",
-                "project_id",
-                "private_key_id",
-                "private_key",
-                "client_email",
-            }
-            if not required.issubset(set(data_dict)):
-                return False
-
-            if data_dict.get("type") != "service_account":
-                return False
-
-            private_key: str = str(data_dict.get("private_key", "")).strip()
-            if not private_key.startswith(
-                "-----BEGIN PRIVATE KEY-----"
-            ) or not private_key.endswith("-----END PRIVATE KEY-----"):
-                return False
-
-            key_id: str = str(data_dict.get("private_key_id", "")).strip()
-            if not key_id or len(key_id) < 16:
-                return False
-
-            client_email: str = str(data_dict.get("client_email", "")).strip()
-            if (
-                not client_email
-                or "@" not in client_email
-                or not client_email.endswith(
-                    (".iam.gserviceaccount.com", ".gserviceaccount.com")
-                )
-            ):
-                return False
-
-            project_id: str = str(data_dict.get("project_id", "")).strip()
-            if not project_id or len(project_id) < 6:
-                return False
-
-            if service_account is not None:
-                try:
-                    credentials = cast(
-                        Any, service_account
-                    ).Credentials.from_service_account_info(data_dict)
-                    return not (hasattr(credentials, "expired") and credentials.expired)
-                except Exception as e:
-                    logger.warning("Credential validation failed: %s", e)
-                    return False
-
-            return True
-        except Exception:
-            return False
-
-    def get_credential_file(self) -> Path | None:
-        """Find a valid credential file."""
-        if self.sensitive.google_application_credentials:
-            creds_path = Path(self.sensitive.google_application_credentials)
-            if creds_path.exists() and self._is_valid_service_account_json(creds_path):
-                return creds_path
-
-        try:
-            valid_files = self.discover_credential_files()
-            if valid_files:
-                return valid_files[0]
-        except ConfigurationError:
-            pass
-
-        return None
-
-    def get_all_credential_files(self) -> list[Path]:
-        """Get all valid credential files for multi-account rotation."""
-        try:
-            return self.discover_credential_files()
-        except ConfigurationError as e:
-            raise ConfigurationError(f"Failed to discover credential files: {e}") from e
+    # Credential/Service Account logic removed
 
 
 _config: EmailOpsConfig | None = None
@@ -483,7 +424,6 @@ def set_rls_tenant(connection: Any, tenant_id: str) -> None:
         )
 
     # Sanitize tenant_id to prevent injection
-    import re
 
     if not re.match(r"^[a-zA-Z0-9_-]+$", tenant_id):
         raise ConfigurationError(
@@ -491,8 +431,13 @@ def set_rls_tenant(connection: Any, tenant_id: str) -> None:
             error_code="RLS_TENANT_INVALID",
         )
 
-    # Execute SET command
-    connection.execute(f"SET app.current_tenant = '{tenant_id}'")
+    # Execute SET command safely
+    from sqlalchemy import text
+
+    # Use parameters to prevent injection (even with regex check)
+    connection.execute(
+        text("SELECT set_config('app.current_tenant', :tid, false)"), {"tid": tenant_id}
+    )
 
 
 def validate_directories(config: EmailOpsConfig) -> list[str]:

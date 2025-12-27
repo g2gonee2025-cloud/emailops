@@ -12,6 +12,10 @@ from cortex.retrieval.results import SearchResultItem
 
 logger = logging.getLogger(__name__)
 
+# Constants
+RERANK_TRUNCATION_CHARS = 4096
+RERANK_TIMEOUT_SECONDS = 15.0
+
 
 def _candidate_summary_text(item: SearchResultItem) -> str:
     """
@@ -36,6 +40,10 @@ def _candidate_summary_text(item: SearchResultItem) -> str:
         parts.append(f"Date: {date}")
     if subject:
         parts.append(f"Subject: {subject}")
+
+    # Ensure metadata dict exists for downstream annotations (e.g., rerank_score)
+    if getattr(item, "metadata", None) is None:
+        item.metadata = {}
 
     # Content is the most important part
     content = item.content or item.snippet or ""
@@ -78,12 +86,21 @@ def call_external_reranker(
     if not results:
         return []
 
+    # Ensure metadata is a dict for all items to avoid None-safety issues
+    for item in results:
+        if getattr(item, "metadata", None) is None or not isinstance(
+            item.metadata, dict
+        ):
+            item.metadata = {}
+
     # Rerank only the top N candidates to save time/compute
     candidates = results[:top_n]
 
     # PREPARE DOCUMENTS WITH SUMMARY CONTEXT
-    # We truncate content to 4096 chars to ensure low latency
-    documents = [_candidate_summary_text(c)[:4096] for c in candidates]
+    # We truncate content to ensure low latency
+    documents = [
+        _candidate_summary_text(c)[:RERANK_TRUNCATION_CHARS] for c in candidates
+    ]
 
     try:
         # Use /v1/rerank endpoint (Jina/Cohere compatible)
@@ -98,7 +115,7 @@ def call_external_reranker(
                 "query": query,
                 "documents": documents,
             },
-            timeout=15.0,  # Allow time for cross-encoder inference
+            timeout=RERANK_TIMEOUT_SECONDS,  # Allow time for cross-encoder inference
         )
         resp.raise_for_status()
 

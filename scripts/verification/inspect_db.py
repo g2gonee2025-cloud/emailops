@@ -3,6 +3,7 @@
 Database Inspection CLI.
 Unified tool for checking DB matching, schema, and liveliness.
 """
+
 import argparse
 import sys
 from pathlib import Path

@@ -44,12 +44,21 @@ def search_chunks_vector(
     config = get_config()
     output_dim = config.embedding.output_dimensionality
 
+    if limit <= 0:
+        limit = 50  # Default if invalid
+
+    # Handling backward compatibility: merge thread_ids into conversation_ids
+    # Prefer conversation_ids as the canonical source
+    if thread_ids:
+        if conversation_ids is None:
+            conversation_ids = []
+        conversation_ids.extend(thread_ids)
+        # Deduplicate if mixed
+        conversation_ids = list(set(conversation_ids))
+
     if getattr(config, "qdrant", None) and config.qdrant.enabled:
         store = QdrantVectorStore(config.qdrant, output_dim)
-        logger.info(
-            "Qdrant integration enabled – delegating vector search to Qdrant at %s",
-            config.qdrant.url,
-        )
+        # Removed logging every query to reduce noise
     else:
         store = PgvectorStore(session, output_dim)
 
@@ -60,7 +69,7 @@ def search_chunks_vector(
         ef_search=ef_search,
         conversation_ids=conversation_ids,
         is_attachment=is_attachment,
-        thread_ids=thread_ids,
+        thread_ids=None,  # Already merged
         file_types=file_types,
     )
 

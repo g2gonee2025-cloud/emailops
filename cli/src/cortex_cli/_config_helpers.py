@@ -72,6 +72,15 @@ def _print_summary_sections(config: Any) -> None:
                 ("Model", config.embedding.model_name),
                 ("Dimensions", config.embedding.output_dimensionality),
                 ("Batch Size", config.embedding.batch_size),
+                ("Mode", config.embedding.embed_mode),
+            ],
+        ),
+        (
+            "Email",
+            [
+                ("Sender Name", config.email.sender_locked_name or "(not set)"),
+                ("Sender Email", config.email.sender_locked_email or "(not set)"),
+                ("Reply Policy", config.email.reply_policy),
             ],
         ),
         (

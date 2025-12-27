@@ -109,7 +109,9 @@ def cmd_s3_ingest(args: argparse.Namespace) -> None:
             )
             return
 
-        print(f"\n  {_colorize('⏳', 'yellow')} Ingesting {len(folders)} folder(s)...\n")
+        print(
+            f"\n  {_colorize('⏳', 'yellow')} Ingesting {len(folders)} folder(s)...\n"
+        )
 
         success = 0
         failed = 0
@@ -398,3 +400,13 @@ def setup_s3_parser(subparsers: Any) -> None:
     )
     validate_parser.add_argument("--json", action="store_true", help="Output as JSON")
     validate_parser.set_defaults(func=cmd_s3_validate)
+
+    # Default: show list when no subcommand given
+    def _default_s3_handler(args: argparse.Namespace) -> None:
+        if not args.s3_command:
+            args.prefix = getattr(args, "prefix", "")
+            args.limit = getattr(args, "limit", 20)
+            args.json = getattr(args, "json", False)
+            cmd_s3_list(args)
+
+    s3_parser.set_defaults(func=_default_s3_handler)

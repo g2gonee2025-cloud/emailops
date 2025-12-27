@@ -3,6 +3,7 @@
 Embeddings Management CLI.
 Tools to fix null embeddings or force full re-embedding.
 """
+
 import argparse
 import logging
 import sys
@@ -34,47 +35,73 @@ def fix_nulls(args):
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    try:
-        count = session.execute(
-            text("SELECT count(*) FROM chunks WHERE embedding IS NULL")
-        ).scalar()
-        logger.info(f"Found {count} chunks with NULL embeddings.")
+    count = session.execute(
+        text("SELECT count(*) FROM chunks WHERE embedding IS NULL")
+    ).scalar()
+    logger.info(f"Found {count} chunks with NULL embeddings.")
 
-        if count == 0:
-            return
+    if count == 0:
+        return
 
-        limit = args.batch_size
-        total_fixed = 0
+    limit = args.batch_size
+    workers = getattr(args, "workers", 5)
 
-        while True:
-            rows = session.execute(
-                text(
-                    "SELECT chunk_id, text FROM chunks WHERE embedding IS NULL LIMIT :limit"
-                ),
-                {"limit": limit},
-            ).fetchall()
-            if not rows:
-                break
+    # Pre-fetch all IDs to distribute work
+    # (If dataset is huge, we might want pagination, but for 3k chunks this is fine)
+    rows = session.execute(
+        text("SELECT chunk_id, text FROM chunks WHERE embedding IS NULL")
+    ).fetchall()
 
-            logger.info(f"Processing batch of {len(rows)}...")
-            for row in rows:
-                if not row.text:
+    total = len(rows)
+    logger.info(f"Loaded {total} chunks to fix. Workers: {workers}")
+
+    # Chunking utility
+    def chunk_list(lst, n):
+        for i in range(0, len(lst), n):
+            yield lst[i : i + n]
+
+    batches = list(chunk_list(rows, limit))
+
+    total_fixed = 0
+    errors = 0
+
+    def _process_batch(batch_rows):
+        # New session per thread recommended
+        _engine = create_engine(db_url)
+        with _engine.connect() as conn:
+            local_fixed = 0
+            for r in batch_rows:
+                if not r.text:
                     continue
                 try:
-                    emb = get_embedding(row.text)
-                    session.execute(
-                        text("UPDATE chunks SET embedding = :emb WHERE chunk_id = :id"),
-                        {"emb": emb, "id": row.chunk_id},
+                    # This calls the LLM client which handles its own HTTP connection
+                    emb = get_embedding(r.text)
+                    conn.execute(
+                        text(
+                            "UPDATE chunks SET embedding = CAST(:emb AS halfvec(3840)) WHERE chunk_id = :id"
+                        ),
+                        {"emb": str(emb), "id": r.chunk_id},
                     )
-                    total_fixed += 1
+                    local_fixed += 1
                 except Exception as e:
-                    logger.error(f"Failed to embed chunk {row.chunk_id}: {e}")
+                    logger.error(f"Failed chunk {r.chunk_id}: {e}")
+            conn.commit()
+            return local_fixed
 
-            session.commit()
-            logger.info(f"Committed. Total fixed: {total_fixed}")
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = [pool.submit(_process_batch, b) for b in batches]
 
-    finally:
-        session.close()
+        for i, future in enumerate(as_completed(futures)):
+            try:
+                fixed = future.result()
+                total_fixed += fixed
+                if i % 5 == 0:
+                    logger.info(f"Progress: {total_fixed}/{total} fixed")
+            except Exception as e:
+                logger.error(f"Batch failed: {e}")
+                errors += 1
+
+    logger.info(f"Done. Fixed: {total_fixed}, Errors: {errors}")
 
 
 def force_reembed(args):
@@ -146,7 +173,9 @@ def force_reembed(args):
             else:
                 processed += cnt
                 if processed % 1000 == 0:
-                    print(f"Progress: {processed}/{total} ({100*processed/total:.1f}%)")
+                    print(
+                        f"Progress: {processed}/{total} ({100 * processed / total:.1f}%)"
+                    )
 
     logger.info(f"Done. Re-embedded {processed} chunks. Errors: {errors}")
 
@@ -158,6 +187,9 @@ def main():
     # fix
     p_fix = subparsers.add_parser("fix", help="Fix NULL embeddings")
     p_fix.add_argument("--batch-size", type=int, default=50)
+    p_fix.add_argument(
+        "--workers", type=int, default=5, help="Number of parallel workers"
+    )
 
     # force
     p_force = subparsers.add_parser("force", help="Force re-embed EVERYTHING")

@@ -30,6 +30,6 @@ try:
 
     print("Updated " + env_path)
 
-except Exception as e:
-    print(f"Exception: {e}")
+except (requests.exceptions.RequestException, OSError, ValueError, KeyError) as e:
+    print(f"Error setting up Sonar auth: {e}")
     exit(1)

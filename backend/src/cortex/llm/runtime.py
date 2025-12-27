@@ -75,15 +75,15 @@ except ImportError:
 
     class RuntimeConfig:
         def __init__(self) -> None:
-            # LLM: MiniMax-M2 (served via vLLM OpenAI-compatible server)
+            # LLM: Default to DO Inference API
             self.llm_model = os.getenv(
-                "LLM_MODEL", os.getenv("KIMI_MODEL", "MiniMaxAI/MiniMax-M2")
+                "LLM_MODEL", os.getenv("OUTLOOKCORTEX_LLM_MODEL", "openai-gpt-oss-120b")
             )
             self.llm_base_url = os.getenv(
                 "LLM_ENDPOINT",
                 os.getenv(
-                    "DO_LLM_BASE_URL",
-                    os.getenv("KIMI_ENDPOINT", "http://localhost:8000/v1"),
+                    "OUTLOOKCORTEX_DO_LLM_BASE_URL",
+                    os.getenv("DO_LLM_BASE_URL", "https://inference.do-ai.run/v1"),
                 ),
             )
             self.llm_api_key = os.getenv(
@@ -271,12 +271,10 @@ class BaseProvider(ABC):
     """Abstract base class for providers."""
 
     @abstractmethod
-    def embed(self, texts: List[str]) -> np.ndarray:
-        ...
+    def embed(self, texts: List[str]) -> np.ndarray: ...
 
     @abstractmethod
-    def complete(self, prompt: str, **kwargs: Any) -> str:
-        ...
+    def complete(self, prompt: str, **kwargs: Any) -> str: ...
 
     @staticmethod
     def normalize_l2(vectors: np.ndarray) -> np.ndarray:
@@ -337,13 +335,13 @@ class VLLMProvider(BaseProvider):
                 if endpoint_cfg and endpoint_cfg.BASE_URL:
                     base_url = str(endpoint_cfg.BASE_URL)
 
-            # 2. Try simple config / env fallback
+            # 2. Try simple config / env fallback (prefer LLM_ENDPOINT for DO Inference)
             if not base_url:
                 base_url = getattr(_config, "llm_base_url", None) or os.getenv(
                     "LLM_ENDPOINT",
                     os.getenv(
-                        "DO_LLM_BASE_URL",
-                        os.getenv("KIMI_ENDPOINT", "http://localhost:8000/v1"),
+                        "OUTLOOKCORTEX_DO_LLM_BASE_URL",
+                        "https://inference.do-ai.run/v1",
                     ),
                 )
 
@@ -372,7 +370,15 @@ class VLLMProvider(BaseProvider):
                     or os.getenv("DO_LLM_API_KEY", os.getenv("KIMI_API_KEY", "EMPTY"))
                 )
 
-            logger.info("Initializing OpenAI client for MiniMax-M2 at %s", base_url)
+            # Resolve actual model name for logging context (used in complete_text but good to know here)
+            # Note: The client is generic, but we log the INTENDED model if known from env.
+            intended_model = os.getenv("LLM_MODEL", "MiniMax-M2 (Default)")
+
+            logger.info(
+                "Initializing OpenAI client for LLM Model '%s' at %s",
+                intended_model,
+                base_url,
+            )
             self._llm_client = OpenAI(base_url=base_url, api_key=api_key)
             return self._llm_client
 
@@ -502,7 +508,8 @@ class VLLMProvider(BaseProvider):
                 # 2. Fallback to simple field / env
                 if not model_name:
                     model_name = getattr(_config, "llm_model", None) or os.getenv(
-                        "KIMI_MODEL", "MiniMaxAI/MiniMax-M2"
+                        "LLM_MODEL",
+                        os.getenv("OUTLOOKCORTEX_LLM_MODEL", "openai-gpt-oss-120b"),
                     )
 
             messages = kwargs.get("messages") or [{"role": "user", "content": prompt}]
@@ -728,9 +735,71 @@ class LLMRuntime:
         else:
             expected_dim = getattr(_config, "embed_dim", 3840)
 
-        vectors = self._execute(
-            "embed_documents", self.primary.embed_documents, documents
-        )
+        # Determine embed mode from config
+        embed_mode = "auto"  # default
+        cpu_fallback_enabled = True
+        if hasattr(_config, "embedding"):
+            embed_cfg = getattr(_config, "embedding")
+            embed_mode = getattr(embed_cfg, "embed_mode", "auto")
+            cpu_fallback_enabled = getattr(embed_cfg, "cpu_fallback_enabled", True)
+
+        vectors = None
+        gpu_error = None
+
+        # CPU-only mode: skip GPU entirely
+        if embed_mode == "cpu":
+            try:
+                from cortex.llm.gguf_provider import GGUFProvider
+
+                gguf = GGUFProvider()
+                if gguf.is_available():
+                    logger.info(
+                        "Using CPU GGUF for document embedding (embed_mode=cpu)"
+                    )
+                    vectors = gguf.embed(documents)
+                else:
+                    raise ProviderError(
+                        "GGUF model not available but embed_mode=cpu requires it"
+                    )
+            except ImportError as e:
+                raise ProviderError(f"GGUF provider not available: {e}") from e
+
+        # GPU-only mode: no fallback
+        elif embed_mode == "gpu":
+            vectors = self._execute(
+                "embed_documents", self.primary.embed_documents, documents
+            )
+
+        # Auto mode: GPU first, CPU fallback if enabled
+        else:  # embed_mode == "auto"
+            try:
+                vectors = self._execute(
+                    "embed_documents", self.primary.embed_documents, documents
+                )
+            except (ProviderError, ConnectionError, TimeoutError) as e:
+                gpu_error = e
+                logger.warning("GPU embedding failed, checking CPU fallback: %s", e)
+
+                if cpu_fallback_enabled:
+                    try:
+                        from cortex.llm.gguf_provider import GGUFProvider
+
+                        gguf = GGUFProvider()
+                        if gguf.is_available():
+                            logger.info(
+                                "Using CPU GGUF fallback for document embedding"
+                            )
+                            vectors = gguf.embed(documents)
+                        else:
+                            logger.warning("GGUF model not available for CPU fallback")
+                    except Exception as fallback_error:
+                        logger.error("CPU fallback also failed: %s", fallback_error)
+
+        # If no vectors from either source, raise original error
+        if vectors is None:
+            if gpu_error:
+                raise gpu_error
+            raise ProviderError("No embedding provider available")
 
         if not isinstance(vectors, np.ndarray):
             vectors = np.asarray(vectors, dtype=np.float32)
@@ -769,7 +838,67 @@ class LLMRuntime:
         else:
             expected_dim = getattr(_config, "embed_dim", 3840)
 
-        vectors = self._execute("embed_queries", self.primary.embed_queries, queries)
+        # Determine embed mode from config
+        embed_mode = "auto"  # default
+        cpu_fallback_enabled = True
+        if hasattr(_config, "embedding"):
+            embed_cfg = getattr(_config, "embedding")
+            embed_mode = getattr(embed_cfg, "embed_mode", "auto")
+            cpu_fallback_enabled = getattr(embed_cfg, "cpu_fallback_enabled", True)
+
+        vectors = None
+        gpu_error = None
+
+        # CPU-only mode: skip GPU entirely
+        if embed_mode == "cpu":
+            try:
+                from cortex.llm.gguf_provider import GGUFProvider
+
+                gguf = GGUFProvider()
+                if gguf.is_available():
+                    logger.info("Using CPU GGUF for query embedding (embed_mode=cpu)")
+                    vectors = gguf.embed_queries(queries)
+                else:
+                    raise ProviderError(
+                        "GGUF model not available but embed_mode=cpu requires it"
+                    )
+            except ImportError as e:
+                raise ProviderError(f"GGUF provider not available: {e}") from e
+
+        # GPU-only mode: no fallback
+        elif embed_mode == "gpu":
+            vectors = self._execute(
+                "embed_queries", self.primary.embed_queries, queries
+            )
+
+        # Auto mode: GPU first, CPU fallback if enabled
+        else:  # embed_mode == "auto"
+            try:
+                vectors = self._execute(
+                    "embed_queries", self.primary.embed_queries, queries
+                )
+            except (ProviderError, ConnectionError, TimeoutError) as e:
+                gpu_error = e
+                logger.warning("GPU embedding failed, checking CPU fallback: %s", e)
+
+                if cpu_fallback_enabled:
+                    try:
+                        from cortex.llm.gguf_provider import GGUFProvider
+
+                        gguf = GGUFProvider()
+                        if gguf.is_available():
+                            logger.info("Using CPU GGUF fallback for query embedding")
+                            vectors = gguf.embed_queries(queries)
+                        else:
+                            logger.warning("GGUF model not available for CPU fallback")
+                    except Exception as fallback_error:
+                        logger.error("CPU fallback also failed: %s", fallback_error)
+
+        # If no vectors from either source, raise original error
+        if vectors is None:
+            if gpu_error:
+                raise gpu_error
+            raise ProviderError("No embedding provider available")
 
         if not isinstance(vectors, np.ndarray):
             vectors = np.asarray(vectors, dtype=np.float32)
@@ -980,6 +1109,12 @@ def _try_load_json(data: Any) -> Dict[str, Any]:
 
     s = str(s).strip()
 
+    # 0. Pre-processing: Remove reasoning traces (e.g., <think>...</think>)
+    import re
+
+    # Remove <think>...</think> (DOTALL to span newlines)
+    s = re.sub(r"<think>.*?</think>", "", s, flags=re.DOTALL | re.IGNORECASE).strip()
+
     # 1. Try direct parse
     try:
         obj = json.loads(s)
@@ -1017,7 +1152,9 @@ def _try_load_json(data: Any) -> Dict[str, Any]:
         except json.JSONDecodeError:
             pass
 
-    raise ValueError(f"Failed to parse JSON from string: {s[:200]}...")
+    raise ValueError(
+        f"Failed to parse JSON from string: {s[:500]!r} (Total len: {len(s)})"
+    )
 
 
 # =============================================================================

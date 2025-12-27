@@ -96,13 +96,23 @@ def _extract_with_tika(path: Path, max_chars: int | None) -> str:
         from tika import parser  # type: ignore
 
         tika_server_url = os.getenv("TIKA_SERVER_URL")
+        # Validate URL to prevent arbitrary SSRF if variable is compromised
         if tika_server_url:
-            os.environ.setdefault("TIKA_SERVER_ENDPOINT", tika_server_url)
-    except Exception:
-        logger.info("Apache Tika not available; skipping %s", path)
+            if not re.match(r"^https?://[a-zA-Z0-9.-]+(:\d+)?(/.*)?$", tika_server_url):
+                logger.warning(
+                    "Invalid TIKA_SERVER_URL format ignored: %s", tika_server_url
+                )
+            else:
+                os.environ.setdefault("TIKA_SERVER_ENDPOINT", tika_server_url)
+    except ImportError:
+        logger.info("Apache Tika not installed; skipping %s", path)
+        return ""
+    except Exception as e:
+        logger.debug("Tika import/setup failed path=%s: %s", path, e)
         return ""
 
     with contextlib.suppress(Exception):
+        # Tika parser can throw various connection errors
         parsed_raw = parser.from_file(str(path))  # type: ignore[attr-defined]
         if isinstance(parsed_raw, dict):
             parsed_dict = cast(dict[str, Any], parsed_raw)
@@ -117,8 +127,11 @@ def _extract_with_unstructured(path: Path, suffix: str, max_chars: int | None) -
     """Extract text using Unstructured's partitioners when installed."""
     try:
         from unstructured.partition.auto import partition  # type: ignore
-    except Exception:
+    except ImportError:
         logger.info("unstructured not installed; skipping %s", path)
+        return ""
+    except Exception as e:
+        logger.warning("Unstructured import failed for %s: %s", path, e)
         return ""
 
     kwargs: dict[str, object] = {
@@ -130,8 +143,13 @@ def _extract_with_unstructured(path: Path, suffix: str, max_chars: int | None) -
 
     try:
         elements = cast(Iterable[Any], partition(**kwargs))
-    except Exception as exc:
+    except (ValueError, OSError, RuntimeError) as exc:
+        # Catch specific known runtime errors from unstructured
         logger.warning("unstructured partition failed for %s: %s", path, exc)
+        return ""
+    except Exception as exc:
+        # Catch-all for other unexpected unstructured errors
+        logger.warning("Unexpected unstructured error for %s: %s", path, exc)
         return ""
 
     parts: list[str] = []
@@ -186,15 +204,18 @@ def _extract_pdf_with_ocr(path: Path, max_chars: int | None) -> str:
         logger.warning("Unable to rasterize PDF %s for OCR: %s", path, exc)
         return ""
 
+    # Try importing once
+    try:
+        import pytesseract  # type: ignore
+
+        pytesseract_module = cast(Any, pytesseract)
+    except Exception:
+        logger.info("pytesseract not installed; skipping PDF OCR")
+        return ""
+
     aggregated: list[str] = []
     for image in images:
         with contextlib.suppress(Exception):
-            # Reuse image OCR helper with in-memory image object
-            try:
-                import pytesseract  # type: ignore
-            except Exception:
-                return ""
-            pytesseract_module = cast(Any, pytesseract)
             text = cast(str, pytesseract_module.image_to_string(image))
             if text and text.strip():
                 aggregated.append(text.strip())

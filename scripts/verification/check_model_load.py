@@ -1,7 +1,10 @@
 import sys
+from pathlib import Path
 
 # Mock paths
-sys.path.append("backend/src")
+backend_src = Path(__file__).resolve().parents[2] / "backend" / "src"
+if backend_src.is_dir():
+    sys.path.insert(0, str(backend_src))
 
 try:
     print("Importing cortex.db.models...")
@@ -9,7 +12,7 @@ try:
 
     print("Chunk model imported.")
     print(f"Embedding column type: {Chunk.embedding.type}")
-except Exception as e:
+except (ImportError, AttributeError) as e:
     print(f"Error loading models: {e}")
     import traceback
 

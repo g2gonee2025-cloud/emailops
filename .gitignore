@@ -14,6 +14,7 @@ pip-delete-this-directory.txt
 coverage.xml
 htmlcov/
 .pytest_cache/
+.mypy_cache/
 
 # Go
 bin/
@@ -27,6 +28,7 @@ dist/
 .idea/
 .vscode/
 *.swp
+*~
 
 # Project Specific
 *.log
@@ -34,19 +36,23 @@ k8s/secrets_live.yaml
 culprit.txt
 k8s_sizes.json
 .env
-.gitignore
+.env.local
+.env.*.local
 
-# Large binaries
+# Large binaries & models
 rclone-*/
 *.exe
 *.dll
 *.so
 *.dylib
+models/*.gguf
+models/.cache/
 
 # Temporary/build artifacts
 *.egg-info/
 build/
 *.whl
+*.orig
 
 # Secrets (redundant but explicit)
 secrets/
@@ -58,4 +64,12 @@ temp_validation_s3_20
 .sonar/
 .scannerwork/
 .sonarlint/
+
+# Bulk review artifacts
+bulk_review*.json
+bulk_review*.log
+per_issue_patches/
+
+# Reference/scratch
 reference code/
+node_modules/

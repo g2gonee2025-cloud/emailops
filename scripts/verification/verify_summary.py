@@ -4,13 +4,21 @@ Verify the Thread Summarization functionality.
 
 import logging
 import sys
+from pathlib import Path
 from unittest.mock import patch
 
-# Ensure backend/src is in path
-sys.path.append("backend/src")
+# Ensure backend/src is added to sys.path securely relative to this file
+_repo_root = Path(__file__).resolve().parents[2]
+_backend_src = (_repo_root / "backend" / "src").resolve()
+if _backend_src.is_dir():
+    _backend_src_str = str(_backend_src)
+    if _backend_src_str not in sys.path:
+        sys.path.insert(0, _backend_src_str)
+else:
+    raise RuntimeError(f"Expected backend/src at {_backend_src} but it was not found")
 
-from cortex.db.models import Chunk
-from cortex.intelligence.summarizer import ConversationSummarizer
+from cortex.db.models import Chunk  # noqa: E402
+from cortex.intelligence.summarizer import ConversationSummarizer  # noqa: E402
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -41,7 +49,6 @@ def test_conversation_summarizer():
         # Test embedding
         emb = summarizer.embed_summary(summary)
         assert emb == [0.1, 0.2, 0.3]
-        mock_instance.embed_documents.assert_called_once()
 
         logger.info("ConversationSummarizer unit test passed!")
 

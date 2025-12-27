@@ -1304,7 +1304,7 @@ def _embed_local(texts: list[str], model: str | None = None) -> np.ndarray:
 # Convenience re-exports from utils so callers can import from one place
 # --------------------------------------------------------------------------------------
 # Re-export commonly used utilities for single import surface
-__all__ = [
+__all__ = (
     # Configuration
     "EmailOpsConfig",
     # Error types

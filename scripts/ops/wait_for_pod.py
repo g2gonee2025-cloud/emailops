@@ -2,18 +2,28 @@ import subprocess
 import sys
 import time
 
+TIMEOUT_SECONDS = 15 * 60  # Timeout in seconds (15 minutes)
 
-def check_pod():
+
+def check_pod() -> bool:
     print("Waiting for embeddings-api to be Ready...")
     start = time.time()
-    while time.time() - start < 900:  # 15 min timeout (large image + model load)
+    while (
+        time.time() - start < TIMEOUT_SECONDS
+    ):  # 15 min timeout (large image + model load)
         try:
             output = subprocess.check_output(
                 ["kubectl", "get", "pods", "-n", "emailops"], text=True
             )
             for line in output.splitlines():
-                if "embeddings-api" in line and "Running" in line:
-                    if "1/1" in line:
+                parts = line.split()
+                if not parts or parts[0] == "NAME":
+                    continue
+                name = parts[0]
+                ready = parts[1] if len(parts) > 1 else ""
+                status = parts[2] if len(parts) > 2 else ""
+                if name.startswith("embeddings-api") and status == "Running":
+                    if ready == "1/1":
                         print(f"Pod is Ready: {line}")
                         return True
                     else:

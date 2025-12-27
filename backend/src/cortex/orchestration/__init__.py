@@ -1,6 +1,4 @@
-"""
-Orchestration module for Cortex.
-
+"""Orchestration module for Cortex.
 Implements §10 of the Canonical Blueprint.
 """
 
@@ -9,7 +7,10 @@ from cortex.orchestration.graphs import (
     graph_draft_email,
     graph_summarize_thread,
 )
-from cortex.orchestration.nodes import (  # Helper tools (§10.2); Answer graph nodes; Draft graph nodes; Summarize graph nodes
+
+# Helper tools (§10.2); Answer graph nodes
+# Draft graph nodes; Summarize graph nodes
+from cortex.orchestration.nodes import (
     extract_document_mentions,
     node_assemble_context,
     node_audit_draft,

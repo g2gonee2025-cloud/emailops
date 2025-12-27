@@ -114,14 +114,17 @@ def _parse_iso_date(s: str) -> Optional[datetime]:
         return None
     try:
         # Handle Z suffix
-        return datetime.fromisoformat(s.replace("Z", "+00:00")).astimezone(UTC)
-    except Exception:
+        return datetime.fromisoformat(s.replace("Z", "+00:00")).astimezone(timezone.utc)
+    except ValueError:
         try:
             # Fallback: try email utils
             from email.utils import parsedate_to_datetime
 
-            return parsedate_to_datetime(s).astimezone(UTC)
-        except Exception:
+            dt = parsedate_to_datetime(s)
+            if dt.tzinfo is None:
+                return dt.replace(tzinfo=timezone.utc)
+            return dt.astimezone(timezone.utc)
+        except (ValueError, TypeError):
             return None
 
 

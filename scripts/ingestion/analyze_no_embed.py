@@ -2,13 +2,18 @@ import os
 
 import psycopg2
 
-db_url = os.environ["DB_URL"]
+db_url = os.environ.get("DB_URL")
+if not db_url:
+    raise RuntimeError(
+        "DB_URL environment variable is not set. Please set it to your Postgres connection URI."
+    )
 conn = psycopg2.connect(db_url)
 cur = conn.cursor()
 
 # 1. Broad check: Look at all data from "deep-dive-tenant"
 # (Since we used that tenant_id in verify_deep_dive.py)
-tenant_id = "deep-dive-tenant"
+TENANT_ID = "deep-dive-tenant"
+tenant_id = TENANT_ID
 
 print(f"--- Analysis for Tenant: {tenant_id} ---")
 

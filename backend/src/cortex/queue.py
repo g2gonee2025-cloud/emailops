@@ -27,7 +27,6 @@ logger = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 
 
-@dataclass
 class JobStatus:
     """Represents the status of a job."""
 
@@ -221,6 +220,9 @@ class InMemoryQueue(JobQueue):
                     elif job:
                         # Put back if not matching type
                         self._queue.put((-job.priority, job.created_at, job_id))
+                        time.sleep(
+                            0.1
+                        )  # Prevent tight loop processing only non-matching jobs
             except Empty:
                 time.sleep(0.1)
         return None
@@ -356,10 +358,10 @@ class RedisStreamsQueue(JobQueue):
                     )
                     logger.debug(f"Created consumer group for stream: {stream}")
                 except Exception as e:
-                    if "BUSYGROUP" not in str(e):
-                        logger.warning(
-                            f"Failed to create consumer group for {stream}: {e}"
-                        )
+                    # Ignore BUSYGROUP errors (group already exists)
+                    if "BUSYGROUP" in str(e):
+                        continue
+                    logger.warning(f"Failed to create consumer group for {stream}: {e}")
 
     def enqueue(self, job_type: str, payload: Dict[str, Any], priority: int = 0) -> str:
         """Enqueue a job to Redis Streams."""

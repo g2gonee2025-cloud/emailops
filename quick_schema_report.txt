@@ -1,0 +1,8 @@
+INFO:quick_schema:Fetching 5 random conversations...
+INFO:cortex.llm.runtime:Custom GPU scaler disabled - using DO native autoscaler
+INFO:quick_schema:Extracting graphs sequentially...
+INFO:quick_schema:Processing text 1/5 (1015 chars)
+INFO:cortex.intelligence.graph:Extracting graph from 1015 chars (Chunks: 1)
+INFO:cortex.llm.runtime:Initializing OpenAI client for LLM Model 'openai-gpt-oss-120b' at https://inference.do-ai.run/v1
+INFO:httpx:HTTP Request: POST https://inference.do-ai.run/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:quick_schema:Processing text 2/5 (41890 chars)

@@ -10,8 +10,10 @@ import json
 import logging
 import re
 import uuid
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Type
 
+from cortex.config.loader import EmailOpsConfig
 from cortex.domain_models.facts_ledger import CriticReview, FactsLedger
 from cortex.domain_models.rag import (
     Answer,
@@ -48,7 +50,7 @@ from cortex.retrieval.query_classifier import (
 from cortex.retrieval.results import SearchResults
 from cortex.safety.guardrails_client import validate_with_repair
 from cortex.safety.policy_enforcer import check_action
-from cortex.security.injection_defense import strip_injection_patterns
+from cortex.security.validators import sanitize_retrieved_content, validate_file_result
 from pydantic import BaseModel, Field, ValidationError
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import aliased
@@ -154,12 +156,23 @@ def extract_document_mentions(text: str) -> List[str]:
     # Pattern 2: Quoted file references
     quoted_pattern = re.compile(r'["\']([A-Z][A-Za-z0-9\s_\-]{2,30})["\']')
     for match in quoted_pattern.finditer(text):
-        ref = match.group(1).strip()
-        lower_ref = ref.lower()
-        # Only include if it looks like a document name (has capital or underscore)
-        if lower_ref not in seen and ("_" in ref or any(c.isupper() for c in ref)):
-            seen.add(lower_ref)
-            mentions.append(ref)
+        try:
+            ref = match.group(1).strip()
+            lower_ref = ref.lower()
+            # Only include if it looks like a document name (has capital or underscore)
+            if lower_ref not in seen and ("_" in ref or any(c.isupper() for c in ref)):
+                seen.add(lower_ref)
+                mentions.append(ref)
+        except (ValueError, KeyError, TypeError) as e:
+            logger.warning(
+                "Skipping malformed quoted reference during extraction: %s",
+                e,
+                exc_info=True,
+            )
+            continue
+        except Exception:
+            logger.exception("Unexpected error while extracting quoted references")
+            raise
 
     # Pattern 3: Explicit attachment references
     _extract_patterns(
@@ -231,6 +244,128 @@ def _extract_entity_mentions(text: str) -> List[str]:
     ]
 
 
+def _safe_stat_mb(path: Path) -> float:
+    """Safely get file size in MB."""
+    try:
+        return path.stat().st_size / (1024 * 1024) if path.exists() else 0.0
+    except Exception:
+        return 0.0
+
+
+def _select_attachments_from_mentions(
+    context_snippets: List[Dict[str, Any]],
+    mentions: List[str],
+    *,
+    max_attachments: int = 3,
+) -> List[Dict[str, Any]]:
+    """Select attachments that were explicitly mentioned/extracted from text."""
+    cfg = EmailOpsConfig.load()
+    allowed_patterns = cfg.file_patterns.allowed_file_patterns
+    # Load limits from config (blueprint §11.2)
+    # Default to 25MB if not configured
+    attach_max_mb = float(cfg.security.max_attachment_size_mb or 25.0)
+    limit = max_attachments  # use arg or config default could go here
+
+    if not mentions:
+        return []
+
+    wanted = {m.strip().lower() for m in mentions if m and isinstance(m, str)}
+    out: List[Dict[str, Any]] = []
+
+    for c in context_snippets or []:
+        try:
+            # Check doc_type if available (from search results)
+            if str(c.get("doc_type") or "").lower() not in ("attachment", "file"):
+                # Also check if it looks like a file path
+                path_str = str(c.get("path") or "")
+                if not path_str or not Path(path_str).suffix:
+                    continue
+
+            name = str(
+                c.get("attachment_name") or Path(str(c.get("path") or "")).name
+            ).lower()
+
+            # Check if name contains any wanted mention
+            if name and any(w in name for w in wanted):
+                p = Path(str(c.get("path") or ""))
+                # Security check
+                result = validate_file_result(
+                    str(p), must_exist=True, allow_parent_traversal=False
+                )
+                if not result.is_ok():
+                    continue
+
+                if _safe_stat_mb(p) > attach_max_mb:
+                    continue
+
+                if not any(p.match(pattern) for pattern in allowed_patterns):
+                    continue
+
+                out.append({"path": str(p), "filename": p.name})
+                if len(out) >= int(limit):
+                    break
+        except Exception:
+            continue
+    return out
+
+
+def _select_all_available_attachments(
+    context_snippets: List[Dict[str, Any]], *, max_attachments: int = 3
+) -> List[Dict[str, Any]]:
+    """Select any valid attachments found in context (heuristic fallback)."""
+    cfg = EmailOpsConfig.load()
+    allowed_patterns = cfg.file_patterns.allowed_file_patterns
+    attach_max_mb = float(cfg.security.max_attachment_size_mb or 25.0)
+
+    selected: List[Dict[str, Any]] = []
+
+    # Track seen paths to avoid dupes
+    seen_paths = set()
+
+    for c in context_snippets or []:
+        try:
+            path_str = str(c.get("path") or "")
+            if not path_str:
+                continue
+
+            p = Path(path_str)
+            if not p.suffix:  # Must have extension
+                continue
+
+            if str(p) in seen_paths:
+                continue
+
+            # Security check
+            result = validate_file_result(
+                str(p), must_exist=True, allow_parent_traversal=False
+            )
+            if not result.is_ok():
+                continue
+
+            if not any(p.match(pattern) for pattern in allowed_patterns):
+                continue
+
+            if _safe_stat_mb(p) > attach_max_mb:
+                continue
+
+            selected.append({"path": str(p), "filename": p.name})
+            seen_paths.add(str(p))
+
+            if len(selected) >= int(max_attachments):
+                break
+        except Exception:
+            continue
+    return selected
+
+
+def _safe_stat_mb(path: Path) -> float:
+    """Safely get file size in MB."""
+    try:
+        return path.stat().st_size / (1024 * 1024) if path.exists() else 0.0
+    except Exception:
+        return 0.0
+
+
 @trace_operation("tool_email_get_thread")
 def tool_email_get_thread(
     thread_id: uuid.UUID | str,
@@ -242,18 +377,18 @@ def tool_email_get_thread(
 
     Blueprint §10.2:
     * tool_email_get_thread(thread_id: UUID, tenant_id: str) -> ThreadContext
-    * Retrieves all messages for a thread
+    * Retrieves conversation and builds ThreadContext from messages JSONB
     * Builds ThreadContext with participants and messages
 
     Args:
-        thread_id: UUID of the thread to fetch
+        thread_id: UUID of the conversation to fetch
         tenant_id: Tenant ID for RLS
         include_attachments: Whether to include attachment info
 
     Returns:
         ThreadContext with full thread data, or None if not found
     """
-    from cortex.db.models import Message, Thread
+    from cortex.db.models import Conversation
     from cortex.db.session import SessionLocal
 
     # Ensure thread_id is a UUID
@@ -270,88 +405,93 @@ def tool_email_get_thread(
 
             set_session_tenant(session, tenant_id)
 
-            # Fetch thread
-            thread = (
-                session.query(Thread)
-                .filter(Thread.thread_id == thread_id, Thread.tenant_id == tenant_id)
+            # Fetch conversation (which contains messages as JSONB)
+            conversation = (
+                session.query(Conversation)
+                .filter(
+                    Conversation.conversation_id == thread_id,
+                    Conversation.tenant_id == tenant_id,
+                )
                 .first()
             )
 
-            if not thread:
-                logger.warning(f"Thread not found: {thread_id}")
+            if not conversation:
+                logger.warning(f"Conversation not found: {thread_id}")
                 return None
 
-            # Fetch messages ordered by sent_at
-            messages_query = (
-                session.query(Message)
-                .filter(Message.thread_id == thread_id, Message.tenant_id == tenant_id)
-                .order_by(Message.sent_at.asc())
-            )
-
-            messages = messages_query.all()
-
-            if not messages:
-                logger.warning(f"No messages found for thread: {thread_id}")
-                return None
-
-            # Build participants set
+            # Build participants from conversation.participants JSONB
             participants_dict: Dict[str, ThreadParticipant] = {}
+            if conversation.participants:
+                for p in conversation.participants:
+                    email = p.get("smtp", p.get("email", ""))
+                    if email and email not in participants_dict:
+                        participants_dict[email] = ThreadParticipant(
+                            email=email,
+                            name=p.get("name"),
+                            role=p.get("role", "participant"),
+                        )
 
-            # Build thread messages
+            # Build thread messages from conversation.messages JSONB
             thread_messages: List[ThreadMessage] = []
+            if conversation.messages:
+                for msg in conversation.messages:
+                    msg_id = msg.get("message_id", str(uuid.uuid4()))
+                    from_addr = msg.get("from", msg.get("sender", ""))
+                    to_addrs = msg.get("to", [])
+                    cc_addrs = msg.get("cc", [])
+                    subject = msg.get("subject", conversation.subject or "")
+                    body = msg.get("body", msg.get("text", ""))
+                    sent_at = msg.get("sent_at", msg.get("date"))
 
-            for msg in messages:
-                # Track participants
-                if msg.from_addr and msg.from_addr not in participants_dict:
-                    participants_dict[msg.from_addr] = ThreadParticipant(
-                        email=msg.from_addr,
-                        name=None,  # Could parse from headers if available
-                        role="sender",
+                    # Parse sent_at if string
+                    if isinstance(sent_at, str):
+                        try:
+                            from datetime import datetime
+
+                            sent_at = datetime.fromisoformat(
+                                sent_at.replace("Z", "+00:00")
+                            )
+                        except Exception:
+                            sent_at = None
+
+                    thread_messages.append(
+                        ThreadMessage(
+                            message_id=msg_id,
+                            sent_at=sent_at,
+                            recv_at=sent_at,  # Use same as sent_at
+                            from_addr=from_addr,
+                            to_addrs=(
+                                to_addrs if isinstance(to_addrs, list) else [to_addrs]
+                            ),
+                            cc_addrs=(
+                                cc_addrs if isinstance(cc_addrs, list) else [cc_addrs]
+                            ),
+                            subject=subject,
+                            body_markdown=body,
+                            is_inbound=False,  # Would need more logic to determine
+                        )
                     )
 
-                for addr in msg.to_addrs or []:
-                    if addr not in participants_dict:
-                        participants_dict[addr] = ThreadParticipant(
-                            email=addr, name=None, role="recipient"
-                        )
-
-                for addr in msg.cc_addrs or []:
-                    if addr not in participants_dict:
-                        participants_dict[addr] = ThreadParticipant(
-                            email=addr, name=None, role="cc"
-                        )
-
-                # Determine if inbound (not from our domain)
-                # Simple heuristic: first message sender is "us", replies are "them"
-                is_inbound = False
-                if thread_messages:
-                    # If sender differs from first message sender, it's inbound
-                    first_sender = thread_messages[0].from_addr
-                    is_inbound = msg.from_addr != first_sender
-
-                # Build body markdown from plain text
-                body_md = msg.body_plain or ""
-                if not body_md and msg.body_html:
-                    # Fallback: strip HTML tags (basic)
-                    body_md = re.sub(r"<[^>]+>", "", msg.body_html)
-
+            # If no structured messages, create one from summary or chunks
+            if not thread_messages:
+                # Fallback: create a placeholder message from summary
                 thread_messages.append(
                     ThreadMessage(
-                        message_id=msg.message_id,
-                        sent_at=msg.sent_at,
-                        recv_at=msg.recv_at,
-                        from_addr=msg.from_addr,
-                        to_addrs=msg.to_addrs or [],
-                        cc_addrs=msg.cc_addrs or [],
-                        subject=msg.subject or "",
-                        body_markdown=body_md,
-                        is_inbound=is_inbound,
+                        message_id=str(thread_id),
+                        sent_at=conversation.latest_date,
+                        recv_at=conversation.latest_date,
+                        from_addr="",
+                        to_addrs=[],
+                        cc_addrs=[],
+                        subject=conversation.subject or "",
+                        body_markdown=conversation.summary_text or "",
+                        is_inbound=False,
                     )
                 )
 
             return ThreadContext(
                 thread_id=thread_id,
-                subject=thread.original_subject or thread.subject_norm or "",
+                subject=conversation.subject or "",
                 participants=list(participants_dict.values()),
                 messages=thread_messages,
             )
@@ -462,7 +602,7 @@ def node_assemble_context(state: Dict[str, Any]) -> Dict[str, Any]:
         text = "\n".join(item.highlights)
 
         # 2. Proactive injection defense
-        safe_text = strip_injection_patterns(text)
+        safe_text = sanitize_retrieved_content(text)
 
         # Format with metadata for citation
         # We use a simple index or ID reference for the LLM
@@ -571,20 +711,20 @@ def _build_graph_context_lines(nodes: List[Any], edges: List[Any]) -> List[str]:
     for node in nodes:
         if node.description:
             context_lines.append(
-                strip_injection_patterns(
+                sanitize_retrieved_content(
                     f"Entity: {node.name} ({node.type}) - {node.description}"
                 )
             )
         else:
             context_lines.append(
-                strip_injection_patterns(f"Entity: {node.name} ({node.type})")
+                sanitize_retrieved_content(f"Entity: {node.name} ({node.type})")
             )
 
     for edge, source, target in edges:
         relation = edge.relation.replace("_", " ").lower()
         description = f" {edge.description}" if edge.description else ""
         fact = f"{source.name} {relation} {target.name}.{description}"
-        context_lines.append(strip_injection_patterns(fact.strip()))
+        context_lines.append(sanitize_retrieved_content(fact.strip()))
 
     return context_lines
 
@@ -739,8 +879,15 @@ def node_draft_email_initial(state: Dict[str, Any]) -> Dict[str, Any]:
     Blueprint §10.3:
     * Draft based on context and query
     """
+    from cortex.config.loader import get_config
+
     query = state.get("explicit_query", "")
     context = state.get("assembled_context", "")
+
+    # Get sender info from config
+    config = get_config()
+    sender_name = config.email.sender_locked_name or "User"
+    sender_email = config.email.sender_locked_email or "user@example.com"
 
     try:
         prompt = get_prompt(
@@ -749,6 +896,8 @@ def node_draft_email_initial(state: Dict[str, Any]) -> Dict[str, Any]:
             thread_context=state.get("thread_context", ""),
             query=query,
             context=context or "[no retrieved context]",
+            sender_name=sender_name,
+            sender_email=sender_email,
             to=", ".join(state.get("to") or []),
             cc=", ".join(state.get("cc") or []),
             subject=state.get("subject") or "",
@@ -872,17 +1021,76 @@ def node_improve_draft(state: Dict[str, Any]) -> Dict[str, Any]:
         return {"error": f"Improvement failed: {str(e)}"}
 
 
+def node_select_attachments(state: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Select attachments to include in the email.
+
+    P0-CRITICAL Implementation:
+    1. Check if user explicitly asked for attachments
+    2. Check if draft mentions attachments
+    3. Validate files exist and are safe
+    """
+    draft = state.get("draft")
+    if not draft or not isinstance(draft, EmailDraft):
+        return {}
+
+    # Gather context (snippets from retrieval)
+    # The 'retrieval_results' in state has 'results' list, needing normalization
+    retrieval_results = state.get("retrieval_results")
+    snippets = []
+    if retrieval_results and retrieval_results.results:
+        for r in retrieval_results.results:
+            snippets.append(
+                {
+                    "path": r.metadata.get("path"),
+                    "attachment_name": r.metadata.get("filename"),
+                    "doc_type": r.metadata.get("type", "unknown"),
+                    "id": r.chunk_id,
+                }
+            )
+
+    selected: List[Dict[str, str]] = []
+
+    # Strategy 1: Explicit mentions in the generated draft body
+    body_mentions = extract_document_mentions(draft.body_markdown)
+    if body_mentions:
+        selected.extend(_select_attachments_from_mentions(snippets, body_mentions))
+
+    # Strategy 2: If user explicitly asked in query "attach the report", etc.
+    # (We rely on retrieval having found it and put it in snippets)
+    query = state.get("query", "")
+    query_mentions = extract_document_mentions(query)
+    if query_mentions:
+        # Avoid duplicates
+        current_names = {s["filename"] for s in selected}
+        from_query = _select_attachments_from_mentions(snippets, query_mentions)
+        for f in from_query:
+            if f["filename"] not in current_names:
+                selected.append(f)
+
+    # Strategy 3: Heuristic - if query has "attach" but no specific file named,
+    # grab most relevant attachment from context
+    if "attach" in query.lower() and not selected:
+        selected.extend(_select_all_available_attachments(snippets, max_attachments=1))
+
+    # Update draft in state
+    draft.attachments = selected
+    return {"draft": draft}
+
+
 def node_audit_draft(state: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Audit draft for policy compliance.
+    Audit draft for policy compliance and quality rubric.
 
     Blueprint §10.3:
-    * Final check before returning
+    * Policy Check (Blocker)
+    * Quality/Safety Rubric (Scoring)
     """
     draft = state.get("draft")
     if not draft:
         return {}
 
+    # 1. Hard Policy Check
     recipients = list(dict.fromkeys((draft.to or []) + (draft.cc or [])))
 
     metadata = {
@@ -894,17 +1102,51 @@ def node_audit_draft(state: Dict[str, Any]) -> Dict[str, Any]:
     }
 
     decision = check_action("draft_email", metadata)
-    decision_payload = decision.model_dump()
 
     if decision.decision == "deny":
         return {
             "error": f"Draft rejected by policy: {decision.reason}",
-            "policy_decision": decision_payload,
+            "policy_decision": decision.model_dump(),
         }
+
+    # 2. LLM Rubric Audit
+    try:
+        prompt = get_prompt(
+            "DRAFT_EMAIL_AUDIT",
+            subject=draft.subject,
+            body=draft.body_markdown,
+            context=state.get("assembled_context", ""),
+        )
+
+        scores = _complete_with_guardrails(
+            prompt,
+            DraftValidationScores,
+            state.get("correlation_id"),
+        )
+
+        # Merge scores into draft
+        draft.val_scores = scores
+
+        # If safety score is low, we might want to flag it even if policy passed
+        if scores.safety < 0.7:
+            logger.warning(f"Draft safety score low: {scores.safety}")
+
+    except Exception as e:
+        logger.error(f"Audit LLM failed: {e}")
+        # Robustness: Fallback to neutral scores so pipeline continues
+        draft.val_scores = DraftValidationScores(
+            factuality=0.5,
+            citation=0.5,
+            tone=0.5,
+            safety=0.5,
+            overall=0.5,
+            feedback=f"Audit service unavailable (Error: {str(e)}). Validation skipped.",
+        )
+        # Non-blocking failure for rubric, but policy passed
 
     result = {
         "draft": draft,
-        "policy_decision": decision_payload,
+        "policy_decision": decision.model_dump(),
     }
 
     if decision.decision == "require_approval":

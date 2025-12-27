@@ -17,6 +17,13 @@ COLORS = {
 
 def colorize(text: str, color: str) -> str:
     """Apply ANSI color to text if terminal supports it."""
-    if not sys.stdout.isatty():
+    # Null-safety: normalize None to empty string
+    if text is None:
+        text = ""
+    # P2 Fix: Guard against None stdout or missing isatty
+    if not hasattr(sys.stdout, "isatty") or not sys.stdout.isatty():
         return text
-    return f"{COLORS.get(color, '')}{text}{COLORS['reset']}"
+    color_code = COLORS.get(color)
+    if not color_code:  # P2 Fix: Don't add reset for unknown colors
+        return text
+    return f"{color_code}{text}{COLORS['reset']}"

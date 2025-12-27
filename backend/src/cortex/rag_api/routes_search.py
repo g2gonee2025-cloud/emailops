@@ -70,8 +70,12 @@ async def search_endpoint(
                 risk_level="low",
                 correlation_id=correlation_id,
                 metadata={
-                    "query": request.query,
-                    "result_count": len(results.results),
+                    "query_hash": hashlib.sha256(
+                        request.query.encode()
+                    ).hexdigest(),  # PII mask
+                    "result_count": (
+                        len(results.results) if hasattr(results, "results") else 0
+                    ),
                     "query_time_ms": query_time_ms,
                 },
             )
@@ -94,6 +98,7 @@ async def search_endpoint(
         raise HTTPException(status_code=400, detail=e.to_dict())
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
         logger.exception("Search failed")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Do not leak internal exception details to client
+        raise HTTPException(status_code=500, detail="Internal Server Error")

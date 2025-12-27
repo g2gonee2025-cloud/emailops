@@ -653,7 +653,7 @@ def thread_emails_from_files(paths: list[Path]) -> list[tuple[ParsedEmail, Threa
     return threader.thread_emails(emails)
 
 
-__all__ = [
+__all__ = (
     "ParsedEmail",
     "ThreadInfo",
     "EmailThread",
@@ -662,4 +662,4 @@ __all__ = [
     "parse_eml_file",
     "parse_mbox",
     "thread_emails_from_files",
-]
+)

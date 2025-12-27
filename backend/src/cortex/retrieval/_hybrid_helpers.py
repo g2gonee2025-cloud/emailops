@@ -2,13 +2,21 @@ import logging
 from typing import Any, List, Optional
 
 import numpy as np
-from cortex.embeddings.client import EmbeddingsClient
+from cortex.llm.runtime import LLMRuntime
 from cortex.retrieval.cache import cache_query_embedding, get_cached_query_embedding
 from cortex.retrieval.filter_resolution import _resolve_filter_conversation_ids
 from cortex.retrieval.results import SearchResultItem
 
 logger = logging.getLogger(__name__)
-_embedding_client = EmbeddingsClient()
+_llm_runtime: Optional[LLMRuntime] = None
+
+
+def _get_runtime() -> LLMRuntime:
+    """Get or create LLMRuntime singleton."""
+    global _llm_runtime
+    if _llm_runtime is None:
+        _llm_runtime = LLMRuntime()
+    return _llm_runtime
 
 
 def _get_query_embedding(query: str, config: Any) -> Optional[List[float]]:
@@ -20,8 +28,11 @@ def _get_query_embedding(query: str, config: Any) -> Optional[List[float]]:
             logger.debug("Using cached query embedding for: %s", query[:50])
             return cached.tolist()
 
-        # Call client
-        embedding = _embedding_client.embed(query)
+        # Use LLMRuntime which has CPU fallback logic
+        runtime = _get_runtime()
+        embedding_array = runtime.embed_queries([query])
+        embedding = embedding_array[0].tolist()
+
         # Cache the embedding
         cache_query_embedding(
             query,

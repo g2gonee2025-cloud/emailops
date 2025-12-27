@@ -10,9 +10,9 @@ sys.path.append("backend/src")
 
 from cortex.intelligence.query_expansion import QueryExpander, expand_for_fts
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Configure module logger without altering global logging configuration
 logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 def test_query_expansion_live():

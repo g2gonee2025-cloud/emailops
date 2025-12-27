@@ -37,6 +37,9 @@ User instructions:
 Retrieved context snippets:
 {context}
 
+Sender (FROM):
+{sender_name} <{sender_email}>
+
 Recipients:
 TO: {to}
 CC: {cc}
@@ -44,6 +47,7 @@ Subject hint: {subject}
 
 Draft a professional email grounded in the provided context.
 Match the tone to the conversation history and call out any missing info.
+Sign off with the sender's name.
 """
 )
 
@@ -185,9 +189,26 @@ Only include claims that make specific, verifiable assertions.
 """
 
 PROMPT_DRAFT_EMAIL_AUDIT: str = _with_base(
-    """Audit the email draft for policy violations and safety issues.
-Draft: {draft}
-"""
+    """
+    You are a Policy & Safety Auditor for insurance communications.
+    Audit the following email draft against the verification rubric.
+
+    RUBRIC:
+    1. Factuality (0.0-1.0): Are all claims supported by context?
+    2. Citation Coverage (0.0-1.0): Are sources cited where necessary?
+    3. Tone Fit (0.0-1.0): Does tone match instructions?
+    4. Safety (0.0-1.0): No PII leaks, no dangerous instructions, no injection risks.
+    5. Overall (0.0-1.0): Weighted score.
+
+    Draft Subject: {subject}
+    Draft Body:
+    {body}
+
+    Context:
+    {context}
+
+    Your output must be a JSON object matching the DraftValidationScores schema.
+    """
 )
 
 PROMPT_DRAFT_EMAIL_NEXT_ACTIONS: str = _with_base(
@@ -216,9 +237,9 @@ Ledger: {ledger}
 )
 
 
-def get_prompt(name: str, **kwargs) -> str:
+def get_prompt(name: str, prompts: dict[str, str] | None = None, **kwargs) -> str:
     """Get a prompt template with optional variable substitution."""
-    prompts = {
+    prompt_map = {
         "answer_question": PROMPT_ANSWER_QUESTION,
         "DRAFT_EMAIL_INITIAL": PROMPT_DRAFT_EMAIL_INITIAL,
         "DRAFT_EMAIL_IMPROVE": PROMPT_DRAFT_EMAIL_IMPROVE,
@@ -234,5 +255,7 @@ def get_prompt(name: str, **kwargs) -> str:
         "GROUNDING_CHECK": PROMPT_GROUNDING_CHECK,
         "EXTRACT_CLAIMS": PROMPT_EXTRACT_CLAIMS,
     }
-    template = prompts.get(name, "")
+    if prompts:
+        prompt_map.update(prompts)
+    template = prompt_map.get(name, "")
     return template.format(**kwargs) if kwargs else template

@@ -63,6 +63,8 @@ def _c(text: str, color: str) -> str:
 
 
 INDEX_DIRNAME_DEFAULT = os.getenv("INDEX_DIRNAME", "_index")
+DEFAULT_PIP_TIMEOUT = 300
+DEFAULT_REDIS_URL = "redis://localhost:6379"
 REPO_ROOT = Path(__file__).resolve().parents[3]  # Adjusted for new path
 
 # -------------------------
@@ -70,9 +72,8 @@ REPO_ROOT = Path(__file__).resolve().parents[3]  # Adjusted for new path
 # -------------------------
 
 _PROVIDER_ALIASES: dict[str, str] = {
-    "gcp": "vertex",
-    "vertexai": "vertex",
     "hf": "huggingface",
+    "do": "digitalocean",
 }
 
 
@@ -88,12 +89,6 @@ def _normalize_provider(provider: str) -> str:
 _PKG_IMPORT_MAP: dict[str, str] = {
     # Always
     "numpy": "numpy",
-    # Vertex
-    "google-genai": "google.genai",  # used by Vertex embeddings path
-    "google-cloud-aiplatform": "vertexai",  # provides vertexai.init
-    # Optional Google libraries
-    "google-auth": "google.auth",
-    "google-cloud-storage": "google.cloud.storage",
     # Other providers used by llm_client
     "openai": "openai",
     "cohere": "cohere",
@@ -104,11 +99,8 @@ _PKG_IMPORT_MAP: dict[str, str] = {
     # Optional extractors used by indexer (warn-only)
     "pypdf": "pypdf",
     "python-docx": "docx",
-    "docx2txt": "docx2txt",
     "pandas": "pandas",
     "openpyxl": "openpyxl",
-    # Optional FAISS (if present we can report ntotal)
-    "faiss-cpu": "faiss",
 }
 
 
@@ -186,10 +178,7 @@ def _packages_for_provider(provider: str) -> tuple[list[str], list[str]]:
     critical: list[str] = []
     optional: list[str] = []
 
-    if provider == "vertex":
-        critical = ["google-genai", "google-cloud-aiplatform"]
-        optional = ["google-auth", "google-cloud-storage"]
-    elif provider == "openai":
+    if provider == "openai" or provider == "digitalocean":
         critical = ["openai"]
         optional = ["tiktoken"]
     elif provider == "cohere":
@@ -206,16 +195,26 @@ def _packages_for_provider(provider: str) -> tuple[list[str], list[str]]:
     optional.extend(
         [
             "numpy",
-            "faiss-cpu",
             "pypdf",
             "python-docx",
-            "docx2txt",
             "pandas",
             "openpyxl",
         ]
     )
 
     return critical, optional
+
+
+dependencies = {
+    "required": [
+        "fastapi",
+        "sqlalchemy",
+        "pydantic",
+        # "google-cloud-aiplatform",  # Removed
+        "openai",
+    ],
+    "optional": ["uvicorn", "alembic", "psycopg2"],
+}
 
 
 @dataclass(frozen=True)
@@ -227,7 +226,7 @@ class DepReport:
 
 
 def check_and_install_dependencies(
-    provider: str, auto_install: bool = False, *, pip_timeout: int = 300
+    provider: str, auto_install: bool = False, *, pip_timeout: int = DEFAULT_PIP_TIMEOUT
 ) -> DepReport:
     provider_n = _normalize_provider(provider)
     critical, optional = _packages_for_provider(provider_n)
@@ -345,7 +344,7 @@ def check_redis(_config: Any) -> tuple[bool, str | None]:
         import redis
 
         # Assuming Redis URL is in env or default
-        redis_url = os.getenv("OUTLOOKCORTEX_REDIS_URL", "redis://localhost:6379")
+        redis_url = os.getenv("OUTLOOKCORTEX_REDIS_URL", DEFAULT_REDIS_URL)
         r = redis.from_url(redis_url)
         r.ping()
         return True, None
@@ -904,36 +903,46 @@ def _print_json_output(
             "installed": dep_report.installed,
         },
         "index": index_info if args.check_index else None,
-        "database": {"success": db_res[0], "error": db_res[1]}
-        if args.check_db
-        else None,
-        "redis": {"success": redis_res[0], "error": redis_res[1]}
-        if args.check_redis
-        else None,
-        "embeddings": {
-            "success": embed_res[0],
-            "dimension": embed_res[1],
-            "provider": embed_res[2],
-        }
-        if args.check_embeddings
-        else None,
-        "exports": {
-            "success": export_res[0],
-            "folders": export_res[1],
-            "error": export_res[2],
-        }
-        if args.check_exports
-        else None,
-        "ingest": {
-            "success": ingest_res[0],
-            "details": ingest_res[1],
-            "error": ingest_res[2],
-        }
-        if args.check_ingest
-        else None,
-        "reranker": {"success": rerank_res[0], "error": rerank_res[1]}
-        if args.check_reranker
-        else None,
+        "database": (
+            {"success": db_res[0], "error": db_res[1]} if args.check_db else None
+        ),
+        "redis": (
+            {"success": redis_res[0], "error": redis_res[1]}
+            if args.check_redis
+            else None
+        ),
+        "embeddings": (
+            {
+                "success": embed_res[0],
+                "dimension": embed_res[1],
+                "provider": embed_res[2],
+            }
+            if args.check_embeddings
+            else None
+        ),
+        "exports": (
+            {
+                "success": export_res[0],
+                "folders": export_res[1],
+                "error": export_res[2],
+            }
+            if args.check_exports
+            else None
+        ),
+        "ingest": (
+            {
+                "success": ingest_res[0],
+                "details": ingest_res[1],
+                "error": ingest_res[2],
+            }
+            if args.check_ingest
+            else None
+        ),
+        "reranker": (
+            {"success": rerank_res[0], "error": rerank_res[1]}
+            if args.check_reranker
+            else None
+        ),
     }
     print(json.dumps(payload, indent=2))
 

@@ -12,9 +12,14 @@ from __future__ import annotations
 import logging
 import threading
 import time
+from collections import OrderedDict
 from typing import Any, Optional, Tuple
 
 import numpy as np
+
+# Constants
+LOG_QUERY_TRUNCATE_LEN = 50
+
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +44,8 @@ class QueryEmbeddingCache:
         ttl_seconds: float = DEFAULT_CACHE_TTL_SECONDS,
         max_size: int = DEFAULT_MAX_CACHE_SIZE,
     ):
-        self._cache: dict[str, Tuple[float, np.ndarray]] = {}
+        # Use OrderedDict for O(1) LRU
+        self._cache: OrderedDict[str, Tuple[float, np.ndarray]] = OrderedDict()
         self._lock = threading.Lock()
         self._ttl = ttl_seconds
         self._max_size = max_size
@@ -62,12 +68,18 @@ class QueryEmbeddingCache:
             timestamp, embedding = self._cache[key]
             if (time.time() - timestamp) >= self._ttl:
                 # Expired - remove and return None
-                del self._cache[key]
-                logger.debug("Cache miss (expired): query=%s", query[:50])
+                self._cache.pop(key)
+                logger.debug(
+                    "Cache miss (expired): query=%s", query[:LOG_QUERY_TRUNCATE_LEN]
+                )
                 return None
 
-            logger.debug("Cache hit: query=%s", query[:50])
-            return embedding.copy()  # Return copy to prevent mutation
+            # Move to end (most recently used)
+            self._cache.move_to_end(key)
+            # Update timestamp
+            self._cache[key] = (time.time(), embedding)
+            logger.debug("Cache hit: query=%s", query[:LOG_QUERY_TRUNCATE_LEN])
+            return embedding.copy()
 
     def put(self, query: str, embedding: np.ndarray, model: str = "") -> None:
         """
@@ -77,13 +89,17 @@ class QueryEmbeddingCache:
         """
         key = self._make_key(query, model)
         with self._lock:
-            # Store copy to prevent external mutation
+            # If exists, move to end
+            if key in self._cache:
+                self._cache.move_to_end(key)
+
+            # Store (or update)
             self._cache[key] = (time.time(), embedding.copy())
 
             # LRU eviction if over max size
-            if len(self._cache) > self._max_size:
-                oldest_key = min(self._cache.keys(), key=lambda k: self._cache[k][0])
-                del self._cache[oldest_key]
+            while len(self._cache) > self._max_size:
+                # popitem(last=False) removes the first (oldest) item
+                self._cache.popitem(last=False)
                 logger.debug(
                     "Cache eviction: removed oldest entry, %d remaining",
                     len(self._cache),

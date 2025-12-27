@@ -155,3 +155,11 @@ def setup_db_parser(subparsers: Any) -> None:
         "--verbose", "-v", action="store_true", help="Show migration output"
     )
     migrate_parser.set_defaults(func=cmd_db_migrate)
+
+    # Default: show stats when no subcommand given
+    def _default_db_handler(args: argparse.Namespace) -> None:
+        if not args.db_command:
+            args.json = getattr(args, "json", False)
+            cmd_db_stats(args)
+
+    db_parser.set_defaults(func=_default_db_handler)

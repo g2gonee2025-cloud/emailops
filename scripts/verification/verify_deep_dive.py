@@ -64,7 +64,7 @@ def analyze_db_results(tenant_id: str):
         print(f"Attachments with Enriched Metadata (from CSV): {enriched_count}")
 
         if len(atts) > 0:
-            print(f"Enrichment Rate: {enriched_count/len(atts)*100:.1f}%")
+            print(f"Enrichment Rate: {enriched_count / len(atts) * 100:.1f}%")
 
             print("\nSample Attachment Metadata:")
             for att in atts[:5]:

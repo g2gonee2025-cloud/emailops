@@ -9,6 +9,7 @@ from __future__ import annotations
 import functools
 import inspect
 import logging
+import threading
 from collections.abc import Callable
 from contextvars import ContextVar
 from typing import Any, Dict
@@ -54,13 +55,17 @@ except ImportError:
     structlog = None  # type: ignore
     STRUCTLOG_AVAILABLE = False
 
-__all__ = [
+# Constants
+METRIC_EXPORT_INTERVAL_MS = 60000
+MAX_METRIC_INSTRUMENTS = 1000
+
+__all__ = (
     "get_logger",
     "get_trace_context",
     "init_observability",
     "record_metric",
     "trace_operation",
-]
+)
 
 # Context variable for trace correlation
 _trace_context: ContextVar[dict[str, str] | None] = ContextVar(
@@ -80,11 +85,12 @@ def _init_tracing(service_name: str, sample_rate: float, config: Any) -> Any:
         return None
 
     try:
+        env = config.core.env if config.core else "unknown"
         resource = Resource.create(
             {
                 "service.name": service_name,
                 "service.version": "1.0",
-                "deployment.environment": config.core.env,
+                "deployment.environment": env,
             }
         )
 
@@ -132,7 +138,7 @@ def _init_metrics(service_name: str, config: Any) -> Any:
         if config.gcp.gcp_project:
             exporter = CloudMonitoringMetricsExporter(project_id=config.gcp.gcp_project)
             reader = PeriodicExportingMetricReader(
-                exporter, export_interval_millis=60000
+                exporter, export_interval_millis=METRIC_EXPORT_INTERVAL_MS
             )
             provider = MeterProvider(resource=resource, metric_readers=[reader])
             metrics.set_meter_provider(provider)
@@ -142,7 +148,7 @@ def _init_metrics(service_name: str, config: Any) -> Any:
         if OTLP_AVAILABLE:
             exporter = OTLPMetricExporter()
             reader = PeriodicExportingMetricReader(
-                exporter, export_interval_millis=60000
+                exporter, export_interval_millis=METRIC_EXPORT_INTERVAL_MS
             )
             provider = MeterProvider(resource=resource, metric_readers=[reader])
             metrics.set_meter_provider(provider)
@@ -168,7 +174,7 @@ def _init_structured_logging() -> None:
                 structlog.contextvars.merge_contextvars,
                 structlog.processors.add_log_level,
                 structlog.processors.StackInfoRenderer(),
-                structlog.dev.set_exc_info,
+                structlog.processors.format_exc_info,
                 structlog.processors.TimeStamper(fmt="iso"),
                 structlog.processors.JSONRenderer(),
             ],
@@ -303,6 +309,11 @@ def trace_operation(operation_name: str, **span_attributes):
     return decorator
 
 
+_metric_lock = threading.Lock()
+
+# ... (global vars)
+
+
 def record_metric(
     metric_name: str,
     value: float | int,
@@ -311,6 +322,7 @@ def record_metric(
 ) -> None:
     """
     Record a metric for export.
+    Thread-safe implementation.
     """
     if not OTEL_AVAILABLE or _meter is None:
         return  # Silently skip if not available
@@ -319,29 +331,50 @@ def record_metric(
         labels = labels or {}
         key = (metric_name, metric_type)
 
-        if metric_type == "counter":
-            counter = _metric_instruments.get(key)
-            if counter is None:
-                counter = _meter.create_counter(metric_name, unit="1")
-                _metric_instruments[key] = counter
-            counter.add(value, labels)
-        elif metric_type == "gauge":
-            gauge = _metric_instruments.get(key)
-            if gauge is None:
-                gauge = _meter.create_up_down_counter(metric_name, unit="1")
-                _metric_instruments[key] = gauge
-            gauge.add(value, labels)
-        elif metric_type == "histogram":
-            histogram = _metric_instruments.get(key)
-            if histogram is None:
-                histogram = _meter.create_histogram(metric_name, unit="ms")
-                _metric_instruments[key] = histogram
-            histogram.record(value, labels)
-        else:
-            logging.debug("Unknown metric type %s for %s", metric_type, metric_name)
+        # Fast path check
+        instrument = _metric_instruments.get(key)
+
+        if instrument is None:
+            with _metric_lock:
+                # Double-check locking pattern
+                instrument = _metric_instruments.get(key)
+                if instrument is None:
+                    # Prevent unbounded growth
+                    if len(_metric_instruments) > MAX_METRIC_INSTRUMENTS:
+                        # Simple eviction: clear all.
+                        # Ideally we'd use LRU, but for bulk review constraint fixes this is sufficient safety.
+                        _metric_instruments.clear()
+                        logging.warning(
+                            "Metrics instrument cache cleared (exceeded %d items)",
+                            MAX_METRIC_INSTRUMENTS,
+                        )
+
+                    if metric_type == "counter":
+                        instrument = _meter.create_counter(metric_name, unit="1")
+                    elif metric_type == "gauge":
+                        # OTel doesn't support 'gauge' directly in this version, usually up_down_counter
+                        instrument = _meter.create_up_down_counter(
+                            metric_name, unit="1"
+                        )
+                    elif metric_type == "histogram":
+                        instrument = _meter.create_histogram(metric_name, unit="ms")
+                    else:
+                        logging.debug(
+                            "Unknown metric type %s for %s", metric_type, metric_name
+                        )
+                        return
+
+                    if instrument:
+                        _metric_instruments[key] = instrument
+
+        if instrument:
+            if metric_type == "histogram":
+                instrument.record(value, labels)
+            else:
+                instrument.add(value, labels)
 
     except Exception as e:
-        logging.debug("Failed to record metric %s: %s", metric_name, e)
+        logging.warning("Failed to record metric %s: %s", metric_name, e)
 
 
 def get_logger(name: str) -> Any:

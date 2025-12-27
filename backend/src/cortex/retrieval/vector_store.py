@@ -187,6 +187,8 @@ class PgvectorStore(VectorStore):
         thread_ids: Optional[List[str]] = None,
         file_types: Optional[List[str]] = None,  # P1 Fix: file_types filter
     ) -> List[VectorResult]:
+        # P2 Fix: Cap limit to prevent resource exhaustion
+        limit = min(limit, 500)
         emb_array = _validate_embedding(embedding, self._output_dim)
 
         # Convert embedding to pgvector text format
@@ -286,6 +288,8 @@ class QdrantVectorStore(VectorStore):
         thread_ids: Optional[List[str]] = None,
         file_types: Optional[List[str]] = None,  # P1 Fix: file_types filter
     ) -> List[VectorResult]:
+        # P2 Fix: Cap limit to prevent resource exhaustion
+        limit = min(limit, 500)
         emb_array = _validate_embedding(embedding, self._output_dim)
 
         if thread_ids and not conversation_ids:
@@ -348,7 +352,14 @@ class QdrantVectorStore(VectorStore):
                 },
             )
 
-        data = response.json()
+        try:
+            data = response.json()
+        except requests.JSONDecodeError:
+            raise RetrievalError(
+                "Qdrant returned invalid JSON",
+                query="vector_search",
+                context={"response": response.text[:200]},
+            )
         results = data.get("result", []) if isinstance(data, dict) else []
 
         out = [_process_qdrant_point(point) for point in results]

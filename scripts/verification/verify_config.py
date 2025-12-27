@@ -1,19 +1,37 @@
-import sys
 from pathlib import Path
 
 root_dir = Path(__file__).resolve().parents[2]
 from pathlib import Path  # noqa: E402
 
-sys.path.append(str(Path("backend/src").resolve()))
 from cortex.config.loader import get_config  # noqa: E402
+
+
+def _safe_get(obj, *attrs):
+    cur = obj
+    for a in attrs:
+        if cur is None:
+            return None
+        try:
+            cur = getattr(cur, a)
+        except AttributeError:
+            if isinstance(cur, dict):
+                cur = cur.get(a)
+            else:
+                return None
+    return cur
 
 
 def verify_config():
     config = get_config()
-    print("Core Env:", config.core.env)
-    print("DB URL:", config.database.url.split("@")[-1])  # Masked
-    print("S3 Bucket:", config.storage.bucket_raw)
-    print("Output Dimension:", config.embedding.output_dimensionality)
+    core_env = _safe_get(config, "core", "env")
+    db_url = _safe_get(config, "database", "url")
+    masked_db = db_url.split("@")[-1] if isinstance(db_url, str) and db_url else None
+    s3_bucket = _safe_get(config, "storage", "bucket_raw")
+    out_dim = _safe_get(config, "embedding", "output_dimensionality")
+    print("Core Env:", core_env if core_env is not None else "N/A")
+    print("DB URL:", masked_db if masked_db is not None else "N/A")  # Masked
+    print("S3 Bucket:", s3_bucket if s3_bucket is not None else "N/A")
+    print("Output Dimension:", out_dim if out_dim is not None else "N/A")
     print(
         "Redis URL:",
         (

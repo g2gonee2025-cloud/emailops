@@ -66,6 +66,9 @@ class Conversation(Base):
     )
     storage_uri: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     extra_data: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB, nullable=True)
+    summary_text: Mapped[Optional[str]] = mapped_column(
+        Text, nullable=True, comment="AI-generated summary of the conversation"
+    )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
@@ -150,7 +153,7 @@ class Chunk(Base):
         ForeignKey("attachments.attachment_id", ondelete="CASCADE"),
         nullable=True,
     )
-    is_attachment: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    is_attachment: Mapped[bool] = mapped_column(Boolean, nullable=False)
     is_summary: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     chunk_type: Mapped[str] = mapped_column(
         String(32), nullable=False, default="message_body"

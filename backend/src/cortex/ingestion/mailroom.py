@@ -22,6 +22,9 @@ from cortex.ingestion.core_manifest import resolve_subject
 from cortex.ingestion.models import IngestJobRequest, IngestJobSummary, Problem
 from cortex.ingestion.pii import PIIInitError
 
+# Backward compatibility for CLI
+IngestJob = IngestJobRequest
+
 logger = logging.getLogger(__name__)
 
 
@@ -137,15 +140,15 @@ def _download_sftp_source(
 
     from cortex.config.loader import get_config
 
-    config = get_config()
+    get_config()
 
     client = paramiko.SSHClient()
-
-    if config.core.env == "prod":
-        client.load_system_host_keys()
-        client.set_missing_host_key_policy(paramiko.RejectPolicy())
-    else:
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    # Always enforce strict host key checking to prevent MITM attacks
+    client.load_system_host_keys()
+    extra_known_hosts = options.get("known_hosts")
+    if extra_known_hosts:
+        client.load_host_keys(extra_known_hosts)
+    client.set_missing_host_key_policy(paramiko.RejectPolicy())
 
     pkey = None
     if pkey_path:
@@ -258,7 +261,12 @@ def _ingest_conversation(
     )
 
     # 4. Intelligence (Summary + Graph)
-    graph_data = _process_intelligence(chunks_data, conversation_id, tenant_ns, job)
+    graph_data, summary_text = _process_intelligence(
+        chunks_data, conversation_id, tenant_ns, job
+    )
+
+    if summary_text:
+        conversation_data["summary_text"] = summary_text
 
     # 5. Write to DB
     _write_results(
@@ -489,14 +497,20 @@ def _process_intelligence(
     conversation_id: uuid.UUID,
     tenant_ns: uuid.UUID,
     job: IngestJobRequest,
-) -> Dict[str, Any]:
+) -> Tuple[Dict[str, Any], Optional[str]]:
     """
-    Generate intelligence (summary, graph) and return graph data for writing.
+    Generate intelligence (summary, graph) and return (graph_data, summary_text).
     """
     graph_data = {"nodes": [], "edges": []}
+    summary_text_out: Optional[str] = None
 
     if not chunks_data:
-        return graph_data
+        return graph_data, None
+
+    # Skip summarization if env var is set (avoids LLM 404 retries)
+    if os.getenv("OUTLOOKCORTEX_SKIP_SUMMARY", "").lower() in ("true", "1", "yes"):
+        logger.info("Skipping summarization (OUTLOOKCORTEX_SKIP_SUMMARY=true)")
+        return graph_data, None
 
     try:
         from cortex.intelligence.summarizer import ConversationSummarizer
@@ -530,7 +544,15 @@ def _process_intelligence(
             summary_text = summarizer.generate_summary(summary_context)
 
             if summary_text:
+                summary_text_out = summary_text
                 summary_embedding = summarizer.embed_summary(summary_text)
+                # P1 Fix: Handle empty embedding due to API failure so DB write doesn't fail
+                final_embedding = (
+                    summary_embedding
+                    if summary_embedding and len(summary_embedding) > 0
+                    else None
+                )
+
                 summary_chunk_id = _generate_stable_id(
                     tenant_ns, "chunk", str(conversation_id), "summary"
                 )
@@ -542,7 +564,7 @@ def _process_intelligence(
                         "is_summary": True,
                         "chunk_type": "summary",
                         "text": summary_text,
-                        "embedding": summary_embedding,
+                        "embedding": final_embedding,
                         "position": -1,
                         "char_start": 0,
                         "char_end": len(summary_text),
@@ -560,7 +582,7 @@ def _process_intelligence(
     except Exception as e:
         logger.warning(f"Intelligence processing failed: {e}")
 
-    return graph_data
+    return graph_data, summary_text_out
 
 
 def _extract_graph(

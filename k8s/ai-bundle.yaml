@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ai-bundle
+  namespace: emailops
   labels:
     app: emailops
     component: ai-bundle
@@ -32,25 +33,15 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              echo "Starting Embeddings Model (Port 8000)..."
+              echo "Starting Embeddings Model Only (Port 8000)..."
               python3 -m vllm.entrypoints.openai.api_server \
                 --model tencent/KaLM-Embedding-Gemma3-12B-2511 \
-                --task embed \
                 --port 8000 \
                 --max-model-len 8192 \
                 --enforce-eager \
                 --trust-remote-code \
                 --max-num-seqs 256 \
-                --gpu-memory-utilization 0.6 &
-
-              echo "Starting Reranker Model (Port 8001)..."
-              python3 -m vllm.entrypoints.openai.api_server \
-                --model mixedbread-ai/mxbai-rerank-large-v2 \
-                --task score \
-                --port 8001 \
-                --max-model-len 8192 \
-                --trust-remote-code \
-                --gpu-memory-utilization 0.3
+                --gpu-memory-utilization 0.85
 
           env:
             - name: HF_HUB_ENABLE_HF_TRANSFER
@@ -89,12 +80,13 @@ spec:
           operator: "Exists"
           effect: "NoSchedule"
       nodeSelector:
-        doks.digitalocean.com/node-pool: pool-gpu-h100
+        doks.digitalocean.com/node-pool: pool-gpu-l40s
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: embeddings-api
+  namespace: emailops
   labels:
     app: emailops
     component: embeddings
@@ -113,6 +105,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: reranker-api
+  namespace: emailops
   labels:
     app: emailops
     component: reranker

@@ -30,10 +30,12 @@ class SearchResultItem(BaseModel):
 
     chunk_id: Optional[str]
     score: float
-    conversation_id: str = ""  # Primary key for Conversation schema
+    # Optional conversation identifier; None indicates "unassigned"
+    conversation_id: Optional[str] = None
     attachment_id: Optional[str] = None
     is_attachment: bool = False
-    highlights: List[str] = Field(default_factory=list)
+    highlights: list[str] = Field(default_factory=list)
+    # Empty snippet is valid for metadata-only results
     snippet: str = ""
     content: Optional[str] = None
     source: Optional[str] = None
@@ -55,6 +57,20 @@ class SearchResultItem(BaseModel):
     def message_id(self) -> str:
         """Backward compat - empty since we use conversation model."""
         return ""
+
+    @classmethod
+    def from_fts_result(cls, res: Any) -> "SearchResultItem":
+        """Factory from FTS result (ChunkFTSResult or similar)."""
+        # Mapping depends on the exact shape of FTS result
+        return cls(
+            chunk_id=getattr(res, "chunk_id", None),
+            score=getattr(res, "score", 0.0),
+            conversation_id=getattr(res, "conversation_id", ""),
+            snippet=getattr(res, "snippet", ""),
+            content=getattr(res, "text", getattr(res, "content", None)),
+            metadata=getattr(res, "metadata", {}),
+            lexical_score=getattr(res, "lexical_score", 0.0),
+        )
 
 
 class SearchResults(BaseModel):

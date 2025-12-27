@@ -31,6 +31,15 @@ from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
+# Constants
+RRF_K_DEFAULT = 60
+QUOTED_HISTORY_DOWNWEIGHT_FACTOR = 0.7
+RECENCY_HALF_LIFE_DAYS = 30.0
+RECENCY_BOOST_STRENGTH = 1.0
+SUMMARY_BOOST_FACTOR = 1.2
+SUMMARY_SEARCH_LIMIT = 5
+WEIGHTED_SUM_ALPHA_DEFAULT = 0.5
+
 
 class KBSearchInput(BaseModel):
     """
@@ -58,8 +67,8 @@ class KBSearchInput(BaseModel):
 def apply_recency_boost(
     results: List[SearchResultItem],
     thread_updated_at: Dict[str, datetime],
-    half_life_days: float = 30.0,
-    boost_strength: float = 1.0,
+    half_life_days: float = RECENCY_HALF_LIFE_DAYS,
+    boost_strength: float = RECENCY_BOOST_STRENGTH,
 ) -> List[SearchResultItem]:
     """
     Apply exponential decay recency boost to search results.
@@ -110,7 +119,7 @@ def deduplicate_by_hash(results: List[SearchResultItem]) -> List[SearchResultIte
 
 
 def downweight_quoted_history(
-    results: List[SearchResultItem], factor: float = 0.7
+    results: List[SearchResultItem], factor: float = QUOTED_HISTORY_DOWNWEIGHT_FACTOR
 ) -> List[SearchResultItem]:
     """
     Down-weight results from quoted_history chunks.
@@ -142,6 +151,8 @@ def _merge_result_fields(
 
     # Highlights
     if other.highlights:
+        if into.highlights is None:
+            into.highlights = []
         # Use simple list extend and let deduplication happen if strictly needed later,
         # or just ensure uniqueness simply.
         existing = set(into.highlights or [])
@@ -150,10 +161,10 @@ def _merge_result_fields(
                 into.highlights.append(h)
                 existing.add(h)
 
-    # Scores - prefer non-zero
-    if not into.lexical_score:
+    # Scores - prefer non-zero/non-none
+    if into.lexical_score is None:
         into.lexical_score = other.lexical_score
-    if not into.vector_score:
+    if into.vector_score is None:
         into.vector_score = other.vector_score
 
     # Metadata & Hash
@@ -171,7 +182,7 @@ def _merge_result_fields(
 def fuse_rrf(
     fts_results: List[SearchResultItem],
     vector_results: List[SearchResultItem],
-    k: int = 60,
+    k: int = RRF_K_DEFAULT,
 ) -> List[SearchResultItem]:
     """
     Reciprocal Rank Fusion of FTS and vector search results.
@@ -184,7 +195,7 @@ def fuse_rrf(
 
     # Score from FTS ranking
     for rank, item in enumerate(fts_results, start=1):
-        key = item.chunk_id or item.message_id
+        key = item.chunk_id or item.message_id or f"unknown_{rank}"
         scores[key] = scores.get(key, 0) + 1 / (k + rank)
         if key in items:
             items[key] = _merge_result_fields(items[key], item)
@@ -214,7 +225,7 @@ def fuse_rrf(
 def fuse_weighted_sum(
     fts_results: List[SearchResultItem],
     vector_results: List[SearchResultItem],
-    alpha: float = 0.5,
+    alpha: float = WEIGHTED_SUM_ALPHA_DEFAULT,
 ) -> List[SearchResultItem]:
     """Fuse rankings via weighted sum.
 
@@ -265,7 +276,7 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
     """
     from cortex.config.loader import get_config
     from cortex.db.session import SessionLocal
-    from cortex.retrieval.fts_search import search_chunks_fts
+    from cortex.retrieval.fts_search import search_chunks_fts, search_conversations_fts
     from cortex.retrieval.vector_search import search_chunks_vector
 
     config = get_config()
@@ -277,7 +288,7 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
     # 0. Parse filters from query (e.g., from:john@example.com subject:"budget")
     parsed_filters, clean_query = parse_filter_grammar(args.query)
     if not parsed_filters.is_empty():
-        logger.info(f"Parsed filters: {parsed_filters.to_dict()}")
+        logger.debug(f"Parsed filters: {parsed_filters.to_dict()}")
 
     # Use cleaned query for embedding and FTS
     search_query = clean_query if clean_query.strip() else args.query
@@ -289,6 +300,18 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
         from cortex.db.session import set_session_tenant
 
         set_session_tenant(session, args.tenant_id)
+
+        # 1.5. Summary-Awareness: Find highly relevant threads by summary
+        summary_boost_ids = set()
+        try:
+            summary_hits = search_conversations_fts(
+                session, search_query, args.tenant_id, limit=SUMMARY_SEARCH_LIMIT
+            )
+            summary_boost_ids = {h.conversation_id for h in summary_hits}
+            if summary_boost_ids:
+                logger.info(f"Summary boost active for threads: {summary_boost_ids}")
+        except Exception as e:
+            logger.warning("Summary search failed: %s", e)
 
         # 2. Resolve Conversations (Navigational + Filters)
         final_conversation_ids = _resolve_target_conversations(
@@ -303,9 +326,9 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
             limit=k * candidates_multiplier,
             conversation_ids=final_conversation_ids,
             is_attachment=parsed_filters.has_attachment,
-            file_types=list(parsed_filters.file_types)
-            if parsed_filters.file_types
-            else None,  # P1 Fix
+            file_types=(
+                list(parsed_filters.file_types) if parsed_filters.file_types else None
+            ),  # P1 Fix
         )
 
         # 4. Vector search (if we have an embedding)
@@ -321,9 +344,11 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
                 ef_search=hnsw_ef_search,
                 conversation_ids=final_conversation_ids,
                 is_attachment=parsed_filters.has_attachment,
-                file_types=list(parsed_filters.file_types)
-                if parsed_filters.file_types
-                else None,  # P1 Fix
+                file_types=(
+                    list(parsed_filters.file_types)
+                    if parsed_filters.file_types
+                    else None
+                ),  # P1 Fix
             )
             logger.info(f"Vector search returned {len(vector_results)} chunks")
         else:
@@ -343,7 +368,18 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
                 fts_deduped, vector_deduped, alpha=config.search.rerank_alpha
             )
         else:
-            fused_results = fuse_rrf(fts_deduped, vector_deduped, k=60)
+            fused_results = fuse_rrf(fts_deduped, vector_deduped, k=RRF_K_DEFAULT)
+
+        # 6.5. Apply Summary Boost
+        if summary_boost_ids:
+            for item in fused_results:
+                if item.conversation_id in summary_boost_ids:
+                    # Boost score by 20%
+                    item.score *= SUMMARY_BOOST_FACTOR
+                    item.fusion_score = item.score
+
+            # Re-sort after boosting
+            fused_results = sorted(fused_results, key=lambda r: r.score, reverse=True)
 
         # 7. Reranking (External vs Lightweight)
         if config.search.reranker_endpoint:
@@ -377,7 +413,9 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> SearchResults:
         )
 
         # 10. Down-weight quoted_history (do this before diversification)
-        fused_results = downweight_quoted_history(fused_results, factor=0.7)
+        fused_results = downweight_quoted_history(
+            fused_results, factor=QUOTED_HISTORY_DOWNWEIGHT_FACTOR
+        )
         fused_results = sorted(fused_results, key=lambda r: r.score, reverse=True)
 
         # 11. MMR diversity for the final top-k list
@@ -411,11 +449,14 @@ def _get_conversation_timestamps(
     """
     )
 
-    results = session.execute(
-        stmt, {"conversation_ids": conversation_ids, "tenant_id": tenant_id}
-    ).fetchall()
-
-    return {str(row.conversation_id): row.updated_at for row in results}
+    try:
+        results = session.execute(
+            stmt, {"conversation_ids": conversation_ids, "tenant_id": tenant_id}
+        ).fetchall()
+        return {str(row.conversation_id): row.updated_at for row in results}
+    except Exception as e:
+        logger.warning("Failed to fetch conversation timestamps: %s", e)
+        return {}
 
 
 # Backward compat alias

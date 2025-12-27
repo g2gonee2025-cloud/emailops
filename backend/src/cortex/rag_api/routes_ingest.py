@@ -43,7 +43,7 @@ class IngestFromS3Response(BaseModel):
     job_id: str
     status: str
     folders_found: int
-    folders_to_process: List[str] = []
+    folders_to_process: List[str] = Field(default_factory=list)
     message: str
 
 
@@ -136,7 +136,7 @@ _active_jobs: Dict[str, Dict[str, Any]] = {}
 
 
 @router.get("/s3/folders", response_model=ListS3FoldersResponse)
-async def list_s3_folders(
+def list_s3_folders(
     prefix: str = Query(default="Outlook/", description="S3 prefix to list"),
     limit: int = Query(default=100, ge=1, le=1000, description="Max folders to return"),
 ):
@@ -147,21 +147,20 @@ async def list_s3_folders(
     conversation data ready for ingestion.
     """
     try:
-        handler = S3SourceHandler()
         folders = []
-
-        for folder in handler.list_conversation_folders(prefix=prefix, limit=limit):
-            folders.append(
-                {
-                    "prefix": folder.prefix,
-                    "name": folder.name,
-                    "file_count": len(folder.files),
-                    "has_conversation": any(
-                        "conversation.txt" in f for f in folder.files
-                    ),
-                    "has_manifest": any("manifest.json" in f for f in folder.files),
-                }
-            )
+        with S3SourceHandler() as handler:
+            for folder in handler.list_conversation_folders(prefix=prefix, limit=limit):
+                folders.append(
+                    {
+                        "prefix": folder.prefix,
+                        "name": folder.name,
+                        "file_count": len(folder.files),
+                        "has_conversation": any(
+                            "conversation.txt" in f for f in folder.files
+                        ),
+                        "has_manifest": any("manifest.json" in f for f in folder.files),
+                    }
+                )
 
         return ListS3FoldersResponse(
             prefix=prefix,
@@ -169,14 +168,14 @@ async def list_s3_folders(
             count=len(folders),
         )
     except Exception as e:
-        logger.error(f"Failed to list S3 folders: {e}", exc_info=True)
+        logger.error("Failed to list S3 folders: %s", e, exc_info=True)
         raise HTTPException(
             status_code=500, detail=f"Failed to list S3 folders: {str(e)}"
         )
 
 
 @router.post("/s3/start", response_model=IngestFromS3Response)
-async def start_s3_ingestion(
+def start_s3_ingestion(
     request: IngestFromS3Request,
     background_tasks: BackgroundTasks,
 ):
@@ -193,13 +192,13 @@ async def start_s3_ingestion(
     job_id = str(uuid.uuid4())
 
     try:
-        handler = S3SourceHandler()
-        folders = list(
-            handler.list_conversation_folders(
-                prefix=request.prefix,
-                limit=request.limit,
+        with S3SourceHandler() as handler:
+            folders = list(
+                handler.list_conversation_folders(
+                    prefix=request.prefix,
+                    limit=request.limit,
+                )
             )
-        )
 
         folder_names = [f.name for f in folders]
 
@@ -244,7 +243,7 @@ async def start_s3_ingestion(
         )
 
     except Exception as e:
-        logger.error(f"Failed to start S3 ingestion: {e}", exc_info=True)
+        logger.error("Failed to start S3 ingestion: %s", e, exc_info=True)
         raise HTTPException(
             status_code=500, detail=f"Failed to start ingestion: {str(e)}"
         )
@@ -296,7 +295,7 @@ async def get_ingestion_status(job_id: str):
 # -----------------------------------------------------------------------------
 
 
-async def _process_s3_folders_with_embeddings(
+def _process_s3_folders_with_embeddings(
     job_id: str,
     tenant_id: str,
     folders: List[S3ConversationFolder],
@@ -333,7 +332,7 @@ async def _process_s3_folders_with_embeddings(
         )
 
     except Exception as e:
-        logger.error(f"Ingestion job {job_id} failed: {e}", exc_info=True)
+        logger.error("Ingestion job %s failed: %s", job_id, e, exc_info=True)
         job_data.update(
             {
                 "status": "failed",
@@ -442,7 +441,11 @@ def _process_push_ingest(
                     "source": "external",
                 }
                 if embeddings:
-                    chunk_data["embedding"] = embeddings[idx]
+                    first_embedding = embeddings[idx]
+                    if hasattr(first_embedding, "tolist"):
+                        chunk_data["embedding"] = first_embedding.tolist()
+                    else:
+                        chunk_data["embedding"] = list(first_embedding)
 
                 chunks_data.append(chunk_data)
 
@@ -493,7 +496,9 @@ def _process_push_ingest(
         except Exception as exc:
             error_ref = document.document_id or document.title or "document"
             errors.append(f"{error_ref}: {exc}")
-            logger.error("Push ingestion failed for %s: %s", error_ref, exc)
+            logger.error(
+                "Push ingestion failed for %s: %s", error_ref, exc, exc_info=True
+            )
 
     message = (
         f"Ingested {documents_ingested}/{len(request.documents)} documents "

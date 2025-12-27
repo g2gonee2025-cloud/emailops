@@ -61,6 +61,17 @@ def _env_list(key: str, default: str = "") -> List[str]:
     return [part.strip() for part in str(raw).split(",") if part.strip()]
 
 
+def env_default(*args, **kwargs):
+    """
+    Helper to create a zero-argument default_factory that defers to _env.
+    Usage:
+        Field(default_factory=env_default("ENV_VAR", default="value"))
+    """
+    from functools import partial as _partial
+
+    return _partial(_env, *args, **kwargs)
+
+
 # -----------------------------------------------------------------------------
 # Directory Configuration
 # -----------------------------------------------------------------------------
@@ -292,11 +303,8 @@ class EmbeddingConfig(BaseModel):
         description="Max sequence length for embedding model (KaLM recommends 512)",
     )
 
-    # Vertex AI specific
-    vertex_model: str = Field(
-        default_factory=lambda: _env("VERTEX_MODEL", "gemini-2.5-pro"),
-        description="Vertex AI model for completion",
-    )
+    # Vertex AI specific configuration removed
+    # vertex_model: str = Field(...)
 
     # Generic option for other embedding models
     generic_embed_model: Optional[str] = Field(
@@ -304,29 +312,28 @@ class EmbeddingConfig(BaseModel):
         description="Generic embedding model name for other providers (set via OUTLOOKCORTEX_GENERIC_EMBED_MODEL)",
     )
 
+    # CPU fallback using GGUF quantized models
+    gguf_model_path: Optional[str] = Field(
+        default_factory=lambda: _env("GGUF_MODEL_PATH", None),
+        description="Path to GGUF quantized model for CPU fallback (e.g., models/kalm-12b-q4.gguf)",
+    )
+    cpu_fallback_enabled: bool = Field(
+        default_factory=lambda: _env("CPU_FALLBACK_ENABLED", True, bool),
+        description="Enable CPU fallback for query embedding when GPU endpoint is unavailable",
+    )
+
+    # Embedding mode selector (overrides cpu_fallback_enabled behavior)
+    embed_mode: Literal["gpu", "cpu", "auto"] = Field(
+        default_factory=lambda: _env("EMBED_MODE", "auto"),
+        description="Embedding mode: 'gpu' (remote API only), 'cpu' (local GGUF only), 'auto' (GPU with CPU fallback)",
+    )
+
     model_config = {"extra": "forbid"}
 
 
 # -----------------------------------------------------------------------------
-# GCP Configuration
+# GCP Configuration Removed
 # -----------------------------------------------------------------------------
-
-
-class GcpConfig(BaseModel):
-    """Google Cloud Platform configuration."""
-
-    gcp_region: str = Field(
-        default_factory=lambda: _env("GCP_REGION", "global"), description="GCP region"
-    )
-    vertex_location: str = Field(
-        default_factory=lambda: _env("VERTEX_LOCATION", "us-central1"),
-        description="Vertex AI location",
-    )
-    gcp_project: str = Field(
-        default_factory=lambda: _env("GCP_PROJECT", ""), description="GCP project ID"
-    )
-
-    model_config = {"extra": "forbid"}
 
 
 # -----------------------------------------------------------------------------
@@ -498,7 +505,7 @@ class DigitalOceanLLMEndpointConfig(BaseModel):
         description="Bearer token forwarded to the gateway",
     )
     default_completion_model: str = Field(
-        default_factory=lambda: _env("DO_LLM_COMPLETION_MODEL", "kimi-k2-moe"),
+        default_factory=lambda: _env("DO_LLM_COMPLETION_MODEL", "openai-gpt-oss-120b"),
         description="Model name to send to completion endpoint",
     )
     default_embedding_model: str = Field(

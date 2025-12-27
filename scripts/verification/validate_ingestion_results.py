@@ -8,17 +8,19 @@ Validates the results claimed in the walkthrough:
 - 8,253 attachments processed
 - 0 failures
 """
+
 import sys
 from pathlib import Path
 
 # Add backend/src to path
 sys.path.insert(0, str(Path.cwd() / "backend" / "src"))
 
+
 from cortex.config.loader import get_config
 from sqlalchemy import create_engine, inspect, text
 
 
-def validate_ingestion_results():
+def validate_ingestion_results() -> None:
     print("=" * 60)
     print("  S3 INGESTION PIPELINE VALIDATION")
     print("=" * 60)

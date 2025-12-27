@@ -6,6 +6,7 @@ Implements §9.5 of the Canonical Blueprint.
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import logging
 
@@ -20,41 +21,39 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 # Lazily compile graph to avoid startup cost (fallback if app.state.graphs not available)
+
 _summarize_graph = None
+_graph_lock = asyncio.Lock()
 
 
-def get_summarize_graph(http_request: Request = None):
-    """Get pre-compiled graph from app.state or lazy load as fallback."""
-    # P0 Fix: Prefer pre-compiled graph from lifespan
+async def get_summarize_graph(http_request: Request = None):
+    """Get pre-compiled graph from app.state or lazy load as fallback in thread-safe way."""
     if http_request and hasattr(http_request.app.state, "graphs"):
         cached = http_request.app.state.graphs.get("summarize")
         if cached:
             return cached
 
-    # Fallback to lazy loading
     global _summarize_graph
     if _summarize_graph is None:
-        logger.info("Lazily Initializing Summarize Graph (prefer app.state.graphs)...")
-        _summarize_graph = build_summarize_graph().compile()
+        async with _graph_lock:
+            if _summarize_graph is None:
+                logger.info(
+                    "Lazily Initializing Summarize Graph (prefer app.state.graphs)..."
+                )
+                _summarize_graph = build_summarize_graph().compile()
     return _summarize_graph
 
 
 @router.post("/summarize", response_model=SummarizeThreadResponse)
-@trace_operation("api_summarize")  # P2 Fix: Enable request tracing
+@trace_operation("api_summarize")
 async def summarize_thread_endpoint(
     request: SummarizeThreadRequest, http_request: Request
 ) -> SummarizeThreadResponse:
-    """
-    Summarize an email thread.
-
-    Blueprint §9.5:
-    * POST /api/v1/summarize
-    * Request: SummarizeThreadRequest
-    * Response: SummarizeThreadResponse
-    """
+    # ... (docstring same)
     correlation_id = getattr(http_request.state, "correlation_id", None)
 
     try:
+        # ... (setup same until graph invoke)
         initial_state = {
             "tenant_id": tenant_id_ctx.get(),
             "user_id": user_id_ctx.get(),
@@ -65,23 +64,23 @@ async def summarize_thread_endpoint(
             "correlation_id": correlation_id,
         }
 
-        # Use pre-compiled graph from app.state if available
-        graph = get_summarize_graph(http_request)
+        graph = await get_summarize_graph(http_request)
         final_state = await graph.ainvoke(initial_state)
 
         if final_state.get("error"):
-            raise HTTPException(status_code=500, detail=final_state["error"])
+            # P2 Fix: Sanitize error
+            logger.error(f"Graph execution error: {final_state['error']}")
+            raise HTTPException(status_code=500, detail="Summarization workflow failed")
 
         summary = final_state.get("summary")
         if not summary:
             raise HTTPException(status_code=500, detail="No summary generated")
 
-        # P2 Fix: Use context vars (authoritative) not request body
         try:
             input_hash = hashlib.sha256(request.model_dump_json().encode()).hexdigest()
             log_audit_event(
-                tenant_id=tenant_id_ctx.get(),  # P2 Fix: Use context
-                user_or_agent=user_id_ctx.get(),  # P2 Fix: Use context
+                tenant_id=tenant_id_ctx.get(),
+                user_or_agent=user_id_ctx.get(),
                 action="summarize_thread",
                 input_hash=input_hash,
                 risk_level="low",
@@ -97,6 +96,6 @@ async def summarize_thread_endpoint(
         )
     except HTTPException:
         raise
-    except Exception as exc:
-        logger.error(f"Summarize API failed: {exc}")
-        raise HTTPException(status_code=500, detail=str(exc))
+    except Exception:
+        logger.exception("Summarize API failed")
+        raise HTTPException(status_code=500, detail="Internal Server Error")

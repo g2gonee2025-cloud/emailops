@@ -29,6 +29,8 @@ except Exception:  # ImportError, RuntimeError, etc.
     tk = None
     filedialog = None
 
+URL_FULLMATCH_RE = re.compile(r"(https?://\S+)", re.IGNORECASE)
+
 
 BOILERPLATE_KEYWORDS = [
     # Common noisy markers / disclaimers / system notes (extend as needed)
@@ -56,6 +58,10 @@ DOMAIN_NOISE = [
     "CAREERS.CHALHOUBGROUP.COM",
 ]
 
+# Standard length used when normalizing long separator lines
+SEPARATOR_LINE_LENGTH = 40
+SEPARATOR_LINE = "-" * SEPARATOR_LINE_LENGTH
+
 HEADER_PATTERNS = [
     # Date + From header at top of each email in Conversation.txt
     re.compile(r"^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\s+\|\s+From:", re.IGNORECASE),
@@ -81,7 +87,7 @@ def is_boilerplate(line: str) -> bool:
         return False
 
     # Single-domain / URL lines
-    if re.fullmatch(r"(https?://\S+)", stripped, re.IGNORECASE):
+    if URL_FULLMATCH_RE.fullmatch(stripped):
         return True
     if stripped.upper() in DOMAIN_NOISE:
         return True

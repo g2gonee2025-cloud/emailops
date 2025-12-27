@@ -111,7 +111,7 @@ class IngestionProcessor:
                                 logger.info(f"Skipping unchanged folder: {prefix}")
                                 return None
             except Exception as e:
-                logger.warning(f"Failed to check existing record for {prefix}: {e}")
+                logger.warning("Failed to check existing record for %s: %s", prefix, e)
 
         job_request = self._build_job_request(prefix)
 
@@ -141,10 +141,8 @@ class IngestionProcessor:
         )
         summaries: List[IngestJobSummary] = []
 
-        folders = list(
-            self.s3_handler.list_conversation_folders(prefix=prefix, limit=limit)
-        )
-        logger.info("Found %d folders to process", len(folders))
+        folders = self.s3_handler.list_conversation_folders(prefix=prefix, limit=limit)
+        logger.info("Starting ingestion scan")
 
         with ThreadPoolExecutor(max_workers=num_workers) as executor:
             futures = {
@@ -179,9 +177,7 @@ class IngestionProcessor:
             f"with {num_workers} parallel workers"
         )
 
-        agg_stats = IngestJobSummary(
-            job_id=uuid.UUID(str(job_id)), tenant_id=self.tenant_id
-        )
+        agg_stats = IngestJobSummary(job_id=uuid.UUID(job_id), tenant_id=self.tenant_id)
         agg_stats.folders_processed = 0
         agg_stats.threads_created = 0
         agg_stats.chunks_created = 0
@@ -210,7 +206,7 @@ class IngestionProcessor:
                         current_count = progress["count"]
 
                         if summary:
-                            if summary.aborted_reason or summary.problems:
+                            if summary.aborted_reason:
                                 agg_stats.errors += 1
                             else:
                                 agg_stats.folders_processed += 1
@@ -231,7 +227,7 @@ class IngestionProcessor:
                             )
 
                 except Exception as exc:
-                    logger.error(f"Future failed for {folder.prefix}: {exc}")
+                    logger.error("Future failed for %s: %s", folder.prefix, exc)
                     with stats_lock:
                         agg_stats.errors += 1
 

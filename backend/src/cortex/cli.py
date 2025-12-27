@@ -23,7 +23,7 @@ logger = structlog.get_logger()
 
 
 @app.command()
-def doctor(check_all: bool = typer.Option(False, "--check-all", help="Run all checks")):
+def doctor():
     """
     Run system health checks (Doctor).
     """
@@ -39,29 +39,29 @@ def doctor(check_all: bool = typer.Option(False, "--check-all", help="Run all ch
 @app.command()
 def ingest(
     source: str = typer.Option(..., help="Source to ingest from (e.g. s3)"),
-    dry_run: bool = typer.Option(False, help="Verify without processing"),
     tenant: str = typer.Option("default", help="Tenant ID"),
 ):
     """
     Trigger ingestion process.
     """
-    logger.info("ingestion_trigger", source=source, dry_run=dry_run)
+    logger.info("ingestion_trigger", source=source)
 
-    if source.lower() == "s3":
-        from cortex.ingestion.processor import IngestionProcessor
+    src = source.lower()
 
-        # Use defaults from config/env
-        processor = IngestionProcessor()
-        processor.run_full_ingestion()
-    elif source == "backfill-embeddings":
-        from cortex.ingestion.backfill import backfill_embeddings
+    if src == "s3":
+        # Lazy import to avoid circular dependency/startup cost
+        try:
+            from cortex.orchestrator import PipelineOrchestrator
 
-        backfill_embeddings(tenant_id=tenant)
+            orchestrator = PipelineOrchestrator()
+            orchestrator.run()
+        except ImportError:
+            logger.error("ingestion_failed", reason="orchestrator_import_error")
+            raise typer.Exit(code=1)
     else:
-        logger.error("unsupported_source", source=source)
-        print(
-            f"Error: Source '{source}' not supported. Use 's3' or 'backfill-embeddings'."
-        )
+        logger.error("ingestion_failed", reason="unsupported_source", source=source)
+        print(f"Error: Source '{source}' not supported. Use 's3'.")
+        raise typer.Exit(code=1)
 
 
 @app.command()

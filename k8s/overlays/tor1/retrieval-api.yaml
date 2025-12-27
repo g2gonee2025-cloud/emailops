@@ -37,8 +37,6 @@ spec:
           args:
             - "--model"
             - "tencent/KaLM-Embedding-Gemma3-12B-2511"
-            - "--task"
-            - "embed"
             - "--enforce-eager"
             - "--trust-remote-code"
             - "--port"
@@ -46,9 +44,9 @@ spec:
             - "--max-model-len"
             - "8192"
             - "--max-num-seqs"
-            - "128"  # Reduced for L40S
+            - "128" # Reduced for L40S
             - "--gpu-memory-utilization"
-            - "0.60"  # L40S has 48GB, KaLM needs ~24GB
+            - "0.60" # L40S has 48GB, KaLM needs ~24GB
           env:
             - name: HF_HUB_ENABLE_HF_TRANSFER
               value: "1"
@@ -67,7 +65,7 @@ spec:
             limits:
               memory: "32Gi"
               cpu: "4"
-              ephemeral-storage: "10Gi"
+              ephemeral-storage: "50Gi"
           startupProbe:
             httpGet:
               path: /health
@@ -81,59 +79,12 @@ spec:
             initialDelaySeconds: 60
             periodSeconds: 20
 
-        # Container 2: MXBAI Reranker (port 8001)
-        - name: reranker-vllm
-          image: vllm/vllm-openai:latest
-          args:
-            - "--model"
-            - "mixedbread-ai/mxbai-rerank-large-v2"
-            - "--task"
-            - "score"
-            - "--port"
-            - "8001"
-            - "--max-model-len"
-            - "8192"
-            - "--trust-remote-code"
-            - "--gpu-memory-utilization"
-            - "0.15"  # MXBAI is small (~335M params)
-          env:
-            - name: HF_HUB_ENABLE_HF_TRANSFER
-              value: "1"
-            - name: CUDA_VISIBLE_DEVICES
-              value: "0"
-          ports:
-            - containerPort: 8001
-              name: reranker
-          volumeMounts:
-            - mountPath: /dev/shm
-              name: dshm
-          resources:
-            requests:
-              memory: "4Gi"
-              cpu: "1"
-            limits:
-              memory: "8Gi"
-              cpu: "2"
-              ephemeral-storage: "10Gi"
-          startupProbe:
-            httpGet:
-              path: /health
-              port: 8001
-            failureThreshold: 60
-            periodSeconds: 10
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 8001
-            initialDelaySeconds: 30
-            periodSeconds: 20
-
       tolerations:
         - key: "nvidia.com/gpu"
           operator: "Exists"
           effect: "NoSchedule"
       nodeSelector:
-        doks.digitalocean.com/node-pool: pool-gpu-l40s
+        doks.digitalocean.com/node-pool: pool-byiwoup50
 ---
 apiVersion: v1
 kind: Service

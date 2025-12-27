@@ -22,10 +22,7 @@ headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/js
 
 # Desired models (will be intersected with available ones from /models)
 DESIRED_MODELS = [
-    "deepseek-r1",
-    "deepseek-r1-250120",
-    "deepseek-r1-250528",
-    "deepseek-r1-search",
+    "openai-gpt-oss-120b",
 ]
 
 

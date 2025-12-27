@@ -3,6 +3,7 @@
 List existing objects in DigitalOcean Space using repo config.
 Prints a summary and sample keys without touching any running uploads.
 """
+
 from __future__ import annotations
 
 import sys

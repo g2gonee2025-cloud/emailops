@@ -110,6 +110,10 @@ class EmailDraft(BaseModel):
     tone_style: ToneStyle = Field(default_factory=ToneStyle)
     val_scores: DraftValidationScores = Field(default_factory=DraftValidationScores)
     next_actions: List[NextAction] = Field(default_factory=list)
+    attachments: List[Dict[str, str]] = Field(
+        default_factory=list,
+        description="List of attachments with 'path' and 'filename'",
+    )
 
 
 class Issue(BaseModel):

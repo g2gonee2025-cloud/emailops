@@ -13,7 +13,11 @@ from cortex.config.loader import get_config
 def fetch_multi_message_manifests():
     try:
         config = get_config()
-        s3_config = config.storage
+        s3_config = getattr(config, "storage", None)
+        if s3_config is None:
+            raise RuntimeError(
+                "Storage configuration is missing; cannot connect to S3."
+            )
 
         print(f"Connecting to S3: {s3_config.endpoint_url}")
         print(f"Bucket: {s3_config.bucket_raw}")

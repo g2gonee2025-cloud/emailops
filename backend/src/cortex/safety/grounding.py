@@ -11,8 +11,22 @@ import logging
 import re
 from typing import Optional
 
+import numpy as np
+import numpy.linalg as npla
 from cortex.embeddings.client import EmbeddingsClient
 from pydantic import BaseModel, Field
+
+
+def _cosine_similarity(v1: list[float], v2: list[float]) -> float:
+    """Calculate cosine similarity between two vectors."""
+    a = np.array(v1)
+    b = np.array(v2)
+    norm_a = npla.norm(a)
+    norm_b = npla.norm(b)
+    if norm_a == 0 or norm_b == 0:
+        return 0.0
+    return float(np.dot(a, b) / (norm_a * norm_b))
+
 
 logger = logging.getLogger(__name__)
 
@@ -210,7 +224,10 @@ def extract_claims_llm(text: str) -> list[str]:
 
 
 def check_claim_against_facts_embedding(
-    claim: str, facts: list[str], threshold: float = 0.75
+    claim: str,
+    facts: list[str],
+    threshold: float = 0.75,
+    fact_embeddings: list[list[float]] | None = None,
 ) -> tuple[bool, float, str | None]:
     """
     Check a single claim against facts using embedding similarity.
@@ -219,6 +236,7 @@ def check_claim_against_facts_embedding(
         claim: The claim to verify
         facts: List of facts from retrieved context
         threshold: Minimum similarity to consider supported
+        fact_embeddings: Optional pre-computed fact embeddings
 
     Returns:
         (is_supported, confidence, supporting_fact)
@@ -230,13 +248,15 @@ def check_claim_against_facts_embedding(
         if not facts:
             return (False, 0.0, None)
 
-        fact_embeddings = client.embed_texts(facts)
+        if fact_embeddings is None:
+            # Use embed_batch for efficiency
+            fact_embeddings = client.embed_batch(facts)
 
         best_score = 0.0
         best_fact = None
 
         for fact, fact_emb in zip(facts, fact_embeddings):
-            similarity = EmbeddingsClient.cosine_similarity(claim_embedding, fact_emb)
+            similarity = _cosine_similarity(claim_embedding, fact_emb)
             if similarity > best_score:
                 best_score = similarity
                 best_fact = fact
@@ -249,6 +269,66 @@ def check_claim_against_facts_embedding(
         return check_claim_against_facts_keyword(claim, facts)
 
 
+_STOPWORDS = {
+    "the",
+    "a",
+    "an",
+    "is",
+    "are",
+    "was",
+    "were",
+    "be",
+    "been",
+    "being",
+    "have",
+    "has",
+    "had",
+    "do",
+    "does",
+    "did",
+    "will",
+    "would",
+    "could",
+    "should",
+    "may",
+    "might",
+    "can",
+    "to",
+    "of",
+    "in",
+    "for",
+    "on",
+    "with",
+    "at",
+    "by",
+    "from",
+    "as",
+    "into",
+    "through",
+    "during",
+    "before",
+    "after",
+    "above",
+    "below",
+    "between",
+    "under",
+    "again",
+    "further",
+    "then",
+    "once",
+    "that",
+    "this",
+    "these",
+    "those",
+    "and",
+    "but",
+    "or",
+    "nor",
+    "so",
+    "yet",
+}
+
+
 def check_claim_against_facts_keyword(
     claim: str, facts: list[str]
 ) -> tuple[bool, float, str | None]:
@@ -258,66 +338,7 @@ def check_claim_against_facts_keyword(
     Less accurate than embeddings but works without LLM.
     """
     claim_words = set(re.findall(r"\b\w+\b", claim.lower()))
-    # Remove common words
-    stopwords = {
-        "the",
-        "a",
-        "an",
-        "is",
-        "are",
-        "was",
-        "were",
-        "be",
-        "been",
-        "being",
-        "have",
-        "has",
-        "had",
-        "do",
-        "does",
-        "did",
-        "will",
-        "would",
-        "could",
-        "should",
-        "may",
-        "might",
-        "can",
-        "to",
-        "of",
-        "in",
-        "for",
-        "on",
-        "with",
-        "at",
-        "by",
-        "from",
-        "as",
-        "into",
-        "through",
-        "during",
-        "before",
-        "after",
-        "above",
-        "below",
-        "between",
-        "under",
-        "again",
-        "further",
-        "then",
-        "once",
-        "that",
-        "this",
-        "these",
-        "those",
-        "and",
-        "but",
-        "or",
-        "nor",
-        "so",
-        "yet",
-    }
-    claim_words -= stopwords
+    claim_words -= _STOPWORDS
 
     if not claim_words:
         return (False, 0.0, None)
@@ -326,7 +347,7 @@ def check_claim_against_facts_keyword(
     best_fact = None
 
     for fact in facts:
-        fact_words = set(re.findall(r"\b\w+\b", fact.lower())) - stopwords
+        fact_words = set(re.findall(r"\b\w+\b", fact.lower())) - _STOPWORDS
         if not fact_words:
             continue
 
@@ -456,9 +477,18 @@ def check_grounding_embedding(
     claim_analyses = []
     unsupported = []
 
+    # Pre-compute fact embeddings once if facts exist
+    fact_embeddings = None
+    if facts:
+        try:
+            client = EmbeddingsClient()
+            fact_embeddings = client.embed_batch(facts)
+        except Exception as e:
+            logger.warning(f"Failed to pre-compute fact embeddings: {e}")
+
     for claim in claims:
         is_supported, confidence, supporting_fact = check_claim_against_facts_embedding(
-            claim, facts, threshold=support_threshold
+            claim, facts, threshold=support_threshold, fact_embeddings=fact_embeddings
         )
 
         claim_analyses.append(
@@ -566,7 +596,7 @@ def get_unsupported_claims(answer: str, facts: list[str]) -> list[str]:
     return result.unsupported_claims
 
 
-__all__ = [
+__all__ = (
     "ClaimAnalysis",
     "GroundingCheck",
     "GroundingAnalysisResult",
@@ -576,4 +606,4 @@ __all__ = [
     "get_unsupported_claims",
     "extract_claims_simple",
     "extract_claims_llm",
-]
+)

@@ -25,11 +25,14 @@ class CortexError(Exception):
         message: str,
         error_code: str | None = None,
         context: dict[str, Any] | None = None,
+        **kwargs: Any,
     ) -> None:
         super().__init__(message)
         self.message = message
         self.error_code = error_code
         self.context = context or {}
+        if kwargs:
+            self.context.update(kwargs)
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize exception for logging/reporting."""
@@ -47,7 +50,7 @@ class ConfigurationError(CortexError):
     pass
 
 
-class IndexError(CortexError):
+class SearchIndexError(CortexError):
     """
     Search index issues: not found, corrupted, incompatible.
     """
@@ -61,6 +64,7 @@ class EmbeddingError(CortexError):
     """
 
     def __init__(self, message: str, retryable: bool = False, **kwargs: Any) -> None:
+        kwargs.pop("retryable", None)
         super().__init__(message, **kwargs)
         self.retryable = retryable
 
@@ -74,6 +78,7 @@ class ProcessingError(CortexError):
         retryable: bool = False,
         **kwargs: Any,
     ) -> None:
+        kwargs.pop("retryable", None)
         super().__init__(message, **kwargs)
         self.retryable = retryable
 
@@ -209,6 +214,8 @@ class RateLimitError(ProviderError):
         retry_after: float | None = None,
         **kwargs: Any,
     ) -> None:
+        kwargs.pop("retryable", None)
+        kwargs.pop("provider", None)
         super().__init__(message, provider=provider, retryable=True, **kwargs)
         self.retry_after = retry_after
 
@@ -225,6 +232,8 @@ class CircuitBreakerOpenError(ProviderError):
         reset_at: float | None = None,
         **kwargs: Any,
     ) -> None:
+        kwargs.pop("retryable", None)
+        kwargs.pop("provider", None)
         super().__init__(message, provider=provider, retryable=False, **kwargs)
         self.reset_at = reset_at
 
@@ -241,6 +250,7 @@ class PolicyViolationError(SecurityError):
         policy_name: str | None = None,
         **kwargs: Any,
     ) -> None:
+        kwargs.pop("threat_type", None)
         super().__init__(message, threat_type="policy_violation", **kwargs)
         self.action = action
         self.policy_name = policy_name

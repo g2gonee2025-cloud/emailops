@@ -8,7 +8,7 @@ from typing import Any
 
 """
 core_manifest.py - Centralized manifest.json parsing and metadata extraction.
-
+from typing import Any, Dict
 This module provides THE SINGLE SOURCE OF TRUTH for:
 1. Loading manifest.json files (with robust fallback parsing)
 2. Extracting lightweight metadata (for indexing/chunking)
@@ -187,7 +187,21 @@ def extract_metadata_lightweight(manifest: dict[str, Any]) -> dict[str, Any]:
 
 
 def _extract_subject_lightweight(manifest: dict[str, Any]) -> str:
-    return (manifest.get("smart_subject") or manifest.get("subject") or "").strip()
+    raw = manifest.get("smart_subject")
+    if not isinstance(raw, str):
+        raw = manifest.get("subject")
+    if not isinstance(raw, str):
+        raw = ""
+    return raw.strip()
+
+
+def parse_manifest_core(man: dict[str, Any]) -> dict[str, Any]:
+    man = man or {}
+    return {
+        "subject": _extract_subject_lightweight(man),
+        **_extract_participants_grouped(man),
+        **_extract_date_range(man),
+    }
 
 
 def _extract_participants_grouped(
@@ -484,11 +498,11 @@ def get_conversation_metadata(convo_dir: Path) -> dict[str, Any]:
     return extract_metadata_lightweight(manifest)
 
 
-__all__ = [
+__all__ = (
     "extract_metadata_lightweight",
     "extract_participants_detailed",
     "get_conversation_metadata",
     "load_manifest",
     "parse_manifest_text",
     "resolve_subject",
-]
+)

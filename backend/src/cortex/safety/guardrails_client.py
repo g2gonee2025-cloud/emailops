@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+import threading
 from typing import Any, Dict, List, Optional, Type, TypeVar
 
 from cortex.llm.client import complete_json
@@ -78,16 +79,14 @@ def attempt_llm_repair(
         or "- Unknown validation error"
     )
 
-    full_prompt = (
-        get_prompt(
-            "GUARDRAILS_REPAIR",
-            error=errors_text,
-            invalid_json=json.dumps(invalid_json, indent=2),
-            target_schema=json.dumps(schema_json, indent=2),
-            validation_errors=errors_text,
-        )
-        + "\n\nRespond with ONLY valid JSON that satisfies the schema."
+    full_prompt = get_prompt(
+        "GUARDRAILS_REPAIR",
+        error=errors_text,
+        invalid_json=json.dumps(invalid_json, indent=2),
+        target_schema=json.dumps(schema_json, indent=2),
+        validation_errors=errors_text,
     )
+    full_prompt += "\n\nRespond with ONLY valid JSON that satisfies the schema."
 
     for attempt in range(max_attempts):
         try:
@@ -260,12 +259,16 @@ class GuardrailsClient:
                     return validate_with_repair(
                         output, schema, correlation_id or "unknown"
                     )
-                except Exception:
+                except Exception as e:
+                    logger.warning(f"String validation failed: {e}")
                     return None
 
             # Try generic validation
             return schema.model_validate(output)
 
+        except (ValidationError, ValueError, TypeError) as e:
+            logger.warning(f"Validation failed with specific error: {e}")
+            return None
         except Exception as e:
             logger.warning(f"Validation failed: {e}")
             return None
@@ -298,13 +301,16 @@ class GuardrailsClient:
 
 # Singleton instance for convenience
 _guardrails_client: Optional[GuardrailsClient] = None
+_client_lock = threading.Lock()
 
 
 def get_guardrails_client() -> GuardrailsClient:
     """Get or create the guardrails client singleton."""
     global _guardrails_client
     if _guardrails_client is None:
-        _guardrails_client = GuardrailsClient()
+        with _client_lock:
+            if _guardrails_client is None:
+                _guardrails_client = GuardrailsClient()
     return _guardrails_client
 
 

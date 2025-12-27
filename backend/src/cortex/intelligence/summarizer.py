@@ -11,6 +11,10 @@ import logging
 
 from cortex.llm.runtime import LLMRuntime
 
+# Constants
+CHARS_PER_TOKEN_ESTIMATE = 4
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -36,7 +40,9 @@ class ConversationSummarizer:
         # Truncate naive token estimation (4 chars/token approx)
         max_chars = self.MAX_CONTEXT_TOKENS * 4
         if len(text) > max_chars:
-            text = text[:max_chars] + "\n...(truncated)..."
+            # P0 Fix: Just slice, don't pretend it's token-aware yet.
+            # Ideally use Tiktoken, but for now just prevent OOM/Context overflow
+            text = text[:max_chars]
 
         prompt = (
             "You are an expert AI assistant analyzing an email conversation thread.\n"
@@ -52,8 +58,9 @@ class ConversationSummarizer:
         )
 
         try:
-            # Using a deterministic temperature for summaries
-            return self.llm.complete_text(prompt, temperature=0.2)
+            # Temperature 0.2 is low-creativity, stable for summaries (not strictly deterministic but close)
+            result = self.llm.complete_text(prompt, temperature=0.2)
+            return result or ""  # P2 Fix: Guard against None return
         except Exception as e:
             logger.error(f"Summary generation failed: {e}")
             return ""
@@ -64,8 +71,12 @@ class ConversationSummarizer:
             return []
         try:
             embeddings = self.llm.embed_documents([summary])
-            if len(embeddings) > 0:
-                return embeddings[0].tolist()
+            if embeddings and len(embeddings) > 0:
+                first_embedding = embeddings[0]
+                # Handle numpy array or list
+                if hasattr(first_embedding, "tolist"):
+                    return first_embedding.tolist()
+                return list(first_embedding)
         except Exception as e:
-            logger.error(f"Summary embedding failed: {e}")
+            logger.error("Summary embedding failed: %s", e)
         return []

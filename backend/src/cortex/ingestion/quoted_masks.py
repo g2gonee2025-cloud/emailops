@@ -23,7 +23,7 @@ def detect_quoted_spans(text: str) -> List[Span]:
     current_span_start = None
 
     for i, line in enumerate(lines):
-        line = line.strip()
+        lines[i] = line.strip()
         is_quoted = (
             line.startswith(">")
             or line.startswith("On ")

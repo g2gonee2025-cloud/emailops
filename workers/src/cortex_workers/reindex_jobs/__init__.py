@@ -10,6 +10,7 @@ This module provides:
 * StreamingMapReduceDriver - Memory-efficient streaming for large datasets
 * DistributedMapReduceDriver - Queue-based distributed processing
 """
+
 from __future__ import annotations
 
 import logging
@@ -50,7 +51,7 @@ from .mapreduce_driver import (  # noqa: E402
 from .parallel_indexer import ParallelEmbeddingIndexer  # noqa: E402
 from .parallel_indexer import parallel_index_conversations  # noqa: E402
 
-__all__ = [
+__all__ = (
     "DistributedMapReduceDriver",
     "JobState",
     "MapReduceEmbeddingDriver",
@@ -60,7 +61,7 @@ __all__ = [
     "get_mapreduce_driver",
     "parallel_index_conversations",
     "process_reindex_job",
-]
+)
 
 
 def process_reindex_job(payload: dict[str, Any]) -> dict[str, Any]:

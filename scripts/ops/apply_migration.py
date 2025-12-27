@@ -12,30 +12,28 @@ from cortex.config.loader import get_config
 
 
 def apply():
-    config = get_config()
-    os.environ["OUTLOOKCORTEX_DB_URL"] = config.database.url
-    os.environ["EMBED_DIM"] = str(config.embedding.output_dimensionality)
-
-    print(
-        f"Applying migrations to: {config.database.url.split('@')[-1]}"
-    )  # redact password
-
-    # We must run this from the backend directory so alembic.ini is found
-    # os.path.join(os.getcwd(), "backend", "migrations")
-
-    # Alembic arguments: [prog, command, revision]
-    # But wait, alembic.config.main() parses args.
-    # It expects to be run from the directory containing alembic.ini usually.
-
-    original_cwd = Path.cwd()
-    os.chdir(original_cwd / "backend" / "migrations")
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger("apply_migration")
 
     try:
-        alembic.config.main(argv=["upgrade", "head"])
+        config = get_config()
+        os.environ["OUTLOOKCORTEX_DB_URL"] = config.database.url
+        os.environ["EMBED_DIM"] = str(config.embedding.output_dimensionality)
+
+        logger.info("Applying migrations to: %s", config.database.url.split("@")[-1])
+
+        original_cwd = Path.cwd()
+        os.chdir(original_cwd / "backend" / "migrations")
+
+        try:
+            alembic.config.main(argv=["upgrade", "head"])
+        except Exception as e:
+            logger.error("Migration failed: %s", e)
+        finally:
+            os.chdir(original_cwd)
+
     except Exception as e:
-        print(f"Migration failed: {e}")
-    finally:
-        os.chdir(original_cwd)
+        logger.error("Failed to setup migration: %s", e)
 
 
 if __name__ == "__main__":

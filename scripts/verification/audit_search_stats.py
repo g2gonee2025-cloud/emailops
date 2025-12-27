@@ -7,8 +7,14 @@ from sqlalchemy import create_engine, text
 
 def main():
     config = get_config()
-    print(f"Connecting to DB: {config.database.url.split('@')[-1]}")  # redact password
-    engine = create_engine(config.database.url)
+    db_url = getattr(getattr(config, "database", None), "url", None)
+    if not db_url:
+        raise RuntimeError(
+            "Database URL is not configured (config.database.url is None)."
+        )
+    redacted = db_url.split("@")[-1] if "@" in db_url else db_url
+    print(f"Connecting to DB: {redacted}")  # redact password
+    engine = create_engine(db_url)
 
     with engine.connect() as conn:
         print("--- Database Audit ---")

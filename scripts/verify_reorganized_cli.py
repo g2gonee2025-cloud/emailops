@@ -3,6 +3,7 @@
 EXHAUSTIVE CLI VERIFICATION - BENCHMARK TEST
 Tests EVERY CLI command with REAL execution. No mocks.
 """
+
 import argparse
 import sys
 import traceback
@@ -18,7 +19,7 @@ def test(name):
 
     def decorator(func):
         def wrapper():
-            print(f"\n{'='*60}")
+            print(f"\n{'=' * 60}")
             print(f"TEST: {name}")
             print("=" * 60)
             try:
@@ -495,7 +496,7 @@ if __name__ == "__main__":
         for w in results["warnings"]:
             print(f"   • {w}")
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     if results["failed"]:
         print(f"BENCHMARK RESULT: FAILED ({len(results['failed'])} failures)")
         sys.exit(1)

@@ -376,7 +376,7 @@ def get_conversation_metadata(convo_dir: Path) -> dict[str, Any]:
     return extract_metadata_lightweight(manifest)
 
 
-__all__ = [
+__all__ = (
     "extract_metadata_lightweight",
     "extract_participants_detailed",
     "get_conversation_metadata",

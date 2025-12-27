@@ -5,6 +5,7 @@ Non-intrusive upload progress check for DigitalOcean Spaces.
 - Counts remote objects under s3://<bucket>/raw/outlook/
 - Outputs a simple progress summary without touching the running upload process.
 """
+
 from __future__ import annotations
 
 import os

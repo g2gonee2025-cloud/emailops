@@ -20,11 +20,19 @@ from cortex.utils import strip_control_chars
 # EMAIL_REGEX is used for validation (anchored). For extraction, we need a similar pattern but unanchored.
 # We'll use a local pattern for extraction but aligned with the validation one conceptually.
 _EMAIL_SEARCH_PATTERN = re.compile(
-    r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
+    r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"
 )
 _URL_PATTERN = re.compile(r'https?://[^\s<>"{}|\\^`\[\]]+')
+_URL_FULLMATCH_PATTERN = re.compile(r"https?://\S+", re.IGNORECASE)
+_WWW_DOMAIN_PATTERN = re.compile(r"www\.[A-Za-z0-9.-]+")
+
+# Constants
+SIGNATURE_LOOKBACK_CHARS = 2000
+MIN_TEXT_LENGTH_FOR_SIGNATURE = 100
+MAX_BOILERPLATE_LINE_LENGTH = 80
 
 # Excessive punctuation normalization
+# Replacing with single char or standard marker instead of stripping entirely
 _EXCESSIVE_DOTS = re.compile(r"\.{3,}")
 _EXCESSIVE_EXCLAIM = re.compile(r"!{2,}")
 _EXCESSIVE_QUESTION = re.compile(r"\?{2,}")
@@ -35,6 +43,7 @@ _EXCESSIVE_UNDERSCORES = re.compile(r"_{5,}")
 # Whitespace normalization
 _MULTIPLE_SPACES = re.compile(r"[ \t]{2,}")
 _MULTIPLE_NEWLINES = re.compile(r"\n{3,}")
+# Matches lines that are empty or contain only whitespace
 _BLANK_LINES = re.compile(r"^\s*$", re.MULTILINE)
 
 # Quoted reply lines (starts with >)
@@ -136,7 +145,7 @@ def _is_boilerplate_line(line: str) -> bool:
         return False
 
     # Single URL lines
-    if re.fullmatch(r"https?://\S+", stripped, re.IGNORECASE):
+    if _URL_FULLMATCH_PATTERN.fullmatch(stripped):
         return True
 
     # Domain noise
@@ -144,7 +153,7 @@ def _is_boilerplate_line(line: str) -> bool:
         return True
 
     # Bare www domains
-    if re.fullmatch(r"www\.[A-Za-z0-9.-]+", stripped):
+    if _WWW_DOMAIN_PATTERN.fullmatch(stripped):
         return True
 
     # Check against boilerplate keywords
@@ -154,7 +163,11 @@ def _is_boilerplate_line(line: str) -> bool:
             return True
 
     # Very long address-like lines (signature blocks)
-    if len(stripped) > 80 and stripped.count(",") >= 3 and "@" not in stripped:
+    if (
+        len(stripped) > MAX_BOILERPLATE_LINE_LENGTH
+        and stripped.count(",") >= 3
+        and "@" not in stripped
+    ):
         return True
 
     return False
@@ -219,7 +232,7 @@ def clean_email_text(text: str) -> str:
     text = _EMAIL_SEARCH_PATTERN.sub("[email]", text)
     text = _URL_PATTERN.sub("[URL]", text)
 
-    # 7. Normalize punctuation
+    # 8. Normalize punctuation
     text = _EXCESSIVE_DOTS.sub("...", text)
     text = _EXCESSIVE_EXCLAIM.sub("!", text)
     text = _EXCESSIVE_QUESTION.sub("?", text)
@@ -227,14 +240,14 @@ def clean_email_text(text: str) -> str:
     text = _EXCESSIVE_DASHES.sub("---", text)
     text = _EXCESSIVE_UNDERSCORES.sub("", text)
 
-    # 8. Normalize whitespace
+    # 9. Normalize whitespace
     text = _MULTIPLE_SPACES.sub(" ", text)
     text = _MULTIPLE_NEWLINES.sub("\n\n", text)
 
-    # 9. Strip control characters
+    # 10. Strip control characters
     text = strip_control_chars(text)
 
-    # 10. Final trim
+    # 11. Final trim
     return text.strip()
 
 
@@ -245,11 +258,11 @@ def _strip_signature(text: str) -> str:
     Checks the last 2000 characters for signature patterns and removes
     everything after the first match.
     """
-    if len(text) < 100:
+    if len(text) < MIN_TEXT_LENGTH_FOR_SIGNATURE:
         return text
 
-    # Look at last 2000 chars for signature
-    tail_start = max(0, len(text) - 2000)
+    # Look at last N chars for signature
+    tail_start = max(0, len(text) - SIGNATURE_LOOKBACK_CHARS)
     tail = text[tail_start:]
 
     earliest_match = len(tail)
@@ -266,4 +279,4 @@ def _strip_signature(text: str) -> str:
     return text
 
 
-__all__ = ["clean_email_text"]
+__all__ = ("clean_email_text",)

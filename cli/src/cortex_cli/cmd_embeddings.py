@@ -12,14 +12,10 @@ from typing import Any
 
 from cortex_cli.style import colorize as _colorize
 
-try:
-    from rich.console import Console
+DEFAULT_BATCH_SIZE = 64
+HIGH_COVERAGE_THRESHOLD = 95
 
-    RICH_AVAILABLE = True
-except ImportError:
-    RICH_AVAILABLE = False
-
-console = Console() if RICH_AVAILABLE else None
+# Console removed (unused)
 
 
 def cmd_embeddings_stats(args: argparse.Namespace) -> None:
@@ -33,15 +29,18 @@ def cmd_embeddings_stats(args: argparse.Namespace) -> None:
         from sqlalchemy.orm import Session
 
         config = get_config()
+        if not config.embedding:
+            print(f"{_colorize('ERROR:', 'red')} No embedding configuration found.")
+            return
 
         with Session(engine) as session:
-            total = session.execute(text("SELECT COUNT(*) FROM chunks")).scalar() or 0
-            with_emb = (
-                session.execute(
-                    text("SELECT COUNT(*) FROM chunks WHERE embedding IS NOT NULL")
-                ).scalar()
-                or 0
-            )
+            # Performance: Combined count query
+            row = session.execute(
+                text("SELECT COUNT(*), COUNT(embedding) FROM chunks")
+            ).one()
+            total = row[0] or 0
+            with_emb = row[1] or 0
+
             missing = total - with_emb
             pct = (with_emb / total * 100) if total > 0 else 0
 
@@ -58,7 +57,9 @@ def cmd_embeddings_stats(args: argparse.Namespace) -> None:
             print(json_module.dumps(stats, indent=2))
         else:
             print(f"\n{_colorize('EMBEDDING STATISTICS', 'bold')}\n")
-            print(f"  Model: {_colorize(config.embedding.model_name, 'cyan')}")
+            embed_cfg = getattr(config, "embedding", None)
+            model_name = getattr(embed_cfg, "model_name", "N/A")
+            print(f"  Model: {_colorize(model_name, 'cyan')}")
             print(
                 f"  Dimensions: {_colorize(str(config.embedding.output_dimensionality), 'cyan')}\n"
             )
@@ -68,7 +69,7 @@ def cmd_embeddings_stats(args: argparse.Namespace) -> None:
                 f"  Missing:         {_colorize(str(missing), 'yellow' if missing > 0 else 'green')}"
             )
             print(
-                f"  Coverage:        {_colorize(f'{pct:.1f}%', 'green' if pct > 95 else 'yellow')}"
+                f"  Coverage:        {_colorize(f'{pct:.1f}%', 'green' if pct > HIGH_COVERAGE_THRESHOLD else 'yellow')}"
             )
 
             if missing > 0:
@@ -145,7 +146,11 @@ def setup_embeddings_parser(subparsers: Any) -> None:
         description="Generate embeddings for chunks that are missing them.",
     )
     backfill_parser.add_argument(
-        "--batch-size", "-b", type=int, default=64, help="Batch size (default: 64)"
+        "--batch-size",
+        "-b",
+        type=int,
+        default=DEFAULT_BATCH_SIZE,
+        help=f"Batch size (default: {DEFAULT_BATCH_SIZE})",
     )
     backfill_parser.add_argument(
         "--limit", "-l", type=int, default=None, help="Limit number to process"
@@ -154,3 +159,11 @@ def setup_embeddings_parser(subparsers: Any) -> None:
         "--dry-run", "-n", action="store_true", help="Show what would be done"
     )
     backfill_parser.set_defaults(func=cmd_embeddings_backfill)
+
+    # Default: show stats when no subcommand given
+    def _default_embeddings_handler(args: argparse.Namespace) -> None:
+        if not args.embeddings_command:
+            args.json = getattr(args, "json", False)
+            cmd_embeddings_stats(args)
+
+    emb_parser.set_defaults(func=_default_embeddings_handler)

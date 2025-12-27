@@ -4,6 +4,7 @@
 This script enforces a small set of guardrails derived from docs/CANONICAL_BLUEPRINT.md.
 Extend cautiously to avoid false positives; prefer high-signal checks only.
 """
+
 from __future__ import annotations
 
 from collections.abc import Iterable

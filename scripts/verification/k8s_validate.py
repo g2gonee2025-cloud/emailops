@@ -56,7 +56,7 @@ def main():
         target_dir.mkdir(parents=True, exist_ok=True)
 
         for i, folder in enumerate(folders):
-            print(f"[{i+1}/{len(folders)}] Processing {folder}")
+            print(f"[{i + 1}/{len(folders)}] Processing {folder}")
 
             # List objects in folder
             # We don't want to use paginator for subfolder if it's small, but to be safe

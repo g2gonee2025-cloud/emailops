@@ -110,11 +110,22 @@ GROUNDING_CHECK_PATTERNS = [
 ]
 
 
-def _match_any_pattern(text: str, patterns: List[str]) -> bool:
-    """Check if text matches any of the given patterns."""
-    text_lower = text.lower()
+# Compiled patterns
+_NAVIGATIONAL_PATTERNS = [re.compile(p, re.IGNORECASE) for p in NAVIGATIONAL_PATTERNS]
+_DRAFTING_PATTERNS = [re.compile(p, re.IGNORECASE) for p in DRAFTING_PATTERNS]
+_TIME_SENSITIVE_PATTERNS = [
+    re.compile(p, re.IGNORECASE) for p in TIME_SENSITIVE_PATTERNS
+]
+_FOLLOWUP_PATTERNS = [re.compile(p, re.IGNORECASE) for p in FOLLOWUP_PATTERNS]
+_GROUNDING_CHECK_PATTERNS = [
+    re.compile(p, re.IGNORECASE) for p in GROUNDING_CHECK_PATTERNS
+]
+
+
+def _match_any_pattern(text: str, patterns: List[re.Pattern]) -> bool:
+    """Check if text matches any of the given compiled patterns."""
     for pattern in patterns:
-        if re.search(pattern, text_lower, re.IGNORECASE):
+        if pattern.search(text):
             return True
     return False
 
@@ -137,20 +148,20 @@ def classify_query_fast(query: str) -> QueryClassification:
     flags: List[str] = []
 
     # Detect flags first
-    if _match_any_pattern(query, TIME_SENSITIVE_PATTERNS):
+    if _match_any_pattern(query, _TIME_SENSITIVE_PATTERNS):
         flags.append("time_sensitive")
 
-    if _match_any_pattern(query, FOLLOWUP_PATTERNS):
+    if _match_any_pattern(query, _FOLLOWUP_PATTERNS):
         flags.append("followup")
 
-    if _match_any_pattern(query, GROUNDING_CHECK_PATTERNS):
+    if _match_any_pattern(query, _GROUNDING_CHECK_PATTERNS):
         flags.append("requires_grounding_check")
 
     # Determine query type
-    if _match_any_pattern(query, DRAFTING_PATTERNS):
+    if _match_any_pattern(query, _DRAFTING_PATTERNS):
         return QueryClassification(query=query, type="drafting", flags=flags)
 
-    if _match_any_pattern(query, NAVIGATIONAL_PATTERNS):
+    if _match_any_pattern(query, _NAVIGATIONAL_PATTERNS):
         return QueryClassification(query=query, type="navigational", flags=flags)
 
     # Default to semantic for analytical/understanding queries
@@ -169,7 +180,7 @@ def classify_query_llm(query: str) -> QueryClassification:
     Uses the LLM to understand query intent when patterns are insufficient.
 
     Args:
-        query: The user's query string
+        args: QueryClassificationInput carrying the user's query and related options
 
     Returns:
         QueryClassification with type and flags
@@ -213,7 +224,7 @@ def tool_classify_query(args: QueryClassificationInput) -> QueryClassification:
     Returns:
         QueryClassification with type and flags
     """
-    query = (args.query or "").strip()
+    query = args.query.strip()
 
     if not query:
         return QueryClassification(query=query or "", type="semantic", flags=[])

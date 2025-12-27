@@ -10,10 +10,14 @@ sys.path.append(str(Path(__file__).resolve().parents[2] / "backend" / "src"))
 from cortex.config.loader import get_config
 
 
-def fetch_deep_real_manifest():
+def fetch_deep_real_manifest() -> None:
     try:
         config = get_config()
-        s3_config = config.storage
+        s3_config = getattr(config, "storage", None)
+        if s3_config is None:
+            raise ValueError(
+                "Missing 'storage' section in configuration; cannot fetch Deep Search manifest."
+            )
 
         session = boto3.session.Session()
         client = session.client(
@@ -54,7 +58,9 @@ def fetch_deep_real_manifest():
                         if isinstance(msgs, list) and len(msgs) > 0:
                             print(f"\n\n✅ FOUND VALID MANIFEST: {key}")
                             print("=" * 60)
-                            print(json.dumps(data, indent=2))
+                            print(
+                                "Matching manifest found. Contents omitted to prevent sensitive data exposure."
+                            )
                             print("=" * 60)
                             return
                     except Exception:
@@ -72,4 +78,9 @@ def fetch_deep_real_manifest():
 
 
 if __name__ == "__main__":
-    fetch_deep_real_manifest()
+    try:
+        fetch_deep_real_manifest()
+    except Exception:
+        import logging
+
+        logging.exception("Unhandled exception in fetch_real_deep_search")

@@ -1,0 +1,243 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backfill-script
+  namespace: emailops
+data:
+  manage_embeddings.py: |
+    #!/usr/bin/env python3
+    """
+    Embeddings Management CLI (Projected via ConfigMap).
+    Optimized for High-Throughput vLLM Backfilling.
+    """
+    import argparse
+    import logging
+    import sys
+    import time
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    from pathlib import Path
+
+    # Mock imports or ensure path correctness in container
+    import sys
+    sys.path.append("/app")
+
+    from openai import OpenAI
+    import httpx
+    from sqlalchemy import create_engine, text
+    from sqlalchemy.orm import sessionmaker
+
+    from cortex.config.loader import get_config
+
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
+    logger = logging.getLogger("embed_ops")
+
+    # Global client to reuse connection pool (httpx is thread-safe)
+    _client = None
+
+    def get_client(base_url):
+        global _client
+        if _client is None:
+            # Increase limits for high concurrency
+            limits = httpx.Limits(max_keepalive_connections=50, max_connections=100)
+            _client = OpenAI(
+                base_url=base_url,
+                api_key="dummy",
+                http_client=httpx.Client(limits=limits, timeout=60.0)
+            )
+        return _client
+
+    def wait_for_service(base_url, max_wait_seconds=600):
+        """Wait for embedding service to be healthy before proceeding."""
+        import urllib.request
+        import urllib.error
+        health_url = base_url.replace("/v1", "/health")
+        logger.info(f"Waiting for embedding service at {health_url}...")
+        start = time.time()
+        while time.time() - start < max_wait_seconds:
+            try:
+                with urllib.request.urlopen(health_url, timeout=5) as resp:
+                    if resp.status == 200:
+                        logger.info("Embedding service is ready!")
+                        return True
+            except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError):
+                pass
+            logger.info(f"Service not ready, retrying in 10s... ({int(time.time() - start)}s elapsed)")
+            time.sleep(10)
+        logger.error("Timed out waiting for embedding service")
+        return False
+
+    def fix_nulls(args):
+        logger.info("Scanning for NULL embeddings...")
+        config = get_config()
+        db_url = config.database.url
+        import os
+        embed_endpoint = args.api_url or os.getenv("EMBED_ENDPOINT")
+        if not embed_endpoint:
+             # Fallback or error
+             embed_endpoint = "http://embeddings-api.emailops.svc.cluster.local:80/v1"
+
+        if not embed_endpoint.endswith("/v1"):
+            embed_endpoint = f"{embed_endpoint.rstrip('/')}/v1"
+
+        # Wait for service to be healthy
+        if not wait_for_service(embed_endpoint):
+            logger.error("Aborting: embedding service not available")
+            sys.exit(1)
+        config = get_config()
+        db_url = config.database.url
+        import os
+        embed_endpoint = args.api_url or os.getenv("EMBED_ENDPOINT")
+        if not embed_endpoint:
+             # Fallback or error
+             embed_endpoint = "http://embeddings-api.emailops.svc.cluster.local:80/v1"
+
+        if not embed_endpoint.endswith("/v1"):
+            embed_endpoint = f"{embed_endpoint.rstrip('/')}/v1"
+
+        embed_model = args.model or os.getenv("EMBED_MODEL") or "tencent/KaLM-Embedding-Gemma3-12B-2511"
+
+        engine = create_engine(db_url, pool_size=20, max_overflow=10)
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        count = session.execute(
+            text("SELECT count(*) FROM chunks WHERE embedding IS NULL")
+        ).scalar()
+        logger.info(f"Found {count} chunks with NULL embeddings.")
+
+        if count == 0:
+            return
+
+        limit = args.batch_size
+        workers = args.workers
+
+        # Fetch all work items
+        rows = session.execute(
+            text("SELECT chunk_id, text FROM chunks WHERE embedding IS NULL")
+        ).fetchall()
+
+        total = len(rows)
+        logger.info(f"Loaded {total} chunks. Config: Batch={limit}, Workers={workers}, Model={embed_model}")
+
+        def chunk_list(lst, n):
+            for i in range(0, len(lst), n):
+                yield lst[i:i + n]
+
+        batches = list(chunk_list(rows, limit))
+        logger.info(f"Created {len(batches)} batches.")
+
+        total_fixed = 0
+        errors = 0
+
+        # Shared client instance
+        client = get_client(embed_endpoint)
+
+        def _process_batch(batch_rows):
+            # Create a dedicated connection for DB update to avoid contention
+            # Using the engine pool
+            with engine.connect() as conn:
+                txts = [r.text for r in batch_rows if r.text]
+                ids_map = {r.text: r.chunk_id for r in batch_rows if r.text}
+
+                if not txts:
+                    return 0
+
+                try:
+                    # Batch embedding call (much more efficient than 1-by-1)
+                    resp = client.embeddings.create(input=txts, model=embed_model)
+
+                    # Update DB
+                    for data in resp.data:
+                        # Find ID corresponding to text (assuming order preserved or unique text)
+                        # Caution: OpenAI API guarantees order matching input list
+                        idx = data.index
+                        embedding = data.embedding
+                        chunk_id = batch_rows[idx].chunk_id
+
+                        conn.execute(
+                            text("UPDATE chunks SET embedding = CAST(:emb AS halfvec(3840)) WHERE chunk_id = :id"),
+                            {"emb": str(embedding), "id": chunk_id},
+                        )
+                    conn.commit()
+                    return len(resp.data)
+                except Exception as e:
+                    logger.error(f"Batch failed: {e}")
+                    return 0
+
+        start_time = time.time()
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = [pool.submit(_process_batch, b) for b in batches]
+
+            for i, future in enumerate(as_completed(futures)):
+                try:
+                    fixed = future.result()
+                    total_fixed += fixed
+                    if i % 5 == 0:
+                        elapsed = time.time() - start_time
+                        rate = total_fixed / elapsed if elapsed > 0 else 0
+                        logger.info(f"Progress: {total_fixed}/{total} ({100*total_fixed/total:.1f}%) - Rate: {rate:.1f} chunks/sec")
+                except Exception as e:
+                    logger.error(f"Worker failed: {e}")
+                    errors += 1
+
+        logger.info(f"Done. Fixed: {total_fixed}, Errors: {errors}")
+
+    def main():
+        parser = argparse.ArgumentParser()
+        subparsers = parser.add_subparsers(dest="command", required=True)
+        p_fix = subparsers.add_parser("fix")
+        p_fix.add_argument("--batch-size", type=int, default=32)
+        p_fix.add_argument("--workers", type=int, default=20)
+        p_fix.add_argument("--api-url", help="Override API URL")
+        p_fix.add_argument("--model", help="Override model name")
+
+        args = parser.parse_args()
+        if args.command == "fix":
+            fix_nulls(args)
+
+    if __name__ == "__main__":
+        main()
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: backfill-embeddings
+  namespace: emailops
+spec:
+  backoffLimit: 2
+  template:
+    spec:
+      restartPolicy: OnFailure
+      imagePullSecrets:
+        - name: registry-sf-registry
+      containers:
+        - name: backfill
+          image: registry.digitalocean.com/sf-registry/emailops-backend:latest
+          command:
+            [
+              "python3",
+              "/tmp/scripts/manage_embeddings.py",
+              "fix",
+              "--workers",
+              "20",
+              "--batch-size",
+              "32",
+            ]
+          volumeMounts:
+            - name: script-vol
+              mountPath: /tmp/scripts
+          env:
+            - name: EMBED_ENDPOINT
+              value: "http://embeddings-api.emailops.svc.cluster.local:80/v1"
+            - name: PYTHONPATH
+              value: "/app"
+          envFrom:
+            - configMapRef:
+                name: emailops-config
+            - secretRef:
+                name: emailops-secrets
+      volumes:
+        - name: script-vol
+          configMap:
+            name: backfill-script

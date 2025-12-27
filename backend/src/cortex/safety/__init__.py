@@ -16,7 +16,40 @@ from cortex.safety.grounding import (
     tool_check_grounding,
 )
 from cortex.safety.policy_enforcer import PolicyDecision, check_action
-from cortex.security.injection_defense import strip_injection_patterns
+
+try:
+    from cortex.security.injection_defense import InjectionDefense
+except Exception:
+    InjectionDefense = None
+
+
+def strip_injection_patterns(text, defense=None):
+    """
+    Backwards-compatible wrapper around InjectionDefense.
+    If the underlying implementation is unavailable, returns text unchanged.
+    """
+    if defense is None:
+        if InjectionDefense is None:
+            return text
+        try:
+            defense = InjectionDefense()
+        except Exception:
+            return text
+    for attr in (
+        "strip_injection_patterns",
+        "strip",
+        "sanitize",
+        "clean",
+        "remove_patterns",
+    ):
+        method = getattr(defense, attr, None)
+        if callable(method):
+            try:
+                return method(text)
+            except Exception:
+                break
+    return text
+
 
 __all__ = [
     # Injection defense

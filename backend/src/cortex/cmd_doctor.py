@@ -4,6 +4,8 @@ Doctor Command Module.
 Implements system health checks for the Cortex Doctor CLI.
 """
 
+import os
+
 import structlog
 from cortex.config.loader import get_config
 
@@ -23,10 +25,20 @@ class CortexDoctor:
         # Using S3_ACCESS_KEY as representative of required env vars
         required_keys = ["DB_URL", "S3_ACCESS_KEY"]
 
-        for key in required_keys:
-            # We rely on ConfigLoader to have validated these or loaded defaults
-            # But here we just check if the config object has them populated
-            pass
+        missing = [key for key in required_keys if not os.environ.get(key)]
+
+        if missing:
+            # Also check if config loaded them (fallback)
+            if self.config:
+                # If config exists, we assume it loaded them, but let's verify specifics
+                if "DB_URL" in missing and self.config.database.url:
+                    missing.remove("DB_URL")
+                if "S3_ACCESS_KEY" in missing and self.config.storage.access_key:
+                    missing.remove("S3_ACCESS_KEY")
+
+        if missing:
+            logger.error("env_check_failed", missing_keys=missing)
+            return False
 
         logger.info("env_check_passed", status="OK")
         return True
@@ -49,9 +61,10 @@ class CortexDoctor:
         """Check Object Storage Connectivity."""
         try:
             if self.config.storage.access_key and self.config.storage.secret_key:
-                logger.info("s3_check", status="OK")
+                logger.info(
+                    "s3_check", status="OK", bucket=self.config.storage.bucket_name
+                )
                 return True
-
             logger.error("s3_check_failed", reason="missing_credentials")
             return False
         except Exception as e:

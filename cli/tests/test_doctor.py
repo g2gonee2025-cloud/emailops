@@ -157,8 +157,8 @@ class TestCmdDoctor(unittest.TestCase):
         mock_root = MagicMock()
         mock_index = MagicMock()
         # Mock __truediv__ to return mock_index when called with index_dirname
-        mock_root.__truediv__.side_effect = (
-            lambda x: mock_index if x == "_index" else MagicMock()
+        mock_root.__truediv__.side_effect = lambda x: (
+            mock_index if x == "_index" else MagicMock()
         )
         mock_index.exists.return_value = True
         mock_index.rglob.return_value = ["file1", "file2"]
@@ -195,8 +195,8 @@ class TestCmdDoctor(unittest.TestCase):
         eml_file = MagicMock()
         eml_file.suffix = ".eml"
         # glob needs to return iterable
-        (folder / "messages").glob.side_effect = (
-            lambda pat: [eml_file] if pat == "*.eml" else []
+        (folder / "messages").glob.side_effect = lambda pat: (
+            [eml_file] if pat == "*.eml" else []
         )
         mock_export.iterdir.return_value = [folder]
 
@@ -348,13 +348,13 @@ class TestCmdDoctorExtended(unittest.TestCase):
     def test_packages_for_provider_vertex(self):
         from cortex_cli.cmd_doctor import _packages_for_provider
 
-        critical, optional = _packages_for_provider("vertex")
+        critical, _optional = _packages_for_provider("vertex")
         self.assertIn("google-genai", critical)
 
     def test_packages_for_provider_openai(self):
         from cortex_cli.cmd_doctor import _packages_for_provider
 
-        critical, optional = _packages_for_provider("openai")
+        critical, _optional = _packages_for_provider("openai")
         self.assertIn("openai", critical)
 
     def test_packages_for_provider_unknown(self):
@@ -379,7 +379,7 @@ class TestCmdDoctorExtended(unittest.TestCase):
             mock_engine.return_value.connect.return_value.__exit__ = MagicMock()
             mock_conn.execute.return_value.scalar.return_value = 1
 
-            success, status, err = check_db(config)
+            success, _status, _err = check_db(config)
             self.assertTrue(success)
 
     def test_find_requirements_file(self):

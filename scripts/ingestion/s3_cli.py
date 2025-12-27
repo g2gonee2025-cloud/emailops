@@ -3,6 +3,7 @@
 S3 Ingestion Utility CLI.
 Consolidates scanning, real-data fetching, and deep dive inspection.
 """
+
 import argparse
 import json
 import logging
@@ -37,8 +38,14 @@ def get_s3_client(config):
 def list_roots(_args):
     """List root folders in the bucket."""
     config = get_config()
+    storage = getattr(config, "storage", None)
+    if storage is None:
+        raise ValueError("Storage configuration is missing")
+    for _attr in ("region", "endpoint_url", "access_key", "secret_key"):
+        if not hasattr(storage, _attr):
+            raise ValueError(f"Storage configuration missing '{_attr}'")
     client = get_s3_client(config)
-    bucket = config.storage.bucket_raw
+    bucket = storage.bucket_raw
 
     print(f"Listing roots in '{bucket}'...")
     paginator = client.get_paginator("list_objects_v2")
@@ -61,7 +68,11 @@ def fetch_sample(args):
     scanned = 0
     max_scan = args.max_scan
 
-    for page in paginator.paginate(Bucket=bucket, MaxKeys=50):
+    # Ensure the max-scan limit applies to total objects examined, not just manifests
+    pagination_kwargs = {"Bucket": bucket, "PaginationConfig": {"PageSize": 50}}
+    if max_scan:
+        pagination_kwargs["PaginationConfig"]["MaxItems"] = max_scan
+    for page in paginator.paginate(**pagination_kwargs):
         if "Contents" not in page:
             continue
 

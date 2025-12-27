@@ -15,11 +15,12 @@ def parse_attachments_log(convo_dir: Path) -> Dict[str, Dict[str, Any]]:
     Parse attachments_log.csv and return a mapping of filename -> metadata.
 
     Returns:
-        Dict mapping filename to metadata dict including:
+        Dict mapping filename to a list of metadata dicts (one per occurrence) including:
         - sender
         - mail_time
         - mail_subject
         - attachment_kind (inline vs attachment)
+        If a filename appears multiple times in the log, all entries are preserved under that filename key.
     """
     # Check potential locations (Outlook/folder/attachments/attachments_log.csv)
     candidates = [
@@ -33,7 +34,7 @@ def parse_attachments_log(convo_dir: Path) -> Dict[str, Dict[str, Any]]:
 
     metadata_map = {}
     try:
-        with open(csv_path, "r", encoding="utf-8-sig") as f:
+        with open(csv_path, "r", encoding="utf-8-sig", newline="") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 filename = row.get("filename")

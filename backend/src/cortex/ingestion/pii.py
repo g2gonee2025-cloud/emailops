@@ -170,7 +170,7 @@ class PIIEngine:
             score_threshold: Minimum confidence score to consider a detection valid
             strict: If True, raise PIIInitError if Presidio fails to load.
         """
-        self.entities = entities or SUPPORTED_ENTITIES
+        self.entities = entities if entities is not None else SUPPORTED_ENTITIES
         self.language = language
         self.score_threshold = score_threshold
         self.analyzer: Any | None = None
@@ -192,7 +192,7 @@ class PIIEngine:
                         f"Failed to initialize Presidio in strict mode: {e}"
                     ) from e
                 logger.error(
-                    f"Failed to initialize Presidio: {e}. Using regex fallback."
+                    "Failed to initialize Presidio: %s. Using regex fallback.", e
                 )
                 self.analyzer = None
                 self.anonymizer = None

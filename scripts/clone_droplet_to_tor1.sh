@@ -238,7 +238,7 @@ fi
 SRC_ID="$(echo "$SRC_JSON" | jq -r '.id')"
 SRC_REGION="$(echo "$SRC_JSON" | jq -r '.region.slug')"
 SIZE_SLUG="$(echo "$SRC_JSON" | jq -r '.size.slug')"
-SRC_TAGS_CSV="$(echo "$SRC_JSON" | jq -r '.tags | join(",")')"
+SRC_TAGS_CSV="$(echo "$SRC_JSON" | jq -r '(.tags // []) | join(",")')"
 SRC_TAGS="${SRC_TAGS_CSV:-}"
 
 if [[ -z "$DST_NAME" ]]; then

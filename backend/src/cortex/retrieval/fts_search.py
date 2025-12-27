@@ -51,14 +51,14 @@ def search_conversations_fts(
     Perform FTS search on conversations.
 
     Blueprint §8.2 (adapted for Conversation schema):
-    * FTS search on conversations subject
+    * FTS search on conversations subject AND summary_text
     * Returns conversation-level hits
     """
     query = (query or "").strip()
     if not query:
         return []
 
-    # Search conversations by subject (since we store subject in conversations table)
+    # Search conversations by subject (weight A) and summary (weight B)
     stmt = text(
         """
         WITH q AS (
@@ -67,12 +67,22 @@ def search_conversations_fts(
         SELECT
             conv.conversation_id,
             conv.subject,
-            ts_rank_cd(to_tsvector(:cfg, COALESCE(conv.subject, '')), q.tsq, 32) AS score,
-            ts_headline(:cfg, COALESCE(conv.subject, ''), q.tsq, :headline_opts) AS snippet
+            ts_rank_cd(
+                setweight(to_tsvector(:cfg, COALESCE(conv.subject, '')), 'A') ||
+                setweight(to_tsvector(:cfg, COALESCE(conv.summary_text, '')), 'B'),
+                q.tsq, 32
+            ) AS score,
+            ts_headline(:cfg,
+                COALESCE(conv.subject, '') || ' | ' || COALESCE(conv.summary_text, ''),
+                q.tsq, :headline_opts
+            ) AS snippet
         FROM conversations conv, q
         WHERE
             conv.tenant_id = :tenant_id
-            AND to_tsvector(:cfg, COALESCE(conv.subject, '')) @@ q.tsq
+            AND (
+                setweight(to_tsvector(:cfg, COALESCE(conv.subject, '')), 'A') ||
+                setweight(to_tsvector(:cfg, COALESCE(conv.summary_text, '')), 'B')
+            ) @@ q.tsq
         ORDER BY score DESC
         LIMIT :limit
     """
@@ -92,9 +102,9 @@ def search_conversations_fts(
     return [
         FTSResult(
             conversation_id=str(row.conversation_id),
-            subject=row.subject or "",
-            score=row.score,
-            snippet=row.snippet or "",
+            subject=str(row.subject or ""),
+            score=float(row.score or 0.0),
+            snippet=str(row.snippet or ""),
         )
         for row in results
     ]
@@ -199,13 +209,13 @@ def search_chunks_fts(
         ChunkFTSResult(
             chunk_id=str(row.chunk_id),
             conversation_id=str(row.conversation_id),
-            chunk_type=row.chunk_type or "message_body",
-            score=row.score,
-            snippet=row.snippet or "",
-            text=row.text or "",
-            is_attachment=row.is_attachment or False,
+            chunk_type=str(row.chunk_type or "message_body"),
+            score=float(row.score or 0.0),
+            snippet=str(row.snippet or ""),
+            text=str(row.text or ""),
+            is_attachment=bool(row.is_attachment),
             attachment_id=str(row.attachment_id) if row.attachment_id else None,
-            metadata=row.extra_data or {},
+            metadata=dict(row.extra_data) if row.extra_data else {},
         )
         for row in results
     ]

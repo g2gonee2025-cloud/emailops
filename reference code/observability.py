@@ -61,7 +61,7 @@ except ImportError:
 
 from .core_config import EmailOpsConfig
 
-__all__ = [
+__all__ = (
     "get_logger",
     "get_trace_context",
     "init_observability",

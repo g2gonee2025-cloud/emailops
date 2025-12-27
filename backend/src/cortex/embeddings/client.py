@@ -6,9 +6,13 @@ Provides a stable interface for embedding operations.
 
 from __future__ import annotations
 
-from typing import List
+from typing import Final, List
 
 from cortex.llm.client import embed_texts as _embed_texts
+
+DEFAULT_EMBED_BATCH_SIZE: Final[int] = 50
+"""
+Default batch size for embedding operations."""
 
 
 class EmbeddingsClient:
@@ -18,7 +22,10 @@ class EmbeddingsClient:
 
     def embed(self, text: str) -> List[float]:
         """Embed a single text string."""
-        return self.embed_texts([text])[0]
+        result = self.embed_texts([text])
+        if not result:
+            return []  # P2 Fix: Handle empty result
+        return result[0]
 
     BATCH_SIZE = 50
 
@@ -35,7 +42,9 @@ class EmbeddingsClient:
         if not texts:
             return []
         result = _embed_texts(texts)
-        return result.tolist() if hasattr(result, "tolist") else result
+        if result is None:  # P2 Fix: Handle None return
+            return []
+        return result.tolist() if hasattr(result, "tolist") else list(result)
 
     @staticmethod
     def cosine_similarity(vec_a: List[float], vec_b: List[float]) -> float:

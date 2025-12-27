@@ -113,5 +113,11 @@ def _resolve_filter_conversation_ids(
         return None
 
     # Execute
-    result_ids = [str(row[0]) for row in query.all()]
-    return result_ids
+    try:
+        result_ids = [str(row[0]) for row in query.all()]
+        return result_ids
+    except Exception:
+        # If DB query fails, fall back strictly to filter IDs if present, or return empty
+        if filters.conv_ids:
+            return list(filters.conv_ids)
+        return []

@@ -91,7 +91,7 @@ def _decide_action(
         "- Use search when you need to look up documents or knowledge base results.\n"
         "- Otherwise answer directly using available context.\n\n"
         f"Thread ID: {request.thread_id or 'none'}\n"
-        f"Latest user message: {latest_user}\n\n"
+        f"Latest user message: <user_input>{latest_user}</user_input>\n\n"
         "Conversation history:\n"
         f"{_format_history(history)}\n\n"
         "Return JSON with fields: action, reason."
@@ -253,7 +253,9 @@ async def _handle_summarize(
     else:
         summary_prompt = (
             "Summarize the following conversation in markdown.\n\n"
-            f"{_format_history(history)}"
+            "<conversation_history>\n"
+            f"{_format_history(history)}\n"
+            "</conversation_history>"
         )
         summary_text = complete_text(summary_prompt)
         summary = ThreadSummary(summary_markdown=summary_text, key_points=[])
@@ -286,7 +288,7 @@ async def _handle_search(
     reply_prompt = (
         "You are responding to a search request. Provide a concise response "
         "grounded in the search results.\n\n"
-        f"User request: {latest_user}\n\n"
+        f"User request: <user_input>{latest_user}</user_input>\n\n"
         f"Search results:\n{snippets}"
     )
     reply = complete_text(reply_prompt)
@@ -335,7 +337,7 @@ async def _handle_answer(
             + _format_history(history)
             + "\n\nContext:\n"
             + assembled_context
-            + f"\n\nQuestion: {latest_user}"
+            + f"\n\nQuestion: <user_input>{latest_user}</user_input>"
         )
         answer_text = complete_text(prompt)
         evidence = _extract_evidence_from_answer(answer_text, results)

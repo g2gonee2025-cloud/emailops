@@ -16,7 +16,7 @@ from .utils import find_conversation_dirs
 
 logger = logging.getLogger(__name__)
 
-__all__ = [
+__all__ = (
     "ChunkWorkerBatch",
     "force_rechunk_all",
     "incremental_rechunk",

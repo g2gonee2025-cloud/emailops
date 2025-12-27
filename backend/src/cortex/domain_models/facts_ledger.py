@@ -7,7 +7,7 @@ Implements §10.4 of the Canonical Blueprint - summarization models.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, List, Literal, Optional
+from typing import Any, Callable, List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -42,9 +42,9 @@ class ParticipantAnalysis(BaseModel):
     """Analyst's view of a participant."""
 
     name: Optional[str] = None
-    role: Optional[
-        Literal["client", "broker", "underwriter", "internal", "other"]
-    ] = "other"
+    role: Optional[Literal["client", "broker", "underwriter", "internal", "other"]] = (
+        "other"
+    )
     tone: Optional[
         Literal[
             "professional", "frustrated", "urgent", "friendly", "demanding", "neutral"
@@ -75,9 +75,9 @@ class FactsLedger(BaseModel):
             return self
 
         # 1. Merge simple lists (set-like union)
-        # Helper to dedup objects that might not be hashable but are Pydantic models
+        # Helper to deduplicate potentially unhashable Pydantic models by comparing their normalized representation (e.g., dict), rather than relying on hashing or JSON serialization.
         def _merge_lists(
-            l1: List[Any], l2: List[Any], key_fn: Optional[callable] = None
+            l1: List[Any], l2: List[Any], key_fn: Optional[Callable[[Any], Any]] = None
         ):
             seen = set()
             out = []

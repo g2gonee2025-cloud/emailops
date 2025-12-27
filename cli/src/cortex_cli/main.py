@@ -17,7 +17,7 @@ Commands:
 
 Examples:
     cortex ingest ./exports/my_emails
-    cortex index --provider vertex
+    cortex index --provider digitalocean
     cortex search "contract renewal"
     cortex doctor --check-embeddings
 """
@@ -40,6 +40,21 @@ if BACKEND_SRC.exists() and str(BACKEND_SRC) not in sys.path:
 CLI_SRC = PROJECT_ROOT / "cli" / "src"
 if CLI_SRC.exists() and str(CLI_SRC) not in sys.path:
     sys.path.insert(0, str(CLI_SRC))
+
+# Ensure Workers package is importable
+WORKERS_SRC = PROJECT_ROOT / "workers" / "src"
+if WORKERS_SRC.exists() and str(WORKERS_SRC) not in sys.path:
+    sys.path.append(str(WORKERS_SRC))
+
+from dotenv import load_dotenv  # noqa: E402
+
+# Load .env file BEFORE any environment variable access
+# This ensures OUTLOOKCORTEX_* vars are available for status/config commands
+_dotenv_path = PROJECT_ROOT / ".env"
+if _dotenv_path.exists():
+    load_dotenv(_dotenv_path)
+else:
+    load_dotenv()  # Fall back to default dotenv discovery
 
 from cortex_cli._config_helpers import (  # noqa: E402
     _print_human_config,
@@ -85,8 +100,7 @@ class EmailOpsConfigProto(Protocol):
     search: SearchConfig
     processing: ProcessingConfig
 
-    def model_dump(self) -> dict[str, Any]:
-        ...
+    def model_dump(self) -> dict[str, Any]: ...
 
 
 # Import config model for typing if available; otherwise fall back to protocol
@@ -133,6 +147,7 @@ DATA_COMMANDS = [
     ("db", "Database management (stats, migrate)"),
     ("embeddings", "Embedding management (stats, backfill)"),
     ("s3", "S3/Spaces storage (list, ingest)"),
+    ("maintenance", "System maintenance (resolve-entities)"),
 ]
 
 COMMON_OPTIONS = [
@@ -161,7 +176,7 @@ def _print_banner() -> None:
     banner = f"""
 {_colorize("╔═══════════════════════════════════════════════════════════╗", "cyan")}
 {_colorize("║", "cyan")}  {_colorize("EmailOps Cortex CLI", "bold")} - Email Intelligence Platform       {_colorize("║", "cyan")}
-{_colorize("║", "cyan")}  Powered by Vertex AI & LangGraph                          {_colorize("║", "cyan")}
+{_colorize("║", "cyan")}  Powered by LangGraph                                      {_colorize("║", "cyan")}
 {_colorize("╚═══════════════════════════════════════════════════════════╝", "cyan")}
 """
     print(banner)
@@ -662,7 +677,7 @@ def _run_ingest(
 
 def _run_index(
     root: str = ".",
-    provider: str = "vertex",
+    provider: str = "digitalocean",
     workers: int = 4,
     limit: int | None = None,
     force: bool = False,
@@ -934,10 +949,20 @@ def _run_answer(
 
         final_state: Any = asyncio.run(_execute())
 
-        if final_state.error:
-            raise Exception(final_state.error)
+        # Handle both dict and object-like state access
+        error = (
+            final_state.get("error")
+            if isinstance(final_state, dict)
+            else getattr(final_state, "error", None)
+        )
+        if error:
+            raise Exception(error)
 
-        answer: Any | None = final_state.answer
+        answer: Any | None = (
+            final_state.get("answer")
+            if isinstance(final_state, dict)
+            else getattr(final_state, "answer", None)
+        )
 
         if json_output:
             print(
@@ -1004,10 +1029,21 @@ def _run_draft(
             build_draft_graph, tenant_id, user_id, thread_id, instructions
         )
 
-        if final_state.error:
-            raise Exception(final_state.error)
+        # Handle both dict and object-like state access
+        error = (
+            final_state.get("error")
+            if isinstance(final_state, dict)
+            else getattr(final_state, "error", None)
+        )
+        if error:
+            raise Exception(error)
 
-        _output_draft_result(final_state.draft, json_output)
+        draft = (
+            final_state.get("draft")
+            if isinstance(final_state, dict)
+            else getattr(final_state, "draft", None)
+        )
+        _output_draft_result(draft, json_output)
 
     except ImportError as e:
         _handle_import_error(e, json_output)
@@ -1168,10 +1204,20 @@ def _run_summarize(
 
         final_state: Any = asyncio.run(_execute())
 
-        if final_state.error:
-            raise Exception(final_state.error)
+        # Handle both dict and object-like state access
+        error = (
+            final_state.get("error")
+            if isinstance(final_state, dict)
+            else getattr(final_state, "error", None)
+        )
+        if error:
+            raise Exception(error)
 
-        summary: Any | None = final_state.summary
+        summary: Any | None = (
+            final_state.get("summary")
+            if isinstance(final_state, dict)
+            else getattr(final_state, "summary", None)
+        )
 
         if json_output:
             print(
@@ -1272,11 +1318,13 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     # Register plugin subcommand groups
     from cortex_cli.cmd_db import setup_db_parser
     from cortex_cli.cmd_embeddings import setup_embeddings_parser
+    from cortex_cli.cmd_maintenance import setup_maintenance_parser
     from cortex_cli.cmd_s3 import setup_s3_parser
 
     setup_db_parser(subparsers)
     setup_embeddings_parser(subparsers)
     setup_s3_parser(subparsers)
+    setup_maintenance_parser(subparsers)
 
     # Parse arguments
     parsed_args = parser.parse_args(args)
@@ -1445,10 +1493,10 @@ Uses parallel workers for faster processing.
     )
     index_parser.add_argument(
         "--provider",
-        "-p",
-        default="vertex",
-        choices=["vertex", "openai", "local"],
-        help="Embedding provider (default: vertex)",
+        type=str,
+        default="digitalocean",
+        choices=["digitalocean"],
+        help="Embedding provider",
     )
     index_parser.add_argument(
         "--workers",
@@ -1767,7 +1815,7 @@ Run comprehensive system diagnostics including:
     )
     doctor_parser.add_argument(
         "--provider",
-        default="vertex",
+        default="digitalocean",
         choices=[
             "vertex",
             "gcp",
@@ -1879,6 +1927,13 @@ Run comprehensive system diagnostics including:
     config_parser.add_argument(
         "--section",
         help="View specific configuration section (e.g. core, search)",
+    )
+    config_parser.set_defaults(
+        func=lambda args: _show_config(
+            validate=args.validate,
+            export_format="json" if args.json else None,
+            section=args.section,
+        )
     )
 
     # Version command

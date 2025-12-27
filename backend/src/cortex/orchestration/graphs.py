@@ -21,6 +21,7 @@ from cortex.orchestration.nodes import (
     node_prepare_draft_query,
     node_query_graph,
     node_retrieve_context,
+    node_select_attachments,
     node_summarize_analyst,
     node_summarize_critic,
     node_summarize_final,
@@ -97,7 +98,11 @@ def build_answer_graph() -> StateGraph:
     )
 
     workflow.add_edge("assemble", "query_graph")
-    workflow.add_edge("query_graph", "generate")
+    workflow.add_conditional_edges(
+        "query_graph",
+        _check_error,
+        {"continue": "generate", "handle_error": "handle_error"},
+    )
 
     # Generate -> check error or end
     workflow.add_conditional_edges(
@@ -122,7 +127,8 @@ def should_improve(state: DraftEmailState) -> str:
 
     # Check if there are major issues
     has_major_issues = any(
-        issue.severity in ["major", "critical"] for issue in critique.issues
+        issue.severity in ["major", "critical"]
+        for issue in (getattr(critique, "issues", None) or [])
     )
 
     if has_major_issues:
@@ -162,6 +168,7 @@ def build_draft_graph() -> StateGraph:
     workflow.add_node("critique", node_critique_draft)
     workflow.add_node("improve", node_improve_draft)
     workflow.add_node("audit", node_audit_draft)
+    workflow.add_node("select_attachments", node_select_attachments)
     workflow.add_node("handle_error", node_handle_error)
 
     # Edges
@@ -179,7 +186,8 @@ def build_draft_graph() -> StateGraph:
     )
 
     workflow.add_edge("improve", "critique")
-    workflow.add_edge("audit", END)
+    workflow.add_edge("audit", "select_attachments")
+    workflow.add_edge("select_attachments", END)
 
     return workflow
 

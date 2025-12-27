@@ -7,12 +7,20 @@ def raw_alter():
         config = get_config()
         # Use a fresh engine without pgvector types registered if possible, or just raw psycopg2
         # But let's use sqlalchemy text()
-        engine = create_engine(config.database.url)
+        db_url = getattr(getattr(config, "database", None), "url", None)
+        if not db_url:
+            raise RuntimeError("Invalid configuration: missing database.url")
+        engine = create_engine(db_url)
+        # The SQL executed below references the following values:
+        # - 3840: vector embedding dimension for columns defined as vector(3840) (e.g., OpenAI text-embedding-3-large).
+        # - m = 16: HNSW graph degree (number of links per node) used in index creation.
+        # - ef_construction = 64: HNSW index build parameter controlling recall/latency during construction.
+        # Keep these documented here to avoid "magic numbers" and adjust as needed for your deployment.
 
         with engine.connect() as conn:
             print("Attempting to create extension vector if not exists...")
-            conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
-            conn.commit()
+            with conn.begin():
+                conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
 
             print("Attempting ALTER COLUMN to halfvec...")
             # We use a transaction

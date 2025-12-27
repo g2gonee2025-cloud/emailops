@@ -100,6 +100,41 @@ def _split_recipients(value: str) -> List[str]:
     return [p for p in parts if p]
 
 
+def _sanitize_local_part(local: str) -> str:
+    """Sanitize an email local-part to ensure it is RFC-compliant enough for our use."""
+    s = (local or "").strip().lower()
+    # Allowed characters per RFC 5322 (unquoted) local-part
+    allowed = set("abcdefghijklmnopqrstuvwxyz0123456789!#$%&'*+/=?^_`{|}~.-")
+    s = "".join(c if c in allowed else "." for c in s)
+    # Collapse multiple dots and trim from ends
+    s = re.sub(r"\.+", ".", s).strip(".")
+    return s or "unknown"
+
+
+def _is_exchange_dn(value: str) -> bool:
+    """Heuristically detect Exchange/X.500 Distinguished Names."""
+    if not value:
+        return False
+    v = value.strip()
+    u = v.upper()
+    return (
+        u.startswith(("EX:", "X500:", "/O=", "/OU=", "/CN=", "O=", "OU=", "CN="))
+        or "/CN=" in u
+    )
+
+
+def _extract_last_cn(dn: str) -> str:
+    """Extract the last CN component from a DN string."""
+    if not dn:
+        return ""
+    matches = re.findall(r"(?i)CN=([^/]+)", dn)
+    if matches:
+        return str(matches[-1])
+    # Fallback: take last segment and strip any key=
+    seg = dn.rsplit("/", 1)[-1]
+    return seg.split("=", 1)[-1] if "=" in seg else seg
+
+
 def _parse_header_line(line: str, participants: Dict[str, Dict[str, Any]]) -> None:
     """Parse a single header line and update participants dict."""
     for match in FIELD_PATTERN.finditer(line):
@@ -110,6 +145,10 @@ def _parse_header_line(line: str, participants: Dict[str, Dict[str, Any]]) -> No
         raw_addrs = _split_recipients(value)
 
         for raw_addr in raw_addrs:
+            # Convert Exchange DNs into sanitized pseudo-emails to avoid malformed addresses
+            if isinstance(raw_addr, str) and _is_exchange_dn(raw_addr):
+                last_cn = _extract_last_cn(raw_addr)
+                raw_addr = f"{_sanitize_local_part(last_cn)}@exchange.local"
             email, name = _extract_email_and_name(raw_addr)
             if email and email not in participants:
                 participants[email] = {
@@ -168,4 +207,4 @@ def _normalize_role(role: str) -> str:
     return role  # cc, bcc
 
 
-__all__ = ["extract_participants_from_conversation_txt"]
+__all__ = "extract_participants_from_conversation_txt"

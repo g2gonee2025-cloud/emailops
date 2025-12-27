@@ -7,6 +7,7 @@ Implements §4.2 and §11.1 of the Canonical Blueprint.
 from __future__ import annotations
 
 import logging
+import time
 from contextlib import contextmanager
 from typing import Any, Callable, Generator, Optional
 
@@ -16,7 +17,66 @@ from cortex.observability import trace_operation
 from sqlalchemy import create_engine, event, text
 from sqlalchemy.orm import Session, sessionmaker
 
+# Constants
+SLOW_QUERY_THRESHOLD_SECONDS = 1.0
+
+
 logger = logging.getLogger(__name__)
+
+# Security hardening: avoid logging or propagating raw exception messages
+# which may reveal sensitive information. We attach a filter to this module's
+# logger that redacts exception messages from log output originating here.
+
+
+class _RedactingExceptionFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        # Scrub exception info so that exception messages are not emitted.
+        if record.exc_info:
+            exc_type, exc_value, tb = record.exc_info  # type: ignore[assignment]
+            # Replace the exception value with a new instance with no args/message.
+            try:
+                sanitized_exc = exc_type()
+            except Exception:
+                sanitized_exc = exc_type  # fallback; logging will print type only
+            record.exc_info = (exc_type, sanitized_exc, tb)  # type: ignore[assignment]
+        # Scrub any exception instances passed as formatting args.
+        if record.args:
+            try:
+                if isinstance(record.args, tuple):
+                    record.args = tuple(
+                        "<redacted>" if isinstance(a, BaseException) else a
+                        for a in record.args
+                    )
+                else:
+                    record.args = (
+                        "<redacted>"
+                        if isinstance(record.args, BaseException)
+                        else record.args
+                    )
+            except Exception:
+                # On any failure, do not block logging.
+                pass
+        return True
+
+
+# Ensure the filter is attached only once.
+if not any(isinstance(f, _RedactingExceptionFilter) for f in logger.filters):
+    logger.addFilter(_RedactingExceptionFilter())
+
+
+class SafeDatabaseError(RuntimeError):
+    pass
+
+
+def raise_sanitized(
+    error_message: str = "Database operation failed",
+    *,
+    cause: Optional[BaseException] = None,
+) -> None:
+    if cause is None:
+        raise SafeDatabaseError(error_message)
+    raise SafeDatabaseError(error_message) from cause
+
 
 _config = get_config()
 
@@ -186,7 +246,7 @@ def receive_before_cursor_execute(
     conn, cursor, statement, parameters, context, executemany
 ):
     """Log queries for debugging (can be extended for metrics)."""
-    conn.info.setdefault("query_start_time", []).append(__import__("time").time())
+    conn.info.setdefault("query_start_time", []).append(time.time())
 
 
 @event.listens_for(engine, "after_cursor_execute")
@@ -194,6 +254,6 @@ def receive_after_cursor_execute(
     conn, cursor, statement, parameters, context, executemany
 ):
     """Log slow queries for observability."""
-    total_time = __import__("time").time() - conn.info["query_start_time"].pop()
+    total_time = time.time() - conn.info["query_start_time"].pop()
     if total_time > 1.0:  # Log queries taking more than 1 second
         logger.warning(f"Slow query ({total_time:.2f}s): {statement[:200]}...")

@@ -310,9 +310,9 @@ class StructuredLoggingMiddleware(BaseHTTPMiddleware):
         start_time = time.time()
 
         # Get context values
-        correlation_id = correlation_id_ctx.get()
-        tenant_id = tenant_id_ctx.get()
-        user_id = user_id_ctx.get()
+        correlation_id = correlation_id_ctx.get(None)
+        tenant_id = tenant_id_ctx.get(None)
+        user_id = user_id_ctx.get(None)
         trace_ctx = get_trace_context()
 
         try:
@@ -466,7 +466,7 @@ def setup_opentelemetry(app: FastAPI) -> None:
     except ImportError:
         logger.warning("OpenTelemetry FastAPI instrumentor not available; skipping")
     except Exception as e:
-        logger.warning(f"Failed to setup OpenTelemetry instrumentation: {e}")
+        logger.warning("Failed to setup OpenTelemetry instrumentation: %s", e)
 
 
 # ---------------------------------------------------------------------------
@@ -497,6 +497,17 @@ def setup_security(app: FastAPI) -> None:
 
         _configure_jwt_decoder(jwks_url=jwks_url, audience=audience, issuer=issuer)
 
+        if jwks_url and (
+            jwks_url.startswith("http://") or jwks_url.startswith("https://")
+        ):
+            # Simple validation to ensure scheme
+            pass
+        elif jwks_url:
+            logger.warning(
+                "Potential insecurity: JWKS URL %s does not start with http/https",
+                jwks_url,
+            )
+
         if jwks_url:
             logger.info("Security: JWT validation enabled via JWKS %s", jwks_url)
         elif config.core.env == "prod":
@@ -506,7 +517,7 @@ def setup_security(app: FastAPI) -> None:
         else:
             logger.info("Security: dev mode with header-based identity fallback")
     except Exception as e:
-        logger.warning(f"Failed to setup security: {e}")
+        logger.warning("Failed to setup security: %s", e)
 
 
 # ---------------------------------------------------------------------------
@@ -588,6 +599,8 @@ def create_app() -> FastAPI:
             "http://127.0.0.1:3000",
             "http://localhost:8000",
             "http://127.0.0.1:8000",
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
         ]
         if config.core.env == "dev"
         else [
@@ -632,6 +645,7 @@ def create_app() -> FastAPI:
     # ---------------------------------------------------------------------------
     # Include API Routers
     # ---------------------------------------------------------------------------
+    from cortex import routes_admin, routes_auth
     from cortex.rag_api import (
         routes_answer,
         routes_chat,
@@ -641,6 +655,8 @@ def create_app() -> FastAPI:
         routes_summarize,
     )
 
+    app.include_router(routes_auth.router, prefix="/api/v1")  # Auth (no JWT required)
+    app.include_router(routes_admin.router, prefix="/api/v1")
     app.include_router(routes_search.router, prefix="/api/v1", tags=["search"])
     app.include_router(routes_answer.router, prefix="/api/v1", tags=["answer"])
     app.include_router(routes_draft.router, prefix="/api/v1", tags=["draft"])

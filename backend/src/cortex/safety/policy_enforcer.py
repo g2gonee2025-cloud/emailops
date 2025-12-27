@@ -102,7 +102,11 @@ def _check_recipient_policy(metadata: Dict[str, Any]) -> Optional[str]:
         )
 
     # Check for external domains
-    external_recipients = [r for r in recipients if EXTERNAL_DOMAIN_PATTERN.search(r)]
+    external_recipients = [
+        r
+        for r in recipients
+        if isinstance(r, str) and EXTERNAL_DOMAIN_PATTERN.search(r)
+    ]
     if external_recipients and metadata.get("check_external", True):
         return f"External recipients detected: {', '.join(external_recipients[:3])}"
 
@@ -188,14 +192,14 @@ def check_action(action: str, metadata: Dict[str, Any]) -> PolicyDecision:
     risk_level = _determine_risk_level(action)
     violations: List[str] = []
 
-    # Run policy checks
-    if recipient_issue := _check_recipient_policy(metadata):
+    # Run policy checks (defaults to safe empty structures if keys missing)
+    if recipient_issue := _check_recipient_policy(metadata or {}):
         violations.append(recipient_issue)
 
-    if content_issue := _check_content_policy(metadata):
+    if content_issue := _check_content_policy(metadata or {}):
         violations.append(content_issue)
 
-    if attachment_issue := _check_attachment_policy(metadata):
+    if attachment_issue := _check_attachment_policy(metadata or {}):
         violations.append(attachment_issue)
 
     # Determine decision based on risk level and violations
@@ -228,15 +232,24 @@ def check_action(action: str, metadata: Dict[str, Any]) -> PolicyDecision:
             decision = "allow"
             reason = "No policy violations"
 
+    safe_meta = metadata or {}
+
     # Check for explicit deny list
-    if metadata.get("force_deny"):
+    if safe_meta.get("force_deny"):
         decision = "deny"
         reason = "Explicitly denied by policy"
 
     # Check for bypass (e.g., admin override)
-    if metadata.get("admin_bypass") and decision != "deny":
-        decision = "allow"
-        reason = "Admin bypass enabled"
+    # SECURITY: Require explicit admin token/flag verification, not just existence
+    if safe_meta.get("admin_bypass") and decision != "deny":
+        # In a real system, verify the token. Here we check for a specific confirmation flag.
+        if safe_meta.get("admin_confirmed") is True:
+            decision = "allow"
+            reason = "Admin bypass enabled"
+        else:
+            logger.warning(
+                "Admin bypass attempted without confirmation for action %s", action
+            )
 
     return PolicyDecision(
         action=action,
