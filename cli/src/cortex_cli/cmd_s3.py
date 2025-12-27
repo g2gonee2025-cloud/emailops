@@ -576,6 +576,7 @@ def setup_s3_parser(subparsers: Any) -> None:
 def cmd_s3_check_structure(args: argparse.Namespace) -> None:
     """Check S3 folder structure for correctness."""
     import json
+
     from cortex_cli.s3_check import check_s3_structure
 
     try:
