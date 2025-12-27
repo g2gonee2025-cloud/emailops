@@ -778,6 +778,8 @@ def _run_index(
         sys.exit(1)
 
 
+<<<<<<< HEAD
+=======
 def _run_search(
     query: str,
     top_k: int = 10,
@@ -914,6 +916,7 @@ def _run_search(
         else:
             print(f"\n  {_colorize('ERROR:', 'red')} {e}")
         sys.exit(1)
+>>>>>>> origin/main
 
 
 # =============================================================================
@@ -1357,6 +1360,7 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     from cortex_cli.cmd_s3 import setup_s3_parser
     from cortex_cli.cmd_safety import setup_safety_parser
     from cortex_cli.cmd_test import setup_test_parser
+    from cortex_cli.cmd_search import setup_search_parser
     from rich.console import Console
     from typer.core import TyperGroup
     from typer.main import get_command_from_info
@@ -1410,6 +1414,9 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     setup_s3_parser(subparsers)
     setup_maintenance_parser(subparsers)
     setup_test_parser(subparsers)
+<<<<<<< HEAD
+    setup_search_parser(subparsers)
+=======
     setup_grounding_parser(subparsers)
     setup_safety_parser(subparsers)
     setup_queue_parser(subparsers)x_parser(subparsers)
@@ -1422,6 +1429,7 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     setup_schema_parser(subparsers)
     if "sqlite" not in _config.database.url:
         setup_test_parser(subparsers)
+>>>>>>> origin/main
 >>>>>>> origin/main
 
     # Parse arguments
@@ -1630,69 +1638,6 @@ Uses parallel workers for faster processing.
             workers=args.workers,
             limit=args.limit,
             force=args.force,
-            json_output=args.json,
-        )
-    )
-
-    # Search command
-    search_parser = subparsers.add_parser(
-        "search",
-        help="Search indexed emails with natural language",
-        description="""
-Search your indexed emails using natural language queries.
-
-Examples:
-  cortex search "contract renewal terms"
-  cortex search "emails from John about budget" --top-k 20
-  cortex search "attachments mentioning quarterly report"
-
-Uses hybrid search (vector + full-text) for best results.
-        """,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    search_parser.add_argument(
-        "query",
-        metavar="QUERY",
-        help="Natural language search query",
-    )
-    search_parser.add_argument(
-        "--top-k",
-        "-k",
-        type=int,
-        default=10,
-        metavar="N",
-        help="Number of results to return (default: 10)",
-    )
-    search_parser.add_argument(
-        "--tenant",
-        "-t",
-        default="default",
-        metavar="ID",
-        help="Tenant ID (default: 'default')",
-    )
-    search_parser.add_argument(
-        "--fusion",
-        choices=["rrf", "weighted_sum"],
-        default="rrf",
-        help="Fusion method: rrf (default) or weighted_sum",
-    )
-    search_parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="Show detailed score breakdown (F/V/L)",
-    )
-    search_parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Output results as JSON",
-    )
-    search_parser.set_defaults(
-        func=lambda args: _run_search(
-            query=args.query,
-            top_k=args.top_k,
-            tenant_id=args.tenant,
-            fusion=args.fusion,
-            debug=args.debug,
             json_output=args.json,
         )
     )
