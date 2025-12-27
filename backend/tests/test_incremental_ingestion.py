@@ -10,11 +10,10 @@ from cortex.ingestion.s3_source import S3ConversationFolder
 
 class TestIncrementalIngestion(unittest.TestCase):
     @patch("cortex.ingestion.processor.process_job")
-    @patch("cortex.db.session.SessionLocal")
     @patch("cortex.ingestion.s3_source.get_config")
     @patch("cortex.ingestion.processor.get_config")
     def test_incremental_processing(
-        self, mock_processor_config, mock_s3_config, mock_session_cls, mock_process_job
+        self, mock_processor_config, mock_s3_config, mock_process_job
     ):
         # Setup
         mock_s3_config.return_value.storage.endpoint_url = "http://localhost:9000"
@@ -30,16 +29,12 @@ class TestIncrementalIngestion(unittest.TestCase):
             last_modified=base_time,
         )
 
-        # Mock DB Session
-        mock_session = mock_session_cls.return_value.__enter__.return_value
-
         # SCENARIO 1: No existing record -> Should Process
-        mock_session.query.return_value.filter.return_value.first.return_value = None
         mock_process_job.return_value = IngestJobSummary(
             job_id=uuid.uuid4(), tenant_id=tenant_id
         )
 
-        result = processor.process_folder(folder)
+        result = processor.process_folder(folder, existing_timestamps={})
 
         self.assertIsNotNone(result)
         self.assertEqual(processor.stats.folders_processed, 1)
@@ -56,15 +51,12 @@ class TestIncrementalIngestion(unittest.TestCase):
         processor.stats.folders_processed = 0
 
         # SCENARIO 2: Existing record is OLDER -> Should Process
-        existing_record_old = MagicMock()
-        existing_record_old.extra_data = {
-            "source_last_modified": (base_time - timedelta(hours=1)).isoformat()
+        existing_timestamps_old = {
+            "test_folder": (base_time - timedelta(hours=1)).isoformat()
         }
-        mock_session.query.return_value.filter.return_value.first.return_value = (
-            existing_record_old
+        result = processor.process_folder(
+            folder, existing_timestamps=existing_timestamps_old
         )
-
-        result = processor.process_folder(folder)
 
         self.assertIsNotNone(result)
         mock_process_job.assert_called()
@@ -73,15 +65,10 @@ class TestIncrementalIngestion(unittest.TestCase):
         mock_process_job.reset_mock()
 
         # SCENARIO 3: Existing record is NEWER/EQUAL -> Should SKIP
-        existing_record_current = MagicMock()
-        existing_record_current.extra_data = {
-            "source_last_modified": base_time.isoformat()
-        }
-        mock_session.query.return_value.filter.return_value.first.return_value = (
-            existing_record_current
+        existing_timestamps_current = {"test_folder": base_time.isoformat()}
+        result = processor.process_folder(
+            folder, existing_timestamps=existing_timestamps_current
         )
-
-        result = processor.process_folder(folder)
 
         self.assertIsNone(result)
         mock_process_job.assert_not_called()
