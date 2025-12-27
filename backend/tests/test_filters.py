@@ -189,12 +189,42 @@ class TestFilterResultsPostQuery:
     def test_from_email_filter(self):
         """Test filtering by from_emails using metadata."""
         results = [
-            {"id": "1", "metadata": {"participants": [{"email": "john@test.com"}]}},
-            {"id": "2", "metadata": {"participants": [{"email": "jane@test.com"}]}},
+            {
+                "id": "1",
+                "metadata": {
+                    "participants": [
+                        {"smtp": "john@test.com", "role": "sender"},
+                        {"smtp": "jane@test.com", "role": "recipient"},
+                    ]
+                },
+            },
+            {
+                "id": "2",
+                "metadata": {
+                    "participants": [
+                        {"smtp": "jane@test.com", "role": "sender"},
+                    ]
+                },
+            },
         ]
         f = SearchFilters(from_emails={"john@test.com"})
-
         filtered = filter_results_post_query(results, f)
-
         assert len(filtered) == 1
         assert filtered[0]["id"] == "1"
+    def test_participant_filters_no_match(self):
+        """Test OR logic for participant filters (no match)."""
+        results = [
+            {
+                "id": "1",
+                "metadata": {
+                    "participants": [
+                        {"smtp": "john@test.com", "role": "sender"},
+                        {"smtp": "jane@test.com", "role": "recipient"},
+                    ]
+                },
+            }
+        ]
+        # Looking for sender that doesn't exist
+        f = SearchFilters(from_emails={"nonexistent@test.com"})
+        filtered = filter_results_post_query(results, f)
+        assert len(filtered) == 0

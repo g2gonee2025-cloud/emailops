@@ -19,7 +19,7 @@ from cortex.retrieval._hybrid_helpers import (
     _get_query_embedding,
     _resolve_target_conversations,
 )
-from cortex.retrieval.filters import parse_filter_grammar
+from cortex.retrieval.filters import filter_results_post_query, parse_filter_grammar
 
 # Import QueryClassification from dedicated module per Blueprint §8.2
 from cortex.retrieval.query_classifier import QueryClassification
@@ -443,12 +443,15 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> Result[SearchResults, Retrieva
                 limit=min(len(fused_results), k),
             )
 
+            # 12. Post-filtering for fields not handled in-query (e.g., participants)
+            final_results = filter_results_post_query(fused_results, parsed_filters)
+
             reranker_label = f"{fusion_method}|alpha={config.search.rerank_alpha:.2f}|mmr={config.search.mmr_lambda:.2f}"
             return Ok(
                 SearchResults(
                     query=args.query,
                     reranker=reranker_label,
-                    results=fused_results[:k],
+                    results=final_results[:k],
                 )
             )
     except Exception as e:
@@ -488,5 +491,3 @@ def _get_conversation_timestamps(
     except Exception as e:
         logger.warning("Failed to fetch conversation timestamps: %s", e)
         return {}
-
-
