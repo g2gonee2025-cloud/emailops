@@ -30,13 +30,28 @@ from cortex.domain_models.rag import (
     ThreadSummary,
     ToneStyle,
 )
-from cortex.llm.client import complete_json, complete_text
+from cortex.llm.client import complete_json, complete_messages, complete_text
 from cortex.observability import get_logger, trace_operation
 from cortex.prompts import (
-    PROMPT_ANSWER_QUESTION,
-    PROMPT_SUMMARIZE_ANALYST,
-    PROMPT_SUMMARIZE_CRITIC,
-    PROMPT_SUMMARIZE_FINAL,
+    SYSTEM_ANSWER_QUESTION,
+    SYSTEM_CRITIQUE_EMAIL,
+    SYSTEM_DRAFT_EMAIL_AUDIT,
+    SYSTEM_DRAFT_EMAIL_IMPROVE,
+    SYSTEM_DRAFT_EMAIL_INITIAL,
+    SYSTEM_SUMMARIZE_ANALYST,
+    SYSTEM_SUMMARIZE_CRITIC,
+    SYSTEM_SUMMARIZE_FINAL,
+    SYSTEM_SUMMARIZE_IMPROVER,
+    USER_ANSWER_QUESTION,
+    USER_CRITIQUE_EMAIL,
+    USER_DRAFT_EMAIL_AUDIT,
+    USER_DRAFT_EMAIL_IMPROVE,
+    USER_DRAFT_EMAIL_INITIAL,
+    USER_SUMMARIZE_ANALYST,
+    USER_SUMMARIZE_CRITIC,
+    USER_SUMMARIZE_FINAL,
+    USER_SUMMARIZE_IMPROVER,
+    construct_prompt_messages,
     get_prompt,
 )
 from cortex.retrieval.hybrid_search import (
@@ -51,6 +66,7 @@ from cortex.retrieval.query_classifier import (
 from cortex.retrieval.results import SearchResults
 from cortex.safety.guardrails_client import validate_with_repair
 from cortex.safety.policy_enforcer import check_action
+from cortex.security.defenses import sanitize_user_input
 from cortex.security.injection_defense import validate_for_injection
 from cortex.security.validators import sanitize_retrieved_content, validate_file_result
 from pydantic import BaseModel, Field, ValidationError
@@ -76,13 +92,29 @@ class DraftGenerationOutput(BaseModel):
 
 
 def _complete_with_guardrails(
-    prompt: str,
+    messages: List[Dict[str, str]],
     model_cls: Type[BaseModel],
     correlation_id: Optional[str],
 ):
     """Run structured completion with guardrails repair fallback."""
     schema = model_cls.model_json_schema()
-    raw = complete_json(prompt=prompt, schema=schema)
+
+    # The `complete_json` function is deprecated. We should be moving towards
+    # a pattern where the model is guided to produce JSON via system prompts
+    # and we parse the result from `complete_messages`.
+    # For now, we adapt to what `complete_json` expects.
+    if not messages:
+        raise ValueError("Cannot perform completion with empty messages.")
+
+    # Reconstruct a single "prompt" string for the deprecated function.
+    # This is a temporary measure during the security transition.
+    # The `system` message provides the instructions and JSON schema info.
+    # The `user` message provides the data.
+    system_content = next((m["content"] for m in messages if m["role"] == "system"), "")
+    user_content = next((m["content"] for m in messages if m["role"] == "user"), "")
+    reconstructed_prompt = f"{system_content}\n\n{user_content}"
+
+    raw = complete_json(prompt=reconstructed_prompt, schema=schema)
     try:
         return model_cls.model_validate(raw)
     except ValidationError:
@@ -838,12 +870,14 @@ def node_generate_answer(state: Dict[str, Any]) -> Dict[str, Any]:
         # to get the EvidenceItem UUIDs right without very specific prompting.
         # For now, let's get the text answer and construct a basic Answer object.
 
-        prompt = (
-            PROMPT_ANSWER_QUESTION
-            + f"\n\nContext:\n{combined_context}\n\nQuestion: {query}"
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_ANSWER_QUESTION,
+            user_prompt_template=USER_ANSWER_QUESTION,
+            context=sanitize_user_input(combined_context),
+            query=sanitize_user_input(query),
         )
 
-        answer_text = complete_text(prompt)
+        answer_text = complete_messages(messages)
 
         retrieval_results: Optional[SearchResults] = state.get("retrieval_results")
 
@@ -923,21 +957,22 @@ def node_draft_email_initial(state: Dict[str, Any]) -> Dict[str, Any]:
     sender_email = config.email.sender_locked_email or "user@example.com"
 
     try:
-        prompt = get_prompt(
-            "DRAFT_EMAIL_INITIAL",
-            mode=state.get("mode", "fresh"),
-            thread_context=state.get("thread_context", ""),
-            query=query,
-            context=context or "[no retrieved context]",
-            sender_name=sender_name,
-            sender_email=sender_email,
-            to=", ".join(state.get("to") or []),
-            cc=", ".join(state.get("cc") or []),
-            subject=state.get("subject") or "",
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_DRAFT_EMAIL_INITIAL,
+            user_prompt_template=USER_DRAFT_EMAIL_INITIAL,
+            mode=sanitize_user_input(state.get("mode", "fresh")),
+            thread_context=sanitize_user_input(state.get("thread_context", "")),
+            query=sanitize_user_input(query),
+            context=sanitize_user_input(context) or "[no retrieved context]",
+            sender_name=sender_name,  # Assumed safe from config
+            sender_email=sender_email,  # Assumed safe from config
+            to=sanitize_user_input(", ".join(state.get("to") or [])),
+            cc=sanitize_user_input(", ".join(state.get("cc") or [])),
+            subject=sanitize_user_input(state.get("subject") or ""),
         )
 
         draft_structured = _complete_with_guardrails(
-            prompt,
+            messages,
             DraftGenerationOutput,
             state.get("correlation_id"),
         )
@@ -981,15 +1016,16 @@ def node_critique_draft(state: Dict[str, Any]) -> Dict[str, Any]:
         return {"error": "No draft to critique"}
 
     try:
-        prompt = get_prompt(
-            "DRAFT_EMAIL_CRITIQUE",
-            draft_subject=draft.subject,
-            draft_body=draft.body_markdown,
-            context=state.get("assembled_context", ""),
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_CRITIQUE_EMAIL,
+            user_prompt_template=USER_CRITIQUE_EMAIL,
+            draft_subject=sanitize_user_input(draft.subject),
+            draft_body=sanitize_user_input(draft.body_markdown),
+            context=sanitize_user_input(state.get("assembled_context", "")),
         )
 
         critique = _complete_with_guardrails(
-            prompt,
+            messages,
             DraftCritique,
             state.get("correlation_id"),
         )
@@ -1014,15 +1050,16 @@ def node_improve_draft(state: Dict[str, Any]) -> Dict[str, Any]:
         return {}
 
     try:
-        prompt = get_prompt(
-            "DRAFT_EMAIL_IMPROVE",
-            original_draft=draft.body_markdown,
-            critique=critique.model_dump_json(indent=2),
-            context=state.get("assembled_context", ""),
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_DRAFT_EMAIL_IMPROVE,
+            user_prompt_template=USER_DRAFT_EMAIL_IMPROVE,
+            original_draft=sanitize_user_input(draft.body_markdown),
+            critique=critique.model_dump_json(indent=2),  # Assumed safe from system
+            context=sanitize_user_input(state.get("assembled_context", "")),
         )
 
         draft_structured = _complete_with_guardrails(
-            prompt,
+            messages,
             DraftGenerationOutput,
             state.get("correlation_id"),
         )
@@ -1152,15 +1189,16 @@ def node_audit_draft(state: Dict[str, Any]) -> Dict[str, Any]:
 
     # 2. LLM Rubric Audit
     try:
-        prompt = get_prompt(
-            "DRAFT_EMAIL_AUDIT",
-            subject=draft.subject,
-            body=draft.body_markdown,
-            context=state.get("assembled_context", ""),
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_DRAFT_EMAIL_AUDIT,
+            user_prompt_template=USER_DRAFT_EMAIL_AUDIT,
+            subject=sanitize_user_input(draft.subject),
+            body=sanitize_user_input(draft.body_markdown),
+            context=sanitize_user_input(state.get("assembled_context", "")),
         )
 
         scores = _complete_with_guardrails(
-            prompt,
+            messages,
             DraftValidationScores,
             state.get("correlation_id"),
         )
@@ -1241,9 +1279,13 @@ def node_summarize_analyst(state: Dict[str, Any]) -> Dict[str, Any]:
         return {}
 
     try:
-        prompt = PROMPT_SUMMARIZE_ANALYST + f"\n\nThread:\n{thread_context}"
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_SUMMARIZE_ANALYST,
+            user_prompt_template=USER_SUMMARIZE_ANALYST,
+            thread_context=sanitize_user_input(thread_context),
+        )
         facts = _complete_with_guardrails(
-            prompt,
+            messages,
             FactsLedger,
             state.get("correlation_id"),
         )
@@ -1265,12 +1307,13 @@ def node_summarize_critic(state: Dict[str, Any]) -> Dict[str, Any]:
         return {}
 
     try:
-        prompt = (
-            PROMPT_SUMMARIZE_CRITIC
-            + f"\n\nFacts Ledger:\n{facts.model_dump_json(indent=2)}"
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_SUMMARIZE_CRITIC,
+            user_prompt_template=USER_SUMMARIZE_CRITIC,
+            facts_ledger_json=facts.model_dump_json(indent=2),
         )
         critique = _complete_with_guardrails(
-            prompt,
+            messages,
             CriticReview,
             state.get("correlation_id"),
         )
@@ -1295,15 +1338,16 @@ def node_summarize_improver(state: Dict[str, Any]) -> Dict[str, Any]:
         return {}
 
     try:
-        prompt = get_prompt(
-            "SUMMARIZE_IMPROVER",
-            thread_context=thread_context or "",
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_SUMMARIZE_IMPROVER,
+            user_prompt_template=USER_SUMMARIZE_IMPROVER,
+            thread_context=sanitize_user_input(thread_context or ""),
             ledger=facts.model_dump_json(),
             critique=critique.model_dump_json(),
         )
 
         new_facts = _complete_with_guardrails(
-            prompt,
+            messages,
             FactsLedger,
             state.get("correlation_id"),
         )
@@ -1334,13 +1378,14 @@ def node_summarize_final(state: Dict[str, Any]) -> Dict[str, Any]:
 
     try:
         max_len = state.get("max_length", 500)
-        prompt = (
-            PROMPT_SUMMARIZE_FINAL
-            + f"\n\nConstraint: Keep summary under {max_len} words."
-            + f"\n\nFacts Ledger:\n{facts.model_dump_json()}"
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_SUMMARIZE_FINAL,
+            user_prompt_template=USER_SUMMARIZE_FINAL,
+            max_len=max_len,
+            ledger=facts.model_dump_json(),
         )
 
-        summary_text = complete_text(prompt)
+        summary_text = complete_messages(messages)
 
         # Prepare participant analysis by merging DB context with LLM inference
         thread_context_obj = state.get("_thread_context_obj")
