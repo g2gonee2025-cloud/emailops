@@ -50,15 +50,28 @@ function UploadSection() {
     setResult(null);
 
     try {
-      const pushDocs: PushDocument[] = validDocs.map(d => ({
-        text: d.text.trim(),
-        metadata: d.metadata ? JSON.parse(d.metadata) : {},
-      }));
+      const pushDocs: PushDocument[] = validDocs.map((d, i) => {
+        try {
+          return {
+            text: d.text.trim(),
+            metadata: d.metadata ? JSON.parse(d.metadata) : {},
+          };
+        } catch (e) {
+          // Note: Using (i + 1) to present a 1-based index to the user
+          throw new Error(`Invalid JSON in metadata for Document ${i + 1}.`);
+        }
+      });
+
       const response = await api.pushDocuments(pushDocs);
       setResult({ success: true, message: `Ingested ${response.documents_ingested} documents, created ${response.chunks_created} chunks` });
       setDocuments([{ text: '', metadata: '' }]);
     } catch (err) {
-      setResult({ success: false, message: err instanceof Error ? err.message : 'Upload failed' });
+      // Sanitize error output to user
+      if (err instanceof Error && err.message.startsWith('Invalid JSON')) {
+        setResult({ success: false, message: err.message });
+      } else {
+        setResult({ success: false, message: 'An unexpected error occurred during upload.' });
+      }
     } finally {
       setIsUploading(false);
     }
@@ -132,6 +145,7 @@ export function IngestionView() {
   const [folders, setFolders] = useState<S3Folder[]>([]);
   const [isLoadingFolders, setIsLoadingFolders] = useState(false);
   const [isStartingJob, setIsStartingJob] = useState(false);
+  const [ingestionError, setIngestionError] = useState<string | null>(null);
   const [activeJobs, setActiveJobs] = useState<ActiveJob[]>([]);
   const [dryRun, setDryRun] = useState(true);
 
@@ -153,16 +167,23 @@ export function IngestionView() {
 
   // Poll active jobs
   useEffect(() => {
-    if (activeJobs.length === 0) return;
+    const jobsStillRunning = activeJobs.some(
+      (job) => job.status.status !== 'completed' && job.status.status !== 'failed'
+    );
+
+    if (!jobsStillRunning) return;
 
     const interval = setInterval(async () => {
       const updatedJobs = await Promise.all(
         activeJobs.map(async (job) => {
+          if (job.status.status === 'completed' || job.status.status === 'failed') {
+            return job; // Stop polling for this job
+          }
           try {
             const status = await api.getIngestionStatus(job.jobId);
             return { jobId: job.jobId, status };
           } catch {
-            return job;
+            return job; // Keep current state on poll failure
           }
         })
       );
@@ -174,6 +195,7 @@ export function IngestionView() {
 
   const startIngestion = async () => {
     setIsStartingJob(true);
+    setIngestionError(null);
     try {
       const response = await api.startIngestion('Outlook/', undefined, dryRun);
       if (!dryRun) {
@@ -193,6 +215,8 @@ export function IngestionView() {
         }]);
       }
     } catch (error) {
+      // Sanitize potential PII from backend error messages
+      setIngestionError('Failed to start ingestion. Please check console for details.');
       console.error('Failed to start ingestion:', error);
     } finally {
       setIsStartingJob(false);
@@ -247,6 +271,13 @@ export function IngestionView() {
       </header>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-8">
+        {/* Ingestion Error */}
+        {ingestionError && (
+          <div className="bg-red-500/10 text-red-400 border border-red-500/20 p-4 rounded-lg text-sm">
+            {ingestionError}
+          </div>
+        )}
+
         {/* Manual Upload Section */}
         <UploadSection />
 
