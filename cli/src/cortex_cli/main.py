@@ -148,26 +148,8 @@ UTILITY_COMMANDS = [
 DATA_COMMANDS = [
     ("db", "Database management (stats, migrate)"),
     ("embeddings", "Embedding management (stats, backfill)"),
-<<<<<<< HEAD
-    ("graph", "Knowledge Graph commands (discover-schema)"),
-    ("s3", "S3/Spaces storage (list, ingest)"),
-=======
     ("s3", "S3/Spaces storage (list, ingest, check-structure)"),
->>>>>>> origin/main
     ("maintenance", "System maintenance (resolve-entities)"),
-<<<<<<< HEAD
-    ("queue", "Job queue management (stats)"),
-=======
-<<<<<<< HEAD
-    ("fix-issues", "Generate patches for SonarQube issues"),
-=======
-<<<<<<< HEAD
-    ("patch", "Fix malformed patch files"),
-=======
-    ("schema", "Graph schema analysis tools"),
->>>>>>> origin/main
->>>>>>> origin/main
->>>>>>> origin/main
 ]
 
 COMMON_OPTIONS = [
@@ -1352,14 +1334,7 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     # A bit of a hack to integrate Typer apps with argparse
     def setup_typer_command(subparsers, name, app, help_text=""):
         parser = subparsers.add_parser(name, help=help_text, add_help=False)
-        command_info = typer.main.get_command_info(
-            app,
-            name=name,
-            pretty_exceptions_short=False,
-            pretty_exceptions_show_locals=False,
-            rich_markup_mode="rich",
-        )
-        command = get_command_from_info(command_info, pretty_exceptions_short=False, pretty_exceptions_show_locals=False, rich_markup_mode="rich")
+        command = typer.main.get_command(app)
 
         def _run_typer(args):
             try:
@@ -1386,7 +1361,7 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     from cortex_cli.cmd_index import setup_index_parser
     from cortex_cli.cmd_schema import setup_schema_parser
     from cortex_cli.cmd_test import setup_test_parser
-    from cortex_cli.config import _config
+    from cortex_cli._config_helpers import _config
 
     setup_backfill_parser(subparsers)
     setup_db_parser(subparsers)
@@ -1543,74 +1518,6 @@ Examples:
     )
     pipeline_parser.set_defaults(func=lambda args: _run_pipeline(args))
 
-    # Index command
-    index_parser = subparsers.add_parser(
-        "index",
-        help="Build/rebuild search index with embeddings",
-        description="""
-Build or rebuild the search index.
-
-This command:
-  1. Scans conversation folders for content
-  2. Chunks text into embedding-friendly segments
-  3. Generates embeddings using the configured provider
-  4. Saves index for fast retrieval
-
-Uses parallel workers for faster processing.
-        """,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    index_parser.add_argument(
-        "--root",
-        "-r",
-        default=".",
-        metavar="DIR",
-        help="Root directory containing conversations (default: current)",
-    )
-    index_parser.add_argument(
-        "--provider",
-        type=str,
-        default="digitalocean",
-        choices=["digitalocean"],
-        help="Embedding provider",
-    )
-    index_parser.add_argument(
-        "--workers",
-        "-w",
-        type=int,
-        default=4,
-        metavar="N",
-        help="Number of parallel workers (default: 4)",
-    )
-    index_parser.add_argument(
-        "--limit",
-        "-l",
-        type=int,
-        default=None,
-        metavar="N",
-        help="Limit number of conversations to index (for testing)",
-    )
-    index_parser.add_argument(
-        "--force",
-        "-f",
-        action="store_true",
-        help="Force full reindex (ignore existing)",
-    )
-    index_parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Output results as JSON",
-    )
-    index_parser.set_defaults(
-        func=lambda args: _run_index(
-            root=args.root,
-            provider=args.provider,
-            workers=args.workers,
-            limit=args.limit,
-            force=args.force,
-            json_output=args.json,
-        )
-    )
 
     # Search command
     search_parser = subparsers.add_parser(
