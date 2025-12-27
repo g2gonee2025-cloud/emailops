@@ -1,6 +1,10 @@
 import asyncio
 import glob
 import json
+import argparse
+import asyncio
+import glob
+import json
 import logging
 import os
 import re
@@ -10,14 +14,12 @@ from typing import Dict, List, Set
 
 import aiohttp
 
-# Configuration
-API_KEY = os.environ.get("JULES_API_KEY")
-REPO_OWNER = "g2gonee2025-cloud"
-REPO_NAME = "emailops"
-SOURCE_ID = f"sources/github/{REPO_OWNER}/{REPO_NAME}"
-API_URL = "https://jules.googleapis.com/v1alpha/sessions"
-CONCURRENCY_LIMIT = 95
-MIN_LOC = 50
+# Default Configuration
+DEFAULT_REPO_OWNER = "g2gonee2025-cloud"
+DEFAULT_REPO_NAME = "emailops"
+DEFAULT_API_URL = "https://jules.googleapis.com/v1alpha/sessions"
+DEFAULT_CONCURRENCY_LIMIT = 50
+DEFAULT_MIN_LOC = 50
 
 # Logging
 logging.basicConfig(
@@ -25,18 +27,62 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-if not API_KEY:
-    logger.error("JULES_API_KEY environment variable not set.")
-    sys.exit(1)
+
+def parse_args():
+    """Parses command-line arguments."""
+    parser = argparse.ArgumentParser(description="Bulk code review using Jules API.")
+    parser.add_argument(
+        "--api-key",
+        type=str,
+        default=os.environ.get("JULES_API_KEY"),
+        help="Jules API key. Can also be set via JULES_API_KEY env var.",
+    )
+    parser.add_argument(
+        "--owner",
+        type=str,
+        default=DEFAULT_REPO_OWNER,
+        help=f"Repository owner. Default: {DEFAULT_REPO_OWNER}",
+    )
+    parser.add_argument(
+        "--repo",
+        type=str,
+        default=DEFAULT_REPO_NAME,
+        help=f"Repository name. Default: {DEFAULT_REPO_NAME}",
+    )
+    parser.add_argument(
+        "--api-url",
+        type=str,
+        default=DEFAULT_API_URL,
+        help=f"Jules API URL. Default: {DEFAULT_API_URL}",
+    )
+    parser.add_argument(
+        "--concurrency",
+        type=int,
+        default=DEFAULT_CONCURRENCY_LIMIT,
+        help=f"Concurrency limit for API calls. Default: {DEFAULT_CONCURRENCY_LIMIT}",
+    )
+    parser.add_argument(
+        "--min-loc",
+        type=int,
+        default=DEFAULT_MIN_LOC,
+        help=f"Minimum lines of code for a file to be eligible. Default: {DEFAULT_MIN_LOC}",
+    )
+    return parser.parse_args()
 
 
-async def count_lines(filepath: Path) -> int:
+def count_lines(filepath: Path) -> int:
+    """Counts lines of code in a file, with specific error handling."""
     try:
         with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
             return sum(1 for _ in f)
+    except IOError as e:
+        logger.warning(f"Could not read file {filepath}: {e}")
     except Exception as e:
-        logger.warning(f"Could not count lines for {filepath}: {e}")
-        return 0
+        logger.error(
+            f"An unexpected error occurred while counting lines for {filepath}: {e}",
+            exc_info=True,
+        )
+    return 0
 
 
 def find_imports(filepath: Path) -> Set[Path]:
@@ -79,10 +125,13 @@ def find_imports(filepath: Path) -> Set[Path]:
                         if p.exists() and p != filepath:
                             imports.add(p)
                             break
-
+    except IOError as e:
+        logger.warning(f"Could not read file {filepath} for import parsing: {e}")
     except Exception as e:
-        logger.warning(f"Error parsing imports for {filepath}: {e}")
-
+        logger.error(
+            f"An unexpected error occurred while parsing imports for {filepath}: {e}",
+            exc_info=True,
+        )
     return imports
 
 
@@ -91,11 +140,12 @@ async def create_session(
     file_path: Path,
     context_files: Set[Path],
     sem: asyncio.Semaphore,
+    api_url: str,
+    api_key: str,
+    source_id: str,
 ):
     async with sem:
         relative_path = file_path.relative_to(Path.cwd())
-
-        # Construct Prompt
         context_str = "\n".join([str(p.relative_to(Path.cwd())) for p in context_files])
         prompt_text = (
             f"Analyze the file '{relative_path}' for errors, mismatches, logic errors, and syntactical errors.\n"
@@ -103,24 +153,22 @@ async def create_session(
             f"Check if it is correctly integrated with the 'frontend_cli' (likely cortex_cli).\n"
             f"Context files:\n{context_str}"
         )
-
         payload = {
             "title": f"Review: {relative_path}",
             "prompt": prompt_text,
             "sourceContext": {
-                "source": SOURCE_ID,
-                "githubRepoContext": {
-                    "startingBranch": "main"  # Assuming main, can be adjusted
-                },
+                "source": source_id,
+                "githubRepoContext": {"startingBranch": "main"},
             },
-            "automationMode": "AUTO_CREATE_PR",  # Optional, purely for action
+            "automationMode": "AUTO_CREATE_PR",
         }
 
         try:
             async with session.post(
-                API_URL,
+                api_url,
                 json=payload,
-                headers={"X-Goog-Api-Key": API_KEY, "Content-Type": "application/json"},
+                headers={"X-Goog-Api-Key": api_key, "Content-Type": "application/json"},
+                timeout=300,  # 5-minute timeout for the entire operation
             ) as resp:
                 if resp.status == 200:
                     data = await resp.json()
@@ -133,21 +181,41 @@ async def create_session(
                         "status": "success",
                     }
                 else:
-                    text = await resp.text()
+                    # Security: Do not log the full response text.
                     logger.error(
-                        f"Failed to create session for {relative_path}: {resp.status} - {text}"
+                        f"Failed to create session for {relative_path}: {resp.status} - {resp.reason}"
                     )
                     return {
                         "file": str(relative_path),
-                        "error": text,
+                        "error": f"{resp.status} - {resp.reason}",
                         "status": "failed",
                     }
+        except aiohttp.ClientError as e:
+            logger.error(f"API request failed for {relative_path}: {e}")
+            return {"file": str(relative_path), "error": str(e), "status": "api_error"}
+        except asyncio.TimeoutError:
+            logger.error(f"API request timed out for {relative_path}")
+            return {"file": str(relative_path), "error": "Timeout", "status": "timeout"}
         except Exception as e:
-            logger.error(f"Exception for {relative_path}: {e}")
-            return {"file": str(relative_path), "error": str(e), "status": "error"}
+            logger.error(
+                f"An unexpected error occurred during session creation for {relative_path}: {e}",
+                exc_info=True,
+            )
+            return {
+                "file": str(relative_path),
+                "error": "Unexpected error",
+                "status": "error",
+            }
 
 
 async def main():
+    args = parse_args()
+
+    if not args.api_key:
+        logger.error("JULES_API_KEY environment variable or --api-key flag must be set.")
+        sys.exit(1)
+
+    source_id = f"sources/github/{args.owner}/{args.repo}"
     root_dir = Path.cwd()
     ignore_dirs = {
         ".git",
@@ -159,7 +227,7 @@ async def main():
     }
 
     tasks = []
-    sem = asyncio.Semaphore(CONCURRENCY_LIMIT)
+    sem = asyncio.Semaphore(args.concurrency)
 
     logger.info(f"Scanning files in {root_dir}...")
 
@@ -168,30 +236,50 @@ async def main():
     # 1. Discovery
     for ext in ["*.py", "*.ts", "*.tsx", "*.js", "*.sh"]:
         for path in root_dir.rglob(ext):
-            # Skip ignored dirs
             if any(part in ignore_dirs for part in path.parts):
                 continue
 
             if path.is_file():
-                loc = await count_lines(path)
-                if loc > MIN_LOC:
+                loc = await asyncio.to_thread(count_lines, path)
+                if loc > args.min_loc:
                     eligible_files.append(path)
 
-    logger.info(f"Found {len(eligible_files)} files > {MIN_LOC} LOC.")
+    logger.info(f"Found {len(eligible_files)} files > {args.min_loc} LOC.")
 
     # 2. Execution
     async with aiohttp.ClientSession() as session:
         for f in eligible_files:
-            context = find_imports(f)
-            tasks.append(create_session(session, f, context, sem))
+            context = await asyncio.to_thread(find_imports, f)
+            tasks.append(
+                create_session(
+                    session, f, context, sem, args.api_url, args.api_key, source_id
+                )
+            )
 
         results = await asyncio.gather(*tasks)
 
     # 3. Report
+    successful_reviews = [r for r in results if r and r.get("status") == "success"]
+    failed_reviews = [r for r in results if r and r.get("status") != "success"]
+
+    logger.info("-" * 50)
+    logger.info("Bulk Review Summary")
+    logger.info("-" * 50)
+    logger.info(f"Successfully created {len(successful_reviews)} review sessions.")
+    for res in successful_reviews:
+        logger.info(f"  [SUCCESS] {res['file']} -> Session ID: {res['session_id']}")
+
+    if failed_reviews:
+        logger.warning(f"\nFailed to create {len(failed_reviews)} review sessions.")
+        for res in failed_reviews:
+            logger.warning(f"  [FAILURE] {res['file']} -> Error: {res['error']}")
+
+    # Save detailed JSON report
     with open("jules_batch_report.json", "w") as f:
         json.dump(results, f, indent=2)
 
-    logger.info("Batch processing complete. Report saved to jules_batch_report.json")
+    logger.info("\nDetailed report saved to jules_batch_report.json")
+    logger.info("Processing complete.")
 
 
 if __name__ == "__main__":
