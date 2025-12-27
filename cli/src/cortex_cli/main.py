@@ -155,9 +155,13 @@ DATA_COMMANDS = [
 >>>>>>> origin/main
     ("maintenance", "System maintenance (resolve-entities)"),
 <<<<<<< HEAD
+    ("fix-issues", "Generate patches for SonarQube issues"),
+=======
+<<<<<<< HEAD
     ("patch", "Fix malformed patch files"),
 =======
     ("schema", "Graph schema analysis tools"),
+>>>>>>> origin/main
 >>>>>>> origin/main
 ]
 
@@ -1333,6 +1337,7 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     from cortex_cli.cmd_graph import app as graph_app
     from cortex_cli.cmd_maintenance import setup_maintenance_parser
     from cortex_cli.cmd_s3 import setup_s3_parser
+    from cortex_cli.cmd_fix import setup_fix_parser
     import typer
     from typer.main import get_command_from_info
     from typer.core import TyperGroup
@@ -1382,6 +1387,7 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     setup_embeddings_parser(subparsers)
     setup_s3_parser(subparsers)
     setup_maintenance_parser(subparsers)
+    setup_fix_parser(subparsers)
     setup_typer_command(subparsers, "graph", graph_app, help_text="Knowledge Graph commands")
     setup_patch_parser(subparsers)
     setup_index_parser(subparsers)
