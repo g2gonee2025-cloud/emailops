@@ -179,21 +179,30 @@ GRAPH_SCHEMA = {
 
 
 def _normalize_relation(relation: str) -> str:
-    """Normalize relation to UPPER_SNAKE_CASE."""
+    """Normalize relation to UPPER_SNAKE_CASE and validate against ontology."""
     normalized = relation.strip().upper().replace(" ", "_").replace("-", "_")
-    # Map common variations
+    # Map common variations that are semantically equivalent and safe
     relation_map = {
         "MENTIONS": "REFERENCES",
         "DISCUSSES": "REFERENCES",
         "SENT_TO": "SENT_EMAIL_TO",
-        "SENT_BY": "SENT_EMAIL_TO",
         "HAS_DEADLINE": "DUE_ON",
         "REQUIRES_ACTION_FROM": "ASSIGNED_TO",
         "AMOUNT_OF": "HAS_VALUE",
         "HAS_STATUS": "CURRENT_STATUS",
         "ATTACHES": "ATTACHED_TO",
     }
-    return relation_map.get(normalized, normalized)
+    final_relation = relation_map.get(normalized, normalized)
+
+    # Validate against the official list
+    if final_relation not in VALID_RELATIONS:
+        logger.warning(
+            f"LLM-extracted relation '{relation}' (normalized to '{final_relation}') "
+            "is not in the ontology. Falling back to 'RELATED_TO'."
+        )
+        return "RELATED_TO"
+
+    return final_relation
 
 
 class GraphExtractor:
@@ -328,6 +337,13 @@ class GraphExtractor:
                     new_type = attrs.get("type", "UNKNOWN")
                     if current_type == "UNKNOWN" and new_type != "UNKNOWN":
                         final_G.nodes[node]["type"] = new_type
+
+                    # Merge properties dictionaries
+                    current_props = final_G.nodes[node].get("properties", {})
+                    new_props = attrs.get("properties", {})
+                    if new_props:
+                        current_props.update(new_props)
+                        final_G.nodes[node]["properties"] = current_props
 
             # Merge Edges
             for u, v, attrs in G.edges(data=True):

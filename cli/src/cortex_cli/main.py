@@ -56,6 +56,7 @@ if _dotenv_path.exists():
 else:
     load_dotenv()  # Fall back to default dotenv discovery
 
+from cortex_cli import cmd_search
 from cortex_cli._config_helpers import (  # noqa: E402
     _print_human_config,
     _print_json_config,
@@ -110,8 +111,10 @@ if TYPE_CHECKING:
 else:
     EmailOpsConfig = EmailOpsConfigProto
 
+from cortex.observability import init_observability
+
 # Lazy import for heavy dependencies
-# from cortex_cli.cmd_doctor import main as doctor_main
+from cortex_cli.cmd_doctor import main as doctor_main
 
 # ANSI color codes for terminal output
 
@@ -147,8 +150,13 @@ UTILITY_COMMANDS = [
 DATA_COMMANDS = [
     ("db", "Database management (stats, migrate)"),
     ("embeddings", "Embedding management (stats, backfill)"),
+    ("graph", "Knowledge Graph commands (discover-schema)"),
     ("s3", "S3/Spaces storage (list, ingest, check-structure)"),
     ("maintenance", "System maintenance (resolve-entities)"),
+    ("queue", "Job queue management (stats)"),
+    ("fix-issues", "Generate patches for SonarQube issues"),
+    ("patch", "Fix malformed patch files"),
+    ("schema", "Graph schema analysis tools"),
 ]
 
 COMMON_OPTIONS = [
@@ -770,6 +778,8 @@ def _run_index(
         sys.exit(1)
 
 
+<<<<<<< HEAD
+=======
 def _run_search(
     query: str,
     top_k: int = 10,
@@ -821,7 +831,17 @@ def _run_search(
         if not json_output:
             print(f"  {_colorize('⏳', 'yellow')} Searching...\n")
 
-        results: Any = tool_kb_search_hybrid(request)
+        result: Any = tool_kb_search_hybrid(request)
+
+        if result.is_err():
+            error = result.unwrap_err()
+            if json_output:
+                print(json.dumps({"error": error.message, "success": False}))
+            else:
+                print(f"\n  {_colorize('ERROR:', 'red')} {error.message}")
+            sys.exit(1)
+
+        results = result.unwrap()
 
         if json_output:
             # Convert results to JSON-serializable format
@@ -896,6 +916,7 @@ def _run_search(
         else:
             print(f"\n  {_colorize('ERROR:', 'red')} {e}")
         sys.exit(1)
+>>>>>>> origin/main
 
 
 # =============================================================================
@@ -996,165 +1017,6 @@ def _run_answer(
         else:
             print(f"\n  {_colorize('ERROR:', 'red')} {e}")
         sys.exit(1)
-
-
-def _run_draft(
-    instructions: str,
-    thread_id: str | None = None,
-    tenant_id: str = "default",
-    user_id: str = "cli-user",
-    json_output: bool = False,
-) -> None:
-    """Draft email replies based on context."""
-
-    if not json_output:
-        _print_banner()
-        print(f"{_colorize('▶ DRAFT EMAIL', 'bold')}\n")
-        print(f"  Instructions: {_colorize(instructions, 'cyan')}")
-        if thread_id:
-            print(f"  Thread ID:    {_colorize(thread_id, 'dim')}")
-        print()
-
-    try:
-        from cortex.orchestration.graphs import build_draft_graph as _build_draft_graph
-
-        _build_draft_graph = cast(Any, _build_draft_graph)
-        build_draft_graph: Callable[[], Any] = cast(
-            Callable[[], Any], _build_draft_graph
-        )
-
-        if not json_output:
-            print(f"  {_colorize('⏳', 'yellow')} Drafting...")
-
-        final_state = _execute_draft_graph(
-            build_draft_graph, tenant_id, user_id, thread_id, instructions
-        )
-
-        # Handle both dict and object-like state access
-        error = (
-            final_state.get("error")
-            if isinstance(final_state, dict)
-            else getattr(final_state, "error", None)
-        )
-        if error:
-            raise Exception(error)
-
-        draft = (
-            final_state.get("draft")
-            if isinstance(final_state, dict)
-            else getattr(final_state, "draft", None)
-        )
-        _output_draft_result(draft, json_output)
-
-    except ImportError as e:
-        _handle_import_error(e, json_output)
-    except Exception as e:
-        _handle_generic_error(e, json_output)
-
-
-def _execute_draft_graph(
-    build_draft_graph: Callable[[], Any],
-    tenant_id: str,
-    user_id: str,
-    thread_id: str | None,
-    instructions: str,
-) -> Any:
-    """Execute the draft graph and return final state."""
-    import asyncio
-
-    async def _execute() -> Any:
-        graph = build_draft_graph().compile()
-        initial_state: dict[str, Any] = {
-            "tenant_id": tenant_id,
-            "user_id": user_id,
-            "thread_id": thread_id,
-            "explicit_query": instructions,
-            "draft_query": None,
-            "retrieval_results": None,
-            "assembled_context": None,
-            "draft": None,
-            "critique": None,
-            "iteration_count": 0,
-            "error": None,
-        }
-        return await graph.ainvoke(initial_state)
-
-    return asyncio.run(_execute())
-
-
-def _output_draft_result(draft: Any | None, json_output: bool) -> None:
-    """Output draft result in JSON or human-readable format."""
-    import json
-
-    if json_output:
-        print(json.dumps(draft.model_dump() if draft else {}, indent=2, default=str))
-        return
-
-    if not draft:
-        print(f"  {_colorize('⚠', 'yellow')} No draft generated.")
-        print()
-        return
-
-    print(f"\n{_colorize('DRAFT:', 'bold')}")
-    print(f"Subject: {draft.subject}")
-    print(f"To: {', '.join(draft.to)}")
-    print("-" * 40)
-    print(f"{draft.body_markdown}\n")
-
-    if draft.next_actions:
-        _print_next_actions(draft.next_actions)
-    print()
-
-
-def _print_next_actions(next_actions: list[Any]) -> None:
-    """Print next actions from a draft."""
-    print(f"{_colorize('NEXT ACTIONS:', 'dim')}")
-    for i, action in enumerate(next_actions, 1):
-        description = getattr(action, "description", None)
-        owner = getattr(action, "owner", None)
-        due_date = getattr(action, "due_date", None)
-
-        if description is None and isinstance(action, dict):
-            description = action.get("description")
-            owner = owner or action.get("owner")
-            due_date = due_date or action.get("due_date")
-
-        if description is None:
-            description = str(action)
-
-        extras = " · ".join(
-            item
-            for item in (
-                f"Owner: {owner}" if owner else None,
-                f"Due: {due_date}" if due_date else None,
-            )
-            if item
-        )
-        suffix = f" ({extras})" if extras else ""
-        print(f"  {i}. {description}{suffix}")
-
-
-def _handle_import_error(e: ImportError, json_output: bool) -> None:
-    """Handle ImportError for RAG module loading."""
-    import json
-
-    msg = f"Could not load RAG module: {e}"
-    if json_output:
-        print(json.dumps({"error": msg, "success": False}))
-    else:
-        print(f"\n  {_colorize('ERROR:', 'red')} {msg}")
-    sys.exit(1)
-
-
-def _handle_generic_error(e: Exception, json_output: bool) -> None:
-    """Handle generic exceptions."""
-    import json
-
-    if json_output:
-        print(json.dumps({"error": str(e), "success": False}))
-    else:
-        print(f"\n  {_colorize('ERROR:', 'red')} {e}")
-    sys.exit(1)
 
 
 def _run_summarize(
@@ -1260,6 +1122,15 @@ def main(args: list[str] | None = None) -> None:
 
     A user-friendly command-line interface for managing EmailOps Cortex.
     """
+    # Initialize observability §12.3
+    # This should be one of the first things to run
+    try:
+        from cortex.observability import init_observability
+
+        init_observability(service_name="cortex-cli")
+    except ImportError:
+        # If cortex backend is not installed, CLI should still function
+        pass
     if args is None:
         args = sys.argv[1:]
 
@@ -1317,17 +1188,90 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     _setup_utility_commands(subparsers)
 
     # Register plugin subcommand groups
+    import typer
+    from cortex_cli.cmd_backfill import setup_backfill_parser
     from cortex_cli.cmd_db import setup_db_parser
     from cortex_cli.cmd_embeddings import setup_embeddings_parser
+    from cortex_cli.cmd_fix import setup_fix_parser
+    from cortex_cli.cmd_graph import app as graph_app
+    from cortex_cli.cmd_grounding import setup_grounding_parser
+    from cortex_cli.cmd_login import setup_login_parser
     from cortex_cli.cmd_maintenance import setup_maintenance_parser
+    from cortex_cli.cmd_queue import setup_queue_parser
     from cortex_cli.cmd_s3 import setup_s3_parser
+    from cortex_cli.cmd_safety import setup_safety_parser
     from cortex_cli.cmd_test import setup_test_parser
+    from cortex_cli.cmd_search import setup_search_parser
+    from rich.console import Console
+    from typer.core import TyperGroup
+    from typer.main import get_command_from_info
 
+    # A bit of a hack to integrate Typer apps with argparse
+    def setup_typer_command(subparsers, name, app, help_text=""):
+        parser = subparsers.add_parser(name, help=help_text, add_help=False)
+        command_info = typer.main.get_command_info(
+            app,
+            name=name,
+            pretty_exceptions_short=False,
+            pretty_exceptions_show_locals=False,
+            rich_markup_mode="rich",
+        )
+        command = get_command_from_info(
+            command_info,
+            pretty_exceptions_short=False,
+            pretty_exceptions_show_locals=False,
+            rich_markup_mode="rich",
+        )
+
+        def _run_typer(args):
+            try:
+                if isinstance(command, TyperGroup):
+                    command(args.typer_args, standalone_mode=False)
+                else:
+                    command(standalone_mode=False)
+
+            except typer.Exit as e:
+                if e.code != 0:
+                    console = Console()
+                    console.print(f"[bold red]Error:[/bold red] {e}")
+                # Do not exit process
+            except Exception as e:
+                console = Console()
+                console.print(f"[bold red]An unexpected error occurred:[/bold red] {e}")
+
+        parser.set_defaults(func=lambda args: _run_typer(args))
+        # This is a simple way to pass through args. A more robust solution might be needed.
+        parser.add_argument("typer_args", nargs="*")
+
+    from cortex_cli.cmd_index import setup_index_parser
+    from cortex_cli.cmd_patch import setup_patch_parser
+    from cortex_cli.cmd_schema import setup_schema_parser
+    from cortex_cli.cmd_test import setup_test_parser
+    from cortex_cli.config import _config
+
+    setup_backfill_parser(subparsers)
     setup_db_parser(subparsers)
     setup_embeddings_parser(subparsers)
     setup_s3_parser(subparsers)
     setup_maintenance_parser(subparsers)
     setup_test_parser(subparsers)
+<<<<<<< HEAD
+    setup_search_parser(subparsers)
+=======
+    setup_grounding_parser(subparsers)
+    setup_safety_parser(subparsers)
+    setup_queue_parser(subparsers)x_parser(subparsers)
+    setup_login_parser(subparsers)
+    setup_typer_command(
+        subparsers, "graph", graph_app, help_text="Knowledge Graph commands"
+    )
+    setup_patch_parser(subparsers)
+    setup_index_parser(subparsers)
+    setup_schema_parser(subparsers)
+    if "sqlite" not in _config.database.url:
+        setup_test_parser(subparsers)
+>>>>>>> origin/main
+>>>>>>> origin/main
 
     # Parse arguments
     parsed_args = parser.parse_args(args)
@@ -1539,69 +1483,6 @@ Uses parallel workers for faster processing.
         )
     )
 
-    # Search command
-    search_parser = subparsers.add_parser(
-        "search",
-        help="Search indexed emails with natural language",
-        description="""
-Search your indexed emails using natural language queries.
-
-Examples:
-  cortex search "contract renewal terms"
-  cortex search "emails from John about budget" --top-k 20
-  cortex search "attachments mentioning quarterly report"
-
-Uses hybrid search (vector + full-text) for best results.
-        """,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    search_parser.add_argument(
-        "query",
-        metavar="QUERY",
-        help="Natural language search query",
-    )
-    search_parser.add_argument(
-        "--top-k",
-        "-k",
-        type=int,
-        default=10,
-        metavar="N",
-        help="Number of results to return (default: 10)",
-    )
-    search_parser.add_argument(
-        "--tenant",
-        "-t",
-        default="default",
-        metavar="ID",
-        help="Tenant ID (default: 'default')",
-    )
-    search_parser.add_argument(
-        "--fusion",
-        choices=["rrf", "weighted_sum"],
-        default="rrf",
-        help="Fusion method: rrf (default) or weighted_sum",
-    )
-    search_parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="Show detailed score breakdown (F/V/L)",
-    )
-    search_parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Output results as JSON",
-    )
-    search_parser.set_defaults(
-        func=lambda args: _run_search(
-            query=args.query,
-            top_k=args.top_k,
-            tenant_id=args.tenant,
-            fusion=args.fusion,
-            debug=args.debug,
-            json_output=args.json,
-        )
-    )
-
     # Validate command
     validate_parser = subparsers.add_parser(
         "validate",
@@ -1630,6 +1511,9 @@ This command:
     validate_parser.set_defaults(
         func=lambda args: _run_validate(path=args.path, json_output=args.json)
     )
+
+
+from cortex_cli.cmd_draft import setup_draft_parser
 
 
 def _setup_rag_commands(subparsers: Any) -> None:
@@ -1672,49 +1556,7 @@ The system will:
     )
 
     # Draft command
-    draft_parser = subparsers.add_parser(
-        "draft",
-        help="Draft email replies based on context",
-        description="""
-Draft an email reply based on instructions and optional thread context.
-
-The system will:
-  1. Retrieve relevant context (if thread ID provided)
-  2. Follow your instructions
-  3. Generate a professional email draft
-        """,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    draft_parser.add_argument(
-        "instructions",
-        metavar="INSTRUCTIONS",
-        help="Instructions for the draft (e.g. 'Reply politely declining')",
-    )
-    draft_parser.add_argument(
-        "--thread-id",
-        metavar="UUID",
-        help="ID of the thread to reply to",
-    )
-    draft_parser.add_argument(
-        "--tenant",
-        "-t",
-        default="default",
-        metavar="ID",
-        help="Tenant ID (default: 'default')",
-    )
-    draft_parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Output results as JSON",
-    )
-    draft_parser.set_defaults(
-        func=lambda args: _run_draft(
-            instructions=args.instructions,
-            thread_id=args.thread_id,
-            tenant_id=args.tenant,
-            json_output=args.json,
-        )
-    )
+    setup_draft_parser(subparsers)
 
     # Summarize command
     summarize_parser = subparsers.add_parser(
@@ -1951,14 +1793,13 @@ Run comprehensive system diagnostics including:
         help="Automatically fix common code issues",
         description="Run the auto-fix script to resolve low-hanging fruit issues.",
     )
-    autofix_parser.set_defaults(
-        func=lambda _: _run_autofix()
-    )
+    autofix_parser.set_defaults(func=lambda _: _run_autofix())
 
 
 def _run_autofix():
     """Run the autofix script."""
     from cortex_cli.cmd_autofix import main as autofix_main
+
     autofix_main()
 
 
