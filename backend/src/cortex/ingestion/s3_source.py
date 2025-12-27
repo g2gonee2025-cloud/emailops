@@ -210,18 +210,32 @@ class S3SourceHandler:
         )
 
         for file_key in folder.files:
-            # Get relative path within folder
-            raw_rel = file_key[len(folder.prefix) :].replace("\\", "/")
-            relative_path = os.path.normpath("/" + raw_rel).lstrip("/\\")
-            if relative_path.startswith(".."):
-                relative_path = os.path.basename(relative_path)
-            if not relative_path:
+            if not file_key.startswith(folder.prefix):
+                logger.warning(
+                    f"Skipping file '{file_key}' outside of folder '{folder.prefix}'"
+                )
                 continue
 
-            local_file = folder_path / relative_path
+            relative_path_str = file_key[len(folder.prefix) :]
+            if not relative_path_str:
+                continue
+
+            # Construct the full local path
+            local_file = (folder_path / relative_path_str).resolve()
+
+            # Security check: Ensure the resolved path is within the target folder
+            if not str(local_file).startswith(str(folder_path.resolve())):
+                logger.warning(
+                    f"Skipping potentially unsafe file path (path traversal attempt?): '{file_key}'"
+                )
+                continue
+
             local_file.parent.mkdir(parents=True, exist_ok=True)
 
-            self.client.download_file(self.bucket, file_key, str(local_file))
+            try:
+                self.client.download_file(self.bucket, file_key, str(local_file))
+            except Exception as e:
+                logger.error(f"Failed to download {file_key}: {e}")
 
         return folder_path
 

@@ -14,7 +14,7 @@ from typing import Any, List, Optional
 from cortex.config.loader import get_config
 from cortex.ingestion.mailroom import process_job
 from cortex.ingestion.models import IngestJobRequest, IngestJobSummary
-from cortex.ingestion.s3_source import S3SourceHandler
+from cortex.ingestion.s3_source import S3ConversationFolder, S3SourceHandler
 
 logger = logging.getLogger(__name__)
 
@@ -80,22 +80,15 @@ class IngestionProcessor:
         return timestamps
 
     def process_folder(
-        self, folder: Any, existing_timestamps: dict[str, Any]
+        self, folder: S3ConversationFolder, existing_timestamps: dict[str, Any]
     ) -> Optional[IngestJobSummary]:
         """
         Process a single folder and return summary.
-
         Checks if folder needs processing based on pre-fetched last_modified timestamp.
         """
-        # Handle both raw prefix strings and S3ConversationFolder objects
-        if isinstance(folder, str):
-            prefix = folder
-            last_modified = None
-            folder_name = prefix.rstrip("/").split("/")[-1]
-        else:
-            prefix = folder.prefix
-            last_modified = folder.last_modified
-            folder_name = folder.prefix.rstrip("/").split("/")[-1]
+        prefix = folder.prefix
+        last_modified = folder.last_modified
+        folder_name = folder.name
 
         # Check if we can skip this folder using pre-fetched data
         if last_modified and folder_name in existing_timestamps:
@@ -138,7 +131,7 @@ class IngestionProcessor:
             self.stats.folders_processed += 1
             self.stats.jobs_created += 1
             return summary
-        except Exception as exc:
+        except Exception as exc:  # Broad exception to catch failures in underlying job
             logger.error("Ingestion failed for %s: %s", prefix, exc, exc_info=True)
             self.stats.errors += 1
             return None
@@ -161,7 +154,7 @@ class IngestionProcessor:
             return summaries
 
         # Bulk fetch existing timestamps to avoid N+1 queries
-        folder_names = [f.prefix.rstrip("/").split("/")[-1] for f in folders]
+        folder_names = [f.name for f in folders]
         existing_timestamps = self._get_existing_timestamps(folder_names)
         logger.info(f"Found {len(existing_timestamps)} existing folder timestamps.")
 
@@ -187,7 +180,9 @@ class IngestionProcessor:
 
         return summaries
 
-    def process_batch(self, folders: List[Any], job_id: str) -> IngestJobSummary:
+    def process_batch(
+        self, folders: List[S3ConversationFolder], job_id: str
+    ) -> IngestJobSummary:
         """Process a batch of folders with parallel workers, avoiding N+1 DB queries."""
         import threading
         from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -202,10 +197,7 @@ class IngestionProcessor:
         # ... (agg_stats initialization) ...
 
         # Bulk fetch existing timestamps
-        folder_names = [
-            (f.prefix if hasattr(f, "prefix") else f).rstrip("/").split("/")[-1]
-            for f in folders
-        ]
+        folder_names = [f.name for f in folders]
         existing_timestamps = self._get_existing_timestamps(folder_names)
         logger.info(
             f"Batch pre-fetch: Found {len(existing_timestamps)} existing timestamps."
@@ -250,7 +242,7 @@ class IngestionProcessor:
                             )
 
                 except Exception as exc:
-                    logger.error("Future failed for %s: %s", (folder.prefix if hasattr(folder, "prefix") else folder), exc)
+                    logger.error("Future failed for %s: %s", folder.prefix, exc)
                     with stats_lock:
                         agg_stats.errors += 1
 

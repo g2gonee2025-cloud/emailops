@@ -23,7 +23,7 @@ class TestIncrementalIngestion(unittest.TestCase):
         # Mock folder with specific last_modified
         base_time = datetime(2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
         folder = S3ConversationFolder(
-            prefix="raw/test_folder/",
+            prefix="raw/a-prefix-that-is-different/",
             name="test_folder",
             files=["key1"],
             last_modified=base_time,
