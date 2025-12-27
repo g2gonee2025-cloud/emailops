@@ -149,7 +149,11 @@ DATA_COMMANDS = [
     ("embeddings", "Embedding management (stats, backfill)"),
     ("s3", "S3/Spaces storage (list, ingest, check-structure)"),
     ("maintenance", "System maintenance (resolve-entities)"),
+<<<<<<< HEAD
+    ("patch", "Fix malformed patch files"),
+=======
     ("schema", "Graph schema analysis tools"),
+>>>>>>> origin/main
 ]
 
 COMMON_OPTIONS = [
@@ -1323,6 +1327,7 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     from cortex_cli.cmd_embeddings import setup_embeddings_parser
     from cortex_cli.cmd_maintenance import setup_maintenance_parser
     from cortex_cli.cmd_s3 import setup_s3_parser
+    from cortex_cli.cmd_patch import setup_patch_parser
     from cortex_cli.cmd_index import setup_index_parser
     from cortex_cli.cmd_schema import setup_schema_parser
     from cortex_cli.cmd_test import setup_test_parser
@@ -1333,6 +1338,7 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     setup_embeddings_parser(subparsers)
     setup_s3_parser(subparsers)
     setup_maintenance_parser(subparsers)
+    setup_patch_parser(subparsers)
     setup_index_parser(subparsers)
     setup_schema_parser(subparsers)
     if "sqlite" not in _config.database.url:
