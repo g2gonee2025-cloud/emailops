@@ -33,7 +33,13 @@ export function DraftView() {
       const response = await api.draftEmail(instruction.trim(), threadId || undefined, tone);
       setDraft(response.draft);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to generate draft');
+      console.error("Draft generation failed:", err);
+      // SECURITY: Do not expose raw error messages to the user in production.
+      if (import.meta.env.DEV) {
+        setError(err instanceof Error ? err.message : 'Failed to generate draft');
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
