@@ -1,4 +1,5 @@
 import logging
+import threading
 from typing import Any, List, Optional
 
 import numpy as np
@@ -9,34 +10,37 @@ from cortex.retrieval.results import SearchResultItem
 
 logger = logging.getLogger(__name__)
 _llm_runtime: Optional[LLMRuntime] = None
+_runtime_lock = threading.Lock()
 
 
 def _get_runtime() -> LLMRuntime:
     """Get or create LLMRuntime singleton."""
     global _llm_runtime
     if _llm_runtime is None:
-        _llm_runtime = LLMRuntime()
+        with _runtime_lock:
+            if _llm_runtime is None:
+                _llm_runtime = LLMRuntime()
     return _llm_runtime
 
 
-def _get_query_embedding(query: str, config: Any) -> Optional[List[float]]:
+def _get_query_embedding(query: str, config: Any) -> Optional[np.ndarray]:
     """Helper: Get query embedding with cache fallback."""
     try:
         # Check cache first
         cached = get_cached_query_embedding(query, model=config.embedding.model_name)
         if cached is not None:
             logger.debug("Using cached query embedding for: %s", query[:50])
-            return cached.tolist()
+            return cached
 
         # Use LLMRuntime which has CPU fallback logic
         runtime = _get_runtime()
         embedding_array = runtime.embed_queries([query])
-        embedding = embedding_array[0].tolist()
+        embedding = embedding_array[0]
 
         # Cache the embedding
         cache_query_embedding(
             query,
-            np.asarray(embedding, dtype=np.float32),
+            embedding,
             model=config.embedding.model_name,
         )
         return embedding
@@ -47,7 +51,7 @@ def _get_query_embedding(query: str, config: Any) -> Optional[List[float]]:
 
 def _resolve_target_conversations(
     session, args: Any, search_query: str, limit: int, parsed_filters: Any
-) -> Optional[List[str]]:
+) -> List[str]:
     """Helper: Resolve specific conversation IDs from navigation or filters."""
     from cortex.retrieval.fts_search import search_messages_fts
 
@@ -60,8 +64,8 @@ def _resolve_target_conversations(
             args.tenant_id,
             limit=min(limit, 200),
         )
-        nav_conversation_ids = (
-            list({h.conversation_id for h in nav_hits if h.conversation_id}) or None
+        nav_conversation_ids = list(
+            {h.conversation_id for h in nav_hits if h.conversation_id}
         )
 
     # 2.5 Resolve Rich Filters
@@ -71,23 +75,23 @@ def _resolve_target_conversations(
 
     # Merge
     final_ids: Optional[List[str]] = None
-    if nav_conversation_ids:
+    if nav_conversation_ids is not None:
         final_ids = nav_conversation_ids
 
     if filter_resolved_ids is not None:
         if final_ids is not None:
             # Intersect
-            final_ids = list(set(final_ids) & set(filter_resolved_ids)) or None
+            final_ids = list(set(final_ids) & set(filter_resolved_ids))
         else:
             final_ids = filter_resolved_ids
 
     # If intersection is empty but filters existed, return empty list (no match)
     if (
         nav_conversation_ids is not None or filter_resolved_ids is not None
-    ) and not final_ids:
+    ) and final_ids is None:
         return []
 
-    return final_ids
+    return final_ids if final_ids is not None else []
 
 
 def _convert_fts_to_items(fts_results: List[Any]) -> List[SearchResultItem]:
