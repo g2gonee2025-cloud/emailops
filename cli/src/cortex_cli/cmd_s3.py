@@ -401,6 +401,27 @@ def setup_s3_parser(subparsers: Any) -> None:
     validate_parser.add_argument("--json", action="store_true", help="Output as JSON")
     validate_parser.set_defaults(func=cmd_s3_validate)
 
+    # s3 check-structure
+    check_structure_parser = s3_subparsers.add_parser(
+        "check-structure",
+        help="Check S3 folder structure for correctness",
+        description="Scans S3 folders and reports missing files or structural issues.",
+    )
+    check_structure_parser.add_argument(
+        "--prefix",
+        "-p",
+        default="raw/outlook/",
+        help="S3 prefix to check (default: raw/outlook/)",
+    )
+    check_structure_parser.add_argument(
+        "--sample",
+        "-s",
+        type=int,
+        default=20,
+        help="Number of folders to sample (default: 20)",
+    )
+    check_structure_parser.set_defaults(func=cmd_s3_check_structure)
+
     # Default: show list when no subcommand given
     def _default_s3_handler(args: argparse.Namespace) -> None:
         if not args.s3_command:
@@ -410,3 +431,19 @@ def setup_s3_parser(subparsers: Any) -> None:
             cmd_s3_list(args)
 
     s3_parser.set_defaults(func=_default_s3_handler)
+
+
+def cmd_s3_check_structure(args: argparse.Namespace) -> None:
+    """Check S3 folder structure for correctness."""
+    import json
+    from cortex_cli.s3_check import check_s3_structure
+
+    try:
+        results = check_s3_structure(
+            prefix=args.prefix,
+            sample_size=args.sample,
+        )
+        print(json.dumps(results, indent=2))
+    except Exception as e:
+        print(json.dumps({"error": str(e)}))
+        sys.exit(1)

@@ -3,12 +3,13 @@ from __future__ import annotations
 import json
 import logging
 import re
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 """
 core_manifest.py - Centralized manifest.json parsing and metadata extraction.
-from typing import Any, Dict
+
 This module provides THE SINGLE SOURCE OF TRUTH for:
 1. Loading manifest.json files (with robust fallback parsing)
 2. Extracting lightweight metadata (for indexing/chunking)
@@ -277,8 +278,6 @@ def _extract_date_range(manifest: dict[str, Any]) -> dict[str, Any]:
 
             dts = _parse_all_dates(msgs)
             if dts:
-                from datetime import timezone
-
                 start_date = min(dts).astimezone(timezone.utc).isoformat()
                 end_date = max(dts).astimezone(timezone.utc).isoformat()
             else:
@@ -291,8 +290,6 @@ def _extract_date_range(manifest: dict[str, Any]) -> dict[str, Any]:
 
 
 def _parse_all_dates(msgs: list[Any]) -> list[Any]:
-    from datetime import datetime
-
     dts: list[datetime] = []
     for msg in msgs:
         if isinstance(msg, dict) and msg.get("date") is not None:
@@ -303,8 +300,6 @@ def _parse_all_dates(msgs: list[Any]) -> list[Any]:
 
 
 def _parse_dt(v: Any) -> Any | None:
-    from datetime import datetime, timezone
-
     if v is None:
         return None
     if isinstance(v, (int, float)):
@@ -428,10 +423,10 @@ def extract_participants_detailed(
         logger.warning(
             "extract_participants_detailed: Error extracting participants: %s", e
         )
-        return out
+        return []
     except Exception as e:
         logger.error("extract_participants_detailed: Unexpected error: %s", e)
-        return out
+        return []
     # Deduplicate by lowercase email or normalized name; skip empty entries
     seen: set[str] = set()
     deduped: list[dict[str, str]] = []
@@ -445,7 +440,7 @@ def extract_participants_detailed(
             continue
         seen.add(key)
         deduped.append(p)
-    return deduped[:max_participants] if deduped else []
+    return deduped[:max_participants]
 
 
 # ============================================================================
