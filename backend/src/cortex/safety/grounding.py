@@ -44,8 +44,8 @@ GroundingMethod = Literal["llm", "embedding", "keyword", "not_applicable"]
 
 def _cosine_similarity(v1: list[float], v2: list[float]) -> float:
     """Calculate cosine similarity between two vectors."""
-    a = np.array(v1)
-    b = np.array(v2)
+    a = np.array(v1, dtype=np.float64)
+    b = np.array(v2, dtype=np.float64)
     norm_a = npla.norm(a)
     norm_b = npla.norm(b)
     if norm_a == 0 or norm_b == 0:
@@ -524,14 +524,16 @@ def check_grounding_embedding(
     claims = extract_claims_simple(answer_candidate)
 
     if not claims:
-        # No verifiable claims = grounded by default
+        # No verifiable claims = not grounded.
+        # This is a safety measure. An answer with no factual claims to verify
+        # cannot be considered "grounded".
         return GroundingCheck(
             answer_candidate=answer_candidate,
-            is_grounded=True,
+            is_grounded=False,
             confidence=1.0,
             unsupported_claims=[],
             claim_analyses=[],
-            grounding_ratio=1.0,
+            grounding_ratio=0.0,
             method="embedding",
         )
 
@@ -540,7 +542,7 @@ def check_grounding_embedding(
         return GroundingCheck(
             answer_candidate=answer_candidate,
             is_grounded=False,
-            confidence=0.5,
+            confidence=1.0,  # High confidence that it's not grounded
             unsupported_claims=claims,
             claim_analyses=[
                 ClaimAnalysis(

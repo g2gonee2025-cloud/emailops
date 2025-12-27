@@ -1346,9 +1346,13 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     from cortex_cli.cmd_s3 import setup_s3_parser
     from cortex_cli.cmd_safety import setup_safety_parser
     from cortex_cli.cmd_test import setup_test_parser
+<<<<<<< HEAD
+    from cortex_cli.cmd_grounding import setup_grounding_parser
+=======
     from rich.console import Console
     from typer.core import TyperGroup
     from typer.main import get_command_from_info
+>>>>>>> origin/main
 
     # A bit of a hack to integrate Typer apps with argparse
     def setup_typer_command(subparsers, name, app, help_text=""):
@@ -1398,9 +1402,10 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     setup_embeddings_parser(subparsers)
     setup_s3_parser(subparsers)
     setup_maintenance_parser(subparsers)
+    setup_test_parser(subparsers)
+    setup_grounding_parser(subparsers)
     setup_safety_parser(subparsers)
-    setup_queue_parser(subparsers)
-    setup_fix_parser(subparsers)
+    setup_queue_parser(subparsers)x_parser(subparsers)
     setup_login_parser(subparsers)
     setup_typer_command(
         subparsers, "graph", graph_app, help_text="Knowledge Graph commands"
@@ -1410,6 +1415,7 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     setup_schema_parser(subparsers)
     if "sqlite" not in _config.database.url:
         setup_test_parser(subparsers)
+>>>>>>> origin/main
 
     # Parse arguments
     parsed_args = parser.parse_args(args)
