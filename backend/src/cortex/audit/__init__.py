@@ -49,6 +49,7 @@ def log_audit_event(
     risk_level: Literal["low", "medium", "high"] = "low",
     correlation_id: Optional[str] = None,
     metadata: Optional[Dict[str, Any]] = None,
+    db_session: Optional[SessionLocal] = None,
 ) -> None:
     """
     Record an audit event to the database.
@@ -63,6 +64,14 @@ def log_audit_event(
     * risk_level
     * correlation_id
     """
+
+    def _write_audit_log(session):
+        from cortex.db.session import set_session_tenant
+
+        set_session_tenant(session, tenant_id)
+        session.add(record)
+        session.commit()
+
     try:
         # Calculate hashes if data provided and hash not explicitly provided
         if input_data and not input_hash:
@@ -98,13 +107,12 @@ def log_audit_event(
             metadata_=final_metadata,
         )
 
-        # Write to DB (new session to avoid transaction coupling)
-        with SessionLocal() as session:
-            from cortex.db.session import set_session_tenant
-
-            set_session_tenant(session, tenant_id)
-            session.add(record)
-            session.commit()
+        if db_session:
+            _write_audit_log(db_session)
+        else:
+            # Write to DB (new session to avoid transaction coupling)
+            with SessionLocal() as session:
+                _write_audit_log(session)
 
     except Exception as e:
         # Audit logging failure should not crash the app, but must be logged critically
@@ -121,6 +129,7 @@ def tool_audit_log(
     policy_decision: Optional[PolicyDecision] = None,
     correlation_id: Optional[str] = None,
     metadata: Optional[Dict[str, Any]] = None,
+    db_session: Optional[Any] = None,
 ) -> AuditEntry:
     """
     Create and persist an audit log entry.
@@ -189,6 +198,7 @@ def tool_audit_log(
             "input_keys": list(input_snapshot.keys()),
             "output_keys": list(output_snapshot.keys()) if output_snapshot else [],
         },
+        db_session=db_session,
     )
 
     return entry
@@ -238,3 +248,59 @@ def get_audit_trail(
     except Exception as e:
         logger.error(f"Failed to query audit trail: {e}", exc_info=True)
         return []
+
+
+def get_audit_log_cli(
+    tenant_id: str,
+    limit: int = 100,
+    since: Optional[datetime] = None,
+    user_or_agent: Optional[str] = None,
+    action: Optional[str] = None,
+    correlation_id: Optional[str] = None,
+) -> None:
+    """CLI-friendly audit log query."""
+    from rich.console import Console
+    from rich.table import Table
+
+    console = Console()
+
+    try:
+        results = get_audit_trail(
+            tenant_id=tenant_id,
+            action=action,
+            user_or_agent=user_or_agent,
+            correlation_id=correlation_id,
+            since=since,
+            limit=limit,
+        )
+
+        if not results:
+            console.print("No audit events found for the specified criteria.")
+            return
+
+        table = Table(
+            "Timestamp",
+            "Action",
+            "User/Agent",
+            "Risk",
+            "Input Hash",
+            "Output Hash",
+            "Correlation ID",
+        )
+        for r in results:
+            correlation_id_str = (
+                r.metadata_.get("correlation_id") if r.metadata_ else "N/A"
+            )
+            table.add_row(
+                str(r.ts),
+                r.action,
+                r.user_or_agent,
+                r.risk_level,
+                r.input_hash[:12] if r.input_hash else "N/A",
+                r.output_hash[:12] if r.output_hash else "N/A",
+                correlation_id_str,
+            )
+        console.print(table)
+
+    except Exception as e:
+        console.print(f"[red]Error querying audit log: {e}[/red]")

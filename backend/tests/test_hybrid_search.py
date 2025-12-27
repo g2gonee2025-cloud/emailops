@@ -3,6 +3,7 @@ from unittest.mock import Mock, patch
 
 import numpy as np
 import pytest
+import numpy as np
 
 # Import the correct return types
 from cortex.retrieval.fts_search import ChunkFTSResult, FTSResult
