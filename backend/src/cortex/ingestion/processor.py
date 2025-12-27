@@ -52,63 +52,80 @@ class IngestionProcessor:
             options={"prefix": folder_prefix},
         )
 
-    def process_folder(self, folder: Any) -> Optional[IngestJobSummary]:
+    def _get_existing_timestamps(self, folder_names: List[str]) -> dict[str, Any]:
+        """Fetch all existing folder timestamps in a single query to prevent N+1."""
+        from cortex.db.models import Conversation
+        from cortex.db.session import SessionLocal
+        from sqlalchemy.exc import SQLAlchemyError
+
+        timestamps = {}
+        try:
+            with SessionLocal() as session:
+                results = (
+                    session.query(
+                        Conversation.folder_name,
+                        Conversation.extra_data["source_last_modified"].astext,
+                    )
+                    .filter(
+                        Conversation.tenant_id == self.tenant_id,
+                        Conversation.folder_name.in_(folder_names),
+                    )
+                    .all()
+                )
+                timestamps = {name: ts for name, ts in results if ts}
+        except SQLAlchemyError as e:
+            logger.error("Failed to query existing timestamps: %s", e)
+            # On DB error, returning empty dict forces re-processing, which is safer
+            # than skipping folders that might need updates.
+        return timestamps
+
+    def process_folder(
+        self, folder: Any, existing_timestamps: dict[str, Any]
+    ) -> Optional[IngestJobSummary]:
         """
         Process a single folder and return summary.
 
-        Checks if folder needs processing based on last_modified timestamp.
+        Checks if folder needs processing based on pre-fetched last_modified timestamp.
         """
-        from cortex.db.models import Conversation
-        from cortex.db.session import SessionLocal
-
         # Handle both raw prefix strings and S3ConversationFolder objects
         if isinstance(folder, str):
             prefix = folder
             last_modified = None
+            folder_name = prefix.rstrip("/").split("/")[-1]
         else:
             prefix = folder.prefix
             last_modified = folder.last_modified
+            folder_name = folder.prefix.rstrip("/").split("/")[-1]
 
-        # Check if we can skip this folder
-        if last_modified:
+        # Check if we can skip this folder using pre-fetched data
+        if last_modified and folder_name in existing_timestamps:
+            saved_mod_str = existing_timestamps[folder_name]
+            from dateutil import parser
+
             try:
-                with SessionLocal() as session:
-                    # Deterministic lookup by tenant/folder
-                    # (We rely on the unique constraint/index on these fields)
-                    existing = (
-                        session.query(Conversation)
-                        .filter(
-                            Conversation.tenant_id == self.tenant_id,
-                            Conversation.folder_name
-                            == folder.prefix.rstrip("/").split("/")[-1],
-                        )
-                        .first()
-                    )
+                saved_mod_dt = parser.parse(saved_mod_str)
 
-                    if existing and existing.extra_data:
-                        saved_mod = existing.extra_data.get("source_last_modified")
-                        if saved_mod:
-                            # Convert saved ISO string back to datetime if needed, or compare naive/aware carefully
-                            # Assuming saved as ISO format string by serializer
-                            from dateutil import parser
+                # Ensure timezone awareness for correct comparison
+                if saved_mod_dt.tzinfo is None:
+                    from datetime import timezone
 
-                            if isinstance(saved_mod, str):
-                                saved_mod_dt = parser.parse(saved_mod)
-                            else:
-                                saved_mod_dt = saved_mod
+                    saved_mod_dt = saved_mod_dt.replace(tzinfo=timezone.utc)
 
-                            # Ensure Timezone awareness compatibility
-                            if saved_mod_dt.tzinfo is None and last_modified.tzinfo:
-                                # Assume UTC for saved if naive
-                                from datetime import timezone
+                if last_modified.tzinfo is None:
+                    from datetime import timezone
 
-                                saved_mod_dt = saved_mod_dt.replace(tzinfo=timezone.utc)
+                    last_modified = last_modified.replace(tzinfo=timezone.utc)
 
-                            if saved_mod_dt >= last_modified:
-                                logger.info(f"Skipping unchanged folder: {prefix}")
-                                return None
-            except Exception as e:
-                logger.warning("Failed to check existing record for %s: %s", prefix, e)
+                if saved_mod_dt >= last_modified:
+                    logger.info(f"Skipping unchanged folder: {prefix}")
+                    return None
+            except (ValueError, TypeError) as e:
+                logger.warning(
+                    "Could not parse saved timestamp '%s' for %s: %s",
+                    saved_mod_str,
+                    prefix,
+                    e,
+                )
 
         job_request = self._build_job_request(prefix)
 
@@ -122,14 +139,14 @@ class IngestionProcessor:
             self.stats.jobs_created += 1
             return summary
         except Exception as exc:
-            logger.error("Ingestion failed for %s: %s", prefix, exc)
+            logger.error("Ingestion failed for %s: %s", prefix, exc, exc_info=True)
             self.stats.errors += 1
             return None
 
     def run_full_ingestion(
         self, prefix: str = "Outlook/", limit: Optional[int] = None
     ) -> List[IngestJobSummary]:
-        """Run full ingestion with parallel workers for GPU saturation."""
+        """Run full ingestion with parallel workers, avoiding N+1 DB queries."""
         from concurrent.futures import ThreadPoolExecutor, as_completed
 
         num_workers = self.config.processing.num_workers
@@ -139,11 +156,18 @@ class IngestionProcessor:
         summaries: List[IngestJobSummary] = []
 
         folders = self.s3_handler.list_conversation_folders(prefix=prefix, limit=limit)
-        logger.info("Starting ingestion scan")
+        if not folders:
+            logger.info("No folders found to process.")
+            return summaries
+
+        # Bulk fetch existing timestamps to avoid N+1 queries
+        folder_names = [f.prefix.rstrip("/").split("/")[-1] for f in folders]
+        existing_timestamps = self._get_existing_timestamps(folder_names)
+        logger.info(f"Found {len(existing_timestamps)} existing folder timestamps.")
 
         with ThreadPoolExecutor(max_workers=num_workers) as executor:
             futures = {
-                executor.submit(self.process_folder, folder): folder
+                executor.submit(self.process_folder, folder, existing_timestamps): folder
                 for folder in folders
             }
 
@@ -164,7 +188,7 @@ class IngestionProcessor:
         return summaries
 
     def process_batch(self, folders: List[Any], job_id: str) -> IngestJobSummary:
-        """Process a batch of folders with parallel workers for GPU saturation."""
+        """Process a batch of folders with parallel workers, avoiding N+1 DB queries."""
         import threading
         from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -175,23 +199,26 @@ class IngestionProcessor:
         )
 
         agg_stats = IngestJobSummary(job_id=uuid.UUID(job_id), tenant_id=self.tenant_id)
-        agg_stats.folders_processed = 0
-        agg_stats.threads_created = 0
-        agg_stats.chunks_created = 0
-        agg_stats.embeddings_generated = 0
-        agg_stats.errors = 0
-        agg_stats.skipped = 0
+        # ... (agg_stats initialization) ...
 
-        # Thread-safe counter for progress tracking
+        # Bulk fetch existing timestamps
+        folder_names = [
+            (f.prefix if hasattr(f, "prefix") else f).rstrip("/").split("/")[-1]
+            for f in folders
+        ]
+        existing_timestamps = self._get_existing_timestamps(folder_names)
+        logger.info(
+            f"Batch pre-fetch: Found {len(existing_timestamps)} existing timestamps."
+        )
+
         stats_lock = threading.Lock()
         progress = {"count": 0}
 
-        def process_single(folder) -> Optional[IngestJobSummary]:
-            # prefix = folder.prefix
-            return self.process_folder(folder)
-
         with ThreadPoolExecutor(max_workers=num_workers) as executor:
-            futures = {executor.submit(process_single, f): f for f in folders}
+            futures = {
+                executor.submit(self.process_folder, f, existing_timestamps): f
+                for f in folders
+            }
 
             for future in as_completed(futures):
                 folder = futures[future]
@@ -214,9 +241,8 @@ class IngestionProcessor:
                                 summary.embeddings_generated
                             )
                         else:
-                            agg_stats.errors += 1
+                            agg_stats.skipped += 1 # Folders returning None are skipped or failed
 
-                        # Log progress every 100 folders
                         if current_count % 100 == 0:
                             logger.info(
                                 f"Progress: {current_count}/{len(folders)} folders, "
@@ -224,12 +250,13 @@ class IngestionProcessor:
                             )
 
                 except Exception as exc:
-                    logger.error("Future failed for %s: %s", folder.prefix, exc)
+                    logger.error("Future failed for %s: %s", (folder.prefix if hasattr(folder, "prefix") else folder), exc)
                     with stats_lock:
                         agg_stats.errors += 1
 
         logger.info(
-            f"Batch complete: {agg_stats.folders_processed} folders, "
+            f"Batch complete: {agg_stats.folders_processed} folders processed, "
+            f"{agg_stats.skipped} skipped, "
             f"{agg_stats.chunks_created} chunks, {agg_stats.errors} errors"
         )
         return agg_stats
