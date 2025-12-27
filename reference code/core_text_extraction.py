@@ -88,7 +88,7 @@ def _is_cache_valid(
         return False
 
     # TTL check
-    if (time.time() - float(cached_at)) > _CACHE_TTL_SECONDS:
+    if (time.time() - float(cached_at)) > _CACHE_TTL:
         return False
 
     try:
@@ -408,36 +408,11 @@ def _extract_msg(path: Path) -> str:
         logger.warning("Failed to parse MSG %s: %s", path, e)
         text_result = ""
     finally:
-        # HIGH #8: Improved resource cleanup with explicit error handling
-        # Close the message handle to prevent resource leaks
-        if m is not None:
+        if m is not None and hasattr(m, "close") and callable(getattr(m, "close")):
             try:
-                close_fn: Callable[..., object] | None = None
-                exit_fn: Callable[..., object] | None = None
-
-                try:
-                    close_candidate = cast(Any, m).close  # type: ignore[attr-defined]
-                    if callable(close_candidate):
-                        close_fn = close_candidate
-                except AttributeError:
-                    close_fn = None
-
-                if close_fn is None:
-                    try:
-                        exit_candidate = cast(Any, m).__exit__  # type: ignore[attr-defined]
-                        if callable(exit_candidate):
-                            exit_fn = exit_candidate
-                    except AttributeError:
-                        exit_fn = None
-
-                if close_fn is not None:
-                    close_fn()
-                elif exit_fn is not None:
-                    exit_fn(None, None, None)
+                m.close()
             except Exception as close_error:
-                # Log close errors but don't fail the extraction
                 logger.debug("Failed to close MSG handle for %s: %s", path, close_error)
-
     return text_result
 
 
@@ -663,11 +638,10 @@ def extract_text(
 
             # Clean old cache entries periodically
             if len(_extraction_cache) > 100:  # Clean when cache gets too large
-                _extraction_cache = {
-                    k: v
-                    for k, v in _extraction_cache.items()
-                    if (time.time() - float(v[0])) <= _CACHE_TTL_SECONDS
-                }
+                current_time = time.time()
+                for k in list(_extraction_cache.keys()):
+                    if (current_time - float(_extraction_cache[k][0])) > _CACHE_TTL:
+                        del _extraction_cache[k]
     return result
 
 
@@ -882,6 +856,6 @@ async def extract_text_async(path: Path, *, max_chars: int | None = None) -> str
     Returns:
         Extracted and sanitized text
     """
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     func = partial(extract_text, path, max_chars=max_chars)
     return await loop.run_in_executor(None, func)

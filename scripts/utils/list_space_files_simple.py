@@ -1,3 +1,8 @@
+"""
+Standalone utility to list objects in a DigitalOcean Space.
+
+Similar to `aws s3 ls`, but uses local .env file for auth.
+"""
 import argparse
 import os
 from collections.abc import Iterable
@@ -24,14 +29,28 @@ def _ensure_env(keys: Iterable[str]) -> dict[str, str]:
 
 
 def main() -> None:
+    """Main function to list objects in a DigitalOcean Space."""
     parser = argparse.ArgumentParser(
-        description="List objects in the configured DigitalOcean Space"
+        description="List objects in a configured S3-compatible bucket (e.g., DigitalOcean Space)."
     )
     parser.add_argument(
-        "--prefix", default="", help="Prefix to filter objects (e.g. raw/outlook/)"
+        "prefix",
+        nargs="?",
+        default="",
+        help="Prefix to filter objects (e.g., 'raw/outlook/'). Optional.",
     )
     parser.add_argument(
-        "--limit", type=int, default=200, help="Maximum number of objects to print"
+        "--limit",
+        "-l",
+        type=int,
+        default=200,
+        help="Maximum number of objects to display.",
+    )
+    parser.add_argument(
+        "--verbose",
+        "-v",
+        action="store_true",
+        help="Print connection details and other debug info.",
     )
     args = parser.parse_args()
 
@@ -42,9 +61,10 @@ def main() -> None:
         ["S3_ENDPOINT", "S3_REGION", "S3_BUCKET_RAW", "S3_ACCESS_KEY", "S3_SECRET_KEY"]
     )
 
-    print(f"Connecting to {env['S3_BUCKET_RAW']} @ {env['S3_ENDPOINT']}")
-    print(f"Access key length: {len(env['S3_ACCESS_KEY'])}")
-    print(f"Secret key length: {len(env['S3_SECRET_KEY'])}")
+    if args.verbose:
+        print(f"Connecting to {env['S3_BUCKET_RAW']} @ {env['S3_ENDPOINT']}")
+        print(f"Access key length: {len(env['S3_ACCESS_KEY'])}")
+        print(f"Secret key length: {len(env['S3_SECRET_KEY'])}")
 
     client = boto3.client(
         "s3",
@@ -58,22 +78,60 @@ def main() -> None:
     try:
         paginator = client.get_paginator("list_objects_v2")
         pages = paginator.paginate(Bucket=env["S3_BUCKET_RAW"], Prefix=args.prefix)
+
+        # Use rich for table output if available
+        try:
+            from rich import box
+            from rich.console import Console
+            from rich.table import Table
+
+            console = Console()
+            table = Table(
+                title=f"Objects in {env['S3_BUCKET_RAW']}/{args.prefix}",
+                box=box.SIMPLE,
+                show_header=True,
+                header_style="bold magenta",
+            )
+            table.add_column("Key")
+            table.add_column("Size", justify="right")
+            table.add_column("Last Modified")
+
+            RICH_AVAILABLE = True
+        except ImportError:
+            RICH_AVAILABLE = False
+
         count = 0
-        printed = 0
         for page in pages:
             for obj in page.get("Contents", []):
+                if count < args.limit:
+                    if RICH_AVAILABLE:
+                        table.add_row(
+                            obj["Key"],
+                            str(obj["Size"]),
+                            str(obj["LastModified"]),
+                        )
+                    else:
+                        print(
+                            f"- {obj['Key']} (size={obj['Size']} "
+                            f"last_modified={obj['LastModified']})"
+                        )
                 count += 1
-                if printed < args.limit:
-                    print(
-                        f"- {obj['Key']} (size={obj['Size']} last_modified={obj['LastModified']})"
-                    )
-                    printed += 1
+
         if count == 0:
-            print("No files found.")
+            print("No objects found.")
         else:
-            print(f"Displayed {printed} of {count} object(s) (use --limit to change)")
+            if RICH_AVAILABLE:
+                console.print(table)
+
+            # Summary line
+            displayed = min(count, args.limit)
+            print(
+                f"\nDisplayed {displayed} of {count} object(s). "
+                f"(use --limit to change)"
+            )
+
     except Exception as exc:  # pragma: no cover - simple utility script
-        print(f"Error listing files: {exc}")
+        print(f"Error listing objects: {exc}")
 
 
 if __name__ == "__main__":
