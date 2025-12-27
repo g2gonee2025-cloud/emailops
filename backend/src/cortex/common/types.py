@@ -186,67 +186,6 @@ def is_err(r: Result[T, E]) -> TypeGuard[Err[T, E]]:
     return r.ok is False
 
 
-# -------------------------
-# Result Helper Functions
-# -------------------------
-
-
-def collect_results(results: Iterable[Result[T, E]]) -> Result[list[T], E]:
-    """
-    Collect multiple Results into a single Result[list[T], E].
-
-    Fails fast on the first Err.
-    """
-    values: list[T] = []
-    for r in results:
-        if not r.ok:
-            return Err(cast(Err[T, E], r).error)
-        values.append(cast(Ok[T, E], r).value)
-    return Ok(values)
-
-
-def sequence_results(
-    items: Iterable[T], fn: Callable[[T], Result[U, E]]
-) -> Result[list[U], E]:
-    """
-    Apply `fn` to each item and collect results (fail-fast).
-
-    Unlike a list comprehension + collect, this truly stops at the first Err.
-    """
-    out: list[U] = []
-    for item in items:
-        r = fn(item)
-        if not r.ok:
-            return Err(cast(Err[U, E], r).error)
-        out.append(cast(Ok[U, E], r).value)
-    return Ok(out)
-
-
-def traverse_results(
-    items: Iterable[T], fn: Callable[[T], Result[U, E]]
-) -> Result[list[U], list[E]]:
-    """
-    Apply `fn` to every item, collecting *all* errors (not fail-fast).
-
-    Returns:
-        Ok(list_of_values) if there are no errors
-        Err(list_of_errors) otherwise
-    """
-    successes: list[U] = []
-    failures: list[E] = []
-
-    for item in items:
-        r = fn(item)
-        if r.ok:
-            successes.append(cast(Ok[U, E], r).value)
-        else:
-            failures.append(cast(Err[U, E], r).error)
-
-    if failures:
-        return Err(failures)
-    return Ok(successes)
-
-
 __all__ = (
     "Result",
     "Ok",
@@ -254,7 +193,4 @@ __all__ = (
     "ResultUnwrapError",
     "is_ok",
     "is_err",
-    "collect_results",
-    "sequence_results",
-    "traverse_results",
 )

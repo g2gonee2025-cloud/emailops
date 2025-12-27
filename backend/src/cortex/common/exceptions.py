@@ -47,15 +47,11 @@ class CortexError(Exception):
 class ConfigurationError(CortexError):
     """Configuration issues: missing/invalid settings."""
 
-    pass
-
 
 class SearchIndexError(CortexError):
     """
     Search index issues: not found, corrupted, incompatible.
     """
-
-    pass
 
 
 class EmbeddingError(CortexError):
@@ -64,9 +60,8 @@ class EmbeddingError(CortexError):
     """
 
     def __init__(self, message: str, retryable: bool = False, **kwargs: Any) -> None:
-        kwargs.pop("retryable", None)
+        self.retryable = kwargs.pop("retryable", retryable)
         super().__init__(message, **kwargs)
-        self.retryable = retryable
 
 
 class ProcessingError(CortexError):
@@ -78,9 +73,8 @@ class ProcessingError(CortexError):
         retryable: bool = False,
         **kwargs: Any,
     ) -> None:
-        kwargs.pop("retryable", None)
+        self.retryable = kwargs.pop("retryable", retryable)
         super().__init__(message, **kwargs)
-        self.retryable = retryable
 
 
 class ValidationError(CortexError):
@@ -95,9 +89,9 @@ class ValidationError(CortexError):
         rule: str | None = None,
         **kwargs: Any,
     ) -> None:
+        self.field = kwargs.pop("field", field)
+        self.rule = kwargs.pop("rule", rule)
         super().__init__(message, **kwargs)
-        self.field = field
-        self.rule = rule
 
 
 class ProviderError(CortexError):
@@ -112,9 +106,9 @@ class ProviderError(CortexError):
         retryable: bool = False,
         **kwargs: Any,
     ) -> None:
+        self.provider = kwargs.pop("provider", provider)
+        self.retryable = kwargs.pop("retryable", retryable)
         super().__init__(message, **kwargs)
-        self.provider = provider
-        self.retryable = retryable
 
 
 class FileOperationError(CortexError):
@@ -129,9 +123,9 @@ class FileOperationError(CortexError):
         operation: str | None = None,
         **kwargs: Any,
     ) -> None:
+        self.file_path = kwargs.pop("file_path", file_path)
+        self.operation = kwargs.pop("operation", operation)
         super().__init__(message, **kwargs)
-        self.file_path = file_path
-        self.operation = operation
 
 
 class TransactionError(CortexError):
@@ -145,8 +139,8 @@ class TransactionError(CortexError):
         transaction_id: str | None = None,
         **kwargs: Any,
     ) -> None:
+        self.transaction_id = kwargs.pop("transaction_id", transaction_id)
         super().__init__(message, **kwargs)
-        self.transaction_id = transaction_id
 
 
 class SecurityError(CortexError):
@@ -160,8 +154,8 @@ class SecurityError(CortexError):
         threat_type: str | None = None,
         **kwargs: Any,
     ) -> None:
+        self.threat_type = kwargs.pop("threat_type", threat_type)
         super().__init__(message, **kwargs)
-        self.threat_type = threat_type
 
 
 class LLMOutputSchemaError(CortexError):
@@ -171,6 +165,8 @@ class LLMOutputSchemaError(CortexError):
     Raised when complete_json cannot produce valid output matching the schema.
     """
 
+
+
     def __init__(
         self,
         message: str,
@@ -179,10 +175,10 @@ class LLMOutputSchemaError(CortexError):
         repair_attempts: int = 0,
         **kwargs: Any,
     ) -> None:
+        self.schema_name = kwargs.pop("schema_name", schema_name)
+        self.raw_output = kwargs.pop("raw_output", raw_output)
+        self.repair_attempts = kwargs.pop("repair_attempts", repair_attempts)
         super().__init__(message, **kwargs)
-        self.schema_name = schema_name
-        self.raw_output = raw_output
-        self.repair_attempts = repair_attempts
 
 
 class RetrievalError(CortexError):
@@ -196,8 +192,8 @@ class RetrievalError(CortexError):
         query: str | None = None,
         **kwargs: Any,
     ) -> None:
+        self.query = kwargs.pop("query", query)
         super().__init__(message, **kwargs)
-        self.query = query
 
 
 class RateLimitError(ProviderError):
@@ -214,10 +210,10 @@ class RateLimitError(ProviderError):
         retry_after: float | None = None,
         **kwargs: Any,
     ) -> None:
+        self.retry_after = kwargs.pop("retry_after", retry_after)
+        provider = kwargs.pop("provider", provider)
         kwargs.pop("retryable", None)
-        kwargs.pop("provider", None)
         super().__init__(message, provider=provider, retryable=True, **kwargs)
-        self.retry_after = retry_after
 
 
 class CircuitBreakerOpenError(ProviderError):
@@ -232,10 +228,10 @@ class CircuitBreakerOpenError(ProviderError):
         reset_at: float | None = None,
         **kwargs: Any,
     ) -> None:
+        self.reset_at = kwargs.pop("reset_at", reset_at)
+        provider = kwargs.pop("provider", provider)
         kwargs.pop("retryable", None)
-        kwargs.pop("provider", None)
         super().__init__(message, provider=provider, retryable=False, **kwargs)
-        self.reset_at = reset_at
 
 
 class PolicyViolationError(SecurityError):
@@ -250,7 +246,7 @@ class PolicyViolationError(SecurityError):
         policy_name: str | None = None,
         **kwargs: Any,
     ) -> None:
+        self.action = kwargs.pop("action", action)
+        self.policy_name = kwargs.pop("policy_name", policy_name)
         kwargs.pop("threat_type", None)
         super().__init__(message, threat_type="policy_violation", **kwargs)
-        self.action = action
-        self.policy_name = policy_name

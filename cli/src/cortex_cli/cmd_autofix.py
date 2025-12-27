@@ -14,6 +14,7 @@ Fixes low-hanging fruit issues from bulk_review_report_v2.json:
 import re
 import subprocess
 import sys
+import ast
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -62,7 +63,7 @@ def fix_magic_numbers():
         original = content
         constants_to_add = []
 
-        for pattern, old_val, const_name, const_val in fixes:
+        for _pattern, old_val, const_name, const_val in fixes:
             # Check if constant already exists
             if const_name in content:
                 continue
@@ -173,18 +174,20 @@ def fix_dunder_imports():
         content = file_path.read_text()
         original = content
 
-        # Find __import__("time") pattern
-        pattern = r'__import__\(["\']time["\']\)'
-        if re.search(pattern, content):
-            # Replace with 'time' (assumes import time is at top)
-            content = re.sub(pattern, "time", content)
+        # Find __import__("module") pattern
+        pattern = r'__import__\(["\'](\w+)["\']\)'
+        match = re.search(pattern, content)
+        if match:
+            module_name = match.group(1)
+            # Replace with module_name
+            content = re.sub(pattern, module_name, content)
 
-            # Ensure 'import time' is at top
-            if "import time" not in content:
+            # Ensure 'import module' is at top
+            if f"import {module_name}" not in content:
                 lines = content.split("\n")
                 for i, line in enumerate(lines):
                     if line.startswith("import ") or line.startswith("from "):
-                        lines.insert(i, "import time")
+                        lines.insert(i, f"import {module_name}")
                         break
                 content = "\n".join(lines)
 
@@ -215,29 +218,65 @@ def fix_unnecessary_hasattr():
         if not file_path.exists():
             continue
 
-        content = file_path.read_text()
-        original = content
+        original_content = file_path.read_text()
+        content = original_content
 
-        # Remove hasattr(os, "open") and hasattr(os, "O_RDONLY") checks
-        # These are always True on supported platforms
+        # First, replace the specific hasattr checks with "True"
         patterns = [
-            r'if hasattr\(os, ["\']open["\']\) and hasattr\(os, ["\']O_RDONLY["\']\):',
             r'hasattr\(os, ["\']open["\']\)',
             r'hasattr\(os, ["\']O_RDONLY["\']\)',
         ]
-
         for pattern in patterns:
             content = re.sub(pattern, "True", content)
 
-        # Clean up "if True:" patterns
-        content = re.sub(r"if True:\n(\s+)", r"\1", content)
+        # Simplify compound boolean conditions
+        content = re.sub(r"if True and True:", "if True:", content)
 
-        if content != original:
-            file_path.write_text(content)
-            print(f"  ✅ {rel_path}")
-            fixed_count += 1
+        # Now, use AST to safely remove 'if True:' blocks
+        try:
+            tree = ast.parse(content)
+            transformer = IfTrueTransformer()
+            new_tree = transformer.visit(tree)
+            if transformer.changed:
+                # Use ast.unparse if available (Python 3.9+)
+                if hasattr(ast, "unparse"):
+                    content = ast.unparse(new_tree)
+                else:
+                    # Fallback for older versions (less perfect formatting)
+                    import astor
+                    content = astor.to_source(new_tree)
+
+                file_path.write_text(content)
+                print(f"  ✅ {rel_path}")
+                fixed_count += 1
+        except (SyntaxError, ImportError) as e:
+            print(f"  ⚠️ Could not process {rel_path} with AST: {e}")
+            # Revert content if AST processing fails
+            content = original_content
 
     return fixed_count
+
+
+class IfTrueTransformer(ast.NodeTransformer):
+    """
+    An AST transformer that replaces 'if True:' blocks with their body.
+    """
+    def __init__(self):
+        self.changed = False
+
+    def visit_If(self, node):
+        # Check if the test is a constant True value
+        if isinstance(node.test, ast.NameConstant) and node.test.value is True:
+            self.changed = True
+            # The body of the 'if' statement is a list of nodes.
+            # We need to visit each of them to continue the transformation recursively.
+            new_body = [self.visit(n) for n in node.body]
+            # De-indent the body by one level. Since we are returning a list of nodes,
+            # the parent node (e.g., a function body) will handle the placement.
+            # No explicit de-indentation is needed at the AST level.
+            return new_body
+        # If the condition is not 'if True:', visit the node's children as usual.
+        return self.generic_visit(node)
 
 
 # ============================================================================
@@ -393,15 +432,13 @@ def fix_specific_issues():
     safety_init = ROOT / "backend/src/cortex/safety/__init__.py"
     if safety_init.exists():
         content = safety_init.read_text()
-        if "from .action_checker import check_action" in content:
-            # Check if check_action is used
-            if content.count("check_action") == 1:  # Only the import
-                content = content.replace(
-                    "from .action_checker import check_action\n", ""
-                )
-                safety_init.write_text(content)
-                print("  ✅ Removed unused check_action import from safety/__init__.py")
-                fixed_count += 1
+        if "from .action_checker import check_action" in content and content.count("check_action") == 1:
+            content = content.replace(
+                "from .action_checker import check_action\n", ""
+            )
+            safety_init.write_text(content)
+            print("  ✅ Removed unused check_action import from safety/__init__.py")
+            fixed_count += 1
 
     # Fix 2: Add type hints to strip_injection_patterns
     if safety_init.exists():
