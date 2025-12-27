@@ -29,10 +29,11 @@ import logging
 import os
 import subprocess
 import sys
+import threading
 from collections import deque
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Awaitable, TypeVar
 
 try:
     import streamlit as st
@@ -417,6 +418,32 @@ logger = logging.getLogger("emailops.ui")
 
 
 # ---------- Utility Functions ----------
+T = TypeVar("T")
+
+
+def run_async(awaitable: Awaitable[T]) -> T:
+    """Execute async code in a background thread to avoid RuntimeError in Streamlit."""
+    # Source: https://discuss.streamlit.io/t/using-asyncio-in-streamlit/22687/10
+
+    loop = asyncio.new_event_loop()
+
+    # Set up a new thread to run the event loop.
+    thread = threading.Thread(target=loop.run_forever, daemon=True)
+    thread.start()
+
+    # Schedule the coroutine to be run in the new loop.
+    future = asyncio.run_coroutine_threadsafe(awaitable, loop)
+
+    # Block and wait for the result.
+    result = future.result()
+
+    # Stop and close the loop.
+    loop.call_soon_threadsafe(loop.stop)
+    thread.join()
+
+    return result
+
+
 def _normpath(p: str | Path) -> str:
     """Normalize and resolve path."""
     try:
@@ -590,7 +617,7 @@ else:
     if "export_root" not in st.session_state:
         export_env = os.getenv("EMAILOPS_EXPORT_ROOT")
         st.session_state.export_root = (
-            export_env.strip() if export_env else r"C:\Users\ASUS\Desktop\OUTLOOK"
+            export_env.strip() if export_env else ""
         )
     if "index_root" not in st.session_state:
         index_env = os.getenv("EMAILOPS_INDEX_ROOT")
@@ -1187,7 +1214,7 @@ else:
                                         }
                                         return await graph.ainvoke(initial_state)
 
-                                    final_state = asyncio.run(run_draft())
+                                    final_state = run_async(run_draft())
                                     draft_result = final_state.get("draft")
 
                                 if draft_result:
@@ -1263,7 +1290,7 @@ else:
                             }
                             return await graph.ainvoke(initial_state)
 
-                        final_state = asyncio.run(run_summary())
+                        final_state = run_async(run_summary())
                         summary = final_state.get("summary")
 
                         if summary:
