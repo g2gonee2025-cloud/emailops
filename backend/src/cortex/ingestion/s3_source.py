@@ -16,6 +16,7 @@ from typing import Any, Dict, Iterator, List, Optional
 
 import boto3
 from botocore.config import Config
+from botocore.exceptions import ClientError
 from cortex.config.loader import get_config
 from cortex.ingestion.core_manifest import parse_manifest_text
 from cortex.ingestion.text_utils import strip_control_chars
@@ -54,9 +55,12 @@ class S3SourceHandler:
 
         self.endpoint_url = endpoint_url or config.storage.endpoint_url
         self.region = region or config.storage.region
-        self.access_key = access_key or config.storage.access_key
-        self.secret_key = secret_key or config.storage.secret_key
         self.bucket = bucket or config.storage.bucket_raw
+
+        # Store credentials with a leading underscore to mark them as "internal"
+        # and reduce the risk of accidental leakage in logs.
+        self._access_key = access_key or config.storage.access_key
+        self._secret_key = secret_key or config.storage.secret_key
 
         self._client: Optional[Any] = None
 
@@ -68,8 +72,8 @@ class S3SourceHandler:
                 "s3",
                 endpoint_url=self.endpoint_url,
                 region_name=self.region,
-                aws_access_key_id=self.access_key,
-                aws_secret_access_key=self.secret_key,
+                aws_access_key_id=self._access_key,
+                aws_secret_access_key=self._secret_key,
                 config=Config(
                     signature_version="s3v4",
                     retries={"max_attempts": 3, "mode": "adaptive"},
@@ -98,13 +102,10 @@ class S3SourceHandler:
         limit: Optional[int] = None,
     ) -> Iterator[S3ConversationFolder]:
         """
-        List conversation folders under a prefix.
+        Efficiently list conversation folders under a prefix using a single pass.
 
-        Each conversation folder is expected to contain:
-        - conversation.txt (the email thread transcript)
-        - manifest.json (metadata)
-        - summary.json (optional, AI-generated summary)
-        - attachments/ (optional subdirectory)
+        This method avoids the N+1 API call pattern by listing all objects
+        and grouping them by folder prefix in a streaming manner.
 
         Args:
             prefix: S3 prefix to search under (default: raw/outlook/)
@@ -113,62 +114,63 @@ class S3SourceHandler:
         Yields:
             S3ConversationFolder objects
         """
-        logger.info(f"Listing conversation folders in s3://{self.bucket}/{prefix}")
+        logger.info(
+            f"Efficiently listing conversation folders in s3://{self.bucket}/{prefix}"
+        )
 
         paginator = self.client.get_paginator("list_objects_v2")
+        pages = paginator.paginate(Bucket=self.bucket, Prefix=prefix)
 
-        # Use delimiter to get "directories"
-        seen_folders = set()
+        current_folder_prefix: Optional[str] = None
+        current_files: List[str] = []
+        current_max_mtime: Optional[datetime] = None
         folder_count = 0
 
-        for page in paginator.paginate(
-            Bucket=self.bucket, Prefix=prefix, Delimiter="/"
-        ):
-            # CommonPrefixes contains the "directories"
-            for common_prefix in page.get("CommonPrefixes", []):
-                folder_prefix = common_prefix["Prefix"]
-                folder_name = folder_prefix.rstrip("/").split("/")[-1]
-
-                if folder_prefix in seen_folders:
-                    continue
-                seen_folders.add(folder_prefix)
-
-                # List files in this folder
-                files, max_mtime = self._list_folder_files(folder_prefix)
-
-                yield S3ConversationFolder(
-                    prefix=folder_prefix,
-                    name=folder_name,
-                    files=files,
-                    last_modified=max_mtime,
-                )
-
-                folder_count += 1
-                if limit and folder_count >= limit:
-                    return
-
-    def _list_folder_files(self, prefix: str) -> tuple[List[str], Optional[datetime]]:
-        """List all files in a folder (recursively) and find max mtime."""
-        files = []
-        max_mtime = None
-
-        paginator = self.client.get_paginator("list_objects_v2")
-
-        for page in paginator.paginate(Bucket=self.bucket, Prefix=prefix):
+        for page in pages:
             for obj in page.get("Contents", []):
-                files.append(obj["Key"])
+                key = obj["Key"]
 
-                # Track max mtime
-                if "LastModified" in obj:
-                    mt = obj["LastModified"]
-                    if max_mtime is None or mt > max_mtime:
-                        max_mtime = mt
+                # Determine the folder prefix for the object
+                if "/" not in key:
+                    continue  # Skip objects at the root of the prefix
+                folder_prefix = key.rsplit("/", 1)[0] + "/"
 
-        return files, max_mtime
+                if folder_prefix != current_folder_prefix:
+                    # New folder detected, yield the completed previous one
+                    if current_folder_prefix:
+                        folder_name = current_folder_prefix.rstrip("/").split("/")[-1]
+                        yield S3ConversationFolder(
+                            prefix=current_folder_prefix,
+                            name=folder_name,
+                            files=current_files,
+                            last_modified=current_max_mtime,
+                        )
+                        folder_count += 1
+                        if limit and folder_count >= limit:
+                            return
 
-    def list_files_in_folder(self, prefix: str) -> tuple[List[str], Optional[datetime]]:
-        """Public method to list files in a folder."""
-        return self._list_folder_files(prefix)
+                    # Start tracking the new folder
+                    current_folder_prefix = folder_prefix
+                    current_files = []
+                    current_max_mtime = None
+
+                # Add file and update last_modified for the current folder
+                current_files.append(key)
+                last_modified = obj.get("LastModified")
+                if last_modified and (
+                    current_max_mtime is None or last_modified > current_max_mtime
+                ):
+                    current_max_mtime = last_modified
+
+        # Yield the last folder after the loop
+        if current_folder_prefix and (not limit or folder_count < limit):
+            folder_name = current_folder_prefix.rstrip("/").split("/")[-1]
+            yield S3ConversationFolder(
+                prefix=current_folder_prefix,
+                name=folder_name,
+                files=current_files,
+                last_modified=current_max_mtime,
+            )
 
     def build_folder(self, prefix: str) -> S3ConversationFolder:
         """
@@ -179,7 +181,18 @@ class S3SourceHandler:
         """
         normalized_prefix = prefix if prefix.endswith("/") else f"{prefix}/"
         name = normalized_prefix.rstrip("/").split("/")[-1]
-        files, max_mtime = self._list_folder_files(normalized_prefix)
+
+        files = []
+        max_mtime = None
+        paginator = self.client.get_paginator("list_objects_v2")
+        for page in paginator.paginate(Bucket=self.bucket, Prefix=normalized_prefix):
+            for obj in page.get("Contents", []):
+                files.append(obj["Key"])
+                if "LastModified" in obj:
+                    mt = obj["LastModified"]
+                    if max_mtime is None or mt > max_mtime:
+                        max_mtime = mt
+
         return S3ConversationFolder(
             prefix=normalized_prefix, name=name, files=files, last_modified=max_mtime
         )
@@ -220,13 +233,15 @@ class S3SourceHandler:
             if not relative_path_str:
                 continue
 
-            # Construct the full local path
+            # Construct the full local path and resolve any ".." components.
             local_file = (folder_path / relative_path_str).resolve()
 
-            # Security check: Ensure the resolved path is within the target folder
-            if not str(local_file).startswith(str(folder_path.resolve())):
-                logger.warning(
-                    f"Skipping potentially unsafe file path (path traversal attempt?): '{file_key}'"
+            # Robust path traversal check: Ensure the resolved file path is
+            # a child of the resolved folder path.
+            if folder_path.resolve() not in local_file.parents:
+                logger.error(
+                    "Path traversal attempt detected. "
+                    f"File key '{file_key}' resolves outside of target directory '{folder_path.resolve()}'"
                 )
                 continue
 
@@ -234,8 +249,10 @@ class S3SourceHandler:
 
             try:
                 self.client.download_file(self.bucket, file_key, str(local_file))
-            except Exception as e:
-                logger.error(f"Failed to download {file_key}: {e}")
+            except ClientError as e:
+                logger.error(f"Failed to download s3://{self.bucket}/{file_key}: {e}")
+                # Re-raise the exception to halt processing of an incomplete folder
+                raise
 
         return folder_path
 
