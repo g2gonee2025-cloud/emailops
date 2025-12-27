@@ -2,6 +2,6 @@
 Security module for Cortex.
 """
 
-from cortex.security.injection_defense import strip_injection_patterns
+from cortex.security.injection_defense import contains_injection, validate_for_injection
 
-__all__ = ["strip_injection_patterns"]
+__all__ = ["contains_injection", "validate_for_injection"]
