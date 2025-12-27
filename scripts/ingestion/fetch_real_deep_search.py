@@ -1,4 +1,5 @@
 import json
+import logging
 import sys
 from pathlib import Path
 
@@ -56,14 +57,15 @@ def fetch_deep_real_manifest() -> None:
                         msgs = data.get("messages")
                         # Check strictly for list and non-empty
                         if isinstance(msgs, list) and len(msgs) > 0:
-                            print(f"\n\n✅ FOUND VALID MANIFEST: {key}")
+                            print(f"\n\n✅ FOUND VALID MANIFEST IN BUCKET: {s3_config.bucket_raw}")
                             print("=" * 60)
                             print(
-                                "Matching manifest found. Contents omitted to prevent sensitive data exposure."
+                                "Matching manifest found. Key omitted to prevent sensitive data exposure."
                             )
                             print("=" * 60)
                             return
-                    except Exception:
+                        except Exception as e:
+                            logging.warning(f"Could not process manifest in bucket {s3_config.bucket_raw}: {e}")
                         # Ignore individual read errors
                         pass
 
