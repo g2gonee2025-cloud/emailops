@@ -158,13 +158,12 @@ class TestHybridSearch:
         # Setup Components
         mock_session = Mock()
         mock_session_cls.return_value.__enter__.return_value = mock_session
+        mock_runtime = Mock()
+        mock_get_runtime.return_value = mock_runtime
 
-<<<<<<< HEAD
         # Setup Cache miss then Embed via mocked runtime
         mock_get_cache.return_value = None
-        mock_runtime = Mock()
         mock_runtime.embed_queries.return_value = np.array([[0.1, 0.2, 0.3]])
-        mock_get_runtime.return_value = mock_runtime
 
         # Setup Results with correct types
         # FTS returns ChunkFTSResult
@@ -256,7 +255,6 @@ class TestHybridSearch:
             ),
         )
 
-<<<<<<< HEAD
         with patch("cortex.retrieval._hybrid_helpers._get_runtime") as mock_get_runtime:
             mock_runtime = Mock()
             mock_runtime.embed_queries.return_value = np.array([[0.1]])
