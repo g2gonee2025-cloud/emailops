@@ -260,12 +260,11 @@ def _select_attachments_from_mentions(
     max_attachments: int = 3,
 ) -> List[Dict[str, Any]]:
     """Select attachments that were explicitly mentioned/extracted from text."""
-    cfg = EmailOpsConfig.load()
+    cfg = get_config()
+    base_dir = Path(cfg.directories.export_root) if cfg.directories.export_root else Path.cwd()
     allowed_patterns = cfg.file_patterns.allowed_file_patterns
-    # Load limits from config (blueprint §11.2)
-    # Default to 25MB if not configured
-    attach_max_mb = float(cfg.security.max_attachment_size_mb or 25.0)
-    limit = max_attachments  # use arg or config default could go here
+    attach_max_mb = float(cfg.limits.max_attachment_text_chars / (1024 * 1024))
+    limit = max_attachments
 
     if not mentions:
         return []
@@ -275,34 +274,26 @@ def _select_attachments_from_mentions(
 
     for c in context_snippets or []:
         try:
-            # Check doc_type if available (from search results)
-            if str(c.get("doc_type") or "").lower() not in ("attachment", "file"):
-                # Also check if it looks like a file path
-                path_str = str(c.get("path") or "")
-                if not path_str or not Path(path_str).suffix:
-                    continue
+            path_str = str(c.get("path") or "")
+            if not path_str or not Path(path_str).suffix:
+                continue
 
-            name = str(
-                c.get("attachment_name") or Path(str(c.get("path") or "")).name
-            ).lower()
+            name = str(c.get("attachment_name") or Path(path_str).name).lower()
 
-            # Check if name contains any wanted mention
             if name and any(w in name for w in wanted):
-                p = Path(str(c.get("path") or ""))
-                # Security check
-                result = validate_file_result(
-                    str(p), must_exist=True, allow_parent_traversal=False
-                )
+                p = Path(path_str)
+                result = validate_file_result(str(p), base_directory=base_dir, must_exist=True)
                 if not result.is_ok():
                     continue
 
-                if _safe_stat_mb(p) > attach_max_mb:
+                validated_path = result.value
+                if _safe_stat_mb(validated_path) > attach_max_mb:
                     continue
 
-                if not any(p.match(pattern) for pattern in allowed_patterns):
+                if not any(validated_path.match(pattern) for pattern in allowed_patterns):
                     continue
 
-                out.append({"path": str(p), "filename": p.name})
+                out.append({"path": str(validated_path), "filename": validated_path.name})
                 if len(out) >= int(limit):
                     break
         except Exception:
@@ -314,13 +305,12 @@ def _select_all_available_attachments(
     context_snippets: List[Dict[str, Any]], *, max_attachments: int = 3
 ) -> List[Dict[str, Any]]:
     """Select any valid attachments found in context (heuristic fallback)."""
-    cfg = EmailOpsConfig.load()
+    cfg = get_config()
+    base_dir = Path(cfg.directories.export_root) if cfg.directories.export_root else Path.cwd()
     allowed_patterns = cfg.file_patterns.allowed_file_patterns
-    attach_max_mb = float(cfg.security.max_attachment_size_mb or 25.0)
+    attach_max_mb = float(cfg.limits.max_attachment_text_chars / (1024 * 1024))
 
     selected: List[Dict[str, Any]] = []
-
-    # Track seen paths to avoid dupes
     seen_paths = set()
 
     for c in context_snippets or []:
@@ -330,27 +320,25 @@ def _select_all_available_attachments(
                 continue
 
             p = Path(path_str)
-            if not p.suffix:  # Must have extension
+            if not p.suffix:
                 continue
 
             if str(p) in seen_paths:
                 continue
 
-            # Security check
-            result = validate_file_result(
-                str(p), must_exist=True, allow_parent_traversal=False
-            )
+            result = validate_file_result(str(p), base_directory=base_dir, must_exist=True)
             if not result.is_ok():
                 continue
 
-            if not any(p.match(pattern) for pattern in allowed_patterns):
+            validated_path = result.value
+            if not any(validated_path.match(pattern) for pattern in allowed_patterns):
                 continue
 
-            if _safe_stat_mb(p) > attach_max_mb:
+            if _safe_stat_mb(validated_path) > attach_max_mb:
                 continue
 
-            selected.append({"path": str(p), "filename": p.name})
-            seen_paths.add(str(p))
+            selected.append({"path": str(validated_path), "filename": validated_path.name})
+            seen_paths.add(str(validated_path))
 
             if len(selected) >= int(max_attachments):
                 break
