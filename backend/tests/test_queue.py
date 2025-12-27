@@ -73,7 +73,9 @@ class TestRedisStreamsQueue:
             yield mock_client
 
     def test_init_creates_groups(self, mock_redis):
-        RedisStreamsQueue(redis_url="redis://localhost")
+        RedisStreamsQueue(
+            redis_url="redis://localhost", job_types=["ingest", "reindex"]
+        )
         # Check consumer groups created for ingest/reindex types
         assert mock_redis.xgroup_create.call_count >= 6  # 2 types * 3 priorities
 
@@ -86,14 +88,14 @@ class TestRedisStreamsQueue:
         mock_redis.hset.assert_called_once()  # Status set
 
     def test_dequeue_empty(self, mock_redis):
-        q = RedisStreamsQueue()
+        q = RedisStreamsQueue(job_types=["ingest"])
         mock_redis.xreadgroup.return_value = []
 
         job = q.dequeue(["ingest"])
         assert job is None
 
     def test_dequeue_success(self, mock_redis):
-        q = RedisStreamsQueue()
+        q = RedisStreamsQueue(job_types=["ingest"])
 
         # Mock xreadgroup response
         mock_redis.xreadgroup.return_value = [
@@ -164,7 +166,7 @@ class TestRedisStreamsQueue:
         assert mock_redis.xadd.call_args[0][0] == q.DEAD_LETTER_STREAM
 
     def test_claim_stale_messages(self, mock_redis):
-        q = RedisStreamsQueue(visibility_timeout=30)
+        q = RedisStreamsQueue(visibility_timeout=30, job_types=["ingest"])
 
         # Mock pending messages (older than timeout)
         mock_redis.xpending_range.return_value = [
@@ -278,7 +280,7 @@ class TestRedisStreamsQueue:
         assert kwargs["mapping"]["status"] == JobStatus.DEAD_LETTER
 
     def test_queue_stats(self, mock_redis):
-        q = RedisStreamsQueue()
+        q = RedisStreamsQueue(job_types=["ingest", "reindex"])
         mock_redis.xinfo_stream.return_value = {"length": 5}
         mock_redis.xinfo_groups.return_value = [
             {"name": q.CONSUMER_GROUP, "pending": 2}
