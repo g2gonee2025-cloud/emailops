@@ -1086,12 +1086,15 @@ def node_audit_draft(state: Dict[str, Any]) -> Dict[str, Any]:
     * Policy Check (Blocker)
     * Quality/Safety Rubric (Scoring)
     """
+    from cortex.context import claims_ctx
+
     draft = state.get("draft")
     if not draft:
         return {}
 
     # 1. Hard Policy Check
     recipients = list(dict.fromkeys((draft.to or []) + (draft.cc or [])))
+    claims = claims_ctx.get({}) or {}
 
     metadata = {
         "recipients": recipients,
@@ -1099,6 +1102,7 @@ def node_audit_draft(state: Dict[str, Any]) -> Dict[str, Any]:
         "content": draft.body_markdown,
         "attachments": state.get("attachments", []),
         "check_external": True,
+        "role": claims.get("role"),
     }
 
     decision = check_action("draft_email", metadata)
