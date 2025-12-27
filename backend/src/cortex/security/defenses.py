@@ -1,27 +1,57 @@
 """
-Advanced security defenses.
+Prompt Injection Defenses.
+
+Canonical Blueprint §6.3.1
 """
 import re
 
-def sanitize_user_input(input_str: str) -> str:
+
+def sanitize_user_input(
+    input_text: str, max_length: int = 2048, replacement: str = ""
+) -> str:
     """
-    Sanitizes user input to prevent prompt injection.
+    Sanitize user input to mitigate prompt injection risks.
+
+    Args:
+        input_text: The raw user input.
+        max_length: Maximum allowed length of the input.
+        replacement: String to replace malicious patterns with.
+
+    Returns:
+        Sanitized and truncated string.
     """
-    if not isinstance(input_str, str):
+    if not isinstance(input_text, str):
         return ""
 
-    # Remove instruction-like phrases
-    instruction_patterns = [
-        r"ignore previous instruction",
-        r"disregard earlier instruction",
-        r"override these rules",
-        r"you are now a .* and should respond with .*",
-        r"your new instructions are .*",
+    # 1. Truncate to prevent resource exhaustion and complex injections
+    sanitized = input_text[:max_length]
+
+    # 2. Strip instruction-like XML tags (system, user, instruction, etc.)
+    # This prevents the user from faking a system message or altering roles.
+    # We use a non-greedy match to avoid stripping large parts of the text.
+    sanitized = re.sub(
+        r"<(?i:(?:system|user|assistant|instruction|prompt|context|tool))(?:\s[^>]*)?>.*?</(?i:\\1)>",
+        replacement,
+        sanitized,
+        flags=re.DOTALL,
+    )
+    sanitized = re.sub(
+        r"<(?i:(?:system|user|assistant|instruction|prompt|context|tool))(?:\s[^>]*)?/>",
+        replacement,
+        sanitized,
+        flags=re.DOTALL,
+    )
+
+    # 3. Remove known meta-instructions or jailbreak phrases
+    # Example: "ignore previous instructions", "act as..."
+    # This list should be updated based on observed attack patterns.
+    jailbreak_patterns = [
+        r"ignore all previous instructions",
+        r"you are now in.*mode",
+        r"act as if you are",
+        r"your new instructions are",
     ]
-    for pattern in instruction_patterns:
-        input_str = re.sub(pattern, "", input_str, flags=re.IGNORECASE)
+    for pattern in jailbreak_patterns:
+        sanitized = re.sub(pattern, replacement, sanitized, flags=re.IGNORECASE)
 
-    # Remove control characters except for whitespace
-    input_str = "".join(ch for ch in input_str if ch.isprintable() or ch.isspace())
-
-    return input_str
+    return sanitized

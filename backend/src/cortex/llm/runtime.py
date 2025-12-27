@@ -487,13 +487,16 @@ class VLLMProvider(BaseProvider):
         # Back-compat: treat generic "texts" as documents for RAG ingestion
         return self.embed_documents(texts)
 
-    def complete(self, prompt: str, **kwargs: Any) -> str:
+    def complete(self, messages: List[Dict[str, str]], **kwargs: Any) -> str:
         """
         Chat completion via MiniMax-M2 (OpenAI Chat Completions API).
 
         Supports vLLM extension params via extra_body (e.g. extra_body={"top_k": 50}).
         """
         try:
+            if not messages:
+                raise ValueError("`messages` list cannot be empty.")
+
             client = self.llm_client
             model_name = kwargs.get("model")
 
@@ -511,8 +514,6 @@ class VLLMProvider(BaseProvider):
                         "LLM_MODEL",
                         os.getenv("OUTLOOKCORTEX_LLM_MODEL", "openai-gpt-oss-120b"),
                     )
-
-            messages = kwargs.get("messages") or [{"role": "user", "content": prompt}]
             response_format = kwargs.get("response_format")
             extra_body = kwargs.get("extra_body")
 
@@ -927,12 +928,15 @@ class LLMRuntime:
     def embed_texts(self, texts: List[str]) -> np.ndarray:
         return self.embed_documents(texts)
 
-    # ---------------- Public API: text completion ----------------
-    def complete_text(self, prompt: str, **kwargs: Any) -> str:
-        if not isinstance(prompt, str) or not prompt.strip():
-            raise ValidationError("prompt must be a non-empty string")
+    # ---------------- Public API: text completion (secure) ----------------
+    def complete_messages(
+        self, messages: List[Dict[str, str]], **kwargs: Any
+    ) -> str:
+        """Secure way to get text completion using a structured messages list."""
+        if not isinstance(messages, list) or not messages:
+            raise ValidationError("`messages` must be a non-empty list of dicts")
 
-        result = self._execute("completion", self.primary.complete, prompt, **kwargs)
+        result = self._execute("completion", self.primary.complete, messages, **kwargs)
 
         if not isinstance(result, str) or not result.strip():
             raise LLMOutputSchemaError(
@@ -940,10 +944,32 @@ class LLMRuntime:
                 schema_name="text_completion",
                 raw_output=str(result),
             )
-
         return result
 
-    # ---------------- Public API: JSON completion ----------------
+
+    # ---------------- Public API: text completion (UNSAFE) ----------------
+    def complete_text(self, prompt: str, **kwargs: Any) -> str:
+        """
+        DEPRECATED: Unsafe method for text completion.
+        Use `complete_messages` instead.
+        """
+        import warnings
+
+        warnings.warn(
+            "`complete_text` is deprecated and insecure. Use `complete_messages`.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        if not isinstance(prompt, str) or not prompt.strip():
+            raise ValidationError("prompt must be a non-empty string")
+
+        messages = [{"role": "user", "content": prompt}]
+        # It's possible old code passed 'messages' in kwargs, which would be confusing.
+        # We prioritize the new messages list.
+        kwargs.pop("messages", None)
+        return self.complete_messages(messages, **kwargs)
+
+    # ---------------- Public API: JSON completion (UNSAFE) ----------------
     def complete_json(
         self,
         prompt: str,
@@ -951,30 +977,46 @@ class LLMRuntime:
         max_repair_attempts: int = 2,
         **kwargs: Any,
     ) -> Dict[str, Any]:
+        """
+        DEPRECATED: Unsafe method for JSON completion.
+        Construct messages with `construct_prompt_messages` and use `complete_messages`.
+        """
+        import warnings
+
+        warnings.warn(
+            "`complete_json` is deprecated and insecure. Use `complete_messages`.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         if not isinstance(prompt, str) or not prompt.strip():
             raise ValidationError("prompt must be a non-empty string")
 
         schema_json = json.dumps(schema, indent=2)
-        json_prompt = (
-            f"{prompt}\n\n"
+        system_prompt = (
             f"Respond with a single valid JSON object that conforms to this JSON Schema:\n"
             f"{schema_json}\n\n"
             f"Do not include markdown. Return ONLY the JSON object."
         )
 
-        def _call_model_for_json(p: str) -> str:
+        initial_messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt},
+        ]
+
+        def _call_model_for_json(msgs: List[Dict[str, str]]) -> str:
             base_kwargs = dict(kwargs)
             base_kwargs.setdefault("temperature", 0.0)
             base_kwargs.setdefault("max_tokens", 2048)
             base_kwargs.setdefault("response_format", {"type": "json_object"})
             try:
-                return self.complete_text(p, **base_kwargs)
+                # Use the new secure method
+                return self.complete_messages(msgs, **base_kwargs)
             except ProviderError as e:
                 # Some OpenAI-compatible servers may not implement response_format.
                 msg = str(e).lower()
                 if "response_format" in msg or "json_object" in msg:
                     base_kwargs.pop("response_format", None)
-                    return self.complete_text(p, **base_kwargs)
+                    return self.complete_messages(msgs, **base_kwargs)
                 raise
 
         raw_output: Optional[str] = None
@@ -982,17 +1024,24 @@ class LLMRuntime:
 
         for attempt in range(max_repair_attempts + 1):
             if attempt == 0:
-                raw_output = _call_model_for_json(json_prompt)
+                raw_output = _call_model_for_json(initial_messages)
             else:
-                repair_prompt = (
-                    "The following JSON output is invalid. "
-                    "Fix it so it becomes valid JSON matching the schema.\n\n"
-                    f"Original error:\n{last_error}\n\n"
-                    f"Invalid JSON:\n{raw_output}\n\n"
-                    f"Required JSON Schema:\n{schema_json}\n\n"
-                    "Respond with ONLY the corrected JSON object."
+                from cortex.prompts import (
+                    SYSTEM_GUARDRAILS_REPAIR,
+                    USER_GUARDRAILS_REPAIR,
+                    construct_prompt_messages,
                 )
-                raw_output = _call_model_for_json(repair_prompt)
+
+                # Use the proper repair prompt templates
+                repair_messages = construct_prompt_messages(
+                    system_prompt_template=SYSTEM_GUARDRAILS_REPAIR,
+                    user_prompt_template=USER_GUARDRAILS_REPAIR,
+                    error=last_error or "Unknown",
+                    invalid_json=raw_output or "",
+                    target_schema=schema_json,
+                    validation_errors=last_error or "N/A",
+                )
+                raw_output = _call_model_for_json(repair_messages)
 
             try:
                 # Robust extraction first
@@ -1181,6 +1230,10 @@ def embed_queries(queries: List[str]) -> np.ndarray:
 
 def embed_texts(texts: List[str]) -> np.ndarray:
     return get_runtime().embed_texts(texts)
+
+
+def complete_messages(messages: List[Dict[str, str]], **kwargs: Any) -> str:
+    return get_runtime().complete_messages(messages, **kwargs)
 
 
 def complete_text(prompt: str, **kwargs: Any) -> str:

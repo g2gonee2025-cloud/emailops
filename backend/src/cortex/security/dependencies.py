@@ -4,7 +4,7 @@ Security dependencies for FastAPI.
 import logging
 from typing import Any, Dict, Optional
 
-from cortex.main import _extract_identity
+from cortex.security.auth import _extract_identity
 from fastapi import Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 

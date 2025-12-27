@@ -14,14 +14,18 @@ from cortex.audit import log_audit_event
 from cortex.config.loader import get_config
 from cortex.context import tenant_id_ctx, user_id_ctx
 from cortex.domain_models.rag import Answer, RetrievalDiagnostics, ThreadSummary
-from cortex.llm.client import complete_json, complete_text
+from cortex.llm.client import complete_json, complete_messages, complete_text
 from cortex.observability import trace_operation  # P2 Fix: Enable tracing
 from cortex.orchestration.graphs import build_summarize_graph
 from cortex.orchestration.nodes import (
     _extract_evidence_from_answer,
     node_assemble_context,
 )
-from cortex.prompts import PROMPT_ANSWER_QUESTION
+from cortex.prompts import (
+    SYSTEM_ANSWER_QUESTION,
+    USER_ANSWER_QUESTION,
+    construct_prompt_messages,
+)
 from cortex.rag_api.models import ChatMessage, ChatRequest, ChatResponse
 from cortex.retrieval.hybrid_search import KBSearchInput, tool_kb_search_hybrid
 from cortex.retrieval.query_classifier import (
@@ -74,7 +78,7 @@ def _latest_user_message(messages: List[ChatMessage]) -> Optional[str]:
     return None
 
 
-def _decide_action(
+async def _decide_action(
     request: ChatRequest, history: List[ChatMessage], latest_user: str
 ) -> ChatActionDecision:
     prompt = (
@@ -149,7 +153,7 @@ async def chat_endpoint(
     latest_user, history = _validate_and_prepare_request(request)
 
     try:
-        decision = _decide_action(request, history, latest_user)
+        decision = await _decide_action(request, history, latest_user)
 
         if decision.action == "summarize":
             response = await _handle_summarize(
@@ -337,15 +341,22 @@ async def _handle_answer(
             retrieval_diagnostics=[],
         )
     else:
-        prompt = (
-            PROMPT_ANSWER_QUESTION
-            + "\n\nConversation history:\n"
-            + _format_history(history)
-            + "\n\nContext:\n"
-            + assembled_context
-            + f"\n\nQuestion: <user_input>{latest_user}</user_input>"
+        # Sanitize all user-controllable inputs
+        safe_history = sanitize_user_input(_format_history(history))
+        safe_context = sanitize_user_input(assembled_context)
+        safe_query = sanitize_user_input(latest_user)
+
+        # Construct the prompt using the secure message-based approach
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_ANSWER_QUESTION,
+            user_prompt_template=f"Conversation history:\n{safe_history}\n\n"
+            + USER_ANSWER_QUESTION,
+            context=safe_context,
+            query=safe_query,
         )
-        answer_text = complete_text(prompt)
+
+        answer_text = await run_in_threadpool(complete_messages, messages)
+
         evidence = await run_in_threadpool(
             _extract_evidence_from_answer, answer_text, results
         )

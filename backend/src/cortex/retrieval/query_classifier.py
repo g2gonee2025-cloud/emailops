@@ -194,13 +194,26 @@ def classify_query_llm(query: str) -> QueryClassification:
             RateLimitError,
         )
         from cortex.llm.client import complete_json
-        from cortex.prompts import PROMPT_QUERY_CLASSIFY
+        from cortex.prompts import (
+            SYSTEM_QUERY_CLASSIFY,
+            USER_QUERY_CLASSIFY,
+            construct_prompt_messages,
+        )
+        from cortex.security.defenses import sanitize_user_input
 
-        # Wrap user input in XML tags to mitigate prompt injection.
-        prompt = f"{PROMPT_QUERY_CLASSIFY}\n\n<user_query>{query}</user_query>"
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_QUERY_CLASSIFY,
+            user_prompt_template=USER_QUERY_CLASSIFY,
+            query=sanitize_user_input(query),
+        )
+
+        # Reconstruct prompt for the deprecated `complete_json` function.
+        system_content = messages[0]["content"]
+        user_content = messages[1]["content"]
+        reconstructed_prompt = f"{system_content}\n\n{user_content}"
 
         schema = QueryClassification.model_json_schema()
-        result = complete_json(prompt, schema)
+        result = complete_json(reconstructed_prompt, schema)
 
         return QueryClassification(**result)
 
