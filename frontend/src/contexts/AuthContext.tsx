@@ -12,6 +12,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  // FIX: Restore reading the token from localStorage to persist sessions.
   const [token, setToken] = useState<string | null>(() => {
     return localStorage.getItem('auth_token');
   });
@@ -19,6 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAuthenticated = !!token;
 
   useEffect(() => {
+    // FIX: Restore logic to synchronize the token with localStorage.
     if (token) {
       localStorage.setItem('auth_token', token);
       api.setAuthToken(token);
@@ -26,11 +28,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem('auth_token');
       api.setAuthToken(null);
     }
+
+    // Keep the new unauthorized event handler.
+    const handleUnauthorized = () => {
+      logout();
+    };
+    window.addEventListener('unauthorized', handleUnauthorized);
+    return () => {
+      window.removeEventListener('unauthorized', handleUnauthorized);
+    };
   }, [token]);
 
   const login = async (username: string, password: string) => {
-    const response = await api.login(username, password);
-    setToken(response.access_token);
+    try {
+      const response = await api.login(username, password);
+      setToken(response.access_token);
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw error;
+    }
   };
 
   const logout = () => {
