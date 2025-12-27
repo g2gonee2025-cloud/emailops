@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import GlassCard from './ui/GlassCard';
 import { StatusIndicator } from './ui/StatusIndicator';
 import { api } from '../lib/api';
@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 
 interface LogEntry {
+  logId: number;
   timestamp: string;
   message: string;
   level: 'INFO' | 'WARN' | 'ERROR' | 'DEBUG';
@@ -24,6 +25,7 @@ interface LogEntry {
 export function DashboardView() {
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [logs, setLogs] = useState<LogEntry[]>([]);
+  const logIdCounter = useRef(0);
 
   useEffect(() => {
     // Fetch health
@@ -42,6 +44,7 @@ export function DashboardView() {
     const interval = setInterval(() => {
       const levels: LogEntry['level'][] = ['INFO', 'DEBUG', 'INFO', 'WARN'];
       const newLog: LogEntry = {
+        logId: logIdCounter.current++,
         timestamp: new Date().toLocaleTimeString(),
         message: messages[Math.floor(Math.random() * messages.length)],
         level: levels[Math.floor(Math.random() * levels.length)],
@@ -127,8 +130,8 @@ export function DashboardView() {
                   Waiting for events...
                 </div>
               )}
-              {logs.map((log, i) => (
-                <div key={i} className="flex gap-4 animate-slide-up">
+              {logs.map((log) => (
+                <div key={log.logId} className="flex gap-4 animate-slide-up">
                   <span className="text-white/30 text-xs w-20">{log.timestamp}</span>
                   <span className={cn(
                     "font-bold text-xs uppercase w-12",
