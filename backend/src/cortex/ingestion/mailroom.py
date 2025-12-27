@@ -373,7 +373,8 @@ def _process_body_and_attachments(
     quoted_spans = detect_quoted_spans(cleaned_body)
 
     # Attachments
-    att_log_meta = parse_attachments_log(convo_dir)
+    # The conversation directory's parent is assumed to be the secure upload root.
+    att_log_meta = parse_attachments_log(convo_dir.parent, convo_dir.name)
     attachments_data: List[Dict[str, Any]] = []
     sorted_attachments = sorted(
         convo_data.get("attachments", []), key=lambda x: x["path"]
@@ -395,8 +396,11 @@ def _process_body_and_attachments(
             raw_att_text, text_type="attachment", tenant_id=tenant_id
         )
 
-        if filename in att_log_meta:
-            att_meta.update(att_log_meta[filename])
+        if filename in att_log_meta and att_log_meta[filename]:
+            # The log can have multiple entries for the same filename.
+            # Use the metadata from the first occurrence as a reasonable default.
+            first_occurrence_meta = att_log_meta[filename][0]
+            att_meta.update(first_occurrence_meta)
 
         attachments_data.append(
             {
