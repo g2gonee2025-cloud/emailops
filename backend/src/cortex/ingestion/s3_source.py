@@ -52,11 +52,11 @@ class S3SourceHandler:
         """Initialize S3 client with config or explicit params."""
         config = get_config()
 
-        self.endpoint_url = endpoint_url or config.s3.endpoint_url
-        self.region = region or config.s3.region
-        self.access_key = access_key or config.s3.access_key
-        self.secret_key = secret_key or config.s3.secret_key
-        self.bucket = bucket or config.s3.bucket_raw
+        self.endpoint_url = endpoint_url or config.storage.endpoint_url
+        self.region = region or config.storage.region
+        self.access_key = access_key or config.storage.access_key
+        self.secret_key = secret_key or config.storage.secret_key
+        self.bucket = bucket or config.storage.bucket_raw
 
         self._client: Optional[Any] = None
 
@@ -165,6 +165,10 @@ class S3SourceHandler:
                         max_mtime = mt
 
         return files, max_mtime
+
+    def list_files_in_folder(self, prefix: str) -> tuple[List[str], Optional[datetime]]:
+        """Public method to list files in a folder."""
+        return self._list_folder_files(prefix)
 
     def build_folder(self, prefix: str) -> S3ConversationFolder:
         """
