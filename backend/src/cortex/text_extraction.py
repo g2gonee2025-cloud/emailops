@@ -741,10 +741,13 @@ def _extract_text_file(
 ) -> None:
     from cortex.utils import read_text_file
 
-    text = read_text_file(path, max_chars=max_chars)
-    if suffix in {".html", ".htm", ".xml"}:
-        text = _html_to_text(text)
-    _add_segment(text, segments, seen_hashes)
+    try:
+        text = read_text_file(path, max_chars=max_chars)
+        if suffix in {".html", ".htm", ".xml"}:
+            text = _html_to_text(text)
+        _add_segment(text, segments, seen_hashes)
+    except IOError as e:
+        logger.warning("Failed to read text file %s: %s", path, e)
 
 
 def _build_pipeline(
