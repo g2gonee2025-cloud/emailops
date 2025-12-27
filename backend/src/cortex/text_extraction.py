@@ -534,7 +534,7 @@ def _extract_pdf(path: Path, max_chars: int | None) -> str:
         from pypdf import PdfReader  # type: ignore
 
         try:
-            with Path.open(path, "rb") as fh:
+            with path.open("rb") as fh:
                 pdf = PdfReader(fh)
                 # Try empty-password decryption when possible
                 if getattr(pdf, "is_encrypted", False):
@@ -720,6 +720,8 @@ def _validate_path(path: Path) -> bool:
 def _add_segment(segment: str, segments: list[str], seen_hashes: set[int]) -> None:
     if not segment:
         return
+    # Strip control characters before hashing to ensure that segments differing
+    # only by invisible characters are treated as duplicates.
     normalized = strip_control_chars(segment).strip()
     if not normalized:
         return

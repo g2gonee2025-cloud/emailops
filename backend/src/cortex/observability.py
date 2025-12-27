@@ -19,6 +19,7 @@ from cortex.config.loader import get_config
 # Optional OpenTelemetry imports
 try:
     from opentelemetry import metrics, trace
+    from opentelemetry.trace import StatusCode
     from opentelemetry.exporter.cloud_monitoring import CloudMonitoringMetricsExporter
     from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
     from opentelemetry.instrumentation.requests import RequestsInstrumentor
@@ -273,12 +274,10 @@ def trace_operation(operation_name: str, **span_attributes):
 
                     try:
                         result = await func(*args, **kwargs)
-                        span.set_attribute("status", "success")
+                        span.set_status(StatusCode.OK)
                         return result
                     except Exception as e:
-                        span.set_attribute("status", "error")
-                        span.set_attribute("error.type", type(e).__name__)
-                        span.set_attribute("error.message", str(e))
+                        span.set_status(StatusCode.ERROR)
                         span.record_exception(e)
                         raise
                     finally:
@@ -307,12 +306,10 @@ def trace_operation(operation_name: str, **span_attributes):
 
                     try:
                         result = func(*args, **kwargs)
-                        span.set_attribute("status", "success")
+                        span.set_status(StatusCode.OK)
                         return result
                     except Exception as e:
-                        span.set_attribute("status", "error")
-                        span.set_attribute("error.type", type(e).__name__)
-                        span.set_attribute("error.message", str(e))
+                        span.set_status(StatusCode.ERROR)
                         span.record_exception(e)
                         raise
                     finally:
@@ -353,38 +350,49 @@ def record_metric(
                 # Double-check locking pattern
                 instrument = _metric_instruments.get(key)
                 if instrument is None:
-                    # Prevent unbounded growth
-                    if len(_metric_instruments) > MAX_METRIC_INSTRUMENTS:
-                        # Simple eviction: clear all.
-                        # Ideally we'd use LRU, but for bulk review constraint fixes this is sufficient safety.
-                        _metric_instruments.clear()
+                    if len(_metric_instruments) >= MAX_METRIC_INSTRUMENTS:
                         logging.warning(
-                            "Metrics instrument cache cleared (exceeded %d items)",
+                            "Metric instrument cache full (%d items). Cannot create new instrument for '%s'.",
                             MAX_METRIC_INSTRUMENTS,
+                            metric_name,
                         )
+                        return
 
                     if metric_type == "counter":
                         instrument = _meter.create_counter(metric_name, unit="1")
                     elif metric_type == "gauge":
-                        # OTel doesn't support 'gauge' directly in this version, usually up_down_counter
+                        # OTel doesn't support 'gauge' directly. An ObservableGauge is the right tool,
+                        # but it requires a callback and is harder to use. We create an UpDownCounter
+                        # but will handle its value recording differently.
                         instrument = _meter.create_up_down_counter(
                             metric_name, unit="1"
                         )
                     elif metric_type == "histogram":
                         instrument = _meter.create_histogram(metric_name, unit="ms")
                     else:
-                        logging.debug(
-                            "Unknown metric type %s for %s", metric_type, metric_name
+                        logging.warning(
+                            "Unknown metric type '%s' for metric '%s'",
+                            metric_type,
+                            metric_name,
                         )
                         return
 
-                    if instrument:
-                        _metric_instruments[key] = instrument
+                    _metric_instruments[key] = instrument
 
         if instrument:
             if metric_type == "histogram":
                 instrument.record(value, labels)
-            else:
+            elif metric_type == "gauge":
+                # For a gauge, we are simulating a set operation. OTel gauges are typically
+                # asynchronous. Using an up_down_counter requires getting the last value
+                # and adding the difference, which is complex and not thread-safe without
+                # more state. Logging a warning is a safer interim solution.
+                logging.warning(
+                    "Metric type 'gauge' for '%s' is not correctly implemented. It will behave like a counter.",
+                    metric_name,
+                )
+                instrument.add(value, labels)
+            else:  # counter
                 instrument.add(value, labels)
 
     except Exception as e:
@@ -397,6 +405,9 @@ def get_logger(name: str) -> Any:
 
     If structlog is available, returns a structured logger that will automatically
     include trace context. Otherwise, returns a standard library logger.
+
+    Blueprint §12.3:
+    * Automatically binds trace context via contextvars processor.
     """
     if STRUCTLOG_AVAILABLE and structlog is not None:
         return structlog.get_logger(name)

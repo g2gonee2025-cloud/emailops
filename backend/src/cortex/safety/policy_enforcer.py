@@ -7,13 +7,16 @@ Implements §11.2 of the Canonical Blueprint.
 from __future__ import annotations
 
 import logging
-import re
-from typing import Any, Dict, List, Literal, Optional, Set
+from typing import Any, Dict, List, Literal, Optional
 
 from cortex.observability import trace_operation
+from cortex.safety.config import PolicyConfig
 from pydantic import BaseModel, ConfigDict, Field
 
 logger = logging.getLogger(__name__)
+
+# Load the policy configuration
+POLICY_CONFIG = PolicyConfig()
 
 
 class PolicyDecision(BaseModel):
@@ -38,52 +41,6 @@ class PolicyDecision(BaseModel):
 
 
 # -----------------------------------------------------------------------------
-# Policy Configuration
-# -----------------------------------------------------------------------------
-
-# Actions by risk level
-LOW_RISK_ACTIONS: Set[str] = {
-    "search",
-    "read_thread",
-    "read_message",
-    "get_thread_context",
-    "summarize_thread",
-    "answer_question",
-}
-
-MEDIUM_RISK_ACTIONS: Set[str] = {
-    "draft_email",
-    "create_draft",
-    "modify_draft",
-    "upload_attachment",
-}
-
-HIGH_RISK_ACTIONS: Set[str] = {
-    "send_email",
-    "delete_message",
-    "delete_thread",
-    "delete_attachment",
-    "admin_action",
-    "export_data",
-    "bulk_operation",
-}
-
-# Patterns that indicate external communication
-EXTERNAL_DOMAIN_PATTERN = re.compile(r"@(?!internal\.company\.com$)", re.IGNORECASE)
-
-# Maximum recipients for auto-approval
-MAX_RECIPIENTS_AUTO_APPROVE = 10
-
-# Sensitive content patterns
-SENSITIVE_PATTERNS: List[re.Pattern] = [
-    re.compile(r"\b(confidential|secret|private|internal only)\b", re.IGNORECASE),
-    re.compile(r"\b(password|credential|api.?key|token)\b", re.IGNORECASE),
-    re.compile(r"\b\d{3}-\d{2}-\d{4}\b"),  # SSN pattern
-    re.compile(r"\b(?:\d{4}[- ]?){3}\d{4}\b"),  # Credit card pattern
-]
-
-
-# -----------------------------------------------------------------------------
 # Policy Checks
 # -----------------------------------------------------------------------------
 
@@ -96,16 +53,17 @@ def _check_recipient_policy(metadata: Dict[str, Any]) -> Optional[str]:
         return None
 
     # Check recipient count
-    if len(recipients) > MAX_RECIPIENTS_AUTO_APPROVE:
+    if len(recipients) > POLICY_CONFIG.max_recipients_auto_approve:
         return (
-            f"Too many recipients ({len(recipients)} > {MAX_RECIPIENTS_AUTO_APPROVE})"
+            f"Too many recipients ({len(recipients)} > {POLICY_CONFIG.max_recipients_auto_approve})"
         )
 
     # Check for external domains
+    external_domain_pattern = POLICY_CONFIG.get_external_domain_pattern()
     external_recipients = [
         r
         for r in recipients
-        if isinstance(r, str) and EXTERNAL_DOMAIN_PATTERN.search(r)
+        if isinstance(r, str) and external_domain_pattern.search(r)
     ]
     if external_recipients and metadata.get("check_external", True):
         return f"External recipients detected: {', '.join(external_recipients[:3])}"
@@ -119,7 +77,8 @@ def _check_content_policy(metadata: Dict[str, Any]) -> Optional[str]:
     subject = metadata.get("subject", "") or ""
     full_text = f"{subject} {content}"
 
-    for pattern in SENSITIVE_PATTERNS:
+    sensitive_patterns = POLICY_CONFIG.get_sensitive_patterns()
+    for pattern in sensitive_patterns:
         if pattern.search(full_text):
             return f"Sensitive content detected (pattern: {pattern.pattern[:30]}...)"
 
@@ -134,8 +93,7 @@ def _check_attachment_policy(metadata: Dict[str, Any]) -> Optional[str]:
         return None
 
     # Check for dangerous extensions
-    dangerous_extensions = {".exe", ".bat", ".cmd", ".ps1", ".vbs", ".js"}
-
+    dangerous_extensions = POLICY_CONFIG.dangerous_extensions
     for attachment in attachments:
         filename = attachment.get("filename", "").lower()
         for ext in dangerous_extensions:
@@ -144,21 +102,22 @@ def _check_attachment_policy(metadata: Dict[str, Any]) -> Optional[str]:
 
     # Check total size
     total_size = sum(a.get("size", 0) for a in attachments)
-    max_size = metadata.get("max_attachment_size", 25 * 1024 * 1024)  # 25MB default
+    max_size_mb = POLICY_CONFIG.max_attachment_size_mb
+    max_size_bytes = metadata.get("max_attachment_size", max_size_mb * 1024 * 1024)
 
-    if total_size > max_size:
-        return f"Attachment size exceeds limit ({total_size} > {max_size})"
+    if total_size > max_size_bytes:
+        return f"Attachment size exceeds limit ({total_size} > {max_size_bytes})"
 
     return None
 
 
 def _determine_risk_level(action: str) -> Literal["low", "medium", "high"]:
     """Determine the risk level for an action."""
-    if action in LOW_RISK_ACTIONS:
+    if action in POLICY_CONFIG.low_risk_actions:
         return "low"
-    elif action in MEDIUM_RISK_ACTIONS:
+    elif action in POLICY_CONFIG.medium_risk_actions:
         return "medium"
-    elif action in HIGH_RISK_ACTIONS:
+    elif action in POLICY_CONFIG.high_risk_actions:
         return "high"
     else:
         # Unknown actions default to medium risk
@@ -240,15 +199,15 @@ def check_action(action: str, metadata: Dict[str, Any]) -> PolicyDecision:
         reason = "Explicitly denied by policy"
 
     # Check for bypass (e.g., admin override)
-    # SECURITY: Require explicit admin token/flag verification, not just existence
-    if safe_meta.get("admin_bypass") and decision != "deny":
-        # In a real system, verify the token. Here we check for a specific confirmation flag.
-        if safe_meta.get("admin_confirmed") is True:
+    # SECURITY: Require explicit role verification
+    if safe_meta.get("admin_bypass"):
+        user_roles = safe_meta.get("user_roles", [])
+        if "admin" in user_roles:
             decision = "allow"
             reason = "Admin bypass enabled"
         else:
             logger.warning(
-                "Admin bypass attempted without confirmation for action %s", action
+                "Admin bypass attempted without required 'admin' role for action %s", action
             )
 
     return PolicyDecision(

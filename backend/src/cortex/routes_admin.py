@@ -3,23 +3,17 @@ import os
 from typing import Any, Dict, List
 
 from cortex.config.loader import get_config
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from pydantic import BaseModel
 
-# Import check functions from CLI module
-# We can reuse the individual check functions which return (success, details, error)
-try:
-    from cortex_cli.cmd_doctor import (
-        _probe_embeddings,
-        check_postgres,
-        check_redis,
-        check_reranker,
-    )
-
-    CLI_AVAILABLE = True
-except ImportError:
-    CLI_AVAILABLE = False
-
+# Import new health check functions
+from cortex.health import (
+    CheckResult,
+    check_embeddings,
+    check_postgres,
+    check_redis,
+    check_reranker,
+)
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 logger = logging.getLogger(__name__)
@@ -60,106 +54,59 @@ async def get_system_status() -> Dict[str, Any]:
     }
 
 
+def _to_doctor_check(result: CheckResult) -> DoctorCheckResult:
+    """Convert a CheckResult to a DoctorCheckResult for the API response."""
+    status = "pass" if result.success else "fail"
+    message = result.error
+    if result.success:
+        if result.details and "message" in result.details:
+            message = result.details["message"]
+        elif result.name == "Embeddings":
+            dim = result.details.get("dimension") if result.details else "N/A"
+            message = f"Dimension: {dim}"
+        else:
+            message = "Connected"
+
+    return DoctorCheckResult(
+        name=result.name,
+        status=status,
+        message=message,
+        details=result.details,
+    )
+
+
 @router.post("/doctor", response_model=DoctorReport)
 async def run_doctor() -> DoctorReport:
     """Run system diagnostics."""
-    if not CLI_AVAILABLE:
-        raise HTTPException(
-            status_code=500, detail="CLI module not available to run diagnostics"
-        )
-
     config = get_config()
-    checks: List[DoctorCheckResult] = []
+    check_results: List[CheckResult] = []
     has_failure = False
 
-    # 1. Database Check
-    try:
-        res = check_postgres(config)
-        if len(res) == 3:
-            success, details, error = res
-        else:
-            success, error = res[0], res[-1]
-            details = {}
-    except Exception as e:
-        success, details, error = False, {}, str(e)
+    # Define all checks to be run
+    all_checks = [
+        check_postgres,
+        check_redis,
+        check_embeddings,
+        check_reranker,
+    ]
 
-    checks.append(
-        DoctorCheckResult(
-            name="PostgreSQL",
-            status="pass" if success else "fail",
-            message="Connected" if success else error,
-            details=details if isinstance(details, dict) else {"error": str(details)},
-        )
-    )
-    if not success:
-        has_failure = True
+    # Execute checks and collect results
+    for check_func in all_checks:
+        try:
+            result = check_func(config)
+            check_results.append(result)
+            if not result.success:
+                has_failure = True
+        except Exception as e:
+            # This is a fallback for unexpected errors within the check function itself
+            check_results.append(
+                CheckResult(name=check_func.__name__, success=False, error=str(e))
+            )
+            has_failure = True
 
-    # 2. Redis Check
-    try:
-        res = check_redis(config)
-        if len(res) == 3:
-            success, details, error = res
-        else:
-            success, error = res[0], res[-1]
-    except Exception as e:
-        success, error = False, str(e)
-
-    checks.append(
-        DoctorCheckResult(
-            name="Redis",
-            status="pass" if success else "fail",
-            message="Connected" if success else error,
-        )
-    )
-    if not success:
-        has_failure = True
-
-    # 3. Embeddings Check
-    try:
-        if config.core and config.core.provider:
-            res = _probe_embeddings(config.core.provider)
-            if len(res) == 2:
-                success, dim = res
-            else:
-                success = res[0]
-                dim = res[1] if success else -1
-        else:
-            success, dim = False, -1
-    except Exception:
-        success, dim = False, -1
-
-    checks.append(
-        DoctorCheckResult(
-            name="Embeddings API",
-            status="pass" if success else "fail",
-            message=f"Dimension: {dim}" if success else "Probe failed",
-            details={"dimension": dim},
-        )
-    )
-    if not success:
-        has_failure = True
-
-    # 4. Reranker Check
-    try:
-        res = check_reranker(config)
-        if len(res) == 3:
-            success, details, error = res
-        else:
-            success, error = res[0], res[-1]
-    except Exception as e:
-        success, error = False, str(e)
-
-    checks.append(
-        DoctorCheckResult(
-            name="Reranker API",
-            status="pass" if success else "fail",
-            message="Connected" if success else error,
-        )
-    )
-    # Reranker optional? Treat as warn if fails? For now fail.
-    if not success:
-        has_failure = True
+    # Convert to API model
+    api_checks = [_to_doctor_check(res) for res in check_results]
 
     return DoctorReport(
-        overall_status="unhealthy" if has_failure else "healthy", checks=checks
+        overall_status="unhealthy" if has_failure else "healthy", checks=api_checks
     )
