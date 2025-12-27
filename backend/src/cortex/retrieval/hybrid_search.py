@@ -264,7 +264,7 @@ def fuse_weighted_sum(
     return sorted(combined.values(), key=lambda i: i.fusion_score or 0.0, reverse=True)
 
 
-def tool_kb_search_hybrid(args: KBSearchInput) -> Result[SearchResults, RetrievalError]:
+async def tool_kb_search_hybrid(args: KBSearchInput) -> Result[SearchResults, RetrievalError]:
     """
     Perform hybrid search (FTS + Vector + RRF).
 
@@ -402,7 +402,7 @@ def tool_kb_search_hybrid(args: KBSearchInput) -> Result[SearchResults, Retrieva
             # 7. Reranking (External vs Lightweight)
             if config.search.reranker_endpoint:
                 # Use Qwen/External Cross-Encoder
-                fused_results = call_external_reranker(
+                fused_results = await call_external_reranker(
                     config.search.reranker_endpoint,
                     args.query,
                     fused_results,
