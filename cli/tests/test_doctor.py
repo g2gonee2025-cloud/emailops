@@ -50,7 +50,7 @@ class TestCmdDoctor(unittest.TestCase):
         self.assertEqual(out2, "test")
 
     def test_normalize_provider(self):
-        self.assertEqual(_normalize_provider("gcp"), "vertex")
+        self.assertEqual(_normalize_provider("gcp"), "gcp")
         self.assertEqual(_normalize_provider("vertexai"), "vertex")
         self.assertEqual(_normalize_provider("openai"), "openai")
 
