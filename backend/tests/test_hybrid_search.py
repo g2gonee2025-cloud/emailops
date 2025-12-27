@@ -131,7 +131,8 @@ class TestHybridSearch:
     @patch("cortex.retrieval.vector_search.search_chunks_vector")
     @patch("cortex.retrieval.cache.get_cached_query_embedding")
     @patch("cortex.retrieval.hybrid_search._get_conversation_timestamps")
-    def test_tool_kb_search_hybrid_flow(
+    @pytest.mark.asyncio
+    async def test_tool_kb_search_hybrid_flow(
         self,
         mock_timestamps,
         mock_get_cache,
@@ -198,7 +199,7 @@ class TestHybridSearch:
             user_id="u1",
             query="test query",
         )
-        result = tool_kb_search_hybrid(input_args)
+        result = await tool_kb_search_hybrid(input_args)
 
         # Verification
         assert result.is_ok()
@@ -218,7 +219,8 @@ class TestHybridSearch:
     @patch("cortex.retrieval.fts_search.search_messages_fts")
     @patch("cortex.retrieval.fts_search.search_chunks_fts")
     @patch("cortex.retrieval.vector_search.search_chunks_vector")
-    def test_navigational_search(
+    @pytest.mark.asyncio
+    async def test_navigational_search(
         self, mock_vector, mock_fts, mock_msg_fts, mock_session_cls, mock_config
     ):
         """Test navigational search logic triggers message search."""
@@ -260,7 +262,7 @@ class TestHybridSearch:
             mock_runtime = Mock()
             mock_runtime.embed_queries.return_value = np.array([[0.1]])
             mock_get_runtime.return_value = mock_runtime
-            tool_kb_search_hybrid(input_args)
+            await tool_kb_search_hybrid(input_args)
 
         # Verify message search was called
         mock_msg_fts.assert_called_once()
@@ -275,7 +277,8 @@ class TestHybridSearch:
     @patch("cortex.db.session.SessionLocal")
     @patch("cortex.retrieval.fts_search.search_chunks_fts")
     @patch("cortex.retrieval.vector_search.search_chunks_vector")
-    def test_sql_injection_through_file_types(
+    @pytest.mark.asyncio
+    async def test_sql_injection_through_file_types(
         self, mock_vector, mock_fts, mock_session_cls, mock_config
     ):
         """Test that file_types filter is not vulnerable to SQL injection."""
@@ -308,7 +311,7 @@ class TestHybridSearch:
             # Simulate embedding for the cleaned query part, which is empty
             mock_runtime.embed_queries.return_value = np.array([[]])
             mock_get_runtime.return_value = mock_runtime
-            tool_kb_search_hybrid(input_args)
+            await tool_kb_search_hybrid(input_args)
 
         # Verify that search_chunks_fts was called
         mock_fts.assert_called_once()
