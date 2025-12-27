@@ -1,112 +1,169 @@
+"""System health and diagnostic checks."""
 from __future__ import annotations
 
 import logging
 import os
-from dataclasses import dataclass
 from typing import Any, Dict
 
-# Library-safe logger
+from pydantic import BaseModel
+
+from cortex.config.loader import EmailOpsConfig
+
 logger = logging.getLogger(__name__)
-
-
 DEFAULT_REDIS_URL = "redis://localhost:6379"
 
 
-@dataclass(frozen=True)
-class CheckResult:
-    """Standardized result for a single health check."""
+class DoctorCheckResult(BaseModel):
+    """Represents the result of a single diagnostic check."""
 
     name: str
-    success: bool
+    status: str  # "pass", "fail", "warn"
+    message: str | None = None
     details: Dict[str, Any] | None = None
-    error: str | None = None
 
 
-def check_postgres(config: Any) -> CheckResult:
+async def check_postgres(config: EmailOpsConfig) -> DoctorCheckResult:
     """Check PostgreSQL connectivity."""
     try:
         from sqlalchemy import create_engine, text
 
+        if not config.database or not config.database.url:
+            return DoctorCheckResult(
+                name="PostgreSQL",
+                status="fail",
+                message="Database URL not configured",
+            )
+
         engine = create_engine(config.database.url)
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
-        return CheckResult(
-            name="PostgreSQL", success=True, details={"message": "Connected"}
+        return DoctorCheckResult(
+            name="PostgreSQL", status="pass", message="Connected"
+        )
+    except ImportError:
+        return DoctorCheckResult(
+            name="PostgreSQL", status="fail", message="sqlalchemy is not installed"
         )
     except Exception as e:
-        return CheckResult(name="PostgreSQL", success=False, error=str(e))
+        logger.error("PostgreSQL health check failed: %s", e)
+        return DoctorCheckResult(
+            name="PostgreSQL", status="fail", message=f"Connection failed: {e}"
+        )
 
 
-def check_redis(config: Any) -> CheckResult:
+async def check_redis(config: EmailOpsConfig) -> DoctorCheckResult:
     """Check Redis connectivity."""
     try:
         import redis
 
-        redis_url = getattr(config.cache, "url", DEFAULT_REDIS_URL)
+        redis_url = (
+            config.redis.url
+            if config.redis and config.redis.url
+            else os.getenv("OUTLOOKCORTEX_REDIS_URL", DEFAULT_REDIS_URL)
+        )
+        if not redis_url:
+            return DoctorCheckResult(
+                name="Redis", status="fail", message="Redis URL not configured"
+            )
+
         r = redis.from_url(redis_url)
         r.ping()
-        return CheckResult(name="Redis", success=True, details={"message": "Connected"})
+        return DoctorCheckResult(name="Redis", status="pass", message="Connected")
+    except ImportError:
+        return DoctorCheckResult(
+            name="Redis", status="fail", message="redis-py is not installed"
+        )
     except Exception as e:
-        return CheckResult(name="Redis", success=False, error=str(e))
+        logger.error("Redis health check failed: %s", e)
+        return DoctorCheckResult(
+            name="Redis", status="fail", message=f"Connection failed: {e}"
+        )
 
 
-def check_embeddings(config: Any) -> CheckResult:
+async def probe_embeddings(config: EmailOpsConfig) -> DoctorCheckResult:
     """Test embedding functionality with the configured provider."""
     try:
         from cortex.llm.client import embed_texts
 
+        if not config.core or not config.core.provider:
+            return DoctorCheckResult(
+                name="Embeddings API",
+                status="fail",
+                message="Embedding provider not configured",
+            )
+
         result = embed_texts(["test"])
         if result is not None and len(result) > 0:
             dim = result.shape[1] if hasattr(result, "shape") else len(result[0])
-            return CheckResult(
-                name="Embeddings", success=True, details={"dimension": dim}
+            return DoctorCheckResult(
+                name="Embeddings API",
+                status="pass",
+                message=f"Dimension: {dim}",
+                details={"dimension": dim},
             )
-        return CheckResult(
-            name="Embeddings", success=False, error="Probe returned empty result"
-        )
+        else:
+            return DoctorCheckResult(
+                name="Embeddings API", status="fail", message="Probe returned empty result"
+            )
     except Exception as e:
-        logger.warning("Embedding probe failed: %s", e)
-        return CheckResult(name="Embeddings", success=False, error=str(e))
+        logger.error("Embedding probe failed: %s", e, exc_info=True)
+        return DoctorCheckResult(
+            name="Embeddings API", status="fail", message=f"Probe failed: {e}"
+        )
 
 
-def check_reranker(config: Any) -> CheckResult:
-    """Check reranker endpoint connectivity."""
+async def check_reranker(config: EmailOpsConfig) -> DoctorCheckResult:
+    """
+    Check reranker endpoint connectivity.
+
+    This check is considered optional. A failure will result in a "warn" status.
+    """
     try:
         import httpx
 
         reranker_endpoint = getattr(config.search, "reranker_endpoint", None)
         if not reranker_endpoint:
-            return CheckResult(
-                name="Reranker",
-                success=False,
-                error="No reranker endpoint configured",
+            return DoctorCheckResult(
+                name="Reranker API",
+                status="pass",
+                message="Not configured",
+                details={"reason": "No reranker endpoint in config."},
             )
 
         health_url = f"{reranker_endpoint.rstrip('/')}/health"
-        try:
-            resp = httpx.get(health_url, timeout=5.0)
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(health_url, timeout=5.0)
+
             if resp.status_code == 200:
-                return CheckResult(
-                    name="Reranker", success=True, details={"message": "Connected"}
+                return DoctorCheckResult(
+                    name="Reranker API", status="pass", message="Connected"
                 )
-            return CheckResult(
-                name="Reranker",
-                success=False,
-                error=f"Reranker returned status {resp.status_code}",
-            )
-        except httpx.ConnectError:
-            return CheckResult(
-                name="Reranker",
-                success=False,
-                error=f"Cannot connect to reranker at {reranker_endpoint}",
-            )
-        except httpx.TimeoutException:
-            return CheckResult(
-                name="Reranker",
-                success=False,
-                error=f"Reranker timeout at {reranker_endpoint}",
-            )
+            else:
+                return DoctorCheckResult(
+                    name="Reranker API",
+                    status="warn",
+                    message=f"Reranker returned status {resp.status_code}",
+                )
     except ImportError:
-        return CheckResult(name="Reranker", success=False, error="httpx not installed")
+            return DoctorCheckResult(
+            name="Reranker API",
+            status="warn",
+            message="httpx not installed (pip install httpx)",
+        )
+    except httpx.ConnectError:
+        return DoctorCheckResult(
+            name="Reranker API",
+            status="warn",
+            message=f"Cannot connect to reranker at {reranker_endpoint}",
+        )
+    except httpx.TimeoutException:
+        return DoctorCheckResult(
+            name="Reranker API",
+            status="warn",
+            message=f"Reranker timeout at {reranker_endpoint}",
+        )
     except Exception as e:
-        return CheckResult(name="Reranker", success=False, error=str(e))
+        logger.warning("Reranker health check failed: %s", e)
+        return DoctorCheckResult(
+            name="Reranker API", status="warn", message=f"Connection failed: {e}"
+        )
