@@ -29,14 +29,14 @@ from cortex.retrieval.query_classifier import (
     tool_classify_query,
 )
 from cortex.retrieval.results import SearchResults
-from fastapi import APIRouter, HTTPException, Request
+from cortex.security.defenses import sanitize_user_input
+from cortex.security.dependencies import get_current_user
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
-
-_summarize_graph = None
 
 
 class ChatActionDecision(BaseModel):
@@ -46,20 +46,13 @@ class ChatActionDecision(BaseModel):
     reason: str
 
 
-def get_summarize_graph(http_request: Request = None):
-    """Get pre-compiled graph from app.state or lazy load as fallback."""
-    # P0 Fix: Prefer pre-compiled graph from lifespan
-    if http_request and hasattr(http_request.app.state, "graphs"):
+def get_summarize_graph(http_request: Request):
+    """Get pre-compiled graph from app.state."""
+    if hasattr(http_request.app.state, "graphs"):
         cached = http_request.app.state.graphs.get("summarize")
         if cached:
             return cached
-
-    # Fallback to lazy loading
-    global _summarize_graph
-    if _summarize_graph is None:
-        logger.info("Lazily Initializing Summarize Graph (prefer app.state.graphs)...")
-        _summarize_graph = build_summarize_graph().compile()
-    return _summarize_graph
+    raise HTTPException(status_code=500, detail="Summarize graph not initialized")
 
 
 def _trim_history(messages: List[ChatMessage], max_history: int) -> List[ChatMessage]:
@@ -96,7 +89,9 @@ def _decide_action(
         f"{_format_history(history)}\n\n"
         "Return JSON with fields: action, reason."
     )
-    raw = complete_json(prompt=prompt, schema=ChatActionDecision.model_json_schema())
+    raw = await run_in_threadpool(
+        complete_json, prompt=prompt, schema=ChatActionDecision.model_json_schema()
+    )
     return ChatActionDecision.model_validate(raw)
 
 
@@ -136,7 +131,11 @@ async def _run_search(query: str, k: int, classification: Any) -> SearchResults:
 
 @router.post("/chat", response_model=ChatResponse)
 @trace_operation("api_chat")  # P2 Fix: Enable request tracing
-async def chat_endpoint(request: ChatRequest, http_request: Request) -> ChatResponse:
+async def chat_endpoint(
+    request: ChatRequest,
+    http_request: Request,
+    current_user: dict = Depends(get_current_user),
+) -> ChatResponse:
     """
     Conversational chat endpoint with tool routing.
 
@@ -188,6 +187,8 @@ def _validate_and_prepare_request(
     if not latest_user:
         raise HTTPException(status_code=400, detail="No user message provided")
 
+    latest_user = sanitize_user_input(latest_user)
+
     config = get_config()
     max_history = (
         request.max_history
@@ -207,8 +208,11 @@ def _log_chat_audit(
 ) -> None:
     """Log audit event for chat."""
     try:
-        input_str = request.model_dump_json()
-        input_hash = hashlib.sha256(input_str.encode()).hexdigest()
+        # PII Leak Fix: Avoid logging the full request.
+        # Create a hash of the latest user message as a pseudo-identifier.
+        latest_user_message = _latest_user_message(request.messages) or ""
+        input_hash = hashlib.sha256(latest_user_message.encode()).hexdigest()
+
         log_audit_event(
             tenant_id=tenant_id,
             user_or_agent=user_id,
@@ -230,7 +234,7 @@ async def _handle_summarize(
     history: List[ChatMessage],
     correlation_id: Optional[str],
     decision: ChatActionDecision,
-    http_request: Request = None,  # P0 Fix: Pass for app.state graph access
+    http_request: Request,
 ) -> ChatResponse:
     if request.thread_id:
         initial_state = {
@@ -257,7 +261,7 @@ async def _handle_summarize(
             f"{_format_history(history)}\n"
             "</conversation_history>"
         )
-        summary_text = complete_text(summary_prompt)
+        summary_text = await run_in_threadpool(complete_text, summary_prompt)
         summary = ThreadSummary(summary_markdown=summary_text, key_points=[])
         reply = summary_text
 
@@ -276,8 +280,9 @@ async def _handle_search(
     correlation_id: Optional[str],
     decision: ChatActionDecision,
 ) -> ChatResponse:
-    classification = tool_classify_query(
-        QueryClassificationInput(query=latest_user, use_llm=True)
+    classification = await run_in_threadpool(
+        tool_classify_query,
+        QueryClassificationInput(query=latest_user, use_llm=True),
     )
     results = await _run_search(latest_user, request.k, classification)
     results_dicts = [r.model_dump() for r in results.results] if results.results else []
@@ -291,7 +296,7 @@ async def _handle_search(
         f"User request: <user_input>{latest_user}</user_input>\n\n"
         f"Search results:\n{snippets}"
     )
-    reply = complete_text(reply_prompt)
+    reply = await run_in_threadpool(complete_text, reply_prompt)
     return ChatResponse(
         correlation_id=correlation_id,
         action="search",
@@ -308,8 +313,9 @@ async def _handle_answer(
     correlation_id: Optional[str],
     decision: ChatActionDecision,
 ) -> ChatResponse:
-    classification = tool_classify_query(
-        QueryClassificationInput(query=latest_user, use_llm=True)
+    classification = await run_in_threadpool(
+        tool_classify_query,
+        QueryClassificationInput(query=latest_user, use_llm=True),
     )
     results = await _run_search(latest_user, request.k, classification)
     context_state = {
@@ -340,7 +346,9 @@ async def _handle_answer(
             + f"\n\nQuestion: <user_input>{latest_user}</user_input>"
         )
         answer_text = complete_text(prompt)
-        evidence = _extract_evidence_from_answer(answer_text, results)
+        evidence = await run_in_threadpool(
+            _extract_evidence_from_answer, answer_text, results
+        )
         confidence = min(0.95, 0.5 + 0.1 * len(evidence)) if evidence else 0.6
         answer = Answer(
             query=latest_user,
