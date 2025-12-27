@@ -6,13 +6,14 @@ Generates one micro-patch per individual error from bulk_review_report_v2.json.
 Each patch fixes exactly ONE issue, making them simpler and more reliable.
 Uses the same patterns as bulk_code_review.py.
 """
-
+import argparse
 import json
 import logging
 import os
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+from typing import Any, Dict, List
 
 import requests
 from dotenv import load_dotenv
@@ -27,25 +28,98 @@ logging.basicConfig(
 logger = logging.getLogger("per_issue_fixer")
 
 # --- Configuration ---
-PROJECT_ROOT = Path(__file__).parent.parent.resolve()
+PROJECT_ROOT = Path(__file__).parent.parent.parent.parent.resolve()
 PATCHES_DIR = PROJECT_ROOT / "patches_per_issue"
-PATCHES_DIR.mkdir(exist_ok=True)
 
-# Concurrency control
-MAX_WORKERS = 10
 
-# Model
-MODEL = "openai-gpt-5"
+def setup_fix_parser(subparsers: Any):
+    """Setup the 'fix-issues' command parser."""
+    fix_parser = subparsers.add_parser(
+        "fix-issues",
+        help="Generate patches for issues in bulk_review_report_v2.json",
+        description="""
+Generates one micro-patch per individual error from bulk_review_report_v2.json.
+Each patch fixes exactly ONE issue, making them simpler and more reliable.
+        """,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    fix_parser.add_argument(
+        "--model",
+        default=os.getenv("FIXER_MODEL", "gpt-4"),
+        help="The model to use for generating patches (default: gpt-4, or FIXER_MODEL env var)",
+    )
+    fix_parser.add_argument(
+        "--max-workers",
+        type=int,
+        default=10,
+        help="Maximum number of concurrent workers (default: 10)",
+    )
+    fix_parser.set_defaults(
+        func=lambda args: run_fixer(model=args.model, max_workers=args.max_workers)
+    )
 
-# API Configuration (same as bulk_code_review.py)
-API_KEY = os.getenv("LLM_API_KEY") or os.getenv("DO_API_KEY")
-BASE_URL = (os.getenv("LLM_ENDPOINT") or "https://inference.do-ai.run/v1").rstrip("/")
 
-if not API_KEY:
-    print("Missing API key. Set LLM_API_KEY or DO_API_KEY.")
-    sys.exit(1)
+def run_fixer(model: str, max_workers: int):
+    """
+    Main function to generate patches for issues.
+    """
+    PATCHES_DIR.mkdir(exist_ok=True)
 
-HEADERS = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
+    # API Configuration (same as bulk_code_review.py)
+    API_KEY = os.getenv("LLM_API_KEY") or os.getenv("DO_API_KEY")
+    BASE_URL = (os.getenv("LLM_ENDPOINT") or "https://inference.do-ai.run/v1").rstrip(
+        "/"
+    )
+
+    if not API_KEY:
+        print("Missing API key. Set LLM_API_KEY or DO_API_KEY.")
+        sys.exit(1)
+
+    HEADERS = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
+
+    logger.info("Loading issues from bulk_review_report_v2.json...")
+    issues = load_report()
+    logger.info(f"Found {len(issues)} issues to process")
+    logger.info(f"Model: {model}")
+    logger.info(f"Workers: {max_workers}")
+    logger.info(f"Output: {PATCHES_DIR}\n")
+
+    results = []
+    success_count = 0
+    failed_count = 0
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_idx = {
+            executor.submit(process_issue, issue, i, model, BASE_URL, HEADERS): i
+            for i, issue in enumerate(issues)
+        }
+
+        for future in as_completed(future_to_idx):
+            idx = future_to_idx[future]
+            try:
+                result = future.result()
+                results.append(result)
+
+                if result["status"] == "success":
+                    success_count += 1
+                    if success_count % 50 == 0:
+                        logger.info(f"Progress: {success_count} patches generated...")
+                else:
+                    failed_count += 1
+            except Exception as e:
+                failed_count += 1
+                logger.error(f"Exception for issue {idx}: {e}")
+
+    # Summary
+    print("\n" + "=" * 60)
+    print("PER-ISSUE PATCH GENERATION COMPLETE")
+    print("=" * 60)
+    print(f"Total Issues: {len(issues)}")
+    print(f"Patches Generated: {success_count}")
+    print(f"Failed: {failed_count}")
+    print(f"Output Directory: {PATCHES_DIR}")
+    print("=" * 60)
+
 
 # Prompt for fixing a single issue
 FIX_PROMPT = """
@@ -64,7 +138,7 @@ Output ONLY a valid unified diff patch. No explanations.
 <output_format>
 --- {file_path}
 +++ {file_path}
-@@ -{hunk_start},{hunk_old} +{hunk_start},{hunk_new} @@
+@@ -{hunk_start},{hunk_old} @@
  context line (space prefix)
 -removed line (minus prefix)
 +added line (plus prefix)
@@ -97,7 +171,8 @@ def get_code_context(
     try:
         with open(full_path, encoding="utf-8") as f:
             lines = f.readlines()
-    except Exception:
+    except (IOError, OSError) as e:
+        logger.error(f"Error reading file {full_path}: {e}")
         return "", 0, 0
 
     start = max(0, line - context - 1)
@@ -111,17 +186,17 @@ def get_code_context(
     return "\n".join(numbered), start + 1, end
 
 
-def call_llm(prompt: str) -> str:
+def call_llm(prompt: str, model: str, base_url: str, headers: Dict[str, str]) -> str:
     """Make a single LLM API call (same pattern as bulk_code_review.py)."""
-    url = f"{BASE_URL}/chat/completions"
+    url = f"{base_url}/chat/completions"
     payload = {
-        "model": MODEL,
+        "model": model,
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.0,
         "max_tokens": 1000,
     }
     try:
-        resp = requests.post(url, json=payload, headers=HEADERS, timeout=60)
+        resp = requests.post(url, json=payload, headers=headers, timeout=60)
         if resp.status_code == 200:
             data = resp.json()
             content = (
@@ -141,7 +216,9 @@ def call_llm(prompt: str) -> str:
         return ""
 
 
-def process_issue(issue: dict, idx: int) -> dict:
+def process_issue(
+    issue: dict, idx: int, model: str, base_url: str, headers: Dict[str, str]
+) -> dict:
     """Generate a patch for a single issue."""
     file_path = issue.get("file", "")
     line = issue.get("line") or 1
@@ -167,10 +244,9 @@ def process_issue(issue: dict, idx: int) -> dict:
         code_context=code_context,
         hunk_start=start_line,
         hunk_old=end_line - start_line + 1,
-        hunk_new=end_line - start_line + 1,
     )
 
-    patch = call_llm(prompt)
+    patch = call_llm(prompt, model, base_url, headers)
     if not patch:
         result["status"] = "llm_failed"
         return result
@@ -186,52 +262,3 @@ def process_issue(issue: dict, idx: int) -> dict:
     result["status"] = "success"
     result["patch"] = str(patch_path)
     return result
-
-
-def main():
-    logger.info("Loading issues from bulk_review_report_v2.json...")
-    issues = load_report()
-    logger.info(f"Found {len(issues)} issues to process")
-    logger.info(f"Model: {MODEL}")
-    logger.info(f"Workers: {MAX_WORKERS}")
-    logger.info(f"Output: {PATCHES_DIR}\n")
-
-    results = []
-    success_count = 0
-    failed_count = 0
-
-    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        future_to_idx = {
-            executor.submit(process_issue, issue, i): i
-            for i, issue in enumerate(issues)
-        }
-
-        for future in as_completed(future_to_idx):
-            idx = future_to_idx[future]
-            try:
-                result = future.result()
-                results.append(result)
-
-                if result["status"] == "success":
-                    success_count += 1
-                    if success_count % 50 == 0:
-                        logger.info(f"Progress: {success_count} patches generated...")
-                else:
-                    failed_count += 1
-            except Exception as e:
-                failed_count += 1
-                logger.error(f"Exception for issue {idx}: {e}")
-
-    # Summary
-    print("\n" + "=" * 60)
-    print("PER-ISSUE PATCH GENERATION COMPLETE")
-    print("=" * 60)
-    print(f"Total Issues: {len(issues)}")
-    print(f"Patches Generated: {success_count}")
-    print(f"Failed: {failed_count}")
-    print(f"Output Directory: {PATCHES_DIR}")
-    print("=" * 60)
-
-
-if __name__ == "__main__":
-    main()

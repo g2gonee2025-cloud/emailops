@@ -158,12 +158,12 @@ class TestHybridSearch:
         # Setup Components
         mock_session = Mock()
         mock_session_cls.return_value.__enter__.return_value = mock_session
-
-        # Setup Cache miss then Embed
-        mock_get_cache.return_value = None
         mock_runtime = Mock()
-        mock_runtime.embed_queries.return_value = np.array([[0.1, 0.2, 0.3]])
         mock_get_runtime.return_value = mock_runtime
+
+        # Setup Cache miss then Embed via mocked runtime
+        mock_get_cache.return_value = None
+        mock_runtime.embed_queries.return_value = np.array([[0.1, 0.2, 0.3]])
 
         # Setup Results with correct types
         # FTS returns ChunkFTSResult
@@ -197,9 +197,11 @@ class TestHybridSearch:
             user_id="u1",
             query="test query",
         )
-        results = tool_kb_search_hybrid(input_args)
+        result = tool_kb_search_hybrid(input_args)
 
         # Verification
+        assert result.is_ok()
+        results = result.unwrap()
         assert len(results.results) == 1
         assert results.results[0].chunk_id == "1"
         assert "rrf" in results.reranker
