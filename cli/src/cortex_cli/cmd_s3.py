@@ -38,16 +38,20 @@ def cmd_s3_upload(args: argparse.Namespace) -> None:
     """Upload a local directory to S3/Spaces."""
     try:
         from cortex.config.loader import get_config
+        from cortex.security.validators import validate_directory_result
 
         config = get_config()
-        source_dir = Path(args.source_dir).resolve()
-        s3_prefix = args.s3_prefix
 
-        if not source_dir.is_dir():
+        # Validate source directory before use
+        validated_source_dir = validate_directory_result(args.source_dir, must_exist=True)
+        if validated_source_dir.is_err():
             print(
-                f"{_colorize('ERROR:', 'red')} Source '{source_dir}' is not a valid directory."
+                f"{_colorize('ERROR:', 'red')} Invalid source directory: {validated_source_dir.err()}"
             )
             sys.exit(1)
+
+        source_dir = validated_source_dir.ok()
+        s3_prefix = args.s3_prefix
 
         print(f"\n{_colorize('S3/SPACES UPLOADER', 'bold')}\n")
         print(f"  Endpoint:   {_colorize(config.storage.endpoint_url, 'cyan')}")

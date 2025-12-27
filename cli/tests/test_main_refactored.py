@@ -52,7 +52,7 @@ class TestCliMainUtils:
         mock_report.problems = []
         mock_scan.return_value = mock_report
 
-        with patch("pathlib.Path.exists", return_value=True):
+        with patch("pathlib.Path.exists", return_value=True), patch("pathlib.Path.is_dir", return_value=True):
             _run_validate("some/path")
 
         captured = capsys.readouterr()
@@ -203,7 +203,7 @@ class TestCliMainUtils:
         with patch("pathlib.Path.cwd") as mock_cwd:
             mock_path = MagicMock()
             mock_path.exists.return_value = True
-            mock_cwd.return_value = mock_.path
+            mock_cwd.return_value = mock_path
             mock_path.__truediv__.return_value.exists.return_value = True
 
             _show_status(json_output=False)

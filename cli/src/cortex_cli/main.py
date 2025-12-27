@@ -145,6 +145,7 @@ UTILITY_COMMANDS = [
     ("config", "View, validate, or export configuration"),
     ("version", "Display version information"),
     ("autofix", "Automatically fix common code issues"),
+    ("fix", "Fix common issues"),
 ]
 
 DATA_COMMANDS = [
@@ -404,8 +405,13 @@ def _run_validate(
     Validate export folder structure (B1).
     """
     import json
+    from cortex.security.validators import validate_directory_result
 
-    target_path = Path(path).resolve()
+    validated_path = validate_directory_result(path, must_exist=True)
+    if validated_path.is_err():
+        print(f"{_colorize('ERROR:', 'red')} Invalid path: {validated_path.error}")
+        sys.exit(1)
+    target_path = validated_path.value
 
     if not json_output:
         _print_banner()
@@ -499,8 +505,17 @@ def _run_ingest(
     """
     import json
     import uuid
+    from cortex.security.validators import validate_directory_result
 
-    source = Path(source_path).resolve()
+    # Validate source path before use
+    validated_source = validate_directory_result(source_path, must_exist=True)
+    if validated_source.is_err():
+        print(
+            f"{_colorize('ERROR:', 'red')} Invalid source path: {validated_source.error}"
+        )
+        sys.exit(1)
+
+    source = validated_source.value
 
     if not json_output:
         _print_banner()
@@ -696,8 +711,13 @@ def _run_index(
     Build or rebuild the search index with embeddings.
     """
     import json
+    from cortex.security.validators import validate_directory_result
 
-    root_path = Path(root).resolve()
+    validated_root = validate_directory_result(root, must_exist=True)
+    if validated_root.is_err():
+        print(f"{_colorize('ERROR:', 'red')} Invalid root path: {validated_root.err()}")
+        sys.exit(1)
+    root_path = validated_root.value
 
     if not json_output:
         _print_banner()
@@ -1052,7 +1072,6 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
                     command(args.typer_args, standalone_mode=False)
                 else:
                     command(standalone_mode=False)
-
             except typer.Exit as e:
                 if e.code != 0:
                     console = Console()
@@ -1087,10 +1106,8 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
         subparsers, "graph", graph_app, help_text="Knowledge Graph commands"
     )
     setup_patch_parser(subparsers)
-    setup_index_parser(subparsers)
     setup_schema_parser(subparsers)
-    if "sqlite" not in _config.database.url:
-        setup_test_parser(subparsers)
+    setup_test_parser(subparsers)
 
     # Parse arguments
     parsed_args = parser.parse_args(args)
@@ -1363,6 +1380,7 @@ _DOCTOR_BOOL_FLAGS = [
 def _handle_doctor(args: argparse.Namespace) -> None:
     """Handle doctor command by forwarding args to cmd_doctor.main()."""
     from cortex_cli.cmd_doctor import main as doctor_main
+    from cortex.security.validators import validate_directory_result
 
     # Handle --all flag
     if getattr(args, "check_all", False):
@@ -1372,7 +1390,13 @@ def _handle_doctor(args: argparse.Namespace) -> None:
     # Build args list using lookup table
     doctor_args: list[str] = []
     if args.root != ".":
-        doctor_args.extend(["--root", args.root])
+        validated_root = validate_directory_result(args.root, must_exist=True)
+        if validated_root.is_err():
+            print(
+                f"{_colorize('ERROR:', 'red')} Invalid root path: {validated_root.err()}"
+            )
+            sys.exit(1)
+        doctor_args.extend(["--root", str(validated_root.ok())])
     if args.provider != "vertex":
         doctor_args.extend(["--provider", args.provider])
 
