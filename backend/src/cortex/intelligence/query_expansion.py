@@ -6,15 +6,20 @@ Uses WordNet for English synonyms, with optional LLM fallback.
 
 Key improvements in this version:
 - Produces PostgreSQL-compatible `to_tsquery` syntax.
-- Efficiently caches the LLMRuntime instance.
-- Singleton pattern for the expander to avoid re-initializing resources.
+- Asynchronous and non-blocking, suitable for FastAPI.
+- Hardened against prompt injection by using structured messages.
+- Concurrent synonym lookups for improved performance.
 """
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import re
-from typing import Any, Set
+from typing import Any, List, Set
+
+from cortex.llm.async_runtime import AsyncLLMRuntime
+from cortex.llm.runtime import ConfigurationError, ProviderError
 
 logger = logging.getLogger(__name__)
 
@@ -33,28 +38,29 @@ class QueryExpander:
     Expands queries with synonyms, compatible with PostgreSQL FTS.
     """
 
-    _llm: Any = None
+    _llm: AsyncLLMRuntime | None = None
 
     def __init__(self, use_llm_fallback: bool = False):
         self.use_llm_fallback = use_llm_fallback
 
     @property
-    def _llm_runtime(self) -> Any:
-        """Lazy-load the LLM runtime to avoid circular imports and startup costs."""
+    def _llm_runtime(self) -> AsyncLLMRuntime | None:
+        """Lazy-load the AsyncLLMRuntime to avoid circular imports and startup costs."""
         if self._llm is None:
             try:
-                from cortex.llm.runtime import LLMRuntime
-
-                self._llm = LLMRuntime()
+                from cortex.llm.async_runtime import get_async_runtime
+                self._llm = get_async_runtime()
+            except (ImportError, ConfigurationError) as e:
+                logger.error(f"LLM runtime for query expansion is unavailable: {e}")
+                return None
             except Exception as e:
-                logger.error(f"Failed to initialize LLMRuntime: {e}")
-                # Set a dummy object to prevent repeated initialization attempts
-                self._llm = None
+                logger.critical(f"Unexpected error initializing LLM runtime: {e}", exc_info=True)
+                return None
         return self._llm
 
-    def expand(self, query: str, max_synonyms_per_term: int = 2) -> str:
+    async def expand(self, query: str, max_synonyms_per_term: int = 2) -> str:
         """
-        Expand a query with synonyms for PostgreSQL `to_tsquery`.
+        Asynchronously expand a query with synonyms for PostgreSQL `to_tsquery`.
 
         Returns a query string with `|` (OR) and `&` (AND) operators.
         Example: "laptop battery" -> "(laptop | notebook) & (battery | power)"
@@ -62,65 +68,70 @@ class QueryExpander:
         if not query or not query.strip():
             return query
 
-        # Tokenize (simple whitespace split, lowercase)
         tokens = re.findall(r"\b\w+\b", query.lower())
 
+        # Concurrently get synonyms for all tokens
+        synonym_lists = await asyncio.gather(
+            *(self._get_synonyms(token, max_synonyms_per_term) for token in tokens)
+        )
+
         expanded_parts = []
-        for token in tokens:
-            synonyms = self._get_synonyms(token, max_synonyms_per_term)
+        for token, synonyms in zip(tokens, synonym_lists):
             if synonyms:
-                # Create OR clause for ts_query: (term1 | term2 | ...)
                 all_terms = [token] + list(synonyms)
-                # Sanitize terms for ts_query (remove special chars)
                 sanitized_terms = [re.sub(r"[&|!()]", "", t) for t in all_terms]
                 expanded_parts.append(f"({' | '.join(sanitized_terms)})")
             else:
                 expanded_parts.append(token)
 
-        # Join parts with AND for ts_query
         return " & ".join(expanded_parts)
 
-    def _get_synonyms(self, term: str, max_count: int) -> Set[str]:
-        """Get synonyms for a term."""
+    async def _get_synonyms(self, term: str, max_count: int) -> Set[str]:
+        """Get synonyms for a term, async."""
         synonyms: Set[str] = set()
 
-        # Skip very short words
         if len(term) <= 2:
             return synonyms
 
-        # Try WordNet first
         if WORDNET_AVAILABLE:
             try:
+                # WordNet is synchronous, but fast enough to not need run_in_executor
                 for syn in wordnet.synsets(term):
                     for lemma in syn.lemmas():
                         name = lemma.name().replace("_", " ").lower()
-                        # Basic validation
                         if name != term and " " not in name and len(name) > 2:
                             synonyms.add(name)
                             if len(synonyms) >= max_count:
                                 return synonyms
             except Exception as e:
-                # This can happen with first-time NLTK use, not an error.
                 logger.debug(f"WordNet lookup failed for '{term}': {e}")
 
-        # LLM fallback (if enabled and WordNet found nothing)
         if self.use_llm_fallback and not synonyms and self._llm_runtime:
-            synonyms = self._llm_synonyms(term, max_count)
+            synonyms = await self._llm_synonyms(term, max_count)
 
         return synonyms
 
-    def _llm_synonyms(self, term: str, max_count: int) -> Set[str]:
-        """Use LLM to generate synonyms (expensive, use sparingly)."""
+    async def _llm_synonyms(self, term: str, max_count: int) -> Set[str]:
+        """Use LLM to generate synonyms asynchronously and securely."""
         if not self._llm_runtime:
             return set()
 
-        prompt = f"List up to {max_count} single-word synonyms for the word '{term}'. Return only the words, comma-separated, no explanation."
+        # Mitigate Prompt Injection: Use structured messages
+        messages = [
+            {
+                "role": "system",
+                "content": f"You are a helpful assistant. List up to {max_count} single-word synonyms. Return only the words, comma-separated, without explanation.",
+            },
+            {"role": "user", "content": term},
+        ]
+
         try:
-            # User requested GPT-OSS-120B for fallback intelligence
-            response = self._llm_runtime.complete_text(
-                prompt, temperature=0.0, max_tokens=50, model="gpt-oss-120b"
+            response = await self._llm_runtime.complete_text(
+                messages,
+                temperature=0.0,
+                max_tokens=50,
+                model="gpt-oss-120b",
             )
-            # Parse comma-separated response
             synonyms = {
                 s.strip().lower()
                 for s in response.split(",")
@@ -128,20 +139,17 @@ class QueryExpander:
             }
             synonyms.discard(term)
             return synonyms
-        except Exception as e:
-            logger.debug(f"LLM synonym lookup failed: {e}")
+        except ProviderError as e:
+            logger.debug(f"Async LLM synonym lookup failed: {e}")
             return set()
 
 
 # --- Singleton Instance ---
-# This ensures a single, shared instance of the expander is used across the app,
-# preventing re-initialization of the LLM runtime.
 _query_expander_instance = QueryExpander(use_llm_fallback=True)
 
 
-def expand_for_fts(query: str) -> str:
+async def expand_for_fts(query: str) -> str:
     """
-    Convenience function: expand query for Full-Text Search.
-    Returns expanded query suitable for PostgreSQL to_tsquery.
+    Async convenience function: expand query for Full-Text Search.
     """
-    return _query_expander_instance.expand(query)
+    return await _query_expander_instance.expand(query)
