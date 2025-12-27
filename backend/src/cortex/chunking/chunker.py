@@ -308,169 +308,132 @@ def _apply_progressive_scaling(
     return max_tokens, overlap_tokens
 
 
-def chunk_text(input_data: ChunkingInput) -> list[ChunkModel]:
+class Chunker:
     """
-    Chunk text into smaller segments.
-
-    Implements §7.1 requirements:
-    - Respects max_tokens/min_tokens/overlap_tokens settings
-    - Classifies chunks based on quoted_spans overlap
-    - Generates stable content_hash for deduplication
-    - Prefers sentence/paragraph boundaries when possible
-
-    Args:
-        input_data: ChunkingInput with text and parameters
-
-    Returns:
-        List of ChunkModel instances
+    Class-based chunker to manage state.
     """
-    text = input_data.text
-    if not text or not text.strip():
-        return []
 
-    counter = TokenCounter(model=input_data.model)
-    chunks: list[ChunkModel] = []
+    def __init__(self, input_data: ChunkingInput):
+        self.input_data = input_data
+        self.text = input_data.text
+        self.counter = TokenCounter(model=input_data.model)
+        self.all_tokens: list[int] = self.counter.encode(self.text)
+        self.token_map: list[int] = []
+        self._build_token_to_char_map()
 
-    # Pre-calculate token count for progressive scaling
-    total_tokens_pre = counter.count(text)
+    def _build_token_to_char_map(self):
+        """
+        Builds a map from token index to character start position in the original text.
+        This is fast and reliable.
+        """
+        self.token_map = [0] * (len(self.all_tokens) + 1)
+        current_pos = 0
+        for i, token in enumerate(self.all_tokens):
+            self.token_map[i] = current_pos
+            current_pos += len(self.counter.decode([token]))
+        self.token_map[len(self.all_tokens)] = current_pos
 
-    # Apply progressive scaling
-    eff_max_tokens, eff_overlap_tokens = _apply_progressive_scaling(
-        total_tokens_pre, input_data.max_tokens, input_data.overlap_tokens
-    )
 
-    # Calculate character targets based on token targets
+    def chunk(self) -> list[ChunkModel]:
+        if not self.text or not self.text.strip():
+            return []
 
-    pos = 0
-    section_idx = 0
+        # Pre-calculate token count for progressive scaling
+        total_tokens_pre = len(self.all_tokens)
 
-    # Pre-encode the entire text to work with tokens directly
-    all_tokens = counter.encode(text)
-    total_tokens = len(all_tokens)
+        # Apply progressive scaling
+        eff_max_tokens, eff_overlap_tokens = _apply_progressive_scaling(
+            total_tokens_pre, self.input_data.max_tokens, self.input_data.overlap_tokens
+        )
 
-    # Map token indices to character offsets for accurate slicing
-    # This is expensive but necessary for exact reconstruction if we want to be safe
-    # Faster approach: Slice tokens, decode back to string.
+        total_tokens = len(self.all_tokens)
+        chunks: list[ChunkModel] = []
+        token_pos = 0
+        section_idx = 0
 
-    token_pos = 0
-    while token_pos < total_tokens:
-        token_end = min(token_pos + eff_max_tokens, total_tokens)
-        chunk_tokens = all_tokens[token_pos:token_end]
+        while token_pos < total_tokens:
+            token_end = min(token_pos + eff_max_tokens, total_tokens)
 
-        chunk_text_str = counter.decode(chunk_tokens)
-        token_count = len(chunk_tokens)
+            if self.input_data.preserve_sentences and token_end < total_tokens:
+                target_char_pos = self.token_map[token_end]
+                boundary_char_pos = find_sentence_boundary(self.text, target_char_pos)
 
-        # If preserving sentences, we might need to shrink the chunk
-        # But tiktoken decoding might not perfectly align with original text chars if lossy
-        # For simplicity and correctness on strict token limits, we rely on the decoded text.
+                boundary_token_idx = -1
+                for i in range(token_end, token_pos, -1):
+                    if self.token_map[i] <= boundary_char_pos:
+                        boundary_token_idx = i
+                        break
 
-        # Recalculate exact char positions in original text if possible,
-        # or just store the decoded text. The implementation below relies on simple decoding.
-        # Note: This might lose perfect alignment with 'quoted_spans' if encoding is lossy,
-        # but protects the embedding model from crashes.
+                if boundary_token_idx > token_pos:
+                    token_end = boundary_token_idx
 
-        # Calculate char_start/end in original text (approximate if duplicates exist, but usually fine)
-        # To be precise, we would need a mapping.
-        # For the fix, ensuring token limit is priority #1.
 
-        # Let's verify token count of the suggested string to be absolutely sure
-        if len(chunk_tokens) > input_data.max_tokens:
-            # Should not happen by definition of slice
-            chunk_tokens = chunk_tokens[: input_data.max_tokens]
-            chunk_text_str = counter.decode(chunk_tokens)
+            char_start = self.token_map[token_pos]
+            char_end = self.token_map[token_end]
 
-        # Skip empty chunks
-        if not chunk_text_str.strip():
-            token_pos += 1  # Advance at least one token
-            continue
+            chunk_text_str = self.text[char_start:char_end]
+            if not chunk_text_str.strip():
+                token_pos += 1
+                continue
 
-        added_chunk = False
+            token_count = self.counter.count(chunk_text_str)
 
-        # For Char Start/End: We need to map back.
-        # Simple heuristic: text.find(chunk, pos).
-        # Since we are iterating forward, search from 'pos' character index.
-        try:
-            # Use the 'pos' char index to track boundaries in original string
-            found_start = text.find(chunk_text_str, pos)
-            if found_start == -1:
-                # Fallback: exact match failed (normalization?), use pos
-                found_start = pos
-
-            found_end = found_start + len(chunk_text_str)
-
-            # Classify
             chunk_type = classify_chunk_type(
-                char_start=found_start,
-                char_end=found_end,
-                quoted_spans=input_data.quoted_spans,
-                type_hint=input_data.chunk_type_hint,
+                char_start=char_start,
+                char_end=char_end,
+                quoted_spans=self.input_data.quoted_spans,
+                type_hint=self.input_data.chunk_type_hint,
             )
 
-            if token_count < input_data.min_tokens and chunks:
+            if token_count < self.input_data.min_tokens and chunks and chunks[-1].chunk_type == chunk_type:
                 last_chunk = chunks[-1]
-                if last_chunk.chunk_type == chunk_type:
-                    combined_text = last_chunk.text + chunk_text_str
-                    combined_tokens = counter.encode(combined_text)
+                combined_text = self.text[last_chunk.char_start:char_end]
+                combined_tokens = self.counter.count(combined_text)
+
+                if combined_tokens <= eff_max_tokens:
+                    last_chunk.char_end = char_end
                     last_chunk.text = combined_text
-                    last_chunk.char_end = found_end
-                    last_chunk.metadata = {
-                        **last_chunk.metadata,
-                        "content_hash": compute_content_hash(combined_text),
-                        "token_count": len(combined_tokens),
-                        "original_length": len(combined_text),
-                    }
-                    pos = found_end
+                    last_chunk.metadata.update({
+                        "content_hash": compute_content_hash(last_chunk.text),
+                        "token_count": combined_tokens,
+                        "original_length": len(last_chunk.text),
+                    })
                 else:
-                    chunks.append(
-                        ChunkModel(
-                            text=chunk_text_str,
-                            section_path=input_data.section_path,
-                            position=section_idx,
-                            char_start=found_start,
-                            char_end=found_end,
-                            chunk_type=chunk_type,
-                            metadata={
-                                "content_hash": compute_content_hash(chunk_text_str),
-                                "token_count": token_count,
-                                "original_length": len(chunk_text_str),
-                            },
-                        )
-                    )
-                    added_chunk = True
-                    pos = found_end
+                    self._add_chunk(chunks, chunk_text_str, token_count, char_start, char_end, chunk_type, section_idx)
+                    section_idx += 1
             else:
-                chunks.append(
-                    ChunkModel(
-                        text=chunk_text_str,
-                        section_path=input_data.section_path,
-                        position=section_idx,
-                        char_start=found_start,
-                        char_end=found_end,
-                        chunk_type=chunk_type,
-                        metadata={
-                            "content_hash": compute_content_hash(chunk_text_str),
-                            "token_count": token_count,
-                            "original_length": len(chunk_text_str),
-                        },
-                    )
-                )
-                added_chunk = True
-                pos = found_end
+                self._add_chunk(chunks, chunk_text_str, token_count, char_start, char_end, chunk_type, section_idx)
+                section_idx += 1
 
-            # Update character 'pos' for next search
-        except Exception as e:
-            logger.warning(f"Chunk metadata alignment failed: {e}")
+            next_token_pos = token_end - eff_overlap_tokens
+            if next_token_pos <= token_pos:
+                next_token_pos = token_pos + 1
+            token_pos = next_token_pos
 
-        # Move forward by (max - overlap) tokens
-        step = eff_max_tokens - eff_overlap_tokens
-        if step < 1:
-            step = 1
+        return chunks
 
-        token_pos += step
-        if added_chunk:
-            section_idx += 1
+    def _add_chunk(self, chunks_list, text, token_count, char_start, char_end, chunk_type, position):
+        chunks_list.append(ChunkModel(
+            text=text,
+            section_path=self.input_data.section_path,
+            position=position,
+            char_start=char_start,
+            char_end=char_end,
+            chunk_type=chunk_type,
+            metadata={
+                "content_hash": compute_content_hash(text),
+                "token_count": token_count,
+                "original_length": len(text),
+            },
+        ))
 
-    return chunks
+def chunk_text(input_data: ChunkingInput) -> list[ChunkModel]:
+    """
+    Legacy wrapper for backward compatibility.
+    Initializes and runs the Chunker class.
+    """
+    chunker = Chunker(input_data)
+    return chunker.chunk()
 
 
 def chunk_with_sections(
@@ -500,7 +463,6 @@ def chunk_with_sections(
 
     for section_path, text in sections:
         quoted_spans = quoted_spans_map.get(section_path, [])
-
         input_data = ChunkingInput(
             text=text,
             section_path=section_path,
@@ -509,7 +471,6 @@ def chunk_with_sections(
             min_tokens=min_tokens,
             overlap_tokens=overlap_tokens,
         )
-
         section_chunks = chunk_text(input_data)
         all_chunks.extend(section_chunks)
 
@@ -543,7 +504,6 @@ def estimate_chunk_count(
     )
 
     effective_step = eff_max_tokens - eff_overlap_tokens
-
     if effective_step <= 0:
         return 1
 
