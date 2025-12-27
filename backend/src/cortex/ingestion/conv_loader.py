@@ -133,6 +133,29 @@ def load_conversation(
         OSError: If directory cannot be accessed
         ValueError: If convo_dir is not a valid Path
     """
+    # SECURITY: Path traversal validation
+    config = get_config()
+    try:
+        # P0-1 FIX: Resolve paths to prevent traversal attacks.
+        # Ensure that the requested conversation directory is a child of the
+        # configured `export_root`, which is the secure base directory for uploads.
+        export_root = Path(config.directories.export_root).resolve()
+        resolved_convo_dir = convo_dir.resolve()
+
+        # Check if the resolved path is within the export_root.
+        # The .parents check and direct equality check handle all cases.
+        if export_root not in resolved_convo_dir.parents and resolved_convo_dir != export_root:
+            logger.error(
+                "Security risk: Attempted to access path '%s' outside of secure root '%s'.",
+                resolved_convo_dir,
+                export_root,
+            )
+            return None
+    except Exception as e:
+        # Catch potential exceptions during path resolution (e.g., file system errors)
+        logger.error("Error during security path validation for %s: %s", convo_dir, e)
+        return None
+
     # Validate input path
     if not convo_dir or not isinstance(convo_dir, Path):
         logger.error("Invalid conversation directory path: %s", convo_dir)
@@ -145,6 +168,7 @@ def load_conversation(
     if not convo_dir.is_dir():
         logger.error("Path is not a directory: %s", convo_dir)
         return None
+
 
     config = get_config().limits
     max_total_attachment_text = (

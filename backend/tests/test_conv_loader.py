@@ -61,12 +61,13 @@ class TestConvLoader(unittest.TestCase):
         mock_process_att.return_value = ([], "")
         mock_load_manifest.return_value = {"id": 1}
 
-        # Mock Config object
-        mock_limits = MagicMock()
-        mock_limits.max_total_attachments_mb = 10
-        mock_limits.max_attachment_text_chars = 1000
-        mock_limits.skip_attachment_over_mb = 5.0
-        mock_config.return_value.limits = mock_limits
+        # Mock Config object to satisfy the new security check
+        mock_config_instance = MagicMock()
+        mock_config_instance.limits.max_total_attachments_mb = 10
+        mock_config_instance.limits.max_attachment_text_chars = 1000
+        mock_config_instance.limits.skip_attachment_over_mb = 5.0
+        mock_config_instance.directories.export_root = str(self.test_dir)
+        mock_config.return_value = mock_config_instance
 
         result = load_conversation(self.convo_dir)
 
@@ -74,14 +75,31 @@ class TestConvLoader(unittest.TestCase):
         self.assertEqual(result["conversation_txt"], "Body")
         self.assertEqual(result["manifest"], {"id": 1})
 
-    def test_load_conversation_invalid_path(self):
+    @patch("cortex.ingestion.conv_loader.get_config")
+    def test_load_conversation_invalid_path(self, mock_config):
+        mock_config.return_value.directories.export_root = "/secure_root"
         result = load_conversation(Path("/non/existent"))
         self.assertIsNone(result)
 
-    def test_load_conversation_not_dir(self):
+    @patch("cortex.ingestion.conv_loader.get_config")
+    def test_load_conversation_not_dir(self, mock_config):
+        mock_config.return_value.directories.export_root = str(self.test_dir)
         f = self.test_dir / "file"
         f.touch()
         result = load_conversation(f)
+        self.assertIsNone(result)
+
+    @patch("cortex.ingestion.conv_loader.get_config")
+    def test_load_conversation_path_traversal(self, mock_config):
+        # Configure the secure root directory
+        secure_root = self.test_dir.resolve()
+        mock_config.return_value.directories.export_root = str(secure_root)
+
+        # Attempt to access a path outside the secure root
+        malicious_path = self.test_dir / ".." / ".."
+        result = load_conversation(malicious_path)
+
+        # Assert that the operation was blocked (returned None)
         self.assertIsNone(result)
 
 
