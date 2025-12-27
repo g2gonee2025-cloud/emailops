@@ -148,6 +148,7 @@ DATA_COMMANDS = [
     ("embeddings", "Embedding management (stats, backfill)"),
     ("s3", "S3/Spaces storage (list, ingest)"),
     ("maintenance", "System maintenance (resolve-entities)"),
+    ("queue", "Job queue management (stats)"),
 ]
 
 COMMON_OPTIONS = [
@@ -1320,11 +1321,13 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     from cortex_cli.cmd_embeddings import setup_embeddings_parser
     from cortex_cli.cmd_maintenance import setup_maintenance_parser
     from cortex_cli.cmd_s3 import setup_s3_parser
+    from cortex_cli.cmd_queue import setup_queue_parser
 
     setup_db_parser(subparsers)
     setup_embeddings_parser(subparsers)
     setup_s3_parser(subparsers)
     setup_maintenance_parser(subparsers)
+    setup_queue_parser(subparsers)
 
     # Parse arguments
     parsed_args = parser.parse_args(args)
