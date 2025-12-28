@@ -841,8 +841,15 @@ def node_retrieve_context(state: dict[str, Any]) -> dict[str, Any]:
             classification=classification,
             k=k,
         )
-        results = tool_kb_search_hybrid(args)
-        return {"retrieval_results": results}
+        # tool_kb_search_hybrid is now async, run it synchronously for LangGraph compatibility
+        result = asyncio.get_event_loop().run_until_complete(
+            tool_kb_search_hybrid(args)
+        )
+        # Handle Result type (Ok/Err)
+        if result.is_ok():
+            return {"retrieval_results": result.unwrap()}
+        else:
+            return {"error": f"Retrieval failed: {result.unwrap_err()}"}
     except Exception as e:
         logger.error(f"Retrieval failed: {e}")
         return {"error": f"Retrieval failed: {e!s}"}

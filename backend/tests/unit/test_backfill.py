@@ -38,8 +38,10 @@ class TestBackfill(unittest.TestCase):
     @patch("cortex.ingestion.backfill.get_openai_client")
     @patch("cortex.ingestion.backfill._get_chunks_without_embeddings")
     @patch("cortex.ingestion.backfill._process_embedding_batch")
+    @patch("cortex.ingestion.backfill._select_best_provider")
     def test_backfill_flow(
         self,
+        mock_select_provider,
         mock_process,
         mock_get_chunks,
         mock_client_factory,
@@ -47,6 +49,9 @@ class TestBackfill(unittest.TestCase):
     ):
         client = MagicMock()
         mock_client_factory.return_value = client
+
+        # Mock provider selection to return None (skip CPU fallback entirely)
+        mock_select_provider.return_value = None
 
         # Determine chunks returned
         chunk = MagicMock()

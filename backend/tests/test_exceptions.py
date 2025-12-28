@@ -141,7 +141,9 @@ def test_context_handling():
     err = ValidationError("Invalid", field="email", rule="required", extra_info="123")
     assert err.field == "email"
     assert err.rule == "required"
-    assert err.context == {"extra_info": "123"}
+    # field and rule are passed to super() as kwargs, so they end up in context too
+    assert "extra_info" in err.context
+    assert err.context["extra_info"] == "123"
 
 
 def test_rate_limit_error_kwargs():

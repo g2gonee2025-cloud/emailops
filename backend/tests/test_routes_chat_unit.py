@@ -93,13 +93,14 @@ class TestRoutesChat:
         resp = await chat_endpoint(chat_req, mock_request)
         assert resp.action == "summarize"
 
-    def test_decide_action_call(self):
+    @pytest.mark.asyncio
+    async def test_decide_action_call(self):
         # Mocking complete_json to verify _decide_action logic without calling LLM
         with patch("cortex.rag_api.routes_chat.complete_json") as mock_complete:
             mock_complete.return_value = {"action": "answer", "reason": "test"}
 
             req = ChatRequest(messages=[ChatMessage(role="user", content="hi")])
-            decision = _decide_action(req, req.messages, "hi")
+            decision = await _decide_action(req, req.messages, "hi")
 
             assert decision.action == "answer"
             assert decision.reason == "test"

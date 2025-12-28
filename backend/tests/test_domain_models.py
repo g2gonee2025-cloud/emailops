@@ -48,27 +48,32 @@ class TestKBSearchInput:
 
 class TestToolSearch:
     @patch("cortex.tools.search.retrieval_tool_kb_search_hybrid")
-    def test_tool_kb_search_hybrid_with_domain_input(self, mock_search):
+    async def test_tool_kb_search_hybrid_with_domain_input(self, mock_search):
+        from unittest.mock import AsyncMock
+
+        from cortex.common.types import Ok
         from cortex.tools.search import tool_kb_search_hybrid
 
         mock_result = MagicMock()
-        mock_search.return_value = mock_result
+        mock_search.return_value = Ok(mock_result)
 
         inp = KBSearchInput(query="test")
-        result = tool_kb_search_hybrid(inp)
+        result = await tool_kb_search_hybrid(inp)
 
         mock_search.assert_called_once()
-        assert result == mock_result
+        assert result.is_ok()
+        assert result.unwrap() == mock_result
 
     @patch("cortex.tools.search.retrieval_tool_kb_search_hybrid")
-    def test_tool_kb_search_hybrid_with_retrieval_input(self, mock_search):
+    async def test_tool_kb_search_hybrid_with_retrieval_input(self, mock_search):
+        from cortex.common.types import Ok
         from cortex.retrieval.hybrid_search import (
             KBSearchInput as RetrievalKBSearchInput,
         )
         from cortex.tools.search import tool_kb_search_hybrid
 
         mock_result = MagicMock()
-        mock_search.return_value = mock_result
+        mock_search.return_value = Ok(mock_result)
 
         inp = RetrievalKBSearchInput(
             tenant_id="default",
@@ -78,7 +83,8 @@ class TestToolSearch:
             fusion_method="rrf",
             filters={},
         )
-        result = tool_kb_search_hybrid(inp)
+        result = await tool_kb_search_hybrid(inp)
 
         mock_search.assert_called_once_with(inp)
-        assert result == mock_result
+        assert result.is_ok()
+        assert result.unwrap() == mock_result

@@ -3,6 +3,7 @@ import uuid
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pytest
 from cortex.ingestion.mailroom import _generate_stable_id, _ingest_conversation
 from cortex.ingestion.models import IngestJobRequest, IngestJobSummary
 
@@ -19,13 +20,16 @@ class TestIdempotency(unittest.TestCase):
         self.assertNotEqual(id1, id3)
         self.assertIsInstance(id1, uuid.UUID)
 
+
+@pytest.mark.asyncio
+class TestIdempotencyAsync:
     @patch("cortex.ingestion.conv_loader.load_conversation")
     @patch("cortex.ingestion.attachments_log.parse_attachments_log")
     @patch("cortex.ingestion.writer.DBWriter")
     @patch("cortex.db.session.SessionLocal")
     @patch("cortex.ingestion.text_preprocessor.get_text_preprocessor")
     @patch("cortex.chunking.chunker.chunk_text")
-    def test_ingest_conversation_stable_ids(
+    async def test_ingest_conversation_stable_ids(
         self,
         mock_chunk,
         mock_preproc,
@@ -75,8 +79,8 @@ class TestIdempotency(unittest.TestCase):
         # Capture the written results
         mock_writer = mock_writer_cls.return_value
 
-        # Run 1
-        _ingest_conversation(convo_dir, job, summary)
+        # Run 1 - await the async function
+        await _ingest_conversation(convo_dir, job, summary)
 
         # Capture IDs from Run 1
         call_args_1 = mock_writer.write_job_results.call_args[0]
@@ -87,8 +91,8 @@ class TestIdempotency(unittest.TestCase):
         chunk_id_1 = results_1["chunks"][0]["chunk_id"]  # Body chunk
         chunk_id_2 = results_1["chunks"][1]["chunk_id"]  # Attachment chunk
 
-        # Run 2 (Same input)
-        _ingest_conversation(convo_dir, job, summary)
+        # Run 2 (Same input) - await the async function
+        await _ingest_conversation(convo_dir, job, summary)
 
         # Capture IDs from Run 2
         call_args_2 = mock_writer.write_job_results.call_args_list[1][0]
@@ -100,7 +104,7 @@ class TestIdempotency(unittest.TestCase):
         chunk_id_4 = results_2["chunks"][1]["chunk_id"]
 
         # Assert assertions
-        self.assertEqual(conv_id_1, conv_id_2, "Conversation ID should be stable")
-        self.assertEqual(att_id_1, att_id_2, "Attachment ID should be stable")
-        self.assertEqual(chunk_id_1, chunk_id_3, "Body Chunk ID should be stable")
-        self.assertEqual(chunk_id_2, chunk_id_4, "Attachment Chunk ID should be stable")
+        assert conv_id_1 == conv_id_2, "Conversation ID should be stable"
+        assert att_id_1 == att_id_2, "Attachment ID should be stable"
+        assert chunk_id_1 == chunk_id_3, "Body Chunk ID should be stable"
+        assert chunk_id_2 == chunk_id_4, "Attachment Chunk ID should be stable"

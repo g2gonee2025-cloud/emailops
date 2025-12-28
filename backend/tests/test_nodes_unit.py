@@ -346,8 +346,10 @@ class TestNodeRetrieveContext:
     """Test node_retrieve_context function."""
 
     @patch("cortex.orchestration.nodes.tool_kb_search_hybrid")
-    def test_node_retrieve_context_success(self, mock_search):
+    @patch("cortex.orchestration.nodes.asyncio.get_event_loop")
+    def test_node_retrieve_context_success(self, mock_loop, mock_search):
         """Test successful retrieval."""
+        from cortex.common.types import Ok
         from cortex.orchestration.nodes import node_retrieve_context
 
         mock_results = SearchResults(
@@ -355,7 +357,8 @@ class TestNodeRetrieveContext:
             results=[SearchResultItem(chunk_id="c1", highlights=["data"], score=0.9)],
             reranker="test",
         )
-        mock_search.return_value = mock_results
+        # Mock the async call mechanism
+        mock_loop.return_value.run_until_complete.return_value = Ok(mock_results)
 
         state = {
             "query": "test query",
@@ -365,13 +368,17 @@ class TestNodeRetrieveContext:
         }
         result = node_retrieve_context(state)
         assert "retrieval_results" in result
+        assert result["retrieval_results"] == mock_results
 
     @patch("cortex.orchestration.nodes.tool_kb_search_hybrid")
-    def test_node_retrieve_context_error(self, mock_search):
+    @patch("cortex.orchestration.nodes.asyncio.get_event_loop")
+    def test_node_retrieve_context_error(self, mock_loop, mock_search):
         """Test retrieval error handling."""
         from cortex.orchestration.nodes import node_retrieve_context
 
-        mock_search.side_effect = Exception("Search failed")
+        mock_loop.return_value.run_until_complete.side_effect = Exception(
+            "Search failed"
+        )
 
         state = {
             "query": "test query",
