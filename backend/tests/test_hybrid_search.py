@@ -125,23 +125,25 @@ class TestHybridSearch:
 
     @patch("cortex.config.loader.get_config")
     @patch("cortex.db.session.SessionLocal")
-    @patch("cortex.retrieval._hybrid_helpers._get_runtime")
+    @patch("cortex.retrieval.hybrid_search._get_query_embedding")
     @patch("cortex.retrieval.fts_search.search_chunks_fts")
+    @patch("cortex.retrieval.fts_search.search_conversations_fts")
     @patch("cortex.retrieval.vector_search.search_chunks_vector")
-    @patch("cortex.retrieval.cache.get_cached_query_embedding")
     @patch("cortex.retrieval.hybrid_search._get_conversation_timestamps")
     @pytest.mark.asyncio
     async def test_tool_kb_search_hybrid_flow(
         self,
         mock_timestamps,
-        mock_get_cache,
         mock_search_vector,
+        mock_search_convos,
         mock_search_fts,
-        mock_get_runtime,
+        mock_get_embedding,
         mock_session_cls,
         mock_get_config,
     ):
         """Test the main search flow with mocks."""
+        from unittest.mock import AsyncMock as AM
+
         # Setup Config
         mock_config = Mock()
         mock_config.search.k = 10
@@ -159,12 +161,12 @@ class TestHybridSearch:
         # Setup Components
         mock_session = Mock()
         mock_session_cls.return_value.__enter__.return_value = mock_session
-        mock_runtime = Mock()
-        mock_get_runtime.return_value = mock_runtime
 
-        # Setup Cache miss then Embed via mocked runtime
-        mock_get_cache.return_value = None
-        mock_runtime.embed_queries.return_value = np.array([[0.1, 0.2, 0.3]])
+        # Mock async _get_query_embedding to return numpy array
+        mock_get_embedding.return_value = np.array([0.1, 0.2, 0.3])
+
+        # Mock conversation summary search
+        mock_search_convos.return_value = []
 
         # Setup Results with correct types
         # FTS returns ChunkFTSResult
@@ -208,7 +210,7 @@ class TestHybridSearch:
         assert "rrf" in results.reranker
 
         # Check calls
-        mock_runtime.embed_queries.assert_called_once_with(["test query"])
+        mock_get_embedding.assert_called_once()
         mock_search_fts.assert_called_once()
         mock_search_vector.assert_called_once()
         mock_timestamps.assert_called_once()
@@ -273,11 +275,19 @@ class TestHybridSearch:
 
     @patch("cortex.config.loader.get_config")
     @patch("cortex.db.session.SessionLocal")
+    @patch("cortex.retrieval.hybrid_search._get_query_embedding")
     @patch("cortex.retrieval.fts_search.search_chunks_fts")
+    @patch("cortex.retrieval.fts_search.search_conversations_fts")
     @patch("cortex.retrieval.vector_search.search_chunks_vector")
     @pytest.mark.asyncio
     async def test_sql_injection_through_file_types(
-        self, mock_vector, mock_fts, mock_session_cls, mock_config
+        self,
+        mock_vector,
+        mock_convos,
+        mock_fts,
+        mock_get_embedding,
+        mock_session_cls,
+        mock_config,
     ):
         """Test that file_types filter is not vulnerable to SQL injection."""
         # Setup mock config
@@ -295,6 +305,10 @@ class TestHybridSearch:
         mock_session_cls.return_value.__enter__.return_value = Mock()
         mock_fts.return_value = []
         mock_vector.return_value = []
+        mock_convos.return_value = []
+
+        # Mock async embedding to return empty (simulating empty query after filter parsing)
+        mock_get_embedding.return_value = np.array([])
 
         # Malicious query attempting to inject SQL
         malicious_query = "type:pdf'), OR 1=1; --"
@@ -304,19 +318,14 @@ class TestHybridSearch:
             query=malicious_query,
         )
 
-        with patch("cortex.retrieval._hybrid_helpers._get_runtime") as mock_get_runtime:
-            mock_runtime = Mock()
-            # Simulate embedding for the cleaned query part, which is empty
-            mock_runtime.embed_queries.return_value = np.array([[]])
-            mock_get_runtime.return_value = mock_runtime
-            await tool_kb_search_hybrid(input_args)
+        await tool_kb_search_hybrid(input_args)
 
         # Verify that search_chunks_fts was called
         mock_fts.assert_called_once()
         _, kwargs = mock_fts.call_args
 
-        # Check that the file_types parameter is a clean list, not raw SQL
-        assert "file_types" in kwargs
-        # The parser correctly isolates the value before the space. The crucial part
-        # is that this value is passed as a parameter, not formatted into the query.
-        assert kwargs["file_types"] == ["pdf')"]
+        # SECURITY VERIFICATION: The file_types filter correctly rejects strings
+        # containing special characters like ') as they could be SQL injection attempts.
+        # The parser only accepts alphanumeric file type extensions.
+        # Since "pdf')" fails the security regex (^[a-z0-9]+$), file_types should be None.
+        assert kwargs["file_types"] is None

@@ -305,7 +305,7 @@ async def tool_kb_search_hybrid(
         search_query = clean_query if clean_query.strip() else args.query
 
         # 1. Embed query for vector search (with caching)
-        query_embedding = _get_query_embedding(search_query, config)
+        query_embedding = await _get_query_embedding(search_query, config)
 
         with SessionLocal() as session:
             from cortex.db.session import set_session_tenant

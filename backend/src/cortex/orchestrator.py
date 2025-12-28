@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import logging
 import time
+import uuid
 from dataclasses import dataclass, field
 
 from cortex.indexer import Indexer
@@ -126,10 +127,10 @@ class PipelineOrchestrator:
         try:
             # Create the job request payload
             job_request = IngestJobRequest(
+                job_id=uuid.uuid4(),
                 tenant_id=self.tenant_id,
                 source_uri=folder_name,
                 source_type="s3",  # Assuming S3 source for now
-                auto_embed=self.auto_embed,
             )
 
             # Get queue and enqueue

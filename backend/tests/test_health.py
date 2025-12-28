@@ -77,11 +77,9 @@ async def test_check_redis_failure(mock_config):
 
 @pytest.mark.asyncio
 async def test_probe_embeddings_success(mock_config):
-    from unittest.mock import AsyncMock as AM
-
     import numpy as np
 
-    with patch("cortex.llm.client.embed_texts", new_callable=AM) as mock_embed:
+    with patch("cortex.llm.client.embed_texts") as mock_embed:
         # Mock numpy array with shape attribute
         mock_result = np.array([[0.1] * 384])
         mock_embed.return_value = mock_result
