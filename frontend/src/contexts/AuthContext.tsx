@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode, useCallback } from 'react';
 import { api } from '../lib/api';
 
 interface AuthContextType {
@@ -12,15 +12,17 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // FIX: Restore reading the token from localStorage to persist sessions.
   const [token, setToken] = useState<string | null>(() => {
     return localStorage.getItem('auth_token');
   });
 
   const isAuthenticated = !!token;
 
+  const logout = useCallback(() => {
+    setToken(null);
+  }, []);
+
   useEffect(() => {
-    // FIX: Restore logic to synchronize the token with localStorage.
     if (token) {
       localStorage.setItem('auth_token', token);
       api.setAuthToken(token);
@@ -29,15 +31,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       api.setAuthToken(null);
     }
 
-    // Keep the new unauthorized event handler.
     const handleUnauthorized = () => {
       logout();
     };
     window.addEventListener('unauthorized', handleUnauthorized);
+
     return () => {
       window.removeEventListener('unauthorized', handleUnauthorized);
     };
-  }, [token]);
+  }, [token, logout]);
 
   const login = async (username: string, password: string) => {
     try {
@@ -47,10 +49,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Login failed:', error);
       throw error;
     }
-  };
-
-  const logout = () => {
-    setToken(null);
   };
 
   return (
