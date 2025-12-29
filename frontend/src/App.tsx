@@ -12,6 +12,7 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { LoginView } from './components/LoginView';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ToastProvider } from './components/ui/Toast';
+import { Button } from './components/ui/Button';
 import { cn } from './lib/utils';
 import {
   LayoutDashboard,
