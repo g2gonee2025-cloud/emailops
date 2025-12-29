@@ -10,7 +10,7 @@ import { ThreadView } from './components/ThreadView';
 import { AdminDashboard } from './components/AdminDashboard';
 import { LoginView } from './components/LoginView';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { ToastProvider } from './components/ui/Toast';
+import { ToastProvider } from './contexts/toastContext';
 import { cn } from './lib/utils';
 import {
   LayoutDashboard,
