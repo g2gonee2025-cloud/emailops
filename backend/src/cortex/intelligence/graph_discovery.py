@@ -3,6 +3,7 @@ Standalone library for discovering graph schema from conversation data.
 """
 
 import asyncio
+import gc
 import logging
 import random
 from collections import Counter
@@ -48,17 +49,21 @@ def discover_graph_schema(*, tenant_id: str, sample_size: int = 20) -> None:
 
         texts = []
         for cid in conv_ids:
-            chunks_stmt = (
-                select(Chunk.text)
-                .where(
-                    Chunk.conversation_id == cid,
-                    Chunk.chunk_type == "message_body",
-                )
-                .order_by(Chunk.position)
+            # Instead of merging all chunks, fetch the first chunk of each file/section
+            # to get better variety (email body + attachments)
+            chunks_stmt = select(Chunk.text, Chunk.chunk_id).where(
+                Chunk.conversation_id == cid,
+                Chunk.chunk_type == "message_body",  # This includes attachment text
+                Chunk.position == 0,  # Only the first chunk of each file/section
             )
-            chunk_texts = db_session.execute(chunks_stmt).scalars().all()
-            full_text = "\n".join(chunk_texts)
-            texts.append(full_text)
+            chunks = db_session.execute(chunks_stmt).all()
+
+            for chunk_text, _ in chunks:
+                if not chunk_text:
+                    continue
+                # Truncate each chunk to 4000 chars as requested
+                truncated = chunk_text[:4000]
+                texts.append(truncated)
         return texts
 
     async def analyze_schema(texts: list[str]):
@@ -68,36 +73,43 @@ def discover_graph_schema(*, tenant_id: str, sample_size: int = 20) -> None:
         relations = Counter()
         entity_names = []
 
-        console.print(
-            f"Starting graph extraction on {len(texts)} texts with asyncio..."
-        )
+        console.print(f"Starting graph extraction on {len(texts)} texts...")
 
-        async def process_text(text: str) -> dict:
-            try:
-                G = await extractor.extract_graph(text)
-                n_types = [
-                    data.get("type", "UNKNOWN") for _, data in G.nodes(data=True)
-                ]
-                rels = [
-                    data.get("relation", "UNKNOWN") for _, _, data in G.edges(data=True)
-                ]
-                names = list(G.nodes())
-                return {"types": n_types, "relations": rels, "names": names}
-            except Exception as e:
-                logger.error(f"Extraction failed: {e}")
-                return {"types": [], "relations": [], "names": []}
+        # Limit concurrency to prevent OOM
+        # Semaphore of 5 allows speedup without memory explosion
+        sem = asyncio.Semaphore(5)
 
-        try:
-            tasks = [process_text(text) for text in texts]
-            results = await asyncio.gather(*tasks)
-        except Exception as e:
-            logger.critical(f"Asyncio gather failed: {e}")
-            return
+        async def _process_with_sem(idx, text):
+            async with sem:
+                console.print(f"  Processing {idx}/{len(texts)}...")
+                try:
+                    G = await extractor.extract_graph(text)
 
-        for res in results:
-            node_types.update(res["types"])
-            relations.update(res["relations"])
-            entity_names.extend(res["names"])
+                    n_types = [
+                        data.get("type", "UNKNOWN") for _, data in G.nodes(data=True)
+                    ]
+                    rels = [
+                        data.get("relation", "UNKNOWN")
+                        for _, _, data in G.edges(data=True)
+                    ]
+                    names = list(G.nodes())
+
+                    # Return results to main loop for aggregation
+                    return n_types, rels, names
+                except Exception as e:
+                    logger.error(f"Extraction failed for text {idx}: {e}")
+                    return [], [], []
+                finally:
+                    # Force garbage collection to prevent memory accumulation
+                    gc.collect()
+
+        tasks = [_process_with_sem(idx, text) for idx, text in enumerate(texts, 1)]
+        results = await asyncio.gather(*tasks)
+
+        for n_types, rels, names in results:
+            node_types.update(n_types)
+            relations.update(rels)
+            entity_names.extend(names)
 
         console.print("\n[bold green]=== SCHEMA DISCOVERY REPORT ===[/bold green]")
 

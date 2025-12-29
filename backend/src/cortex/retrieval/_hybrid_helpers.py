@@ -39,7 +39,7 @@ async def _get_query_embedding(query: str, config: Any) -> np.ndarray | None:
 
         # Use LLMRuntime which has CPU fallback logic
         runtime = await _get_runtime()
-        embedding_array = await runtime.embed_queries([query])
+        embedding_array = runtime.embed_queries([query])
         embedding = embedding_array[0]
 
         # Cache the embedding

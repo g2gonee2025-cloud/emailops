@@ -503,7 +503,9 @@ class VLLMProvider(BaseProvider):
             model_name = kwargs.get("model")
 
             if not model_name:
-                # 1. Try unified config nesting
+                model_name = os.getenv("LLM_MODEL")
+
+            if not model_name:
                 if hasattr(_config, "digitalocean"):
                     do_cfg = _config.digitalocean
                     endpoint_cfg = getattr(do_cfg, "endpoint", None)
@@ -512,9 +514,10 @@ class VLLMProvider(BaseProvider):
 
                 # 2. Fallback to simple field / env
                 if not model_name:
-                    model_name = getattr(_config, "llm_model", None) or os.getenv(
-                        "LLM_MODEL",
-                        os.getenv("OUTLOOKCORTEX_LLM_MODEL", "openai-gpt-oss-120b"),
+                    model_name = (
+                        os.getenv("LLM_MODEL")
+                        or getattr(_config, "llm_model", None)
+                        or os.getenv("OUTLOOKCORTEX_LLM_MODEL", "openai-gpt-oss-120b")
                     )
             response_format = kwargs.get("response_format")
             extra_body = kwargs.get("extra_body")
@@ -755,11 +758,11 @@ class LLMRuntime:
                 from cortex.llm.gguf_provider import GGUFProvider
 
                 gguf = GGUFProvider()
-                if gguf.is_available():
+                if gguf.is_available_sync():
                     logger.info(
                         "Using CPU GGUF for document embedding (embed_mode=cpu)"
                     )
-                    vectors = gguf.embed(documents)
+                    vectors = gguf.embed_sync(documents)
                 else:
                     raise ProviderError(
                         "GGUF model not available but embed_mode=cpu requires it"
@@ -788,11 +791,11 @@ class LLMRuntime:
                         from cortex.llm.gguf_provider import GGUFProvider
 
                         gguf = GGUFProvider()
-                        if gguf.is_available():
+                        if gguf.is_available_sync():
                             logger.info(
                                 "Using CPU GGUF fallback for document embedding"
                             )
-                            vectors = gguf.embed(documents)
+                            vectors = gguf.embed_sync(documents)
                         else:
                             logger.warning("GGUF model not available for CPU fallback")
                     except Exception as fallback_error:
@@ -858,9 +861,9 @@ class LLMRuntime:
                 from cortex.llm.gguf_provider import GGUFProvider
 
                 gguf = GGUFProvider()
-                if gguf.is_available():
+                if gguf.is_available_sync():
                     logger.info("Using CPU GGUF for query embedding (embed_mode=cpu)")
-                    vectors = gguf.embed_queries(queries)
+                    vectors = gguf.embed_sync(queries)
                 else:
                     raise ProviderError(
                         "GGUF model not available but embed_mode=cpu requires it"
@@ -889,9 +892,9 @@ class LLMRuntime:
                         from cortex.llm.gguf_provider import GGUFProvider
 
                         gguf = GGUFProvider()
-                        if gguf.is_available():
+                        if gguf.is_available_sync():
                             logger.info("Using CPU GGUF fallback for query embedding")
-                            vectors = gguf.embed_queries(queries)
+                            vectors = gguf.embed_sync(queries)
                         else:
                             logger.warning("GGUF model not available for CPU fallback")
                     except Exception as fallback_error:

@@ -33,9 +33,10 @@ console = Console() if RICH_AVAILABLE else None
 def cmd_db_stats(args: argparse.Namespace) -> None:
     """Show database statistics."""
     try:
+        from cortex.config.loader import get_config
         from cortex.db.session import engine
-        from cortex_cli.config import get_config
-        from cortex_cli.utils import _colorize
+
+        # from cortex_cli.utils import _colorize  # Removed: use global _colorize
         from sqlalchemy import text
         from sqlalchemy.orm import Session
 

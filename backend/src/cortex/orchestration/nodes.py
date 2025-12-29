@@ -32,6 +32,7 @@ from cortex.domain_models.rag import (
 )
 from cortex.llm.client import complete_json, complete_messages, complete_text
 from cortex.observability import get_logger, trace_operation
+from cortex.orchestration.redacted import Redacted
 from cortex.prompts import (
     SYSTEM_ANSWER_QUESTION,
     SYSTEM_CRITIQUE_EMAIL,
@@ -662,7 +663,7 @@ def node_assemble_context(state: dict[str, Any]) -> dict[str, Any]:
     """
     results = state.get("retrieval_results")
     if not results or not results.results:
-        return {"assembled_context": ""}
+        return {"assembled_context": Redacted("")}
 
     context_parts = []
 
@@ -678,7 +679,7 @@ def node_assemble_context(state: dict[str, Any]) -> dict[str, Any]:
         source_ref = f"Source {i + 1} (ID: {item.chunk_id or item.message_id})"
         context_parts.append(f"[{source_ref}]\n{safe_text}")
 
-    return {"assembled_context": "\n\n".join(context_parts)}
+    return {"assembled_context": Redacted("\n\n".join(context_parts))}
 
 
 def node_query_graph(state: dict[str, Any]) -> dict[str, Any]:
@@ -688,32 +689,35 @@ def node_query_graph(state: dict[str, Any]) -> dict[str, Any]:
     Blueprint §10.1:
     * Inject relational facts into answer context.
     """
-    query = state.get("query", "")
+    query_obj = state.get("query", "")
+    try:
+        query = query_obj.get_secret_value()
+    except AttributeError:
+        query = query_obj
     tenant_id = state.get("tenant_id")
 
     if not query or not tenant_id:
-        return {"graph_context": ""}
-
+        return {"graph_context": Redacted("")}
     mentions = _extract_entity_mentions(query)
     if not mentions:
-        return {"graph_context": ""}
+        return {"graph_context": Redacted("")}
 
     try:
         nodes, edges = _fetch_graph_entities(tenant_id, mentions)
         if not nodes:
-            return {"graph_context": ""}
+            return {"graph_context": Redacted("")}
 
         context_lines = _build_graph_context_lines(nodes, edges)
         if not context_lines:
-            return {"graph_context": ""}
+            return {"graph_context": Redacted("")}
 
         graph_context = "Knowledge Graph Facts:\n" + "\n".join(
             f"- {line}" for line in context_lines
         )
-        return {"graph_context": graph_context}
+        return {"graph_context": Redacted(graph_context)}
     except Exception as e:
         logger.error(f"Graph query failed: {e}")
-        return {"graph_context": ""}
+        return {"graph_context": Redacted("")}
 
 
 def _fetch_graph_entities(
@@ -800,7 +804,12 @@ def node_classify_query(state: dict[str, Any]) -> dict[str, Any]:
     Blueprint §8.1:
     * Determine intent (navigational, semantic, drafting)
     """
-    query = state.get("query", "")
+    query_obj = state.get("query", "")
+    try:
+        query = query_obj.get_secret_value()
+    except AttributeError:
+        query = query_obj
+
     try:
         validate_for_injection(query)
     except ValueError:
@@ -808,8 +817,8 @@ def node_classify_query(state: dict[str, Any]) -> dict[str, Any]:
         return {"error": "Invalid input detected."}
 
     try:
-        args = QueryClassificationInput(query=query, use_llm=True)
-        classification = tool_classify_query(args)
+        # args = QueryClassificationInput(query=query, use_llm=True)
+        classification = tool_classify_query(query=query, use_llm=True)
         return {"classification": classification}
     except Exception as e:
         logger.error(f"Classification failed: {e}")
@@ -820,14 +829,20 @@ def node_classify_query(state: dict[str, Any]) -> dict[str, Any]:
         }
 
 
-def node_retrieve_context(state: dict[str, Any]) -> dict[str, Any]:
+async def node_retrieve_context(state: dict[str, Any]) -> dict[str, Any]:
     """
     Retrieve context based on query and classification.
 
     Blueprint §8.3:
     * Call Hybrid Search
     """
-    query = state.get("query", "")
+    query_obj = state.get("query", "")
+    query = (
+        query_obj.get_secret_value()
+        if hasattr(query_obj, "get_secret_value")
+        else query_obj
+    )
+
     classification = state.get("classification")
     tenant_id = state.get("tenant_id")
     user_id = state.get("user_id")
@@ -841,10 +856,9 @@ def node_retrieve_context(state: dict[str, Any]) -> dict[str, Any]:
             classification=classification,
             k=k,
         )
-        # tool_kb_search_hybrid is now async, run it synchronously for LangGraph compatibility
-        result = asyncio.get_event_loop().run_until_complete(
-            tool_kb_search_hybrid(args)
-        )
+        # tool_kb_search_hybrid is async, await it directly
+        result = await tool_kb_search_hybrid(args)
+
         # Handle Result type (Ok/Err)
         if result.is_ok():
             return {"retrieval_results": result.unwrap()}
@@ -862,9 +876,24 @@ def node_generate_answer(state: dict[str, Any]) -> dict[str, Any]:
     Blueprint §3.6:
     * Generate response with citations
     """
-    query = state.get("query", "")
+    query_obj = state.get("query", "")
+    try:
+        query = query_obj.get_secret_value()
+    except AttributeError:
+        query = query_obj
+
     context = state.get("assembled_context", "")
+    try:
+        context = context.get_secret_value()
+    except AttributeError:
+        pass
+
     graph_context = state.get("graph_context", "")
+    try:
+        graph_context = graph_context.get_secret_value()
+    except AttributeError:
+        pass
+
     combined_context = "\n\n".join(
         part for part in [context, graph_context] if part
     ).strip()

@@ -1037,7 +1037,7 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     from cortex_cli.cmd_backfill import setup_backfill_parser
     from cortex_cli.cmd_db import setup_db_parser
     from cortex_cli.cmd_embeddings import setup_embeddings_parser
-    from cortex_cli.cmd_graph import app as graph_app
+    from cortex_cli.cmd_graph import setup_graph_parser
     from cortex_cli.cmd_grounding import setup_grounding_parser
     from cortex_cli.cmd_login import setup_login_parser
     from cortex_cli.cmd_maintenance import setup_maintenance_parser
@@ -1049,25 +1049,30 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     from rich.console import Console
 
     # A bit of a hack to integrate Typer apps with argparse
-    def setup_typer_command(subparsers, name, app, help_text=""):
+    def setup_typer_command(subparsers, name, typer_app, help_text=""):
         parser = subparsers.add_parser(name, help=help_text, add_help=False)
-        command = typer.main.get_command(app)
 
         def _run_typer(args):
             try:
-                command(args.typer_args, standalone_mode=False)
+                # Pass remaining args to typer app directly
+                typer_args = args.typer_args if args.typer_args else []
+                # Filter out empty strings that argparse.REMAINDER might capture
+                typer_args = [a for a in typer_args if a]
+                typer_app(typer_args, standalone_mode=False)
             except typer.Exit as e:
                 if e.code != 0:
                     console = Console()
                     console.print(f"[bold red]Error:[/bold red] {e}")
-                # Do not exit process
+            except SystemExit:
+                # Handle typer's SystemExit for --help
+                pass
             except Exception as e:
                 console = Console()
                 console.print(f"[bold red]An unexpected error occurred:[/bold red] {e}")
 
         parser.set_defaults(func=lambda args: _run_typer(args))
-        # This is a simple way to pass through args. A more robust solution might be needed.
-        parser.add_argument("typer_args", nargs="*")
+        # Capture all remaining arguments for the typer subcommand
+        parser.add_argument("typer_args", nargs=argparse.REMAINDER)
 
     from cortex_cli.cmd_patch import setup_patch_parser
     from cortex_cli.cmd_schema import setup_schema_parser
@@ -1083,9 +1088,7 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     setup_safety_parser(subparsers)
     setup_queue_parser(subparsers)
     setup_login_parser(subparsers)
-    setup_typer_command(
-        subparsers, "graph", graph_app, help_text="Knowledge Graph commands"
-    )
+    setup_graph_parser(subparsers)
     setup_patch_parser(subparsers)
     setup_schema_parser(subparsers)
 

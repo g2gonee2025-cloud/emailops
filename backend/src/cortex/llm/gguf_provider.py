@@ -149,3 +149,64 @@ class GGUFProvider:
             return resp.status_code == 200
         except Exception:
             return False
+
+    def embed_sync(self, texts: list[str]) -> np.ndarray:
+        """Synchronous version of embed() using httpx.Client."""
+        if not texts:
+            return np.empty((0, self._expected_dim), dtype=np.float32)
+
+        url = f"{self._endpoint.rstrip('/')}/embedding"
+
+        # Use a fresh sync client for simplicity in fallback scenarios
+        with httpx.Client(timeout=self._timeout) as client:
+            embeddings = []
+            for text in texts:
+                if not text or not text.strip():
+                    embeddings.append(np.zeros(self._expected_dim, dtype=np.float32))
+                    continue
+
+                # Truncate long texts
+                max_chars = 512 * 4
+                if len(text) > max_chars:
+                    text = text[:max_chars]
+
+                try:
+                    resp = client.post(
+                        url,
+                        json={"content": text},
+                        headers={"Content-Type": "application/json"},
+                    )
+                    resp.raise_for_status()
+
+                    data = resp.json()
+                    if isinstance(data, list) and len(data) > 0:
+                        emb = data[0].get("embedding", [[]])[0]
+                    else:
+                        emb = data.get("embedding", [])
+
+                    emb_array = np.array(emb, dtype=np.float32)
+
+                    # L2 normalize
+                    norm = np.linalg.norm(emb_array)
+                    if norm > 0:
+                        emb_array = emb_array / norm
+
+                    embeddings.append(emb_array)
+                except Exception as e:
+                    logger.error("GGUF sync embedding failed: %s", type(e).__name__)
+                    raise e
+
+            return (
+                np.stack(embeddings)
+                if embeddings
+                else np.empty((0, self._expected_dim), dtype=np.float32)
+            )
+
+    def is_available_sync(self) -> bool:
+        """Synchronous check if the llama-server is available."""
+        try:
+            with httpx.Client(timeout=5.0) as client:
+                resp = client.get(f"{self._endpoint.rstrip('/')}/health")
+                return resp.status_code == 200
+        except Exception:
+            return False

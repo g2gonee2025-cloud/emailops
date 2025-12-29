@@ -118,7 +118,7 @@ class QueryExpander:
         try:
             # User requested GPT-OSS-120B for fallback intelligence
             response = self._llm_runtime.complete_text(
-                prompt, temperature=0.0, max_tokens=50, model="gpt-oss-120b"
+                prompt, temperature=0.0, max_tokens=50
             )
             # Parse comma-separated response
             synonyms = {

@@ -463,7 +463,7 @@ def main() -> None:
 
     # Default: API Mode
     api_url = _get_api_url(config)
-    doctor_endpoint = f"{api_url}/admin/doctor"
+    doctor_endpoint = f"{api_url}/api/v1/admin/doctor"
 
     if not args.json:
         print(f"Contacting Cortex backend at {_c(api_url, 'cyan')}...")

@@ -38,15 +38,9 @@ from langgraph.graph import END, StateGraph
 logger = logging.getLogger(__name__)
 
 
-class ErrorState(Protocol):
-    """Protocol for states that have an 'error' field."""
-
-    error: str | None
-
-
-def _check_error(state: ErrorState) -> str:
+def _check_error(state: dict) -> str:
     """Check if state has error and route accordingly."""
-    if state.error:
+    if state.get("error"):
         return "handle_error"
     return "continue"
 
@@ -63,7 +57,7 @@ def _route_by_classification(state: AnswerQuestionState) -> str:
     # Route based on classification type
     # NOTE: Currently all valid classifications use retrieval, but structure
     # allows future specialization (e.g., navigational -> direct lookup)
-    if classification.query_type == "error":
+    if classification.type == "error":
         return "handle_error"
 
     return "retrieve"

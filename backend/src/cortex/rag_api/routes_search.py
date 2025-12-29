@@ -52,7 +52,12 @@ async def search_endpoint(
         )
 
         # Call retrieval tool
-        results = await tool_kb_search_hybrid(tool_input)
+        result_wrapper = await tool_kb_search_hybrid(tool_input)
+
+        if result_wrapper.is_err():
+            raise CortexError(str(result_wrapper.unwrap_err()))
+
+        results = result_wrapper.unwrap()
 
         query_time_ms = (time.perf_counter() - start_time) * 1000
 
@@ -60,6 +65,9 @@ async def search_endpoint(
         try:
             input_str = request.model_dump_json()
             input_hash = hashlib.sha256(input_str.encode()).hexdigest()
+
+            # Safely get result count
+            res_count = len(results.results) if results and results.results else 0
 
             log_audit_event(
                 tenant_id=tenant_id_ctx.get(),
@@ -72,9 +80,7 @@ async def search_endpoint(
                     "query_hash": hashlib.sha256(
                         request.query.encode()
                     ).hexdigest(),  # PII mask
-                    "result_count": (
-                        len(results.results) if hasattr(results, "results") else 0
-                    ),
+                    "result_count": res_count,
                     "query_time_ms": query_time_ms,
                 },
             )

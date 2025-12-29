@@ -15,7 +15,6 @@ from typing import Any
 
 import networkx as nx
 from cortex.llm.async_runtime import AsyncLLMRuntime
-from thefuzz import fuzz, process
 
 # Constants
 DEFAULT_CHUNK_SIZE = 8000
@@ -238,9 +237,11 @@ class GraphExtractor:
 
         logger.info(f"Extracting graph from {len(text)} chars (Chunks: {len(chunks)})")
 
-        # 2. Extract Sub-Graphs concurrently
-        tasks = [self._process_chunk(chunk, i) for i, chunk in enumerate(chunks)]
-        sub_graphs = await asyncio.gather(*tasks)
+        # 2. Extract Sub-Graphs sequentially to prevent OOM
+        sub_graphs = []
+        for i, chunk in enumerate(chunks):
+            sub_graph = await self._process_chunk(chunk, i)
+            sub_graphs.append(sub_graph)
 
         # 3. Merge Graphs
         # Run the CPU-bound merge operation in a thread pool to avoid blocking the event loop.
@@ -362,34 +363,24 @@ class GraphExtractor:
                     existing_props.update(new_props)
                     existing_attrs["properties"] = existing_props
 
-        # 2. Efficiently cluster nodes using a blocking strategy to avoid O(N^2)
+        # 2. Group nodes by normalized name (case-insensitive) - O(n) instead of O(n²)
         node_names = list(all_nodes.keys())
-        blocks = defaultdict(list)
+        canonical_map: dict[str, str] = {}  # lowercase -> canonical (longest version)
+
         for name in node_names:
-            # Use a simple blocking key (e.g., first word, case-insensitive)
-            key = name.split()[0].lower() if name else ""
-            blocks[key].append(name)
+            normalized = name.strip().lower()
+            if normalized not in canonical_map:
+                canonical_map[normalized] = name
+            else:
+                # Keep the longer version as canonical
+                if len(name) > len(canonical_map[normalized]):
+                    canonical_map[normalized] = name
 
-        node_map = {}  # Maps each node to its canonical representative
-        processed_nodes = set()
-
-        for block_nodes in blocks.values():
-            for node in block_nodes:
-                if node in processed_nodes:
-                    continue
-
-                # Find similar nodes only within the smaller block
-                matches = process.extractBests(node, block_nodes, score_cutoff=80)
-                if not matches:
-                    processed_nodes.add(node)
-                    node_map[node] = node
-                    continue
-
-                cluster = [match[0] for match in matches]
-                canonical = max(cluster, key=len)
-                for member in cluster:
-                    node_map[member] = canonical
-                    processed_nodes.add(member)
+        # Build node_map: each node -> its canonical version
+        node_map = {}
+        for name in node_names:
+            normalized = name.strip().lower()
+            node_map[name] = canonical_map[normalized]
 
         # 3. Build the final graph
         final_G = nx.DiGraph()
