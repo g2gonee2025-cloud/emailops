@@ -185,29 +185,7 @@ export class ApiError extends Error {
   }
 }
 
-<<<<<<< HEAD
 const getHeaders = (): HeadersInit => {
-=======
-const handleResponse = async <T>(response: Response): Promise<T> => {
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({ detail: 'Unknown error' }));
-    const apiError = new ApiError(response.status, response.statusText, errorBody.detail);
-
-    if (response.status === 401 && !response.url.includes('login')) {
-      // Dispatch a custom event for unauthorized access to be handled by AuthContext
-      window.dispatchEvent(new CustomEvent('cortex-unauthorized'));
-    } else if (response.status !== 401) {
-      // For other errors, dispatch a global event to be caught by the ToastProvider
-      window.dispatchEvent(new CustomEvent('api:error', { detail: apiError }));
-    }
-
-    throw apiError;
-  }
-  return response.json();
-};
-
-const getHeaders = (includeAuth = true): HeadersInit => {
->>>>>>> 497e17f7 (feat(frontend): implement global API error toasts)
   const headers: HeadersInit = { 'Content-Type': 'application/json' };
   const authToken = localStorage.getItem('auth_token');
   if (authToken) {
@@ -228,30 +206,33 @@ export const request = async <T>(
 
   try {
     const response = await fetch(endpoint, config);
-
-    if (!response.ok) {
-      if (response.status === 401 && !response.url.includes('login')) {
-        window.dispatchEvent(new CustomEvent('cortex-unauthorized'));
-      }
-      let errorDetails;
-      try {
-        errorDetails = await response.json();
-      } catch (e) {
-        errorDetails = { detail: response.statusText };
-      }
-      throw new ApiError(
-        `API request failed: ${response.status}`,
-        response.status,
-        errorDetails,
-      );
+    if (response.ok) {
+      return response.status === 204 ? ({} as T) : ((await response.json()) as T);
     }
 
-    if (response.status === 204) {
-      return {} as T;
+    // Handle non-OK responses
+    let errorDetails;
+    try {
+      errorDetails = await response.json();
+    } catch (e) {
+      errorDetails = { detail: response.statusText };
     }
 
-    return (await response.json()) as T;
+    const apiError = new ApiError(
+      `API request failed: ${response.status}`,
+      response.status,
+      errorDetails,
+    );
+
+    if (response.status === 401 && !response.url.includes('login')) {
+      window.dispatchEvent(new CustomEvent('cortex-unauthorized'));
+    } else if (response.status !== 401) {
+      window.dispatchEvent(new CustomEvent('api:error', { detail: apiError }));
+    }
+
+    throw apiError;
   } catch (error) {
+    // Re-throw ApiError to be handled by the caller (e.g., react-query)
     if (error instanceof ApiError) {
       throw error;
     }
@@ -406,20 +387,6 @@ export const api = {
   // Auth Endpoints
   // ---------------------------------------------------------------------------
 
-<<<<<<< HEAD
-  login: (username: string, password: string): Promise<LoginResponse> => {
-    return request<LoginResponse>(
-      '/api/v1/auth/login',
-      {
-        method: 'POST',
-        body: JSON.stringify({ username, password }),
-      },
-      false, // Do not include auth token for login request
-    );
-  },
-
-=======
->>>>>>> 9da26b95 (feat(frontend): Update AuthContext to use generic request handler)
   setAuthToken: (token: string | null) => {
     if (token) {
       localStorage.setItem('auth_token', token);

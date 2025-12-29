@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { type ApiError } from '../lib/api';
+import { logger } from '../lib/logger';
 import { ToastContainer } from '../components/ui/Toast';
 
 // =============================================================================
@@ -70,11 +71,26 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       const customEvent = event as CustomEvent<ApiError>;
       const error = customEvent.detail;
 
-      console.error('Global API Error:', error);
+      // Log the full error for debugging
+      logger.error('Global API Error Event', {
+        name: error.name,
+        message: error.message,
+        status: error.status,
+        details: error.details,
+      });
 
       const isDev = import.meta.env.DEV;
-      const message = error.detail || (isDev ? error.message : 'An unexpected API error occurred.');
-      const details = isDev ? `[${error.status}] ${error.statusText}` : undefined;
+
+      // Extract a user-friendly message from the API error details
+      let message = 'An unexpected API error occurred.';
+      if (typeof error.details?.detail === 'string') {
+        message = error.details.detail;
+      } else if (isDev) {
+        message = error.message; // Fallback to raw error message in dev
+      }
+
+      // Extract additional details for display in dev mode
+      const details = isDev ? `[${error.status}] ${error.message}` : undefined;
 
       addToast({ message, details, type: 'error', duration: 10000 });
     };

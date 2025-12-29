@@ -5,6 +5,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import { ToastProvider, useToast } from './toastContext';
 import { ApiError } from '../lib/api';
+import { logger } from '../lib/logger';
 
 // A simple component to trigger toasts
 function TestComponent() {
@@ -49,32 +50,41 @@ describe('ToastProvider', () => {
     expect(screen.getByText('Error details')).toBeInTheDocument();
   });
 
-  it('should handle global api:error event', () => {
+  it('should handle global api:error event and show a toast', async () => {
     render(
       <ToastProvider>
         <div />
       </ToastProvider>,
     );
 
-    const error = new ApiError(500, 'Internal Server Error', 'Something broke');
+    const errorDetails = { detail: 'Something broke on the server.' };
+    const error = new ApiError('Internal Server Error', 500, errorDetails);
 
-    // Mock console.error to avoid polluting test output
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    // Spy on the logger to ensure it's called
+    const loggerSpy = vi.spyOn(logger, 'error').mockImplementation(() => {});
 
+    // Dispatch the custom event
     act(() => {
       window.dispatchEvent(new CustomEvent('api:error', { detail: error }));
     });
 
-    expect(screen.getByText(error.detail!)).toBeInTheDocument();
+    // Verify the toast is displayed with the correct content
+    expect(await screen.findByText(errorDetails.detail)).toBeInTheDocument();
 
-    // In dev, it should also show status and statusText
+    // In dev, it should also show status and message
     const isDev = import.meta.env.DEV;
     if (isDev) {
-      expect(screen.getByText(`[${error.status}] ${error.statusText}`)).toBeInTheDocument();
+      expect(await screen.findByText(`[${error.status}] ${error.message}`)).toBeInTheDocument();
     }
 
-    expect(consoleErrorSpy).toHaveBeenCalledWith('Global API Error:', error);
+    // Verify the logger was called
+    expect(loggerSpy).toHaveBeenCalledWith('Global API Error Event', {
+      name: 'ApiError',
+      message: error.message,
+      status: error.status,
+      details: errorDetails,
+    });
 
-    consoleErrorSpy.mockRestore();
+    loggerSpy.mockRestore();
   });
 });
