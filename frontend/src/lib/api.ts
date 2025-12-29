@@ -185,7 +185,29 @@ export class ApiError extends Error {
   }
 }
 
+<<<<<<< HEAD
 const getHeaders = (): HeadersInit => {
+=======
+const handleResponse = async <T>(response: Response): Promise<T> => {
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({ detail: 'Unknown error' }));
+    const apiError = new ApiError(response.status, response.statusText, errorBody.detail);
+
+    if (response.status === 401 && !response.url.includes('login')) {
+      // Dispatch a custom event for unauthorized access to be handled by AuthContext
+      window.dispatchEvent(new CustomEvent('cortex-unauthorized'));
+    } else if (response.status !== 401) {
+      // For other errors, dispatch a global event to be caught by the ToastProvider
+      window.dispatchEvent(new CustomEvent('api:error', { detail: apiError }));
+    }
+
+    throw apiError;
+  }
+  return response.json();
+};
+
+const getHeaders = (includeAuth = true): HeadersInit => {
+>>>>>>> 497e17f7 (feat(frontend): implement global API error toasts)
   const headers: HeadersInit = { 'Content-Type': 'application/json' };
   const authToken = localStorage.getItem('auth_token');
   if (authToken) {
