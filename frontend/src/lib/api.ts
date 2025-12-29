@@ -168,6 +168,17 @@ export interface LoginResponse {
   expires_in: number;
 }
 
+export interface DashboardMetrics {
+  total_conversations: number;
+  total_threads: number;
+  total_messages: number;
+  total_documents: number;
+  total_chunks: number;
+  total_embeddings: number;
+  storage_used_gb: number;
+  avg_response_time_ms: number;
+}
+
 // =============================================================================
 // API Client
 // =============================================================================
@@ -301,6 +312,29 @@ export const api = {
       logger.error('Failed to fetch config:', error);
       return null;
     }
+  },
+
+  // ---------------------------------------------------------------------------
+  // Metrics Endpoints
+  // ---------------------------------------------------------------------------
+  getDashboardMetrics: async (): Promise<DashboardMetrics> => {
+    // In a real application, this would fetch from a backend endpoint.
+    // For now, we'll return mock data.
+    logger.info('Fetching dashboard metrics...');
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          total_conversations: 1256,
+          total_threads: 3421,
+          total_messages: 15890,
+          total_documents: 2345,
+          total_chunks: 98453,
+          total_embeddings: 98453,
+          storage_used_gb: 15.7,
+          avg_response_time_ms: 234,
+        });
+      }, 500);
+    });
   },
 
   // ---------------------------------------------------------------------------
