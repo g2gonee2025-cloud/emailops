@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, type ReactNode, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../lib/api';
+import { request, ApiError, api } from '@/lib/api';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -47,10 +47,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (username: string, password: string) => {
     try {
-      const response = await api.login(username, password);
+      const response = await request<{ access_token: string }>('/api/v1/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          username,
+          password,
+        }),
+      });
       setToken(response.access_token);
     } catch (error) {
-      // Re-throw the error to be handled by the UI component
+      if (error instanceof ApiError && error.status === 401) {
+        logout();
+        throw new Error('Invalid credentials');
+      }
+      // Re-throw other errors to be handled by the UI component
       console.error('Login failed:', error);
       throw error;
     }

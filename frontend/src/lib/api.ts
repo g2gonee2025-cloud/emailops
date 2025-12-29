@@ -384,6 +384,7 @@ export const api = {
   // Auth Endpoints
   // ---------------------------------------------------------------------------
 
+<<<<<<< HEAD
   login: (username: string, password: string): Promise<LoginResponse> => {
     return request<LoginResponse>(
       '/api/v1/auth/login',
@@ -395,6 +396,8 @@ export const api = {
     );
   },
 
+=======
+>>>>>>> 9da26b95 (feat(frontend): Update AuthContext to use generic request handler)
   setAuthToken: (token: string | null) => {
     if (token) {
       localStorage.setItem('auth_token', token);
