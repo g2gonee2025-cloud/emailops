@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import GlassCard from './ui/GlassCard';
 import { StatusIndicator } from './ui/StatusIndicator';
+import { Badge } from './ui/Badge';
 import { api } from '../lib/api';
 import type { HealthResponse } from '../lib/api';
 import { cn } from '../lib/utils';
@@ -74,6 +75,16 @@ export function DashboardView() {
           </GlassCard>
         </div>
       </header>
+
+      {/* Badge Showcase */}
+      <GlassCard>
+        <div className="p-4 flex items-center justify-around">
+            <Badge>Default</Badge>
+            <Badge variant="secondary">Secondary</Badge>
+            <Badge variant="destructive">Destructive</Badge>
+            <Badge variant="outline">Outline</Badge>
+        </div>
+      </GlassCard>
 
       {/* KPI Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
