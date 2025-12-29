@@ -1,57 +1,64 @@
 import { cn } from '../../lib/utils';
+import * as React from 'react';
 
-interface SkeletonProps {
-  className?: string;
-  containerClassName?: string; // Add for styling the wrapper
+// The main `className` prop from HTMLAttributes will apply to the container.
+// `lineClassName` is for styling the individual pulsing lines.
+export interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
+  lineClassName?: string;
   variant?: 'text' | 'circular' | 'rectangular';
   width?: string | number;
   height?: string | number;
   lines?: number;
 }
 
-export function Skeleton({
-  className,
-  containerClassName, // Use new prop
-  variant = 'rectangular',
-  width,
-  height,
-  lines = 1,
-}: SkeletonProps) {
-  const baseStyles = 'animate-pulse bg-white/10 rounded';
+export const Skeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(
+  (
+    {
+      className,
+      lineClassName,
+      variant = 'rectangular',
+      width,
+      height,
+      lines = 1,
+      ...props
+    },
+    ref
+  ) => {
+    const baseStyles = 'animate-pulse bg-white/10 rounded';
 
-  const variantStyles = {
-    text: 'h-4',
-    circular: 'rounded-full',
-    rectangular: 'rounded-lg',
-  };
+    const variantStyles = {
+      text: 'h-4',
+      circular: 'rounded-full',
+      rectangular: 'rounded-lg',
+    };
 
-  const style: React.CSSProperties = {};
-  if (width) style.width = typeof width === 'number' ? `${width}px` : width;
-  if (height) style.height = typeof height === 'number' ? `${height}px` : height;
+    const style: React.CSSProperties = {};
+    if (width) style.width = typeof width === 'number' ? `${width}px` : width;
+    if (height) style.height = typeof height === 'number' ? `${height}px` : height;
 
-  return (
-    <div
-      className={cn(lines > 1 && 'space-y-2', containerClassName)} // Apply container class here
-      role="status"
-      aria-label="Loading..."
-    >
-      {Array.from({ length: lines }).map((_, i) => (
-        <div
-          key={i}
-          className={cn(
-            baseStyles,
-            variantStyles[variant],
-            className // Original className styles the line
-          )}
-          style={{
-            ...style,
-            width: lines > 1 && i === lines - 1 ? '75%' : style.width,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
+    return (
+      <div
+        ref={ref}
+        className={cn(lines > 1 && 'space-y-2', className)}
+        role="status"
+        aria-label="Loading..."
+        {...props}
+      >
+        {Array.from({ length: lines }).map((_, i) => (
+          <div
+            key={i}
+            className={cn(baseStyles, variantStyles[variant], lineClassName)}
+            style={{
+              ...style,
+              width: lines > 1 && i === lines - 1 ? '75%' : style.width,
+            }}
+          />
+        ))}
+      </div>
+    );
+  }
+);
+Skeleton.displayName = 'Skeleton';
 
 // Pre-built skeleton patterns
 export function SkeletonCard({ className }: { className?: string }) {
