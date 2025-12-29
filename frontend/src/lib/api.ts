@@ -10,6 +10,18 @@ import { logger } from './logger';
 // Type Definitions
 // =============================================================================
 
+export class ApiError extends Error {
+  status: number;
+  details?: Record<string, unknown>;
+
+  constructor(status: number, message: string, details?: Record<string, unknown>) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.details = details;
+  }
+}
+
 export interface SearchResult {
   chunk_id: string;
   conversation_id: string;
@@ -175,17 +187,6 @@ export interface LoginResponse {
 // Auth token storage
 let authToken: string | null = null;
 
-const handleResponse = async <T>(response: Response): Promise<T> => {
-  if (response.status === 401) {
-    window.dispatchEvent(new Event('unauthorized'));
-  }
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
-    throw new Error(error.detail || `HTTP ${response.status}`);
-  }
-  return response.json();
-};
-
 const getHeaders = (): HeadersInit => {
   const headers: HeadersInit = { 'Content-Type': 'application/json' };
   if (authToken) {
@@ -194,157 +195,187 @@ const getHeaders = (): HeadersInit => {
   return headers;
 };
 
+interface RequestOptions extends Omit<RequestInit, 'body'> {
+  body?: unknown;
+}
+
+const request = async <T>(url: string, options: RequestOptions = {}): Promise<T> => {
+  const { body, ...fetchOptions } = options;
+
+  const headers = getHeaders();
+
+  try {
+    const response = await fetch(url, {
+      ...fetchOptions,
+      headers: {
+        ...headers,
+        ...fetchOptions.headers,
+      },
+      body: body ? JSON.stringify(body) : undefined,
+      signal: fetchOptions.signal,
+    });
+
+    if (response.status === 401) {
+      window.dispatchEvent(new Event('unauthorized'));
+    }
+
+    if (!response.ok) {
+      let errorData: { detail?: string } | null = null;
+      try {
+        errorData = await response.json();
+      } catch (e) {
+        // Response is not JSON or empty
+      }
+      throw new ApiError(
+        response.status,
+        errorData?.detail || response.statusText || 'An unknown error occurred',
+        errorData ?? undefined
+      );
+    }
+
+    // Handle 204 No Content
+    if (response.status === 204) {
+      return undefined as T;
+    }
+
+    const responseText = await response.text();
+    try {
+        return JSON.parse(responseText);
+    } catch (e) {
+        throw new ApiError(500, "Failed to parse JSON response", { response: responseText });
+    }
+
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+
+    // Avoid logging sensitive data from the request body
+    const { body: _, ...loggedOptions } = options;
+    logger.error('API request failed unexpectedly', { url, options: loggedOptions, error });
+
+    throw new ApiError(0, (error as Error).message || 'A network error occurred');
+  }
+};
+
 export const api = {
   // ---------------------------------------------------------------------------
   // System Endpoints
   // ---------------------------------------------------------------------------
 
-  fetchHealth: async (): Promise<HealthResponse | null> => {
-    try {
-      const response = await fetch('/health');
-      return handleResponse<HealthResponse>(response);
-    } catch (error) {
-      logger.error('Failed to fetch health:', error);
-      return null;
-    }
+  fetchHealth: (signal?: AbortSignal) => {
+    return request<HealthResponse>('/health', { signal });
   },
 
-  fetchVersion: async (): Promise<Record<string, string> | null> => {
-    try {
-      const response = await fetch('/version');
-      return handleResponse<Record<string, string>>(response);
-    } catch (error) {
-      logger.error('Failed to fetch version:', error);
-      return null;
-    }
+  fetchVersion: (signal?: AbortSignal) => {
+    return request<Record<string, string>>('/version', { signal });
   },
 
   // ---------------------------------------------------------------------------
   // RAG Endpoints
   // ---------------------------------------------------------------------------
 
-  search: async (query: string, k = 10, filters: Record<string, unknown> = {}): Promise<SearchResponse> => {
-    const response = await fetch('/api/v1/search', {
+  search: (query: string, k = 10, filters: Record<string, unknown> = {}, signal?: AbortSignal) => {
+    return request<SearchResponse>('/api/v1/search', {
       method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ query, k, filters }),
+      body: { query, k, filters },
+      signal,
     });
-    return handleResponse<SearchResponse>(response);
   },
 
-  ask: async (query: string, threadId?: string, k = 10): Promise<AnswerResponse> => {
-    const response = await fetch('/api/v1/answer', {
+  ask: (query: string, threadId?: string, k = 10, signal?: AbortSignal) => {
+    return request<AnswerResponse>('/api/v1/answer', {
       method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ query, thread_id: threadId, k }),
+      body: { query, thread_id: threadId, k },
+      signal,
     });
-    return handleResponse<AnswerResponse>(response);
   },
 
-  chat: async (messages: ChatMessage[], threadId?: string, k = 10): Promise<ChatResponse> => {
-    const response = await fetch('/api/v1/chat', {
+  chat: (messages: ChatMessage[], threadId?: string, k = 10, signal?: AbortSignal) => {
+    return request<ChatResponse>('/api/v1/chat', {
       method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ messages, thread_id: threadId, k }),
+      body: { messages, thread_id: threadId, k },
+      signal,
     });
-    return handleResponse<ChatResponse>(response);
   },
 
   // ---------------------------------------------------------------------------
   // Ingestion Endpoints
   // ---------------------------------------------------------------------------
 
-  listS3Folders: async (prefix = 'Outlook/', limit = 100): Promise<ListS3FoldersResponse> => {
+  listS3Folders: (prefix = 'Outlook/', limit = 100, signal?: AbortSignal) => {
     const params = new URLSearchParams({ prefix, limit: String(limit) });
-    const response = await fetch(`/api/v1/ingest/list?${params}`);
-    return handleResponse<ListS3FoldersResponse>(response);
+    return request<ListS3FoldersResponse>(`/api/v1/ingest/list?${params}`, { signal });
   },
 
-  startIngestion: async (prefix = 'Outlook/', limit?: number, dryRun = false): Promise<IngestJobResponse> => {
-    const response = await fetch('/api/v1/ingest/s3', {
+  startIngestion: (prefix = 'Outlook/', limit?: number, dryRun = false, signal?: AbortSignal) => {
+    return request<IngestJobResponse>('/api/v1/ingest/s3', {
       method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ prefix, limit, dry_run: dryRun }),
+      body: { prefix, limit, dry_run: dryRun },
+      signal,
     });
-    return handleResponse<IngestJobResponse>(response);
   },
 
-  getIngestionStatus: async (jobId: string): Promise<IngestStatusResponse> => {
-    const response = await fetch(`/api/v1/ingest/status/${jobId}`);
-    return handleResponse<IngestStatusResponse>(response);
+  getIngestionStatus: (jobId: string, signal?: AbortSignal) => {
+    return request<IngestStatusResponse>(`/api/v1/ingest/status/${jobId}`, { signal });
   },
 
   // ---------------------------------------------------------------------------
   // Admin Endpoints
   // ---------------------------------------------------------------------------
 
-  runDoctor: async (): Promise<DoctorReport> => {
-    const response = await fetch('/api/v1/admin/doctor', { method: 'POST' });
-    return handleResponse<DoctorReport>(response);
+  runDoctor: (signal?: AbortSignal) => {
+    return request<DoctorReport>('/api/v1/admin/doctor', { method: 'POST', signal });
   },
 
-  fetchStatus: async (): Promise<SystemStatus | null> => {
-    try {
-      const response = await fetch('/api/v1/admin/status');
-      return handleResponse<SystemStatus>(response);
-    } catch (error) {
-      logger.error('Failed to fetch status:', error);
-      return null;
-    }
+  fetchStatus: (signal?: AbortSignal) => {
+    return request<SystemStatus>('/api/v1/admin/status', { signal });
   },
 
-  fetchConfig: async (): Promise<SystemConfig | null> => {
-    try {
-      const response = await fetch('/api/v1/admin/config');
-      return handleResponse<SystemConfig>(response);
-    } catch (error) {
-      logger.error('Failed to fetch config:', error);
-      return null;
-    }
+  fetchConfig: (signal?: AbortSignal) => {
+    return request<SystemConfig>('/api/v1/admin/config', { signal });
   },
 
   // ---------------------------------------------------------------------------
   // Draft & Summarize Endpoints
   // ---------------------------------------------------------------------------
 
-  draftEmail: async (instruction: string, threadId?: string, tone = 'professional'): Promise<DraftEmailResponse> => {
-    const response = await fetch('/api/v1/draft', {
+  draftEmail: (instruction: string, threadId?: string, tone = 'professional', signal?: AbortSignal) => {
+    return request<DraftEmailResponse>('/api/v1/draft', {
       method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ instruction, thread_id: threadId, tone }),
+      body: { instruction, thread_id: threadId, tone },
+      signal,
     });
-    return handleResponse<DraftEmailResponse>(response);
   },
 
-  summarizeThread: async (threadId: string, maxLength = 500): Promise<SummarizeResponse> => {
-    const response = await fetch('/api/v1/summarize', {
+  summarizeThread: (threadId: string, maxLength = 500, signal?: AbortSignal) => {
+    return request<SummarizeResponse>('/api/v1/summarize', {
       method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ thread_id: threadId, max_length: maxLength }),
+      body: { thread_id: threadId, max_length: maxLength },
+      signal,
     });
-    return handleResponse<SummarizeResponse>(response);
   },
 
-  pushDocuments: async (documents: PushDocument[], generateEmbeddings = true): Promise<PushIngestResponse> => {
-    const response = await fetch('/api/v1/ingest/push', {
+  pushDocuments: (documents: PushDocument[], generateEmbeddings = true, signal?: AbortSignal) => {
+    return request<PushIngestResponse>('/api/v1/ingest/push', {
       method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ documents, generate_embeddings: generateEmbeddings }),
+      body: { documents, generate_embeddings: generateEmbeddings },
+      signal,
     });
-    return handleResponse<PushIngestResponse>(response);
   },
 
   // ---------------------------------------------------------------------------
   // Auth Endpoints
   // ---------------------------------------------------------------------------
 
-  login: async (username: string, password: string): Promise<LoginResponse> => {
-    const response = await fetch('/api/v1/auth/login', {
+  login: (username: string, password: string, signal?: AbortSignal) => {
+    return request<LoginResponse>('/api/v1/auth/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
+      body: { username, password },
+      // Skip auth header for login
+      headers: { Authorization: '' },
+      signal,
     });
-    return handleResponse<LoginResponse>(response);
   },
 
   setAuthToken: (token: string | null) => {
