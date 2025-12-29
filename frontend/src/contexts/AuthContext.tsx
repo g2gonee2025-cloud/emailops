@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode, useCallback } from 'react';
 import { api } from '../lib/api';
 
 interface AuthContextType {
@@ -19,6 +19,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isAuthenticated = !!token;
 
+  const logout = useCallback(() => {
+    setToken(null);
+  }, []);
+
   useEffect(() => {
     // FIX: Restore logic to synchronize the token with localStorage.
     if (token) {
@@ -37,9 +41,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       window.removeEventListener('unauthorized', handleUnauthorized);
     };
-  }, [token]);
+  }, [token, logout]);
 
-  const login = async (username: string, password: string) => {
+  const login = useCallback(async (username: string, password: string) => {
     try {
       const response = await api.login(username, password);
       setToken(response.access_token);
@@ -47,11 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Login failed:', error);
       throw error;
     }
-  };
-
-  const logout = () => {
-    setToken(null);
-  };
+  }, []);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, token, login, logout }}>
