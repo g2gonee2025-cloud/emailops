@@ -1,26 +1,26 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { ShieldCheck, Loader2, AlertCircle } from 'lucide-react';
+import { useToast } from '../components/ui/toastContext';
+import { ShieldCheck, Loader2 } from 'lucide-react';
 
 export function LoginView() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const { login } = useAuth();
+  const { addToast } = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError(null);
     setIsLoading(true);
 
     try {
       await login(username.trim(), password.trim());
       navigate('/dashboard');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      addToast(err instanceof Error ? err.message : 'Login failed', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -46,14 +46,6 @@ export function LoginView() {
             EmailOps Cortex
           </h1>
           <p className="text-white/40 text-center mb-8">Sign in to continue</p>
-
-          {/* Error Alert */}
-          {error && (
-            <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-400">{error}</p>
-            </div>
-          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
