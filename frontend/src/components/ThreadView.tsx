@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import GlassCard from './ui/GlassCard';
 import { api } from '../lib/api';
 import type { SearchResult, ThreadSummary } from '../lib/api';
@@ -12,14 +13,9 @@ import {
   PenTool
 } from 'lucide-react';
 
-interface ThreadViewProps {
-  threadId: string;
-  onBack: () => void;
-  onAskAbout: () => void;
-  onDraft: () => void;
-}
-
-export function ThreadView({ threadId, onBack, onAskAbout, onDraft }: ThreadViewProps) {
+export function ThreadView() {
+  const { id: threadId } = useParams();
+  const navigate = useNavigate();
   const [chunks, setChunks] = useState<SearchResult[]>([]);
   const [summary, setSummary] = useState<ThreadSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -28,6 +24,7 @@ export function ThreadView({ threadId, onBack, onAskAbout, onDraft }: ThreadView
 
   useEffect(() => {
     const loadThreadContent = async () => {
+      if (!threadId) return;
       setIsLoading(true);
       setError(null);
       try {
@@ -45,6 +42,7 @@ export function ThreadView({ threadId, onBack, onAskAbout, onDraft }: ThreadView
   }, [threadId]);
 
   const handleSummarize = async () => {
+    if (!threadId) return;
     setIsSummarizing(true);
     try {
       const response = await api.summarizeThread(threadId);
@@ -56,13 +54,21 @@ export function ThreadView({ threadId, onBack, onAskAbout, onDraft }: ThreadView
     }
   };
 
+  if (!threadId) {
+    return (
+      <div className="p-8">
+        <h2 className="text-xl text-red-400">Invalid Thread ID</h2>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
       <header className="p-6 border-b border-white/5">
         <div className="flex items-center gap-4 mb-4">
           <button
-            onClick={onBack}
+            onClick={() => navigate('/search')}
             className="p-2 rounded-lg hover:bg-white/5 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -75,14 +81,14 @@ export function ThreadView({ threadId, onBack, onAskAbout, onDraft }: ThreadView
         {/* Actions */}
         <div className="flex gap-2">
           <button
-            onClick={onAskAbout}
+            onClick={() => navigate('/ask')}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-sm font-medium transition-all"
           >
             <MessageSquare className="w-4 h-4" />
             Ask About This
           </button>
           <button
-            onClick={onDraft}
+            onClick={() => navigate('/draft')}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-sm font-medium transition-all"
           >
             <PenTool className="w-4 h-4" />

@@ -26,40 +26,43 @@ import {
   type LucideIcon
 } from 'lucide-react';
 
+import { Link, useLocation } from 'react-router-dom';
+
 // Navigation Item Component
 interface NavItemProps {
   icon: LucideIcon;
   label: string;
-  id: string;
-  active: boolean;
-  onClick: () => void;
+  to: string;
 }
 
-const NavItem = ({ icon: Icon, label, active, onClick }: NavItemProps) => (
-  <button
-    onClick={onClick}
-    className={cn(
-      "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
-      active
-        ? "bg-blue-600/20 text-blue-400 border border-blue-500/30"
-        : "text-white/50 hover:text-white hover:bg-white/5 border border-transparent"
-    )}
-    title={label}
-  >
-    <Icon className={cn("w-5 h-5 transition-colors", active && "text-blue-400")} />
-    <span className="font-medium text-sm">{label}</span>
-    {active && (
-      <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-    )}
-  </button>
-);
+const NavItem = ({ icon: Icon, label, to }: NavItemProps) => {
+  const location = useLocation();
+  const isActive = location.pathname === to;
+
+  return (
+    <Link
+      to={to}
+      className={cn(
+        "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
+        isActive
+          ? "bg-blue-600/20 text-blue-400 border border-blue-500/30"
+          : "text-white/50 hover:text-white hover:bg-white/5 border border-transparent"
+      )}
+      title={label}
+    >
+      <Icon className={cn("w-5 h-5 transition-colors", isActive && "text-blue-400")} />
+      <span className="font-medium text-sm">{label}</span>
+      {isActive && (
+        <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+      )}
+    </Link>
+  );
+};
 
 // Protected layout wrapper
 function ProtectedLayout() {
   const { isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -74,66 +77,14 @@ function ProtectedLayout() {
 
   // Navigation items
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'ask', label: 'Ask', icon: MessageSquare },
-    { id: 'search', label: 'Search', icon: Search },
-    { id: 'draft', label: 'Draft', icon: PenTool },
-    { id: 'summarize', label: 'Summarize', icon: FileText },
-    { id: 'ingestion', label: 'Ingestion', icon: Upload },
-    { id: 'admin', label: 'Admin', icon: Settings },
+    { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/ask', label: 'Ask', icon: MessageSquare },
+    { to: '/search', label: 'Search', icon: Search },
+    { to: '/draft', label: 'Draft', icon: PenTool },
+    { to: '/summarize', label: 'Summarize', icon: FileText },
+    { to: '/ingestion', label: 'Ingestion', icon: Upload },
+    { to: '/admin', label: 'Admin', icon: Settings },
   ];
-
-  // Navigation handlers
-  const handleSelectThread = (threadId: string) => {
-    setSelectedThreadId(threadId);
-    setActiveTab('thread');
-  };
-
-  const handleBackFromThread = () => {
-    setActiveTab('search');
-    setSelectedThreadId(null);
-  };
-
-  const handleAskAboutThread = () => {
-    setActiveTab('ask');
-  };
-
-  const handleDraftForThread = () => {
-    setActiveTab('draft');
-  };
-
-  // Render active view
-  const renderView = () => {
-    switch (activeTab) {
-      case 'dashboard':
-        return <DashboardView />;
-      case 'ask':
-        return <AskView />;
-      case 'search':
-        return <SearchView onSelectThread={handleSelectThread} />;
-      case 'thread':
-        return selectedThreadId ? (
-          <ThreadView
-            threadId={selectedThreadId}
-            onBack={handleBackFromThread}
-            onAskAbout={handleAskAboutThread}
-            onDraft={handleDraftForThread}
-          />
-        ) : (
-          <SearchView onSelectThread={handleSelectThread} />
-        );
-      case 'draft':
-        return <DraftView />;
-      case 'summarize':
-        return <SummarizeView />;
-      case 'ingestion':
-        return <IngestionView />;
-      case 'admin':
-        return <AdminDashboard />;
-      default:
-        return <DashboardView />;
-    }
-  };
 
   return (
     <div className="flex h-screen bg-[#0a0a0a] text-white overflow-hidden font-sans selection:bg-blue-500/30">
@@ -158,10 +109,10 @@ function ProtectedLayout() {
         <nav className="flex-1 p-4 space-y-2" aria-label="Primary navigation">
           {navItems.map((item) => (
             <NavItem
-              key={item.id}
-              {...item}
-              active={activeTab === item.id || (activeTab === 'thread' && item.id === 'search')}
-              onClick={() => setActiveTab(item.id)}
+              key={item.to}
+              icon={item.icon}
+              label={item.label}
+              to={item.to}
             />
           ))}
         </nav>
@@ -188,7 +139,17 @@ function ProtectedLayout() {
 
       {/* Main Content */}
       <main className="flex-1 overflow-hidden flex flex-col bg-gradient-to-br from-transparent via-transparent to-black/30" role="main" aria-label="Main content">
-        {renderView()}
+        <Routes>
+          <Route path="dashboard" element={<DashboardView />} />
+          <Route path="ask" element={<AskView />} />
+          <Route path="search" element={<SearchView />} />
+          <Route path="thread/:id" element={<ThreadView />} />
+          <Route path="draft" element={<DraftView />} />
+          <Route path="summarize" element={<SummarizeView />} />
+          <Route path="ingestion" element={<IngestionView />} />
+          <Route path="admin" element={<AdminDashboard />} />
+          <Route index element={<Navigate to="/dashboard" replace />} />
+        </Routes>
       </main>
     </div>
   );
@@ -196,17 +157,13 @@ function ProtectedLayout() {
 
 function App() {
   return (
-    <ToastProvider>
-      <AuthProvider>
-        <ErrorBoundary>
-          <Routes>
-            <Route path="/login" element={<LoginView />} />
-            <Route path="/*" element={<ProtectedLayout />} />
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </ErrorBoundary>
-      </AuthProvider>
-    </ToastProvider>
+    <ErrorBoundary>
+      <Routes>
+        <Route path="/login" element={<LoginView />} />
+        <Route path="/*" element={<ProtectedLayout />} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+    </ErrorBoundary>
   );
 }
 
