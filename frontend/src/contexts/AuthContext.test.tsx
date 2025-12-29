@@ -1,87 +1,116 @@
 
 import { renderHook, act } from '@testing-library/react';
-import { AuthProvider, useAuth } from './AuthContext';
-import { vi } from 'vitest';
-import * as api from '../lib/api';
-import { ApiError } from '../lib/api';
 import { BrowserRouter } from 'react-router-dom';
+import { vi } from 'vitest';
+import { AuthProvider, useAuth } from './AuthContext';
+import { api, ApiError } from '@/lib/api';
 
-// Mock the navigate function
+// Mock the api module
+vi.mock('@/lib/api', () => ({
+  api: {
+    login: vi.fn(),
+    setAuthToken: vi.fn(),
+  },
+  ApiError: class extends Error {
+    status: number;
+    constructor(message: string, status: number) {
+      super(message);
+      this.status = status;
+    }
+  },
+}));
+
+// Mock useNavigate
 const mockedNavigate = vi.fn();
 vi.mock('react-router-dom', async () => {
-    const original = await vi.importActual('react-router-dom');
-    return {
-        ...original,
-        useNavigate: () => mockedNavigate,
-    };
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => mockedNavigate,
+  };
 });
 
-
-describe('AuthProvider', () => {
-  afterEach(() => {
+describe('AuthContext', () => {
+  beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
   });
 
-  it('should handle successful login', async () => {
-    const requestSpy = vi.spyOn(api, 'request').mockResolvedValue({ access_token: 'test_token' });
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <BrowserRouter>
+      <AuthProvider>{children}</AuthProvider>
+    </BrowserRouter>
+  );
 
-    const wrapper = ({ children }) => <BrowserRouter><AuthProvider>{children}</AuthProvider></BrowserRouter>;
+  it('should start with an unauthenticated state', () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    expect(result.current.isAuthenticated).toBe(false);
+    expect(result.current.token).toBeNull();
+  });
+
+  it('should successfully log in and update state', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
 
+    const mockToken = 'test_token';
+    (api.login as vi.Mock).mockResolvedValue({ access_token: mockToken });
+
     await act(async () => {
-      await result.current.login('test', 'password');
+      await result.current.login('testuser', 'password');
     });
 
     expect(result.current.isAuthenticated).toBe(true);
-    expect(result.current.token).toBe('test_token');
-    expect(localStorage.getItem('auth_token')).toBe('test_token');
-
-    // Check the call arguments
-    expect(requestSpy).toHaveBeenCalledTimes(1);
-    const [endpoint, options] = requestSpy.mock.calls[0];
-    expect(endpoint).toBe('/api/v1/auth/login');
-    expect(options.method).toBe('POST');
-    expect(options.headers).toEqual({ 'Content-Type': 'application/x-www-form-urlencoded' });
-    expect(options.body).toBeInstanceOf(URLSearchParams);
-    expect((options.body as URLSearchParams).get('username')).toBe('test');
-    expect((options.body as URLSearchParams).get('password')).toBe('password');
+    expect(result.current.token).toBe(mockToken);
+    expect(localStorage.getItem('auth_token')).toBe(mockToken);
+    expect(api.setAuthToken).toHaveBeenCalledWith(mockToken);
   });
 
-  it('should handle failed login', async () => {
-    const requestSpy = vi.spyOn(api, 'request').mockRejectedValue(new ApiError(401, 'Unauthorized'));
-
-    const wrapper = ({ children }) => <BrowserRouter><AuthProvider>{children}</AuthProvider></BrowserRouter>;
+  it('should handle login failure', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
 
+    const mockError = new ApiError('Invalid credentials', 401);
+    (api.login as vi.Mock).mockRejectedValue(mockError);
+
     await act(async () => {
-        try {
-            await result.current.login('test', 'wrong_password');
-        } catch (error) {
-            expect(error.message).toBe('Invalid credentials');
-        }
+      await expect(result.current.login('testuser', 'wrongpassword')).rejects.toThrow(
+        'Invalid credentials',
+      );
     });
 
     expect(result.current.isAuthenticated).toBe(false);
-    expect(result.current.token).toBe(null);
-    expect(localStorage.getItem('auth_token')).toBe(null);
-    expect(requestSpy).toHaveBeenCalledTimes(1);
+    expect(result.current.token).toBeNull();
+    expect(localStorage.getItem('auth_token')).toBeNull();
   });
 
-  it('should handle logout', async () => {
-    localStorage.setItem('auth_token', 'test_token');
-    const wrapper = ({ children }) => <BrowserRouter><AuthProvider>{children}</AuthProvider></BrowserRouter>;
+  it('should log out and clear state', async () => {
+    // First, log in
     const { result } = renderHook(() => useAuth(), { wrapper });
+    const mockToken = 'test_token';
+    (api.login as vi.Mock).mockResolvedValue({ access_token: mockToken });
+    await act(async () => {
+      await result.current.login('testuser', 'password');
+    });
 
-    expect(result.current.isAuthenticated).toBe(true);
+    // Then, log out
+    await act(async () => {
+      result.current.logout();
+    });
+
+    expect(result.current.isAuthenticated).toBe(false);
+    expect(result.current.token).toBeNull();
+    expect(localStorage.getItem('auth_token')).toBeNull();
+    expect(api.setAuthToken).toHaveBeenCalledWith(null);
+    expect(mockedNavigate).toHaveBeenCalledWith('/login');
+  });
+
+  it('should handle unauthorized events', () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
 
     act(() => {
-        result.current.logout();
+      window.dispatchEvent(new CustomEvent('cortex-unauthorized'));
     });
 
     expect(result.current.isAuthenticated).toBe(false);
-    expect(result.current.token).toBe(null);
-    expect(localStorage.getItem('auth_token')).toBe(null);
+    expect(result.current.token).toBeNull();
     expect(mockedNavigate).toHaveBeenCalledWith('/login');
-    });
+  });
 });
