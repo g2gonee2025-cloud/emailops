@@ -172,39 +172,23 @@ export interface LoginResponse {
 // API Client
 // =============================================================================
 
-// Auth token storage
-let authToken: string | null = null;
-
 // Custom Error for API responses
 export class ApiError extends Error {
   status: number;
-  statusText: string;
-  detail?: string;
+  details?: Record<string, unknown>;
 
-  constructor(status: number, statusText: string, detail?: string) {
-    super(detail || `${status} ${statusText}`);
+  constructor(message: string, status: number, details?: Record<string, unknown>) {
+    super(message);
     this.name = 'ApiError';
     this.status = status;
-    this.statusText = statusText;
-    this.detail = detail;
+    this.details = details;
   }
 }
 
-const handleResponse = async <T>(response: Response): Promise<T> => {
-  if (!response.ok) {
-    if (response.status === 401 && !response.url.includes('login')) {
-      // Dispatch a custom event for unauthorized access from non-login endpoints
-      window.dispatchEvent(new CustomEvent('cortex-unauthorized'));
-    }
-    const errorBody = await response.json().catch(() => ({ detail: 'Unknown error' }));
-    throw new ApiError(response.status, response.statusText, errorBody.detail);
-  }
-  return response.json();
-};
-
-const getHeaders = (includeAuth = true): HeadersInit => {
+const getHeaders = (): HeadersInit => {
   const headers: HeadersInit = { 'Content-Type': 'application/json' };
-  if (includeAuth && authToken) {
+  const authToken = localStorage.getItem('auth_token');
+  if (authToken) {
     headers['Authorization'] = `Bearer ${authToken}`;
   }
   return headers;
@@ -215,17 +199,46 @@ export const request = async <T>(
   options: RequestInit = {},
   includeAuth = true,
 ): Promise<T> => {
-  const headers = getHeaders(includeAuth);
   const config: RequestInit = {
     ...options,
-    headers: {
-      ...headers,
-      ...options.headers,
-    },
+    headers: includeAuth ? getHeaders() : { 'Content-Type': 'application/json' },
   };
 
-  const response = await fetch(endpoint, config);
-  return handleResponse<T>(response);
+  try {
+    const response = await fetch(endpoint, config);
+
+    if (!response.ok) {
+      if (response.status === 401 && !response.url.includes('login')) {
+        window.dispatchEvent(new CustomEvent('cortex-unauthorized'));
+      }
+      let errorDetails;
+      try {
+        errorDetails = await response.json();
+      } catch (e) {
+        errorDetails = { detail: response.statusText };
+      }
+      throw new ApiError(
+        `API request failed: ${response.status}`,
+        response.status,
+        errorDetails,
+      );
+    }
+
+    if (response.status === 204) {
+      return {} as T;
+    }
+
+    return (await response.json()) as T;
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    logger.error('Network or other fetch error occurred.', {
+      endpoint: endpoint,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw new Error('A network error occurred.');
+  }
 };
 
 export const api = {
@@ -233,46 +246,52 @@ export const api = {
   // System Endpoints
   // ---------------------------------------------------------------------------
 
-  fetchHealth: async (): Promise<HealthResponse | null> => {
-    try {
-      return await request<HealthResponse>('/health', {}, false);
-    } catch (error) {
-      logger.error('Failed to fetch health:', error);
-      return null;
-    }
-  },
+  fetchHealth: (signal?: AbortSignal): Promise<HealthResponse> =>
+    request<HealthResponse>('/health', { signal }, false),
 
-  fetchVersion: async (): Promise<Record<string, string> | null> => {
-    try {
-      return await request<Record<string, string>>('/version', {}, false);
-    } catch (error) {
-      logger.error('Failed to fetch version:', error);
-      return null;
-    }
-  },
+  fetchVersion: (signal?: AbortSignal): Promise<Record<string, string>> =>
+    request<Record<string, string>>('/version', { signal }, false),
 
   // ---------------------------------------------------------------------------
   // RAG Endpoints
   // ---------------------------------------------------------------------------
 
-  search: async (query: string, k = 10, filters: Record<string, unknown> = {}): Promise<SearchResponse> => {
-    return await request<SearchResponse>('/api/v1/search', {
+  search: (
+    query: string,
+    k = 10,
+    filters: Record<string, unknown> = {},
+    signal?: AbortSignal,
+  ): Promise<SearchResponse> => {
+    return request<SearchResponse>('/api/v1/search', {
       method: 'POST',
       body: JSON.stringify({ query, k, filters }),
+      signal,
     });
   },
 
-  ask: async (query: string, threadId?: string, k = 10): Promise<AnswerResponse> => {
-    return await request<AnswerResponse>('/api/v1/answer', {
+  ask: (
+    query: string,
+    threadId?: string,
+    k = 10,
+    signal?: AbortSignal,
+  ): Promise<AnswerResponse> => {
+    return request<AnswerResponse>('/api/v1/answer', {
       method: 'POST',
       body: JSON.stringify({ query, thread_id: threadId, k }),
+      signal,
     });
   },
 
-  chat: async (messages: ChatMessage[], threadId?: string, k = 10): Promise<ChatResponse> => {
-    return await request<ChatResponse>('/api/v1/chat', {
+  chat: (
+    messages: ChatMessage[],
+    threadId?: string,
+    k = 10,
+    signal?: AbortSignal,
+  ): Promise<ChatResponse> => {
+    return request<ChatResponse>('/api/v1/chat', {
       method: 'POST',
       body: JSON.stringify({ messages, thread_id: threadId, k }),
+      signal,
     });
   },
 
@@ -280,70 +299,84 @@ export const api = {
   // Ingestion Endpoints
   // ---------------------------------------------------------------------------
 
-  listS3Folders: async (prefix = 'Outlook/', limit = 100): Promise<ListS3FoldersResponse> => {
+  listS3Folders: (
+    prefix = 'Outlook/',
+    limit = 100,
+    signal?: AbortSignal,
+  ): Promise<ListS3FoldersResponse> => {
     const params = new URLSearchParams({ prefix, limit: String(limit) });
-    return await request<ListS3FoldersResponse>(`/api/v1/ingest/list?${params}`);
+    return request<ListS3FoldersResponse>(`/api/v1/ingest/list?${params}`, { signal });
   },
 
-  startIngestion: async (prefix = 'Outlook/', limit?: number, dryRun = false): Promise<IngestJobResponse> => {
-    return await request<IngestJobResponse>('/api/v1/ingest/s3', {
+  startIngestion: (
+    prefix = 'Outlook/',
+    limit?: number,
+    dryRun = false,
+    signal?: AbortSignal,
+  ): Promise<IngestJobResponse> => {
+    return request<IngestJobResponse>('/api/v1/ingest/s3', {
       method: 'POST',
       body: JSON.stringify({ prefix, limit, dry_run: dryRun }),
+      signal,
     });
   },
 
-  getIngestionStatus: async (jobId: string): Promise<IngestStatusResponse> => {
-    return await request<IngestStatusResponse>(`/api/v1/ingest/status/${jobId}`);
+  getIngestionStatus: (jobId: string, signal?: AbortSignal): Promise<IngestStatusResponse> => {
+    return request<IngestStatusResponse>(`/api/v1/ingest/status/${jobId}`, { signal });
   },
 
   // ---------------------------------------------------------------------------
   // Admin Endpoints
   // ---------------------------------------------------------------------------
 
-  runDoctor: async (): Promise<DoctorReport> => {
-    return await request<DoctorReport>('/api/v1/admin/doctor', { method: 'POST' });
+  runDoctor: (signal?: AbortSignal): Promise<DoctorReport> => {
+    return request<DoctorReport>('/api/v1/admin/doctor', { method: 'POST', signal });
   },
 
-  fetchStatus: async (): Promise<SystemStatus | null> => {
-    try {
-      return await request<SystemStatus>('/api/v1/admin/status');
-    } catch (error) {
-      logger.error('Failed to fetch status:', error);
-      return null;
-    }
-  },
+  fetchStatus: (signal?: AbortSignal): Promise<SystemStatus> =>
+    request<SystemStatus>('/api/v1/admin/status', { signal }),
 
-  fetchConfig: async (): Promise<SystemConfig | null> => {
-    try {
-      return await request<SystemConfig>('/api/v1/admin/config');
-    } catch (error) {
-      logger.error('Failed to fetch config:', error);
-      return null;
-    }
-  },
+  fetchConfig: (signal?: AbortSignal): Promise<SystemConfig> =>
+    request<SystemConfig>('/api/v1/admin/config', { signal }),
 
   // ---------------------------------------------------------------------------
   // Draft & Summarize Endpoints
   // ---------------------------------------------------------------------------
 
-  draftEmail: async (instruction: string, threadId?: string, tone = 'professional'): Promise<DraftEmailResponse> => {
-    return await request<DraftEmailResponse>('/api/v1/draft', {
+  draftEmail: (
+    instruction: string,
+    threadId?: string,
+    tone = 'professional',
+    signal?: AbortSignal,
+  ): Promise<DraftEmailResponse> => {
+    return request<DraftEmailResponse>('/api/v1/draft', {
       method: 'POST',
       body: JSON.stringify({ instruction, thread_id: threadId, tone }),
+      signal,
     });
   },
 
-  summarizeThread: async (threadId: string, maxLength = 500): Promise<SummarizeResponse> => {
-    return await request<SummarizeResponse>('/api/v1/summarize', {
+  summarizeThread: (
+    threadId: string,
+    maxLength = 500,
+    signal?: AbortSignal,
+  ): Promise<SummarizeResponse> => {
+    return request<SummarizeResponse>('/api/v1/summarize', {
       method: 'POST',
       body: JSON.stringify({ thread_id: threadId, max_length: maxLength }),
+      signal,
     });
   },
 
-  pushDocuments: async (documents: PushDocument[], generateEmbeddings = true): Promise<PushIngestResponse> => {
-    return await request<PushIngestResponse>('/api/v1/ingest/push', {
+  pushDocuments: (
+    documents: PushDocument[],
+    generateEmbeddings = true,
+    signal?: AbortSignal,
+  ): Promise<PushIngestResponse> => {
+    return request<PushIngestResponse>('/api/v1/ingest/push', {
       method: 'POST',
       body: JSON.stringify({ documents, generate_embeddings: generateEmbeddings }),
+      signal,
     });
   },
 
@@ -351,8 +384,8 @@ export const api = {
   // Auth Endpoints
   // ---------------------------------------------------------------------------
 
-  login: async (username: string, password: string): Promise<LoginResponse> => {
-    return await request<LoginResponse>(
+  login: (username: string, password: string): Promise<LoginResponse> => {
+    return request<LoginResponse>(
       '/api/v1/auth/login',
       {
         method: 'POST',
@@ -363,7 +396,11 @@ export const api = {
   },
 
   setAuthToken: (token: string | null) => {
-    authToken = token;
+    if (token) {
+      localStorage.setItem('auth_token', token);
+    } else {
+      localStorage.removeItem('auth_token');
+    }
   },
 };
 
