@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { api } from '../lib/api';
 
 interface AuthContextType {
@@ -19,6 +19,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isAuthenticated = !!token;
 
+  const logout = useCallback(() => {
+    setToken(null);
+  }, []);
+
+  const login = useCallback(async (username: string, password: string) => {
+    try {
+      const response = await api.login(username, password);
+      setToken(response.access_token);
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw error;
+    }
+  }, []);
+
   useEffect(() => {
     // FIX: Restore logic to synchronize the token with localStorage.
     if (token) {
@@ -37,21 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       window.removeEventListener('unauthorized', handleUnauthorized);
     };
-  }, [token]);
-
-  const login = async (username: string, password: string) => {
-    try {
-      const response = await api.login(username, password);
-      setToken(response.access_token);
-    } catch (error) {
-      console.error('Login failed:', error);
-      throw error;
-    }
-  };
-
-  const logout = () => {
-    setToken(null);
-  };
+  }, [token, logout]);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, token, login, logout }}>
