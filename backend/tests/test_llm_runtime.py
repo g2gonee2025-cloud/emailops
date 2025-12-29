@@ -1,6 +1,5 @@
 import time
 import unittest
-from unittest.mock import patch
 
 from cortex.llm.runtime import ResilienceManager, _try_load_json
 
@@ -66,26 +65,22 @@ class TestResilienceManager(unittest.TestCase):
             rm.record_outcome(success=False)
         self.assertEqual(rm.circuit_state, "open")
 
-    @patch("cortex.llm.runtime.time.time")
-    def test_check_circuit_open_raises(self, mock_time):
+    def test_check_circuit_open_raises(self):
         """Test that check_circuit raises when circuit is open."""
         from cortex.llm.runtime import CircuitBreakerOpenError
 
         rm = ResilienceManager()
         rm.circuit_state = "open"
-        rm.last_failure_time = 100.0
-        mock_time.return_value = 110.0  # Only 10 seconds elapsed
+        rm.last_failure_time = time.time()  # Just now
 
         with self.assertRaises(CircuitBreakerOpenError):
             rm.check_circuit()
 
-    @patch("cortex.llm.runtime.time.time")
-    def test_check_circuit_transitions_to_half_open(self, mock_time):
+    def test_check_circuit_transitions_to_half_open(self):
         """Test that circuit transitions to half-open after reset timeout."""
         rm = ResilienceManager()
         rm.circuit_state = "open"
-        rm.last_failure_time = 0.0
-        mock_time.return_value = 1000.0  # Long time elapsed
+        rm.last_failure_time = time.time() - 1000.0  # Long time ago
 
         rm.check_circuit()
         self.assertEqual(rm.circuit_state, "half-open")
