@@ -185,37 +185,40 @@ export class ApiError extends Error {
   }
 }
 
-<<<<<<< HEAD
-const getHeaders = (): HeadersInit => {
-=======
-const handleResponse = async <T>(response: Response): Promise<T> => {
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({ detail: 'Unknown error' }));
-    const apiError = new ApiError(response.status, response.statusText, errorBody.detail);
-
-    if (response.status === 401 && !response.url.includes('login')) {
-      // Dispatch a custom event for unauthorized access to be handled by AuthContext
-      window.dispatchEvent(new CustomEvent('cortex-unauthorized'));
-    } else if (response.status !== 401) {
-      // For other errors, dispatch a global event to be caught by the ToastProvider
-      window.dispatchEvent(new CustomEvent('api:error', { detail: apiError }));
-    }
-
-    throw apiError;
-  }
-  return response.json();
-};
-
+/**
+ * Creates the headers for an API request.
+ * @param includeAuth - Whether to include the Authorization header. Defaults to true.
+ * @returns A HeadersInit object.
+ */
 const getHeaders = (includeAuth = true): HeadersInit => {
->>>>>>> 497e17f7 (feat(frontend): implement global API error toasts)
-  const headers: HeadersInit = { 'Content-Type': 'application/json' };
-  const authToken = localStorage.getItem('auth_token');
-  if (authToken) {
-    headers['Authorization'] = `Bearer ${authToken}`;
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  if (includeAuth) {
+    const authToken = localStorage.getItem('auth_token');
+    if (authToken) {
+      headers['Authorization'] = `Bearer ${authToken}`;
+    }
   }
+
   return headers;
 };
 
+/**
+ * A generic request wrapper for the API client.
+ *
+ * - Ensures consistent headers (including auth).
+ * - Handles non-OK responses by throwing a typed ApiError.
+ * - Safely parses JSON.
+ * - Supports AbortController signals.
+ * - Avoids logging sensitive data.
+ *
+ * @param endpoint - The API endpoint to call.
+ * @param options - RequestInit options for fetch.
+ * @param includeAuth - Whether to include the auth token.
+ * @returns The JSON response as type T.
+ */
 export const request = async <T>(
   endpoint: string,
   options: RequestInit = {},
@@ -223,7 +226,8 @@ export const request = async <T>(
 ): Promise<T> => {
   const config: RequestInit = {
     ...options,
-    headers: includeAuth ? getHeaders() : { 'Content-Type': 'application/json' },
+    // Merge default headers with any custom headers from options
+    headers: { ...getHeaders(includeAuth), ...options.headers },
   };
 
   try {
@@ -233,33 +237,64 @@ export const request = async <T>(
       if (response.status === 401 && !response.url.includes('login')) {
         window.dispatchEvent(new CustomEvent('cortex-unauthorized'));
       }
+
       let errorDetails;
       try {
         errorDetails = await response.json();
       } catch (e) {
         errorDetails = { detail: response.statusText };
       }
-      throw new ApiError(
-        `API request failed: ${response.status}`,
+      const apiError = new ApiError(
+        `API request failed with status ${response.status}`,
         response.status,
         errorDetails,
       );
+      if (response.status !== 401) {
+        window.dispatchEvent(new CustomEvent('api:error', { detail: apiError }));
+      }
+      throw apiError;
     }
 
     if (response.status === 204) {
       return {} as T;
     }
 
-    return (await response.json()) as T;
+    try {
+      return (await response.json()) as T;
+    } catch (e) {
+      const parseError = new ApiError('Failed to parse JSON response.', response.status);
+      window.dispatchEvent(new CustomEvent('api:error', { detail: parseError }));
+      throw parseError;
+    }
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;
     }
-    logger.error('Network or other fetch error occurred.', {
+
+    const sanitizedConfig = { ...config };
+    // Don't log the body of urlencoded forms
+    if (
+      sanitizedConfig.body &&
+      (sanitizedConfig.headers as Record<string, string>)['Content-Type'] ===
+        'application/x-www-form-urlencoded'
+    ) {
+      sanitizedConfig.body = '[REDACTED FORM]';
+    } else if (sanitizedConfig.body) {
+      sanitizedConfig.body = '[REDACTED]';
+    }
+
+    logger.error('A network or other fetch error occurred.', {
       endpoint: endpoint,
+      config: sanitizedConfig,
       error: error instanceof Error ? error.message : String(error),
     });
-    throw new Error('A network error occurred.');
+
+    const networkError = new ApiError(
+      'A network error occurred. Please try again later.',
+      0, // Using 0 for network errors
+    );
+    window.dispatchEvent(new CustomEvent('api:error', { detail: networkError }));
+    throw networkError;
   }
 };
 
@@ -352,7 +387,8 @@ export const api = {
   // ---------------------------------------------------------------------------
 
   runDoctor: (signal?: AbortSignal): Promise<DoctorReport> => {
-    return request<DoctorReport>('/api/v1/admin/doctor', { method: 'POST', signal });
+    // Note: runDoctor uses an authenticated POST, which is now supported.
+    return request<DoctorReport>('/api/v1/admin/doctor', { method: 'POST', signal }, true);
   },
 
   fetchStatus: (signal?: AbortSignal): Promise<SystemStatus> =>
@@ -406,20 +442,24 @@ export const api = {
   // Auth Endpoints
   // ---------------------------------------------------------------------------
 
-<<<<<<< HEAD
   login: (username: string, password: string): Promise<LoginResponse> => {
+    const formData = new URLSearchParams();
+    formData.append('username', username);
+    formData.append('password', password);
+
     return request<LoginResponse>(
       '/api/v1/auth/login',
       {
         method: 'POST',
-        body: JSON.stringify({ username, password }),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData,
       },
       false, // Do not include auth token for login request
     );
   },
 
-=======
->>>>>>> 9da26b95 (feat(frontend): Update AuthContext to use generic request handler)
   setAuthToken: (token: string | null) => {
     if (token) {
       localStorage.setItem('auth_token', token);
