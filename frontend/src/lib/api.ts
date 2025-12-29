@@ -175,43 +175,25 @@ export interface LoginResponse {
 // Custom Error for API responses
 export class ApiError extends Error {
   status: number;
-  details?: Record<string, unknown>;
+  statusText: string;
+  detail?: string;
 
-  constructor(message: string, status: number, details?: Record<string, unknown>) {
-    super(message);
+  constructor(status: number, statusText: string, detail?: string) {
+    super(`API Error: ${status} ${statusText}`);
     this.name = 'ApiError';
     this.status = status;
-    this.details = details;
+    this.statusText = statusText;
+    this.detail = detail;
   }
 }
 
-<<<<<<< HEAD
-const getHeaders = (): HeadersInit => {
-=======
-const handleResponse = async <T>(response: Response): Promise<T> => {
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({ detail: 'Unknown error' }));
-    const apiError = new ApiError(response.status, response.statusText, errorBody.detail);
-
-    if (response.status === 401 && !response.url.includes('login')) {
-      // Dispatch a custom event for unauthorized access to be handled by AuthContext
-      window.dispatchEvent(new CustomEvent('cortex-unauthorized'));
-    } else if (response.status !== 401) {
-      // For other errors, dispatch a global event to be caught by the ToastProvider
-      window.dispatchEvent(new CustomEvent('api:error', { detail: apiError }));
-    }
-
-    throw apiError;
-  }
-  return response.json();
-};
-
 const getHeaders = (includeAuth = true): HeadersInit => {
->>>>>>> 497e17f7 (feat(frontend): implement global API error toasts)
   const headers: HeadersInit = { 'Content-Type': 'application/json' };
-  const authToken = localStorage.getItem('auth_token');
-  if (authToken) {
-    headers['Authorization'] = `Bearer ${authToken}`;
+  if (includeAuth) {
+    const authToken = localStorage.getItem('auth_token');
+    if (authToken) {
+      headers['Authorization'] = `Bearer ${authToken}`;
+    }
   }
   return headers;
 };
@@ -223,27 +205,24 @@ export const request = async <T>(
 ): Promise<T> => {
   const config: RequestInit = {
     ...options,
-    headers: includeAuth ? getHeaders() : { 'Content-Type': 'application/json' },
+    headers: getHeaders(includeAuth),
   };
 
   try {
     const response = await fetch(endpoint, config);
 
     if (!response.ok) {
+      const errorBody = await response.json().catch(() => ({
+        detail: `Request failed with status: ${response.statusText}`,
+      }));
+      const apiError = new ApiError(response.status, response.statusText, errorBody.detail);
+
       if (response.status === 401 && !response.url.includes('login')) {
         window.dispatchEvent(new CustomEvent('cortex-unauthorized'));
+      } else if (response.status !== 401) {
+        window.dispatchEvent(new CustomEvent('api:error', { detail: apiError }));
       }
-      let errorDetails;
-      try {
-        errorDetails = await response.json();
-      } catch (e) {
-        errorDetails = { detail: response.statusText };
-      }
-      throw new ApiError(
-        `API request failed: ${response.status}`,
-        response.status,
-        errorDetails,
-      );
+      throw apiError;
     }
 
     if (response.status === 204) {
@@ -259,7 +238,10 @@ export const request = async <T>(
       endpoint: endpoint,
       error: error instanceof Error ? error.message : String(error),
     });
-    throw new Error('A network error occurred.');
+    // Create a generic ApiError for network failures
+    const networkError = new ApiError(503, 'Service Unavailable', 'A network error occurred.');
+    window.dispatchEvent(new CustomEvent('api:error', { detail: networkError }));
+    throw networkError;
   }
 };
 
@@ -406,20 +388,6 @@ export const api = {
   // Auth Endpoints
   // ---------------------------------------------------------------------------
 
-<<<<<<< HEAD
-  login: (username: string, password: string): Promise<LoginResponse> => {
-    return request<LoginResponse>(
-      '/api/v1/auth/login',
-      {
-        method: 'POST',
-        body: JSON.stringify({ username, password }),
-      },
-      false, // Do not include auth token for login request
-    );
-  },
-
-=======
->>>>>>> 9da26b95 (feat(frontend): Update AuthContext to use generic request handler)
   setAuthToken: (token: string | null) => {
     if (token) {
       localStorage.setItem('auth_token', token);
