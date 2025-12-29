@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import GlassCard from './ui/GlassCard';
 import { api } from '../lib/api';
 import type { SearchResult } from '../lib/api';
@@ -6,11 +7,8 @@ import { cn } from '../lib/utils';
 import { Search, X, FileText, Mail, ExternalLink } from 'lucide-react';
 import { SkeletonCard } from './ui/Skeleton';
 
-interface SearchViewProps {
-  onSelectThread?: (threadId: string) => void;
-}
-
-export function SearchView({ onSelectThread }: SearchViewProps) {
+export function SearchView() {
+  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -60,8 +58,8 @@ export function SearchView({ onSelectThread }: SearchViewProps) {
   const handleResultClick = (result: SearchResult) => {
     // Prefer thread_id, fall back to conversation_id
     const id = result.thread_id || result.conversation_id;
-    if (id && onSelectThread) {
-      onSelectThread(id);
+    if (id) {
+      navigate(`/thread/${id}`);
     }
   };
 
@@ -181,7 +179,7 @@ export function SearchView({ onSelectThread }: SearchViewProps) {
                     )}>
                       {(result.score * 100).toFixed(0)}% match
                     </span>
-                    {(result.thread_id || result.conversation_id) && onSelectThread && (
+                    {(result.thread_id || result.conversation_id) && (
                       <span className="text-xs text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
                         <ExternalLink className="w-3 h-3" /> View
                       </span>
