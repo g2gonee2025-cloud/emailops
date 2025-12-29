@@ -10,8 +10,7 @@ import { SummarizeView } from './components/SummarizeView';
 import { ThreadView } from './components/ThreadView';
 import { AdminDashboard } from './components/AdminDashboard';
 import { LoginView } from './components/LoginView';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { ToastProvider } from './components/ui/Toast';
+import { useAuth } from './contexts/AuthContext';
 import { cn } from './lib/utils';
 import {
   LayoutDashboard,
@@ -196,17 +195,13 @@ function ProtectedLayout() {
 
 function App() {
   return (
-    <ToastProvider>
-      <AuthProvider>
-        <ErrorBoundary>
-          <Routes>
-            <Route path="/login" element={<LoginView />} />
-            <Route path="/*" element={<ProtectedLayout />} />
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </ErrorBoundary>
-      </AuthProvider>
-    </ToastProvider>
+    <ErrorBoundary>
+      <Routes>
+        <Route path="/login" element={<LoginView />} />
+        <Route path="/*" element={<ProtectedLayout />} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+    </ErrorBoundary>
   );
 }
 

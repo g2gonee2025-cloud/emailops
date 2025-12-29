@@ -56,7 +56,7 @@ function UploadSection() {
             text: d.text.trim(),
             metadata: d.metadata ? JSON.parse(d.metadata) : {},
           };
-        } catch (e) {
+        } catch {
           // Note: Using (i + 1) to present a 1-based index to the user
           throw new Error(`Invalid JSON in metadata for Document ${i + 1}.`);
         }
