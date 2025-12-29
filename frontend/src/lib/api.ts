@@ -168,6 +168,21 @@ export interface LoginResponse {
   expires_in: number;
 }
 
+// Thread types
+export interface Message {
+  message_id: string;
+  sender: string;
+  content: string;
+  timestamp: string;
+}
+
+export interface Thread {
+  thread_id: string;
+  subject: string;
+  participants: string[];
+  messages: Message[];
+}
+
 // =============================================================================
 // API Client
 // =============================================================================
@@ -248,6 +263,38 @@ export const api = {
       body: JSON.stringify({ messages, thread_id: threadId, k }),
     });
     return handleResponse<ChatResponse>(response);
+  },
+
+  fetchThread: async (threadId: string): Promise<Thread> => {
+    logger.info(`Fetching mock thread data for threadId: ${threadId}`);
+    // This is a mock implementation.
+    // In a real scenario, this would be:
+    // const response = await fetch(`/api/v1/thread/${threadId}`);
+    // return handleResponse<Thread>(response);
+
+    // Simulate a network delay
+    await new Promise((resolve) => setTimeout(resolve, 200));
+
+    // Return mock data
+    return Promise.resolve({
+      thread_id: threadId,
+      subject: 'Mock Subject: Discussing Q3 Strategy',
+      participants: ['alice@example.com', 'bob@example.com'],
+      messages: [
+        {
+          message_id: 'msg_1',
+          sender: 'alice@example.com',
+          content: "Hi team, let's discuss the Q3 strategy.",
+          timestamp: '2023-08-20T10:00:00Z',
+        },
+        {
+          message_id: 'msg_2',
+          sender: 'bob@example.com',
+          content: "Sounds good, I've attached the preliminary report.",
+          timestamp: '2023-08-20T10:05:00Z',
+        },
+      ],
+    });
   },
 
   // ---------------------------------------------------------------------------
