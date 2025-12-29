@@ -175,23 +175,57 @@ export interface LoginResponse {
 // Auth token storage
 let authToken: string | null = null;
 
-const handleResponse = async <T>(response: Response): Promise<T> => {
-  if (response.status === 401) {
-    window.dispatchEvent(new Event('unauthorized'));
+// Custom Error for API responses
+export class ApiError extends Error {
+  status: number;
+  statusText: string;
+  detail?: string;
+
+  constructor(status: number, statusText: string, detail?: string) {
+    super(detail || `${status} ${statusText}`);
+    this.name = 'ApiError';
+    this.status = status;
+    this.statusText = statusText;
+    this.detail = detail;
   }
+}
+
+const handleResponse = async <T>(response: Response): Promise<T> => {
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
-    throw new Error(error.detail || `HTTP ${response.status}`);
+    if (response.status === 401 && !response.url.includes('login')) {
+      // Dispatch a custom event for unauthorized access from non-login endpoints
+      window.dispatchEvent(new CustomEvent('cortex-unauthorized'));
+    }
+    const errorBody = await response.json().catch(() => ({ detail: 'Unknown error' }));
+    throw new ApiError(response.status, response.statusText, errorBody.detail);
   }
   return response.json();
 };
 
-const getHeaders = (): HeadersInit => {
+const getHeaders = (includeAuth = true): HeadersInit => {
   const headers: HeadersInit = { 'Content-Type': 'application/json' };
-  if (authToken) {
+  if (includeAuth && authToken) {
     headers['Authorization'] = `Bearer ${authToken}`;
   }
   return headers;
+};
+
+export const request = async <T>(
+  endpoint: string,
+  options: RequestInit = {},
+  includeAuth = true,
+): Promise<T> => {
+  const headers = getHeaders(includeAuth);
+  const config: RequestInit = {
+    ...options,
+    headers: {
+      ...headers,
+      ...options.headers,
+    },
+  };
+
+  const response = await fetch(endpoint, config);
+  return handleResponse<T>(response);
 };
 
 export const api = {
@@ -201,8 +235,7 @@ export const api = {
 
   fetchHealth: async (): Promise<HealthResponse | null> => {
     try {
-      const response = await fetch('/health');
-      return handleResponse<HealthResponse>(response);
+      return await request<HealthResponse>('/health', {}, false);
     } catch (error) {
       logger.error('Failed to fetch health:', error);
       return null;
@@ -211,8 +244,7 @@ export const api = {
 
   fetchVersion: async (): Promise<Record<string, string> | null> => {
     try {
-      const response = await fetch('/version');
-      return handleResponse<Record<string, string>>(response);
+      return await request<Record<string, string>>('/version', {}, false);
     } catch (error) {
       logger.error('Failed to fetch version:', error);
       return null;
@@ -224,30 +256,24 @@ export const api = {
   // ---------------------------------------------------------------------------
 
   search: async (query: string, k = 10, filters: Record<string, unknown> = {}): Promise<SearchResponse> => {
-    const response = await fetch('/api/v1/search', {
+    return await request<SearchResponse>('/api/v1/search', {
       method: 'POST',
-      headers: getHeaders(),
       body: JSON.stringify({ query, k, filters }),
     });
-    return handleResponse<SearchResponse>(response);
   },
 
   ask: async (query: string, threadId?: string, k = 10): Promise<AnswerResponse> => {
-    const response = await fetch('/api/v1/answer', {
+    return await request<AnswerResponse>('/api/v1/answer', {
       method: 'POST',
-      headers: getHeaders(),
       body: JSON.stringify({ query, thread_id: threadId, k }),
     });
-    return handleResponse<AnswerResponse>(response);
   },
 
   chat: async (messages: ChatMessage[], threadId?: string, k = 10): Promise<ChatResponse> => {
-    const response = await fetch('/api/v1/chat', {
+    return await request<ChatResponse>('/api/v1/chat', {
       method: 'POST',
-      headers: getHeaders(),
       body: JSON.stringify({ messages, thread_id: threadId, k }),
     });
-    return handleResponse<ChatResponse>(response);
   },
 
   // ---------------------------------------------------------------------------
@@ -256,22 +282,18 @@ export const api = {
 
   listS3Folders: async (prefix = 'Outlook/', limit = 100): Promise<ListS3FoldersResponse> => {
     const params = new URLSearchParams({ prefix, limit: String(limit) });
-    const response = await fetch(`/api/v1/ingest/list?${params}`);
-    return handleResponse<ListS3FoldersResponse>(response);
+    return await request<ListS3FoldersResponse>(`/api/v1/ingest/list?${params}`);
   },
 
   startIngestion: async (prefix = 'Outlook/', limit?: number, dryRun = false): Promise<IngestJobResponse> => {
-    const response = await fetch('/api/v1/ingest/s3', {
+    return await request<IngestJobResponse>('/api/v1/ingest/s3', {
       method: 'POST',
-      headers: getHeaders(),
       body: JSON.stringify({ prefix, limit, dry_run: dryRun }),
     });
-    return handleResponse<IngestJobResponse>(response);
   },
 
   getIngestionStatus: async (jobId: string): Promise<IngestStatusResponse> => {
-    const response = await fetch(`/api/v1/ingest/status/${jobId}`);
-    return handleResponse<IngestStatusResponse>(response);
+    return await request<IngestStatusResponse>(`/api/v1/ingest/status/${jobId}`);
   },
 
   // ---------------------------------------------------------------------------
@@ -279,14 +301,12 @@ export const api = {
   // ---------------------------------------------------------------------------
 
   runDoctor: async (): Promise<DoctorReport> => {
-    const response = await fetch('/api/v1/admin/doctor', { method: 'POST' });
-    return handleResponse<DoctorReport>(response);
+    return await request<DoctorReport>('/api/v1/admin/doctor', { method: 'POST' });
   },
 
   fetchStatus: async (): Promise<SystemStatus | null> => {
     try {
-      const response = await fetch('/api/v1/admin/status');
-      return handleResponse<SystemStatus>(response);
+      return await request<SystemStatus>('/api/v1/admin/status');
     } catch (error) {
       logger.error('Failed to fetch status:', error);
       return null;
@@ -295,8 +315,7 @@ export const api = {
 
   fetchConfig: async (): Promise<SystemConfig | null> => {
     try {
-      const response = await fetch('/api/v1/admin/config');
-      return handleResponse<SystemConfig>(response);
+      return await request<SystemConfig>('/api/v1/admin/config');
     } catch (error) {
       logger.error('Failed to fetch config:', error);
       return null;
@@ -308,30 +327,24 @@ export const api = {
   // ---------------------------------------------------------------------------
 
   draftEmail: async (instruction: string, threadId?: string, tone = 'professional'): Promise<DraftEmailResponse> => {
-    const response = await fetch('/api/v1/draft', {
+    return await request<DraftEmailResponse>('/api/v1/draft', {
       method: 'POST',
-      headers: getHeaders(),
       body: JSON.stringify({ instruction, thread_id: threadId, tone }),
     });
-    return handleResponse<DraftEmailResponse>(response);
   },
 
   summarizeThread: async (threadId: string, maxLength = 500): Promise<SummarizeResponse> => {
-    const response = await fetch('/api/v1/summarize', {
+    return await request<SummarizeResponse>('/api/v1/summarize', {
       method: 'POST',
-      headers: getHeaders(),
       body: JSON.stringify({ thread_id: threadId, max_length: maxLength }),
     });
-    return handleResponse<SummarizeResponse>(response);
   },
 
   pushDocuments: async (documents: PushDocument[], generateEmbeddings = true): Promise<PushIngestResponse> => {
-    const response = await fetch('/api/v1/ingest/push', {
+    return await request<PushIngestResponse>('/api/v1/ingest/push', {
       method: 'POST',
-      headers: getHeaders(),
       body: JSON.stringify({ documents, generate_embeddings: generateEmbeddings }),
     });
-    return handleResponse<PushIngestResponse>(response);
   },
 
   // ---------------------------------------------------------------------------
@@ -339,12 +352,14 @@ export const api = {
   // ---------------------------------------------------------------------------
 
   login: async (username: string, password: string): Promise<LoginResponse> => {
-    const response = await fetch('/api/v1/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    });
-    return handleResponse<LoginResponse>(response);
+    return await request<LoginResponse>(
+      '/api/v1/auth/login',
+      {
+        method: 'POST',
+        body: JSON.stringify({ username, password }),
+      },
+      false, // Do not include auth token for login request
+    );
   },
 
   setAuthToken: (token: string | null) => {

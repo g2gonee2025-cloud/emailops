@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 
 interface AuthContextType {
@@ -12,15 +13,19 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // FIX: Restore reading the token from localStorage to persist sessions.
   const [token, setToken] = useState<string | null>(() => {
     return localStorage.getItem('auth_token');
   });
+  const navigate = useNavigate();
 
   const isAuthenticated = !!token;
 
+  const logout = useCallback(() => {
+    setToken(null);
+    navigate('/login');
+  }, [navigate]);
+
   useEffect(() => {
-    // FIX: Restore logic to synchronize the token with localStorage.
     if (token) {
       localStorage.setItem('auth_token', token);
       api.setAuthToken(token);
@@ -29,28 +34,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       api.setAuthToken(null);
     }
 
-    // Keep the new unauthorized event handler.
     const handleUnauthorized = () => {
       logout();
     };
-    window.addEventListener('unauthorized', handleUnauthorized);
+
+    window.addEventListener('cortex-unauthorized', handleUnauthorized);
+
     return () => {
-      window.removeEventListener('unauthorized', handleUnauthorized);
+      window.removeEventListener('cortex-unauthorized', handleUnauthorized);
     };
-  }, [token]);
+  }, [token, logout]);
 
   const login = async (username: string, password: string) => {
     try {
       const response = await api.login(username, password);
       setToken(response.access_token);
     } catch (error) {
+      // Re-throw the error to be handled by the UI component
       console.error('Login failed:', error);
       throw error;
     }
-  };
-
-  const logout = () => {
-    setToken(null);
   };
 
   return (

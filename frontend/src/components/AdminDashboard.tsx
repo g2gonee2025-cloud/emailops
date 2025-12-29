@@ -75,7 +75,7 @@ export function AdminDashboard() {
         const report = await api.runDoctor() as DoctorReport;
         const redactedChecks = report.checks.map(check => ({
             ...check,
-            details: redactObject(check.details),
+            details: redactObject(check.details) ?? undefined,
         }));
         setDoctorReport({ ...report, checks: redactedChecks });
     } catch(err) {
