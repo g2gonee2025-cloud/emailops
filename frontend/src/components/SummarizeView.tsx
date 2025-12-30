@@ -4,7 +4,7 @@ import { useSummarize } from '../hooks/useSummarize';
 import GlassCard from './ui/GlassCard';
 import { Alert, AlertDescription, AlertTitle } from './ui/Alert';
 import { Skeleton } from './ui/Skeleton';
-import { useToast } from './ui/Toast';
+import { useToast } from '../contexts/toastContext';
 import { Loader2, Sparkles, AlertTriangle } from 'lucide-react';
 import type { ThreadSummary } from '../schemas/summarize';
 

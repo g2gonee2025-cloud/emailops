@@ -26,3 +26,23 @@ export const statusDataSchema = z.object({
 export type DoctorCheck = z.infer<typeof doctorCheckSchema>;
 export type DoctorReport = z.infer<typeof doctorReportSchema>;
 export type StatusData = z.infer<typeof statusDataSchema>;
+
+/**
+ * @description Redacts sensitive keys from an object.
+ * @param obj The object to redact.
+ * @returns A new object with sensitive values replaced.
+ */
+export function redactObject<T extends Record<string, unknown> | null | undefined>(obj: T): T {
+    if (!obj) return obj;
+
+    const redacted = { ...obj };
+    const sensitiveKeywords = ['key', 'secret', 'token', 'password', 'url'];
+
+    for (const key in redacted) {
+        if (sensitiveKeywords.some(keyword => key.toLowerCase().includes(keyword))) {
+            (redacted as any)[key] = '••••••••';
+        }
+    }
+
+    return redacted;
+}
