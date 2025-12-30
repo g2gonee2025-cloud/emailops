@@ -775,6 +775,9 @@ VIEWS: list[dict[str, str]] = [
         "view_file": "frontend/src/components/SearchView.tsx",
         "hook": "useSearch",
         "hook_file": "frontend/src/hooks/useSearch.ts",
+        "schema_file": "frontend/src/schemas/search.ts",
+        "test_file": "frontend/src/tests/SearchView.test.tsx",
+        "e2e_file": "frontend/e2e/search.spec.ts",
     },
     {
         "view": "DraftView",
