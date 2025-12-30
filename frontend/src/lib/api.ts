@@ -5,7 +5,7 @@
  */
 
 import { z } from 'zod';
-import { DraftSchema } from '../schemas/draft';
+import { DraftFormSchema } from '../schemas/draft';
 import { logger } from './logger';
 import {
   doctorReportSchema,
@@ -109,7 +109,7 @@ export interface HealthResponse {
 // Draft Email Types
 const DraftEmailResponseSchema = z.object({
   correlation_id: z.string().optional(),
-  draft: DraftSchema,
+  draft: DraftFormSchema,
   confidence: z.number(),
   iterations: z.number(),
 });
