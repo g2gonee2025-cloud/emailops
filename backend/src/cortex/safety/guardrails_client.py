@@ -17,7 +17,11 @@ from typing import Any, TypeVar
 from cortex.common.exceptions import LLMOutputSchemaError
 from cortex.llm.client import complete_json
 from cortex.observability import trace_operation
-from cortex.prompts import get_prompt
+from cortex.prompts import (
+    SYSTEM_GUARDRAILS_REPAIR,
+    USER_GUARDRAILS_REPAIR,
+    construct_prompt_messages,
+)
 from pydantic import BaseModel, Field, ValidationError
 
 logger = logging.getLogger(__name__)
@@ -83,18 +87,27 @@ def attempt_llm_repair(
             or "- Unknown validation error"
         )
 
-        full_prompt = get_prompt(
-            "GUARDRAILS_REPAIR",
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_GUARDRAILS_REPAIR,
+            user_prompt_template=USER_GUARDRAILS_REPAIR,
             error=errors_text,
             invalid_json=json.dumps(invalid_json, indent=2),
             target_schema=json.dumps(schema_json, indent=2),
             validation_errors=errors_text,
         )
-        full_prompt += "\n\nRespond with ONLY valid JSON that satisfies the schema."
+        # The new `complete_json` expects a single prompt string, but it's now safer.
+        # We'll reconstruct the prompt for it, preserving the message separation benefits
+        # as much as possible within the deprecated function's constraints.
+        system_content = next(
+            (m["content"] for m in messages if m["role"] == "system"), ""
+        )
+        user_content = next((m["content"] for m in messages if m["role"] == "user"), "")
+        reconstructed_prompt = f"{system_content}\n\n{user_content}"
+
         try:
             # Use JSON mode for repair
             repaired = complete_json(
-                prompt=full_prompt,
+                prompt=reconstructed_prompt,
                 schema=schema_json,
             )
 

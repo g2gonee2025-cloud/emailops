@@ -1000,84 +1000,43 @@ class LLMRuntime:
             f"Do not include markdown. Return ONLY the JSON object."
         )
 
-        initial_messages = [
+        messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": prompt},
         ]
 
-        def _call_model_for_json(msgs: list[dict[str, str]]) -> str:
-            base_kwargs = dict(kwargs)
-            base_kwargs.setdefault("temperature", 0.0)
-            base_kwargs.setdefault("max_tokens", 2048)
-            base_kwargs.setdefault("response_format", {"type": "json_object"})
-            try:
-                # Use the new secure method
-                return self.complete_messages(msgs, **base_kwargs)
-            except ProviderError as e:
-                # Some OpenAI-compatible servers may not implement response_format.
-                msg = str(e).lower()
-                if "response_format" in msg or "json_object" in msg:
-                    base_kwargs.pop("response_format", None)
-                    return self.complete_messages(msgs, **base_kwargs)
+        # Set kwargs for JSON mode and call the underlying secure message-based completion
+        base_kwargs = dict(kwargs)
+        base_kwargs.setdefault("temperature", 0.0)
+        base_kwargs.setdefault("max_tokens", 2048)
+        base_kwargs.setdefault("response_format", {"type": "json_object"})
+
+        raw_output = ""
+        try:
+            raw_output = self.complete_messages(messages, **base_kwargs)
+        except ProviderError as e:
+            # Fallback for servers that don't support JSON mode
+            msg = str(e).lower()
+            if "response_format" in msg or "json_object" in msg:
+                base_kwargs.pop("response_format", None)
+                raw_output = self.complete_messages(messages, **base_kwargs)
+            else:
                 raise
 
-        raw_output: str | None = None
-        last_error: str | None = None
-
-        for attempt in range(max_repair_attempts + 1):
-            if attempt == 0:
-                raw_output = _call_model_for_json(initial_messages)
-            else:
-                from cortex.prompts import (
-                    SYSTEM_GUARDRAILS_REPAIR,
-                    USER_GUARDRAILS_REPAIR,
-                    construct_prompt_messages,
-                )
-
-                # Use the proper repair prompt templates
-                repair_messages = construct_prompt_messages(
-                    system_prompt_template=SYSTEM_GUARDRAILS_REPAIR,
-                    user_prompt_template=USER_GUARDRAILS_REPAIR,
-                    error=last_error or "Unknown",
-                    invalid_json=raw_output or "",
-                    target_schema=schema_json,
-                    validation_errors=last_error or "N/A",
-                )
-                raw_output = _call_model_for_json(repair_messages)
-
-            try:
-                # Robust extraction first
-                parsed = _try_load_json(raw_output or "")
-
-                validation_error = _validate_json_schema(parsed, schema)
-                if validation_error:
-                    last_error = validation_error
-                    logger.warning(
-                        "JSON schema validation failed (attempt %d): %s",
-                        attempt + 1,
-                        validation_error,
-                    )
-                    continue
-                return parsed
-            except ValueError as e:
-                # _try_load_json raises ValueError on parsing failure
-                last_error = str(e)
-                logger.warning("JSON decode failed (attempt %d): %s", attempt + 1, e)
-
-            except Exception as e:
-                last_error = str(e)
-                logger.warning("JSON completion error (attempt %d): %s", attempt + 1, e)
-
-        raise LLMOutputSchemaError(
-            message=(
-                "Failed to generate valid JSON after "
-                f"{max_repair_attempts + 1} attempts: {last_error}"
-            ),
-            schema_name=schema.get("title", "unknown"),
-            raw_output=(raw_output[:1000] if raw_output else None),
-            repair_attempts=max_repair_attempts,
-            error_code="JSON_SCHEMA_VALIDATION_FAILED",
-        )
+        # The caller (`_complete_with_guardrails`) is now responsible for validation
+        # and repair. This function's only job is to get a JSON object.
+        try:
+            return _try_load_json(raw_output or "")
+        except ValueError as e:
+            # Wrap parsing errors in the expected exception type for the guardrails
+            # to catch and attempt repair.
+            raise LLMOutputSchemaError(
+                message=f"Failed to parse JSON from LLM output: {e}",
+                schema_name=schema.get("title", "unknown"),
+                raw_output=(raw_output[:1000] if raw_output else None),
+                repair_attempts=0,
+                error_code="JSON_DECODE_FAILED",
+            )
 
 
 # =============================================================================

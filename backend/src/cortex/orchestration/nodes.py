@@ -53,7 +53,6 @@ from cortex.prompts import (
     USER_SUMMARIZE_FINAL,
     USER_SUMMARIZE_IMPROVER,
     construct_prompt_messages,
-    get_prompt,
 )
 from cortex.retrieval.hybrid_search import (
     KBSearchInput,
@@ -115,11 +114,21 @@ def _complete_with_guardrails(
     user_content = next((m["content"] for m in messages if m["role"] == "user"), "")
     reconstructed_prompt = f"{system_content}\n\n{user_content}"
 
-    raw = complete_json(prompt=reconstructed_prompt, schema=schema)
     try:
-        return model_cls.model_validate(raw)
-    except ValidationError:
-        raw_payload = json.dumps(raw, ensure_ascii=False)
+        # Directly call the refactored, safer `complete_json`
+        raw_json = complete_json(prompt=reconstructed_prompt, schema=schema)
+        return model_cls.model_validate(raw_json)
+    except (ValidationError, LLMOutputSchemaError) as e:
+        # If validation or parsing fails, use the guardrails for repair.
+        # The `validate_with_repair` function expects a string payload.
+        raw_payload = ""
+        if isinstance(e, LLMOutputSchemaError) and e.raw_output:
+            raw_payload = e.raw_output
+        elif isinstance(e, ValidationError):
+            # If we have a validation error, we need to get the invalid data
+            # to attempt a repair. Let's assume the raw_json was the issue.
+            raw_payload = json.dumps(getattr(e, "raw_data", None), ensure_ascii=False)
+
         return validate_with_repair(
             raw_payload,
             model_cls,
