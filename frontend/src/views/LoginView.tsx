@@ -1,30 +1,29 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useLogin } from '../hooks/useLogin';
 import { ShieldCheck, Loader2, AlertCircle } from 'lucide-react';
 
 export default function LoginView() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { login } = useAuth();
+  const { setToken } = useAuth();
   const navigate = useNavigate();
+  const { loginAsync, error, isLoading, isSuccess, data } = useLogin();
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setIsLoading(true);
-
-    try {
-      await login(username.trim(), password.trim());
-      navigate('/dashboard');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
-    } finally {
-      setIsLoading(false);
-    }
+    loginAsync([username.trim(), password.trim()]);
   };
+
+  useEffect(() => {
+    if (isSuccess && data) {
+      setToken(data.access_token);
+      navigate('/dashboard');
+    }
+  }, [isSuccess, data, setToken, navigate]);
+
+  const displayError = error instanceof Error ? error.message : null;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] p-4">
@@ -48,10 +47,10 @@ export default function LoginView() {
           <p className="text-white/40 text-center mb-8">Sign in to continue</p>
 
           {/* Error Alert */}
-          {error && (
+          {displayError && (
             <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-400">{error}</p>
+              <p className="text-sm text-red-400">{displayError}</p>
             </div>
           )}
 
