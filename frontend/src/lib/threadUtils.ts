@@ -1,38 +1,68 @@
 /**
- * @file Utilities for sorting and processing thread chunks.
- * @description These are pure functions that operate on thread data structures.
- */
-
-import type { SearchResult } from './api';
-
-/**
- * A Thread is represented as an array of SearchResult chunks.
- */
-export type Thread = SearchResult[];
-
-/**
- * Sorts the chunks within a thread. The primary sort key is relevance score (descending),
- * with a secondary sort on the chunk_id (ascending) to ensure stability.
+ * Thread Utilities
  *
- * @param thread - The array of SearchResult chunks to sort.
- * @returns A new array of sorted SearchResult chunks.
+ * This module provides pure functions for sorting, flattening, and otherwise
+ * manipulating thread chunks and messages. Its purpose is to centralize
+ * common thread operations and ensure consistent handling of thread data
+ * structures throughout the frontend application.
+ *
+ * As pure functions, these utilities are deterministic and have no side effects,
+ * making them easy to test and reason about.
  */
-export const sortThreadChunks = (thread: Thread): Thread => {
-  return [...thread].sort((a, b) => {
-    if (a.score !== b.score) {
-      return b.score - a.score;
+
+import { ChatMessage, SearchResult } from './api';
+
+/**
+ * A generic type representing any object that has a timestamp.
+ * The timestamp can be either a string or a number.
+ */
+type Timestamped =
+  | { metadata?: { timestamp?: string | number } }
+  | { timestamp?: string | number };
+
+/**
+ * Sorts an array of objects by a timestamp property.
+ *
+ * The function is generic and can handle any object that has a `timestamp`
+ * property or a `metadata.timestamp` property. The timestamp can be a string
+ * in ISO 8601 format or a number (Unix epoch).
+ *
+ * @param items The array of items to sort.
+ * @param order The sort order, either 'asc' for ascending or 'desc' for descending.
+ * @returns A new array with the items sorted by timestamp.
+ */
+export const sortByTimestamp = <T extends Timestamped>(
+  items: T[],
+  order: 'asc' | 'desc' = 'asc',
+): T[] => {
+  return [...items].sort((a, b) => {
+    const tsA = 'metadata' in a ? a.metadata?.timestamp : a.timestamp;
+    const tsB = 'metadata' in b ? b.metadata?.timestamp : b.timestamp;
+
+    if (tsA === undefined || tsB === undefined) {
+      return 0;
     }
-    return a.chunk_id.localeCompare(b.chunk_id);
+
+    const dateA = new Date(tsA).getTime();
+    const dateB = new Date(tsB).getTime();
+
+    if (isNaN(dateA) || isNaN(dateB)) {
+      return 0;
+    }
+
+    return order === 'asc' ? dateA - dateB : dateB - dateA;
   });
 };
 
 /**
- * Flattens the content of all chunks in a thread into a single string,
- * with each chunk's content separated by a double newline.
+ * Flattens an array of threads into a single array of items.
  *
- * @param thread - The array of SearchResult chunks to flatten.
- * @returns A single string containing the concatenated content.
+ * This function is useful for combining search results or messages from
+ * multiple threads into a single list for display or processing.
+ *
+ * @param threads An array of threads, where each thread is an array of items.
+ * @returns A new array containing all the items from all threads.
  */
-export const flattenThreadContent = (thread: Thread): string => {
-  return thread.map(chunk => chunk.content).join('\n\n');
+export const flattenThreads = <T>(threads: T[][]): T[] => {
+  return threads.flat();
 };

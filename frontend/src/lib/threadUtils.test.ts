@@ -1,72 +1,124 @@
 import { describe, it, expect } from 'vitest';
-import { sortThreadChunks, flattenThreadContent } from './threadUtils';
-import type { Thread } from './threadUtils';
-
-const createMockChunk = (chunk_id: string, score: number, content: string): Thread[number] => ({
-  chunk_id,
-  score,
-  content,
-  conversation_id: `conv-${chunk_id}`,
-});
+import { sortByTimestamp, flattenThreads } from './threadUtils';
+import { SearchResult } from './api';
 
 describe('threadUtils', () => {
-  describe('sortThreadChunks', () => {
-    it('should sort chunks by score in descending order', () => {
-      const thread: Thread = [
-        createMockChunk('c1', 0.8, 'Content 1'),
-        createMockChunk('c2', 0.9, 'Content 2'),
-        createMockChunk('c3', 0.7, 'Content 3'),
+  describe('sortByTimestamp', () => {
+    it('should sort search results by timestamp in ascending order', () => {
+      const items: SearchResult[] = [
+        {
+          chunk_id: '1',
+          conversation_id: 'a',
+          content: '',
+          score: 1,
+          metadata: { timestamp: '2023-01-02T00:00:00Z' },
+        },
+        {
+          chunk_id: '2',
+          conversation_id: 'a',
+          content: '',
+          score: 1,
+          metadata: { timestamp: '2023-01-01T00:00:00Z' },
+        },
+        {
+          chunk_id: '3',
+          conversation_id: 'a',
+          content: '',
+          score: 1,
+          metadata: { timestamp: '2023-01-03T00:00:00Z' },
+        },
       ];
-      const sorted = sortThreadChunks(thread);
-      expect(sorted.map(c => c.chunk_id)).toEqual(['c2', 'c1', 'c3']);
+
+      const sorted = sortByTimestamp(items, 'asc');
+      expect(sorted[0].metadata?.timestamp).toBe('2023-01-01T00:00:00Z');
+      expect(sorted[1].metadata?.timestamp).toBe('2023-01-02T00:00:00Z');
+      expect(sorted[2].metadata?.timestamp).toBe('2023-01-03T00:00:00Z');
     });
 
-    it('should maintain stable sort using chunk_id when scores are equal', () => {
-      const thread: Thread = [
-        createMockChunk('c2', 0.9, 'Content 2'),
-        createMockChunk('c1', 0.9, 'Content 1'),
-        createMockChunk('c3', 0.7, 'Content 3'),
+    it('should sort search results by timestamp in descending order', () => {
+      const items: SearchResult[] = [
+        {
+          chunk_id: '1',
+          conversation_id: 'a',
+          content: '',
+          score: 1,
+          metadata: { timestamp: '2023-01-02T00:00:00Z' },
+        },
+        {
+          chunk_id: '2',
+          conversation_id: 'a',
+          content: '',
+          score: 1,
+          metadata: { timestamp: '2023-01-01T00:00:00Z' },
+        },
+        {
+          chunk_id: '3',
+          conversation_id: 'a',
+          content: '',
+          score: 1,
+          metadata: { timestamp: '2023-01-03T00:00:00Z' },
+        },
       ];
-      const sorted = sortThreadChunks(thread);
-      expect(sorted.map(c => c.chunk_id)).toEqual(['c1', 'c2', 'c3']);
+
+      const sorted = sortByTimestamp(items, 'desc');
+      expect(sorted[0].metadata?.timestamp).toBe('2023-01-03T00:00:00Z');
+      expect(sorted[1].metadata?.timestamp).toBe('2023-01-02T00:00:00Z');
+      expect(sorted[2].metadata?.timestamp).toBe('2023-01-01T00:00:00Z');
     });
 
-    it('should handle an empty thread', () => {
-      const thread: Thread = [];
-      const sorted = sortThreadChunks(thread);
-      expect(sorted).toEqual([]);
-    });
-
-    it('should not mutate the original thread array', () => {
-      const thread: Thread = [
-        createMockChunk('c1', 0.8, 'Content 1'),
-        createMockChunk('c2', 0.9, 'Content 2'),
+    it('should handle items with missing timestamps gracefully', () => {
+      const items: SearchResult[] = [
+        {
+          chunk_id: '1',
+          conversation_id: 'a',
+          content: '',
+          score: 1,
+          metadata: { timestamp: '2023-01-02T00:00:00Z' },
+        },
+        { chunk_id: '2', conversation_id: 'a', content: '', score: 1 },
+        {
+          chunk_id: '3',
+          conversation_id: 'a',
+          content: '',
+          score: 1,
+          metadata: { timestamp: '2023-01-01T00:00:00Z' },
+        },
       ];
-      const threadCopy = [...thread];
-      sortThreadChunks(thread);
-      expect(thread).toEqual(threadCopy);
+
+      const sorted = sortByTimestamp(items);
+      // The order of items with missing timestamps is not guaranteed,
+      // but the ones with timestamps should be sorted correctly.
+      const timestamps = sorted
+        .map((item) => item.metadata?.timestamp)
+        .filter(Boolean);
+      expect(timestamps).toEqual([
+        '2023-01-01T00:00:00Z',
+        '2023-01-02T00:00:00Z',
+      ]);
     });
   });
 
-  describe('flattenThreadContent', () => {
-    it('should join chunk content with double newlines', () => {
-      const thread: Thread = [
-        createMockChunk('c1', 0.9, 'First message.'),
-        createMockChunk('c2', 0.8, 'Second message.'),
-        createMockChunk('c3', 0.7, 'Third message.'),
+  describe('flattenThreads', () => {
+    it('should flatten an array of threads into a single array', () => {
+      const threads = [
+        [1, 2, 3],
+        [4, 5],
+        [6, 7, 8],
       ];
-      const expected = 'First message.\n\nSecond message.\n\nThird message.';
-      expect(flattenThreadContent(thread)).toBe(expected);
+      const flattened = flattenThreads(threads);
+      expect(flattened).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
     });
 
-    it('should handle a thread with a single chunk', () => {
-      const thread: Thread = [createMockChunk('c1', 0.9, 'Only message.')];
-      expect(flattenThreadContent(thread)).toBe('Only message.');
+    it('should handle an empty array of threads', () => {
+      const threads: number[][] = [];
+      const flattened = flattenThreads(threads);
+      expect(flattened).toEqual([]);
     });
 
-    it('should return an empty string for an empty thread', () => {
-      const thread: Thread = [];
-      expect(flattenThreadContent(thread)).toBe('');
+    it('should handle threads with a single item', () => {
+      const threads = [[1], [2], [3]];
+      const flattened = flattenThreads(threads);
+      expect(flattened).toEqual([1, 2, 3]);
     });
   });
 });
