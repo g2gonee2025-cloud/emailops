@@ -1,22 +1,17 @@
 import { z } from 'zod';
 
-export const DraftSchema = z.object({
-  to: z.array(z.string().email()).min(1, 'At least one recipient is required'),
-  cc: z.array(z.string().email()).optional(),
-  bcc: z.array(z.string().email()).optional(),
-  subject: z.string().min(1, 'Subject is required'),
-  body: z.string().min(1, 'Body is required'),
+/**
+ * @description Zod schema for the email draft form.
+ * Defines the validation rules for the fields used to generate an email draft.
+ */
+export const DraftFormSchema = z.object({
+  instruction: z.string().min(1, 'Instruction cannot be empty.'),
+  threadId: z.string().optional(),
+  tone: z.string().optional(),
 });
 
-export type Draft = z.infer<typeof DraftSchema>;
-
-export const isInvalidEmail = (email: string) => {
-    return !z.string().email().safeParse(email).success;
-}
-
-export const DraftGenerationFormSchema = z.object({
-    instruction: z.string().min(1, 'Instruction is required'),
-    threadId: z.string().optional(),
-});
-
-export type DraftGenerationForm = z.infer<typeof DraftGenerationFormSchema>;
+/**
+ * @description TypeScript type inferred from the DraftFormSchema.
+ * Represents the structure of the data for the email draft form.
+ */
+export type DraftForm = z.infer<typeof DraftFormSchema>;
