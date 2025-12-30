@@ -1,94 +1,17 @@
 
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import GlassCard from '../components/ui/GlassCard';
 import { StatusIndicator } from '../components/ui/StatusIndicator';
-import { api } from '../lib/api';
 import { Activity, Server, Settings, Play, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { redactObject } from '../schemas/admin';
+import { useAdmin } from '../hooks/useAdmin';
+import { Skeleton } from '../components/ui/Skeleton';
+import { Alert, AlertDescription, AlertTitle } from '../components/ui/Alert';
+import { useToast } from '../contexts/toastContext';
+import { Button } from '../components/ui/Button';
 
-interface DoctorCheck {
-  name: string;
-  status: 'pass' | 'fail' | 'warn';
-  message?: string;
-  details?: Record<string, unknown>;
-}
-
-interface DoctorReport {
-  overall_status: 'healthy' | 'degraded' | 'unhealthy';
-  checks: DoctorCheck[];
-}
-
-interface StatusData {
-    env: string;
-    service: string;
-    status: string;
-}
-
-const SENSITIVE_KEY_SUBSTRINGS = ['KEY', 'SECRET', 'TOKEN', 'URL', 'PASS', 'CONNECTION_STRING', 'PW'];
-
-const redactObject = (obj: Record<string, unknown> | null | undefined): Record<string, unknown> | null => {
-    if (!obj) return null;
-
-    return Object.fromEntries(
-        Object.entries(obj).map(([key, value]) => {
-            const upperKey = key.toUpperCase();
-            if (SENSITIVE_KEY_SUBSTRINGS.some(substring => upperKey.includes(substring))) {
-                return [key, '******'];
-            }
-            return [key, value];
-        })
-    );
-};
-
-
-export default function AdminDashboard() {
-  const [doctorReport, setDoctorReport] = useState<DoctorReport | null>(null);
-  const [isRunningDoctor, setIsRunningDoctor] = useState(false);
-  const [status, setStatus] = useState<StatusData | null>(null);
-  const [config, setConfig] = useState<Record<string, unknown> | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [doctorError, setDoctorError] = useState<string | null>(null);
-
-  useEffect(() => {
-    loadInitialData();
-  }, []);
-
-  const loadInitialData = async () => {
-    setError(null);
-    try {
-        const [statusData, configData] = await Promise.all([
-            api.fetchStatus(),
-            api.fetchConfig()
-        ]);
-        setStatus(statusData as StatusData);
-        setConfig(redactObject(configData as unknown as Record<string, unknown>));
-    } catch (err) {
-        setError("Failed to load initial environment data. Please try again later.");
-        console.error(err);
-    }
-  };
-
-  const runDiagnostics = async () => {
-    setIsRunningDoctor(true);
-    setDoctorError(null);
-    setDoctorReport(null);
-    try {
-        const report = await api.runDoctor() as DoctorReport;
-        const redactedChecks = report.checks.map(check => ({
-            ...check,
-            details: redactObject(check.details) ?? undefined,
-        }));
-        setDoctorReport({ ...report, checks: redactedChecks });
-    } catch(err) {
-        setDoctorError("An error occurred while running diagnostics. Please check the console.");
-        console.error(err);
-    }
-    finally {
-        setIsRunningDoctor(false);
-    }
-  };
-
-  const getStatusColor = (status: string) => {
+const getStatusColor = (status: string) => {
     switch (status) {
       case 'pass': return 'text-green-400';
       case 'fail': return 'text-red-400';
@@ -106,8 +29,58 @@ export default function AdminDashboard() {
     }
   };
 
+export default function AdminDashboard() {
+    const { toast } = useToast();
+    const {
+        status, isStatusLoading, statusError,
+        config, isConfigLoading, configError,
+        runDoctor, isDoctorRunning, doctorReport, doctorError,
+    } = useAdmin();
+
+    useEffect(() => {
+        if (statusError) {
+            toast({
+                variant: "destructive",
+                title: "Error loading status",
+                description: statusError.message,
+            });
+        }
+    }, [statusError, toast]);
+
+    useEffect(() => {
+        if (configError) {
+            toast({
+                variant: "destructive",
+                title: "Error loading configuration",
+                description: configError.message,
+            });
+        }
+    }, [configError, toast]);
+
+    useEffect(() => {
+        if (doctorError) {
+            toast({
+                variant: "destructive",
+                title: "Error running diagnostics",
+                description: doctorError.message,
+            });
+        }
+    }, [doctorError, toast]);
+
+    const redactedConfig = useMemo(() => redactObject(config), [config]);
+
+    const redactedDoctorReport = useMemo(() => {
+        if (!doctorReport) return null;
+        const redactedChecks = doctorReport.checks.map(check => ({
+            ...check,
+            details: redactObject(check.details) ?? undefined,
+        }));
+        return { ...doctorReport, checks: redactedChecks };
+    }, [doctorReport]);
+
+
   return (
-    <div className="p-8 space-y-8 animate-fade-in pb-24">
+    <div className="p-8 space-y-8 pb-24">
       <header className="flex justify-between items-center">
         <div>
           <h1 className="text-4xl font-bold tracking-tight mb-2 bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
@@ -118,7 +91,7 @@ export default function AdminDashboard() {
         <div className="flex gap-4">
             <GlassCard className="px-4 py-2 flex items-center gap-2">
                 <StatusIndicator status={status ? 'healthy' : 'inactive'} />
-                <span className="text-sm font-medium">{status?.env?.toUpperCase() || 'UNKNOWN'}</span>
+                {isStatusLoading ? <Skeleton className="h-5 w-16" /> : <span className="text-sm font-medium">{status?.env?.toUpperCase() || 'UNKNOWN'}</span>}
             </GlassCard>
         </div>
       </header>
@@ -133,46 +106,47 @@ export default function AdminDashboard() {
                     </div>
                     <h2 className="text-xl font-semibold">System Doctor</h2>
                 </div>
-                <button
-                    onClick={runDiagnostics}
-                    disabled={isRunningDoctor}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 transition-all font-medium text-sm"
+                <Button
+                    onClick={() => runDoctor()}
+                    disabled={isDoctorRunning}
                 >
-                    <Play className={cn("w-4 h-4", isRunningDoctor && "animate-spin")} />
-                    {isRunningDoctor ? 'Running Diagnostics...' : 'Run Diagnostics'}
-                </button>
+                    <Play className={cn("w-4 h-4 mr-2", isDoctorRunning && "animate-spin")} />
+                    {isDoctorRunning ? 'Running...' : 'Run Diagnostics'}
+                </Button>
             </div>
 
             <div className="space-y-4 min-h-[200px]">
                 {doctorError && (
-                    <div className="h-full flex flex-col items-center justify-center text-red-400/70 py-12">
-                        <AlertTriangle className="w-12 h-12 mb-4 opacity-50" />
-                        <p className="font-semibold">Diagnostics Failed</p>
-                        <p className="text-sm text-white/30">{doctorError}</p>
-                    </div>
+                    <Alert variant="destructive">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertTitle>Diagnostics Failed</AlertTitle>
+                        <AlertDescription>
+                            An error occurred while running diagnostics. Please check the console for details.
+                        </AlertDescription>
+                    </Alert>
                 )}
 
-                {!doctorReport && !isRunningDoctor && !doctorError &&(
+                {!redactedDoctorReport && !isDoctorRunning && !doctorError &&(
                     <div className="h-full flex flex-col items-center justify-center text-white/20 py-12">
                         <Activity className="w-12 h-12 mb-4 opacity-50" />
                         <p>Ready to scan system health</p>
                     </div>
                 )}
 
-                {doctorReport && (
+                {redactedDoctorReport && (
                     <div className="space-y-3 animate-slide-up">
                          <div className={cn(
                              "p-3 rounded-lg border flex items-center justify-between mb-4",
-                             doctorReport.overall_status === 'healthy' ? "bg-green-500/10 border-green-500/20" : "bg-red-500/10 border-red-500/20"
+                             redactedDoctorReport.overall_status === 'healthy' ? "bg-green-500/10 border-green-500/20" : "bg-red-500/10 border-red-500/20"
                          )}>
                              <span className="font-semibold">Overall Status</span>
                              <span className={cn(
                                  "uppercase font-bold tracking-wider text-sm",
-                                 doctorReport.overall_status === 'healthy' ? "text-green-400" : "text-red-400"
-                             )}>{doctorReport.overall_status}</span>
+                                 redactedDoctorReport.overall_status === 'healthy' ? "text-green-400" : "text-red-400"
+                             )}>{redactedDoctorReport.overall_status}</span>
                          </div>
 
-                        {doctorReport.checks.map((check, idx) => (
+                        {redactedDoctorReport.checks.map((check, idx) => (
                             <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:border-white/10 transition-colors">
                                 <div className="flex items-center gap-3">
                                     {getStatusIcon(check.status)}
@@ -204,13 +178,22 @@ export default function AdminDashboard() {
                     </div>
                     <h2 className="text-xl font-semibold">Environment</h2>
                 </div>
-                {error && (
-                    <div className="text-red-400/70 text-center py-8">
-                        <AlertTriangle className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                        <p>{error}</p>
+                {statusError && (
+                    <Alert variant="destructive">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertTitle>Error</AlertTitle>
+                        <AlertDescription>
+                            {statusError.message}
+                        </AlertDescription>
+                    </Alert>
+                )}
+                {isStatusLoading && (
+                    <div className="grid grid-cols-2 gap-4">
+                        <Skeleton className="h-16" />
+                        <Skeleton className="h-16" />
+                        <Skeleton className="h-16 col-span-2" />
                     </div>
                 )}
-                {!status && !error && <div className="text-white/20 text-center py-8">Loading status...</div>}
                 {status && (
                      <div className="grid grid-cols-2 gap-4">
                         <div className="p-3 rounded-lg bg-white/5 border border-white/5">
@@ -240,16 +223,26 @@ export default function AdminDashboard() {
                     </div>
                     <h2 className="text-xl font-semibold">Configuration</h2>
                 </div>
-                {error && (
-                    <div className="text-red-400/70 text-center py-8">
-                        <AlertTriangle className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                        <p>Could not load configuration.</p>
+                {configError && (
+                    <Alert variant="destructive">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertTitle>Error</AlertTitle>
+                        <AlertDescription>
+                            {configError.message}
+                        </AlertDescription>
+                    </Alert>
+                )}
+                {isConfigLoading && (
+                    <div className="space-y-4">
+                        <Skeleton className="h-8 w-full" />
+                        <Skeleton className="h-8 w-full" />
+                        <Skeleton className="h-8 w-full" />
+                        <Skeleton className="h-8 w-full" />
                     </div>
                 )}
-                {!config && !error && <div className="text-white/20 text-center py-8">Loading configuration...</div>}
-                {config && (
+                {redactedConfig && (
                     <div className="space-y-4">
-                        {Object.entries(config).map(([key, value]) => (
+                        {Object.entries(redactedConfig).map(([key, value]) => (
                              <div key={key} className="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
                                 <span className="text-white/60 capitalize">{key.replace(/_/g, ' ')}</span>
                                 <span className="font-mono text-sm px-2 py-0.5 rounded bg-white/10">
