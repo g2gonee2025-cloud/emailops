@@ -4,10 +4,12 @@
  * Provides typed methods for all backend endpoints.
  */
 
+import { z } from 'zod';
+import { DraftSchema } from '../schemas/draft';
 import { logger } from './logger';
 
 // =============================================================================
-// Type Definitions
+// Type Definitions & Zod Schemas
 // =============================================================================
 
 export interface SearchResult {
@@ -117,19 +119,13 @@ export interface HealthResponse {
 }
 
 // Draft Email Types
-export interface EmailDraft {
-  subject: string;
-  body: string;
-  to?: string[];
-  cc?: string[];
-}
-
-export interface DraftEmailResponse {
-  correlation_id?: string;
-  draft: EmailDraft;
-  confidence: number;
-  iterations: number;
-}
+const DraftEmailResponseSchema = z.object({
+  correlation_id: z.string().optional(),
+  draft: DraftSchema,
+  confidence: z.number(),
+  iterations: z.number(),
+});
+export type DraftEmailResponse = z.infer<typeof DraftEmailResponseSchema>;
 
 // Summarize Types
 export interface ThreadSummary {
@@ -354,17 +350,18 @@ export const api = {
   // Draft & Summarize Endpoints
   // ---------------------------------------------------------------------------
 
-  draftEmail: (
+  draftEmail: async (
     instruction: string,
     threadId?: string,
     tone = 'professional',
     signal?: AbortSignal,
   ): Promise<DraftEmailResponse> => {
-    return request<DraftEmailResponse>('/api/v1/draft', {
+    const response = await request<unknown>('/api/v1/draft', {
       method: 'POST',
       body: JSON.stringify({ instruction, thread_id: threadId, tone }),
       signal,
     });
+    return DraftEmailResponseSchema.parse(response);
   },
 
   summarizeThread: (

@@ -1,8 +1,10 @@
 
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { DraftSchema, type Draft, DraftGenerationFormSchema, type DraftGenerationForm } from '../schemas/draft';
 import GlassCard from '../components/ui/GlassCard';
 import { api } from '../lib/api';
-import type { EmailDraft } from '../lib/api';
 import { cn } from '../lib/utils';
 import { Loader2, PenTool, Copy, Check, RefreshCw } from 'lucide-react';
 
@@ -14,24 +16,30 @@ const TONES = [
 ];
 
 export default function DraftView() {
-  const [instruction, setInstruction] = useState('');
-  const [threadId, setThreadId] = useState('');
   const [tone, setTone] = useState('professional');
   const [isLoading, setIsLoading] = useState(false);
-  const [draft, setDraft] = useState<EmailDraft | null>(null);
+  const [draft, setDraft] = useState<Draft | null>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!instruction.trim() || isLoading) return;
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<DraftGenerationForm>({
+    resolver: zodResolver(DraftGenerationFormSchema),
+  });
+
+  const onSubmit = async (data: DraftGenerationForm) => {
+    if (isLoading) return;
 
     setIsLoading(true);
     setError(null);
     setDraft(null);
 
     try {
-      const response = await api.draftEmail(instruction.trim(), threadId || undefined, tone);
+      const response = await api.draftEmail(data.instruction, data.threadId, tone);
       setDraft(response.draft);
     } catch (err) {
       console.error("Draft generation failed:", err);
@@ -56,8 +64,7 @@ export default function DraftView() {
 
   const handleReset = () => {
     setDraft(null);
-    setInstruction('');
-    setThreadId('');
+    reset({ instruction: '', threadId: '' });
     setError(null);
   };
 
@@ -75,30 +82,30 @@ export default function DraftView() {
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Input Form */}
           {!draft && (
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* Instruction */}
-              <div className="space-y-2">
+              <div>
                 <label className="text-sm font-medium text-white/60">What should the email say?</label>
                 <textarea
-                  value={instruction}
-                  onChange={(e) => setInstruction(e.target.value)}
+                  {...register('instruction')}
                   placeholder="e.g., Reply to John thanking him for the meeting and propose next Tuesday at 2pm..."
-                  className="w-full h-32 px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-white placeholder-white/30 transition-all resize-none"
+                  className="w-full h-32 px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-white placeholder-white/30 transition-all resize-none mt-2"
                   disabled={isLoading}
                 />
+                {errors.instruction && <p className="text-red-400 text-sm mt-1">{errors.instruction.message}</p>}
               </div>
 
               {/* Thread Context (Optional) */}
-              <div className="space-y-2">
+              <div>
                 <label className="text-sm font-medium text-white/60">Thread ID (optional)</label>
                 <input
                   type="text"
-                  value={threadId}
-                  onChange={(e) => setThreadId(e.target.value)}
+                  {...register('threadId')}
                   placeholder="Leave empty to draft without context"
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-white placeholder-white/30 transition-all font-mono text-sm"
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-white placeholder-white/30 transition-all font-mono text-sm mt-2"
                   disabled={isLoading}
                 />
+                {errors.threadId && <p className="text-red-400 text-sm mt-1">{errors.threadId.message}</p>}
               </div>
 
               {/* Tone Selector */}
@@ -126,7 +133,7 @@ export default function DraftView() {
               {/* Submit */}
               <button
                 type="submit"
-                disabled={isLoading || !instruction.trim()}
+                disabled={isLoading}
                 className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 font-medium"
               >
                 {isLoading ? (
