@@ -1,19 +1,40 @@
-import { useState, type FormEvent, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '../contexts/AuthContext';
 import { useLogin } from '../hooks/useLogin';
+import { LoginSchema, type LoginForm } from '../schemas/login';
 import { ShieldCheck, Loader2, AlertCircle } from 'lucide-react';
+import { Input } from '../components/ui/Input';
+import { Button } from '../components/ui/Button';
+import { Label } from '../components/ui/Label';
+import { Alert, AlertDescription } from '../components/ui/Alert';
 
 export default function LoginView() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
   const { setToken } = useAuth();
   const navigate = useNavigate();
   const { loginAsync, error, isLoading, isSuccess, data } = useLogin();
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    loginAsync([username.trim(), password.trim()]);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+  } = useForm<LoginForm>({
+    resolver: zodResolver(LoginSchema),
+    defaultValues: {
+      email: import.meta.env.DEV ? 'testuser@emailops.ai' : '',
+      password: import.meta.env.DEV ? 'test' : '',
+    }
+  });
+
+  const onSubmit = async (formData: LoginForm) => {
+    try {
+      await loginAsync([formData.email, formData.password]);
+    } catch (e) {
+      // error is handled by useEffect
+    }
   };
 
   useEffect(() => {
@@ -23,7 +44,12 @@ export default function LoginView() {
     }
   }, [isSuccess, data, setToken, navigate]);
 
-  const displayError = error instanceof Error ? error.message : null;
+  useEffect(() => {
+    if (error) {
+      const message = error instanceof Error ? error.message : 'An unknown error occurred';
+      setError('root.serverError', { type: 'custom', message });
+    }
+  }, [error, setError]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] p-4">
@@ -46,64 +72,61 @@ export default function LoginView() {
           </h1>
           <p className="text-white/40 text-center mb-8">Sign in to continue</p>
 
-          {/* Error Alert */}
-          {displayError && (
-            <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-400">{displayError}</p>
-            </div>
+          {/* Server Error Alert */}
+          {errors.root?.serverError && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="w-5 h-5" />
+              <AlertDescription>
+                {errors.root.serverError.message}
+              </AlertDescription>
+            </Alert>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-white/60 mb-2">
-                Username
-              </label>
-              <input
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                autoComplete="username"
-                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-white placeholder-white/30 transition-all"
-                placeholder="Enter your username"
-                aria-label="Username"
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-white/60">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                {...register('email')}
+                autoComplete="email"
+                placeholder="Enter your email"
+                aria-invalid={errors.email ? "true" : "false"}
+                className="bg-white/5"
               />
+              {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email.message}</p>}
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-white/60 mb-2">
-                Password
-              </label>
-              <input
+            <div className="space-y-2">
+              <Label htmlFor="password"  className="text-white/60">Password</Label>
+              <Input
                 id="password"
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
+                {...register('password')}
                 autoComplete="current-password"
-                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-white placeholder-white/30 transition-all"
                 placeholder="Enter your password"
-                aria-label="Password"
+                aria-invalid={errors.password ? "true" : "false"}
+                 className="bg-white/5"
               />
+              {errors.password && <p className="text-red-400 text-sm mt-1">{errors.password.message}</p>}
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 font-medium text-white"
+              className="w-full !mt-8 bg-blue-600 hover:bg-blue-500 text-white"
+              size="lg"
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
                   Signing in...
                 </>
               ) : (
                 'Sign In'
               )}
-            </button>
+            </Button>
           </form>
 
         </div>
