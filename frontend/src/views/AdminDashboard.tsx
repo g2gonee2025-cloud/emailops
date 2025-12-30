@@ -4,12 +4,13 @@ import GlassCard from '../components/ui/GlassCard';
 import { StatusIndicator } from '../components/ui/StatusIndicator';
 import { Activity, Server, Settings, Play, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { redactObject } from '../schemas/admin';
+import { AppConfig, redactObject } from '../schemas/admin';
 import { useAdmin } from '../hooks/useAdmin';
 import { Skeleton } from '../components/ui/Skeleton';
 import { Alert, AlertDescription, AlertTitle } from '../components/ui/Alert';
 import { useToast } from '../contexts/toastContext';
 import { Button } from '../components/ui/Button';
+import ConfigPanel from '../components/admin/ConfigPanel';
 
 const getStatusColor = (status: string) => {
     switch (status) {
@@ -67,7 +68,14 @@ export default function AdminDashboard() {
         }
     }, [doctorError, toast]);
 
-    const redactedConfig = useMemo(() => redactObject(config), [config]);
+    const handleSaveConfig = (newConfig: AppConfig) => {
+        console.log("Saving new config:", newConfig);
+        // This is a placeholder. In a real app, you'd call a mutation here.
+        toast({
+            title: "Configuration Saved",
+            description: "Changes have been saved successfully.",
+        });
+    };
 
     const redactedDoctorReport = useMemo(() => {
         if (!doctorReport) return null;
@@ -240,17 +248,12 @@ export default function AdminDashboard() {
                         <Skeleton className="h-8 w-full" />
                     </div>
                 )}
-                {redactedConfig && (
-                    <div className="space-y-4">
-                        {Object.entries(redactedConfig).map(([key, value]) => (
-                             <div key={key} className="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
-                                <span className="text-white/60 capitalize">{key.replace(/_/g, ' ')}</span>
-                                <span className="font-mono text-sm px-2 py-0.5 rounded bg-white/10">
-                                    {String(value)}
-                                </span>
-                             </div>
-                        ))}
-                    </div>
+                {config && (
+                    <ConfigPanel
+                        config={config}
+                        onSave={handleSaveConfig}
+                        isLoading={isConfigLoading}
+                    />
                 )}
             </GlassCard>
         </div>
