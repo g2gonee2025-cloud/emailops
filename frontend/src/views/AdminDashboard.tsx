@@ -3,26 +3,9 @@ import { useState, useEffect } from 'react';
 import GlassCard from '../components/ui/GlassCard';
 import { StatusIndicator } from '../components/ui/StatusIndicator';
 import { api } from '../lib/api';
+import { type DoctorReport, type StatusData } from '../schemas/admin';
 import { Activity, Server, Settings, Play, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { cn } from '../lib/utils';
-
-interface DoctorCheck {
-  name: string;
-  status: 'pass' | 'fail' | 'warn';
-  message?: string;
-  details?: Record<string, unknown>;
-}
-
-interface DoctorReport {
-  overall_status: 'healthy' | 'degraded' | 'unhealthy';
-  checks: DoctorCheck[];
-}
-
-interface StatusData {
-    env: string;
-    service: string;
-    status: string;
-}
 
 const SENSITIVE_KEY_SUBSTRINGS = ['KEY', 'SECRET', 'TOKEN', 'URL', 'PASS', 'CONNECTION_STRING', 'PW'];
 
@@ -60,7 +43,7 @@ export default function AdminDashboard() {
             api.fetchStatus(),
             api.fetchConfig()
         ]);
-        setStatus(statusData as StatusData);
+        setStatus(statusData);
         setConfig(redactObject(configData as unknown as Record<string, unknown>));
     } catch (err) {
         setError("Failed to load initial environment data. Please try again later.");
@@ -73,7 +56,7 @@ export default function AdminDashboard() {
     setDoctorError(null);
     setDoctorReport(null);
     try {
-        const report = await api.runDoctor() as DoctorReport;
+        const report = await api.runDoctor();
         const redactedChecks = report.checks.map(check => ({
             ...check,
             details: redactObject(check.details) ?? undefined,
