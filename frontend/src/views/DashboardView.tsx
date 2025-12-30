@@ -14,6 +14,7 @@ import {
   Server,
   Clock,
 } from 'lucide-react';
+import KPIGrid from '../components/dashboard/KPIGrid';
 
 interface LogEntry {
   logId: number;
@@ -81,45 +82,7 @@ export default function DashboardView() {
       </header>
 
       {/* KPI Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <KPICard
-          data-testid="kpi-card-pipeline-throughput"
-          title="Pipeline Throughput"
-          value="1,240"
-          unit="/hr"
-          icon={Zap}
-          trend="+12%"
-          trendUp
-          color="emerald"
-        />
-        <KPICard
-          data-testid="kpi-card-active-connections"
-          title="Active Connections"
-          value="8"
-          unit="nodes"
-          icon={Server}
-          trend="stable"
-          color="blue"
-        />
-        <KPICard
-          data-testid="kpi-card-vector-index"
-          title="Vector Index"
-          value="84.2k"
-          unit="chunks"
-          icon={Database}
-          trend="+540"
-          trendUp
-          color="purple"
-        />
-        <KPICard
-          data-testid="kpi-card-security-gate"
-          title="Security Gate"
-          value="99.9"
-          unit="%"
-          icon={Shield}
-          color="green"
-        />
-      </div>
+      <KPIGrid />
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -227,61 +190,5 @@ export default function DashboardView() {
         </div>
       </div>
     </div>
-  );
-}
-
-// KPI Card Component
-interface KPICardProps {
-  title: string;
-  value: string;
-  unit?: string;
-  icon: React.ElementType;
-  trend?: string;
-  trendUp?: boolean;
-  color?: 'emerald' | 'blue' | 'purple' | 'green' | 'orange';
-  'data-testid'?: string;
-}
-
-function KPICard({
-  title,
-  value,
-  unit,
-  icon: Icon,
-  trend,
-  trendUp,
-  color = 'blue',
-  'data-testid': dataTestId,
-}: KPICardProps) {
-  const colorClasses = {
-    emerald: 'bg-emerald-500/10 text-emerald-400',
-    blue: 'bg-blue-500/10 text-blue-400',
-    purple: 'bg-purple-500/10 text-purple-400',
-    green: 'bg-green-500/10 text-green-400',
-    orange: 'bg-orange-500/10 text-orange-400',
-  };
-
-  return (
-    <GlassCard className="p-6 relative group" data-testid={dataTestId}>
-      <div
-        className={cn('absolute top-4 right-4 p-2 rounded-lg transition-colors', colorClasses[color])}
-      >
-        <Icon className="w-5 h-5" />
-      </div>
-      <h3 className="text-sm font-medium text-white/50">{title}</h3>
-      <div className="mt-2 text-3xl font-bold">
-        {value}
-        {unit && <span className="text-sm font-normal opacity-50 ml-1">{unit}</span>}
-      </div>
-      {trend && (
-        <div
-          className={cn(
-            'mt-3 text-xs font-medium',
-            trendUp ? 'text-green-400' : 'text-white/40',
-          )}
-        >
-          {trend}
-        </div>
-      )}
-    </GlassCard>
   );
 }
