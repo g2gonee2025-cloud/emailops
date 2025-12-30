@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { ProtectedLayout } from './App';
+import ProtectedLayout from './components/Layout';
 
 // Helper for lazy loading views
 const lazyView = (importFunc: () => Promise<{ default: React.ComponentType<any> }>) => {

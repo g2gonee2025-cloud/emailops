@@ -1,13 +1,14 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import GlassCard from './ui/GlassCard';
+import GlassCard from '../components/ui/GlassCard';
 import { api } from '../lib/api';
 import type { SearchResult } from '../lib/api';
 import { cn } from '../lib/utils';
-import { Search, X, FileText, Mail, ExternalLink } from 'lucide-react';
-import { SkeletonCard } from './ui/Skeleton';
+import { Search, Mail, FileText, X, ExternalLink } from 'lucide-react';
+import { SkeletonCard } from '../components/ui/Skeleton';
 
-export function SearchView() {
+export default function SearchView() {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);

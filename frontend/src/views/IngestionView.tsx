@@ -1,8 +1,10 @@
+
 import { useState, useEffect } from 'react';
-import GlassCard from './ui/GlassCard';
-import { StatusIndicator } from './ui/StatusIndicator';
+import GlassCard from '../components/ui/GlassCard';
+import { StatusIndicator } from '../components/ui/StatusIndicator';
 import { api } from '../lib/api';
-import type { S3Folder, IngestStatusResponse, PushDocument } from '../lib/api';
+import type { S3Folder } from '../lib/api';
+import type { IngestStatusResponse, PushDocument } from '../lib/api';
 import { cn } from '../lib/utils';
 import {
   FolderOpen,
@@ -141,7 +143,7 @@ function UploadSection() {
   );
 }
 
-export function IngestionView() {
+export default function IngestionView() {
   const [folders, setFolders] = useState<S3Folder[]>([]);
   const [isLoadingFolders, setIsLoadingFolders] = useState(false);
   const [isStartingJob, setIsStartingJob] = useState(false);

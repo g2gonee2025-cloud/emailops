@@ -1,0 +1,468 @@
+{
+  "batch": "3",
+  "source": "sources/github/g2gonee2025-cloud/emailops",
+  "branch": "main",
+  "approval_mode": "auto",
+  "concurrency": 3,
+  "max_session_minutes": 45,
+  "waves": [
+    {
+      "wave": "B3.W1 Hooks",
+      "status": "ok",
+      "created": [
+        {
+          "status": "created",
+          "task": "Hook useSearch",
+          "file": "frontend/src/hooks/useSearch.ts",
+          "session_name": "sessions/12496242592092384328",
+          "session_url": "https://jules.google.com/session/12496242592092384328",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/12496242592092384328",
+            "title": "[UI] Hook useSearch \u2014 useSearch.ts",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Hook useSearch\nPrimary target: frontend/src/hooks/useSearch.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/hooks/useSearch.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Implement useSearch using TanStack Query. Encapsulate API calls from api.ts. Return { data, isLoading, error } plus mutation helpers where needed.\n",
+            "url": "https://jules.google.com/session/12496242592092384328",
+            "requirePlanApproval": true,
+            "id": "12496242592092384328",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "Hook useThread",
+          "file": "frontend/src/hooks/useThread.ts",
+          "session_name": "sessions/5987199585618944692",
+          "session_url": "https://jules.google.com/session/5987199585618944692",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/5987199585618944692",
+            "title": "[UI] Hook useThread \u2014 useThread.ts",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Hook useThread\nPrimary target: frontend/src/hooks/useThread.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/hooks/useThread.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Implement useThread using TanStack Query. Encapsulate API calls from api.ts. Return { data, isLoading, error } plus mutation helpers where needed.\n",
+            "url": "https://jules.google.com/session/5987199585618944692",
+            "requirePlanApproval": true,
+            "id": "5987199585618944692",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "Hook useDashboardMetrics",
+          "file": "frontend/src/hooks/useDashboardMetrics.ts",
+          "session_name": "sessions/9310647567632107156",
+          "session_url": "https://jules.google.com/session/9310647567632107156",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/9310647567632107156",
+            "title": "[UI] Hook useDashboardMetrics \u2014 useDashboardMetrics.ts",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Hook useDashboardMetrics\nPrimary target: frontend/src/hooks/useDashboardMetrics.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/hooks/useDashboardMetrics.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Implement useDashboardMetrics using TanStack Query. Encapsulate API calls from api.ts. Return { data, isLoading, error } plus mutation helpers where needed.\n",
+            "url": "https://jules.google.com/session/9310647567632107156",
+            "requirePlanApproval": true,
+            "id": "9310647567632107156",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "Hook useAsk",
+          "file": "frontend/src/hooks/useAsk.ts",
+          "session_name": "sessions/1845943036506382682",
+          "session_url": "https://jules.google.com/session/1845943036506382682",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/1845943036506382682",
+            "title": "[UI] Hook useAsk \u2014 useAsk.ts",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Hook useAsk\nPrimary target: frontend/src/hooks/useAsk.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/hooks/useAsk.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Implement useAsk using TanStack Query. Encapsulate API calls from api.ts. Return { data, isLoading, error } plus mutation helpers where needed.\n",
+            "url": "https://jules.google.com/session/1845943036506382682",
+            "requirePlanApproval": true,
+            "id": "1845943036506382682",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "Hook useIngestion",
+          "file": "frontend/src/hooks/useIngestion.ts",
+          "session_name": "sessions/15225670725478828583",
+          "session_url": "https://jules.google.com/session/15225670725478828583",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/15225670725478828583",
+            "title": "[UI] Hook useIngestion \u2014 useIngestion.ts",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Hook useIngestion\nPrimary target: frontend/src/hooks/useIngestion.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/hooks/useIngestion.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Implement useIngestion using TanStack Query. Encapsulate API calls from api.ts. Return { data, isLoading, error } plus mutation helpers where needed.\n",
+            "url": "https://jules.google.com/session/15225670725478828583",
+            "requirePlanApproval": true,
+            "id": "15225670725478828583",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "Hook useDraft",
+          "file": "frontend/src/hooks/useDraft.ts",
+          "session_name": "sessions/14356748997366200665",
+          "session_url": "https://jules.google.com/session/14356748997366200665",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/14356748997366200665",
+            "title": "[UI] Hook useDraft \u2014 useDraft.ts",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Hook useDraft\nPrimary target: frontend/src/hooks/useDraft.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/hooks/useDraft.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Implement useDraft using TanStack Query. Encapsulate API calls from api.ts. Return { data, isLoading, error } plus mutation helpers where needed.\n",
+            "url": "https://jules.google.com/session/14356748997366200665",
+            "requirePlanApproval": true,
+            "id": "14356748997366200665",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "Hook useSummarize",
+          "file": "frontend/src/hooks/useSummarize.ts",
+          "session_name": "sessions/6198410773488268299",
+          "session_url": "https://jules.google.com/session/6198410773488268299",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/6198410773488268299",
+            "title": "[UI] Hook useSummarize \u2014 useSummarize.ts",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Hook useSummarize\nPrimary target: frontend/src/hooks/useSummarize.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/hooks/useSummarize.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Implement useSummarize using TanStack Query. Encapsulate API calls from api.ts. Return { data, isLoading, error } plus mutation helpers where needed.\n",
+            "url": "https://jules.google.com/session/6198410773488268299",
+            "requirePlanApproval": true,
+            "id": "6198410773488268299",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "Hook useAdmin",
+          "file": "frontend/src/hooks/useAdmin.ts",
+          "session_name": "sessions/12575598865067176433",
+          "session_url": "https://jules.google.com/session/12575598865067176433",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/12575598865067176433",
+            "title": "[UI] Hook useAdmin \u2014 useAdmin.ts",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Hook useAdmin\nPrimary target: frontend/src/hooks/useAdmin.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/hooks/useAdmin.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Implement useAdmin using TanStack Query. Encapsulate API calls from api.ts. Return { data, isLoading, error } plus mutation helpers where needed.\n",
+            "url": "https://jules.google.com/session/12575598865067176433",
+            "requirePlanApproval": true,
+            "id": "12575598865067176433",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "Hook useLogin",
+          "file": "frontend/src/hooks/useLogin.ts",
+          "session_name": "sessions/3285700789930188051",
+          "session_url": "https://jules.google.com/session/3285700789930188051",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/3285700789930188051",
+            "title": "[UI] Hook useLogin \u2014 useLogin.ts",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Hook useLogin\nPrimary target: frontend/src/hooks/useLogin.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/hooks/useLogin.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Implement useLogin using TanStack Query. Encapsulate API calls from api.ts. Return { data, isLoading, error } plus mutation helpers where needed.\n",
+            "url": "https://jules.google.com/session/3285700789930188051",
+            "requirePlanApproval": true,
+            "id": "3285700789930188051",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        }
+      ],
+      "failures": [],
+      "polled": [
+        {
+          "session_name": "sessions/12496242592092384328",
+          "state": "COMPLETED",
+          "session_url": "https://jules.google.com/session/12496242592092384328",
+          "pr_urls": [
+            "https://github.com/g2gonee2025-cloud/emailops/pull/230"
+          ],
+          "raw": {
+            "name": "sessions/12496242592092384328",
+            "title": "[UI] Hook useSearch \u2014 useSearch.ts",
+            "createTime": "2025-12-29T15:26:01.618338293Z",
+            "updateTime": "2025-12-29T15:34:54.296719Z",
+            "state": "COMPLETED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Hook useSearch\nPrimary target: frontend/src/hooks/useSearch.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/hooks/useSearch.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Implement useSearch using TanStack Query. Encapsulate API calls from api.ts. Return { data, isLoading, error } plus mutation helpers where needed.\n",
+            "url": "https://jules.google.com/session/12496242592092384328",
+            "id": "12496242592092384328",
+            "outputs": [
+              {
+                "pullRequest": {
+                  "url": "https://github.com/g2gonee2025-cloud/emailops/pull/230",
+                  "title": "feat(frontend): Implement useSearch hook",
+                  "description": "This change introduces the `useSearch` hook, which uses TanStack Query to provide a reactive and efficient way to fetch search results from the backend. The implementation includes the hook itself, comprehensive unit tests, and the necessary testing infrastructure setup for the frontend application.\n\n---\n*PR created automatically by Jules for task [12496242592092384328](https://jules.google.com/task/12496242592092384328) started by @g2gonee2025-cloud*"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "session_name": "sessions/5987199585618944692",
+          "state": "FAILED",
+          "session_url": "https://jules.google.com/session/5987199585618944692",
+          "pr_urls": [],
+          "raw": {
+            "name": "sessions/5987199585618944692",
+            "title": "[UI] Hook useThread \u2014 useThread.ts",
+            "createTime": "2025-12-29T15:26:01.690339971Z",
+            "updateTime": "2025-12-29T15:26:42.343071Z",
+            "state": "FAILED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Hook useThread\nPrimary target: frontend/src/hooks/useThread.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/hooks/useThread.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Implement useThread using TanStack Query. Encapsulate API calls from api.ts. Return { data, isLoading, error } plus mutation helpers where needed.\n",
+            "url": "https://jules.google.com/session/5987199585618944692",
+            "id": "5987199585618944692"
+          }
+        },
+        {
+          "session_name": "sessions/9310647567632107156",
+          "state": "FAILED",
+          "session_url": "https://jules.google.com/session/9310647567632107156",
+          "pr_urls": [],
+          "raw": {
+            "name": "sessions/9310647567632107156",
+            "title": "[UI] Hook useDashboardMetrics \u2014 useDashboardMetrics.ts",
+            "createTime": "2025-12-29T15:26:01.755101094Z",
+            "updateTime": "2025-12-29T15:26:43.246319Z",
+            "state": "FAILED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Hook useDashboardMetrics\nPrimary target: frontend/src/hooks/useDashboardMetrics.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/hooks/useDashboardMetrics.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Implement useDashboardMetrics using TanStack Query. Encapsulate API calls from api.ts. Return { data, isLoading, error } plus mutation helpers where needed.\n",
+            "url": "https://jules.google.com/session/9310647567632107156",
+            "id": "9310647567632107156"
+          }
+        },
+        {
+          "session_name": "sessions/1845943036506382682",
+          "state": "COMPLETED",
+          "session_url": "https://jules.google.com/session/1845943036506382682",
+          "pr_urls": [
+            "https://github.com/g2gonee2025-cloud/emailops/pull/231"
+          ],
+          "raw": {
+            "name": "sessions/1845943036506382682",
+            "title": "[UI] Hook useAsk \u2014 useAsk.ts",
+            "createTime": "2025-12-29T15:26:03.247730794Z",
+            "updateTime": "2025-12-29T15:36:25.994127Z",
+            "state": "COMPLETED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Hook useAsk\nPrimary target: frontend/src/hooks/useAsk.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/hooks/useAsk.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Implement useAsk using TanStack Query. Encapsulate API calls from api.ts. Return { data, isLoading, error } plus mutation helpers where needed.\n",
+            "url": "https://jules.google.com/session/1845943036506382682",
+            "id": "1845943036506382682",
+            "outputs": [
+              {
+                "pullRequest": {
+                  "url": "https://github.com/g2gonee2025-cloud/emailops/pull/231",
+                  "title": "feat(frontend): add useAsk hook",
+                  "description": "This change introduces the `useAsk` hook, which provides a clean and reusable way to interact with the `/api/v1/answer` endpoint using TanStack Query. It also sets up the frontend testing environment with Vitest and React Testing Library, and includes a test suite for the new hook.\n\n---\n*PR created automatically by Jules for task [1845943036506382682](https://jules.google.com/task/1845943036506382682) started by @g2gonee2025-cloud*"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "session_name": "sessions/15225670725478828583",
+          "state": "COMPLETED",
+          "session_url": "https://jules.google.com/session/15225670725478828583",
+          "pr_urls": [
+            "https://github.com/g2gonee2025-cloud/emailops/pull/236"
+          ],
+          "raw": {
+            "name": "sessions/15225670725478828583",
+            "title": "[UI] Hook useIngestion \u2014 useIngestion.ts",
+            "createTime": "2025-12-29T15:26:03.767808455Z",
+            "updateTime": "2025-12-29T15:40:07.377924Z",
+            "state": "COMPLETED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Hook useIngestion\nPrimary target: frontend/src/hooks/useIngestion.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/hooks/useIngestion.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Implement useIngestion using TanStack Query. Encapsulate API calls from api.ts. Return { data, isLoading, error } plus mutation helpers where needed.\n",
+            "url": "https://jules.google.com/session/15225670725478828583",
+            "id": "15225670725478828583",
+            "outputs": [
+              {
+                "pullRequest": {
+                  "url": "https://github.com/g2gonee2025-cloud/emailops/pull/236",
+                  "title": "feat(frontend): add useIngestion hook",
+                  "description": "This change introduces the `useIngestion` hook, which provides a clean and reusable interface for interacting with the ingestion API. It leverages TanStack Query to manage state, caching, and polling, improving the overall architecture of the frontend. Additionally, this change establishes a complete testing infrastructure for the frontend, including the installation and configuration of Vitest, JSDOM, and React Testing Library, along with a new test file for the `useIngestion` hook.\n\n---\n*PR created automatically by Jules for task [15225670725478828583](https://jules.google.com/task/15225670725478828583) started by @g2gonee2025-cloud*"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "session_name": "sessions/14356748997366200665",
+          "state": "FAILED",
+          "session_url": "https://jules.google.com/session/14356748997366200665",
+          "pr_urls": [],
+          "raw": {
+            "name": "sessions/14356748997366200665",
+            "title": "[UI] Hook useDraft \u2014 useDraft.ts",
+            "createTime": "2025-12-29T15:26:04.820682708Z",
+            "updateTime": "2025-12-29T15:27:10.335983Z",
+            "state": "FAILED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Hook useDraft\nPrimary target: frontend/src/hooks/useDraft.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/hooks/useDraft.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Implement useDraft using TanStack Query. Encapsulate API calls from api.ts. Return { data, isLoading, error } plus mutation helpers where needed.\n",
+            "url": "https://jules.google.com/session/14356748997366200665",
+            "id": "14356748997366200665"
+          }
+        },
+        {
+          "session_name": "sessions/6198410773488268299",
+          "state": "FAILED",
+          "session_url": "https://jules.google.com/session/6198410773488268299",
+          "pr_urls": [],
+          "raw": {
+            "name": "sessions/6198410773488268299",
+            "title": "[UI] Hook useSummarize \u2014 useSummarize.ts",
+            "createTime": "2025-12-29T15:26:07.942231223Z",
+            "updateTime": "2025-12-29T15:27:04.655087Z",
+            "state": "FAILED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Hook useSummarize\nPrimary target: frontend/src/hooks/useSummarize.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/hooks/useSummarize.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Implement useSummarize using TanStack Query. Encapsulate API calls from api.ts. Return { data, isLoading, error } plus mutation helpers where needed.\n",
+            "url": "https://jules.google.com/session/6198410773488268299",
+            "id": "6198410773488268299"
+          }
+        },
+        {
+          "session_name": "sessions/12575598865067176433",
+          "state": "COMPLETED",
+          "session_url": "https://jules.google.com/session/12575598865067176433",
+          "pr_urls": [
+            "https://github.com/g2gonee2025-cloud/emailops/pull/229"
+          ],
+          "raw": {
+            "name": "sessions/12575598865067176433",
+            "title": "[UI] Hook useAdmin \u2014 useAdmin.ts",
+            "createTime": "2025-12-29T15:26:10.016450862Z",
+            "updateTime": "2025-12-29T15:34:40.256487Z",
+            "state": "COMPLETED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Hook useAdmin\nPrimary target: frontend/src/hooks/useAdmin.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/hooks/useAdmin.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Implement useAdmin using TanStack Query. Encapsulate API calls from api.ts. Return { data, isLoading, error } plus mutation helpers where needed.\n",
+            "url": "https://jules.google.com/session/12575598865067176433",
+            "id": "12575598865067176433",
+            "outputs": [
+              {
+                "pullRequest": {
+                  "url": "https://github.com/g2gonee2025-cloud/emailops/pull/229",
+                  "title": "Implement useAdmin Hook",
+                  "description": "This submission adds the `useAdmin` hook, which uses TanStack Query to manage admin-related API calls. It also sets up the frontend testing environment with Vitest and includes comprehensive tests for the new hook.\n\n---\n*PR created automatically by Jules for task [12575598865067176433](https://jules.google.com/task/12575598865067176433) started by @g2gonee2025-cloud*"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "session_name": "sessions/3285700789930188051",
+          "state": "FAILED",
+          "session_url": "https://jules.google.com/session/3285700789930188051",
+          "pr_urls": [],
+          "raw": {
+            "name": "sessions/3285700789930188051",
+            "title": "[UI] Hook useLogin \u2014 useLogin.ts",
+            "createTime": "2025-12-29T15:26:12.064846291Z",
+            "updateTime": "2025-12-29T15:27:20.984938Z",
+            "state": "FAILED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Hook useLogin\nPrimary target: frontend/src/hooks/useLogin.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/hooks/useLogin.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Implement useLogin using TanStack Query. Encapsulate API calls from api.ts. Return { data, isLoading, error } plus mutation helpers where needed.\n",
+            "url": "https://jules.google.com/session/3285700789930188051",
+            "id": "3285700789930188051"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import GlassCard from './ui/GlassCard';
+import GlassCard from '../components/ui/GlassCard';
 import { api } from '../lib/api';
 import type { SearchResult, ThreadSummary } from '../lib/api';
 import {
@@ -13,7 +14,7 @@ import {
   PenTool
 } from 'lucide-react';
 
-export function ThreadView() {
+export default function ThreadView() {
   const { id } = useParams<{ id: string }>();
   const threadId = id!;
   const navigate = useNavigate();

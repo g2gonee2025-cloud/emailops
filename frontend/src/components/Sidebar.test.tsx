@@ -1,27 +1,33 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { vi, describe, test, expect, beforeEach } from 'vitest';
+import { vi, describe, test, expect, beforeEach, type Mock } from 'vitest';
 import { Sidebar } from './Sidebar';
 import { useAuth } from '../contexts/AuthContext';
+import { ToastProvider } from '../contexts/toastContext';
 
 // Mock the useAuth hook
 vi.mock('../contexts/AuthContext');
 
-const mockLogout = vi.fn();
-
 describe('Sidebar', () => {
+  const mockLogout = vi.fn();
+
   beforeEach(() => {
     vi.clearAllMocks();
-    (useAuth as vi.Mock).mockReturnValue({
+    (useAuth as Mock).mockReturnValue({
       isAuthenticated: true,
+      token: 'mock-token',
+      user: { username: 'testuser' },
       logout: mockLogout,
+      login: vi.fn(),
     });
   });
 
   const renderSidebar = () => {
     return render(
       <MemoryRouter>
-        <Sidebar />
+        <ToastProvider>
+          <Sidebar />
+        </ToastProvider>
       </MemoryRouter>
     );
   };

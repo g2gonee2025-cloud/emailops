@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import GlassCard from './ui/GlassCard';
-import { StatusIndicator } from './ui/StatusIndicator';
+import GlassCard from '../components/ui/GlassCard';
+import { StatusIndicator } from '../components/ui/StatusIndicator';
 import { api } from '../lib/api';
 import type { HealthResponse } from '../lib/api';
 import { cn } from '../lib/utils';
@@ -22,7 +22,7 @@ interface LogEntry {
   level: 'INFO' | 'WARN' | 'ERROR' | 'DEBUG';
 }
 
-export function DashboardView() {
+export default function DashboardView() {
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const logIdCounter = useRef(0);

@@ -251,6 +251,10 @@ class EntityNode(Base):
     type: Mapped[str] = mapped_column(String(64), nullable=False)  # e.g., "PERSON"
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     properties: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    # Pre-computed PageRank for graph retrieval relevance scoring
+    pagerank: Mapped[float] = mapped_column(
+        "pagerank", nullable=False, server_default="0.0"
+    )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False

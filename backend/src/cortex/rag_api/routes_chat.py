@@ -286,7 +286,8 @@ async def _handle_search(
 ) -> ChatResponse:
     classification = await run_in_threadpool(
         tool_classify_query,
-        QueryClassificationInput(query=latest_user, use_llm=True),
+        latest_user,
+        True,  # use_llm
     )
     results = await _run_search(latest_user, request.k, classification)
     results_dicts = [r.model_dump() for r in results.results] if results.results else []
@@ -319,7 +320,8 @@ async def _handle_answer(
 ) -> ChatResponse:
     classification = await run_in_threadpool(
         tool_classify_query,
-        QueryClassificationInput(query=latest_user, use_llm=True),
+        latest_user,
+        True,  # use_llm
     )
     results = await _run_search(latest_user, request.k, classification)
     context_state = {

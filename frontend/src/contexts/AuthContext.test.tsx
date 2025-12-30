@@ -1,8 +1,7 @@
-
 import { renderHook, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { vi } from 'vitest';
 import { AuthProvider, useAuth } from './AuthContext';
+import { vi, type Mock } from 'vitest';
 import { api, ApiError } from '@/lib/api';
 
 // Mock the api module
@@ -52,7 +51,7 @@ describe('AuthContext', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
 
     const mockToken = 'test_token';
-    (api.login as vi.Mock).mockResolvedValue({ access_token: mockToken });
+    (api.login as Mock).mockResolvedValue({ access_token: mockToken });
 
     await act(async () => {
       await result.current.login('testuser', 'password');
@@ -68,7 +67,7 @@ describe('AuthContext', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
 
     const mockError = new ApiError('Invalid credentials', 401);
-    (api.login as vi.Mock).mockRejectedValue(mockError);
+    (api.login as Mock).mockRejectedValue(mockError);
 
     await act(async () => {
       await expect(result.current.login('testuser', 'wrongpassword')).rejects.toThrow(
@@ -85,7 +84,7 @@ describe('AuthContext', () => {
     // First, log in
     const { result } = renderHook(() => useAuth(), { wrapper });
     const mockToken = 'test_token';
-    (api.login as vi.Mock).mockResolvedValue({ access_token: mockToken });
+    (api.login as Mock).mockResolvedValue({ access_token: mockToken });
     await act(async () => {
       await result.current.login('testuser', 'password');
     });

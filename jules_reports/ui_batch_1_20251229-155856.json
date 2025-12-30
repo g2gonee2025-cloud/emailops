@@ -1,0 +1,566 @@
+{
+  "batch": "1",
+  "source": "sources/github/g2gonee2025-cloud/emailops",
+  "branch": "main",
+  "approval_mode": "auto",
+  "concurrency": 3,
+  "max_session_minutes": 45,
+  "waves": [
+    {
+      "wave": "B1.W1 Deps & CI",
+      "status": "ok",
+      "created": [
+        {
+          "status": "created",
+          "task": "Vitest setup",
+          "file": "frontend/vitest.setup.ts",
+          "session_name": "sessions/11313672058536072587",
+          "session_url": "https://jules.google.com/session/11313672058536072587",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/11313672058536072587",
+            "title": "[UI] Vitest setup \u2014 vitest.setup.ts",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Vitest setup\nPrimary target: frontend/vitest.setup.ts\n\nConstraints:\n- Apply changes primarily to frontend/vitest.setup.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Add `import '@testing-library/jest-dom/vitest'` and any minimal setup required for RTL. Keep it lightweight.\n",
+            "url": "https://jules.google.com/session/11313672058536072587",
+            "requirePlanApproval": true,
+            "id": "11313672058536072587",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "Install core deps & scripts",
+          "file": "frontend/package.json",
+          "session_name": "sessions/3533556095384751371",
+          "session_url": "https://jules.google.com/session/3533556095384751371",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/3533556095384751371",
+            "title": "[UI] Install core deps & scripts \u2014 package.json",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Install core deps & scripts\nPrimary target: frontend/package.json\n\nConstraints:\n- Apply changes primarily to frontend/package.json.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nAdd devDependencies: vitest, jsdom, @testing-library/react, @testing-library/jest-dom, @testing-library/user-event, @playwright/test. Add dependencies: react-router-dom, @tanstack/react-query, @tanstack/react-query-devtools (optional), @radix-ui/react-dialog, @radix-ui/react-select, @radix-ui/react-tabs, @radix-ui/react-tooltip, @radix-ui/react-switch, @radix-ui/react-checkbox, @radix-ui/react-dropdown-menu, @radix-ui/react-scroll-area, @radix-ui/react-separator, @radix-ui/react-avatar, framer-motion, react-virtuoso, zod, react-hook-form, @hookform/resolvers, recharts, clsx, tailwind-merge, lucide-react. Add scripts: test (vitest run), test:watch (vitest), test:e2e (playwright test).\n",
+            "url": "https://jules.google.com/session/3533556095384751371",
+            "requirePlanApproval": true,
+            "id": "3533556095384751371",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "Configure Vitest",
+          "file": "frontend/vite.config.ts",
+          "session_name": "sessions/16514741942780214774",
+          "session_url": "https://jules.google.com/session/16514741942780214774",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/16514741942780214774",
+            "title": "[UI] Configure Vitest \u2014 vite.config.ts",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Configure Vitest\nPrimary target: frontend/vite.config.ts\n\nConstraints:\n- Apply changes primarily to frontend/vite.config.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nConfigure Vite+Vitest for React+TS: test.environment='jsdom', globals=true, setupFiles=['./vitest.setup.ts']. Ensure alias '@' -> './src' works in both dev and tests.\n",
+            "url": "https://jules.google.com/session/16514741942780214774",
+            "requirePlanApproval": true,
+            "id": "16514741942780214774",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "Playwright config",
+          "file": "frontend/playwright.config.ts",
+          "session_name": "sessions/9690405478516254419",
+          "session_url": "https://jules.google.com/session/9690405478516254419",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/9690405478516254419",
+            "title": "[UI] Playwright config \u2014 playwright.config.ts",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Playwright config\nPrimary target: frontend/playwright.config.ts\n\nConstraints:\n- Apply changes primarily to frontend/playwright.config.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Configure Playwright with baseURL http://localhost:5173 and a webServer that runs the frontend dev server. Add projects for chromium and webkit.\n",
+            "url": "https://jules.google.com/session/9690405478516254419",
+            "requirePlanApproval": true,
+            "id": "9690405478516254419",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "Frontend CI",
+          "file": ".github/workflows/frontend-ci.yml",
+          "session_name": "sessions/9323516631222108136",
+          "session_url": "https://jules.google.com/session/9323516631222108136",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/9323516631222108136",
+            "title": "[UI] Frontend CI \u2014 frontend-ci.yml",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Frontend CI\nPrimary target: .github/workflows/frontend-ci.yml\n\nConstraints:\n- Apply changes primarily to .github/workflows/frontend-ci.yml.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Add a GitHub Actions workflow that runs (in frontend/): npm ci, npm run lint, npm run build, npm run test. Cache npm. Use Node 20.\n",
+            "url": "https://jules.google.com/session/9323516631222108136",
+            "requirePlanApproval": true,
+            "id": "9323516631222108136",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        }
+      ],
+      "failures": [],
+      "polled": [
+        {
+          "session_name": "sessions/11313672058536072587",
+          "state": "COMPLETED",
+          "session_url": "https://jules.google.com/session/11313672058536072587",
+          "pr_urls": [
+            "https://github.com/g2gonee2025-cloud/emailops/pull/249"
+          ],
+          "raw": {
+            "name": "sessions/11313672058536072587",
+            "title": "[UI] Vitest setup \u2014 vitest.setup.ts",
+            "createTime": "2025-12-29T15:58:57.044226931Z",
+            "updateTime": "2025-12-29T16:07:58.406920Z",
+            "state": "COMPLETED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Vitest setup\nPrimary target: frontend/vitest.setup.ts\n\nConstraints:\n- Apply changes primarily to frontend/vitest.setup.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Add `import '@testing-library/jest-dom/vitest'` and any minimal setup required for RTL. Keep it lightweight.\n",
+            "url": "https://jules.google.com/session/11313672058536072587",
+            "id": "11313672058536072587",
+            "outputs": [
+              {
+                "pullRequest": {
+                  "url": "https://github.com/g2gonee2025-cloud/emailops/pull/249",
+                  "title": "feat: Configure Vitest setup for frontend",
+                  "description": "This change configures Vitest for the frontend application. It adds a setup file to import Jest DOM matchers and updates the Vite configuration to integrate the test environment.\n\n---\n*PR created automatically by Jules for task [11313672058536072587](https://jules.google.com/task/11313672058536072587) started by @g2gonee2025-cloud*"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "session_name": "sessions/3533556095384751371",
+          "state": "COMPLETED",
+          "session_url": "https://jules.google.com/session/3533556095384751371",
+          "pr_urls": [],
+          "raw": {
+            "name": "sessions/3533556095384751371",
+            "title": "[UI] Install core deps & scripts \u2014 package.json",
+            "createTime": "2025-12-29T15:58:57.077508452Z",
+            "updateTime": "2025-12-29T15:59:33.373593Z",
+            "state": "COMPLETED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Install core deps & scripts\nPrimary target: frontend/package.json\n\nConstraints:\n- Apply changes primarily to frontend/package.json.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nAdd devDependencies: vitest, jsdom, @testing-library/react, @testing-library/jest-dom, @testing-library/user-event, @playwright/test. Add dependencies: react-router-dom, @tanstack/react-query, @tanstack/react-query-devtools (optional), @radix-ui/react-dialog, @radix-ui/react-select, @radix-ui/react-tabs, @radix-ui/react-tooltip, @radix-ui/react-switch, @radix-ui/react-checkbox, @radix-ui/react-dropdown-menu, @radix-ui/react-scroll-area, @radix-ui/react-separator, @radix-ui/react-avatar, framer-motion, react-virtuoso, zod, react-hook-form, @hookform/resolvers, recharts, clsx, tailwind-merge, lucide-react. Add scripts: test (vitest run), test:watch (vitest), test:e2e (playwright test).\n",
+            "url": "https://jules.google.com/session/3533556095384751371",
+            "id": "3533556095384751371"
+          }
+        },
+        {
+          "session_name": "sessions/16514741942780214774",
+          "state": "COMPLETED",
+          "session_url": "https://jules.google.com/session/16514741942780214774",
+          "pr_urls": [
+            "https://github.com/g2gonee2025-cloud/emailops/pull/248"
+          ],
+          "raw": {
+            "name": "sessions/16514741942780214774",
+            "title": "[UI] Configure Vitest \u2014 vite.config.ts",
+            "createTime": "2025-12-29T15:58:57.312540658Z",
+            "updateTime": "2025-12-29T16:06:31.861354Z",
+            "state": "COMPLETED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Configure Vitest\nPrimary target: frontend/vite.config.ts\n\nConstraints:\n- Apply changes primarily to frontend/vite.config.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nConfigure Vite+Vitest for React+TS: test.environment='jsdom', globals=true, setupFiles=['./vitest.setup.ts']. Ensure alias '@' -> './src' works in both dev and tests.\n",
+            "url": "https://jules.google.com/session/16514741942780214774",
+            "id": "16514741942780214774",
+            "outputs": [
+              {
+                "pullRequest": {
+                  "url": "https://github.com/g2gonee2025-cloud/emailops/pull/248",
+                  "title": "Configure Vitest for Frontend",
+                  "description": "This change configures Vitest for the frontend React+TypeScript application by updating `vite.config.ts` and creating a new `vitest.setup.ts` file. It sets up the test environment, enables globals, and ensures the `'@'` path alias works correctly in tests.\n\n---\n*PR created automatically by Jules for task [16514741942780214774](https://jules.google.com/task/16514741942780214774) started by @g2gonee2025-cloud*"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "session_name": "sessions/9690405478516254419",
+          "state": "COMPLETED",
+          "session_url": "https://jules.google.com/session/9690405478516254419",
+          "pr_urls": [
+            "https://github.com/g2gonee2025-cloud/emailops/pull/247"
+          ],
+          "raw": {
+            "name": "sessions/9690405478516254419",
+            "title": "[UI] Playwright config \u2014 playwright.config.ts",
+            "createTime": "2025-12-29T15:58:58.427435346Z",
+            "updateTime": "2025-12-29T16:04:20.987791Z",
+            "state": "COMPLETED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Playwright config\nPrimary target: frontend/playwright.config.ts\n\nConstraints:\n- Apply changes primarily to frontend/playwright.config.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Configure Playwright with baseURL http://localhost:5173 and a webServer that runs the frontend dev server. Add projects for chromium and webkit.\n",
+            "url": "https://jules.google.com/session/9690405478516254419",
+            "id": "9690405478516254419",
+            "outputs": [
+              {
+                "pullRequest": {
+                  "url": "https://github.com/g2gonee2025-cloud/emailops/pull/247",
+                  "title": "Add Playwright Config",
+                  "description": "This change adds a Playwright configuration file to the frontend directory. The new `frontend/playwright.config.ts` file sets up the necessary options to run end-to-end tests, including the base URL for the application, a web server to automatically launch the dev environment, and browser configurations for Chromium and WebKit.\n\n---\n*PR created automatically by Jules for task [9690405478516254419](https://jules.google.com/task/9690405478516254419) started by @g2gonee2025-cloud*"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "session_name": "sessions/9323516631222108136",
+          "state": "COMPLETED",
+          "session_url": "https://jules.google.com/session/9323516631222108136",
+          "pr_urls": [
+            "https://github.com/g2gonee2025-cloud/emailops/pull/246"
+          ],
+          "raw": {
+            "name": "sessions/9323516631222108136",
+            "title": "[UI] Frontend CI \u2014 frontend-ci.yml",
+            "createTime": "2025-12-29T15:59:00.474111834Z",
+            "updateTime": "2025-12-29T16:01:34.362671Z",
+            "state": "COMPLETED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Frontend CI\nPrimary target: .github/workflows/frontend-ci.yml\n\nConstraints:\n- Apply changes primarily to .github/workflows/frontend-ci.yml.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Add a GitHub Actions workflow that runs (in frontend/): npm ci, npm run lint, npm run build, npm run test. Cache npm. Use Node 20.\n",
+            "url": "https://jules.google.com/session/9323516631222108136",
+            "id": "9323516631222108136",
+            "outputs": [
+              {
+                "pullRequest": {
+                  "url": "https://github.com/g2gonee2025-cloud/emailops/pull/246",
+                  "title": "Add Frontend CI Workflow",
+                  "description": "This submission adds a new GitHub Actions workflow file at `.github/workflows/frontend-ci.yml` to automate the continuous integration process for the frontend application. The workflow is configured to run on pushes and pull requests to the `main` branch that involve changes in the `frontend/` directory. It uses Node.js 20, caches npm dependencies, and executes `npm ci`, `npm run lint`, `npm run build`, and `npm run test` to ensure code quality and correctness.\n\n---\n*PR created automatically by Jules for task [9323516631222108136](https://jules.google.com/task/9323516631222108136) started by @g2gonee2025-cloud*"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "wave": "B1.W2 Data/Auth Core",
+      "status": "ok",
+      "created": [
+        {
+          "status": "created",
+          "task": "Add QueryClient",
+          "file": "frontend/src/lib/queryClient.ts",
+          "session_name": "sessions/1055911693367477494",
+          "session_url": "https://jules.google.com/session/1055911693367477494",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/1055911693367477494",
+            "title": "[UI] Add QueryClient \u2014 queryClient.ts",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Add QueryClient\nPrimary target: frontend/src/lib/queryClient.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/lib/queryClient.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Export a configured TanStack QueryClient (staleTime 60000, refetchOnWindowFocus false, retry 1). Export a <QueryProvider> wrapper component.\n",
+            "url": "https://jules.google.com/session/1055911693367477494",
+            "requirePlanApproval": true,
+            "id": "1055911693367477494",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "Auth consistency",
+          "file": "frontend/src/contexts/AuthContext.tsx",
+          "session_name": "sessions/7087191816726403280",
+          "session_url": "https://jules.google.com/session/7087191816726403280",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/7087191816726403280",
+            "title": "[UI] Auth consistency \u2014 AuthContext.tsx",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Auth consistency\nPrimary target: frontend/src/contexts/AuthContext.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/contexts/AuthContext.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nUpdate AuthContext to use request<T>() from api.ts. Handle 401 by clearing auth state and navigating to /login via React Router.\n",
+            "url": "https://jules.google.com/session/7087191816726403280",
+            "requirePlanApproval": true,
+            "id": "7087191816726403280",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "Harden API client",
+          "file": "frontend/src/lib/api.ts",
+          "session_name": "sessions/784009355234082702",
+          "session_url": "https://jules.google.com/session/784009355234082702",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/784009355234082702",
+            "title": "[UI] Harden API client \u2014 api.ts",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Harden API client\nPrimary target: frontend/src/lib/api.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/lib/api.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nRefactor API client so EVERY request uses getHeaders() (auth coverage, including runDoctor). Add request<T> wrapper: handles response.ok, parses JSON safely, throws typed ApiError {status, message, details?}. Support AbortController signals and avoid logging sensitive data.\n",
+            "url": "https://jules.google.com/session/784009355234082702",
+            "requirePlanApproval": true,
+            "id": "784009355234082702",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "Global API error toasts",
+          "file": "frontend/src/contexts/toastContext.tsx",
+          "session_name": "sessions/17929121621227032272",
+          "session_url": "https://jules.google.com/session/17929121621227032272",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/17929121621227032272",
+            "title": "[UI] Global API error toasts \u2014 toastContext.tsx",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Global API error toasts\nPrimary target: frontend/src/contexts/toastContext.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/contexts/toastContext.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nEnhance toast context to support success/error/info variants and typed API-error payloads. Listen for a custom window event (e.g., `api:error`) and show a global error toast.\n",
+            "url": "https://jules.google.com/session/17929121621227032272",
+            "requirePlanApproval": true,
+            "id": "17929121621227032272",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "Wire providers",
+          "file": "frontend/src/main.tsx",
+          "session_name": "sessions/8508525861205562980",
+          "session_url": "https://jules.google.com/session/8508525861205562980",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/8508525861205562980",
+            "title": "[UI] Wire providers \u2014 main.tsx",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Wire providers\nPrimary target: frontend/src/main.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/main.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nEnsure provider order: BrowserRouter -> QueryProvider -> ToastProvider -> AuthProvider -> App. Avoid multiple routers/providers and ensure strict mode is consistent.\n",
+            "url": "https://jules.google.com/session/8508525861205562980",
+            "requirePlanApproval": true,
+            "id": "8508525861205562980",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        }
+      ],
+      "failures": [],
+      "polled": [
+        {
+          "session_name": "sessions/1055911693367477494",
+          "state": "COMPLETED",
+          "session_url": "https://jules.google.com/session/1055911693367477494",
+          "pr_urls": [
+            "https://github.com/g2gonee2025-cloud/emailops/pull/252"
+          ],
+          "raw": {
+            "name": "sessions/1055911693367477494",
+            "title": "[UI] Add QueryClient \u2014 queryClient.ts",
+            "createTime": "2025-12-29T16:07:58.977235014Z",
+            "updateTime": "2025-12-29T16:19:10.824732Z",
+            "state": "COMPLETED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Add QueryClient\nPrimary target: frontend/src/lib/queryClient.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/lib/queryClient.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Export a configured TanStack QueryClient (staleTime 60000, refetchOnWindowFocus false, retry 1). Export a <QueryProvider> wrapper component.\n",
+            "url": "https://jules.google.com/session/1055911693367477494",
+            "id": "1055911693367477494",
+            "outputs": [
+              {
+                "pullRequest": {
+                  "url": "https://github.com/g2gonee2025-cloud/emailops/pull/252",
+                  "title": "feat(frontend): Add QueryClient and QueryProvider",
+                  "description": "This change introduces a centralized TanStack QueryClient configuration and a `QueryProvider` component. The `QueryClient` is configured with a `staleTime` of 60 seconds, `refetchOnWindowFocus` disabled, and a single retry attempt.\n\nThe `QueryProvider` is integrated into the application's entry point (`main.tsx`) to make the client available to all components. A unit test has been added to verify that the provider works as expected, and the necessary Vitest configuration has been added to support this.\n\n---\n*PR created automatically by Jules for task [1055911693367477494](https://jules.google.com/task/1055911693367477494) started by @g2gonee2025-cloud*"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "session_name": "sessions/7087191816726403280",
+          "state": "COMPLETED",
+          "session_url": "https://jules.google.com/session/7087191816726403280",
+          "pr_urls": [
+            "https://github.com/g2gonee2025-cloud/emailops/pull/253"
+          ],
+          "raw": {
+            "name": "sessions/7087191816726403280",
+            "title": "[UI] Auth consistency \u2014 AuthContext.tsx",
+            "createTime": "2025-12-29T16:07:59.084611225Z",
+            "updateTime": "2025-12-29T16:23:37.044975Z",
+            "state": "COMPLETED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Auth consistency\nPrimary target: frontend/src/contexts/AuthContext.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/contexts/AuthContext.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nUpdate AuthContext to use request<T>() from api.ts. Handle 401 by clearing auth state and navigating to /login via React Router.\n",
+            "url": "https://jules.google.com/session/7087191816726403280",
+            "id": "7087191816726403280",
+            "outputs": [
+              {
+                "pullRequest": {
+                  "url": "https://github.com/g2gonee2025-cloud/emailops/pull/253",
+                  "title": "Refactor AuthContext for Consistency and Improved Error Handling",
+                  "description": "This submission refactors the frontend authentication logic to improve consistency and robustness. The `AuthContext` now uses the generic `request` function from `api.ts`, which centralizes API call handling. It specifically addresses 401 Unauthorized errors by clearing the user's session and redirecting to the login page. The changes include removing the old `api.login` method, adding a comprehensive new test suite for the `AuthContext`, and updating the Vite configuration to ensure tests run correctly.\n\n---\n*PR created automatically by Jules for task [7087191816726403280](https://jules.google.com/task/7087191816726403280) started by @g2gonee2025-cloud*"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "session_name": "sessions/784009355234082702",
+          "state": "FAILED",
+          "session_url": "https://jules.google.com/session/784009355234082702",
+          "pr_urls": [],
+          "raw": {
+            "name": "sessions/784009355234082702",
+            "title": "[UI] Harden API client \u2014 api.ts",
+            "createTime": "2025-12-29T16:07:59.103120110Z",
+            "updateTime": "2025-12-29T16:09:09.306527Z",
+            "state": "FAILED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Harden API client\nPrimary target: frontend/src/lib/api.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/lib/api.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nRefactor API client so EVERY request uses getHeaders() (auth coverage, including runDoctor). Add request<T> wrapper: handles response.ok, parses JSON safely, throws typed ApiError {status, message, details?}. Support AbortController signals and avoid logging sensitive data.\n",
+            "url": "https://jules.google.com/session/784009355234082702",
+            "id": "784009355234082702"
+          }
+        },
+        {
+          "session_name": "sessions/17929121621227032272",
+          "state": "COMPLETED",
+          "session_url": "https://jules.google.com/session/17929121621227032272",
+          "pr_urls": [
+            "https://github.com/g2gonee2025-cloud/emailops/pull/254"
+          ],
+          "raw": {
+            "name": "sessions/17929121621227032272",
+            "title": "[UI] Global API error toasts \u2014 toastContext.tsx",
+            "createTime": "2025-12-29T16:08:00.735710306Z",
+            "updateTime": "2025-12-29T16:23:58.452879Z",
+            "state": "COMPLETED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Global API error toasts\nPrimary target: frontend/src/contexts/toastContext.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/contexts/toastContext.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nEnhance toast context to support success/error/info variants and typed API-error payloads. Listen for a custom window event (e.g., `api:error`) and show a global error toast.\n",
+            "url": "https://jules.google.com/session/17929121621227032272",
+            "id": "17929121621227032272",
+            "outputs": [
+              {
+                "pullRequest": {
+                  "url": "https://github.com/g2gonee2025-cloud/emailops/pull/254",
+                  "title": "Implement Global API Error Toasts",
+                  "description": "This change enhances the frontend toast notification system to support success/error/info variants and typed API-error payloads. It listens for a custom `api:error` window event and shows a global error toast, improving user feedback on system-wide errors. The implementation includes refactoring the toast components for better maintainability, adding comprehensive tests, and ensuring all changes are type-safe and lint-free.\n\n---\n*PR created automatically by Jules for task [17929121621227032272](https://jules.google.com/task/17929121621227032272) started by @g2gonee2025-cloud*"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "session_name": "sessions/8508525861205562980",
+          "state": "COMPLETED",
+          "session_url": "https://jules.google.com/session/8508525861205562980",
+          "pr_urls": [
+            "https://github.com/g2gonee2025-cloud/emailops/pull/250"
+          ],
+          "raw": {
+            "name": "sessions/8508525861205562980",
+            "title": "[UI] Wire providers \u2014 main.tsx",
+            "createTime": "2025-12-29T16:08:01.773791698Z",
+            "updateTime": "2025-12-29T16:16:11.110943Z",
+            "state": "COMPLETED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Wire providers\nPrimary target: frontend/src/main.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/main.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nEnsure provider order: BrowserRouter -> QueryProvider -> ToastProvider -> AuthProvider -> App. Avoid multiple routers/providers and ensure strict mode is consistent.\n",
+            "url": "https://jules.google.com/session/8508525861205562980",
+            "id": "8508525861205562980",
+            "outputs": [
+              {
+                "pullRequest": {
+                  "url": "https://github.com/g2gonee2025-cloud/emailops/pull/250",
+                  "title": "Wire Providers in main.tsx",
+                  "description": "This wires the `QueryClientProvider`, `ToastProvider`, and `AuthProvider` in the correct order within `frontend/src/main.tsx` and adds the necessary Vitest configuration to ensure frontend tests run correctly.\n\n---\n*PR created automatically by Jules for task [8508525861205562980](https://jules.google.com/task/8508525861205562980) started by @g2gonee2025-cloud*"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

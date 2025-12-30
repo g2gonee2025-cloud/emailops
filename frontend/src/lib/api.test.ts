@@ -1,5 +1,5 @@
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { api, request, ApiError } from './api';
 
 // Mock the logger to avoid polluting test output
@@ -28,7 +28,7 @@ describe('API Client', () => {
   describe('request<T>', () => {
     it('should return JSON data on a successful request', async () => {
       const mockData = { message: 'Success' };
-      (fetch as vi.Mock).mockResolvedValue({
+      (fetch as Mock).mockResolvedValue({
         ok: true,
         status: 200,
         json: async () => mockData,
@@ -44,7 +44,7 @@ describe('API Client', () => {
     });
 
     it('should handle 204 No Content responses', async () => {
-      (fetch as vi.Mock).mockResolvedValue({
+      (fetch as Mock).mockResolvedValue({
         ok: true,
         status: 204,
         json: async () => {
@@ -58,7 +58,7 @@ describe('API Client', () => {
 
     it('should throw ApiError for non-ok responses with JSON details', async () => {
       const errorDetails = { detail: 'Server error' };
-      (fetch as vi.Mock).mockResolvedValue({
+      (fetch as Mock).mockResolvedValue({
         ok: false,
         status: 500,
         url: 'http://localhost/api/v1' + mockEndpoint,
@@ -78,7 +78,7 @@ describe('API Client', () => {
 
     it('should dispatch cortex-unauthorized event on 401 error', async () => {
       const dispatchEventSpy = vi.spyOn(window, 'dispatchEvent');
-      (fetch as vi.Mock).mockResolvedValue({
+      (fetch as Mock).mockResolvedValue({
         ok: false,
         status: 401,
         url: 'http://localhost/api/v1' + mockEndpoint,
@@ -91,7 +91,7 @@ describe('API Client', () => {
 
     it('should not dispatch cortex-unauthorized event on 401 error for login endpoint', async () => {
         const dispatchEventSpy = vi.spyOn(window, 'dispatchEvent');
-        (fetch as vi.Mock).mockResolvedValue({
+        (fetch as Mock).mockResolvedValue({
           ok: false,
           status: 401,
           url: 'http://localhost/api/v1/auth/login',
@@ -103,14 +103,14 @@ describe('API Client', () => {
       });
 
     it('should throw a generic error for network failures', async () => {
-      (fetch as vi.Mock).mockRejectedValue(new TypeError('Network failed'));
+      (fetch as Mock).mockRejectedValue(new TypeError('Network failed'));
       await expect(request(mockEndpoint)).rejects.toThrow('A network error occurred.');
     });
 
     it('should support AbortController signals', async () => {
       const controller = new AbortController();
       const signal = controller.signal;
-      (fetch as vi.Mock).mockRejectedValue(new DOMException('Aborted', 'AbortError'));
+      (fetch as Mock).mockRejectedValue(new DOMException('Aborted', 'AbortError'));
 
       controller.abort();
 
@@ -131,34 +131,40 @@ describe('API Client', () => {
   describe('Authentication', () => {
     it('should include Authorization header if token exists', async () => {
       const token = 'test-token';
-      api.setAuthToken(token); // Sets token in localStorage
-      (fetch as vi.Mock).mockResolvedValue({ ok: true, json: async () => ({}) });
+      localStorage.setItem('auth_token', token); // Sets token in localStorage
+      (global.fetch as Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ status: 'ok' }),
+      });
 
       await api.fetchStatus();
 
-      const fetchCall = (fetch as vi.Mock).mock.calls[0];
-      const headers = fetchCall[1].headers as HeadersInit;
-      expect(headers['Authorization']).toBe(`Bearer ${token}`);
+      const fetchCall = (fetch as Mock).mock.calls[0];
+      const headers = fetchCall[1].headers as Record<string, string>;
+      expect(headers['Authorization']).toBe('Bearer test-token');
     });
 
     it('should not include Authorization header if token does not exist', async () => {
-        api.setAuthToken(null); // Removes token from localStorage
-        (fetch as vi.Mock).mockResolvedValue({ ok: true, json: async () => ({}) });
-
-        await api.fetchStatus();
-
-        const fetchCall = (fetch as vi.Mock).mock.calls[0];
-        const headers = fetchCall[1].headers as HeadersInit;
-        expect(headers['Authorization']).toBeUndefined();
+      localStorage.removeItem('auth_token'); // Removes token from localStorage
+      (global.fetch as Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ status: 'ok' }),
       });
+
+      await api.fetchStatus();
+
+      const fetchCall = (fetch as Mock).mock.calls[0];
+      const headers = fetchCall[1].headers as Record<string, string>;
+      expect(headers['Authorization']).toBeUndefined();
+    });
 
     it('should not include Authorization header for unauthenticated requests like login', async () => {
       api.setAuthToken('some-token');
-      (fetch as vi.Mock).mockResolvedValue({ ok: true, json: async () => ({ access_token: 'new' }) });
+      (fetch as Mock).mockResolvedValue({ ok: true, json: async () => ({ access_token: 'new' }) });
 
       await api.login('user', 'pass');
 
-      const fetchCall = (fetch as vi.Mock).mock.calls[0];
+      const fetchCall = (fetch as Mock).mock.calls[0];
       const requestConfig = fetchCall[1] as RequestInit;
       expect(requestConfig.headers).not.toHaveProperty('Authorization');
     });

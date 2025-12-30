@@ -56,7 +56,7 @@ describe('ToastProvider', () => {
       </ToastProvider>,
     );
 
-    const error = new ApiError(500, 'Internal Server Error', 'Something broke');
+    const error = new ApiError('Internal Server Error', 500, { detail: 'Something broke' });
 
     // Mock console.error to avoid polluting test output
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -65,12 +65,13 @@ describe('ToastProvider', () => {
       window.dispatchEvent(new CustomEvent('api:error', { detail: error }));
     });
 
-    expect(screen.getByText(error.detail!)).toBeInTheDocument();
+    // We expect the message to be 'Something broke' because details.detail takes precedence
+    expect(screen.getByText('Something broke')).toBeInTheDocument();
 
-    // In dev, it should also show status and statusText
+    // In dev, it should also show status
     const isDev = import.meta.env.DEV;
     if (isDev) {
-      expect(screen.getByText(`[${error.status}] ${error.statusText}`)).toBeInTheDocument();
+      expect(screen.getByText(`[${error.status}]`)).toBeInTheDocument();
     }
 
     expect(consoleErrorSpy).toHaveBeenCalledWith('Global API Error:', error);

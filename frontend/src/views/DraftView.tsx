@@ -1,5 +1,6 @@
+
 import { useState } from 'react';
-import GlassCard from './ui/GlassCard';
+import GlassCard from '../components/ui/GlassCard';
 import { api } from '../lib/api';
 import type { EmailDraft } from '../lib/api';
 import { cn } from '../lib/utils';
@@ -12,7 +13,7 @@ const TONES = [
   { id: 'concise', label: 'Concise' },
 ];
 
-export function DraftView() {
+export default function DraftView() {
   const [instruction, setInstruction] = useState('');
   const [threadId, setThreadId] = useState('');
   const [tone, setTone] = useState('professional');

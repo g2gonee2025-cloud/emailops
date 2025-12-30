@@ -1,0 +1,1016 @@
+{
+  "batch": "2",
+  "source": "sources/github/g2gonee2025-cloud/emailops",
+  "branch": "main",
+  "approval_mode": "auto",
+  "concurrency": 3,
+  "max_session_minutes": 45,
+  "waves": [
+    {
+      "wave": "B2.W1 Radix wrappers",
+      "status": "ok",
+      "created": [
+        {
+          "status": "created",
+          "task": "UI Tabs (Radix)",
+          "file": "frontend/src/components/ui/Tabs.tsx",
+          "session_name": "sessions/4799479637231787524",
+          "session_url": "https://jules.google.com/session/4799479637231787524",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/4799479637231787524",
+            "title": "[UI] UI Tabs (Radix) \u2014 Tabs.tsx",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Tabs (Radix)\nPrimary target: frontend/src/components/ui/Tabs.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Tabs.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Tabs> wrapper using Radix UI primitives. Ensure accessibility (keyboard, focus). Style with Tailwind glassmorphism tokens. Use forwardRef and typed props.\n",
+            "url": "https://jules.google.com/session/4799479637231787524",
+            "requirePlanApproval": true,
+            "id": "4799479637231787524",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "UI Dialog (Radix)",
+          "file": "frontend/src/components/ui/Dialog.tsx",
+          "session_name": "sessions/1724345887215490323",
+          "session_url": "https://jules.google.com/session/1724345887215490323",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/1724345887215490323",
+            "title": "[UI] UI Dialog (Radix) \u2014 Dialog.tsx",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Dialog (Radix)\nPrimary target: frontend/src/components/ui/Dialog.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Dialog.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Dialog> wrapper using Radix UI primitives. Ensure accessibility (keyboard, focus). Style with Tailwind glassmorphism tokens. Use forwardRef and typed props.\n",
+            "url": "https://jules.google.com/session/1724345887215490323",
+            "requirePlanApproval": true,
+            "id": "1724345887215490323",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "UI Select (Radix)",
+          "file": "frontend/src/components/ui/Select.tsx",
+          "session_name": "sessions/13389760713304566911",
+          "session_url": "https://jules.google.com/session/13389760713304566911",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/13389760713304566911",
+            "title": "[UI] UI Select (Radix) \u2014 Select.tsx",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Select (Radix)\nPrimary target: frontend/src/components/ui/Select.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Select.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Select> wrapper using Radix UI primitives. Ensure accessibility (keyboard, focus). Style with Tailwind glassmorphism tokens. Use forwardRef and typed props.\n",
+            "url": "https://jules.google.com/session/13389760713304566911",
+            "requirePlanApproval": true,
+            "id": "13389760713304566911",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "UI Tooltip (Radix)",
+          "file": "frontend/src/components/ui/Tooltip.tsx",
+          "session_name": "sessions/4796850909683245648",
+          "session_url": "https://jules.google.com/session/4796850909683245648",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/4796850909683245648",
+            "title": "[UI] UI Tooltip (Radix) \u2014 Tooltip.tsx",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Tooltip (Radix)\nPrimary target: frontend/src/components/ui/Tooltip.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Tooltip.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Tooltip> wrapper using Radix UI primitives. Ensure accessibility (keyboard, focus). Style with Tailwind glassmorphism tokens. Use forwardRef and typed props.\n",
+            "url": "https://jules.google.com/session/4796850909683245648",
+            "requirePlanApproval": true,
+            "id": "4796850909683245648",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "UI Switch (Radix)",
+          "file": "frontend/src/components/ui/Switch.tsx",
+          "session_name": "sessions/8735402583446653687",
+          "session_url": "https://jules.google.com/session/8735402583446653687",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/8735402583446653687",
+            "title": "[UI] UI Switch (Radix) \u2014 Switch.tsx",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Switch (Radix)\nPrimary target: frontend/src/components/ui/Switch.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Switch.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Switch> wrapper using Radix UI primitives. Ensure accessibility (keyboard, focus). Style with Tailwind glassmorphism tokens. Use forwardRef and typed props.\n",
+            "url": "https://jules.google.com/session/8735402583446653687",
+            "requirePlanApproval": true,
+            "id": "8735402583446653687",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "UI DropdownMenu (Radix)",
+          "file": "frontend/src/components/ui/DropdownMenu.tsx",
+          "session_name": "sessions/12629567265154969866",
+          "session_url": "https://jules.google.com/session/12629567265154969866",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/12629567265154969866",
+            "title": "[UI] UI DropdownMenu (Radix) \u2014 DropdownMenu.tsx",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI DropdownMenu (Radix)\nPrimary target: frontend/src/components/ui/DropdownMenu.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/DropdownMenu.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <DropdownMenu> wrapper using Radix UI primitives. Ensure accessibility (keyboard, focus). Style with Tailwind glassmorphism tokens. Use forwardRef and typed props.\n",
+            "url": "https://jules.google.com/session/12629567265154969866",
+            "requirePlanApproval": true,
+            "id": "12629567265154969866",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "UI Checkbox (Radix)",
+          "file": "frontend/src/components/ui/Checkbox.tsx",
+          "session_name": "sessions/1492219810813884222",
+          "session_url": "https://jules.google.com/session/1492219810813884222",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/1492219810813884222",
+            "title": "[UI] UI Checkbox (Radix) \u2014 Checkbox.tsx",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Checkbox (Radix)\nPrimary target: frontend/src/components/ui/Checkbox.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Checkbox.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Checkbox> wrapper using Radix UI primitives. Ensure accessibility (keyboard, focus). Style with Tailwind glassmorphism tokens. Use forwardRef and typed props.\n",
+            "url": "https://jules.google.com/session/1492219810813884222",
+            "requirePlanApproval": true,
+            "id": "1492219810813884222",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "UI ScrollArea (Radix)",
+          "file": "frontend/src/components/ui/ScrollArea.tsx",
+          "session_name": "sessions/2089913127051437670",
+          "session_url": "https://jules.google.com/session/2089913127051437670",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/2089913127051437670",
+            "title": "[UI] UI ScrollArea (Radix) \u2014 ScrollArea.tsx",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI ScrollArea (Radix)\nPrimary target: frontend/src/components/ui/ScrollArea.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/ScrollArea.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <ScrollArea> wrapper using Radix UI primitives. Ensure accessibility (keyboard, focus). Style with Tailwind glassmorphism tokens. Use forwardRef and typed props.\n",
+            "url": "https://jules.google.com/session/2089913127051437670",
+            "requirePlanApproval": true,
+            "id": "2089913127051437670",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "UI Separator (Radix)",
+          "file": "frontend/src/components/ui/Separator.tsx",
+          "session_name": "sessions/3778170859504554451",
+          "session_url": "https://jules.google.com/session/3778170859504554451",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/3778170859504554451",
+            "title": "[UI] UI Separator (Radix) \u2014 Separator.tsx",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Separator (Radix)\nPrimary target: frontend/src/components/ui/Separator.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Separator.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Separator> wrapper using Radix UI primitives. Ensure accessibility (keyboard, focus). Style with Tailwind glassmorphism tokens. Use forwardRef and typed props.\n",
+            "url": "https://jules.google.com/session/3778170859504554451",
+            "requirePlanApproval": true,
+            "id": "3778170859504554451",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "UI Avatar (Radix)",
+          "file": "frontend/src/components/ui/Avatar.tsx",
+          "session_name": "sessions/5533283146257534731",
+          "session_url": "https://jules.google.com/session/5533283146257534731",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/5533283146257534731",
+            "title": "[UI] UI Avatar (Radix) \u2014 Avatar.tsx",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Avatar (Radix)\nPrimary target: frontend/src/components/ui/Avatar.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Avatar.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Avatar> wrapper using Radix UI primitives. Ensure accessibility (keyboard, focus). Style with Tailwind glassmorphism tokens. Use forwardRef and typed props.\n",
+            "url": "https://jules.google.com/session/5533283146257534731",
+            "requirePlanApproval": true,
+            "id": "5533283146257534731",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        }
+      ],
+      "failures": [],
+      "polled": [
+        {
+          "session_name": "sessions/4799479637231787524",
+          "state": "AWAITING_USER_FEEDBACK",
+          "session_url": "https://jules.google.com/session/4799479637231787524",
+          "pr_urls": [],
+          "raw": {
+            "name": "sessions/4799479637231787524",
+            "title": "[UI] UI Tabs (Radix) \u2014 Tabs.tsx",
+            "createTime": "2025-12-29T14:30:40.239105421Z",
+            "updateTime": "2025-12-29T14:34:34.563564Z",
+            "state": "AWAITING_USER_FEEDBACK",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Tabs (Radix)\nPrimary target: frontend/src/components/ui/Tabs.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Tabs.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Tabs> wrapper using Radix UI primitives. Ensure accessibility (keyboard, focus). Style with Tailwind glassmorphism tokens. Use forwardRef and typed props.\n",
+            "url": "https://jules.google.com/session/4799479637231787524",
+            "id": "4799479637231787524"
+          }
+        },
+        {
+          "session_name": "sessions/1724345887215490323",
+          "state": "FAILED",
+          "session_url": "https://jules.google.com/session/1724345887215490323",
+          "pr_urls": [],
+          "raw": {
+            "name": "sessions/1724345887215490323",
+            "title": "[UI] UI Dialog (Radix) \u2014 Dialog.tsx",
+            "createTime": "2025-12-29T14:30:40.239313559Z",
+            "updateTime": "2025-12-29T14:31:28.704511Z",
+            "state": "FAILED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Dialog (Radix)\nPrimary target: frontend/src/components/ui/Dialog.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Dialog.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Dialog> wrapper using Radix UI primitives. Ensure accessibility (keyboard, focus). Style with Tailwind glassmorphism tokens. Use forwardRef and typed props.\n",
+            "url": "https://jules.google.com/session/1724345887215490323",
+            "id": "1724345887215490323"
+          }
+        },
+        {
+          "session_name": "sessions/13389760713304566911",
+          "state": "AWAITING_USER_FEEDBACK",
+          "session_url": "https://jules.google.com/session/13389760713304566911",
+          "pr_urls": [],
+          "raw": {
+            "name": "sessions/13389760713304566911",
+            "title": "[UI] UI Select (Radix) \u2014 Select.tsx",
+            "createTime": "2025-12-29T14:30:40.278527105Z",
+            "updateTime": "2025-12-29T14:32:23.250996Z",
+            "state": "AWAITING_USER_FEEDBACK",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Select (Radix)\nPrimary target: frontend/src/components/ui/Select.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Select.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Select> wrapper using Radix UI primitives. Ensure accessibility (keyboard, focus). Style with Tailwind glassmorphism tokens. Use forwardRef and typed props.\n",
+            "url": "https://jules.google.com/session/13389760713304566911",
+            "id": "13389760713304566911"
+          }
+        },
+        {
+          "session_name": "sessions/4796850909683245648",
+          "state": "FAILED",
+          "session_url": "https://jules.google.com/session/4796850909683245648",
+          "pr_urls": [],
+          "raw": {
+            "name": "sessions/4796850909683245648",
+            "title": "[UI] UI Tooltip (Radix) \u2014 Tooltip.tsx",
+            "createTime": "2025-12-29T14:30:42.943233580Z",
+            "updateTime": "2025-12-29T14:31:39.476303Z",
+            "state": "FAILED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Tooltip (Radix)\nPrimary target: frontend/src/components/ui/Tooltip.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Tooltip.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Tooltip> wrapper using Radix UI primitives. Ensure accessibility (keyboard, focus). Style with Tailwind glassmorphism tokens. Use forwardRef and typed props.\n",
+            "url": "https://jules.google.com/session/4796850909683245648",
+            "id": "4796850909683245648"
+          }
+        },
+        {
+          "session_name": "sessions/8735402583446653687",
+          "state": "COMPLETED",
+          "session_url": "https://jules.google.com/session/8735402583446653687",
+          "pr_urls": [],
+          "raw": {
+            "name": "sessions/8735402583446653687",
+            "title": "[UI] UI Switch (Radix) \u2014 Switch.tsx",
+            "createTime": "2025-12-29T14:30:44.211338243Z",
+            "updateTime": "2025-12-29T14:34:32.117662Z",
+            "state": "COMPLETED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Switch (Radix)\nPrimary target: frontend/src/components/ui/Switch.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Switch.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Switch> wrapper using Radix UI primitives. Ensure accessibility (keyboard, focus). Style with Tailwind glassmorphism tokens. Use forwardRef and typed props.\n",
+            "url": "https://jules.google.com/session/8735402583446653687",
+            "id": "8735402583446653687"
+          }
+        },
+        {
+          "session_name": "sessions/12629567265154969866",
+          "state": "COMPLETED",
+          "session_url": "https://jules.google.com/session/12629567265154969866",
+          "pr_urls": [
+            "https://github.com/g2gonee2025-cloud/emailops/pull/214"
+          ],
+          "raw": {
+            "name": "sessions/12629567265154969866",
+            "title": "[UI] UI DropdownMenu (Radix) \u2014 DropdownMenu.tsx",
+            "createTime": "2025-12-29T14:30:44.649788651Z",
+            "updateTime": "2025-12-29T14:47:49.818237Z",
+            "state": "COMPLETED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI DropdownMenu (Radix)\nPrimary target: frontend/src/components/ui/DropdownMenu.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/DropdownMenu.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <DropdownMenu> wrapper using Radix UI primitives. Ensure accessibility (keyboard, focus). Style with Tailwind glassmorphism tokens. Use forwardRef and typed props.\n",
+            "url": "https://jules.google.com/session/12629567265154969866",
+            "id": "12629567265154969866",
+            "outputs": [
+              {
+                "pullRequest": {
+                  "url": "https://github.com/g2gonee2025-cloud/emailops/pull/214",
+                  "title": "feat(ui): add DropdownMenu component",
+                  "description": "This submission adds a new `DropdownMenu` component to the UI library. It is built with Radix UI for accessibility and styled with Tailwind CSS to match the application's glassmorphism theme. The submission also includes a new testing suite for the frontend, with a test for the new component.\n\n---\n*PR created automatically by Jules for task [12629567265154969866](https://jules.google.com/task/12629567265154969866) started by @g2gonee2025-cloud*"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "session_name": "sessions/1492219810813884222",
+          "state": "COMPLETED",
+          "session_url": "https://jules.google.com/session/1492219810813884222",
+          "pr_urls": [
+            "https://github.com/g2gonee2025-cloud/emailops/pull/212"
+          ],
+          "raw": {
+            "name": "sessions/1492219810813884222",
+            "title": "[UI] UI Checkbox (Radix) \u2014 Checkbox.tsx",
+            "createTime": "2025-12-29T14:30:44.656046629Z",
+            "updateTime": "2025-12-29T14:43:00.523543Z",
+            "state": "COMPLETED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Checkbox (Radix)\nPrimary target: frontend/src/components/ui/Checkbox.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Checkbox.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Checkbox> wrapper using Radix UI primitives. Ensure accessibility (keyboard, focus). Style with Tailwind glassmorphism tokens. Use forwardRef and typed props.\n",
+            "url": "https://jules.google.com/session/1492219810813884222",
+            "id": "1492219810813884222",
+            "outputs": [
+              {
+                "pullRequest": {
+                  "url": "https://github.com/g2gonee2025-cloud/emailops/pull/212",
+                  "title": "feat(ui): Create Radix UI Checkbox Component",
+                  "description": "This change introduces a new, reusable Checkbox component built with Radix UI and styled with Tailwind CSS. It is fully accessible and includes a comprehensive test suite. The work also involved setting up the frontend testing environment from scratch.\n\n---\n*PR created automatically by Jules for task [1492219810813884222](https://jules.google.com/task/1492219810813884222) started by @g2gonee2025-cloud*"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "session_name": "sessions/2089913127051437670",
+          "state": "AWAITING_USER_FEEDBACK",
+          "session_url": "https://jules.google.com/session/2089913127051437670",
+          "pr_urls": [],
+          "raw": {
+            "name": "sessions/2089913127051437670",
+            "title": "[UI] UI ScrollArea (Radix) \u2014 ScrollArea.tsx",
+            "createTime": "2025-12-29T14:30:46.111566550Z",
+            "updateTime": "2025-12-29T14:32:38.445635Z",
+            "state": "AWAITING_USER_FEEDBACK",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI ScrollArea (Radix)\nPrimary target: frontend/src/components/ui/ScrollArea.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/ScrollArea.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <ScrollArea> wrapper using Radix UI primitives. Ensure accessibility (keyboard, focus). Style with Tailwind glassmorphism tokens. Use forwardRef and typed props.\n",
+            "url": "https://jules.google.com/session/2089913127051437670",
+            "id": "2089913127051437670"
+          }
+        },
+        {
+          "session_name": "sessions/3778170859504554451",
+          "state": "FAILED",
+          "session_url": "https://jules.google.com/session/3778170859504554451",
+          "pr_urls": [],
+          "raw": {
+            "name": "sessions/3778170859504554451",
+            "title": "[UI] UI Separator (Radix) \u2014 Separator.tsx",
+            "createTime": "2025-12-29T14:30:50.223258993Z",
+            "updateTime": "2025-12-29T14:31:42.818783Z",
+            "state": "FAILED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Separator (Radix)\nPrimary target: frontend/src/components/ui/Separator.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Separator.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Separator> wrapper using Radix UI primitives. Ensure accessibility (keyboard, focus). Style with Tailwind glassmorphism tokens. Use forwardRef and typed props.\n",
+            "url": "https://jules.google.com/session/3778170859504554451",
+            "id": "3778170859504554451"
+          }
+        },
+        {
+          "session_name": "sessions/5533283146257534731",
+          "state": "COMPLETED",
+          "session_url": "https://jules.google.com/session/5533283146257534731",
+          "pr_urls": [
+            "https://github.com/g2gonee2025-cloud/emailops/pull/211"
+          ],
+          "raw": {
+            "name": "sessions/5533283146257534731",
+            "title": "[UI] UI Avatar (Radix) \u2014 Avatar.tsx",
+            "createTime": "2025-12-29T14:30:51.244298152Z",
+            "updateTime": "2025-12-29T14:43:00.790393Z",
+            "state": "COMPLETED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Avatar (Radix)\nPrimary target: frontend/src/components/ui/Avatar.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Avatar.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Avatar> wrapper using Radix UI primitives. Ensure accessibility (keyboard, focus). Style with Tailwind glassmorphism tokens. Use forwardRef and typed props.\n",
+            "url": "https://jules.google.com/session/5533283146257534731",
+            "id": "5533283146257534731",
+            "outputs": [
+              {
+                "pullRequest": {
+                  "url": "https://github.com/g2gonee2025-cloud/emailops/pull/211",
+                  "title": "Create Radix UI Avatar Component",
+                  "description": "This change introduces a new, accessible `Avatar` component to the frontend UI library. It's built using Radix UI primitives for robust accessibility and styled with Tailwind CSS to match the application's design, including a glassmorphism effect for the fallback state.\n\nThe submission also includes a complete testing setup for the frontend, using Vitest and Testing Library. This ensures the new component is well-tested and provides a foundation for future frontend testing.\n\n---\n*PR created automatically by Jules for task [5533283146257534731](https://jules.google.com/task/5533283146257534731) started by @g2gonee2025-cloud*"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "wave": "B2.W2 Basic components",
+      "status": "ok",
+      "created": [
+        {
+          "status": "created",
+          "task": "UI Button (Tailwind)",
+          "file": "frontend/src/components/ui/Button.tsx",
+          "session_name": "sessions/17361798638869010141",
+          "session_url": "https://jules.google.com/session/17361798638869010141",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/17361798638869010141",
+            "title": "[UI] UI Button (Tailwind) \u2014 Button.tsx",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Button (Tailwind)\nPrimary target: frontend/src/components/ui/Button.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Button.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Button> component using Tailwind. Support variants/sizes as appropriate. Dark-mode glass aesthetic. Typed props; forwardRef when needed.\n",
+            "url": "https://jules.google.com/session/17361798638869010141",
+            "requirePlanApproval": true,
+            "id": "17361798638869010141",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "UI Input (Tailwind)",
+          "file": "frontend/src/components/ui/Input.tsx",
+          "session_name": "sessions/1763518807657993208",
+          "session_url": "https://jules.google.com/session/1763518807657993208",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/1763518807657993208",
+            "title": "[UI] UI Input (Tailwind) \u2014 Input.tsx",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Input (Tailwind)\nPrimary target: frontend/src/components/ui/Input.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Input.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Input> component using Tailwind. Support variants/sizes as appropriate. Dark-mode glass aesthetic. Typed props; forwardRef when needed.\n",
+            "url": "https://jules.google.com/session/1763518807657993208",
+            "requirePlanApproval": true,
+            "id": "1763518807657993208",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "UI Label (Tailwind)",
+          "file": "frontend/src/components/ui/Label.tsx",
+          "session_name": "sessions/5584390987961307745",
+          "session_url": "https://jules.google.com/session/5584390987961307745",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/5584390987961307745",
+            "title": "[UI] UI Label (Tailwind) \u2014 Label.tsx",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Label (Tailwind)\nPrimary target: frontend/src/components/ui/Label.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Label.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Label> component using Tailwind. Support variants/sizes as appropriate. Dark-mode glass aesthetic. Typed props; forwardRef when needed.\n",
+            "url": "https://jules.google.com/session/5584390987961307745",
+            "requirePlanApproval": true,
+            "id": "5584390987961307745",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "UI Textarea (Tailwind)",
+          "file": "frontend/src/components/ui/Textarea.tsx",
+          "session_name": "sessions/10748449683452497800",
+          "session_url": "https://jules.google.com/session/10748449683452497800",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/10748449683452497800",
+            "title": "[UI] UI Textarea (Tailwind) \u2014 Textarea.tsx",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Textarea (Tailwind)\nPrimary target: frontend/src/components/ui/Textarea.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Textarea.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Textarea> component using Tailwind. Support variants/sizes as appropriate. Dark-mode glass aesthetic. Typed props; forwardRef when needed.\n",
+            "url": "https://jules.google.com/session/10748449683452497800",
+            "requirePlanApproval": true,
+            "id": "10748449683452497800",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "UI Badge (Tailwind)",
+          "file": "frontend/src/components/ui/Badge.tsx",
+          "session_name": "sessions/6754893444012805100",
+          "session_url": "https://jules.google.com/session/6754893444012805100",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/6754893444012805100",
+            "title": "[UI] UI Badge (Tailwind) \u2014 Badge.tsx",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Badge (Tailwind)\nPrimary target: frontend/src/components/ui/Badge.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Badge.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Badge> component using Tailwind. Support variants/sizes as appropriate. Dark-mode glass aesthetic. Typed props; forwardRef when needed.\n",
+            "url": "https://jules.google.com/session/6754893444012805100",
+            "requirePlanApproval": true,
+            "id": "6754893444012805100",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "UI Card (Tailwind)",
+          "file": "frontend/src/components/ui/Card.tsx",
+          "session_name": "sessions/7822516920240063893",
+          "session_url": "https://jules.google.com/session/7822516920240063893",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/7822516920240063893",
+            "title": "[UI] UI Card (Tailwind) \u2014 Card.tsx",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Card (Tailwind)\nPrimary target: frontend/src/components/ui/Card.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Card.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Card> component using Tailwind. Support variants/sizes as appropriate. Dark-mode glass aesthetic. Typed props; forwardRef when needed.\n",
+            "url": "https://jules.google.com/session/7822516920240063893",
+            "requirePlanApproval": true,
+            "id": "7822516920240063893",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "UI Skeleton (Tailwind)",
+          "file": "frontend/src/components/ui/Skeleton.tsx",
+          "session_name": "sessions/9920981245704248060",
+          "session_url": "https://jules.google.com/session/9920981245704248060",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/9920981245704248060",
+            "title": "[UI] UI Skeleton (Tailwind) \u2014 Skeleton.tsx",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Skeleton (Tailwind)\nPrimary target: frontend/src/components/ui/Skeleton.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Skeleton.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Skeleton> component using Tailwind. Support variants/sizes as appropriate. Dark-mode glass aesthetic. Typed props; forwardRef when needed.\n",
+            "url": "https://jules.google.com/session/9920981245704248060",
+            "requirePlanApproval": true,
+            "id": "9920981245704248060",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "UI Table (Tailwind)",
+          "file": "frontend/src/components/ui/Table.tsx",
+          "session_name": "sessions/5677658982270732910",
+          "session_url": "https://jules.google.com/session/5677658982270732910",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/5677658982270732910",
+            "title": "[UI] UI Table (Tailwind) \u2014 Table.tsx",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Table (Tailwind)\nPrimary target: frontend/src/components/ui/Table.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Table.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Table> component using Tailwind. Support variants/sizes as appropriate. Dark-mode glass aesthetic. Typed props; forwardRef when needed.\n",
+            "url": "https://jules.google.com/session/5677658982270732910",
+            "requirePlanApproval": true,
+            "id": "5677658982270732910",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "UI Alert (Tailwind)",
+          "file": "frontend/src/components/ui/Alert.tsx",
+          "session_name": "sessions/12416876439304784355",
+          "session_url": "https://jules.google.com/session/12416876439304784355",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/12416876439304784355",
+            "title": "[UI] UI Alert (Tailwind) \u2014 Alert.tsx",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Alert (Tailwind)\nPrimary target: frontend/src/components/ui/Alert.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Alert.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Alert> component using Tailwind. Support variants/sizes as appropriate. Dark-mode glass aesthetic. Typed props; forwardRef when needed.\n",
+            "url": "https://jules.google.com/session/12416876439304784355",
+            "requirePlanApproval": true,
+            "id": "12416876439304784355",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "UI Progress (Tailwind)",
+          "file": "frontend/src/components/ui/Progress.tsx",
+          "session_name": "sessions/1119576390241937745",
+          "session_url": "https://jules.google.com/session/1119576390241937745",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/1119576390241937745",
+            "title": "[UI] UI Progress (Tailwind) \u2014 Progress.tsx",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Progress (Tailwind)\nPrimary target: frontend/src/components/ui/Progress.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Progress.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Progress> component using Tailwind. Support variants/sizes as appropriate. Dark-mode glass aesthetic. Typed props; forwardRef when needed.\n",
+            "url": "https://jules.google.com/session/1119576390241937745",
+            "requirePlanApproval": true,
+            "id": "1119576390241937745",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        }
+      ],
+      "failures": [],
+      "polled": [
+        {
+          "session_name": "sessions/17361798638869010141",
+          "state": "FAILED",
+          "session_url": "https://jules.google.com/session/17361798638869010141",
+          "pr_urls": [],
+          "raw": {
+            "name": "sessions/17361798638869010141",
+            "title": "[UI] UI Button (Tailwind) \u2014 Button.tsx",
+            "createTime": "2025-12-29T14:47:52.875509925Z",
+            "updateTime": "2025-12-29T14:48:47.045727Z",
+            "state": "FAILED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Button (Tailwind)\nPrimary target: frontend/src/components/ui/Button.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Button.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Button> component using Tailwind. Support variants/sizes as appropriate. Dark-mode glass aesthetic. Typed props; forwardRef when needed.\n",
+            "url": "https://jules.google.com/session/17361798638869010141",
+            "id": "17361798638869010141"
+          }
+        },
+        {
+          "session_name": "sessions/1763518807657993208",
+          "state": "FAILED",
+          "session_url": "https://jules.google.com/session/1763518807657993208",
+          "pr_urls": [],
+          "raw": {
+            "name": "sessions/1763518807657993208",
+            "title": "[UI] UI Input (Tailwind) \u2014 Input.tsx",
+            "createTime": "2025-12-29T14:47:53.123553Z",
+            "updateTime": "2025-12-29T14:49:07.393855Z",
+            "state": "FAILED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Input (Tailwind)\nPrimary target: frontend/src/components/ui/Input.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Input.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Input> component using Tailwind. Support variants/sizes as appropriate. Dark-mode glass aesthetic. Typed props; forwardRef when needed.\n",
+            "url": "https://jules.google.com/session/1763518807657993208",
+            "id": "1763518807657993208"
+          }
+        },
+        {
+          "session_name": "sessions/5584390987961307745",
+          "state": "COMPLETED",
+          "session_url": "https://jules.google.com/session/5584390987961307745",
+          "pr_urls": [
+            "https://github.com/g2gonee2025-cloud/emailops/pull/221"
+          ],
+          "raw": {
+            "name": "sessions/5584390987961307745",
+            "title": "[UI] UI Label (Tailwind) \u2014 Label.tsx",
+            "createTime": "2025-12-29T14:47:53.395645791Z",
+            "updateTime": "2025-12-29T15:03:09.329946Z",
+            "state": "COMPLETED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Label (Tailwind)\nPrimary target: frontend/src/components/ui/Label.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Label.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Label> component using Tailwind. Support variants/sizes as appropriate. Dark-mode glass aesthetic. Typed props; forwardRef when needed.\n",
+            "url": "https://jules.google.com/session/5584390987961307745",
+            "id": "5584390987961307745",
+            "outputs": [
+              {
+                "pullRequest": {
+                  "url": "https://github.com/g2gonee2025-cloud/emailops/pull/221",
+                  "title": "feat: Create Tailwind Label Component",
+                  "description": "Created a new <Label> component using Tailwind CSS. It supports different variants and sizes, has a dark-mode glass aesthetic, and uses typed props with forwardRef.\n\n---\n*PR created automatically by Jules for task [5584390987961307745](https://jules.google.com/task/5584390987961307745) started by @g2gonee2025-cloud*"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "session_name": "sessions/10748449683452497800",
+          "state": "FAILED",
+          "session_url": "https://jules.google.com/session/10748449683452497800",
+          "pr_urls": [],
+          "raw": {
+            "name": "sessions/10748449683452497800",
+            "title": "[UI] UI Textarea (Tailwind) \u2014 Textarea.tsx",
+            "createTime": "2025-12-29T14:47:55.234933056Z",
+            "updateTime": "2025-12-29T14:48:37.649342Z",
+            "state": "FAILED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Textarea (Tailwind)\nPrimary target: frontend/src/components/ui/Textarea.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Textarea.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Textarea> component using Tailwind. Support variants/sizes as appropriate. Dark-mode glass aesthetic. Typed props; forwardRef when needed.\n",
+            "url": "https://jules.google.com/session/10748449683452497800",
+            "id": "10748449683452497800"
+          }
+        },
+        {
+          "session_name": "sessions/6754893444012805100",
+          "state": "COMPLETED",
+          "session_url": "https://jules.google.com/session/6754893444012805100",
+          "pr_urls": [
+            "https://github.com/g2gonee2025-cloud/emailops/pull/219"
+          ],
+          "raw": {
+            "name": "sessions/6754893444012805100",
+            "title": "[UI] UI Badge (Tailwind) \u2014 Badge.tsx",
+            "createTime": "2025-12-29T14:47:57.045737777Z",
+            "updateTime": "2025-12-29T15:00:46.146215Z",
+            "state": "COMPLETED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Badge (Tailwind)\nPrimary target: frontend/src/components/ui/Badge.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Badge.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Badge> component using Tailwind. Support variants/sizes as appropriate. Dark-mode glass aesthetic. Typed props; forwardRef when needed.\n",
+            "url": "https://jules.google.com/session/6754893444012805100",
+            "id": "6754893444012805100",
+            "outputs": [
+              {
+                "pullRequest": {
+                  "url": "https://github.com/g2gonee2025-cloud/emailops/pull/219",
+                  "title": "feat(ui): Create Badge component",
+                  "description": "This change adds a new <Badge> component with a glassmorphism aesthetic, multiple variants, and a complete testing setup, including unit tests and visual verification.\n\n---\n*PR created automatically by Jules for task [6754893444012805100](https://jules.google.com/task/6754893444012805100) started by @g2gonee2025-cloud*"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "session_name": "sessions/7822516920240063893",
+          "state": "FAILED",
+          "session_url": "https://jules.google.com/session/7822516920240063893",
+          "pr_urls": [],
+          "raw": {
+            "name": "sessions/7822516920240063893",
+            "title": "[UI] UI Card (Tailwind) \u2014 Card.tsx",
+            "createTime": "2025-12-29T14:47:59.201888212Z",
+            "updateTime": "2025-12-29T14:48:45.536015Z",
+            "state": "FAILED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Card (Tailwind)\nPrimary target: frontend/src/components/ui/Card.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Card.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Card> component using Tailwind. Support variants/sizes as appropriate. Dark-mode glass aesthetic. Typed props; forwardRef when needed.\n",
+            "url": "https://jules.google.com/session/7822516920240063893",
+            "id": "7822516920240063893"
+          }
+        },
+        {
+          "session_name": "sessions/9920981245704248060",
+          "state": "COMPLETED",
+          "session_url": "https://jules.google.com/session/9920981245704248060",
+          "pr_urls": [
+            "https://github.com/g2gonee2025-cloud/emailops/pull/217"
+          ],
+          "raw": {
+            "name": "sessions/9920981245704248060",
+            "title": "[UI] UI Skeleton (Tailwind) \u2014 Skeleton.tsx",
+            "createTime": "2025-12-29T14:48:00.253778751Z",
+            "updateTime": "2025-12-29T14:58:22.435325Z",
+            "state": "COMPLETED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Skeleton (Tailwind)\nPrimary target: frontend/src/components/ui/Skeleton.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Skeleton.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Skeleton> component using Tailwind. Support variants/sizes as appropriate. Dark-mode glass aesthetic. Typed props; forwardRef when needed.\n",
+            "url": "https://jules.google.com/session/9920981245704248060",
+            "id": "9920981245704248060",
+            "outputs": [
+              {
+                "pullRequest": {
+                  "url": "https://github.com/g2gonee2025-cloud/emailops/pull/217",
+                  "title": "Create Skeleton UI Component",
+                  "description": "This commit introduces a new <Skeleton> component to the frontend UI library.\n\nThe component is built with Tailwind CSS and features a dark-mode glass aesthetic. It is fully typed with TypeScript and supports multiple variants (`text`, `circular`, `rectangular`), sizes, and line counts.\n\nKey features:\n- Wrapped with `React.forwardRef` to allow parent components to access the underlying DOM element.\n- Includes pre-built composite skeleton patterns like `SkeletonCard`, `SkeletonTable`, and `SkeletonKPI` for common use cases.\n- A unit test has been added to verify the `forwardRef` functionality, although the test runner is not yet configured in the frontend project.\n\n---\n*PR created automatically by Jules for task [9920981245704248060](https://jules.google.com/task/9920981245704248060) started by @g2gonee2025-cloud*"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "session_name": "sessions/5677658982270732910",
+          "state": "COMPLETED",
+          "session_url": "https://jules.google.com/session/5677658982270732910",
+          "pr_urls": [
+            "https://github.com/g2gonee2025-cloud/emailops/pull/216"
+          ],
+          "raw": {
+            "name": "sessions/5677658982270732910",
+            "title": "[UI] UI Table (Tailwind) \u2014 Table.tsx",
+            "createTime": "2025-12-29T14:48:01.967413856Z",
+            "updateTime": "2025-12-29T14:57:39.438609Z",
+            "state": "COMPLETED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Table (Tailwind)\nPrimary target: frontend/src/components/ui/Table.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Table.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Table> component using Tailwind. Support variants/sizes as appropriate. Dark-mode glass aesthetic. Typed props; forwardRef when needed.\n",
+            "url": "https://jules.google.com/session/5677658982270732910",
+            "id": "5677658982270732910",
+            "outputs": [
+              {
+                "pullRequest": {
+                  "url": "https://github.com/g2gonee2025-cloud/emailops/pull/216",
+                  "title": "Feat: Create reusable Table component",
+                  "description": "This change introduces a new reusable `Table` component suite in `frontend/src/components/ui/Table.tsx`. The component is styled with Tailwind CSS and designed with a dark-mode glass aesthetic, consistent with the application's theme.\n\nThe new component suite includes:\n- `Table`\n- `TableHeader`\n- `TableBody`\n- `TableRow`\n- `TableHead`\n- `TableCell`\n- `TableCaption`\n\nAll components are created with `forwardRef` for flexible usage and are fully typed with TypeScript.\n\nUnit tests have been added in `Table.test.tsx` to ensure the component renders correctly.\n\nAdditionally, ESLint configuration was updated to ignore unused variables prefixed with an underscore, which was necessary to resolve linting errors in existing components.\n\n---\n*PR created automatically by Jules for task [5677658982270732910](https://jules.google.com/task/5677658982270732910) started by @g2gonee2025-cloud*"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "session_name": "sessions/12416876439304784355",
+          "state": "COMPLETED",
+          "session_url": "https://jules.google.com/session/12416876439304784355",
+          "pr_urls": [
+            "https://github.com/g2gonee2025-cloud/emailops/pull/215"
+          ],
+          "raw": {
+            "name": "sessions/12416876439304784355",
+            "title": "[UI] UI Alert (Tailwind) \u2014 Alert.tsx",
+            "createTime": "2025-12-29T14:48:04.087263789Z",
+            "updateTime": "2025-12-29T14:55:46.071442Z",
+            "state": "COMPLETED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Alert (Tailwind)\nPrimary target: frontend/src/components/ui/Alert.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Alert.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Alert> component using Tailwind. Support variants/sizes as appropriate. Dark-mode glass aesthetic. Typed props; forwardRef when needed.\n",
+            "url": "https://jules.google.com/session/12416876439304784355",
+            "id": "12416876439304784355",
+            "outputs": [
+              {
+                "pullRequest": {
+                  "url": "https://github.com/g2gonee2025-cloud/emailops/pull/215",
+                  "title": "feat(ui): Add Alert Component",
+                  "description": "This change introduces a new Alert component to the UI library, following the established dark-mode glass aesthetic. It includes variants for different alert types, unit tests to ensure correctness, and sets up the necessary frontend testing infrastructure.\n\n---\n*PR created automatically by Jules for task [12416876439304784355](https://jules.google.com/task/12416876439304784355) started by @g2gonee2025-cloud*"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "session_name": "sessions/1119576390241937745",
+          "state": "FAILED",
+          "session_url": "https://jules.google.com/session/1119576390241937745",
+          "pr_urls": [],
+          "raw": {
+            "name": "sessions/1119576390241937745",
+            "title": "[UI] UI Progress (Tailwind) \u2014 Progress.tsx",
+            "createTime": "2025-12-29T14:48:07.322054131Z",
+            "updateTime": "2025-12-29T14:48:55.887487Z",
+            "state": "FAILED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: UI Progress (Tailwind)\nPrimary target: frontend/src/components/ui/Progress.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/ui/Progress.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCreate a <Progress> component using Tailwind. Support variants/sizes as appropriate. Dark-mode glass aesthetic. Typed props; forwardRef when needed.\n",
+            "url": "https://jules.google.com/session/1119576390241937745",
+            "id": "1119576390241937745"
+          }
+        }
+      ]
+    }
+  ]
+}

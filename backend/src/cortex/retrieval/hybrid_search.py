@@ -20,6 +20,7 @@ from cortex.retrieval._hybrid_helpers import (
     _resolve_target_conversations,
 )
 from cortex.retrieval.filters import parse_filter_grammar
+from cortex.retrieval.graph_search import GraphSearchInput, graph_retrieve
 
 # Import QueryClassification from dedicated module per Blueprint §8.2
 from cortex.retrieval.query_classifier import QueryClassification
@@ -41,6 +42,7 @@ RECENCY_BOOST_STRENGTH = 1.0
 SUMMARY_BOOST_FACTOR = 1.2
 SUMMARY_SEARCH_LIMIT = 5
 WEIGHTED_SUM_ALPHA_DEFAULT = 0.5
+GRAPH_BOOST_FACTOR = 1.15  # Boost for conversations found via graph
 
 
 class KBSearchInput(BaseModel):
@@ -372,6 +374,31 @@ async def tool_kb_search_hybrid(
             else:
                 logger.warning("Query embedding is None, skipping vector search")
 
+            # 4.5. Graph-based retrieval (if enabled)
+            graph_boost_conv_ids: set[str] = set()
+            if config.search.enable_graph_rag:
+                try:
+                    graph_result = await graph_retrieve(
+                        session,
+                        GraphSearchInput(
+                            tenant_id=args.tenant_id,
+                            query=search_query,
+                            k=k * 2,  # Fetch more candidates for fusion
+                            max_hops=config.search.graph_max_hops,
+                        ),
+                    )
+                    if graph_result.is_ok():
+                        graph_items = graph_result.ok()
+                        graph_boost_conv_ids = {g.conversation_id for g in graph_items}
+                        logger.info(
+                            f"Graph retrieval found {len(graph_boost_conv_ids)} "
+                            "related conversations"
+                        )
+                    else:
+                        logger.warning(f"Graph retrieval failed: {graph_result.err()}")
+                except Exception as e:
+                    logger.warning(f"Graph retrieval error (graceful fallback): {e}")
+
             # Convert to SearchResultItem format
             fts_items = _convert_fts_to_items(fts_chunk_results)
             vector_items = _convert_vector_to_items(vector_results)
@@ -395,6 +422,16 @@ async def tool_kb_search_hybrid(
                         # Boost score by 20%
                         item.score *= SUMMARY_BOOST_FACTOR
                         item.fusion_score = item.score
+
+            # 6.6. Apply Graph Boost (conversations discovered via KG)
+            if graph_boost_conv_ids:
+                for item in fused_results:
+                    if item.conversation_id in graph_boost_conv_ids:
+                        # Boost score by 15% for graph-discovered conversations
+                        item.score *= GRAPH_BOOST_FACTOR
+                        item.fusion_score = item.score
+                        # Mark as graph-boosted in metadata
+                        item.metadata["graph_boosted"] = True
 
                 # Re-sort after boosting
                 fused_results = sorted(

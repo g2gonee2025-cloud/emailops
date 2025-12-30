@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import GlassCard from './ui/GlassCard';
+import GlassCard from '../components/ui/GlassCard';
 import { api } from '../lib/api';
 import type { ChatMessage as ApiChatMessage, Answer } from '../lib/api';
 import { cn } from '../lib/utils';
@@ -12,7 +12,7 @@ interface Message {
   timestamp: Date;
 }
 
-export function AskView() {
+export default function AskView() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);

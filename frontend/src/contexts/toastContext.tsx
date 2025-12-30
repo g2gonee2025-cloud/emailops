@@ -73,8 +73,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       console.error('Global API Error:', error);
 
       const isDev = import.meta.env.DEV;
-      const message = error.detail || (isDev ? error.message : 'An unexpected API error occurred.');
-      const details = isDev ? `[${error.status}] ${error.statusText}` : undefined;
+      const message = (error.details?.detail as string) || (isDev ? error.message : 'An unexpected API error occurred.');
+      const details = isDev ? `[${error.status}]` : undefined;
 
       addToast({ message, details, type: 'error', duration: 10000 });
     };

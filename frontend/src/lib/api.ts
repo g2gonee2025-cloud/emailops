@@ -401,9 +401,9 @@ export const api = {
       {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Type': 'application/json',
         },
-        body: new URLSearchParams({ username, password }),
+        body: JSON.stringify({ username, password }),
       },
       false, // Do not include auth token for login request
     );

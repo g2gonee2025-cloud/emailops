@@ -722,6 +722,30 @@ class SearchConfig(BaseModel):
         description="External reranker endpoint (vLLM serving mxbai-rerank-large-v2)",
     )
 
+    # Graph RAG Configuration (disabled by default for safe rollout)
+    enable_graph_rag: bool = Field(
+        default_factory=lambda: _env("SEARCH_ENABLE_GRAPH_RAG", False, bool),
+        description="Enable knowledge graph retrieval in hybrid search",
+    )
+    graph_max_hops: int = Field(
+        default_factory=lambda: _env("SEARCH_GRAPH_MAX_HOPS", 1, int),
+        ge=1,
+        le=3,
+        description="Maximum graph traversal depth for entity expansion",
+    )
+    graph_entity_limit: int = Field(
+        default_factory=lambda: _env("SEARCH_GRAPH_ENTITY_LIMIT", 10, int),
+        ge=1,
+        le=50,
+        description="Maximum entities to extract from query",
+    )
+    graph_weight_in_fusion: float = Field(
+        default_factory=lambda: _env("SEARCH_GRAPH_WEIGHT", 0.3, float),
+        ge=0.0,
+        le=1.0,
+        description="Weight for graph signal in triple fusion (FTS + Vector + Graph)",
+    )
+
     model_config = {"extra": "forbid"}
 
 

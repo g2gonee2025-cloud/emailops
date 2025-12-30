@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from 'react';
-import GlassCard from './ui/GlassCard';
-import { StatusIndicator } from './ui/StatusIndicator';
+import GlassCard from '../components/ui/GlassCard';
+import { StatusIndicator } from '../components/ui/StatusIndicator';
 import { api } from '../lib/api';
 import { Activity, Server, Settings, Play, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -40,7 +41,7 @@ const redactObject = (obj: Record<string, unknown> | null | undefined): Record<s
 };
 
 
-export function AdminDashboard() {
+export default function AdminDashboard() {
   const [doctorReport, setDoctorReport] = useState<DoctorReport | null>(null);
   const [isRunningDoctor, setIsRunningDoctor] = useState(false);
   const [status, setStatus] = useState<StatusData | null>(null);
