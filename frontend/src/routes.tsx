@@ -29,11 +29,11 @@ export const AppRoutes = () => (
       <Route index element={<Navigate to="/dashboard" replace />} />
       <Route path="dashboard" element={DashboardView} />
       <Route path="ask" element={AskView} />
-      <Route path="search" element={SearchView} />
-      <Route path="thread/:id" element={ThreadView} />
-      <Route path="draft" element={DraftView} />
-      <Route path="ingest" element={IngestionView} />
-      <Route path="admin" element={AdminDashboard} />
+      <Route path="search" element={<SearchView />} />
+      <Route path="thread/:id" element={<ThreadView />} />
+      <Route path="draft" element={<DraftView />} />
+      <Route path="ingest" element={<IngestionView />} />
+      <Route path="admin" element={<AdminDashboard />} />
     </Route>
   </Routes>
 );
