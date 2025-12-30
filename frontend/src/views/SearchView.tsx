@@ -1,6 +1,6 @@
 
 import { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Search,
   Mail,
@@ -22,18 +22,30 @@ import GlassCard from '../components/ui/GlassCard';
 import { Badge } from '../components/ui/Badge';
 import { Alert, AlertDescription, AlertTitle } from '../components/ui/Alert';
 import { useToast } from '../contexts/toastContext';
+import { FilterBar } from '../components/search/FilterBar';
 
 const SKELETON_COUNT = 3;
 
 export default function SearchView() {
   const navigate = useNavigate();
   const { addToast } = useToast();
+  const [searchParams] = useSearchParams();
   const [query, setQuery] = useState('');
   const debouncedQuery = useDebounce(query, 300);
+
+  const filters = useMemo(() => {
+    const filetype = searchParams.get('filetype');
+    const newFilters: Record<string, string> = {};
+    if (filetype) {
+      newFilters.filetype = filetype;
+    }
+    return newFilters;
+  }, [searchParams]);
 
   const { data, isLoading, isError, error } = useSearch({
     query: debouncedQuery,
     k: 20,
+    filters,
   });
 
   // Display a toast notification on error
@@ -213,7 +225,7 @@ export default function SearchView() {
             </button>
           )}
         </div>
-
+        <FilterBar />
         {debouncedQuery && !isLoading && validatedData && (
           <div className="flex items-center gap-4 text-sm text-white/40">
             <span>{validatedData.total_count} results</span>
