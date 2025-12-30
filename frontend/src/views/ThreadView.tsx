@@ -6,13 +6,13 @@ import { api } from '../lib/api';
 import type { SearchResult } from '../lib/api';
 import {
   ArrowLeft,
-  Mail,
   FileText,
   Loader2,
   MessageSquare,
   PenTool
 } from 'lucide-react';
 import SummarizeView from '../components/SummarizeView';
+import MessageList from '../components/thread/MessageList';
 
 export default function ThreadView() {
   const { id } = useParams<{ id: string }>();
@@ -71,8 +71,10 @@ export default function ThreadView() {
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        <SummarizeView threadId={threadId} />
+      <div className="flex-1 flex flex-col min-h-0">
+        <div className="p-6 space-y-6">
+            <SummarizeView threadId={threadId} />
+        </div>
 
         {isLoading && (
           <div className="flex items-center justify-center py-20">
@@ -80,50 +82,26 @@ export default function ThreadView() {
           </div>
         )}
 
-        {!isLoading && chunks.length > 0 && (
-          <section>
+        {!isLoading && (
+          <div className="flex-1 flex flex-col min-h-0 px-6 pb-6">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <FileText className="w-5 h-5 text-blue-400" />
               Thread Content ({chunks.length} chunks)
             </h2>
-            <div className="space-y-4">
-              {chunks.map((chunk, i) => (
-                <GlassCard key={chunk.chunk_id || i} className="p-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <p className="text-white/90 whitespace-pre-wrap">{chunk.content}</p>
-                      <div className="mt-3 flex items-center gap-3 text-xs text-white/40">
-                        {chunk.conversation_id && (
-                          <span className="flex items-center gap-1">
-                            <Mail className="w-3 h-3" />
-                            {chunk.conversation_id.substring(0, 8)}...
-                          </span>
-                        )}
-                        <span className="text-blue-400">{(chunk.score * 100).toFixed(0)}% relevance</span>
-                      </div>
-                    </div>
-                  </div>
-                </GlassCard>
-              ))}
+            <div className="flex-1 min-h-0">
+                <MessageList messages={chunks} />
             </div>
-          </section>
+          </div>
         )}
 
         {error && (
-          <div className="text-center py-20">
+          <div className="text-center py-20 px-6">
             <FileText className="w-12 h-12 text-red-500/50 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-red-500/80 mb-2">An Error Occurred</h3>
             <p className="text-white/40">{error}</p>
           </div>
         )}
 
-        {!isLoading && !error && chunks.length === 0 && (
-          <div className="text-center py-20">
-            <FileText className="w-12 h-12 text-white/20 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-white/60 mb-2">No Content Found</h3>
-            <p className="text-white/40">This thread may not exist or has not been indexed.</p>
-          </div>
-        )}
       </div>
     </div>
   );
