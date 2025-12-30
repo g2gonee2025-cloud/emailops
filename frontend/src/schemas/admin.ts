@@ -56,3 +56,17 @@ export function redactObject<T>(obj: T): T {
 
   return redacted as unknown as T;
 }
+
+/**
+ * Schema for the application configuration.
+ * This is a placeholder and should be updated with the actual config structure.
+ */
+export const ConfigSchema = z.object({
+    // Example fields - replace with actual config fields
+    api_url: z.string().url().optional(),
+    log_level: z.enum(['DEBUG', 'INFO', 'WARNING', 'ERROR']).optional(),
+    max_pool_size: z.coerce.number().int().positive().optional(),
+  });
+
+// Inferred TypeScript type for the configuration
+export type AppConfig = z.infer<typeof ConfigSchema>;
