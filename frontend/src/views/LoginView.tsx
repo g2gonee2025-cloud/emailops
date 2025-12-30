@@ -94,6 +94,7 @@ export default function LoginView() {
                 placeholder="Enter your email"
                 aria-invalid={errors.email ? "true" : "false"}
                 className="bg-white/5"
+                data-testid="email-input"
               />
               {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email.message}</p>}
             </div>
@@ -108,6 +109,7 @@ export default function LoginView() {
                 placeholder="Enter your password"
                 aria-invalid={errors.password ? "true" : "false"}
                  className="bg-white/5"
+                 data-testid="password-input"
               />
               {errors.password && <p className="text-red-400 text-sm mt-1">{errors.password.message}</p>}
             </div>
@@ -117,6 +119,7 @@ export default function LoginView() {
               disabled={isLoading}
               className="w-full !mt-8 bg-blue-600 hover:bg-blue-500 text-white"
               size="lg"
+              data-testid="submit-button"
             >
               {isLoading ? (
                 <>
