@@ -6,7 +6,7 @@ import { api } from '@/lib/api';
 interface AuthContextType {
   isAuthenticated: boolean;
   token: string | null;
-  login: (username: string, password: string) => Promise<void>;
+  setToken: (token: string | null) => void;
   logout: () => void;
 }
 
@@ -45,19 +45,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [token, logout]);
 
-  const login = async (username: string, password: string) => {
-    try {
-      const response = await api.login(username, password);
-      setToken(response.access_token);
-    } catch (error) {
-      // Re-throw other errors to be handled by the UI component
-      console.error('Login failed:', error);
-      throw error;
-    }
-  };
-
   return (
-    <AuthContext.Provider value={{ isAuthenticated, token, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, token, setToken, logout }}>
       {children}
     </AuthContext.Provider>
   );

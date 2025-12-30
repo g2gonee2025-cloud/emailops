@@ -1,21 +1,13 @@
 import { renderHook, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider, useAuth } from './AuthContext';
-import { vi, type Mock } from 'vitest';
-import { api, ApiError } from '@/lib/api';
+import { vi } from 'vitest';
+import { api } from '@/lib/api';
 
 // Mock the api module
 vi.mock('@/lib/api', () => ({
   api: {
-    login: vi.fn(),
     setAuthToken: vi.fn(),
-  },
-  ApiError: class extends Error {
-    status: number;
-    constructor(message: string, status: number) {
-      super(message);
-      this.status = status;
-    }
   },
 }));
 
@@ -24,7 +16,7 @@ const mockedNavigate = vi.fn();
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return {
-    ...actual,
+    ...(actual as object),
     useNavigate: () => mockedNavigate,
   };
 });
@@ -47,14 +39,12 @@ describe('AuthContext', () => {
     expect(result.current.token).toBeNull();
   });
 
-  it('should successfully log in and update state', async () => {
+  it('should update state when setToken is called', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
-
     const mockToken = 'test_token';
-    (api.login as Mock).mockResolvedValue({ access_token: mockToken });
 
-    await act(async () => {
-      await result.current.login('testuser', 'password');
+    act(() => {
+      result.current.setToken(mockToken);
     });
 
     expect(result.current.isAuthenticated).toBe(true);
@@ -63,34 +53,18 @@ describe('AuthContext', () => {
     expect(api.setAuthToken).toHaveBeenCalledWith(mockToken);
   });
 
-  it('should handle login failure', async () => {
-    const { result } = renderHook(() => useAuth(), { wrapper });
-
-    const mockError = new ApiError('Invalid credentials', 401);
-    (api.login as Mock).mockRejectedValue(mockError);
-
-    await act(async () => {
-      await expect(result.current.login('testuser', 'wrongpassword')).rejects.toThrow(
-        'Invalid credentials',
-      );
-    });
-
-    expect(result.current.isAuthenticated).toBe(false);
-    expect(result.current.token).toBeNull();
-    expect(localStorage.getItem('auth_token')).toBeNull();
-  });
-
-  it('should log out and clear state', async () => {
-    // First, log in
+  it('should log out and clear state', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     const mockToken = 'test_token';
-    (api.login as Mock).mockResolvedValue({ access_token: mockToken });
-    await act(async () => {
-      await result.current.login('testuser', 'password');
+
+    // Set initial logged-in state
+    act(() => {
+      result.current.setToken(mockToken);
     });
+    expect(result.current.isAuthenticated).toBe(true); // Verify logged-in state
 
     // Then, log out
-    await act(async () => {
+    act(() => {
       result.current.logout();
     });
 
