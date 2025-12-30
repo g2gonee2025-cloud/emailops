@@ -34,3 +34,16 @@ export const SearchResponseSchema = z.object({
 
 // Infer the TypeScript type from the SearchResponseSchema for use with TanStack Query.
 export type SearchResponse = z.infer<typeof SearchResponseSchema>;
+
+/**
+ * Represents the structured search parameters used within the application.
+ * This schema is used to validate the state object after it has been parsed
+ * from URL query parameters or before being serialized.
+ */
+export const SearchParamsSchema = z.object({
+  query: z.string().default(''),
+  k: z.number().int().positive().default(10),
+  filters: z.record(z.unknown()).default({}),
+});
+
+export type SearchParams = z.infer<typeof SearchParamsSchema>;
