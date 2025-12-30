@@ -5,6 +5,12 @@
  */
 
 import { logger } from './logger';
+import {
+  doctorReportSchema,
+  statusDataSchema,
+  type DoctorReport,
+  type StatusData,
+} from '../schemas/admin';
 
 // =============================================================================
 // Type Definitions
@@ -83,24 +89,6 @@ export interface IngestStatusResponse {
   errors: number;
   skipped: number;
   message: string;
-}
-
-export interface DoctorCheck {
-  name: string;
-  status: 'pass' | 'fail' | 'warn';
-  message?: string;
-  details?: Record<string, unknown>;
-}
-
-export interface DoctorReport {
-  overall_status: 'healthy' | 'degraded' | 'unhealthy';
-  checks: DoctorCheck[];
-}
-
-export interface SystemStatus {
-  status: string;
-  service: string;
-  env: string;
 }
 
 export interface SystemConfig {
@@ -216,7 +204,7 @@ export const request = async <T>(
       let errorDetails;
       try {
         errorDetails = await response.json();
-      } catch (e) {
+      } catch (_e) {
         errorDetails = { detail: response.statusText };
       }
 
@@ -340,12 +328,15 @@ export const api = {
   // Admin Endpoints
   // ---------------------------------------------------------------------------
 
-  runDoctor: (signal?: AbortSignal): Promise<DoctorReport> => {
-    return request<DoctorReport>('/api/v1/admin/doctor', { method: 'POST', signal });
+  runDoctor: async (signal?: AbortSignal): Promise<DoctorReport> => {
+    const data = await request<unknown>('/api/v1/admin/doctor', { method: 'POST', signal });
+    return doctorReportSchema.parse(data);
   },
 
-  fetchStatus: (signal?: AbortSignal): Promise<SystemStatus> =>
-    request<SystemStatus>('/api/v1/admin/status', { signal }),
+  fetchStatus: async (signal?: AbortSignal): Promise<StatusData> => {
+    const data = await request<unknown>('/api/v1/admin/status', { signal });
+    return statusDataSchema.parse(data);
+  },
 
   fetchConfig: (signal?: AbortSignal): Promise<SystemConfig> =>
     request<SystemConfig>('/api/v1/admin/config', { signal }),
