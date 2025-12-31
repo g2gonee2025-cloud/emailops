@@ -31,17 +31,18 @@ class TestKBSearchInput:
         inp = KBSearchInput(query="test", limit=20, tenant_id="t1", user_id="u1")
         tool_inp = inp.to_tool_input()
 
-        assert tool_inp.query == "test"
-        assert tool_inp.k == 20
-        assert tool_inp.tenant_id == "t1"
-        assert tool_inp.user_id == "u1"
+        assert tool_inp["query"] == "test"
+        assert tool_inp["k"] == 20
+        assert tool_inp["tenant_id"] == "t1"
+        assert tool_inp["user_id"] == "u1"
 
     def test_to_tool_input_defaults(self):
         inp = KBSearchInput(query="test")
-        tool_inp = inp.to_tool_input()
-
-        assert tool_inp.tenant_id == "default"
-        assert tool_inp.user_id == "cli-user"
+        try:
+            inp.to_tool_input()
+            raise AssertionError("Expected ValueError for missing tenant/user")
+        except ValueError:
+            pass
 
 
 class TestToolSearch:
@@ -52,7 +53,9 @@ class TestToolSearch:
         import pytest
         from cortex.tools.search import tool_kb_search_hybrid
 
-        inp = KBSearchInput(query="insurance claim", tenant_id="default")
+        inp = KBSearchInput(
+            query="insurance claim", tenant_id="default", user_id="cli-user"
+        )
         result = await tool_kb_search_hybrid(inp)
 
         # Should return Ok result (may or may not have results depending on DB state)
@@ -83,8 +86,8 @@ class TestToolSearch:
         """Test search with empty query handles gracefully."""
         from cortex.tools.search import tool_kb_search_hybrid
 
-        inp = KBSearchInput(query="", tenant_id="default")
-        result = await tool_kb_search_hybrid(inp)
-
-        # Should handle empty query gracefully
-        assert result.is_ok() or result.is_err()
+        try:
+            KBSearchInput(query="", tenant_id="default", user_id="cli-user")
+            raise AssertionError("Expected ValueError for empty query")
+        except ValueError:
+            pass
