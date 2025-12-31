@@ -471,8 +471,15 @@ def main() -> None:
         print(f"Contacting Cortex backend at {_c(api_url, 'cyan')}...")
 
     try:
+        import os
+
+        token = os.getenv("CORTEX_API_TOKEN")
+        headers = {}
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+
         with httpx.Client(timeout=30.0) as client:
-            response = client.post(doctor_endpoint)
+            response = client.post(doctor_endpoint, headers=headers)
             response.raise_for_status()
             report = response.json()
 
