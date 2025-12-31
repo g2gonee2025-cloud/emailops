@@ -1,29 +1,24 @@
 """
 S3/Spaces direct uploader module.
 
-This module provides a robust and efficient way to upload files to
-DigitalOcean Spaces or any S3-compatible storage. It is designed to be
-used by the Cortex CLI, but can also be used as a standalone module.
+This module uploads files to DigitalOcean Spaces or any S3-compatible
+storage using a thread pool and a shared boto3 client.
 
 Key features:
 - Concurrent uploads using a thread pool
-- Progress tracking with ETA calculation
-- Graceful error handling and detailed summary reporting
-- MIME type detection for proper Content-Type headers
-- Configurable S3 client with retry mechanism
-
-Classes:
-    S3Uploader: A class that encapsulates the upload logic.
-
+- MIME type detection for Content-Type headers
+- Error handling with per-file results
 """
 
 import logging
 import mimetypes
-from collections.abc import Iterator
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
+from collections.abc import Iterable, Iterator
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from pathlib import Path
 
 import boto3
+from boto3.s3.transfer import TransferConfig
 from botocore.client import BaseClient
 from botocore.config import Config
 from botocore.exceptions import BotoCoreError, ClientError
@@ -64,25 +59,29 @@ class S3Uploader:
         self.bucket_name = bucket_name
         self.max_workers = max_workers
         self._s3_client = None
+        self._client_lock = threading.Lock()
+        self._transfer_config = TransferConfig(use_threads=False)
 
     def _get_s3_client(self) -> BaseClient:
         """
         Creates and returns an S3 client.
         """
         if self._s3_client is None:
-            self._s3_client = boto3.client(
-                "s3",
-                endpoint_url=self.endpoint_url,
-                region_name=self.region_name,
-                aws_access_key_id=self.access_key,
-                aws_secret_access_key=self.secret_key,
-                config=Config(
-                    signature_version="s3v4",
-                    retries={"max_attempts": 3, "mode": "adaptive"},
-                    connect_timeout=30,
-                    read_timeout=60,
-                ),
-            )
+            with self._client_lock:
+                if self._s3_client is None:
+                    self._s3_client = boto3.client(
+                        "s3",
+                        endpoint_url=self.endpoint_url,
+                        region_name=self.region_name,
+                        aws_access_key_id=self.access_key,
+                        aws_secret_access_key=self.secret_key,
+                        config=Config(
+                            signature_version="s3v4",
+                            retries={"max_attempts": 3, "mode": "adaptive"},
+                            connect_timeout=30,
+                            read_timeout=60,
+                        ),
+                    )
         return self._s3_client
 
     def _get_content_type(self, file_path: Path) -> str:
@@ -104,43 +103,89 @@ class S3Uploader:
             self.bucket_name,
             s3_key,
             ExtraArgs={"ContentType": content_type},
+            Config=self._transfer_config,
         )
         return s3_key, file_size
 
+    @staticmethod
+    def _normalize_prefix(prefix: str) -> str:
+        if not prefix:
+            return ""
+        normalized = prefix.lstrip("/")
+        if not normalized.endswith("/"):
+            normalized = f"{normalized}/"
+        return normalized
+
+    def close(self) -> None:
+        """Close the S3 client if possible."""
+        if self._s3_client is None:
+            return
+        close_fn = getattr(self._s3_client, "close", None)
+        if callable(close_fn):
+            try:
+                close_fn()
+            except Exception:
+                logger.warning("Failed to close S3 client", exc_info=True)
+        self._s3_client = None
+
     def upload_files(
-        self, source_dir: Path, files_to_upload: list[Path], s3_prefix: str
+        self, source_dir: Path, files_to_upload: Iterable[Path], s3_prefix: str
     ) -> Iterator[tuple[bool, str]]:
         """
         Uploads a list of files to S3.
 
         Args:
             source_dir (Path): The root directory of the files.
-            files_to_upload (list[Path]): The list of file paths to upload.
+            files_to_upload (Iterable[Path]): The list of file paths to upload.
             s3_prefix (str): The prefix to use for S3 keys.
 
         Yields:
             Iterator[Tuple[bool, str]]: A tuple of (success, message).
         """
-        s3_tasks = [
-            (p, f"{s3_prefix}{p.relative_to(source_dir).as_posix()}")
-            for p in files_to_upload
-        ]
+        normalized_prefix = self._normalize_prefix(s3_prefix)
+        files_iter = iter(files_to_upload)
+        pending = {}
 
-        if not s3_tasks:
-            return
+        try:
+            with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+                while True:
+                    while len(pending) < self.max_workers:
+                        try:
+                            local_path = next(files_iter)
+                        except StopIteration:
+                            break
+                        try:
+                            relative_path = local_path.relative_to(source_dir)
+                        except ValueError:
+                            logger.warning(
+                                "Skipping file outside source directory: %s",
+                                local_path,
+                            )
+                            yield False, f"{local_path}: not under source directory"
+                            continue
+                        s3_key = f"{normalized_prefix}{relative_path.as_posix()}"
+                        future = executor.submit(self._upload_file, local_path, s3_key)
+                        pending[future] = s3_key
 
-        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            futures = {
-                executor.submit(self._upload_file, local_path, s3_key): s3_key
-                for local_path, s3_key in s3_tasks
-            }
+                    if not pending:
+                        break
 
-            for future in as_completed(futures):
-                s3_key = futures[future]
-                try:
-                    _, file_size = future.result()
-                    yield True, f"{s3_key} ({file_size} bytes)"
-                except (ClientError, BotoCoreError) as e:
-                    yield False, f"{s3_key}: {e}"
-                except Exception as e:
-                    yield False, f"{s3_key}: An unexpected error occurred: {e}"
+                    done, _ = wait(pending, return_when=FIRST_COMPLETED)
+                    for future in done:
+                        s3_key = pending.pop(future)
+                        try:
+                            _, file_size = future.result()
+                            yield True, f"{s3_key} ({file_size} bytes)"
+                        except (ClientError, BotoCoreError) as exc:
+                            logger.warning(
+                                "Upload failed for %s", s3_key, exc_info=True
+                            )
+                            yield (
+                                False,
+                                (f"{s3_key}: upload failed ({exc.__class__.__name__})"),
+                            )
+                        except Exception:
+                            logger.exception("Unexpected error uploading %s", s3_key)
+                            yield False, f"{s3_key}: upload failed"
+        finally:
+            self.close()

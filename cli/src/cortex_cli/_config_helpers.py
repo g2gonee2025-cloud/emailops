@@ -3,11 +3,9 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from cortex.config.loader import get_config
-
 from .style import colorize as _colorize
 
-_config = get_config()
+_MISSING = object()
 
 
 def resolve_index_dir(root_dir: Path | None) -> Path:
@@ -17,7 +15,10 @@ def resolve_index_dir(root_dir: Path | None) -> Path:
     # Fallback to environment variable or default
     from backend.src.cortex.indexing.metadata import INDEX_DIRNAME_DEFAULT
 
-    return Path(os.getenv("INDEX_DIR", INDEX_DIRNAME_DEFAULT))
+    env_value = os.getenv("INDEX_DIR")
+    if env_value:
+        return Path(env_value)
+    return Path(INDEX_DIRNAME_DEFAULT)
 
 
 def resolve_sender(sender: str | None) -> str:
@@ -84,8 +85,8 @@ def _print_human_config(config: Any, section: str | None = None) -> None:
     # 2. Print specific section or fallback
     if section:
         target = section_map.get(section, section.lower())
-        attr = getattr(config, target, None)
-        if attr:
+        attr = getattr(config, target, _MISSING)
+        if attr is not _MISSING:
             # Generic display for unmapped sections
             if section not in section_map:
                 print(f"  {_colorize(section, 'cyan')}")
@@ -93,6 +94,8 @@ def _print_human_config(config: Any, section: str | None = None) -> None:
             if hasattr(attr, "model_dump"):
                 for k, v in attr.model_dump().items():
                     print(f"    {k:<20} {v}")
+            else:
+                print(f"    value               {attr}")
         else:
             print(
                 f"{_colorize('ERROR:', 'red')} Section '{section}' not found",
@@ -108,42 +111,78 @@ def _print_summary_sections(config: Any) -> None:
         (
             "Core",
             [
-                ("Environment", config.core.env),
-                ("Provider", config.core.provider),
-                ("Persona", config.core.persona),
+                ("Environment", _safe_get(config, "core", "env", default="N/A")),
+                ("Provider", _safe_get(config, "core", "provider", default="N/A")),
+                ("Persona", _safe_get(config, "core", "persona", default="N/A")),
             ],
         ),
         (
             "Embeddings",
             [
-                ("Model", config.embedding.model_name),
-                ("Dimensions", config.embedding.output_dimensionality),
-                ("Batch Size", config.embedding.batch_size),
-                ("Mode", config.embedding.embed_mode),
+                ("Model", _safe_get(config, "embedding", "model_name", default="N/A")),
+                (
+                    "Dimensions",
+                    _safe_get(
+                        config, "embedding", "output_dimensionality", default="N/A"
+                    ),
+                ),
+                (
+                    "Batch Size",
+                    _safe_get(config, "embedding", "batch_size", default="N/A"),
+                ),
+                ("Mode", _safe_get(config, "embedding", "embed_mode", default="N/A")),
             ],
         ),
         (
             "Email",
             [
-                ("Sender Name", config.email.sender_locked_name or "(not set)"),
-                ("Sender Email", config.email.sender_locked_email or "(not set)"),
-                ("Reply Policy", config.email.reply_policy),
+                (
+                    "Sender Name",
+                    _safe_get(config, "email", "sender_locked_name", default="")
+                    or "(not set)",
+                ),
+                (
+                    "Sender Email",
+                    _safe_get(config, "email", "sender_locked_email", default="")
+                    or "(not set)",
+                ),
+                (
+                    "Reply Policy",
+                    _safe_get(config, "email", "reply_policy", default="N/A"),
+                ),
             ],
         ),
         (
             "Search",
             [
-                ("Strategy", config.search.fusion_strategy),
-                ("K", config.search.k),
-                ("Recency", config.search.recency_boost_strength),
-                ("Reranker", config.search.reranker_endpoint),
+                (
+                    "Strategy",
+                    _safe_get(config, "search", "fusion_strategy", default="N/A"),
+                ),
+                ("K", _safe_get(config, "search", "k", default="N/A")),
+                (
+                    "Recency",
+                    _safe_get(
+                        config, "search", "recency_boost_strength", default="N/A"
+                    ),
+                ),
+                (
+                    "Reranker",
+                    _safe_get(config, "search", "reranker_endpoint", default="N/A"),
+                ),
             ],
         ),
         (
             "Processing",
             [
-                ("Chunk Size", config.processing.chunk_size),
-                ("Chunk Overlap", config.processing.chunk_overlap),
+                (
+                    "Chunk Size",
+                    _safe_get(config, "processing", "chunk_size", default="N/A"),
+                ),
+                (
+                    "Chunk Overlap",
+                    _safe_get(config, "processing", "chunk_overlap", default="N/A"),
+                ),
             ],
         ),
     ]
@@ -153,3 +192,14 @@ def _print_summary_sections(config: Any) -> None:
         for label, val in items:
             print(f"    {label:<15} {val}")
         print()
+
+
+def _safe_get(config: Any, *path: str, default: Any = None) -> Any:
+    current = config
+    for attr in path:
+        if current is None:
+            return default
+        current = getattr(current, attr, _MISSING)
+        if current is _MISSING:
+            return default
+    return current

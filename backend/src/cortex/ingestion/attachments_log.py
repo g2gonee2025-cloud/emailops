@@ -4,11 +4,42 @@ Parses attachments_log.csv for rich attachment metadata.
 
 import csv
 import logging
+import os
 from collections import defaultdict
 from pathlib import Path
-from typing import Any
+from typing import Any, TextIO
 
 logger = logging.getLogger(__name__)
+
+
+def _is_within_base(base_dir: Path, candidate: Path) -> bool:
+    try:
+        candidate.relative_to(base_dir)
+    except ValueError:
+        return False
+    return True
+
+
+def _open_csv_candidate(base_dir: Path, candidate: Path) -> tuple[Path, TextIO] | None:
+    try:
+        resolved = candidate.resolve(strict=True)
+    except FileNotFoundError:
+        return None
+
+    if not _is_within_base(base_dir, resolved):
+        raise ValueError(
+            "Path traversal attempt detected: "
+            f"Attachments log '{resolved}' is outside of secure upload directory '{base_dir}'."
+        )
+
+    flags = os.O_RDONLY
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    try:
+        fd = os.open(resolved, flags)
+    except FileNotFoundError:
+        return None
+    return resolved, open(fd, encoding="utf-8-sig", newline="", closefd=True)
 
 
 def parse_attachments_log(
@@ -45,13 +76,18 @@ def parse_attachments_log(
         convo_dir / "Attachments" / "attachments_log.csv",
     ]
 
-    csv_path = next((p for p in candidates if p.exists()), None)
-    if not csv_path:
+    metadata_map = defaultdict(list)
+    opened: tuple[Path, TextIO] | None = None
+    for candidate in candidates:
+        opened = _open_csv_candidate(base_dir, candidate)
+        if opened:
+            break
+    if not opened:
         return {}
 
-    metadata_map = defaultdict(list)
+    csv_path, file_handle = opened
     try:
-        with open(csv_path, encoding="utf-8-sig", newline="") as f:
+        with file_handle as f:
             reader = csv.DictReader(f)
             for row in reader:
                 filename = row.get("filename")
@@ -69,9 +105,12 @@ def parse_attachments_log(
                 metadata_map[filename].append(metadata)
 
         logger.info(
-            f"Loaded metadata for {len(metadata_map)} unique attachment filenames from {csv_path.name}"
+            "Loaded metadata for %s unique attachment filenames from %s",
+            len(metadata_map),
+            csv_path.name,
         )
-    except (OSError, csv.Error) as e:
-        logger.warning(f"Failed to parse CSV file at {csv_path}: {e}")
+    except (OSError, csv.Error, UnicodeDecodeError):
+        logger.exception("Failed to parse CSV file at %s", csv_path)
+        raise
 
     return dict(metadata_map)

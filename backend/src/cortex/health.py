@@ -34,7 +34,7 @@ async def check_postgres(config: EmailOpsConfig) -> DoctorCheckResult:
                 message="Database URL not configured",
             )
 
-        engine = create_engine(config.database.url)
+        engine = create_engine(str(config.database.url))
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
         return DoctorCheckResult(name="PostgreSQL", status="pass", message="Connected")
@@ -55,7 +55,7 @@ async def check_redis(config: EmailOpsConfig) -> DoctorCheckResult:
         import redis
 
         redis_url = (
-            config.redis.url
+            str(config.redis.url)
             if config.redis and config.redis.url
             else os.getenv("OUTLOOKCORTEX_REDIS_URL", DEFAULT_REDIS_URL)
         )

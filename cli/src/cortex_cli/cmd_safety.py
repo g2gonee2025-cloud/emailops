@@ -6,42 +6,84 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import sys
+from importlib import import_module
 from pathlib import Path
+from typing import Any
 
-# Ensure backend package is importable
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
-BACKEND_SRC = PROJECT_ROOT / "backend" / "src"
-if str(BACKEND_SRC) not in sys.path:
-    sys.path.append(str(BACKEND_SRC))
-
-from cortex.safety.grounding import (
-    GroundingCheckInput,
-    tool_check_grounding,
-)
 from cortex_cli.style import colorize as _colorize
+
+logger = logging.getLogger(__name__)
+
+
+def _find_backend_src() -> Path | None:
+    current = Path(__file__).resolve()
+    for parent in (current, *current.parents):
+        candidate = parent / "backend" / "src" / "cortex" / "__init__.py"
+        if candidate.is_file():
+            return candidate.parent.parent
+    return None
+
+
+def _ensure_backend_on_path() -> None:
+    backend_src = _find_backend_src()
+    if backend_src is None:
+        return
+    backend_str = str(backend_src)
+    if backend_str not in sys.path:
+        sys.path.insert(0, backend_str)
+
+
+def _safe_print(text: str) -> None:
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        safe_text = text.encode("ascii", errors="replace").decode("ascii")
+        print(safe_text)
+
+
+def _format_percent(value: Any) -> str:
+    try:
+        return f"{float(value):.2%}"
+    except (TypeError, ValueError):
+        return "n/a"
 
 
 def _run_grounding_check(args: argparse.Namespace) -> None:
     """Run the grounding check tool."""
-    if not args.json:
-        print(f"{_colorize('▶ GROUNDING CHECK', 'bold')}\n")
-        print(f"  Answer:  {_colorize(args.answer[:80] + '...', 'cyan')}")
-        print(f"  Facts:   {_colorize(f'{len(args.facts)} provided', 'dim')}")
-        print(f"  LLM Mode:{'Enabled' if args.use_llm else 'Disabled'}")
-        print()
-        print(f"  {_colorize('⏳', 'yellow')} Analyzing...")
-
-    check_input = GroundingCheckInput(
-        answer_candidate=args.answer,
-        facts=args.facts,
-        use_llm=args.use_llm,
-    )
-
     try:
+        _ensure_backend_on_path()
+        grounding_module = import_module("cortex.safety.grounding")
+        GroundingCheckInput = grounding_module.GroundingCheckInput
+        tool_check_grounding = grounding_module.tool_check_grounding
+
+        json_output = bool(getattr(args, "json", False))
+        answer = getattr(args, "answer", "") or ""
+        facts_value = getattr(args, "facts", []) or []
+        facts = list(facts_value) if isinstance(facts_value, (list, tuple)) else []
+        use_llm = bool(getattr(args, "use_llm", False))
+
+        preview = answer[:80]
+        if len(answer) > 80:
+            preview = f"{preview}..."
+
+        if not json_output:
+            _safe_print(f"{_colorize('▶ GROUNDING CHECK', 'bold')}\n")
+            _safe_print(f"  Answer:  {_colorize(preview, 'cyan')}")
+            _safe_print(f"  Facts:   {_colorize(f'{len(facts)} provided', 'dim')}")
+            _safe_print(f"  LLM Mode: {'Enabled' if use_llm else 'Disabled'}")
+            _safe_print("")
+            _safe_print(f"  {_colorize('⏳', 'yellow')} Analyzing...")
+
+        check_input = GroundingCheckInput(
+            answer_candidate=answer,
+            facts=facts,
+            use_llm=use_llm,
+        )
         result = tool_check_grounding(check_input)
 
-        if args.json:
+        if json_output:
             print(result.model_dump_json(indent=2))
         else:
             is_grounded_text = (
@@ -49,27 +91,43 @@ def _run_grounding_check(args: argparse.Namespace) -> None:
                 if result.is_grounded
                 else _colorize("✗ NOT GROUNDED", "red")
             )
-            print(f"\n{_colorize('RESULT:', 'bold')} {is_grounded_text}")
-            print(f"  Confidence:       {result.confidence:.2%}")
-            print(f"  Supported Claims: {result.grounding_ratio:.2%}")
-            print(f"  Method:           {result.method}")
+            _safe_print(f"\n{_colorize('RESULT:', 'bold')} {is_grounded_text}")
+            _safe_print(f"  Confidence:       {_format_percent(result.confidence)}")
+            _safe_print(
+                f"  Supported Claims: {_format_percent(result.grounding_ratio)}"
+            )
+            _safe_print(f"  Method:           {result.method}")
 
             if result.unsupported_claims:
-                print(f"\n{_colorize('UNSUPPORTED CLAIMS:', 'yellow')}")
+                _safe_print(f"\n{_colorize('UNSUPPORTED CLAIMS:', 'yellow')}")
                 for i, claim in enumerate(result.unsupported_claims, 1):
-                    print(f"  {i}. {claim}")
-            print()
+                    _safe_print(f"  {i}. {claim}")
+            _safe_print("")
 
-    except Exception as e:
-        if args.json:
-            print(json.dumps({"error": str(e)}, indent=2))
+    except ImportError as exc:
+        if exc.name not in {
+            "cortex",
+            "cortex.safety",
+            "cortex.safety.grounding",
+        }:
+            raise
+        message = "Unable to load the grounding tool. Check your environment."
+        if getattr(args, "json", False):
+            print(json.dumps({"error": message}, indent=2))
         else:
-            print(f"\n  {_colorize('ERROR:', 'red')} {e}")
+            _safe_print(f"\n  {_colorize('ERROR:', 'red')} {message}")
+        sys.exit(1)
+    except Exception:
+        logger.exception("Grounding check failed.")
+        if getattr(args, "json", False):
+            print(json.dumps({"error": "Grounding check failed."}, indent=2))
+        else:
+            _safe_print(f"\n  {_colorize('ERROR:', 'red')} Grounding check failed.")
         sys.exit(1)
 
 
 def setup_safety_parser(
-    subparsers: argparse._SubParsersAction,
+    subparsers: Any,
 ) -> None:
     """Setup the 'safety' command and its subcommands."""
     safety_parser = subparsers.add_parser(

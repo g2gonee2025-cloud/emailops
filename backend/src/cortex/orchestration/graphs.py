@@ -6,7 +6,8 @@ Implements §10.1 of the Canonical Blueprint.
 
 from __future__ import annotations
 
-import logging
+from collections.abc import Mapping
+from typing import Any
 
 from cortex.orchestration.nodes import (
     node_assemble_context,
@@ -34,29 +35,32 @@ from cortex.orchestration.states import (
 )
 from langgraph.graph import END, StateGraph
 
-logger = logging.getLogger(__name__)
 
-
-def _check_error(state: dict) -> str:
+def _check_error(state: Any) -> str:
     """Check if state has error and route accordingly."""
-    if state.get("error"):
+    if _get_state_value(state, "error"):
         return "handle_error"
     return "continue"
 
 
-def _route_by_classification(state: AnswerQuestionState) -> str:
+def _route_by_classification(state: AnswerQuestionState | dict[str, Any]) -> str:
     """Route based on query classification."""
-    if state.error:
+    if _get_state_value(state, "error"):
         return "handle_error"
 
-    classification = state.classification
+    classification = _get_state_value(state, "classification")
     if not classification:
         return "retrieve"
+
+    if isinstance(classification, Mapping):
+        classification_type = classification.get("type")
+    else:
+        classification_type = getattr(classification, "type", None)
 
     # Route based on classification type
     # NOTE: Currently all valid classifications use retrieval, but structure
     # allows future specialization (e.g., navigational -> direct lookup)
-    if classification.type == "error":
+    if classification_type == "error":
         return "handle_error"
 
     return "retrieve"
@@ -117,23 +121,32 @@ def build_answer_graph() -> StateGraph:
 MAX_ITERATIONS = 3
 
 
-def should_improve(state: DraftEmailState) -> str:
+def should_improve(state: DraftEmailState | dict[str, Any]) -> str:
     """Determine if draft needs improvement."""
-    if state.error:
+    if _get_state_value(state, "error"):
         return "handle_error"
 
-    critique = state.critique
-    iteration = state.iteration_count
+    critique = _get_state_value(state, "critique")
+    iteration_value = _coerce_int(_get_state_value(state, "iteration_count"))
 
-    if iteration >= MAX_ITERATIONS:
+    if iteration_value is None:
         return "audit"
 
-    if not critique or not critique.issues:
+    if iteration_value >= MAX_ITERATIONS:
+        return "audit"
+
+    issues = None
+    if isinstance(critique, Mapping):
+        issues = critique.get("issues")
+    else:
+        issues = getattr(critique, "issues", None)
+
+    if not critique or not issues:
         return "audit"
 
     # Check if there are major issues
     has_major_issues = any(
-        issue.severity in ["major", "critical"] for issue in critique.issues
+        getattr(issue, "severity", None) in ["major", "critical"] for issue in issues
     )
 
     if has_major_issues:
@@ -208,7 +221,9 @@ def build_draft_graph() -> StateGraph:
 
     # Conditional edge for improvement loop
     workflow.add_conditional_edges(
-        "critique", should_improve, {"improve": "improve", "audit": "audit"}
+        "critique",
+        should_improve,
+        {"improve": "improve", "audit": "audit", "handle_error": "handle_error"},
     )
 
     workflow.add_conditional_edges(
@@ -268,8 +283,12 @@ def build_summarize_graph() -> StateGraph:
     )
     workflow.add_conditional_edges(
         "critic",
-        _check_error,
-        {"continue": "improver", "handle_error": "handle_error"},
+        _should_improve_summary,
+        {
+            "improver": "improver",
+            "finalize": "finalize",
+            "handle_error": "handle_error",
+        },
     )
     workflow.add_conditional_edges(
         "improver",
@@ -297,3 +316,37 @@ graph_draft_email = build_draft_graph
 
 graph_summarize_thread = build_summarize_graph
 """Canonical alias for build_summarize_graph per Blueprint §10.4."""
+
+
+def _get_state_value(state: Any, key: str) -> Any:
+    if isinstance(state, Mapping):
+        return state.get(key)
+    return getattr(state, key, None)
+
+
+def _coerce_int(value: Any) -> int | None:
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _should_improve_summary(state: SummarizeThreadState | dict[str, Any]) -> str:
+    if _get_state_value(state, "error"):
+        return "handle_error"
+    critique = _get_state_value(state, "critique")
+    if not critique:
+        return "finalize"
+    if isinstance(critique, Mapping):
+        missing_items = critique.get("missing_items") or []
+        accuracy = critique.get("accuracy_concerns") or []
+        suggestions = critique.get("suggestions") or []
+    else:
+        missing_items = getattr(critique, "missing_items", []) or []
+        accuracy = getattr(critique, "accuracy_concerns", []) or []
+        suggestions = getattr(critique, "suggestions", []) or []
+    if missing_items or accuracy or suggestions:
+        return "improver"
+    return "finalize"

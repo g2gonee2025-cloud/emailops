@@ -23,12 +23,6 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
-# Python <3.11 compatibility
-try:
-    from datetime import UTC  # type: ignore
-except ImportError:
-    UTC = timezone.utc  # type: ignore
-
 
 @dataclass
 class SearchFilters:
@@ -60,17 +54,19 @@ class SearchFilters:
 
     def is_empty(self) -> bool:
         """Check if no filters are set."""
-        return (
-            self.conv_ids is None
-            and self.from_emails is None
-            and self.to_emails is None
-            and self.cc_emails is None
-            and self.subject_contains is None
-            and self.exclude_terms is None
-            and self.has_attachment is None
-            and self.file_types is None
-            and self.date_from is None
-            and self.date_to is None
+        return not any(
+            [
+                self.conv_ids,
+                self.from_emails,
+                self.to_emails,
+                self.cc_emails,
+                self.subject_contains,
+                self.exclude_terms,
+                self.file_types,
+                self.date_from,
+                self.date_to,
+                self.has_attachment is not None,
+            ]
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -114,7 +110,10 @@ def _parse_iso_date(s: str) -> datetime | None:
         return None
     try:
         # Handle Z suffix
-        return datetime.fromisoformat(s.replace("Z", "+00:00")).astimezone(timezone.utc)
+        dt = datetime.fromisoformat(s.replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            return dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc)
     except ValueError:
         try:
             # Fallback: try email utils
@@ -269,11 +268,11 @@ def apply_filters_to_sql(
     # Date range filters (assuming chunk has related conversation with date)
     if filters.date_from:
         conditions.append(f"{conversation_table_alias}.latest_date >= :date_from")
-        params["date_from"] = filters.date_from
+        params["date_from"] = _to_naive_utc(filters.date_from)
 
     if filters.date_to:
         conditions.append(f"{conversation_table_alias}.latest_date <= :date_to")
-        params["date_to"] = filters.date_to
+        params["date_to"] = _to_naive_utc(filters.date_to)
 
     # Attachment filter
     if filters.has_attachment is True:
@@ -284,7 +283,7 @@ def apply_filters_to_sql(
     # File type filter on chunk metadata
     if filters.file_types:
         conditions.append(
-            f"lower({table_alias}.metadata->>'file_type') = ANY(:file_types)"
+            f"lower({table_alias}.metadata->>'file_type') = ANY(CAST(:file_types AS TEXT[]))"
         )
         params["file_types"] = list(filters.file_types)
 
@@ -292,42 +291,70 @@ def apply_filters_to_sql(
     if filters.subject_contains:
         for i, term in enumerate(filters.subject_contains):
             param_name = f"subject_term_{i}"
-            conditions.append(f"{conversation_table_alias}.subject ILIKE :{param_name}")
-            params[param_name] = f"%{term}%"
+            conditions.append(
+                f"{conversation_table_alias}.subject ILIKE :{param_name} ESCAPE '\\\\'"
+            )
+            params[param_name] = f"%{_escape_like(term)}%"
 
     # Exclude terms (NOT ILIKE on text)
     if filters.exclude_terms:
         for i, term in enumerate(filters.exclude_terms):
             param_name = f"exclude_term_{i}"
-            conditions.append(f"{table_alias}.text NOT ILIKE :{param_name}")
-            params[param_name] = f"%{term}%"
+            conditions.append(
+                f"{table_alias}.text NOT ILIKE :{param_name} ESCAPE '\\\\'"
+            )
+            params[param_name] = f"%{_escape_like(term)}%"
 
     # Conversation ID filter
     if filters.conv_ids:
-        conditions.append(f"{table_alias}.conversation_id = ANY(:conv_ids)")
+        conditions.append(
+            f"{table_alias}.conversation_id = ANY(CAST(:conv_ids AS UUID[]))"
+        )
         params["conv_ids"] = list(filters.conv_ids)
 
-    # Participant filters using JSONB subqueries for performance and security.
+    participant_conditions = []
+    participant_params = []
     if filters.from_emails:
-        conditions.append(
-            f"EXISTS (SELECT 1 FROM jsonb_array_elements({conversation_table_alias}.participants) p "
-            "WHERE p->>'role' = 'sender' AND lower(p->>'smtp') = ANY(:from_emails))",
+        participant_params.append(
+            "bool_or(p->>'role' = 'sender' AND lower(p->>'smtp') = ANY(CAST(:from_emails AS TEXT[]))) AS has_from"
         )
+        participant_conditions.append("participant_filter.has_from")
         params["from_emails"] = [e.lower() for e in filters.from_emails]
 
     if filters.to_emails:
-        conditions.append(
-            f"EXISTS (SELECT 1 FROM jsonb_array_elements({conversation_table_alias}.participants) p "
-            "WHERE p->>'role' = 'recipient' AND lower(p->>'smtp') = ANY(:to_emails))",
+        participant_params.append(
+            "bool_or(p->>'role' = 'recipient' AND lower(p->>'smtp') = ANY(CAST(:to_emails AS TEXT[]))) AS has_to"
         )
+        participant_conditions.append("participant_filter.has_to")
         params["to_emails"] = [e.lower() for e in filters.to_emails]
 
     if filters.cc_emails:
-        conditions.append(
-            f"EXISTS (SELECT 1 FROM jsonb_array_elements({conversation_table_alias}.participants) p "
-            "WHERE p->>'role' = 'cc' AND lower(p->>'smtp') = ANY(:cc_emails))",
+        participant_params.append(
+            "bool_or(p->>'role' = 'cc' AND lower(p->>'smtp') = ANY(CAST(:cc_emails AS TEXT[]))) AS has_cc"
         )
+        participant_conditions.append("participant_filter.has_cc")
         params["cc_emails"] = [e.lower() for e in filters.cc_emails]
+
+    if participant_params:
+        subquery = (
+            "SELECT "
+            + ", ".join(participant_params)
+            + f" FROM jsonb_array_elements({conversation_table_alias}.participants) p"
+        )
+        condition = " AND ".join(participant_conditions)
+        conditions.append(
+            f"EXISTS (SELECT 1 FROM ({subquery}) participant_filter WHERE {condition})"
+        )
 
     where_clause = " AND ".join(conditions) if conditions else ""
     return where_clause, params
+
+
+def _escape_like(term: str) -> str:
+    return term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
+def _to_naive_utc(dt: datetime) -> datetime:
+    if dt.tzinfo is None:
+        return dt
+    return dt.astimezone(timezone.utc).replace(tzinfo=None)

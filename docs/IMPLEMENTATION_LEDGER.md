@@ -1994,3 +1994,1029 @@ This ledger tracks the **exact state of implementation** for each checklist step
 
 - [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-15
   Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Audit, S3, Graph Discovery, Cache, DB Session, S3 Uploader) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 11:41 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-16
+
+### Scope & files
+
+- **Summary:** Sanitized audit/db errors, hardened S3 ingestion/uploader, and optimized graph discovery and cache behaviors.
+- **Files touched:**
+  - `backend/src/cortex/audit/__init__.py`
+  - `backend/src/cortex/ingestion/s3_source.py`
+  - `backend/src/cortex/intelligence/graph_discovery.py`
+  - `backend/src/cortex/retrieval/async_cache.py`
+  - `backend/src/cortex/db/session.py`
+  - `cli/src/cortex_cli/_s3_uploader.py`
+  - `cli/src/cortex_cli/cmd_graph.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Sanitized audit logging, added risk normalization, and prevented caller session commits while keeping UTC-safe timestamps.
+- Switched S3 ingestion folder discovery to delimiter-based listing with safer prefix handling and explicit error contexts.
+- Refined graph discovery sampling, concurrency, and output controls; added async entrypoint and PII-safe logging.
+- Hardened async cache TTL handling with monotonic clocks, safer locking, and hashed query logging.
+- Normalized CLI S3 uploads with thread-safe client initialization, bounded task submission, and sanitized errors.
+- Guarded DB session config, cleaned slow-query logging, and added error-path cleanup.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-16
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Classifier, Auth, Attachments, Filters) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 11:56 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-17
+
+### Scope & files
+
+- **Summary:** Hardened query classification caching, auth dependencies, attachment ingestion, and retrieval filter resolution.
+- **Files touched:**
+  - `backend/src/cortex/retrieval/query_classifier.py`
+  - `backend/src/cortex/orchestration/nodes.py`
+  - `backend/src/cortex/security/dependencies.py`
+  - `backend/src/cortex/security/auth.py`
+  - `backend/src/cortex/ingestion/attachments.py`
+  - `backend/src/cortex/retrieval/filter_resolution.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Normalized query classifier caching, removed deprecated JSON completion usage, and updated docs.
+- Hardened auth dependency handling with consistent 401/500 responses, public identity helper, and safer defaults.
+- Secured attachment processing with guarded config access, safe path handling, and dedicated executor use.
+- Improved filter resolution with role-aware participant filters, safe LIKE sanitization, and tenant-safe conv_id resolution.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-17
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Safety Config, Secure Models, API Client) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 12:09 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-18
+
+### Scope & files
+
+- **Summary:** Hardened safety config regex handling, secured PII redaction helpers, and stabilized CLI API client behavior.
+- **Files touched:**
+  - `backend/src/cortex/safety/config.py`
+  - `backend/src/cortex/common/models.py`
+  - `cli/src/cortex_cli/api_client.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Added cached, validated regex compilation for safety config with stronger external-domain matching.
+- Reworked SecureBaseModel PII handling with ClassVar fields and redacted serialization helpers.
+- Made CLI API client singleton-based with HTTPS default, endpoint normalization, and safe JSON parsing.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-18
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (DB Models Consistency) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 12:14 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-19
+
+### Scope & files
+
+- **Summary:** Tightened database model constraints and typing for chunks and entity graphs; removed unsafe cascades.
+- **Files touched:**
+  - `backend/src/cortex/db/models.py`
+  - `backend/src/cortex/ingestion/writer.py`
+  - `backend/src/cortex/retrieval/graph_search.py`
+  - `backend/src/cortex/orchestration/nodes.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Enforced unique conversation folder per tenant and added chunk consistency checks for attachments and character ranges.
+- Added typed mappings for tsvector/embedding fields and narrowed the attachment index to a partial index.
+- Renamed EntityNode.type to entity_type while keeping the column name, and removed delete-orphan cascades.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-19
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Config Models) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 12:26 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-20
+
+### Scope & files
+
+- **Summary:** Strengthened config validation, URL typing, and secret handling across storage, database, Redis, and DigitalOcean scaler settings.
+- **Files touched:**
+  - `backend/src/cortex/config/models.py`
+  - `backend/src/cortex/config/loader.py`
+  - `backend/src/cortex/ingestion/s3_source.py`
+  - `backend/src/cortex/llm/doks_scaler.py`
+  - `backend/src/cortex/db/session.py`
+  - `backend/src/cortex/health.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Added strict env parsing, normalized env names, and model validators for config cross-field checks.
+- Converted storage/DB/Redis URL fields to DSN types and secrets to SecretStr with safe unwrapping.
+- Ensured URL/DSN values are cast to strings where required by SQLAlchemy/Redis clients.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-20
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (CLI Schema Check) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 12:29 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-21
+
+### Scope & files
+
+- **Summary:** Removed import-time side effects, optimized sampling, and tightened error handling for schema analysis.
+- **Files touched:**
+  - `cli/src/cortex_cli/cmd_schema.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Deferred dotenv loading, removed global logging config, and guarded limit defaults.
+- Replaced random order and N+1 chunk fetches with offset sampling and single-pass streaming.
+- Logged extraction failures with tracebacks and corrected progress counters.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-21
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (CLI Auth & Safety Commands) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 12:39 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-22
+
+### Scope & files
+
+- **Summary:** Secured CLI login handling, hardened safety/grounding commands, and normalized search output/error handling.
+- **Files touched:**
+  - `cli/src/cortex_cli/api_client.py`
+  - `cli/src/cortex_cli/cmd_login.py`
+  - `cli/src/cortex_cli/cmd_safety.py`
+  - `cli/src/cortex_cli/cmd_grounding.py`
+  - `cli/src/cortex_cli/cmd_search.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Switched login to password prompting/stdin, HTTPS default, token file storage, and sanitized error output.
+- Added safe backend path resolution, guarded imports, and robust formatting for grounding/safety outputs.
+- Normalized search result handling, type-safe formatting, and consistent non-zero exits on failure.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-22
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Ingest Routes Background Tasks) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 12:45 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-23
+
+### Scope & files
+
+- **Summary:** Hardened ingestion background tasks, tenant validation, and redis handling; resolved routing warnings.
+- **Files touched:**
+  - `backend/src/cortex/rag_api/routes_ingest.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Wrapped async ingestion background work in a sync entrypoint with proper redis lifecycle.
+- Added tenant context validation and ensured contextvars are reset after background tasks.
+- Normalized ingestion stats handling and avoided request-scoped redis in background jobs.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-23
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Draft Routes Guardrails) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 12:52 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-24
+
+### Scope & files
+
+- **Summary:** Hardened draft route guards, sanitized error handling, and stabilized context defaults.
+- **Files touched:**
+  - `backend/src/cortex/rag_api/routes_draft.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Validated graph state and final output mapping before accessing fields.
+- Normalized tenant/user defaults, narrowed draft presence checks, and sanitized errors.
+- Logged audit failures with tracebacks while preserving API responses.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-24
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Search Routes Guardrails) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 13:03 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-25
+
+### Scope & files
+
+- **Summary:** Added search route guardrails for query validation, result handling, and error mapping.
+- **Files touched:**
+  - `backend/src/cortex/rag_api/routes_search.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Normalized tenant/user context defaults, clamped search k, and validated query input.
+- Preserved tool error types, sanitized server failures, and logged audit failures with tracebacks.
+- Standardized results handling to avoid None errors and maintain consistent response building.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-25
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (CLI Draft Command) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 13:12 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-26
+
+### Scope & files
+
+- **Summary:** Hardened CLI draft command parsing, response handling, and error exits.
+- **Files touched:**
+  - `cli/src/cortex_cli/cmd_draft.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Corrected module header imports, removed private argparse typing, and guarded args access.
+- Validated JSON responses, escaped server error text, and ensured non-zero exits on failure.
+- Avoided syntax shadowing and improved draft payload handling for markdown output.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-26
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (CLI Style Helpers) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 13:16 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-27
+
+### Scope & files
+
+- **Summary:** Updated CLI style helper typing to match runtime behavior.
+- **Files touched:**
+  - `cli/src/cortex_cli/style.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Allowed optional text input for colorize to match None normalization.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-27
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Summarizer Guardrails) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 13:27 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-28
+
+### Scope & files
+
+- **Summary:** Updated summarizer truncation logic and error handling; clarified embedding failures.
+- **Files touched:**
+  - `backend/src/cortex/intelligence/summarizer.py`
+  - `backend/src/cortex/ingestion/mailroom.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Accounted for prompt overhead when truncating context and centralized prompt template constants.
+- Switched summarizer logging to exception traces and differentiated embedding failures.
+- Logged embedding failures in ingestion while preserving fallback behavior.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-28
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Orchestration State Models) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 13:39 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-29
+
+### Scope & files
+
+- **Summary:** Hardened orchestration state models with validation, redaction, and doc updates.
+- **Files touched:**
+  - `backend/src/cortex/orchestration/states.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Converted internal graph metadata to PrivateAttr and updated docstring references.
+- Added UUID validation for thread_id fields and bounds for retrieval and summary length.
+- Reworked __repr__ to use model_fields with nested redaction and added retrieval_k alias.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-29
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Vector Search Guards) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 13:54 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-30
+
+### Scope & files
+
+- **Summary:** Hardened vector search input normalization, config guards, and qdrant caching.
+- **Files touched:**
+  - `backend/src/cortex/retrieval/vector_search.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Avoided mutating caller filters, preserved ID order, and handled empty filters safely.
+- Guarded config access, validated embedding dimensions, and skipped invalid requests.
+- Added qdrant store cache and made DB session optional for qdrant path.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-30
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Text Preprocessor Guardrails) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 14:08 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-31
+
+### Scope & files
+
+- **Summary:** Hardened ingestion text preprocessing validation, docs, and PII config handling.
+- **Files touched:**
+  - `backend/src/cortex/ingestion/text_preprocessor.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Validated inputs and unexpected text types with safe defaults and logging.
+- Wrapped cleaning steps with exception logging and aligned doc comments with behavior.
+- Cached PII config lookup and supported mapping-based config access.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-31
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (CLI Embeddings Command) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 14:20 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-32
+
+### Scope & files
+
+- **Summary:** Hardened embeddings CLI with config guards, validation, and error logging.
+- **Files touched:**
+  - `cli/src/cortex_cli/cmd_embeddings.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Validated embedding config presence and ensured non-zero exits on missing config.
+- Added batch/limit validation, guarded backfill results, and improved error diagnostics.
+- Hardened default handler against missing namespace attributes.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-32
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Retrieval Results Models) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 14:33 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-33
+
+### Scope & files
+
+- **Summary:** Updated retrieval result models for safer repr output and clearer semantics.
+- **Files touched:**
+  - `backend/src/cortex/retrieval/results.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Reworked SearchResultItem repr to redact sensitive fields and avoid model_dump.
+- Normalized from_fts_result defaults for conversation_id and lexical_score.
+- Introduced result_type alias for the search results type field and updated docs.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-33
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Search Filters SQL) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 14:49 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-34
+
+### Scope & files
+
+- **Summary:** Hardened filter parsing/SQL generation with safer date handling, escaping, and participant filtering.
+- **Files touched:**
+  - `backend/src/cortex/retrieval/filters.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Normalized ISO date parsing and ensured naive UTC params for SQL comparisons.
+- Escaped ILIKE patterns, cast array params explicitly, and improved empty-filter detection.
+- Consolidated participant filters into a single JSONB expansion for performance.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-34
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Facts Ledger Merge) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 15:01 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-35
+
+### Scope & files
+
+- **Summary:** Improved facts ledger merge semantics and participant handling.
+- **Files touched:**
+  - `backend/src/cortex/domain_models/facts_ledger.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Added explicit empty-ledger checks and more specific dedupe keys.
+- Preserved unkeyed participants and normalized participant keys.
+- Merged role/tone defaults safely and avoided extra list allocations in set sorting.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-35
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (CLI Config Helpers) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 15:14 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-36
+
+### Scope & files
+
+- **Summary:** Removed import-time config loading and hardened CLI config output.
+- **Files touched:**
+  - `cli/src/cortex_cli/_config_helpers.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Deferred index dir resolution for empty env values and removed unused module config.
+- Added sentinel-based section checks and safe nested config access.
+- Ensured non-model config sections render explicit values.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-36
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (CLI Queue Command) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 15:28 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-37
+
+### Scope & files
+
+- **Summary:** Hardened queue CLI stats handling and added default behavior.
+- **Files touched:**
+  - `cli/src/cortex_cli/cmd_queue.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Added queue load guards, stats type validation, and safer key formatting.
+- Introduced a default handler for missing subcommands.
+- Narrowed subparser typing and clarified unused args.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-37
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (CLI Maintenance Command) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 15:40 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-38
+
+### Scope & files
+
+- **Summary:** Hardened maintenance CLI error handling and parser defaults.
+- **Files touched:**
+  - `cli/src/cortex_cli/cmd_maintenance.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Guarded dry-run access, isolated import errors, and routed runtime errors to stderr.
+- Removed unused wrapper and cleaned default handler control flow.
+- Replaced private argparse type with a protocol for subparser typing.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-38
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Orchestration Package Imports) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 15:52 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-39
+
+### Scope & files
+
+- **Summary:** Switched orchestration package exports to lazy loading and narrowed public API.
+- **Files touched:**
+  - `backend/src/cortex/orchestration/__init__.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Added lazy import mapping with __getattr__ to avoid import-time side effects.
+- Simplified comments and limited __all__ to core graphs and state models.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-39
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Orchestration Graph Logic) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 16:05 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-40
+
+### Scope & files
+
+- **Summary:** Hardened orchestration graph routing and state handling.
+- **Files touched:**
+  - `backend/src/cortex/orchestration/graphs.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Unified state access for dict/model inputs and normalized iteration counts.
+- Added handle_error routes for critique/improver paths and conditional summary improver.
+- Improved routing guards for classification and summarize flows.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-40
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (RAG Domain Models) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 16:20 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-41
+
+### Scope & files
+
+- **Summary:** Tightened RAG domain model redaction and attachment typing.
+- **Files touched:**
+  - `backend/src/cortex/domain_models/rag.py`
+  - `backend/src/cortex/orchestration/nodes.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Marked PII field lists as ClassVar and aligned minor models to SecureBaseModel.
+- Added AttachmentRef model, updated EmailDraft attachments, and expanded PII redaction for summaries.
+- Aliased ThreadSummary type field and normalized attachment assignment in node selection.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-41
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Prompt Defense Sanitizer) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 16:35 UTC
+- **Responsible run ID:** run-review-report-verify-20251231-42
+
+### Scope & files
+
+- **Summary:** Hardened prompt injection sanitizer regex handling and ordering.
+- **Files touched:**
+  - `backend/src/cortex/security/defenses.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Switched tag stripping to named captures with safe callable replacements.
+- Ensured sanitization runs before truncation and logged non-string inputs.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-42
+  Notes: Re-ran review_report_resolver; no drift detected.

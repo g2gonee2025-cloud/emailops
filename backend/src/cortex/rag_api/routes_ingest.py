@@ -7,6 +7,7 @@ Provides endpoints for triggering and monitoring ingestion jobs.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import uuid
@@ -15,6 +16,7 @@ from typing import Any, Literal
 
 import redis.asyncio as redis
 from cortex.common.redis import get_redis
+from cortex.config.loader import get_config
 from cortex.context import tenant_id_ctx
 from cortex.ingestion.s3_source import S3ConversationFolder, S3SourceHandler
 from cortex.security.auth import get_current_user
@@ -132,11 +134,14 @@ class PushIngestResponse(BaseModel):
 # -----------------------------------------------------------------------------
 
 
-@router.get("/s3/folders", response_model=ListS3FoldersResponse)
+@router.get(
+    "/s3/folders",
+    response_model=ListS3FoldersResponse,
+    dependencies=[Depends(get_current_user)],
+)
 async def list_s3_folders(
     prefix: str = Query(default="Outlook/", description="S3 prefix to list"),
     limit: int = Query(default=100, ge=1, le=1000, description="Max folders to return"),
-    current_user: str = Depends(get_current_user),
 ):
     """
     List conversation folders in S3/Spaces.
@@ -189,11 +194,14 @@ async def list_s3_folders(
         raise HTTPException(status_code=500, detail=f"Failed to list S3 folders: {e!s}")
 
 
-@router.post("/s3/start", response_model=IngestFromS3Response)
+@router.post(
+    "/s3/start",
+    response_model=IngestFromS3Response,
+    dependencies=[Depends(get_current_user)],
+)
 async def start_s3_ingestion(
     request: IngestFromS3Request,
     background_tasks: BackgroundTasks,
-    current_user: str = Depends(get_current_user),
     redis_client: redis.Redis = Depends(get_redis),
 ):
     """
@@ -230,7 +238,7 @@ async def start_s3_ingestion(
                 message=f"Dry run: Found {len(folders)} folders to process",
             )
 
-        tenant_id = tenant_id_ctx.get()
+        tenant_id = _require_tenant_id()
         job_key = f"tenant:{tenant_id}:ingest_job:{job_id}"
 
         job_data = {
@@ -248,12 +256,13 @@ async def start_s3_ingestion(
         await redis_client.set(job_key, json.dumps(job_data), ex=86400)
 
         # Process in background
+        redis_url = str(get_config().redis.url)
         background_tasks.add_task(
-            _process_s3_folders_with_embeddings,
+            _run_s3_ingest_background,
             job_id=job_id,
             tenant_id=tenant_id,
             folders=folders,
-            redis_client=redis_client,
+            redis_url=redis_url,
         )
 
         return IngestFromS3Response(
@@ -269,10 +278,12 @@ async def start_s3_ingestion(
         raise HTTPException(status_code=500, detail=f"Failed to start ingestion: {e!s}")
 
 
-@router.post("", response_model=PushIngestResponse)
-async def push_ingest(
-    request: PushIngestRequest, current_user: str = Depends(get_current_user)
-) -> PushIngestResponse:
+@router.post(
+    "",
+    response_model=PushIngestResponse,
+    dependencies=[Depends(get_current_user)],
+)
+async def push_ingest(request: PushIngestRequest) -> PushIngestResponse:
     """
     Push documents into the index.
 
@@ -282,7 +293,7 @@ async def push_ingest(
         raise HTTPException(status_code=400, detail="No documents provided")
 
     job_id = str(uuid.uuid4())
-    tenant_id = tenant_id_ctx.get()
+    tenant_id = _require_tenant_id()
 
     return await run_in_threadpool(
         _process_push_ingest,
@@ -292,14 +303,17 @@ async def push_ingest(
     )
 
 
-@router.get("/status/{job_id}", response_model=IngestStatusResponse)
+@router.get(
+    "/status/{job_id}",
+    response_model=IngestStatusResponse,
+    dependencies=[Depends(get_current_user)],
+)
 async def get_ingestion_status(
     job_id: str,
-    current_user: str = Depends(get_current_user),
     redis_client: redis.Redis = Depends(get_redis),
 ):
     """Get the status of an ingestion job."""
-    tenant_id = tenant_id_ctx.get()
+    tenant_id = _require_tenant_id()
     job_key = f"tenant:{tenant_id}:ingest_job:{job_id}"
 
     job_data_raw = await redis_client.get(job_key)
@@ -340,21 +354,47 @@ async def get_ingestion_status(
 # -----------------------------------------------------------------------------
 
 
+def _run_s3_ingest_background(
+    job_id: str,
+    tenant_id: str,
+    folders: list[S3ConversationFolder],
+    redis_url: str,
+) -> None:
+    asyncio.run(
+        _process_s3_folders_with_embeddings(
+            job_id=job_id,
+            tenant_id=tenant_id,
+            folders=folders,
+            redis_url=redis_url,
+        )
+    )
+
+
 async def _process_s3_folders_with_embeddings(
     job_id: str,
     tenant_id: str,
     folders: list[S3ConversationFolder],
-    redis_client: redis.Redis,
+    redis_url: str,
 ):
     """Process S3 folders with embedding generation."""
     from cortex.ingestion.processor import IngestionProcessor
 
+    redis_client: redis.Redis | None = None
     job_key = f"tenant:{tenant_id}:ingest_job:{job_id}"
-
-    job_data = {}
+    job_data: dict[str, Any] = {}
+    token = None
     try:
+        redis_client = redis.from_url(redis_url)
         job_data_raw = await redis_client.get(job_key)
         if not job_data_raw:
+            error_job_data = {
+                "job_id": job_id,
+                "status": "failed",
+                "error": "Job not found in Redis",
+                "message": "Critical error: job not found.",
+                "completed_at": datetime.now(timezone.utc).isoformat(),
+            }
+            await redis_client.set(job_key, json.dumps(error_job_data), ex=86400)
             logger.error("Job %s not found in Redis for tenant %s", job_id, tenant_id)
             return
         job_data = json.loads(job_data_raw)
@@ -362,13 +402,14 @@ async def _process_s3_folders_with_embeddings(
         logger.error(
             "Failed to load or parse job %s from Redis: %s", job_id, e, exc_info=True
         )
-        error_job_data = {
-            "status": "failed",
-            "error": f"Failed to load job from Redis: {e}",
-            "message": "Critical error: could not read job data.",
-            "completed_at": datetime.now(timezone.utc).isoformat(),
-        }
-        await redis_client.set(job_key, json.dumps(error_job_data), ex=86400)
+        if redis_client is not None:
+            error_job_data = {
+                "status": "failed",
+                "error": f"Failed to load job from Redis: {e}",
+                "message": "Critical error: could not read job data.",
+                "completed_at": datetime.now(timezone.utc).isoformat(),
+            }
+            await redis_client.set(job_key, json.dumps(error_job_data), ex=86400)
         return
 
     if not isinstance(job_data, dict):
@@ -384,7 +425,7 @@ async def _process_s3_folders_with_embeddings(
         return
 
     # Propagate tenant context for downstream code that may rely on it
-    tenant_id_ctx.set(tenant_id)
+    token = tenant_id_ctx.set(tenant_id)
 
     # Update status to 'processing' to give users accurate feedback that work has begun.
     job_data["status"] = "processing"
@@ -398,18 +439,25 @@ async def _process_s3_folders_with_embeddings(
         processor = await run_in_threadpool(IngestionProcessor, tenant_id=tenant_id)
         stats = await run_in_threadpool(processor.process_batch, folders, job_id)
 
+        errors = _get_stat_value(stats, "errors")
+        folders_processed = _get_stat_value(stats, "folders_processed")
+        threads_created = _get_stat_value(stats, "threads_created")
+        chunks_created = _get_stat_value(stats, "chunks_created")
+        embeddings_generated = _get_stat_value(stats, "embeddings_generated")
+        skipped = _get_stat_value(stats, "skipped")
+
         # Update job data with final stats
         job_data.update(
             {
-                "status": "completed" if stats.errors == 0 else "completed_with_errors",
-                "folders_processed": stats.folders_processed,
-                "threads_created": stats.threads_created,
-                "chunks_created": stats.chunks_created,
-                "embeddings_generated": stats.embeddings_generated,
-                "errors": stats.errors,
-                "skipped": stats.skipped,
+                "status": "completed" if errors == 0 else "completed_with_errors",
+                "folders_processed": folders_processed,
+                "threads_created": threads_created,
+                "chunks_created": chunks_created,
+                "embeddings_generated": embeddings_generated,
+                "errors": errors,
+                "skipped": skipped,
                 "completed_at": datetime.now(timezone.utc).isoformat(),
-                "message": f"Processed {stats.folders_processed} folders, created {stats.chunks_created} chunks with embeddings",
+                "message": f"Processed {folders_processed} folders, created {chunks_created} chunks with embeddings",
             }
         )
         await redis_client.set(job_key, json.dumps(job_data), ex=86400)
@@ -417,8 +465,8 @@ async def _process_s3_folders_with_embeddings(
         logger.info(
             "Ingestion job %s completed: %d folders, %d chunks",
             job_id,
-            stats.folders_processed,
-            stats.chunks_created,
+            folders_processed,
+            chunks_created,
         )
 
     except Exception as e:
@@ -432,6 +480,32 @@ async def _process_s3_folders_with_embeddings(
             }
         )
         await redis_client.set(job_key, json.dumps(job_data), ex=86400)
+    finally:
+        if token is not None:
+            tenant_id_ctx.reset(token)
+        if redis_client is not None:
+            await redis_client.close()
+            await redis_client.connection_pool.disconnect()
+
+
+def _get_stat_value(stats: Any, key: str, default: int = 0) -> int:
+    if isinstance(stats, dict):
+        value = stats.get(key, default)
+    else:
+        value = getattr(stats, key, default)
+    if value is None:
+        return default
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _require_tenant_id() -> str:
+    tenant_id = tenant_id_ctx.get()
+    if not isinstance(tenant_id, str) or not tenant_id.strip():
+        raise HTTPException(status_code=401, detail="Tenant context missing")
+    return tenant_id
 
 
 def _generate_stable_id(namespace: uuid.UUID, *args: str) -> uuid.UUID:

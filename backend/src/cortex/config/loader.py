@@ -16,7 +16,7 @@ from typing import Any
 
 from cortex.common.exceptions import ConfigurationError
 from dotenv import load_dotenv
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field, SecretStr, ValidationError
 
 from .models import (
     CoreConfig,
@@ -162,6 +162,10 @@ class EmailOpsConfig(BaseModel):
         def _set_env(name: str, value: Any) -> None:
             if value is None:
                 return
+            if isinstance(value, SecretStr):
+                value = value.get_secret_value()
+                if value is None:
+                    return
             os.environ[name] = str(value)
 
         # GCP settings removed

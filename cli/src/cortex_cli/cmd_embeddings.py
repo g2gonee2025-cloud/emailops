@@ -7,7 +7,9 @@ Provides:
 """
 
 import argparse
+import logging
 import sys
+import traceback
 from typing import Any
 
 from cortex_cli.style import colorize as _colorize
@@ -15,7 +17,7 @@ from cortex_cli.style import colorize as _colorize
 DEFAULT_BATCH_SIZE = 64
 HIGH_COVERAGE_THRESHOLD = 95
 
-# Console removed (unused)
+logger = logging.getLogger(__name__)
 
 
 def cmd_embeddings_stats(args: argparse.Namespace) -> None:
@@ -29,12 +31,13 @@ def cmd_embeddings_stats(args: argparse.Namespace) -> None:
         from sqlalchemy.orm import Session
 
         config = get_config()
-        if not config.embedding:
+        embed_cfg = getattr(config, "embedding", None)
+        if not embed_cfg:
             print(
                 f"{_colorize('ERROR:', 'red')} No embedding configuration found.",
                 file=sys.stderr,
             )
-            return
+            sys.exit(1)
 
         with Session(engine) as session:
             # Performance: Combined count query
@@ -48,8 +51,8 @@ def cmd_embeddings_stats(args: argparse.Namespace) -> None:
             pct = (with_emb / total * 100) if total > 0 else 0
 
         stats = {
-            "model": config.embedding.model_name,
-            "dimensions": config.embedding.output_dimensionality,
+            "model": getattr(embed_cfg, "model_name", "N/A"),
+            "dimensions": getattr(embed_cfg, "output_dimensionality", "N/A"),
             "total_chunks": total,
             "with_embedding": with_emb,
             "missing": missing,
@@ -60,12 +63,10 @@ def cmd_embeddings_stats(args: argparse.Namespace) -> None:
             print(json_module.dumps(stats, indent=2))
         else:
             print(f"\n{_colorize('EMBEDDING STATISTICS', 'bold')}\n")
-            embed_cfg = getattr(config, "embedding", None)
             model_name = getattr(embed_cfg, "model_name", "N/A")
+            dimensions = getattr(embed_cfg, "output_dimensionality", "N/A")
             print(f"  Model: {_colorize(model_name, 'cyan')}")
-            print(
-                f"  Dimensions: {_colorize(str(config.embedding.output_dimensionality), 'cyan')}\n"
-            )
+            print(f"  Dimensions: {_colorize(str(dimensions), 'cyan')}\n")
             print(f"  Total Chunks:    {_colorize(str(total), 'bold')}")
             print(f"  With Embedding:  {_colorize(str(with_emb), 'green')}")
             print(
@@ -81,7 +82,9 @@ def cmd_embeddings_stats(args: argparse.Namespace) -> None:
                 )
 
     except Exception as e:
+        logger.exception("Embeddings stats failed")
         print(f"{_colorize('ERROR:', 'red')} {e}", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
         sys.exit(1)
 
 
@@ -92,10 +95,30 @@ def cmd_embeddings_backfill(args: argparse.Namespace) -> None:
         from cortex.ingestion.backfill import backfill_embeddings
 
         config = get_config()
+        embed_cfg = getattr(config, "embedding", None)
+        if not embed_cfg:
+            print(
+                f"{_colorize('ERROR:', 'red')} No embedding configuration found.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
 
         print(f"\n{_colorize('EMBEDDING BACKFILL', 'bold')}\n")
-        print(f"  Model: {_colorize(config.embedding.model_name, 'cyan')}")
+        print(f"  Model: {_colorize(embed_cfg.model_name, 'cyan')}")
         print(f"  Batch Size: {_colorize(str(args.batch_size), 'dim')}")
+
+        if args.batch_size <= 0:
+            print(
+                f"{_colorize('ERROR:', 'red')} Batch size must be positive.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        if args.limit is not None and args.limit < 0:
+            print(
+                f"{_colorize('ERROR:', 'red')} Limit must be zero or positive.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
 
         if args.dry_run:
             print("\n  DRY RUN: Would backfill embeddings. No changes made.")
@@ -109,8 +132,11 @@ def cmd_embeddings_backfill(args: argparse.Namespace) -> None:
         )
 
         print(f"\n  {_colorize('✓', 'green')} Backfill complete!")
-        print(f"    Processed: {result.get('processed', 0)}")
-        print(f"    Errors: {result.get('errors', 0)}")
+        result_data = result if isinstance(result, dict) else {}
+        if not isinstance(result, dict):
+            logger.error("Unexpected backfill result type: %s", type(result))
+        print(f"    Processed: {result_data.get('processed', 0)}")
+        print(f"    Errors: {result_data.get('errors', 0)}")
 
     except ImportError as e:
         print(
@@ -123,7 +149,9 @@ def cmd_embeddings_backfill(args: argparse.Namespace) -> None:
         )
         sys.exit(1)
     except Exception as e:
+        logger.exception("Embeddings backfill failed")
         print(f"{_colorize('ERROR:', 'red')} {e}", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
         sys.exit(1)
 
 
@@ -171,7 +199,7 @@ def setup_embeddings_parser(subparsers: Any) -> None:
 
     # Default: show stats when no subcommand given
     def _default_embeddings_handler(args: argparse.Namespace) -> None:
-        if not args.embeddings_command:
+        if not getattr(args, "embeddings_command", None):
             args.json = getattr(args, "json", False)
             cmd_embeddings_stats(args)
 

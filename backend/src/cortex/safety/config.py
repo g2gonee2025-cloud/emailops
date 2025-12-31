@@ -5,14 +5,18 @@ Safety Configuration.
 from __future__ import annotations
 
 import re
+from functools import lru_cache
 
-from pydantic import BaseModel, Field
+from cortex.common.exceptions import ConfigurationError
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PolicyConfig(BaseModel):
     """
     Defines the security and operational policies for actions.
     """
+
+    model_config = ConfigDict(validate_assignment=True)
 
     # Risk levels for actions
     low_risk_actions: set[str] = Field(
@@ -46,7 +50,10 @@ class PolicyConfig(BaseModel):
     )
 
     # Recipient policies
-    external_domain_pattern: str = r"@(?!internal\.company\.com$)"
+    external_domain_pattern: str = (
+        r"@(?!(?:[A-Z0-9-]+\.)*internal\.company\.com(?=$|[^A-Z0-9.-]))"
+        r"[A-Z0-9.-]+(?=$|[^A-Z0-9.-])"
+    )
     max_recipients_auto_approve: int = 10
 
     # Sensitive content patterns (using more generic regex)
@@ -67,8 +74,36 @@ class PolicyConfig(BaseModel):
 
     def get_sensitive_patterns(self) -> list[re.Pattern]:
         """Compile and return sensitive patterns as regex objects."""
-        return [re.compile(p, re.IGNORECASE) for p in self.sensitive_patterns]
+        patterns = tuple(self.sensitive_patterns or [])
+        if not patterns:
+            return []
+        return list(_compile_sensitive_patterns(patterns))
 
     def get_external_domain_pattern(self) -> re.Pattern:
         """Compile and return the external domain pattern."""
-        return re.compile(self.external_domain_pattern, re.IGNORECASE)
+        return _compile_external_domain_pattern(self.external_domain_pattern)
+
+
+@lru_cache(maxsize=128)
+def _compile_sensitive_patterns(patterns: tuple[str, ...]) -> tuple[re.Pattern, ...]:
+    compiled: list[re.Pattern] = []
+    for pattern in patterns:
+        try:
+            compiled.append(re.compile(pattern, re.IGNORECASE))
+        except re.error as exc:
+            raise ConfigurationError(
+                "Invalid sensitive pattern regex.",
+                context={"pattern": pattern},
+            ) from exc
+    return tuple(compiled)
+
+
+@lru_cache(maxsize=128)
+def _compile_external_domain_pattern(pattern: str) -> re.Pattern:
+    try:
+        return re.compile(pattern, re.IGNORECASE)
+    except re.error as exc:
+        raise ConfigurationError(
+            "Invalid external domain pattern regex.",
+            context={"pattern": pattern},
+        ) from exc

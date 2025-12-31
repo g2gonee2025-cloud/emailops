@@ -4,45 +4,52 @@ Maintenance commands.
 
 import argparse
 import sys
+from typing import Any, Protocol
 
 from cortex_cli.style import colorize
 
 
+class _Subparsers(Protocol):
+    def add_parser(self, *args: Any, **kwargs: Any) -> argparse.ArgumentParser: ...
+
+
 def resolve_entities(args: argparse.Namespace) -> None:
     """Run entity resolution."""
+    dry_run = getattr(args, "dry_run", False)
     try:
         from cortex_workers.maintenance.resolve_entities import EntityResolver
+    except ImportError as exc:
+        print(
+            f"{colorize('ERROR:', 'red')} Could not load resolution worker: {exc}",
+            file=sys.stderr,
+        )
+        print(
+            "Ensure the workers package is installed.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
+    try:
         print(f"{colorize('▶ ENTITY RESOLUTION', 'bold')}")
-        if args.dry_run:
+        if dry_run:
             print(f"{colorize('DRY RUN', 'yellow')}")
         print()
 
         resolver = EntityResolver()
-        resolver.run(dry_run=getattr(args, "dry_run", False))
+        resolver.run(dry_run=dry_run)
 
         print(f"\n{colorize('✓', 'green')} Entity resolution complete.")
 
-    except ImportError:
-        print(
-            f"{colorize('ERROR:', 'red')} Could not load resolution worker. Ensure workers package is installed."
-        )
-        sys.exit(1)
     except Exception as e:
         import traceback
 
-        traceback.print_exc()
-        print(f"{colorize('ERROR:', 'red')} {e}")
+        traceback.print_exc(file=sys.stderr)
+        print(f"{colorize('ERROR:', 'red')} {e}", file=sys.stderr)
         sys.exit(1)
 
 
-def _run_maintenance_resolve(args: argparse.Namespace) -> None:
-    """Wrapper for resolve-entities command."""
-    resolve_entities(args)
-
-
 def setup_maintenance_parser(
-    subparsers: "argparse._SubParsersAction",
+    subparsers: _Subparsers,
 ) -> None:
     """Setup maintenance command parser."""
     maintenance_parser = subparsers.add_parser(
@@ -68,17 +75,12 @@ def setup_maintenance_parser(
     resolve_parser.set_defaults(func=resolve_entities)
 
     # Default: show available subcommands when no subcommand given
-    def _default_maintenance_handler(args: argparse.Namespace | None = None) -> int:
+    def _default_maintenance_handler(args: argparse.Namespace | None = None) -> None:
         maintenance_command = getattr(args, "maintenance_command", None)
         if maintenance_command is None:
             print(f"{colorize('MAINTENANCE COMMANDS', 'bold')}\n")
             print("  resolve-entities  Resolve duplicate entities in the graph\n")
             print("Usage: cortex maintenance <command> [options]")
-            return 1
-        return 0
-        # Ensure explicit return to avoid ambiguous control flow for callers
-        return None
-        # Ensure explicit return to avoid ambiguous control flow for callers
-        return None
+            raise SystemExit(1)
 
     maintenance_parser.set_defaults(func=_default_maintenance_handler)

@@ -261,7 +261,7 @@ class DBWriter:
                 {
                     "tenant_id": tenant_id,
                     "name": n["name"],
-                    "type": n["type"],
+                    "entity_type": n["type"],
                     "description": f"Extracted from conversation {conv_id or 'unknown'}",
                     "properties": n.get("properties", {}),
                 }

@@ -20,7 +20,7 @@ from botocore.exceptions import ClientError
 from cortex.config.loader import get_config
 from cortex.ingestion.core_manifest import parse_manifest_text
 from cortex.ingestion.text_utils import strip_control_chars
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, SecretStr
 
 logger = logging.getLogger(__name__)
 
@@ -53,14 +53,24 @@ class S3SourceHandler:
         """Initialize S3 client with config or explicit params."""
         config = get_config()
 
-        self.endpoint_url = endpoint_url or config.storage.endpoint_url
+        self.endpoint_url = str(endpoint_url or config.storage.endpoint_url)
         self.region = region or config.storage.region
         self.bucket = bucket or config.storage.bucket_raw
 
         # Store credentials with a leading underscore to mark them as "internal"
         # and reduce the risk of accidental leakage in logs.
-        self._access_key = access_key or config.storage.access_key
-        self._secret_key = secret_key or config.storage.secret_key
+        access_value = access_key or config.storage.access_key
+        secret_value = secret_key or config.storage.secret_key
+        self._access_key = (
+            access_value.get_secret_value()
+            if isinstance(access_value, SecretStr)
+            else access_value
+        )
+        self._secret_key = (
+            secret_value.get_secret_value()
+            if isinstance(secret_value, SecretStr)
+            else secret_value
+        )
 
         missing = [
             name

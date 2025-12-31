@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+from collections.abc import Mapping
 
 from cortex.audit import log_audit_event
 from cortex.common.exceptions import CortexError
@@ -26,9 +27,18 @@ def get_draft_graph(http_request: Request):
 
     This is intended to be used as a FastAPI dependency.
     """
+    graphs = getattr(http_request.app.state, "graphs", None)
+    if not isinstance(graphs, Mapping):
+        logger.error(
+            "Draft graph not found in app.state.graphs. Check lifespan configuration."
+        )
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error: Draft service not configured",
+        )
     try:
-        return http_request.app.state.graphs["draft"]
-    except (AttributeError, KeyError) as e:
+        return graphs["draft"]
+    except KeyError as e:
         logger.exception(
             "Draft graph not found in app.state.graphs. Check lifespan configuration."
         )
@@ -55,12 +65,14 @@ async def draft_endpoint(
     """
     # Get correlation_id from request state (set by middleware)
     correlation_id = getattr(http_request.state, "correlation_id", None)
+    tenant_id = tenant_id_ctx.get("default") or "default"
+    user_id = user_id_ctx.get("anonymous") or "anonymous"
 
     try:
         # Initialize state
         initial_state = {
-            "tenant_id": tenant_id_ctx.get(),
-            "user_id": user_id_ctx.get(),
+            "tenant_id": tenant_id,
+            "user_id": user_id,
             "thread_id": str(request.thread_id) if request.thread_id else None,
             "tone": request.tone,
             "reply_to_message_id": request.reply_to_message_id,
@@ -78,13 +90,18 @@ async def draft_endpoint(
         # Invoke graph
         final_state = await graph.ainvoke(initial_state)
 
+        if not isinstance(final_state, Mapping):
+            logger.error("Draft graph returned non-mapping state")
+            raise HTTPException(status_code=500, detail="Draft generation failed")
+
         # Check for errors
-        if final_state.get("error"):
-            raise HTTPException(status_code=500, detail=final_state["error"])
+        if final_state.get("error") is not None:
+            logger.error("Draft graph reported error state")
+            raise HTTPException(status_code=500, detail="Draft generation failed")
 
         # Return draft
         draft = final_state.get("draft")
-        if not draft:
+        if draft is None:
             raise HTTPException(status_code=500, detail="No draft generated")
 
         # Audit log - P2 Fix: Use context vars (authoritative) not request body
@@ -93,8 +110,8 @@ async def draft_endpoint(
             input_hash = hashlib.sha256(input_str.encode()).hexdigest()
 
             log_audit_event(
-                tenant_id=tenant_id_ctx.get(),  # P2 Fix: Use context
-                user_or_agent=user_id_ctx.get(),  # P2 Fix: Use context
+                tenant_id=tenant_id,  # P2 Fix: Use context
+                user_or_agent=user_id,  # P2 Fix: Use context
                 action="draft_email",
                 input_hash=input_hash,
                 risk_level="medium",
@@ -105,8 +122,8 @@ async def draft_endpoint(
                     "iterations": final_state.get("iteration_count", 0),
                 },
             )
-        except Exception as audit_err:
-            logger.error(f"Audit logging failed: {audit_err}")
+        except Exception:
+            logger.exception("Audit logging failed")
 
         return DraftEmailResponse(
             correlation_id=correlation_id,
@@ -118,6 +135,6 @@ async def draft_endpoint(
         raise HTTPException(status_code=400, detail=e.to_dict())
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
         logger.exception("Draft failed")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal Server Error")

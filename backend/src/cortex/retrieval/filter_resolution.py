@@ -1,24 +1,25 @@
 import logging
+from typing import Optional
 
 from cortex.db.models import Conversation
 from cortex.retrieval.filters import SearchFilters
 from sqlalchemy import or_
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import Query
 
 logger = logging.getLogger(__name__)
 
 
 # Safeguard against queries that could return a huge number of conversation IDs
 MAX_FILTER_CONVERSATION_IDS = 1000
+MAX_EMAIL_FILTERS = 50
 
 
 def _sanitize_like_term(term: str) -> str:
     """Sanitize a term for use in a LIKE query by escaping wildcards."""
-    return term.replace("%", "\\%").replace("_", "\\_")
+    return term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
-def _add_email_filters(query: Query, emails: set[str]) -> Query:
+def _add_email_filters(query, emails: set[str], *, role: str | None = None):
     """
     Adds email filters to the query.
 
@@ -34,16 +35,35 @@ def _add_email_filters(query: Query, emails: set[str]) -> Query:
     if not emails:
         return query
 
+    emails_list = sorted(emails)
+    if len(emails_list) > MAX_EMAIL_FILTERS:
+        logger.warning(
+            "Email filter set too large (%s); truncating to %s",
+            len(emails_list),
+            MAX_EMAIL_FILTERS,
+        )
+        emails_list = emails_list[:MAX_EMAIL_FILTERS]
+
     # Creates a series of OR clauses to find any of the provided emails
     # in the participants JSONB array.
-    clauses = [
-        Conversation.participants.contains([{"email": email}]) for email in emails
-    ] + [Conversation.participants.contains([{"smtp": email}]) for email in emails]
+    if role:
+        clauses = [
+            Conversation.participants.contains([{"email": email, "role": role}])
+            for email in emails_list
+        ] + [
+            Conversation.participants.contains([{"smtp": email, "role": role}])
+            for email in emails_list
+        ]
+    else:
+        clauses = [
+            Conversation.participants.contains([{"email": email}])
+            for email in emails_list
+        ] + [
+            Conversation.participants.contains([{"smtp": email}])
+            for email in emails_list
+        ]
 
-    if clauses:
-        return query.filter(or_(*clauses))
-
-    return query
+    return query.filter(or_(*clauses))
 
 
 def _resolve_filter_conversation_ids(
@@ -65,18 +85,6 @@ def _resolve_filter_conversation_ids(
     """
     if filters.is_empty():
         return None
-
-    # If we only have conv_ids and nothing else, return them directly
-    if (
-        filters.conv_ids
-        and not filters.date_from
-        and not filters.date_to
-        and not filters.from_emails
-        and not filters.to_emails
-        and not filters.cc_emails
-        and not filters.subject_contains
-    ):
-        return list(filters.conv_ids)
 
     # Start simply - we can construct a SQL query dynamically or use ORM
     # using ORM for safety and readability
@@ -101,23 +109,22 @@ def _resolve_filter_conversation_ids(
 
     if filters.subject_contains:
         for term in filters.subject_contains:
+            if not isinstance(term, str):
+                continue
             sanitized_term = _sanitize_like_term(term)
             query = query.filter(
-                Conversation.subject.ilike(f"%%{sanitized_term}%%", escape="\\")
+                Conversation.subject.ilike(f"%{sanitized_term}%", escape="\\")
             )
         has_restrictions = True
 
-    # Participant filters (JSONB) - combine all emails for one efficient query
-    all_participant_emails = set()
     if filters.from_emails:
-        all_participant_emails.update(filters.from_emails)
+        query = _add_email_filters(query, filters.from_emails, role="from")
+        has_restrictions = True
     if filters.to_emails:
-        all_participant_emails.update(filters.to_emails)
+        query = _add_email_filters(query, filters.to_emails, role="to")
+        has_restrictions = True
     if filters.cc_emails:
-        all_participant_emails.update(filters.cc_emails)
-
-    if all_participant_emails:
-        query = _add_email_filters(query, all_participant_emails)
+        query = _add_email_filters(query, filters.cc_emails, role="cc")
         has_restrictions = True
 
     if not has_restrictions:
@@ -125,7 +132,8 @@ def _resolve_filter_conversation_ids(
 
     # Execute
     try:
-        # Add a safeguard limit to prevent unbounded queries from overwhelming the system.
+        # Add a safeguard limit to prevent unbounded queries from overwhelming
+        # the system.
         rows = query.limit(MAX_FILTER_CONVERSATION_IDS + 1).all()
 
         if len(rows) > MAX_FILTER_CONVERSATION_IDS:
@@ -138,8 +146,8 @@ def _resolve_filter_conversation_ids(
 
         result_ids = [str(row[0]) for row in rows]
         return result_ids
-    except SQLAlchemyError as e:
-        logger.error(f"Failed to resolve conversation IDs from DB: {e}")
+    except SQLAlchemyError:
+        logger.exception("Failed to resolve conversation IDs from DB")
         # Re-raise the exception to be handled by the global error handler.
         # Silently returning partial data can lead to inconsistencies.
         raise

@@ -1,70 +1,64 @@
 """Orchestration module for Cortex.
+
 Implements §10 of the Canonical Blueprint.
 """
 
-from cortex.orchestration.graphs import (
-    graph_answer_question,
-    graph_draft_email,
-    graph_summarize_thread,
-)
+from __future__ import annotations
 
-# Helper tools (§10.2); Answer graph nodes
-# Draft graph nodes; Summarize graph nodes
-from cortex.orchestration.nodes import (
-    extract_document_mentions,
-    node_assemble_context,
-    node_audit_draft,
-    node_classify_query,
-    node_critique_draft,
-    node_draft_email_initial,
-    node_generate_answer,
-    node_handle_error,
-    node_improve_draft,
-    node_load_thread,
-    node_prepare_draft_query,
-    node_query_graph,
-    node_retrieve_context,
-    node_select_attachments,
-    node_summarize_analyst,
-    node_summarize_critic,
-    node_summarize_final,
-    node_summarize_improver,
-    tool_email_get_thread,
-)
-from cortex.orchestration.states import (
-    AnswerQuestionState,
-    DraftEmailState,
-    SummarizeThreadState,
-)
+from importlib import import_module
+from typing import Any
+
+_LAZY_IMPORTS = {
+    # Graphs
+    "graph_answer_question": "cortex.orchestration.graphs",
+    "graph_draft_email": "cortex.orchestration.graphs",
+    "graph_summarize_thread": "cortex.orchestration.graphs",
+    # Nodes and tools
+    "tool_email_get_thread": "cortex.orchestration.nodes",
+    "extract_document_mentions": "cortex.orchestration.nodes",
+    "node_handle_error": "cortex.orchestration.nodes",
+    "node_assemble_context": "cortex.orchestration.nodes",
+    "node_classify_query": "cortex.orchestration.nodes",
+    "node_retrieve_context": "cortex.orchestration.nodes",
+    "node_query_graph": "cortex.orchestration.nodes",
+    "node_generate_answer": "cortex.orchestration.nodes",
+    "node_prepare_draft_query": "cortex.orchestration.nodes",
+    "node_draft_email_initial": "cortex.orchestration.nodes",
+    "node_critique_draft": "cortex.orchestration.nodes",
+    "node_improve_draft": "cortex.orchestration.nodes",
+    "node_audit_draft": "cortex.orchestration.nodes",
+    "node_select_attachments": "cortex.orchestration.nodes",
+    "node_load_thread": "cortex.orchestration.nodes",
+    "node_summarize_analyst": "cortex.orchestration.nodes",
+    "node_summarize_critic": "cortex.orchestration.nodes",
+    "node_summarize_improver": "cortex.orchestration.nodes",
+    "node_summarize_final": "cortex.orchestration.nodes",
+    # States
+    "AnswerQuestionState": "cortex.orchestration.states",
+    "DraftEmailState": "cortex.orchestration.states",
+    "SummarizeThreadState": "cortex.orchestration.states",
+}
 
 __all__ = [
-    # Tools
-    "tool_email_get_thread",
-    "extract_document_mentions",
-    # Nodes
-    "node_handle_error",
-    "node_assemble_context",
-    "node_classify_query",
-    "node_retrieve_context",
-    "node_query_graph",
-    "node_generate_answer",
-    "node_prepare_draft_query",
-    "node_draft_email_initial",
-    "node_critique_draft",
-    "node_improve_draft",
-    "node_audit_draft",
-    "node_select_attachments",
-    "node_load_thread",
-    "node_summarize_analyst",
-    "node_summarize_critic",
-    "node_summarize_improver",
-    "node_summarize_final",
-    # States
-    "AnswerQuestionState",
-    "DraftEmailState",
-    "SummarizeThreadState",
-    # Graphs
+    # Public API: graphs and states only
     "graph_answer_question",
     "graph_draft_email",
     "graph_summarize_thread",
+    "AnswerQuestionState",
+    "DraftEmailState",
+    "SummarizeThreadState",
 ]
+
+
+def __getattr__(name: str) -> Any:
+    module_name = _LAZY_IMPORTS.get(name)
+    if not module_name:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    module = import_module(module_name)
+    value = getattr(module, name)
+    globals()[name] = value
+    return value
+
+
+def __dir__() -> list[str]:
+    return sorted(set(globals()) | set(_LAZY_IMPORTS))

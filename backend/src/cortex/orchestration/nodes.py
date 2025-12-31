@@ -20,6 +20,7 @@ from cortex.config.loader import EmailOpsConfig, get_config
 from cortex.domain_models.facts_ledger import CriticReview, FactsLedger
 from cortex.domain_models.rag import (
     Answer,
+    AttachmentRef,
     DraftCritique,
     DraftValidationScores,
     EmailDraft,
@@ -63,7 +64,6 @@ from cortex.retrieval.hybrid_search import (
 )
 from cortex.retrieval.query_classifier import (
     QueryClassification,
-    QueryClassificationInput,
     tool_classify_query,
 )
 from cortex.retrieval.results import SearchResults
@@ -838,12 +838,12 @@ def _build_graph_context_lines(nodes: list[Any], edges: list[Any]) -> list[str]:
         if node.description:
             context_lines.append(
                 sanitize_retrieved_content(
-                    f"Entity: {node.name} ({node.type}) - {node.description}"
+                    f"Entity: {node.name} ({node.entity_type}) - {node.description}"
                 )
             )
         else:
             context_lines.append(
-                sanitize_retrieved_content(f"Entity: {node.name} ({node.type})")
+                sanitize_retrieved_content(f"Entity: {node.name} ({node.entity_type})")
             )
 
     for edge, source, target in edges:
@@ -1252,7 +1252,11 @@ async def node_select_attachments(state: dict[str, Any]) -> dict[str, Any]:
         )
 
     # Update draft in state
-    draft.attachments = selected
+    draft.attachments = [
+        AttachmentRef(path=item["path"], filename=item["filename"])
+        for item in selected
+        if item.get("path") and item.get("filename")
+    ]
     return {"draft": draft}
 
 

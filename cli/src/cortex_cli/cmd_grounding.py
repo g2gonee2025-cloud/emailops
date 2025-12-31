@@ -1,40 +1,59 @@
 """Grounding check CLI command."""
 
 import argparse
+import logging
 import sys
+from importlib import import_module
+from pathlib import Path
+from typing import Any
 
 from rich.console import Console
 from rich.table import Table
 
-# Correcting the import path requires modifying sys.path since this is a script
-# This is a common pattern in this codebase.
-try:
-    from cortex.safety.grounding import (
-        GroundingCheckInput,
-        tool_check_grounding,
-    )
-except ImportError:
-    # Add backend to sys.path to resolve import
-    from pathlib import Path
+logger = logging.getLogger(__name__)
 
-    backend_path = Path(__file__).resolve().parent.parent.parent.parent / "backend/src"
-    sys.path.insert(0, str(backend_path))
-    from cortex.safety.grounding import (
-        GroundingCheckInput,
-        tool_check_grounding,
-    )
+
+def _find_backend_src() -> Path | None:
+    current = Path(__file__).resolve()
+    for parent in (current, *current.parents):
+        candidate = parent / "backend" / "src" / "cortex" / "__init__.py"
+        if candidate.is_file():
+            return candidate.parent.parent
+    return None
+
+
+def _ensure_backend_on_path() -> None:
+    backend_src = _find_backend_src()
+    if backend_src is None:
+        return
+    backend_str = str(backend_src)
+    if backend_str not in sys.path:
+        sys.path.insert(0, backend_str)
+
+
+def _format_float(value: Any) -> str:
+    try:
+        return f"{float(value):.2f}"
+    except (TypeError, ValueError):
+        return "n/a"
+
+
+def _safe_text(value: Any) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value
+    return str(value)
 
 
 def setup_grounding_parser(
-    parser: argparse._SubParsersAction,
+    parser: Any,
 ) -> None:
     """Add grounding command to parser."""
     grounding_parser = parser.add_parser(
         "grounding", help="Tools for checking answer grounding"
     )
-    grounding_subparsers = grounding_parser.add_subparsers(
-        dest="subcommand", required=True
-    )
+    grounding_subparsers = grounding_parser.add_subparsers(dest="subcommand")
 
     check_parser = grounding_subparsers.add_parser(
         "check", help="Check if an answer is grounded in the provided facts"
@@ -54,6 +73,12 @@ def setup_grounding_parser(
         help="Use a Large Language Model for verification (more accurate, requires API access)",
     )
     check_parser.set_defaults(func=run_grounding_check)
+    grounding_parser.set_defaults(func=_default_grounding_handler)
+
+
+def _default_grounding_handler(args: argparse.Namespace) -> None:
+    if not getattr(args, "subcommand", None):
+        print("Please specify a grounding subcommand. Use --help for details.")
 
 
 def run_grounding_check(args: argparse.Namespace) -> None:
@@ -61,8 +86,15 @@ def run_grounding_check(args: argparse.Namespace) -> None:
     console = Console()
 
     try:
+        _ensure_backend_on_path()
+        grounding_module = import_module("cortex.safety.grounding")
+        GroundingCheckInput = grounding_module.GroundingCheckInput
+        tool_check_grounding = grounding_module.tool_check_grounding
+
         input_data = GroundingCheckInput(
-            answer_candidate=args.answer, facts=args.facts, use_llm=args.use_llm
+            answer_candidate=getattr(args, "answer", ""),
+            facts=getattr(args, "facts", []),
+            use_llm=bool(getattr(args, "use_llm", False)),
         )
         result = tool_check_grounding(input_data)
 
@@ -75,10 +107,12 @@ def run_grounding_check(args: argparse.Namespace) -> None:
             else "[bold red]NOT GROUNDED[/bold red]"
         )
         console.print(f"Overall Status: {status}")
-        console.print(f"Confidence: {result.confidence:.2f}")
-        console.print(f"Grounding Ratio: {result.grounding_ratio:.2f}")
+        console.print(f"Confidence: {_format_float(result.confidence)}")
+        console.print(f"Grounding Ratio: {_format_float(result.grounding_ratio)}")
 
-        if result.claim_analyses:
+        analyses_value = getattr(result, "claim_analyses", None)
+        analyses = analyses_value if isinstance(analyses_value, list) else []
+        if analyses:
             console.print("\n[bold]Claim-by-Claim Analysis[/bold]")
             table = Table(show_header=True, header_style="bold magenta")
             table.add_column("Claim", style="dim", width=50)
@@ -86,13 +120,17 @@ def run_grounding_check(args: argparse.Namespace) -> None:
             table.add_column("Confidence", justify="right")
             table.add_column("Supporting Fact")
 
-            for analysis in result.claim_analyses:
-                supported_icon = "✅" if analysis.is_supported else "❌"
+            for analysis in analyses:
+                supported = bool(getattr(analysis, "is_supported", False))
+                supported_icon = "✅" if supported else "❌"
+                claim_text = _safe_text(getattr(analysis, "claim", ""))
+                confidence_text = _format_float(getattr(analysis, "confidence", None))
+                supporting_fact = _safe_text(getattr(analysis, "supporting_fact", None))
                 table.add_row(
-                    analysis.claim,
+                    claim_text,
                     supported_icon,
-                    f"{analysis.confidence:.2f}",
-                    analysis.supporting_fact or "N/A",
+                    confidence_text,
+                    supporting_fact or "N/A",
                 )
             console.print(table)
         else:
@@ -100,10 +138,17 @@ def run_grounding_check(args: argparse.Namespace) -> None:
                 "\n[yellow]No verifiable claims were extracted from the answer.[/yellow]"
             )
 
-    except ImportError as e:
-        console.print(f"[bold red]Error[/bold red]: {e}")
+    except ImportError as exc:
+        if exc.name not in {
+            "cortex",
+            "cortex.safety",
+            "cortex.safety.grounding",
+        }:
+            raise
+        console.print(f"[bold red]Error[/bold red]: {exc}")
         console.print("Please ensure all necessary backend dependencies are installed.")
         sys.exit(1)
-    except Exception as e:
-        console.print(f"[bold red]An unexpected error occurred[/bold red]: {e}")
+    except Exception:
+        logger.exception("Grounding check failed.")
+        console.print("[bold red]An unexpected error occurred[/bold red].")
         sys.exit(1)

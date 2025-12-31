@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SearchResultItem(BaseModel):
@@ -18,7 +18,7 @@ class SearchResultItem(BaseModel):
     Blueprint §8.4 (adapted for Conversation schema):
     * chunk_id: Optional[UUID]
     * score: float
-    * conversation_id: str (was thread_id)
+    * conversation_id: Optional[str] (was thread_id)
     * attachment_id: Optional[UUID]
     * highlights: list[str]
     * snippet: str
@@ -49,14 +49,24 @@ class SearchResultItem(BaseModel):
 
     def __repr__(self) -> str:
         """Build a string representation with redacted content for secure logging."""
-        fields = self.model_dump()
-        # Redact sensitive fields
-        if "content" in fields:
-            fields["content"] = "[REDACTED]"
-        if "snippet" in fields:
-            fields["snippet"] = "[REDACTED]"
-
-        # Create a string of key-value pairs
+        fields = {
+            "chunk_id": self.chunk_id,
+            "score": self.score,
+            "conversation_id": self.conversation_id,
+            "attachment_id": self.attachment_id,
+            "is_attachment": self.is_attachment,
+            "highlights_count": len(self.highlights),
+            "snippet": "[REDACTED]" if self.snippet else "",
+            "content": "[REDACTED]" if self.content else None,
+            "source": self.source,
+            "filename": self.filename,
+            "metadata_keys": len(self.metadata) if self.metadata else 0,
+            "lexical_score": self.lexical_score,
+            "vector_score": self.vector_score,
+            "fusion_score": self.fusion_score,
+            "rerank_score": self.rerank_score,
+            "content_hash": self.content_hash,
+        }
         field_strings = [f"{key}={value!r}" for key, value in fields.items()]
         return f"SearchResultItem({', '.join(field_strings)})"
 
@@ -78,11 +88,11 @@ class SearchResultItem(BaseModel):
         return cls(
             chunk_id=getattr(res, "chunk_id", None),
             score=getattr(res, "score", 0.0),
-            conversation_id=getattr(res, "conversation_id", ""),
+            conversation_id=getattr(res, "conversation_id", None),
             snippet=getattr(res, "snippet", ""),
             content=getattr(res, "text", getattr(res, "content", None)),
             metadata=getattr(res, "metadata", {}),
-            lexical_score=getattr(res, "lexical_score", 0.0),
+            lexical_score=getattr(res, "lexical_score", None),
         )
 
 
@@ -97,7 +107,15 @@ class SearchResults(BaseModel):
     * results: list[SearchResultItem]
     """
 
-    type: Literal["search_results"] = "search_results"
+    model_config = ConfigDict(populate_by_name=True)
+
+    result_type: Literal["search_results"] = Field(
+        default="search_results", alias="type"
+    )
     query: str
     reranker: str | None = None
     results: list[SearchResultItem]
+
+    @property
+    def type(self) -> str:
+        return self.result_type

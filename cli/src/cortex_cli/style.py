@@ -15,7 +15,7 @@ COLORS = {
 }
 
 
-def colorize(text: str, color: str) -> str:
+def colorize(text: str | None, color: str) -> str:
     """Apply ANSI color to text if terminal supports it."""
     # Null-safety: normalize None to empty string
     if text is None:

@@ -13,6 +13,19 @@ from cortex.llm.runtime import LLMRuntime
 
 # Constants
 CHARS_PER_TOKEN_ESTIMATE = 4
+PROMPT_TEMPLATE = (
+    "You are an expert AI assistant analyzing an email conversation thread.\n"
+    "Generate a comprehensive summary of the following conversation.\n"
+    "Focus on:\n"
+    "1. The main topic or request.\n"
+    "2. Key decisions made.\n"
+    "3. Action items or next steps.\n"
+    "4. Important entities (people, dates, project names).\n\n"
+    "Conversation:\n"
+    "{conversation}\n\n"
+    "Summary:"
+)
+PROMPT_OVERHEAD_CHARS = len(PROMPT_TEMPLATE.format(conversation=""))
 
 
 logger = logging.getLogger(__name__)
@@ -37,36 +50,28 @@ class ConversationSummarizer:
         if not text or not text.strip():
             return ""
 
-        # Truncate naive token estimation (4 chars/token approx)
-        max_chars = self.MAX_CONTEXT_TOKENS * 4
+        # Truncate naive token estimation while reserving prompt overhead.
+        max_chars = (
+            self.MAX_CONTEXT_TOKENS * CHARS_PER_TOKEN_ESTIMATE - PROMPT_OVERHEAD_CHARS
+        )
+        max_chars = max(max_chars, 0)
         if len(text) > max_chars:
             # P0 Fix: Just slice, don't pretend it's token-aware yet.
             # Ideally use Tiktoken, but for now just prevent OOM/Context overflow
             text = text[:max_chars]
 
-        prompt = (
-            "You are an expert AI assistant analyzing an email conversation thread.\n"
-            "Generate a comprehensive summary of the following conversation.\n"
-            "Focus on:\n"
-            "1. The main topic or request.\n"
-            "2. Key decisions made.\n"
-            "3. Action items or next steps.\n"
-            "4. Important entities (people, dates, project names).\n\n"
-            "Conversation:\n"
-            f"{text}\n\n"
-            "Summary:"
-        )
+        prompt = PROMPT_TEMPLATE.format(conversation=text)
 
         try:
             # Temperature 0.2 is low-creativity, stable for summaries (not strictly deterministic but close)
             result = self.llm.complete_text(prompt, temperature=0.2)
             return result or ""  # P2 Fix: Guard against None return
-        except Exception as e:
-            logger.error(f"Summary generation failed: {e}")
+        except Exception:
+            logger.exception("Summary generation failed")
             return ""
 
-    def embed_summary(self, summary: str) -> list[float]:
-        """Embed the summary text."""
+    def embed_summary(self, summary: str) -> list[float] | None:
+        """Embed the summary text; returns None on embedding failure."""
         if not summary:
             return []
         try:
@@ -75,6 +80,6 @@ class ConversationSummarizer:
                 first_embedding = embeddings[0]
                 # Ensure elements are native Python floats, not numpy floats
                 return [float(x) for x in first_embedding]
-        except Exception as e:
-            logger.error("Summary embedding failed: %s", e)
-        return []
+        except Exception:
+            logger.exception("Summary embedding failed")
+        return None

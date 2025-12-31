@@ -1,21 +1,19 @@
-"""
-from __future__ import annotations
+"""Draft command for Cortex CLI."""
 
-Draft command for Cortex CLI.
-"""
+from __future__ import annotations
 
 import argparse
 import os
 import uuid
+from typing import Any
 
 import httpx
 from rich.console import Console
+from rich.markup import escape
 from rich.syntax import Syntax
 
 
-def setup_draft_parser(
-    parser: argparse._SubParsersAction,
-) -> None:
+def setup_draft_parser(parser: Any) -> None:
     """
     Setup the parser for the 'draft' command.
     """
@@ -33,17 +31,18 @@ def run_draft_command(args: argparse.Namespace) -> None:
     """
     console = Console()
 
-    api_url = os.getenv("CORTEX_API_URL", "http://localhost:8000")
-    if not api_url:
-        console.print("[red]CORTEX_API_URL environment variable not set.[/red]")
-        return
+    api_url = os.getenv("CORTEX_API_URL") or "http://localhost:8000"
+    instruction = getattr(args, "instruction", None)
+    if not instruction:
+        console.print("[red]Draft instruction is required.[/red]")
+        raise SystemExit(1)
 
     try:
         data = {
-            "instruction": args.instruction,
-            "thread_id": args.thread_id,
-            "reply_to_message_id": args.reply_to_message_id,
-            "tone": args.tone,
+            "instruction": instruction,
+            "thread_id": getattr(args, "thread_id", None),
+            "reply_to_message_id": getattr(args, "reply_to_message_id", None),
+            "tone": getattr(args, "tone", "professional"),
         }
 
         with httpx.Client(base_url=api_url, timeout=60.0) as client:
@@ -54,14 +53,31 @@ def run_draft_command(args: argparse.Namespace) -> None:
             res = client.post("/api/v1/draft-email", json=data, headers=headers)
             res.raise_for_status()
 
-            response_data = res.json()
-            draft_content = response_data.get("draft", {}).get(
-                "draft", "No draft generated."
-            )
+            try:
+                response_data = res.json()
+            except ValueError:
+                console.print("[red]Invalid JSON response from server.[/red]")
+                raise SystemExit(1)
+            if not isinstance(response_data, dict):
+                console.print("[red]Unexpected response format from server.[/red]")
+                raise SystemExit(1)
+
+            draft_content = "No draft generated."
+            draft_payload = response_data.get("draft")
+            if isinstance(draft_payload, dict):
+                draft_content = (
+                    draft_payload.get("body_markdown")
+                    or draft_payload.get("draft")
+                    or draft_content
+                )
+            elif isinstance(draft_payload, str):
+                draft_content = draft_payload
 
             console.print("\n[bold]Drafted Email:[/bold]")
-            syntax = Syntax(draft_content, "markdown", theme="default", word_wrap=True)
-            console.print(syntax)
+            draft_syntax = Syntax(
+                draft_content, "markdown", theme="default", word_wrap=True
+            )
+            console.print(draft_syntax)
 
             console.print(
                 f"\n[dim]Correlation ID: {response_data.get('correlation_id')}[/dim]"
@@ -71,8 +87,12 @@ def run_draft_command(args: argparse.Namespace) -> None:
             )
 
     except httpx.HTTPStatusError as e:
-        console.print(f"[red]Error: {e.response.status_code} - {e.response.text}[/red]")
+        message = escape(e.response.text) if e.response.text else "Request failed."
+        console.print(f"[red]Error: {e.response.status_code} - {message}[/red]")
+        raise SystemExit(1)
     except httpx.RequestError as e:
         console.print(f"[red]Request failed: {e}[/red]")
+        raise SystemExit(1)
     except Exception as e:
         console.print(f"[red]An unexpected error occurred: {e}[/red]")
+        raise SystemExit(1)

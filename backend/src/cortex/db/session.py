@@ -6,7 +6,9 @@ Implements §4.2 and §11.1 of the Canonical Blueprint.
 
 from __future__ import annotations
 
+import hashlib
 import logging
+import re
 import time
 from collections.abc import Callable, Generator
 from contextlib import contextmanager
@@ -16,10 +18,12 @@ from cortex.common.exceptions import TransactionError
 from cortex.config.loader import get_config
 from cortex.observability import trace_operation
 from sqlalchemy import create_engine, event, text
+from sqlalchemy.engine.url import make_url
 from sqlalchemy.orm import Session, sessionmaker
 
 # Constants
 SLOW_QUERY_THRESHOLD_SECONDS = 1.0
+HASH_PREFIX_LEN = 8
 
 
 logger = logging.getLogger(__name__)
@@ -27,6 +31,10 @@ logger = logging.getLogger(__name__)
 # Security hardening: avoid logging or propagating raw exception messages
 # which may reveal sensitive information. We attach a filter to this module's
 # logger that redacts exception messages from log output originating here.
+
+
+class SafeDatabaseError(RuntimeError):
+    pass
 
 
 class _RedactingExceptionFilter(logging.Filter):
@@ -37,9 +45,15 @@ class _RedactingExceptionFilter(logging.Filter):
             # Replace the exception value with a new instance with no args/message.
             try:
                 sanitized_exc = exc_type()
+                sanitized_type = exc_type
             except Exception:
-                sanitized_exc = exc_type  # fallback; logging will print type only
-            record.exc_info = (exc_type, sanitized_exc, tb)  # type: ignore[assignment]
+                sanitized_exc = SafeDatabaseError()
+                sanitized_type = SafeDatabaseError
+            record.exc_info = (
+                sanitized_type,
+                sanitized_exc,
+                tb,
+            )  # type: ignore[assignment]
         # Scrub any exception instances passed as formatting args.
         if record.args:
             try:
@@ -65,10 +79,6 @@ if not any(isinstance(f, _RedactingExceptionFilter) for f in logger.filters):
     logger.addFilter(_RedactingExceptionFilter())
 
 
-class SafeDatabaseError(RuntimeError):
-    pass
-
-
 def raise_sanitized(
     error_message: str = "Database operation failed",
     *,
@@ -79,17 +89,43 @@ def raise_sanitized(
     raise SafeDatabaseError(error_message) from cause
 
 
-_config = get_config()
+def _hash_text(value: str) -> str:
+    digest = hashlib.sha256(value.encode("utf-8")).hexdigest()
+    return digest[:HASH_PREFIX_LEN]
 
+
+def _load_config():
+    try:
+        return get_config()
+    except Exception as exc:
+        logger.error("Database configuration unavailable", exc_info=True)
+        raise SafeDatabaseError("Database configuration unavailable") from exc
+
+
+_config = _load_config()
+_db_config = getattr(_config, "database", None)
+if _db_config is None:
+    raise SafeDatabaseError("Database configuration unavailable")
+
+_db_url = getattr(_db_config, "url", None)
+if not _db_url:
+    raise SafeDatabaseError("Database configuration missing database.url")
+
+_db_url_value = str(_db_url)
 engine_args = {
     "pool_pre_ping": True,
 }
-if "sqlite" not in _config.database.url:
-    engine_args["pool_size"] = _config.database.pool_size
-    engine_args["max_overflow"] = _config.database.max_overflow
+db_backend = make_url(_db_url_value).get_backend_name()
+if db_backend != "sqlite":
+    pool_size = getattr(_db_config, "pool_size", None)
+    max_overflow = getattr(_db_config, "max_overflow", None)
+    if pool_size is not None:
+        engine_args["pool_size"] = pool_size
+    if max_overflow is not None:
+        engine_args["max_overflow"] = max_overflow
 
 engine = create_engine(
-    _config.database.url,
+    _db_url_value,
     **engine_args,
 )
 
@@ -140,15 +176,15 @@ def get_db_session(tenant_id: str | None = None) -> Generator[Session, None, Non
         # Rollback on any error
         try:
             session.rollback()
-        except Exception as rollback_error:
-            logger.error(f"Rollback failed: {rollback_error}")
+        except Exception:
+            logger.error("Rollback failed", exc_info=True)
 
         # Wrap in TransactionError for non-CortexErrors
         if not isinstance(e, TransactionError):
             raise TransactionError(
-                message=f"Database transaction failed: {e}",
+                message="Database transaction failed",
                 error_code="TRANSACTION_FAILED",
-                context={"original_error": str(e)},
+                context={"operation": "get_db_session"},
             ) from e
         raise
 
@@ -171,8 +207,6 @@ def set_session_tenant(session: Session, tenant_id: str) -> None:
     Raises:
         TransactionError: If tenant_id is invalid
     """
-    import re
-
     if not tenant_id:
         raise TransactionError(
             message="tenant_id is required for RLS",
@@ -182,20 +216,21 @@ def set_session_tenant(session: Session, tenant_id: str) -> None:
     # Validate tenant_id format to prevent SQL injection
     if not re.match(r"^[a-zA-Z0-9_-]+$", tenant_id):
         raise TransactionError(
-            message=f"Invalid tenant_id format: {tenant_id}",
+            message="Invalid tenant_id format",
             error_code="RLS_TENANT_INVALID",
+            context={"tenant_hash": _hash_text(tenant_id)},
         )
 
     try:
         session.execute(
             text("SET app.current_tenant = :tenant_id"), {"tenant_id": tenant_id}
         )
-        logger.debug(f"Set RLS tenant context: {tenant_id}")
+        logger.debug("Set RLS tenant context: %s", _hash_text(tenant_id))
     except Exception as e:
         raise TransactionError(
-            message=f"Failed to set RLS tenant: {e}",
+            message="Failed to set RLS tenant",
             error_code="RLS_SET_FAILED",
-            context={"tenant_id": tenant_id},
+            context={"tenant_hash": _hash_text(tenant_id)},
         ) from e
 
 
@@ -228,12 +263,12 @@ def execute_in_transaction(
     except Exception as e:
         try:
             session.rollback()
-        except Exception as rollback_error:
-            logger.error(f"Rollback failed: {rollback_error}")
+        except Exception:
+            logger.error("Rollback failed", exc_info=True)
 
         if not isinstance(e, TransactionError):
             raise TransactionError(
-                message=f"Transaction failed: {e}",
+                message="Transaction failed",
                 error_code="TRANSACTION_FAILED",
                 context={
                     "operation": (
@@ -252,7 +287,7 @@ def receive_before_cursor_execute(
     conn, cursor, statement, parameters, context, executemany
 ):
     """Log queries for debugging (can be extended for metrics)."""
-    conn.info.setdefault("query_start_time", []).append(time.time())
+    conn.info.setdefault("query_start_time", []).append(time.perf_counter())
 
 
 @event.listens_for(engine, "after_cursor_execute")
@@ -260,6 +295,28 @@ def receive_after_cursor_execute(
     conn, cursor, statement, parameters, context, executemany
 ):
     """Log slow queries for observability."""
-    total_time = time.time() - conn.info["query_start_time"].pop()
-    if total_time > 1.0:  # Log queries taking more than 1 second
-        logger.warning(f"Slow query ({total_time:.2f}s): {statement[:200]}...")
+    start_times = conn.info.get("query_start_time")
+    if not start_times:
+        return
+    start_time = start_times.pop()
+    total_time = time.perf_counter() - start_time
+    if total_time > SLOW_QUERY_THRESHOLD_SECONDS:
+        statement_text = statement or ""
+        statement_hash = _hash_text(str(statement_text))
+        logger.warning(
+            "Slow query (%.2fs) hash=%s length=%s",
+            total_time,
+            statement_hash,
+            len(statement_text),
+        )
+
+
+@event.listens_for(engine, "handle_error")
+def receive_handle_error(exception_context):
+    """Ensure query start times are cleaned up on DB errors."""
+    connection = getattr(exception_context, "connection", None)
+    if connection is None:
+        return
+    start_times = connection.info.get("query_start_time")
+    if start_times:
+        start_times.pop()

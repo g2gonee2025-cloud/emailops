@@ -17,6 +17,9 @@ from pydantic import (
     AnyHttpUrl,
     BaseModel,
     Field,
+    PostgresDsn,
+    RedisDsn,
+    SecretStr,
     field_validator,
     model_validator,
 )
@@ -42,23 +45,36 @@ def _env(key: str, default: Any, value_type: type = str) -> Any:
     env_key_legacy = f"EMAILOPS_{key}"
 
     value = os.getenv(env_key_new)
+    source_key = env_key_new if value is not None else None
     if value is None:
         value = os.getenv(env_key_legacy)
+        if value is not None:
+            source_key = env_key_legacy
     if value is None:
         value = os.getenv(key)
+        if value is not None:
+            source_key = key
 
     if value is None:
         return default
     try:
         if value_type is bool:
-            return str(value).lower() in ("true", "1", "yes", "on")
+            normalized = str(value).strip().lower()
+            if normalized in ("true", "1", "yes", "on"):
+                return True
+            if normalized in ("false", "0", "no", "off"):
+                return False
+            raise ValueError("Invalid boolean value")
         if value_type is int:
             return int(value)
         if value_type is float:
             return float(value)
         return value
-    except (ValueError, TypeError):
-        return default
+    except (ValueError, TypeError) as exc:
+        key_name = source_key or key
+        raise ValueError(
+            f"Invalid value for {key_name}; expected {value_type.__name__}."
+        ) from exc
 
 
 def _env_list(key: str, default: str = "") -> list[str]:
@@ -69,15 +85,24 @@ def _env_list(key: str, default: str = "") -> list[str]:
     return [part.strip() for part in str(raw).split(",") if part.strip()]
 
 
-def env_default(*args: Any, **kwargs: Any) -> Any:
-    """
-    Helper to create a zero-argument default_factory that defers to _env.
-    Usage:
-        Field(default_factory=env_default("ENV_VAR", default="value"))
-    """
-    from functools import partial as _partial
+_LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1"}
 
-    return _partial(_env, *args, **kwargs)
+
+def _is_local_host(host: str | None) -> bool:
+    if not host:
+        return False
+    if host in _LOCAL_HOSTS:
+        return True
+    try:
+        return ip_address(host).is_loopback
+    except ValueError:
+        return False
+
+
+def _unwrap_secret(value: SecretStr | str | None) -> str | None:
+    if isinstance(value, SecretStr):
+        return value.get_secret_value()
+    return value
 
 
 # -----------------------------------------------------------------------------
@@ -116,16 +141,16 @@ class DirectoryConfig(BaseModel):
 class StorageConfig(BaseModel):
     """Object storage configuration (DigitalOcean Spaces / S3)."""
 
-    endpoint_url: str = Field(
+    endpoint_url: AnyHttpUrl = Field(
         default_factory=lambda: _env(
             "S3_ENDPOINT", "https://nyc3.digitaloceanspaces.com"
         ),
         description="S3-compatible endpoint URL",
     )
-    access_key: str | None = Field(
+    access_key: SecretStr | None = Field(
         default_factory=lambda: _env("S3_ACCESS_KEY", None), description="S3 access key"
     )
-    secret_key: str | None = Field(
+    secret_key: SecretStr | None = Field(
         default_factory=lambda: _env("S3_SECRET_KEY", None), description="S3 secret key"
     )
     bucket_raw: str = Field(
@@ -135,6 +160,19 @@ class StorageConfig(BaseModel):
     region: str = Field(
         default_factory=lambda: _env("S3_REGION", "nyc3"), description="S3 region"
     )
+
+    @model_validator(mode="after")
+    def validate_credentials(self) -> StorageConfig:
+        """Require access/secret keys for non-local endpoints."""
+        access_key = _unwrap_secret(self.access_key)
+        secret_key = _unwrap_secret(self.secret_key)
+        if _is_local_host(self.endpoint_url.host):
+            return self
+        if access_key and secret_key:
+            return self
+        if os.getenv("AWS_ACCESS_KEY_ID") and os.getenv("AWS_SECRET_ACCESS_KEY"):
+            return self
+        raise ValueError("S3 access_key and secret_key are required.")
 
     model_config = {"extra": "forbid"}
 
@@ -147,8 +185,8 @@ class StorageConfig(BaseModel):
 class CoreConfig(BaseModel):
     """Core application configuration."""
 
-    env: Literal["dev", "staging", "prod", "production"] = Field(
-        default_factory=lambda: _env("ENV", "production"),
+    env: Literal["dev", "staging", "prod"] = Field(
+        default_factory=lambda: _env("ENV", "prod"),
         description="Environment name",
     )
     tenant_mode: Literal["single", "multi"] = Field(
@@ -164,6 +202,13 @@ class CoreConfig(BaseModel):
         description="Default LLM/embedding provider",
     )
 
+    @field_validator("env", mode="before")
+    def normalize_env(cls, value: str) -> str:
+        normalized = str(value).strip().lower()
+        if normalized == "production":
+            return "prod"
+        return normalized
+
     model_config = {"extra": "forbid"}
 
 
@@ -175,8 +220,8 @@ class CoreConfig(BaseModel):
 class DatabaseConfig(BaseModel):
     """Database connection configuration."""
 
-    url: str = Field(
-        default_factory=lambda: _env("DB_URL", ""),
+    url: PostgresDsn | None = Field(
+        default_factory=lambda: _env("DB_URL", None),
         description="Database connection URL (required - set via OUTLOOKCORTEX_DB_URL or DB_URL env var)",
     )
     pool_size: int = Field(
@@ -201,6 +246,8 @@ class DatabaseConfig(BaseModel):
             )
         return self
 
+    model_config = {"extra": "forbid"}
+
 
 # -----------------------------------------------------------------------------
 # Redis Configuration
@@ -210,7 +257,7 @@ class DatabaseConfig(BaseModel):
 class RedisConfig(BaseModel):
     """Redis connection configuration."""
 
-    url: str = Field(
+    url: RedisDsn = Field(
         default_factory=lambda: _env("REDIS_URL", "redis://localhost:6379"),
         description="Redis connection URL",
     )
@@ -222,7 +269,7 @@ class RedisConfig(BaseModel):
         default_factory=lambda: _env("REDIS_PORT", 6379, int),
         description="Redis port",
     )
-    password: str | None = Field(
+    password: SecretStr | None = Field(
         default_factory=lambda: _env("REDIS_PASSWORD", None),
         description="Redis password",
     )
@@ -230,6 +277,17 @@ class RedisConfig(BaseModel):
         default_factory=lambda: _env("REDIS_SSL", False, bool),
         description="Use SSL for Redis connection",
     )
+
+    @model_validator(mode="after")
+    def validate_password(self) -> RedisConfig:
+        """Require a password for non-local Redis endpoints."""
+        if _is_local_host(self.url.host):
+            return self
+        url_password = self.url.password
+        password_value = _unwrap_secret(self.password)
+        if url_password or password_value:
+            return self
+        raise ValueError("Redis password is required for non-local endpoints.")
 
     model_config = {"extra": "forbid"}
 
@@ -267,14 +325,12 @@ class ProcessingConfig(BaseModel):
         description="Number of parallel workers for GPU saturation",
     )
 
-    @field_validator("chunk_overlap")
-    @classmethod
-    def overlap_less_than_size(cls, v: int, info: Any) -> int:
+    @model_validator(mode="after")
+    def validate_overlap(self) -> ProcessingConfig:
         """Ensure overlap is less than chunk size."""
-        chunk_size = info.data.get("chunk_size", 1600)
-        if v >= chunk_size:
+        if self.chunk_overlap >= self.chunk_size:
             raise ValueError("chunk_overlap must be less than chunk_size")
-        return v
+        return self
 
     model_config = {"extra": "forbid"}
 
@@ -354,7 +410,7 @@ class EmbeddingConfig(BaseModel):
 class DigitalOceanScalerConfig(BaseModel):
     """Scaling controls for DigitalOcean Kubernetes GPU pools."""
 
-    token: str | None = Field(
+    token: SecretStr | None = Field(
         default_factory=lambda: _env("DO_TOKEN", os.getenv("DIGITALOCEAN_TOKEN")),
         description="DigitalOcean API token (falls back to DIGITALOCEAN_TOKEN)",
     )
@@ -460,6 +516,27 @@ class DigitalOceanScalerConfig(BaseModel):
         except (socket.gaierror, ValueError) as e:
             raise ValueError(f"URL validation failed: {e}") from e
         return v
+
+    @model_validator(mode="after")
+    def validate_scaler_bounds(self) -> DigitalOceanScalerConfig:
+        if self.min_nodes > self.max_nodes:
+            raise ValueError("min_nodes must be less than or equal to max_nodes")
+        if self.dry_run:
+            return self
+        token_value = _unwrap_secret(self.token)
+        if token_value:
+            return self
+        if any(
+            [
+                self.cluster_id,
+                self.cluster_name,
+                self.node_pool_id,
+                self.region,
+                self.gpu_node_size,
+            ]
+        ):
+            raise ValueError("DigitalOcean API token is required.")
+        return self
 
     model_config = {"extra": "forbid"}
 

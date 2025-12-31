@@ -6,18 +6,21 @@ Provides a stable interface for embedding operations.
 
 from __future__ import annotations
 
+import logging
 import threading
 from typing import cast
 
 import numpy as np
 from cortex.llm.client import embed_texts as _embed_texts
 
+logger = logging.getLogger(__name__)
+
 
 class EmbeddingsClient:
     """
     Client for generating text embeddings.
 
-    NOTE: This is a singleton. Use get_embeddings_client() to get the instance.
+    Use get_embeddings_client() for the shared instance.
     """
 
     def embed(self, text: str) -> list[float]:
@@ -37,9 +40,17 @@ class EmbeddingsClient:
         if not texts:
             return []
 
+        normalized_texts: list[str] = []
+        for text in texts:
+            if isinstance(text, str):
+                normalized_texts.append(text)
+            else:
+                logger.warning("Skipping non-string text for embedding: %s", type(text))
+                normalized_texts.append("")
+
         # Identify non-empty texts to be embedded while keeping their original indices
         indices_and_texts_to_embed = [
-            (i, t) for i, t in enumerate(texts) if t and t.strip()
+            (i, t) for i, t in enumerate(normalized_texts) if t and t.strip()
         ]
 
         if not indices_and_texts_to_embed:
@@ -49,20 +60,35 @@ class EmbeddingsClient:
         indices, texts_to_embed = zip(*indices_and_texts_to_embed)
 
         # Note: LLM runtime handles resilience (retry, circuit breaker)
-        embeddings_array = _embed_texts(list(texts_to_embed))
+        try:
+            embeddings_array = _embed_texts(list(texts_to_embed))
+        except Exception:
+            logger.exception("Embedding generation failed")
+            return [[] for _ in texts]
 
         # Initialize a result list with placeholders for all original texts
-        results: list[list[float]] = [[] for _ in texts]
+        results = [[] for _ in texts]
 
-        # If embedding fails or returns unexpected shape, return list of empty lists
-        if (
-            embeddings_array is None
-            or embeddings_array.size == 0
-            or len(embeddings_array) != len(texts_to_embed)
-        ):
+        if embeddings_array is None:
             return results
 
-        embedded_vectors = cast(list[list[float]], embeddings_array.tolist())
+        embedded_vectors: list[list[float]] | None = None
+        if isinstance(embeddings_array, np.ndarray):
+            if embeddings_array.size == 0:
+                return results
+            if embeddings_array.ndim == 1:
+                embedded_vectors = [embeddings_array.tolist()]
+            else:
+                embedded_vectors = cast(list[list[float]], embeddings_array.tolist())
+        else:
+            embedded_vectors = list(embeddings_array)
+            if embedded_vectors and all(
+                isinstance(v, (int, float)) for v in embedded_vectors
+            ):
+                embedded_vectors = [cast(list[float], embedded_vectors)]
+
+        if embedded_vectors is None or len(embedded_vectors) != len(texts_to_embed):
+            return results
 
         # Place the generated embeddings back into the correct positions
         for i, embedding in zip(indices, embedded_vectors):

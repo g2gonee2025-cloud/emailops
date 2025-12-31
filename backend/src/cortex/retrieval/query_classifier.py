@@ -14,7 +14,7 @@ from __future__ import annotations
 import logging
 import re
 from functools import lru_cache
-from typing import Literal
+from typing import Any, Literal, Optional
 
 from cortex.observability import trace_operation
 from pydantic import BaseModel, Field
@@ -26,10 +26,11 @@ class QueryClassification(BaseModel):
     """
     Query classification result.
 
-    Blueprint §8.1:
+    Blueprint §8.2:
     * query: str - the original query
     * type: navigational | semantic | drafting
-    * flags: list of additional flags (followup, requires_grounding_check, time_sensitive)
+    * flags: list of additional flags (followup, requires_grounding_check,
+      time_sensitive)
     """
 
     query: str = Field(..., description="The original query")
@@ -38,15 +39,10 @@ class QueryClassification(BaseModel):
     )
     flags: list[str] = Field(
         default_factory=list,
-        description="Additional flags: followup, requires_grounding_check, time_sensitive",
+        description=(
+            "Additional flags: followup, requires_grounding_check, time_sensitive"
+        ),
     )
-
-
-class QueryClassificationInput(BaseModel):
-    """Input payload for tool_classify_query."""
-
-    query: str
-    use_llm: bool = False
 
 
 # -----------------------------------------------------------------------------
@@ -77,7 +73,8 @@ NAVIGATIONAL_PATTERNS = [
 
 # Patterns indicating drafting requests
 DRAFTING_PATTERNS = [
-    r"\b(?:draft|write|compose|create|prepare)\s+(?:a|an)?\s*(?:email|reply|response|message)",
+    r"\b(?:draft|write|compose|create|prepare)\s+(?:a|an)?\s*(?:email|"
+    r"reply|response|message)",
     r"\breply to\b",
     r"\brespond to\b",
     r"\bsend\s+(?:a|an)\s+(?:email|message)",
@@ -90,7 +87,8 @@ TIME_SENSITIVE_PATTERNS = [
     r"\basap\b",
     r"\bimmediately\b",
     r"\bdeadline\b",
-    r"\bby\s+(?:today|tomorrow|monday|tuesday|wednesday|thursday|friday|end of day|eod|cob)",
+    r"\bby\s+(?:today|tomorrow|monday|tuesday|wednesday|thursday|friday|"
+    r"end of day|eod|cob)",
 ]
 
 # Patterns indicating follow-up context
@@ -123,6 +121,14 @@ _GROUNDING_CHECK_PATTERNS = [
 ]
 
 
+def _normalize_query(query: str | None) -> str:
+    if query is None:
+        return ""
+    if not isinstance(query, str):
+        query = str(query)
+    return query.strip()
+
+
 def _match_any_pattern(text: str, patterns: list[re.Pattern]) -> bool:
     """Check if text matches any of the given compiled patterns."""
     for pattern in patterns:
@@ -145,7 +151,9 @@ def classify_query_fast(query: str) -> QueryClassification:
     Returns:
         QueryClassification with type and flags
     """
-    query = query.strip()
+    query = _normalize_query(query)
+    if not query:
+        return QueryClassification(query="", type="semantic", flags=[])
     flags: list[str] = []
 
     # Detect flags first
@@ -181,11 +189,14 @@ def classify_query_llm(query: str) -> QueryClassification:
     Uses the LLM to understand query intent when patterns are insufficient.
 
     Args:
-        args: QueryClassificationInput carrying the user's query and related options
+        query: The user's query string
 
     Returns:
         QueryClassification with type and flags
     """
+    query_text = _normalize_query(query)
+    if not query_text:
+        return QueryClassification(query="", type="semantic", flags=[])
     try:
         from cortex.common.exceptions import (
             CircuitBreakerOpenError,
@@ -193,41 +204,44 @@ def classify_query_llm(query: str) -> QueryClassification:
             ProviderError,
             RateLimitError,
         )
-        from cortex.llm.client import complete_json
+        from cortex.llm.client import complete_messages
         from cortex.prompts import (
             SYSTEM_QUERY_CLASSIFY,
             USER_QUERY_CLASSIFY,
             construct_prompt_messages,
         )
+        from cortex.safety.guardrails_client import validate_with_repair
         from cortex.security.defenses import sanitize_user_input
 
         messages = construct_prompt_messages(
             system_prompt_template=SYSTEM_QUERY_CLASSIFY,
             user_prompt_template=USER_QUERY_CLASSIFY,
-            query=sanitize_user_input(query),
+            query=sanitize_user_input(query_text),
         )
 
-        # Reconstruct prompt for the deprecated `complete_json` function.
-        system_content = messages[0]["content"]
-        user_content = messages[1]["content"]
-        reconstructed_prompt = f"{system_content}\n\n{user_content}"
-
-        schema = QueryClassification.model_json_schema()
-        result = complete_json(reconstructed_prompt, schema)
-
-        return QueryClassification(**result)
+        raw_output = complete_messages(
+            messages,
+            temperature=0.0,
+            max_tokens=512,
+            response_format={"type": "json_object"},
+        )
+        return validate_with_repair(
+            raw_output,
+            QueryClassification,
+            correlation_id="query_classifier",
+        )
 
     except (
         ProviderError,
         RateLimitError,
         CircuitBreakerOpenError,
         LLMOutputSchemaError,
-    ) as e:
-        logger.warning(f"LLM classification failed: {e}. Using fast fallback.")
-        return classify_query_fast(query)
-    except Exception as e:
-        logger.error(f"Unexpected error during LLM classification: {e}", exc_info=True)
-        return classify_query_fast(query)
+    ):
+        logger.warning("LLM classification failed; using fast fallback.")
+        return classify_query_fast(query_text)
+    except Exception:
+        logger.exception("Unexpected error during LLM classification")
+        return classify_query_fast(query_text)
 
 
 # -----------------------------------------------------------------------------
@@ -235,9 +249,21 @@ def classify_query_llm(query: str) -> QueryClassification:
 # -----------------------------------------------------------------------------
 
 
-@trace_operation("tool_classify_query")
 @lru_cache(maxsize=128)
-def tool_classify_query(query: str, use_llm: bool = False) -> QueryClassification:
+@trace_operation("tool_classify_query")
+def _tool_classify_query_cached(query: str, use_llm: bool) -> dict[str, Any]:
+    if not query:
+        classification = QueryClassification(query="", type="semantic", flags=[])
+    elif use_llm:
+        classification = classify_query_llm(query)
+    else:
+        classification = classify_query_fast(query)
+    return classification.model_dump()
+
+
+def tool_classify_query(
+    query: str | None, use_llm: bool = False
+) -> QueryClassification:
     """
     Classify a user query for routing to appropriate retrieval strategy.
 
@@ -254,15 +280,10 @@ def tool_classify_query(query: str, use_llm: bool = False) -> QueryClassificatio
     Returns:
         QueryClassification with type and flags
     """
-    query = query.strip()
+    normalized_query = _normalize_query(query)
 
-    if not query:
-        return QueryClassification(query=query or "", type="semantic", flags=[])
-
-    if use_llm:
-        return classify_query_llm(query)
-
-    return classify_query_fast(query)
+    cached = _tool_classify_query_cached(normalized_query, bool(use_llm))
+    return QueryClassification.model_validate(cached)
 
 
 # -----------------------------------------------------------------------------

@@ -64,7 +64,7 @@ def _build_entity_match(node: EntityNode, *, similarity: float) -> EntityMatch:
     name = node.name or ""
     if not isinstance(name, str):
         name = str(name)
-    entity_type = node.type or "UNKNOWN"
+    entity_type = node.entity_type or "UNKNOWN"
     if not isinstance(entity_type, str):
         entity_type = str(entity_type)
     return EntityMatch(

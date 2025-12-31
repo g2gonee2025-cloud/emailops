@@ -7,18 +7,18 @@ Implements §10 of the Canonical Blueprint - data models for orchestration.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Literal
+from typing import Any, ClassVar, Literal
 from uuid import UUID
 
 from cortex.common.models import SecureBaseModel
 from cortex.domain_models.facts_ledger import FactsLedger, ParticipantAnalysis
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ThreadParticipant(SecureBaseModel):
     """Participant in an email thread."""
 
-    _PII_FIELDS: set[str] = {"email", "name"}
+    _PII_FIELDS: ClassVar[set[str]] = {"email", "name"}
 
     email: str
     name: str | None = None
@@ -28,7 +28,7 @@ class ThreadParticipant(SecureBaseModel):
 class ThreadMessage(SecureBaseModel):
     """Single message in a thread."""
 
-    _PII_FIELDS: set[str] = {
+    _PII_FIELDS: ClassVar[set[str]] = {
         "from_addr",
         "to_addrs",
         "cc_addrs",
@@ -59,7 +59,7 @@ class ThreadContext(SecureBaseModel):
 class EvidenceItem(SecureBaseModel):
     """Evidence item from retrieval results."""
 
-    _PII_FIELDS: set[str] = {"text"}
+    _PII_FIELDS: ClassVar[set[str]] = {"text"}
 
     chunk_id: str
     text: str = ""
@@ -67,7 +67,7 @@ class EvidenceItem(SecureBaseModel):
     source_type: Literal["email", "attachment", "other"] = "email"
 
 
-class RetrievalDiagnostics(BaseModel):
+class RetrievalDiagnostics(SecureBaseModel):
     """Diagnostics for retrieval results."""
 
     lexical_score: float = 0.0
@@ -79,7 +79,7 @@ class RetrievalDiagnostics(BaseModel):
 class Answer(SecureBaseModel):
     """Generated answer with evidence."""
 
-    _PII_FIELDS: set[str] = {"query", "answer_markdown"}
+    _PII_FIELDS: ClassVar[set[str]] = {"query", "answer_markdown"}
 
     query: str
     answer_markdown: str = ""
@@ -89,7 +89,7 @@ class Answer(SecureBaseModel):
     retrieval_diagnostics: list[RetrievalDiagnostics] = Field(default_factory=list)
 
 
-class ToneStyle(BaseModel):
+class ToneStyle(SecureBaseModel):
     """Tone and style configuration for emails."""
 
     persona_id: str = "default"
@@ -99,7 +99,7 @@ class ToneStyle(BaseModel):
 class DraftValidationScores(SecureBaseModel):
     """Validation scores for a draft."""
 
-    _PII_FIELDS: set[str] = {"feedback"}
+    _PII_FIELDS: ClassVar[set[str]] = {"feedback"}
 
     factuality: float = 0.0
     citation_coverage: float = 0.0
@@ -113,7 +113,16 @@ class DraftValidationScores(SecureBaseModel):
 class NextAction(SecureBaseModel):
     """Next action item extracted from email."""
 
-    _PII_FIELDS: set[str] = {"description", "owner"}
+    _PII_FIELDS: ClassVar[set[str]] = {"description", "owner"}
+
+
+class AttachmentRef(SecureBaseModel):
+    """Reference to an attachment for inclusion."""
+
+    _PII_FIELDS: ClassVar[set[str]] = {"path", "filename"}
+
+    path: str
+    filename: str
 
     description: str
     owner: str | None = None
@@ -123,7 +132,13 @@ class NextAction(SecureBaseModel):
 class EmailDraft(SecureBaseModel):
     """Generated email draft."""
 
-    _PII_FIELDS: set[str] = {"to", "cc", "subject", "body_markdown"}
+    _PII_FIELDS: ClassVar[set[str]] = {
+        "to",
+        "cc",
+        "subject",
+        "body_markdown",
+        "attachments",
+    }
 
     to: list[str] = Field(default_factory=list)
     cc: list[str] = Field(default_factory=list)
@@ -132,7 +147,7 @@ class EmailDraft(SecureBaseModel):
     tone_style: ToneStyle = Field(default_factory=ToneStyle)
     val_scores: DraftValidationScores = Field(default_factory=DraftValidationScores)
     next_actions: list[NextAction] = Field(default_factory=list)
-    attachments: list[dict[str, str]] = Field(
+    attachments: list[AttachmentRef] = Field(
         default_factory=list,
         description="List of attachments with 'path' and 'filename'",
     )
@@ -141,7 +156,7 @@ class EmailDraft(SecureBaseModel):
 class Issue(SecureBaseModel):
     """Critique issue of a draft email."""
 
-    _PII_FIELDS: set[str] = {"description"}
+    _PII_FIELDS: ClassVar[set[str]] = {"description"}
 
     description: str
     severity: str = "medium"
@@ -162,9 +177,18 @@ class DraftCritique(SecureBaseModel):
 class ThreadSummary(SecureBaseModel):
     """Summary of an email thread."""
 
-    _PII_FIELDS: set[str] = {"summary_markdown"}
+    model_config = ConfigDict(populate_by_name=True)
 
-    type: Literal["thread_summary"] = "thread_summary"
+    _PII_FIELDS: ClassVar[set[str]] = {
+        "summary_markdown",
+        "key_points",
+        "action_items",
+        "participants",
+    }
+
+    summary_type: Literal["thread_summary"] = Field(
+        default="thread_summary", alias="type"
+    )
     thread_id: UUID | None = None
     summary_markdown: str = ""
     facts_ledger: FactsLedger = Field(default_factory=FactsLedger)
@@ -172,3 +196,7 @@ class ThreadSummary(SecureBaseModel):
     key_points: list[str] = Field(default_factory=list)
     action_items: list[str] = Field(default_factory=list)
     participants: list[ParticipantAnalysis] = Field(default_factory=list)
+
+    @property
+    def type(self) -> str:
+        return self.summary_type

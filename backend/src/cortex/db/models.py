@@ -14,12 +14,14 @@ from typing import Any
 from pgvector.sqlalchemy import HALFVEC
 from sqlalchemy import (
     Boolean,
+    CheckConstraint,
     DateTime,
     ForeignKey,
     Index,
     Integer,
     String,
     Text,
+    UniqueConstraint,
     func,
 )
 from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR, UUID
@@ -89,7 +91,9 @@ class Conversation(Base):
     )
 
     __table_args__ = (
-        Index("ix_conversations_tenant_folder", "tenant_id", "folder_name"),
+        UniqueConstraint(
+            "tenant_id", "folder_name", name="uq_conversations_tenant_folder"
+        ),
         Index(
             "ix_conversations_participants_gin",
             "participants",
@@ -177,8 +181,8 @@ class Chunk(Base):
         String(32), nullable=False, default="message_body"
     )
     text: Mapped[str] = mapped_column(Text, nullable=False)
-    tsv_text: Mapped[Any | None] = mapped_column(TSVECTOR, nullable=True)
-    embedding = mapped_column(
+    tsv_text: Mapped[str | None] = mapped_column(TSVECTOR, nullable=True)
+    embedding: Mapped[list[float] | None] = mapped_column(
         HALFVEC(3840), nullable=True
     )  # pgvector, KaLM full dim (float16)
     position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
@@ -198,8 +202,21 @@ class Chunk(Base):
     attachment: Mapped[Attachment | None] = relationship(back_populates="chunks")
 
     __table_args__ = (
+        CheckConstraint(
+            "(is_attachment AND attachment_id IS NOT NULL) OR "
+            "(NOT is_attachment AND attachment_id IS NULL)",
+            name="chk_chunks_attachment_link",
+        ),
+        CheckConstraint(
+            "char_start >= 0 AND char_end >= 0 AND char_end >= char_start",
+            name="chk_chunks_char_range",
+        ),
         Index("ix_chunks_conversation", "conversation_id"),
-        Index("ix_chunks_is_attachment", "is_attachment"),
+        Index(
+            "ix_chunks_is_attachment",
+            "is_attachment",
+            postgresql_where=is_attachment.is_(True),
+        ),
         # FTS Index
         Index("ix_chunks_tsv_text", "tsv_text", postgresql_using="gin"),
         Index("ix_chunks_extra_data_gin", "extra_data", postgresql_using="gin"),
@@ -248,13 +265,13 @@ class EntityNode(Base):
     )
     tenant_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(512), nullable=False)
-    type: Mapped[str] = mapped_column(String(64), nullable=False)  # e.g., "PERSON"
+    entity_type: Mapped[str] = mapped_column(
+        "type", String(64), nullable=False
+    )  # e.g., "PERSON"
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     properties: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
     # Pre-computed PageRank for graph retrieval relevance scoring
-    pagerank: Mapped[float] = mapped_column(
-        "pagerank", nullable=False, server_default="0.0"
-    )
+    pagerank: Mapped[float] = mapped_column(nullable=False, server_default="0.0")
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
@@ -271,13 +288,13 @@ class EntityNode(Base):
         "EntityEdge",
         foreign_keys="[EntityEdge.source_id]",
         back_populates="source_node",
-        cascade=CASCADE_DELETE_ORPHAN,
+        cascade="all, delete",
     )
     incoming_edges: Mapped[list[EntityEdge]] = relationship(
         "EntityEdge",
         foreign_keys="[EntityEdge.target_id]",
         back_populates="target_node",
-        cascade=CASCADE_DELETE_ORPHAN,
+        cascade="all, delete",
     )
 
     __table_args__ = (
@@ -312,7 +329,7 @@ class EntityEdge(Base):
     )  # e.g., "MANAGED_BY"
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     weight: Mapped[float] = mapped_column(
-        "weight", nullable=False, default=1.0
+        nullable=False, default=1.0
     )  # Confidence score
 
     # Provenance

@@ -1,7 +1,7 @@
 """
 Graph State Models.
 
-Implements §3.6 and §10.1 of the Canonical Blueprint.
+Implements §3.6, §10.3, and §10.4 of the Canonical Blueprint.
 """
 
 from __future__ import annotations
@@ -14,7 +14,14 @@ from cortex.domain_models.rag import Answer, DraftCritique, EmailDraft, ThreadSu
 from cortex.orchestration.redacted import Redacted
 from cortex.retrieval.query_classifier import QueryClassification
 from cortex.retrieval.results import SearchResults
-from pydantic import BaseModel, ConfigDict, Field, SecretStr
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    PrivateAttr,
+    SecretStr,
+    field_validator,
+)
 
 # Default configuration constants
 DEFAULT_RETRIEVAL_K = 10  # Number of chunks to retrieve
@@ -27,7 +34,7 @@ class GraphState(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     # Internal metadata
-    _graph_type: str = "unknown"
+    _graph_type: str = PrivateAttr(default="unknown")
 
     def get(self, key: str, default: Any | None = None) -> Any | None:
         return getattr(self, key, default)
@@ -35,11 +42,10 @@ class GraphState(BaseModel):
     def __repr__(self) -> str:
         """Return a redacted representation of the state."""
         field_reprs = []
-        for field_name, field_value in self:
-            if isinstance(field_value, (Redacted, SecretStr)):
-                field_reprs.append(f"{field_name}='REDACTED'")
-            else:
-                field_reprs.append(f"{field_name}={field_value!r}")
+        for field_name in self.__class__.model_fields:
+            field_value = getattr(self, field_name, None)
+            safe_value = _redact_state_value(field_value)
+            field_reprs.append(f"{field_name}={safe_value!r}")
         return f"{self.__class__.__name__}({', '.join(field_reprs)})"
 
 
@@ -63,7 +69,11 @@ class AnswerQuestionState(GraphState):
     tenant_id: str
     user_id: str
     thread_id: str | None = None
-    k: int = DEFAULT_RETRIEVAL_K
+    k: int = Field(
+        default=DEFAULT_RETRIEVAL_K,
+        ge=1,
+        description="Number of chunks to retrieve",
+    )
     debug: bool = False
     classification: QueryClassification | None = None
     retrieval_results: SearchResults | None = None
@@ -72,6 +82,10 @@ class AnswerQuestionState(GraphState):
     answer: Answer | None = None
     error: str | None = None
     correlation_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+
+    @property
+    def retrieval_k(self) -> int:
+        return self.k
 
 
 class DraftEmailState(GraphState):
@@ -104,6 +118,16 @@ class DraftEmailState(GraphState):
     error: str | None = None
     correlation_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
 
+    @field_validator("thread_id")
+    @classmethod
+    def validate_thread_id(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        try:
+            return str(uuid.UUID(str(value)))
+        except (ValueError, TypeError) as exc:
+            raise ValueError("thread_id must be a valid UUID") from exc
+
 
 class SummarizeThreadState(GraphState):
     """
@@ -117,7 +141,12 @@ class SummarizeThreadState(GraphState):
     tenant_id: str
     user_id: str
     thread_id: str
-    max_length: int = DEFAULT_SUMMARY_MAX_LENGTH
+    max_length: int = Field(
+        default=DEFAULT_SUMMARY_MAX_LENGTH,
+        ge=50,
+        le=2000,
+        description="Max summary length in words",
+    )
     thread_context: Redacted | None = None  # Raw text of thread
     facts_ledger: FactsLedger | None = None
     critique: CriticReview | None = None
@@ -125,3 +154,25 @@ class SummarizeThreadState(GraphState):
     summary: ThreadSummary | None = None
     error: str | None = None
     correlation_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+
+    @field_validator("thread_id")
+    @classmethod
+    def validate_thread_id(cls, value: str) -> str:
+        try:
+            return str(uuid.UUID(str(value)))
+        except (ValueError, TypeError) as exc:
+            raise ValueError("thread_id must be a valid UUID") from exc
+
+
+def _redact_state_value(value: Any) -> Any:
+    if isinstance(value, (Redacted, SecretStr)):
+        return "REDACTED"
+    if isinstance(value, BaseModel):
+        return f"<{value.__class__.__name__}>"
+    if isinstance(value, dict):
+        return {key: _redact_state_value(val) for key, val in value.items()}
+    if isinstance(value, list):
+        return [_redact_state_value(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_redact_state_value(item) for item in value)
+    return value

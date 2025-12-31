@@ -18,6 +18,7 @@ import numpy as np
 import requests
 from cortex.common.exceptions import ConfigurationError, ProviderError
 from cortex.config.models import DigitalOceanLLMConfig, DigitalOceanLLMModelConfig
+from pydantic import SecretStr
 from requests import Session
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -100,14 +101,17 @@ class DOApiClient:
 
     def __init__(
         self,
-        token: str | None,
+        token: str | SecretStr | None,
         base_url: str = "https://api.digitalocean.com/v2",
         timeout_s: int = 30,
         max_retries: int = 3,
         backoff_factor: float = 2.0,
         dry_run: bool = False,
     ) -> None:
-        self.token = token or os.environ.get("DIGITALOCEAN_TOKEN", "")
+        token_value = (
+            token.get_secret_value() if isinstance(token, SecretStr) else token
+        )
+        self.token = token_value or os.environ.get("DIGITALOCEAN_TOKEN", "")
         self.base_url = base_url.rstrip("/")
         self.timeout_s = timeout_s
         self.dry_run = dry_run

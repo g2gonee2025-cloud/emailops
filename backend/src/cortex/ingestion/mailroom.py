@@ -572,6 +572,10 @@ async def _process_intelligence(
             if summary_text:
                 summary_text_out = summary_text
                 summary_embedding = summarizer.embed_summary(summary_text)
+                if summary_embedding is None:
+                    logger.warning(
+                        "Summary embedding failed; continuing without embedding"
+                    )
                 # P1 Fix: Handle empty embedding due to API failure so DB write doesn't fail
                 final_embedding = (
                     summary_embedding

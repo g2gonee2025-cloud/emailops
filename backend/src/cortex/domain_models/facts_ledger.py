@@ -77,7 +77,7 @@ class FactsLedger(BaseModel):
         - Lists are unioned and deduplicated efficiently.
         - Participants are merged robustly, prioritizing non-default values.
         """
-        if not other:
+        if other is None or _is_empty_ledger(other):
             return self
 
         # Helper for deduplicating lists of Pydantic models based on a key
@@ -96,41 +96,48 @@ class FactsLedger(BaseModel):
         # 1. Merge lists of Pydantic models efficiently
         asks = _deduplicate_models(
             self.asks + other.asks,
-            lambda x: (x.description, x.from_participant, x.to_participant),
+            lambda x: (x.description, x.from_participant, x.to_participant, x.status),
         )
         commitments = _deduplicate_models(
             self.commitments + other.commitments,
-            lambda x: (x.description, x.by_participant),
+            lambda x: (x.description, x.by_participant, x.due_date, x.status),
         )
         key_dates = _deduplicate_models(
-            self.key_dates + other.key_dates, lambda x: (x.date, x.description)
+            self.key_dates + other.key_dates,
+            lambda x: (x.date, x.description, x.relevance),
         )
 
         # 2. Merge simple string lists using sets for performance and deterministic order
-        key_decisions = sorted(list(set(self.key_decisions + other.key_decisions)))
-        open_questions = sorted(list(set(self.open_questions + other.open_questions)))
-        risks_concerns = sorted(list(set(self.risks_concerns + other.risks_concerns)))
+        key_decisions = sorted(set(self.key_decisions + other.key_decisions))
+        open_questions = sorted(set(self.open_questions + other.open_questions))
+        risks_concerns = sorted(set(self.risks_concerns + other.risks_concerns))
 
         # 3. Merge participants with a robust, deterministic strategy
         def get_participant_key(p: ParticipantAnalysis) -> str | None:
             """Generates a unique key for a participant, prioritizing email."""
-            if p.email:
-                return f"email:{p.email.strip().lower()}"
-            if p.name:
-                return f"name:{p.name.strip().lower()}"
+            email = (p.email or "").strip().lower()
+            if email:
+                return f"email:{email}"
+            name = (p.name or "").strip().lower()
+            if name:
+                return f"name:{name}"
             return None
 
         # Start with the participants from this ledger
-        participant_map: dict[str, ParticipantAnalysis] = {
-            key: p.model_copy()
-            for p in self.participants
-            if (key := get_participant_key(p))
-        }
+        participant_map: dict[str, ParticipantAnalysis] = {}
+        unkeyed_participants: list[ParticipantAnalysis] = []
+        for participant in self.participants:
+            key = get_participant_key(participant)
+            if key:
+                participant_map[key] = participant.model_copy()
+            else:
+                unkeyed_participants.append(participant.model_copy())
 
         # Merge in participants from the other ledger
         for other_p in other.participants:
             key = get_participant_key(other_p)
             if not key:
+                unkeyed_participants.append(other_p.model_copy())
                 continue
 
             if key not in participant_map:
@@ -140,10 +147,8 @@ class FactsLedger(BaseModel):
                 p = participant_map[key]
                 p.name = p.name or other_p.name
                 p.email = p.email or other_p.email
-                if p.role == "other":
-                    p.role = other_p.role
-                if p.tone == "neutral":
-                    p.tone = other_p.tone
+                p.role = _merge_default_value(p.role, other_p.role, "other")
+                p.tone = _merge_default_value(p.tone, other_p.tone, "neutral")
                 p.stance = p.stance or other_p.stance
 
         return FactsLedger(
@@ -153,8 +158,36 @@ class FactsLedger(BaseModel):
             key_decisions=key_decisions,
             open_questions=open_questions,
             risks_concerns=risks_concerns,
-            participants=list(participant_map.values()),
+            participants=list(participant_map.values()) + unkeyed_participants,
         )
+
+
+def _is_empty_ledger(ledger: FactsLedger) -> bool:
+    return not any(
+        [
+            ledger.asks,
+            ledger.commitments,
+            ledger.key_dates,
+            ledger.key_decisions,
+            ledger.open_questions,
+            ledger.risks_concerns,
+            ledger.participants,
+        ]
+    )
+
+
+def _merge_default_value(
+    current: str | None,
+    candidate: str | None,
+    default: str,
+) -> str | None:
+    if candidate is None:
+        return current
+    if current is None:
+        return candidate
+    if current == default:
+        return candidate
+    return current
 
 
 class CriticReview(BaseModel):
