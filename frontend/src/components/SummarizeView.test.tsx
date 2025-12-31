@@ -1,16 +1,16 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import SummarizeView from './SummarizeView';
 import { AllTheProviders } from '../tests/testUtils';
 import { useSummarize } from '../hooks/useSummarize';
-import { ThreadSummary } from '../schemas/summarize';
+import type { ThreadSummary } from '../schemas/summarize';
 
 // Mock hooks
 vi.mock('../hooks/useSummarize');
 
 // Partially mock the Toast module to override useToast but keep other exports
 vi.mock('./ui/Toast', async (importOriginal) => {
-  const actual = await importOriginal();
+  const actual = await importOriginal() as object;
   return {
     ...actual,
     useToast: () => ({
@@ -19,7 +19,7 @@ vi.mock('./ui/Toast', async (importOriginal) => {
   };
 });
 
-const mockUseSummarize = useSummarize as vi.Mock;
+const mockUseSummarize = useSummarize as Mock;
 
 describe('SummarizeView', () => {
   const mockSummarize = vi.fn();

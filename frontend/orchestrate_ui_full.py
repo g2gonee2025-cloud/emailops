@@ -1007,13 +1007,31 @@ B3_W7 = [
     ),
 ]
 
+B3_REMAINING = [
+    make_task(
+        "frontend/src/components/thread/MessageList.tsx",
+        "MessageList component",
+        "CREATE FILE. Virtualized message list using react-virtuoso.",
+    ),
+    make_task(
+        "frontend/src/components/dashboard/IngestionChart.tsx",
+        "IngestionChart component",
+        "CREATE FILE. Recharts chart for ingestion throughput/latency.",
+    ),
+    make_task(
+        "frontend/src/components/draft/TemplateSelector.tsx",
+        "TemplateSelector component",
+        "CREATE FILE. Draft template selector using Select; supports saved templates.",
+    ),
+    make_task(
+        "frontend/src/components/admin/DoctorPanel.tsx",
+        "DoctorPanel component",
+        "CREATE FILE. Doctor results panel with copy/download actions.",
+    ),
+]
+
 BATCH_3: list[tuple[str, list[dict[str, str]]]] = [
-    ("B3.W1 Hooks", B3_W1),
-    ("B3.W2 Schemas", B3_W2),
-    ("B3.W3 View refactors", B3_W3),
-    ("B3.W4 Integration tests", B3_W4),
-    ("B3.W5 View E2E", B3_W5),
-    ("B3.W6 Shared components/utils", B3_W6),
+    ("B3.W6 Remaining Components", B3_REMAINING),
     ("B3.W7 Verification", B3_W7),
 ]
 

@@ -10,7 +10,9 @@ import httpx
 from cortex_cli.style import colorize
 
 
-def setup_login_parser(subparsers: argparse._SubParsersAction) -> None:
+def setup_login_parser(
+    subparsers: argparse._SubParsersAction,
+) -> None:
     """Setup parser for the `login` command."""
     login_parser = subparsers.add_parser(
         "login",

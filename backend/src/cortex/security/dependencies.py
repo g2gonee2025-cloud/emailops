@@ -3,7 +3,7 @@ Security dependencies for FastAPI.
 """
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from cortex.security.auth import _extract_identity
 from fastapi import Depends, HTTPException, Request

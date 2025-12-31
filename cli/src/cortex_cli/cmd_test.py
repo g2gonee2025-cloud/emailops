@@ -1,15 +1,16 @@
 import subprocess
 import sys
 from argparse import ArgumentParser, Namespace
+from typing import Any
 
 from cortex_cli.style import colorize
 
 
-def setup_test_parser(subparsers) -> ArgumentParser:
+def setup_test_parser(subparsers: Any) -> ArgumentParser:
     """
     Setup the subparser for the 'test' command.
     """
-    test_parser = subparsers.add_parser(
+    test_parser: ArgumentParser = subparsers.add_parser(
         "test",
         help="Run tests using pytest",
         description="""

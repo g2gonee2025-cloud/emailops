@@ -6,9 +6,11 @@ Implements §12 of the Canonical Blueprint.
 
 from __future__ import annotations
 
+import atexit
 import functools
 import inspect
 import logging
+import os
 import threading
 from collections.abc import Callable
 from contextvars import ContextVar
@@ -22,13 +24,14 @@ try:
     from opentelemetry.exporter.cloud_monitoring import CloudMonitoringMetricsExporter
     from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
     from opentelemetry.instrumentation.requests import RequestsInstrumentor
+    from opentelemetry.metrics import Observation
     from opentelemetry.sdk.metrics import MeterProvider
     from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
     from opentelemetry.sdk.resources import Resource
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
     from opentelemetry.sdk.trace.sampling import TraceIdRatioBased
-    from opentelemetry.trace import StatusCode
+    from opentelemetry.trace import Status, StatusCode
 
     OTEL_AVAILABLE = True
 except ImportError:
@@ -59,11 +62,15 @@ except ImportError:
 # Constants
 METRIC_EXPORT_INTERVAL_MS = 60000
 MAX_METRIC_INSTRUMENTS = 1000
+REQUESTS_INSTRUMENTATION_ENV = "OUTLOOKCORTEX_OTEL_INSTRUMENT_REQUESTS"
+
+AttributeValue = str | bool | int | float
 
 __all__ = (
     "get_logger",
     "get_trace_context",
     "init_observability",
+    "shutdown_observability",
     "record_metric",
     "trace_operation",
 )
@@ -76,18 +83,100 @@ _trace_context: ContextVar[dict[str, str] | None] = ContextVar(
 # Global tracer and meter (initialized lazily)
 _tracer = None
 _meter = None
+_tracer_provider = None
+_meter_provider = None
 _metric_instruments: dict[tuple[str, str], Any] = {}
+_gauge_instruments: dict[str, Any] = {}
+_gauge_values: dict[tuple[str, tuple[tuple[str, AttributeValue], ...]], float] = {}
 _initialized = False
 _init_lock = threading.Lock()
+_shutdown_registered = False
+_metric_lock = threading.Lock()
+_gauge_lock = threading.Lock()
+
+
+def _parse_bool_env(name: str, default: bool = True) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _get_gcp_project(config: Any) -> str | None:
+    gcp_config = getattr(config, "gcp", None)
+    return (
+        getattr(gcp_config, "gcp_project", None)
+        or os.getenv("GOOGLE_CLOUD_PROJECT")
+        or os.getenv("GCP_PROJECT")
+    )
+
+
+def _register_shutdown_hook() -> None:
+    global _shutdown_registered
+    if _shutdown_registered:
+        return
+    atexit.register(shutdown_observability)
+    _shutdown_registered = True
+
+
+def _labels_key(
+    labels: dict[str, AttributeValue],
+) -> tuple[tuple[str, AttributeValue], ...]:
+    return tuple(sorted(labels.items(), key=lambda item: item[0]))
+
+
+def _make_gauge_callback(metric_name: str) -> Callable[[Any], list[Observation]]:
+    def callback(_: Any) -> list[Observation]:
+        with _gauge_lock:
+            return [
+                Observation(value, dict(labels_key))
+                for (name, labels_key), value in _gauge_values.items()
+                if name == metric_name
+            ]
+
+    return callback
+
+
+def _ensure_gauge_instrument(metric_name: str) -> None:
+    if _meter is None:
+        return
+    if metric_name in _gauge_instruments:
+        return
+    with _metric_lock:
+        if metric_name in _gauge_instruments:
+            return
+        if len(_metric_instruments) + len(_gauge_instruments) >= MAX_METRIC_INSTRUMENTS:
+            logging.warning(
+                "Metric instrument cache full (%d items). Cannot create gauge '%s'.",
+                MAX_METRIC_INSTRUMENTS,
+                metric_name,
+            )
+            return
+        create_gauge = getattr(_meter, "create_observable_gauge", None)
+        if not create_gauge:
+            logging.warning(
+                "Observable gauge not supported; skipping gauge '%s'.", metric_name
+            )
+            return
+        _gauge_instruments[metric_name] = create_gauge(
+            metric_name,
+            callbacks=[_make_gauge_callback(metric_name)],
+            unit="1",
+        )
 
 
 def _init_tracing(service_name: str, sample_rate: float, config: Any) -> Any:
-    """Initialize OpenTelemetry tracing. Returns tracer or None."""
+    """Initialize OpenTelemetry tracing. Returns tracer or None.
+
+    Requests instrumentation is global; disable via OUTLOOKCORTEX_OTEL_INSTRUMENT_REQUESTS.
+    """
     if not OTEL_AVAILABLE or trace is None:
         return None
 
+    global _tracer_provider
     try:
-        env = config.core.env if config.core else "unknown"
+        env = getattr(getattr(config, "core", None), "env", "unknown")
+        gcp_project = _get_gcp_project(config)
         resource = Resource.create(
             {
                 "service.name": service_name,
@@ -100,31 +189,48 @@ def _init_tracing(service_name: str, sample_rate: float, config: Any) -> Any:
             resource=resource,
             sampler=TraceIdRatioBased(sample_rate),
         )
+        has_exporter = False
 
         # Cloud Trace exporter for GCP
-        if config.gcp.gcp_project:
-            cloud_trace_exporter = CloudTraceSpanExporter(
-                project_id=config.gcp.gcp_project
-            )
+        if gcp_project:
+            cloud_trace_exporter = CloudTraceSpanExporter(project_id=gcp_project)
             provider.add_span_processor(BatchSpanProcessor(cloud_trace_exporter))
+            has_exporter = True
         elif OTLP_AVAILABLE:
             otlp_exporter = OTLPSpanExporter()
             provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
+            has_exporter = True
             logging.info("✓ OTLP Trace Exporter configured")
+        else:
+            logging.warning(
+                "Tracing enabled but no exporter configured; spans will not be exported."
+            )
 
         trace.set_tracer_provider(provider)
+        _tracer_provider = provider
         tracer = trace.get_tracer(__name__)
 
         # Auto-instrument requests library
-        RequestsInstrumentor().instrument()
+        instrument_requests = _parse_bool_env(REQUESTS_INSTRUMENTATION_ENV, True)
+        if instrument_requests and has_exporter:
+            RequestsInstrumentor().instrument()
+            logging.info("✓ Requests instrumentation enabled (global)")
+        elif instrument_requests:
+            logging.info("Requests instrumentation skipped (no exporter configured)")
+        else:
+            logging.info(
+                "Requests instrumentation disabled via %s",
+                REQUESTS_INSTRUMENTATION_ENV,
+            )
 
-        logging.info(
-            "✓ OpenTelemetry tracing initialized (sample_rate=%.1f)", sample_rate
-        )
+        if has_exporter:
+            logging.info(
+                "✓ OpenTelemetry tracing initialized (sample_rate=%.1f)", sample_rate
+            )
         return tracer
 
-    except Exception as e:
-        logging.warning("Failed to initialize tracing: %s", e)
+    except Exception:
+        logging.warning("Failed to initialize tracing", exc_info=True)
         return None
 
 
@@ -133,17 +239,20 @@ def _init_metrics(service_name: str, config: Any) -> Any:
     if not OTEL_AVAILABLE or metrics is None:
         return None
 
+    global _meter_provider
     try:
+        gcp_project = _get_gcp_project(config)
         resource = Resource.create({"service.name": service_name})
 
         # Cloud Monitoring exporter for GCP
-        if config.gcp.gcp_project:
-            exporter = CloudMonitoringMetricsExporter(project_id=config.gcp.gcp_project)
+        if gcp_project:
+            exporter = CloudMonitoringMetricsExporter(project_id=gcp_project)
             reader = PeriodicExportingMetricReader(
                 exporter, export_interval_millis=METRIC_EXPORT_INTERVAL_MS
             )
             provider = MeterProvider(resource=resource, metric_readers=[reader])
             metrics.set_meter_provider(provider)
+            _meter_provider = provider
             logging.info("✓ Metrics export initialized (Cloud Monitoring)")
             return metrics.get_meter(__name__)
 
@@ -154,14 +263,15 @@ def _init_metrics(service_name: str, config: Any) -> Any:
             )
             provider = MeterProvider(resource=resource, metric_readers=[reader])
             metrics.set_meter_provider(provider)
+            _meter_provider = provider
             logging.info("✓ Metrics export initialized (OTLP)")
             return metrics.get_meter(__name__)
 
         logging.info("OTLP metrics exporter unavailable; metrics disabled")
         return None
 
-    except Exception as e:
-        logging.warning("Failed to initialize metrics: %s", e)
+    except Exception:
+        logging.warning("Failed to initialize metrics", exc_info=True)
         return None
 
 
@@ -191,8 +301,8 @@ def _init_structured_logging() -> None:
         )
         logging.info("✓ Structured logging initialized")
 
-    except Exception as e:
-        logging.warning("Failed to initialize structured logging: %s", e)
+    except Exception:
+        logging.warning("Failed to initialize structured logging", exc_info=True)
 
 
 def _bind_trace_context(logger, method_name, event_dict):
@@ -224,7 +334,11 @@ def init_observability(
         if _initialized:
             return
 
-        config = get_config()
+        try:
+            config = get_config()
+        except Exception:
+            logging.exception("Failed to load config for observability")
+            raise
 
         # Guardrails for invalid sampling values
         sample_rate = max(0.0, min(sample_rate, 1.0))
@@ -239,6 +353,21 @@ def init_observability(
             _init_structured_logging()
 
         _initialized = True
+        _register_shutdown_hook()
+
+
+def shutdown_observability() -> None:
+    """Flush and shutdown OTel providers to avoid losing buffered telemetry."""
+    if _tracer_provider is not None:
+        try:
+            _tracer_provider.shutdown()
+        except Exception:
+            logging.warning("Failed to shutdown tracer provider", exc_info=True)
+    if _meter_provider is not None:
+        try:
+            _meter_provider.shutdown()
+        except Exception:
+            logging.warning("Failed to shutdown meter provider", exc_info=True)
 
 
 def trace_operation(operation_name: str, **span_attributes):
@@ -274,10 +403,10 @@ def trace_operation(operation_name: str, **span_attributes):
 
                     try:
                         result = await func(*args, **kwargs)
-                        span.set_status(StatusCode.OK)
+                        span.set_status(Status(StatusCode.OK))
                         return result
                     except Exception as e:
-                        span.set_status(StatusCode.ERROR)
+                        span.set_status(Status(StatusCode.ERROR))
                         span.record_exception(e)
                         raise
                     finally:
@@ -306,10 +435,10 @@ def trace_operation(operation_name: str, **span_attributes):
 
                     try:
                         result = func(*args, **kwargs)
-                        span.set_status(StatusCode.OK)
+                        span.set_status(Status(StatusCode.OK))
                         return result
                     except Exception as e:
-                        span.set_status(StatusCode.ERROR)
+                        span.set_status(Status(StatusCode.ERROR))
                         span.record_exception(e)
                         raise
                     finally:
@@ -320,15 +449,10 @@ def trace_operation(operation_name: str, **span_attributes):
     return decorator
 
 
-_metric_lock = threading.Lock()
-
-# ... (global vars)
-
-
 def record_metric(
     metric_name: str,
     value: float | int,
-    labels: dict[str, str] | None = None,
+    labels: dict[str, AttributeValue] | None = None,
     metric_type: str = "counter",
 ) -> None:
     """
@@ -339,7 +463,15 @@ def record_metric(
         return  # Silently skip if not available
 
     try:
-        labels = labels or {}
+        attributes = labels or {}
+        if metric_type == "gauge":
+            _ensure_gauge_instrument(metric_name)
+            if metric_name in _gauge_instruments:
+                labels_key = _labels_key(attributes)
+                with _gauge_lock:
+                    _gauge_values[(metric_name, labels_key)] = float(value)
+            return
+
         key = (metric_name, metric_type)
 
         # Fast path check
@@ -350,7 +482,10 @@ def record_metric(
                 # Double-check locking pattern
                 instrument = _metric_instruments.get(key)
                 if instrument is None:
-                    if len(_metric_instruments) >= MAX_METRIC_INSTRUMENTS:
+                    if (
+                        len(_metric_instruments) + len(_gauge_instruments)
+                        >= MAX_METRIC_INSTRUMENTS
+                    ):
                         logging.warning(
                             "Metric instrument cache full (%d items). Cannot create new instrument for '%s'.",
                             MAX_METRIC_INSTRUMENTS,
@@ -360,13 +495,6 @@ def record_metric(
 
                     if metric_type == "counter":
                         instrument = _meter.create_counter(metric_name, unit="1")
-                    elif metric_type == "gauge":
-                        # OTel doesn't support 'gauge' directly. An ObservableGauge is the right tool,
-                        # but it requires a callback and is harder to use. We create an UpDownCounter
-                        # but will handle its value recording differently.
-                        instrument = _meter.create_up_down_counter(
-                            metric_name, unit="1"
-                        )
                     elif metric_type == "histogram":
                         instrument = _meter.create_histogram(metric_name, unit="ms")
                     else:
@@ -381,22 +509,12 @@ def record_metric(
 
         if instrument:
             if metric_type == "histogram":
-                instrument.record(value, labels)
-            elif metric_type == "gauge":
-                # For a gauge, we are simulating a set operation. OTel gauges are typically
-                # asynchronous. Using an up_down_counter requires getting the last value
-                # and adding the difference, which is complex and not thread-safe without
-                # more state. Logging a warning is a safer interim solution.
-                logging.warning(
-                    "Metric type 'gauge' for '%s' is not correctly implemented. It will behave like a counter.",
-                    metric_name,
-                )
-                instrument.add(value, labels)
+                instrument.record(value, attributes)
             else:  # counter
-                instrument.add(value, labels)
+                instrument.add(value, attributes)
 
-    except Exception as e:
-        logging.warning("Failed to record metric %s: %s", metric_name, e)
+    except Exception:
+        logging.warning("Failed to record metric %s", metric_name, exc_info=True)
 
 
 def get_logger(name: str) -> Any:

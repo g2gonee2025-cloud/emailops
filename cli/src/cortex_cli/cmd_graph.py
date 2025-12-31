@@ -27,10 +27,13 @@ def cmd_discover_schema(args: argparse.Namespace) -> None:
         print(f"\n  {_colorize('✓', 'green')} Schema discovery complete!")
 
     except ImportError as e:
-        print(f"{_colorize('ERROR:', 'red')} Graph discovery module not available: {e}")
+        print(
+            f"{_colorize('ERROR:', 'red')} Graph discovery module not available: {e}",
+            file=sys.stderr,
+        )
         sys.exit(1)
     except Exception as e:
-        print(f"{_colorize('ERROR:', 'red')} {e}")
+        print(f"{_colorize('ERROR:', 'red')} {e}", file=sys.stderr)
         sys.exit(1)
 
 

@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import os
-from typing import Any
+from typing import Any, Literal
 
 from cortex.config.loader import get_config
 from cortex.health import (
@@ -11,22 +11,36 @@ from cortex.health import (
     check_reranker,
     probe_embeddings,
 )
-from fastapi import APIRouter
+from cortex.security.auth import require_admin
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-router = APIRouter(prefix="/admin", tags=["admin"])
+router = APIRouter(
+    prefix="/admin",
+    tags=["admin"],
+    dependencies=[Depends(require_admin)],
+)
 logger = logging.getLogger(__name__)
 
 
+OverallStatus = Literal["healthy", "degraded", "unhealthy"]
+
+
 class DoctorReport(BaseModel):
-    overall_status: str  # "healthy", "degraded", "unhealthy"
+    overall_status: OverallStatus
     checks: list[DoctorCheckResult]
 
 
 @router.get("/config")
 async def get_config_info() -> dict[str, Any]:
     """Get sanitized safe configuration."""
-    config = get_config()
+    try:
+        config = get_config()
+    except Exception as exc:
+        logger.exception("Admin config lookup failed")
+        raise HTTPException(
+            status_code=500, detail="Configuration unavailable"
+        ) from exc
     # Safely access nested attributes
     core_config = getattr(config, "core", None)
     system_config = getattr(config, "system", None)
@@ -55,16 +69,47 @@ async def get_system_status() -> dict[str, Any]:
 @router.post("/doctor", response_model=DoctorReport)
 async def run_doctor() -> DoctorReport:
     """Run system diagnostics."""
-    config = get_config()
+    try:
+        config = get_config()
+    except Exception as exc:
+        logger.exception("Doctor config lookup failed")
+        raise HTTPException(
+            status_code=500, detail="Configuration unavailable"
+        ) from exc
 
     # Run checks concurrently
-    tasks = [
-        check_postgres(config),
-        check_redis(config),
-        probe_embeddings(config),
-        check_reranker(config),
+    checks = [
+        ("PostgreSQL", check_postgres),
+        ("Redis", check_redis),
+        ("Embeddings API", probe_embeddings),
+        ("Reranker API", check_reranker),
     ]
-    results: list[DoctorCheckResult] = await asyncio.gather(*tasks)
+    tasks = [check(config) for _, check in checks]
+    raw_results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    results: list[DoctorCheckResult] = []
+    for (check_name, _), result in zip(checks, raw_results, strict=False):
+        if isinstance(result, Exception):
+            logger.error("Doctor check %s failed: %s", check_name, result)
+            results.append(
+                DoctorCheckResult(
+                    name=check_name,
+                    status="fail",
+                    message="Check failed",
+                    details={"error": str(result)},
+                )
+            )
+        elif isinstance(result, DoctorCheckResult):
+            results.append(result)
+        else:
+            results.append(
+                DoctorCheckResult(
+                    name=check_name,
+                    status="fail",
+                    message="Unexpected check result",
+                    details={"result_type": type(result).__name__},
+                )
+            )
 
     # Determine overall status
     has_failure = any(check.status == "fail" for check in results)

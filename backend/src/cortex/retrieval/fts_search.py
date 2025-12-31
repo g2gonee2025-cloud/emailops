@@ -67,7 +67,7 @@ def search_conversations_fts(
     stmt = text(
         """
         WITH q AS (
-            SELECT plainto_tsquery(:cfg, :query) AS tsq
+            SELECT to_tsquery(:cfg, :query) AS tsq
         )
         SELECT
             conv.conversation_id,
@@ -96,7 +96,7 @@ def search_conversations_fts(
     results = session.execute(
         stmt,
         {
-            "query": query,
+            "query": expanded_query,
             "tenant_id": tenant_id,
             "limit": limit,
             "cfg": _FTS_CONFIG,
@@ -188,7 +188,7 @@ def search_chunks_fts(
     # string at once, which is less prone to future injection vulnerabilities.
     query_str = """
         WITH q AS (
-            SELECT plainto_tsquery(:cfg, :query) AS tsq
+            SELECT to_tsquery(:cfg, :query) AS tsq
         )
         SELECT
             c.chunk_id,

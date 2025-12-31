@@ -159,7 +159,7 @@ def call_llm(prompt: str, model: str) -> str:
 
 def fix_patch(
     patch_path: Path, output_dir: Path, project_root: Path, model: str
-) -> dict:
+) -> dict[str, Any]:
     """Fix a single malformed patch."""
     try:
         patch_content = patch_path.read_text()

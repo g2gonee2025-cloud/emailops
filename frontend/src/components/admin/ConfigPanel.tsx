@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AppConfig, ConfigSchema } from '../../schemas/admin';
+import { type AppConfig, ConfigSchema } from '../../schemas/admin';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Label } from '../ui/Label';
@@ -70,13 +70,15 @@ export default function ConfigPanel({ config, onSave, isLoading }: ConfigPanelPr
                   )}
                 />
                 {isSensitive && (
-                  <button
+                  <Button
                     type="button"
                     onClick={() => toggleReveal(key)}
-                    className="absolute inset-y-0 right-0 flex items-center px-3 text-white/40 hover:text-white"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute inset-y-0 right-0 h-auto w-10 text-white/40 hover:text-white"
                   >
                     {isRevealed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
+                  </Button>
                 )}
               </div>
               {fieldError && <p className="text-sm text-red-400">{fieldError.message}</p>}

@@ -95,9 +95,10 @@ def apply_recency_boost(
                 updated = updated.replace(tzinfo=UTC)
             days_old = (now - updated).total_seconds() / 86400
             boost = math.exp(-decay_rate * days_old) * boost_strength
-            item.score = item.score * (1 + boost)
+            base_score = float(item.score or 0.0)
+            item.score = base_score * (1 + boost)
 
-    return sorted(results, key=lambda x: x.score, reverse=True)
+    return sorted(results, key=lambda x: x.score or 0.0, reverse=True)
 
 
 def deduplicate_by_hash(results: list[SearchResultItem]) -> list[SearchResultItem]:
@@ -112,13 +113,16 @@ def deduplicate_by_hash(results: list[SearchResultItem]) -> list[SearchResultIte
     passthrough: list[SearchResultItem] = []
 
     for item in results:
-        content_hash = item.content_hash or item.metadata.get("content_hash")
+        metadata = item.metadata or {}
+        content_hash = item.content_hash or metadata.get("content_hash")
         if not content_hash:
             passthrough.append(item)
             continue
 
         existing = best_by_hash.get(content_hash)
-        if existing is None or item.score > existing.score:
+        item_score = float(item.score or 0.0)
+        existing_score = float(existing.score or 0.0) if existing else 0.0
+        if existing is None or item_score > existing_score:
             best_by_hash[content_hash] = item
 
     # Order isn't critical here since later steps re-sort, but keep stable-ish output.
@@ -134,9 +138,10 @@ def downweight_quoted_history(
     Blueprint §8.8: Quoted history down-weighting
     """
     for item in results:
-        chunk_type = item.metadata.get("chunk_type")
+        metadata = item.metadata or {}
+        chunk_type = metadata.get("chunk_type")
         if chunk_type == "quoted_history":
-            item.score *= factor
+            item.score = float(item.score or 0.0) * factor
     return results
 
 
@@ -176,6 +181,8 @@ def _merge_result_fields(
 
     # Metadata & Hash
     if other.metadata:
+        if into.metadata is None:
+            into.metadata = {}
         into.metadata.update(
             {k: v for k, v in other.metadata.items() if k not in into.metadata}
         )
@@ -326,7 +333,8 @@ async def tool_kb_search_hybrid(
                 summary_boost_ids = {h.conversation_id for h in summary_hits}
                 if summary_boost_ids:
                     logger.info(
-                        f"Summary boost active for threads: {summary_boost_ids}"
+                        "Summary boost active for %d conversations",
+                        len(summary_boost_ids),
                     )
             except Exception as e:
                 logger.warning("Summary search failed: %s", e)
@@ -348,7 +356,7 @@ async def tool_kb_search_hybrid(
                     list(parsed_filters.file_types)
                     if parsed_filters.file_types
                     else None
-                ),  # P1 Fix
+                ),
             )
 
             # 4. Vector search (if we have an embedding)
@@ -368,7 +376,7 @@ async def tool_kb_search_hybrid(
                         list(parsed_filters.file_types)
                         if parsed_filters.file_types
                         else None
-                    ),  # P1 Fix
+                    ),
                 )
                 logger.info(f"Vector search returned {len(vector_results)} chunks")
             else:
@@ -379,7 +387,6 @@ async def tool_kb_search_hybrid(
             if config.search.enable_graph_rag:
                 try:
                     graph_result = await graph_retrieve(
-                        session,
                         GraphSearchInput(
                             tenant_id=args.tenant_id,
                             query=search_query,
@@ -389,15 +396,24 @@ async def tool_kb_search_hybrid(
                     )
                     if graph_result.is_ok():
                         graph_items = graph_result.ok()
-                        graph_boost_conv_ids = {g.conversation_id for g in graph_items}
+                        graph_boost_conv_ids = {
+                            g.conversation_id for g in graph_items if g.conversation_id
+                        }
                         logger.info(
                             f"Graph retrieval found {len(graph_boost_conv_ids)} "
                             "related conversations"
                         )
                     else:
-                        logger.warning(f"Graph retrieval failed: {graph_result.err()}")
-                except Exception as e:
-                    logger.warning(f"Graph retrieval error (graceful fallback): {e}")
+                        logger.warning("Graph retrieval failed")
+                        logger.debug(
+                            "Graph retrieval failure detail: %s",
+                            graph_result.err(),
+                        )
+                except Exception:
+                    logger.warning(
+                        "Graph retrieval error; falling back to hybrid results"
+                    )
+                    logger.debug("Graph retrieval exception", exc_info=True)
 
             # Convert to SearchResultItem format
             fts_items = _convert_fts_to_items(fts_chunk_results)
@@ -413,29 +429,33 @@ async def tool_kb_search_hybrid(
                     fts_deduped, vector_deduped, alpha=config.search.rerank_alpha
                 )
             else:
-                fused_results = fuse_rrf(fts_deduped, vector_deduped, k=RRF_K_DEFAULT)
+                rrf_k = getattr(config.search, "rrf_k", RRF_K_DEFAULT)
+                fused_results = fuse_rrf(fts_deduped, vector_deduped, k=rrf_k)
 
             # 6.5. Apply Summary Boost
             if summary_boost_ids:
                 for item in fused_results:
                     if item.conversation_id in summary_boost_ids:
                         # Boost score by 20%
-                        item.score *= SUMMARY_BOOST_FACTOR
+                        item.score = float(item.score or 0.0) * SUMMARY_BOOST_FACTOR
                         item.fusion_score = item.score
+                fused_results = sorted(
+                    fused_results, key=lambda r: r.score or 0.0, reverse=True
+                )
 
             # 6.6. Apply Graph Boost (conversations discovered via KG)
             if graph_boost_conv_ids:
                 for item in fused_results:
                     if item.conversation_id in graph_boost_conv_ids:
                         # Boost score by 15% for graph-discovered conversations
-                        item.score *= GRAPH_BOOST_FACTOR
+                        item.score = float(item.score or 0.0) * GRAPH_BOOST_FACTOR
                         item.fusion_score = item.score
                         # Mark as graph-boosted in metadata
                         item.metadata["graph_boosted"] = True
 
                 # Re-sort after boosting
                 fused_results = sorted(
-                    fused_results, key=lambda r: r.score, reverse=True
+                    fused_results, key=lambda r: r.score or 0.0, reverse=True
                 )
 
             # 7. Reranking (External vs Lightweight)
@@ -473,7 +493,9 @@ async def tool_kb_search_hybrid(
             fused_results = downweight_quoted_history(
                 fused_results, factor=QUOTED_HISTORY_DOWNWEIGHT_FACTOR
             )
-            fused_results = sorted(fused_results, key=lambda r: r.score, reverse=True)
+            fused_results = sorted(
+                fused_results, key=lambda r: r.score or 0.0, reverse=True
+            )
 
             # 11. MMR diversity for the final top-k list
             fused_results = apply_mmr(

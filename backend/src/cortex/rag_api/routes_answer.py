@@ -9,7 +9,6 @@ from __future__ import annotations
 import hashlib
 import logging
 import os
-from typing import Optional
 
 from cortex.audit import log_audit_event
 from cortex.context import tenant_id_ctx, user_id_ctx

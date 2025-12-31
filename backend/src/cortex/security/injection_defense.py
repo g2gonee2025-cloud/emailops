@@ -1,13 +1,15 @@
 """
 Injection Defense Module.
 
-Implements defense against prompt injection attacks by detecting and neutralizing
+Implements detection against prompt injection attacks by flagging
 common jailbreak patterns and override attempts.
 """
 
 import re
+import unicodedata
 
 import structlog
+from cortex.common.exceptions import SecurityError
 
 logger = structlog.get_logger(__name__)
 
@@ -17,15 +19,14 @@ BLOCKLIST_PATTERNS = [
     r"ignore previous instructions",
     r"ignore all instructions",
     r"forget all previous instructions",
-    r"you are now (?:a|an) .*",
+    r"you are now (?:a|an|in) [\s\S]*",
     r"roleplay as",
     r"system override",
     r"developer mode",
     r"god mode",
     r"jailbreak",
-    r"DAN mode",
+    r"dan mode",
     r"ignore your previous instructions",
-    r"you are now",
     r"new rule:",
     r"important instruction:",
     r"ignore all prior instructions",
@@ -33,7 +34,6 @@ BLOCKLIST_PATTERNS = [
     r"start a new conversation",
     r"act as a",
     r"simulate a",
-    r"you are a helpful assistant",
     r"your new persona is",
     # Sophisticated patterns
     # Detects character separators and noise, e.g., "i g n o r e"
@@ -44,13 +44,54 @@ BLOCKLIST_PATTERNS = [
     # Detects context shifting
     r"what if someone said",
     # Detects direct commands
-    r"print the following",
-    r"output the following",
-    # Unicode homoglyphs (example with Cyrillic 'і' and 'е')
-    r"іgnorе",
+    r"(?:print|output) the following (?:system|developer)? ?(?:prompt|instructions)",
 ]
 
-_COMPILED_PATTERNS = [re.compile(p, re.IGNORECASE) for p in BLOCKLIST_PATTERNS]
+_BLOCKLIST_REGEX = re.compile("|".join(BLOCKLIST_PATTERNS), re.IGNORECASE)
+
+_HOMOGLYPH_MAP = str.maketrans(
+    {
+        "\u0430": "a",  # Cyrillic a
+        "\u0435": "e",  # Cyrillic e
+        "\u043e": "o",  # Cyrillic o
+        "\u0440": "p",  # Cyrillic p
+        "\u0441": "c",  # Cyrillic c
+        "\u0445": "x",  # Cyrillic x
+        "\u0443": "y",  # Cyrillic y
+        "\u0456": "i",  # Cyrillic i
+    }
+)
+
+_SUSPICIOUS_KEYWORDS = {
+    "ignore",
+    "instruction",
+    "instructions",
+    "override",
+    "jailbreak",
+    "system",
+    "developer",
+    "prompt",
+    "persona",
+    "roleplay",
+}
+
+
+def _normalize_text(text: str) -> str:
+    normalized = unicodedata.normalize("NFKC", text)
+    normalized = normalized.translate(_HOMOGLYPH_MAP)
+    return normalized
+
+
+def _matches_suspicious_keywords(text: str) -> bool:
+    tokens = set(re.findall(r"[a-z]+", text.lower()))
+    hits = tokens & _SUSPICIOUS_KEYWORDS
+    if "ignore" in hits and ("instruction" in hits or "instructions" in hits):
+        return True
+    if "system" in hits and ("prompt" in hits or "instructions" in hits):
+        return True
+    if "developer" in hits and ("prompt" in hits or "instructions" in hits):
+        return True
+    return len(hits) >= 3
 
 
 def contains_injection(text: str) -> bool:
@@ -64,17 +105,25 @@ def contains_injection(text: str) -> bool:
         True if injection detected, False otherwise.
     """
 
-    if not text:
+    if text is None:
+        raise TypeError("text must be a string, not None")
+    if not isinstance(text, str):
+        raise TypeError("text must be a string")
+    if not text.strip():
         return False
 
-    for pattern in _COMPILED_PATTERNS:
-        if pattern.search(text):
-            logger.warning("potential_injection_detected", pattern=pattern.pattern)
-            return True
+    normalized = _normalize_text(text)
+
+    if _BLOCKLIST_REGEX.search(normalized):
+        logger.warning("potential_injection_detected", reason="blocklist")
+        return True
+    if _matches_suspicious_keywords(normalized):
+        logger.warning("potential_injection_detected", reason="keyword_heuristic")
+        return True
     return False
 
 
-def validate_for_injection(text: str):
+def validate_for_injection(text: str) -> None:
     """
     Validates the input text for injection patterns and raises an exception if a threat is detected.
 
@@ -82,7 +131,10 @@ def validate_for_injection(text: str):
         text: The input text to validate.
 
     Raises:
-        ValueError: If the text contains a potential injection pattern.
+        SecurityError: If the text contains a potential injection pattern.
     """
     if contains_injection(text):
-        raise ValueError("Potential injection attack detected.")
+        raise SecurityError(
+            "Potential injection attack detected.",
+            threat_type="prompt_injection",
+        )

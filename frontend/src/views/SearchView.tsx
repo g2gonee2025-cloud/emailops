@@ -21,6 +21,7 @@ import { Skeleton } from '../components/ui/Skeleton';
 import GlassCard from '../components/ui/GlassCard';
 import { Badge } from '../components/ui/Badge';
 import { Alert, AlertDescription, AlertTitle } from '../components/ui/Alert';
+import { Button } from '../components/ui/Button';
 import { useToast } from '../contexts/toastContext';
 import { FilterBar } from '../components/search/FilterBar';
 
@@ -196,7 +197,7 @@ export default function SearchView() {
     <div className="flex flex-col h-full">
       <header className="p-6 border-b border-white/5 space-y-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-display font-semibold tracking-tight bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">
             Search
           </h1>
           <p className="text-white/40 mt-1">Find conversations, emails, and documents</p>
@@ -216,13 +217,16 @@ export default function SearchView() {
             aria-label="Search query"
           />
           {query && (
-            <button
+            <Button
+              type="button"
               onClick={handleClear}
-              className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-white/10 transition-colors"
+              variant="ghost"
+              size="icon"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white"
               aria-label="Clear search"
             >
               <X className="w-5 h-5 text-white/50" />
-            </button>
+            </Button>
           )}
         </div>
         <FilterBar />

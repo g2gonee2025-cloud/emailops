@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, PenTool, Copy, Check, RefreshCw } from 'lucide-react';
-import { DraftForm, DraftFormSchema } from '../schemas/draft';
+import { DraftFormSchema } from '../schemas/draft';
+import type { DraftForm } from '../schemas/draft';
 import { useDraftEmail } from '../hooks/useDraft';
 import GlassCard from '../components/ui/GlassCard';
 import { Button } from '@/components/ui/Button';
@@ -44,6 +45,7 @@ export default function DraftView() {
     formState: { errors },
   } = form;
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const tone = watch('tone');
   const draft = data?.draft;
 
@@ -76,8 +78,8 @@ export default function DraftView() {
 
   const renderEmptyState = () => (
     <div className="text-center py-12">
-      <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center mx-auto mb-6">
-        <PenTool className="w-10 h-10 text-purple-400" />
+      <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center mx-auto mb-6">
+        <PenTool className="w-10 h-10 text-emerald-300" />
       </div>
       <h3 className="text-xl font-semibold mb-2">Compose with AI</h3>
       <p className="text-white/40 max-w-md mx-auto">
@@ -164,7 +166,7 @@ export default function DraftView() {
     <div className="flex flex-col h-full">
       {/* Header */}
       <header className="p-6 border-b border-white/5">
-        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+        <h1 className="text-3xl font-display font-semibold tracking-tight bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">
           Draft Email
         </h1>
         <p className="text-white/40 mt-1">Generate professional email drafts using AI</p>
@@ -174,7 +176,7 @@ export default function DraftView() {
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Input Form */}
           {!draft && !isPending && (
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
               {/* Instruction */}
               <div className="space-y-2">
                 <Label htmlFor="instruction" className="text-sm font-medium text-white/60">

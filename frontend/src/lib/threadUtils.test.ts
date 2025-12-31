@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { sortByTimestamp, flattenThreads } from './threadUtils';
-import { SearchResult } from './api';
+import type { SearchResult } from './api';
 
 describe('threadUtils', () => {
   describe('sortByTimestamp', () => {

@@ -30,7 +30,10 @@ def cmd_embeddings_stats(args: argparse.Namespace) -> None:
 
         config = get_config()
         if not config.embedding:
-            print(f"{_colorize('ERROR:', 'red')} No embedding configuration found.")
+            print(
+                f"{_colorize('ERROR:', 'red')} No embedding configuration found.",
+                file=sys.stderr,
+            )
             return
 
         with Session(engine) as session:
@@ -78,7 +81,7 @@ def cmd_embeddings_stats(args: argparse.Namespace) -> None:
                 )
 
     except Exception as e:
-        print(f"{_colorize('ERROR:', 'red')} {e}")
+        print(f"{_colorize('ERROR:', 'red')} {e}", file=sys.stderr)
         sys.exit(1)
 
 
@@ -110,11 +113,17 @@ def cmd_embeddings_backfill(args: argparse.Namespace) -> None:
         print(f"    Errors: {result.get('errors', 0)}")
 
     except ImportError as e:
-        print(f"{_colorize('ERROR:', 'red')} Backfill module not available: {e}")
-        print("  Check that `cortex.ingestion.backfill` exists.")
+        print(
+            f"{_colorize('ERROR:', 'red')} Backfill module not available: {e}",
+            file=sys.stderr,
+        )
+        print(
+            "  Check that `cortex.ingestion.backfill` exists.",
+            file=sys.stderr,
+        )
         sys.exit(1)
     except Exception as e:
-        print(f"{_colorize('ERROR:', 'red')} {e}")
+        print(f"{_colorize('ERROR:', 'red')} {e}", file=sys.stderr)
         sys.exit(1)
 
 

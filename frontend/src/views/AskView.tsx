@@ -4,6 +4,8 @@ import { api } from '../lib/api';
 import type { ChatMessage as ApiChatMessage, Answer } from '../lib/api';
 import { cn } from '../lib/utils';
 import { Send, Bot, User, Loader2, Sparkles, FileText } from 'lucide-react';
+import { Input } from '../components/ui/Input';
+import { Button } from '../components/ui/Button';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -74,7 +76,7 @@ export default function AskView() {
     <div className="flex flex-col h-full">
       {/* Header */}
       <header className="p-6 border-b border-white/5">
-        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+        <h1 className="text-3xl font-display font-semibold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
           Ask Cortex
         </h1>
         <p className="text-white/40 mt-1">Query your knowledge base with natural language</p>
@@ -84,10 +86,10 @@ export default function AskView() {
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
         {messages.length === 0 && (
           <div className="h-full flex flex-col items-center justify-center text-center py-20">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center mb-6">
-              <Sparkles className="w-10 h-10 text-blue-400" />
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center mb-6">
+              <Sparkles className="w-10 h-10 text-emerald-300" />
             </div>
-            <h2 className="text-2xl font-semibold mb-2">Welcome to Cortex AI</h2>
+            <h2 className="text-2xl font-display font-semibold mb-2">Welcome to Cortex AI</h2>
             <p className="text-white/40 max-w-md">
               Ask questions about your emails, conversations, and documents. I'll search the knowledge base and provide answers with sources.
             </p>
@@ -98,13 +100,14 @@ export default function AskView() {
                 "Who contacted me about Project Alpha?",
                 "Find emails about the Q4 budget",
               ].map((suggestion, i) => (
-                <button
+                <Button
                   key={i}
                   onClick={() => setInput(suggestion)}
-                  className="p-4 text-left rounded-xl bg-white/5 border border-white/10 hover:border-blue-500/50 hover:bg-white/10 transition-all text-sm text-white/70"
+                  variant="glass"
+                  className="h-auto p-4 text-left justify-start border-white/10 hover:border-emerald-400/40 text-sm text-white/70 whitespace-normal"
                 >
                   {suggestion}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -119,7 +122,7 @@ export default function AskView() {
             )}
           >
             {message.role === 'assistant' && (
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center flex-shrink-0">
                 <Bot className="w-5 h-5 text-white" />
               </div>
             )}
@@ -131,7 +134,7 @@ export default function AskView() {
               <GlassCard className={cn(
                 "p-4",
                 message.role === 'user'
-                  ? "bg-blue-600/20 border-blue-500/30"
+                  ? "bg-emerald-500/15 border-emerald-400/30"
                   : "bg-white/5"
               )}>
                 <p className="text-white/90 whitespace-pre-wrap">{message.content}</p>
@@ -147,11 +150,11 @@ export default function AskView() {
                         key={si}
                         className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs"
                       >
-                        <FileText className="w-3 h-3 text-blue-400" />
+                        <FileText className="w-3 h-3 text-emerald-300" />
                         <span className="text-white/60 truncate max-w-[200px]">
                           {source.content.substring(0, 50)}...
                         </span>
-                        <span className="text-blue-400">{(source.score * 100).toFixed(0)}%</span>
+                        <span className="text-emerald-300">{(source.score * 100).toFixed(0)}%</span>
                       </div>
                     ))}
                   </div>
@@ -169,12 +172,12 @@ export default function AskView() {
 
         {isLoading && (
           <div className="flex gap-4 animate-slide-up">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center">
               <Bot className="w-5 h-5 text-white" />
             </div>
             <GlassCard className="p-4">
               <div className="flex items-center gap-3">
-                <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
+                <Loader2 className="w-4 h-4 animate-spin text-emerald-300" />
                 <span className="text-white/60">Thinking...</span>
               </div>
             </GlassCard>
@@ -187,22 +190,23 @@ export default function AskView() {
       {/* Input */}
       <div className="p-6 border-t border-white/5">
         <form onSubmit={handleSubmit} className="flex gap-4">
-          <input
+          <Input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask anything about your emails..."
-            className="flex-1 px-6 py-4 rounded-2xl bg-white/5 border border-white/10 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-white placeholder-white/30 transition-all"
+            className="flex-1 h-12 px-4 text-base bg-white/5 border-white/10 focus:border-emerald-400/50 focus:ring-emerald-500/30 text-white placeholder-white/30"
             disabled={isLoading}
           />
-          <button
+          <Button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="px-6 py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 font-medium"
+            size="lg"
+            className="h-12 px-5 gap-2 font-medium"
           >
             <Send className="w-5 h-5" />
             <span className="hidden md:inline">Send</span>
-          </button>
+          </Button>
         </form>
       </div>
     </div>

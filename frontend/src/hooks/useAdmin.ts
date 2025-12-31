@@ -1,8 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api, DoctorReport, SystemStatus, SystemConfig } from '../lib/api';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { api, type DoctorReport, type StatusData as SystemStatus, type SystemConfig } from '../lib/api';
 
 export const useAdmin = () => {
-  const queryClient = useQueryClient();
 
   const {
     data: status,

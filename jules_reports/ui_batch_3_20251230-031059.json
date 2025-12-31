@@ -1,0 +1,244 @@
+{
+  "batch": "3",
+  "source": "sources/github/g2gonee2025-cloud/emailops",
+  "branch": "main",
+  "approval_mode": "auto",
+  "concurrency": 1,
+  "max_session_minutes": 45,
+  "waves": [
+    {
+      "wave": "B3.W6a Utils & Messaging",
+      "status": "ok",
+      "created": [
+        {
+          "status": "created",
+          "task": "Thread utils",
+          "file": "frontend/src/lib/threadUtils.ts",
+          "session_name": "sessions/1934780681610646012",
+          "session_url": "https://jules.google.com/session/1934780681610646012",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/1934780681610646012",
+            "title": "[UI] Thread utils \u2014 threadUtils.ts",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Thread utils\nPrimary target: frontend/src/lib/threadUtils.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/lib/threadUtils.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Utilities for sorting/flattening thread chunks/messages. Pure functions.\n",
+            "url": "https://jules.google.com/session/1934780681610646012",
+            "requirePlanApproval": true,
+            "id": "1934780681610646012",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "Ingestion utils",
+          "file": "frontend/src/lib/ingestUtils.ts",
+          "session_name": "sessions/3167754098550103477",
+          "session_url": "https://jules.google.com/session/3167754098550103477",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/3167754098550103477",
+            "title": "[UI] Ingestion utils \u2014 ingestUtils.ts",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Ingestion utils\nPrimary target: frontend/src/lib/ingestUtils.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/lib/ingestUtils.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Utilities to validate/normalize ingestion JSON manifests and payloads.\n",
+            "url": "https://jules.google.com/session/3167754098550103477",
+            "requirePlanApproval": true,
+            "id": "3167754098550103477",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "Search utils",
+          "file": "frontend/src/lib/searchUtils.ts",
+          "session_name": "sessions/4176929647006128596",
+          "session_url": "https://jules.google.com/session/4176929647006128596",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/4176929647006128596",
+            "title": "[UI] Search utils \u2014 searchUtils.ts",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Search utils\nPrimary target: frontend/src/lib/searchUtils.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/lib/searchUtils.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Utilities to serialize/parse search query params (URL state).\n",
+            "url": "https://jules.google.com/session/4176929647006128596",
+            "requirePlanApproval": true,
+            "id": "4176929647006128596",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "Chart utils",
+          "file": "frontend/src/lib/chartUtils.ts",
+          "session_name": "sessions/12718302671307130255",
+          "session_url": "https://jules.google.com/session/12718302671307130255",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/12718302671307130255",
+            "title": "[UI] Chart utils \u2014 chartUtils.ts",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Chart utils\nPrimary target: frontend/src/lib/chartUtils.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/lib/chartUtils.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Helpers to map metrics to Recharts datasets, plus formatters.\n",
+            "url": "https://jules.google.com/session/12718302671307130255",
+            "requirePlanApproval": true,
+            "id": "12718302671307130255",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        },
+        {
+          "status": "created",
+          "task": "MessageList component",
+          "file": "frontend/src/components/thread/MessageList.tsx",
+          "session_name": "sessions/1918782787647342002",
+          "session_url": "https://jules.google.com/session/1918782787647342002",
+          "initial_state": null,
+          "raw": {
+            "name": "sessions/1918782787647342002",
+            "title": "[UI] MessageList component \u2014 MessageList.tsx",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: MessageList component\nPrimary target: frontend/src/components/thread/MessageList.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/thread/MessageList.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Virtualized message list using react-virtuoso.\n",
+            "url": "https://jules.google.com/session/1918782787647342002",
+            "requirePlanApproval": true,
+            "id": "1918782787647342002",
+            "automationMode": "AUTO_CREATE_PR"
+          }
+        }
+      ],
+      "failures": [],
+      "polled": [
+        {
+          "session_name": "sessions/1934780681610646012",
+          "state": "FAILED",
+          "session_url": "https://jules.google.com/session/1934780681610646012",
+          "pr_urls": [],
+          "raw": {
+            "name": "sessions/1934780681610646012",
+            "title": "[UI] Thread utils \u2014 threadUtils.ts",
+            "createTime": "2025-12-30T03:11:00.150037259Z",
+            "updateTime": "2025-12-30T03:11:53.810479Z",
+            "state": "FAILED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Thread utils\nPrimary target: frontend/src/lib/threadUtils.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/lib/threadUtils.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Utilities for sorting/flattening thread chunks/messages. Pure functions.\n",
+            "url": "https://jules.google.com/session/1934780681610646012",
+            "id": "1934780681610646012"
+          }
+        },
+        {
+          "session_name": "sessions/3167754098550103477",
+          "state": "FAILED",
+          "session_url": "https://jules.google.com/session/3167754098550103477",
+          "pr_urls": [],
+          "raw": {
+            "name": "sessions/3167754098550103477",
+            "title": "[UI] Ingestion utils \u2014 ingestUtils.ts",
+            "createTime": "2025-12-30T03:11:01.000631652Z",
+            "updateTime": "2025-12-30T03:11:50.090463Z",
+            "state": "FAILED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Ingestion utils\nPrimary target: frontend/src/lib/ingestUtils.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/lib/ingestUtils.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Utilities to validate/normalize ingestion JSON manifests and payloads.\n",
+            "url": "https://jules.google.com/session/3167754098550103477",
+            "id": "3167754098550103477"
+          }
+        },
+        {
+          "session_name": "sessions/4176929647006128596",
+          "state": "FAILED",
+          "session_url": "https://jules.google.com/session/4176929647006128596",
+          "pr_urls": [],
+          "raw": {
+            "name": "sessions/4176929647006128596",
+            "title": "[UI] Search utils \u2014 searchUtils.ts",
+            "createTime": "2025-12-30T03:11:01.854074783Z",
+            "updateTime": "2025-12-30T03:12:21.002607Z",
+            "state": "FAILED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Search utils\nPrimary target: frontend/src/lib/searchUtils.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/lib/searchUtils.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Utilities to serialize/parse search query params (URL state).\n",
+            "url": "https://jules.google.com/session/4176929647006128596",
+            "id": "4176929647006128596"
+          }
+        },
+        {
+          "session_name": "sessions/12718302671307130255",
+          "state": "FAILED",
+          "session_url": "https://jules.google.com/session/12718302671307130255",
+          "pr_urls": [],
+          "raw": {
+            "name": "sessions/12718302671307130255",
+            "title": "[UI] Chart utils \u2014 chartUtils.ts",
+            "createTime": "2025-12-30T03:11:04.015126648Z",
+            "updateTime": "2025-12-30T03:12:32.974799Z",
+            "state": "FAILED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: Chart utils\nPrimary target: frontend/src/lib/chartUtils.ts\n\nConstraints:\n- Apply changes primarily to frontend/src/lib/chartUtils.ts.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Helpers to map metrics to Recharts datasets, plus formatters.\n",
+            "url": "https://jules.google.com/session/12718302671307130255",
+            "id": "12718302671307130255"
+          }
+        },
+        {
+          "session_name": "sessions/1918782787647342002",
+          "state": "FAILED",
+          "session_url": "https://jules.google.com/session/1918782787647342002",
+          "pr_urls": [],
+          "raw": {
+            "name": "sessions/1918782787647342002",
+            "title": "[UI] MessageList component \u2014 MessageList.tsx",
+            "createTime": "2025-12-30T03:11:04.990978506Z",
+            "updateTime": "2025-12-30T03:12:06.403443Z",
+            "state": "FAILED",
+            "sourceContext": {
+              "source": "sources/github/g2gonee2025-cloud/emailops",
+              "githubRepoContext": {
+                "startingBranch": "main"
+              }
+            },
+            "prompt": "Mission: MessageList component\nPrimary target: frontend/src/components/thread/MessageList.tsx\n\nConstraints:\n- Apply changes primarily to frontend/src/components/thread/MessageList.tsx.\n- Keep scope minimal to complete the mission.\n- Maintain TypeScript strictness and fix any lint errors introduced.\n- Add or update tests when relevant.\n\nInstructions:\nCREATE FILE. Virtualized message list using react-virtuoso.\n",
+            "url": "https://jules.google.com/session/1918782787647342002",
+            "id": "1918782787647342002"
+          }
+        }
+      ]
+    }
+  ]
+}

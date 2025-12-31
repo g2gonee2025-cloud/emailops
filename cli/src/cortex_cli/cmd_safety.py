@@ -68,7 +68,9 @@ def _run_grounding_check(args: argparse.Namespace) -> None:
         sys.exit(1)
 
 
-def setup_safety_parser(subparsers: argparse._SubParsersAction) -> None:
+def setup_safety_parser(
+    subparsers: argparse._SubParsersAction,
+) -> None:
     """Setup the 'safety' command and its subcommands."""
     safety_parser = subparsers.add_parser(
         "safety",

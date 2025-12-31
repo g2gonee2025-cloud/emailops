@@ -1,9 +1,14 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import App from '../App';
 import React from 'react';
-import { vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const routerFuture = {
+    v7_startTransition: true,
+    v7_relativeSplatPath: true,
+};
 
 // Mocking Recharts to avoid sizing issues in JSDOM
 vi.mock('recharts', () => {
@@ -27,7 +32,7 @@ describe('App Smoke Test', () => {
 
         render(
             <QueryClientProvider client={queryClient}>
-                <BrowserRouter>
+                <BrowserRouter future={routerFuture}>
                     <App />
                 </BrowserRouter>
             </QueryClientProvider>

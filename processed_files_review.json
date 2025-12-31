@@ -1,0 +1,192 @@
+{
+  "summary": {
+    "total_files": 46,
+    "total_issues": 437
+  },
+  "files": [
+    {
+      "filename": "orchestrator.py",
+      "issue_count": 19
+    },
+    {
+      "filename": "_hybrid_helpers.py",
+      "issue_count": 18
+    },
+    {
+      "filename": "queue.py",
+      "issue_count": 16
+    },
+    {
+      "filename": "indexer.py",
+      "issue_count": 15
+    },
+    {
+      "filename": "policy_enforcer.py",
+      "issue_count": 15
+    },
+    {
+      "filename": "rag.py",
+      "issue_count": 14
+    },
+    {
+      "filename": "grounding.py",
+      "issue_count": 13
+    },
+    {
+      "filename": "graph_discovery.py",
+      "issue_count": 13
+    },
+    {
+      "filename": "facts_ledger.py",
+      "issue_count": 13
+    },
+    {
+      "filename": "auth.py",
+      "issue_count": 13
+    },
+    {
+      "filename": "routes_chat.py",
+      "issue_count": 12
+    },
+    {
+      "filename": "summarizer.py",
+      "issue_count": 12
+    },
+    {
+      "filename": "session.py",
+      "issue_count": 12
+    },
+    {
+      "filename": "observability.py",
+      "issue_count": 11
+    },
+    {
+      "filename": "__init__.py",
+      "issue_count": 11
+    },
+    {
+      "filename": "routes_summarize.py",
+      "issue_count": 11
+    },
+    {
+      "filename": "client.py",
+      "issue_count": 11
+    },
+    {
+      "filename": "routes_auth.py",
+      "issue_count": 10
+    },
+    {
+      "filename": "health.py",
+      "issue_count": 10
+    },
+    {
+      "filename": "routes_search.py",
+      "issue_count": 10
+    },
+    {
+      "filename": "query_classifier.py",
+      "issue_count": 10
+    },
+    {
+      "filename": "loader.py",
+      "issue_count": 10
+    },
+    {
+      "filename": "routes_admin.py",
+      "issue_count": 9
+    },
+    {
+      "filename": "email_processing.py",
+      "issue_count": 9
+    },
+    {
+      "filename": "text_extraction.py",
+      "issue_count": 9
+    },
+    {
+      "filename": "exceptions.py",
+      "issue_count": 9
+    },
+    {
+      "filename": "routes_draft.py",
+      "issue_count": 9
+    },
+    {
+      "filename": "routes_answer.py",
+      "issue_count": 9
+    },
+    {
+      "filename": "vector_search.py",
+      "issue_count": 9
+    },
+    {
+      "filename": "audit_config.py",
+      "issue_count": 9
+    },
+    {
+      "filename": "guardrails_client.py",
+      "issue_count": 8
+    },
+    {
+      "filename": "atomic_io.py",
+      "issue_count": 8
+    },
+    {
+      "filename": "results.py",
+      "issue_count": 8
+    },
+    {
+      "filename": "dependencies.py",
+      "issue_count": 8
+    },
+    {
+      "filename": "injection_defense.py",
+      "issue_count": 8
+    },
+    {
+      "filename": "states.py",
+      "issue_count": 7
+    },
+    {
+      "filename": "defenses.py",
+      "issue_count": 6
+    },
+    {
+      "filename": "config.py",
+      "issue_count": 5
+    },
+    {
+      "filename": "graphs.py",
+      "issue_count": 5
+    },
+    {
+      "filename": "types.py",
+      "issue_count": 4
+    },
+    {
+      "filename": "redis.py",
+      "issue_count": 4
+    },
+    {
+      "filename": "search.py",
+      "issue_count": 4
+    },
+    {
+      "filename": "queue_registry.py",
+      "issue_count": 3
+    },
+    {
+      "filename": "models.py",
+      "issue_count": 3
+    },
+    {
+      "filename": "redacted.py",
+      "issue_count": 3
+    },
+    {
+      "filename": "context.py",
+      "issue_count": 2
+    }
+  ]
+}

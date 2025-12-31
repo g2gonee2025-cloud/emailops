@@ -70,6 +70,24 @@ class ClaimAnalysis(BaseModel):
     method: GroundingMethod = Field(..., description="The method used for verification")
 
 
+class ClaimAnalysisInput(BaseModel):
+    """Input model for LLM grounding analysis results."""
+
+    claim: str = Field(..., description="The factual claim being verified")
+    is_supported: bool = Field(
+        ..., description="Whether the claim is supported by facts"
+    )
+    supporting_fact: str | None = Field(
+        None, description="The fact that supports this claim"
+    )
+    confidence: float = Field(
+        ..., ge=0.0, le=1.0, description="Confidence in the assessment"
+    )
+    method: GroundingMethod | None = Field(
+        None, description="The method used for verification"
+    )
+
+
 class GroundingCheck(BaseModel):
     """
     Result of grounding verification.
@@ -103,7 +121,7 @@ class GroundingCheck(BaseModel):
 class GroundingAnalysisResult(BaseModel):
     """Full grounding analysis from LLM."""
 
-    claims: list[ClaimAnalysis] = Field(default_factory=list)
+    claims: list[ClaimAnalysisInput] = Field(default_factory=list)
     overall_grounded: bool = Field(True)
     overall_confidence: float = Field(1.0)
     unsupported_claims: list[str] = Field(default_factory=list)
@@ -134,7 +152,7 @@ HEDGE_PATTERNS = [
     r"\bappears?\b",
     r"\bI think\b",
     r"\bI believe\b",
-    r"\bIt\'s possible\b",
+    r"\bIt's possible\b",
 ]
 
 # Compiled patterns for efficiency
@@ -156,19 +174,23 @@ def extract_claims_simple(text: str) -> list[str]:
     - Hedged statements
     - Very short fragments
     """
-    # Split into sentences
-    sentences = re.split(r"[.!?]+", text)
+    # Split into sentences while preserving punctuation for question detection
+    sentences = re.split(r"(?<=[.!?])\s+", text.strip()) if text else []
 
     claims = []
     for sentence in sentences:
         sentence = sentence.strip()
+        if not sentence:
+            continue
+        is_question = sentence.endswith("?")
+        sentence = sentence.rstrip(" .!?").strip()
 
         # Skip empty or very short
         if len(sentence) < MIN_CLAIM_LENGTH:
             continue
 
         # Skip questions
-        if "?" in sentence or sentence.lower().startswith(
+        if is_question or sentence.lower().startswith(
             (
                 "who",
                 "what",
@@ -227,9 +249,14 @@ def extract_claims_llm(text: str) -> list[str]:
             text=sanitize_user_input(text),
         )
 
+        if len(messages) < 2:
+            raise ValueError("Prompt construction returned insufficient messages")
+
         # Reconstruct prompt for the deprecated `complete_json`
-        system_content = messages[0]["content"]
-        user_content = messages[1]["content"]
+        system_content = messages[0].get("content")
+        user_content = messages[1].get("content")
+        if system_content is None or user_content is None:
+            raise ValueError("Prompt messages missing content")
         reconstructed_prompt = f"{system_content}\n\n{user_content}"
 
         result = complete_json(
@@ -253,9 +280,9 @@ def extract_claims_llm(text: str) -> list[str]:
             f"LLM dependencies not found for claim extraction: {e}. Install with `pip install cortex-llm`."
         )
         return extract_claims_simple(text)
-    except Exception as e:
-        logger.warning(
-            f"LLM claim extraction failed due to an API error: {e}. Using heuristics."
+    except Exception:
+        logger.exception(
+            "LLM claim extraction failed due to an API error. Using heuristics."
         )
         return extract_claims_simple(text)
 
@@ -319,16 +346,26 @@ def check_claim_against_facts_embedding(
     Returns:
         (is_supported, confidence, supporting_fact, method)
     """
+    if not facts:
+        return (False, 0.0, None, "embedding")
+
     try:
         client = get_embeddings_client()
-
-        claim_embedding = client.embed(claim)
-        if not facts:
-            return (False, 0.0, None, "embedding")
 
         if fact_embeddings is None:
             # Use embed_texts for efficiency
             fact_embeddings = client.embed_texts(facts)
+        if not fact_embeddings:
+            return (False, 0.0, None, "embedding")
+        if len(fact_embeddings) != len(facts):
+            logger.warning(
+                "Fact embedding length mismatch (facts=%d embeddings=%d); using keyword fallback.",
+                len(facts),
+                len(fact_embeddings),
+            )
+            return check_claim_against_facts_keyword(claim, facts)
+
+        claim_embedding = client.embed(claim)
 
         best_score = 0.0
         best_fact = None
@@ -351,8 +388,8 @@ def check_claim_against_facts_embedding(
             f"Embeddings client dependencies not found: {e}. Install with `pip install cortex-embeddings`."
         )
         return check_claim_against_facts_keyword(claim, facts)
-    except Exception as e:
-        logger.warning(f"Embedding-based matching failed: {e}. Using keyword fallback.")
+    except Exception:
+        logger.exception("Embedding-based matching failed. Using keyword fallback.")
         return check_claim_against_facts_keyword(claim, facts)
 
 
@@ -487,9 +524,14 @@ def check_grounding_llm(
             claims=claims_text,
         )
 
+        if len(messages) < 2:
+            raise ValueError("Prompt construction returned insufficient messages")
+
         # Reconstruct prompt for the deprecated `complete_json`
-        system_content = messages[0]["content"]
-        user_content = messages[1]["content"]
+        system_content = messages[0].get("content")
+        user_content = messages[1].get("content")
+        if system_content is None or user_content is None:
+            raise ValueError("Prompt messages missing content")
         reconstructed_prompt = f"{system_content}\n\n{user_content}"
 
         result = complete_json(
@@ -499,14 +541,17 @@ def check_grounding_llm(
 
         analysis = GroundingAnalysisResult(**result)
 
-        claim_analyses_with_method = [
-            ClaimAnalysis(**c.model_dump(), method="llm") for c in analysis.claims
-        ]
+        claim_analyses_with_method = []
+        for claim in analysis.claims:
+            data = claim.model_dump()
+            if not data.get("method"):
+                data["method"] = "llm"
+            claim_analyses_with_method.append(ClaimAnalysis(**data))
 
         # Calculate grounding ratio
         total_claims = len(claim_analyses_with_method)
         supported_claims = sum(1 for c in claim_analyses_with_method if c.is_supported)
-        grounding_ratio = supported_claims / total_claims if total_claims > 0 else 1.0
+        grounding_ratio = supported_claims / total_claims if total_claims > 0 else 0.0
 
         return GroundingCheck(
             answer_candidate=answer_candidate,
@@ -522,9 +567,9 @@ def check_grounding_llm(
             f"LLM dependencies not found for grounding check: {e}. Install with `pip install cortex-llm`."
         )
         return check_grounding_embedding(answer_candidate, facts)
-    except Exception as e:
-        logger.warning(
-            f"LLM grounding check failed due to an API error: {e}. Using embedding fallback."
+    except Exception:
+        logger.exception(
+            "LLM grounding check failed due to an API error. Using embedding fallback."
         )
         return check_grounding_embedding(answer_candidate, facts)
 
@@ -628,7 +673,7 @@ def check_grounding_embedding(
 
     # Calculate overall grounding
     supported_count = sum(1 for c in claim_analyses if c.is_supported)
-    grounding_ratio = supported_count / len(claims) if claims else 1.0
+    grounding_ratio = supported_count / len(claims) if claims else 0.0
 
     is_grounded = grounding_ratio >= grounding_threshold
     avg_confidence = (

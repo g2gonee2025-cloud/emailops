@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 import { cn } from '../../lib/utils';
 import { CheckCircle, AlertCircle, Info, X, AlertTriangle } from 'lucide-react';
 import { type Toast } from '../../contexts/toastContext';
+import { Button } from './Button';
 
 /**
  * A container that renders all active toasts.
@@ -78,13 +79,16 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
         <p className="text-sm font-medium text-white/90">{toast.message}</p>
         {toast.details && <p className="mt-1 text-xs text-white/60">{toast.details}</p>}
       </div>
-      <button
+      <Button
+        type="button"
         onClick={() => onRemove(toast.id)}
-        className="p-1 rounded-full hover:bg-white/10 transition-colors flex-shrink-0"
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7 flex-shrink-0"
         aria-label="Dismiss notification"
       >
         <X className="w-4 h-4 text-white/50" />
-      </button>
+      </Button>
     </div>
   );
 }

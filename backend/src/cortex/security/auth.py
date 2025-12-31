@@ -7,16 +7,13 @@ from __future__ import annotations
 import inspect
 from typing import Any
 
-import jwt
 from cortex.common.exceptions import (
-    CortexError,
     SecurityError,
 )
 from cortex.config.loader import get_config
-from cortex.context import user_id_ctx
+from cortex.context import claims_ctx, user_id_ctx
 from cortex.security.validators import validate_email_format
 from fastapi import HTTPException, Request
-from jwt.exceptions import PyJWTError as JWTError
 
 # Reference to JWT decoder configured in main.py
 _jwt_decoder: Any = None
@@ -38,6 +35,31 @@ async def get_current_user():
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user_id
+
+
+async def require_admin() -> dict[str, Any]:
+    """FastAPI dependency to enforce admin access."""
+    user_id = user_id_ctx.get()
+    if not user_id or user_id == "anonymous":
+        raise HTTPException(
+            status_code=401,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    claims = claims_ctx.get() or {}
+    role = claims.get("role")
+    roles = claims.get("roles") or []
+    if isinstance(roles, str):
+        roles = [roles]
+    if role:
+        roles = [*roles, role]
+
+    role_names = {r.lower() for r in roles if isinstance(r, str)}
+    if "admin" not in role_names:
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    return claims
 
 
 async def _extract_identity(request: Request) -> tuple[str, str, dict[str, Any]]:

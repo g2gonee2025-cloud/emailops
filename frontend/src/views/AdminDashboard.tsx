@@ -4,7 +4,8 @@ import GlassCard from '../components/ui/GlassCard';
 import { StatusIndicator } from '../components/ui/StatusIndicator';
 import { Activity, Server, Settings, Play, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { AppConfig, redactObject } from '../schemas/admin';
+import { redactObject } from '../schemas/admin';
+import type { AppConfig, DoctorCheck } from '../schemas/admin';
 import { useAdmin } from '../hooks/useAdmin';
 import { Skeleton } from '../components/ui/Skeleton';
 import { Alert, AlertDescription, AlertTitle } from '../components/ui/Alert';
@@ -31,7 +32,7 @@ const getStatusColor = (status: string) => {
   };
 
 export default function AdminDashboard() {
-    const { toast } = useToast();
+    const { addToast } = useToast();
     const {
         status, isStatusLoading, statusError,
         config, isConfigLoading, configError,
@@ -40,46 +41,47 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         if (statusError) {
-            toast({
-                variant: "destructive",
-                title: "Error loading status",
-                description: statusError.message,
+            addToast({
+                type: 'error',
+                message: "Error loading status",
+                details: statusError.message,
             });
         }
-    }, [statusError, toast]);
+    }, [statusError, addToast]);
 
     useEffect(() => {
         if (configError) {
-            toast({
-                variant: "destructive",
-                title: "Error loading configuration",
-                description: configError.message,
+            addToast({
+                type: 'error',
+                message: "Error loading configuration",
+                details: configError.message,
             });
         }
-    }, [configError, toast]);
+    }, [configError, addToast]);
 
     useEffect(() => {
         if (doctorError) {
-            toast({
-                variant: "destructive",
-                title: "Error running diagnostics",
-                description: doctorError.message,
+            addToast({
+                type: 'error',
+                message: "Error running diagnostics",
+                details: doctorError.message,
             });
         }
-    }, [doctorError, toast]);
+    }, [doctorError, addToast]);
 
     const handleSaveConfig = (newConfig: AppConfig) => {
         console.log("Saving new config:", newConfig);
         // This is a placeholder. In a real app, you'd call a mutation here.
-        toast({
-            title: "Configuration Saved",
-            description: "Changes have been saved successfully.",
+        addToast({
+            type: 'info',
+            message: "Configuration Saved",
+            details: "Changes have been saved successfully.",
         });
     };
 
     const redactedDoctorReport = useMemo(() => {
         if (!doctorReport) return null;
-        const redactedChecks = doctorReport.checks.map(check => ({
+        const redactedChecks = doctorReport.checks.map((check: DoctorCheck) => ({
             ...check,
             details: redactObject(check.details) ?? undefined,
         }));
@@ -91,7 +93,7 @@ export default function AdminDashboard() {
     <div className="p-8 space-y-8 pb-24">
       <header className="flex justify-between items-center">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight mb-2 bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-display font-semibold tracking-tight mb-2 bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">
             System Administration
           </h1>
           <p className="text-white/40">Diagnostics and Configuration Control</p>
@@ -109,7 +111,7 @@ export default function AdminDashboard() {
         <GlassCard className="p-6 space-y-6">
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400">
+                    <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-300">
                         <Activity className="w-6 h-6" />
                     </div>
                     <h2 className="text-xl font-semibold">System Doctor</h2>
@@ -154,7 +156,7 @@ export default function AdminDashboard() {
                              )}>{redactedDoctorReport.overall_status}</span>
                          </div>
 
-                        {redactedDoctorReport.checks.map((check, idx) => (
+                        {redactedDoctorReport.checks.map((check: DoctorCheck, idx: number) => (
                             <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:border-white/10 transition-colors">
                                 <div className="flex items-center gap-3">
                                     {getStatusIcon(check.status)}
@@ -181,7 +183,7 @@ export default function AdminDashboard() {
             {/* Environment Status */}
             <GlassCard className="p-6">
                 <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 rounded-lg bg-purple-500/20 text-purple-400">
+                    <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-300">
                         <Server className="w-6 h-6" />
                     </div>
                     <h2 className="text-xl font-semibold">Environment</h2>
@@ -250,7 +252,7 @@ export default function AdminDashboard() {
                 )}
                 {config && (
                     <ConfigPanel
-                        config={config}
+                        config={config as unknown as AppConfig}
                         onSave={handleSaveConfig}
                         isLoading={isConfigLoading}
                     />

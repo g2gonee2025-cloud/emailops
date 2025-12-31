@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from pgvector.sqlalchemy import HALFVEC
 from sqlalchemy import (

@@ -1,7 +1,7 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { useSummarize } from '../../hooks/useSummarize';
 import { api } from '../../lib/api';
-import { vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 
@@ -35,7 +35,7 @@ describe('useSummarize', () => {
         action_items: ['Item 1'],
       },
     };
-    (api.summarizeThread as vi.Mock).mockResolvedValue(mockData);
+    (api.summarizeThread as Mock).mockResolvedValue(mockData);
 
     const { result } = renderHook(() => useSummarize(), {
       wrapper: createWrapper(),
@@ -55,7 +55,7 @@ describe('useSummarize', () => {
 
   it('should handle errors from the api', async () => {
     const mockError = new Error('Summarization failed');
-    (api.summarizeThread as vi.Mock).mockRejectedValue(mockError);
+    (api.summarizeThread as Mock).mockRejectedValue(mockError);
 
     const { result } = renderHook(() => useSummarize(), {
       wrapper: createWrapper(),

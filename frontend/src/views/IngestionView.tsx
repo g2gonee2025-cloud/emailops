@@ -2,6 +2,9 @@
 import { useState, useEffect } from 'react';
 import GlassCard from '../components/ui/GlassCard';
 import { StatusIndicator } from '../components/ui/StatusIndicator';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Textarea } from '../components/ui/Textarea';
 import { api } from '../lib/api';
 import type { S3Folder } from '../lib/api';
 import type { IngestStatusResponse, PushDocument } from '../lib/api';
@@ -82,7 +85,7 @@ function UploadSection() {
   return (
     <section>
       <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-        <Upload className="w-5 h-5 text-purple-400" />
+        <Upload className="w-5 h-5 text-emerald-300" />
         Manual Upload
       </h2>
       <GlassCard className="p-5 space-y-4">
@@ -91,42 +94,49 @@ function UploadSection() {
             <div className="flex items-center justify-between">
               <span className="text-sm text-white/40">Document {i + 1}</span>
               {documents.length > 1 && (
-                <button onClick={() => removeDocument(i)} className="text-red-400 hover:text-red-300 p-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeDocument(i)}
+                  className="text-red-400 hover:text-red-300"
+                >
                   <Trash2 className="w-4 h-4" />
-                </button>
+                </Button>
               )}
             </div>
-            <textarea
+            <Textarea
               value={doc.text}
               onChange={(e) => updateDocument(i, 'text', e.target.value)}
               placeholder="Document text content..."
-              className="w-full h-24 px-3 py-2 rounded-lg bg-white/5 border border-white/10 focus:border-blue-500/50 focus:outline-none text-sm text-white placeholder-white/30 resize-none"
+              className="h-24 bg-white/5 border-white/10 focus-visible:ring-emerald-500/30 text-white placeholder-white/30 resize-none"
             />
-            <input
+            <Input
               type="text"
               value={doc.metadata}
               onChange={(e) => updateDocument(i, 'metadata', e.target.value)}
               placeholder='Optional metadata JSON, e.g. {"source": "manual"}'
-              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 focus:border-blue-500/50 focus:outline-none text-xs text-white placeholder-white/30 font-mono"
+              className="bg-white/5 border-white/10 focus-visible:ring-emerald-500/30 text-xs text-white placeholder-white/30 font-mono"
             />
           </div>
         ))}
 
         <div className="flex gap-2">
-          <button
+          <Button
             onClick={addDocument}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm transition-all"
+            variant="glass"
+            className="gap-2 text-sm"
           >
             <Plus className="w-4 h-4" /> Add Document
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleUpload}
             disabled={isUploading || !documents.some(d => d.text.trim())}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-sm font-medium transition-all ml-auto"
+            className="ml-auto gap-2 text-sm font-medium"
           >
             {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
             Upload
-          </button>
+          </Button>
         </div>
 
         {result && (
@@ -240,7 +250,7 @@ export default function IngestionView() {
       <header className="p-6 border-b border-white/5">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-display font-semibold tracking-tight bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">
               Ingestion Pipeline
             </h1>
             <p className="text-white/40 mt-1">Manage data ingestion from S3/Spaces</p>
@@ -252,14 +262,14 @@ export default function IngestionView() {
                 type="checkbox"
                 checked={dryRun}
                 onChange={(e) => setDryRun(e.target.checked)}
-                className="rounded border-white/20 bg-white/5 text-blue-500 focus:ring-blue-500/50"
+                className="rounded border-white/20 bg-white/5 text-emerald-400 focus:ring-emerald-500/50"
               />
               Dry Run
             </label>
-            <button
+            <Button
               onClick={startIngestion}
               disabled={isStartingJob}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 transition-all font-medium"
+              className="gap-2 font-medium"
             >
               {isStartingJob ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -267,7 +277,7 @@ export default function IngestionView() {
                 <Play className="w-4 h-4" />
               )}
               {dryRun ? 'Preview' : 'Start Ingestion'}
-            </button>
+            </Button>
           </div>
         </div>
       </header>
@@ -316,7 +326,7 @@ export default function IngestionView() {
                     <div className="space-y-1">
                       <span className="text-xs text-white/40">Chunks</span>
                       <div className="text-xl font-bold flex items-center gap-2">
-                        <Database className="w-4 h-4 text-purple-400" />
+                        <Database className="w-4 h-4 text-emerald-300" />
                         {job.status.chunks_created}
                       </div>
                     </div>
@@ -347,18 +357,20 @@ export default function IngestionView() {
               <FolderOpen className="w-5 h-5 text-yellow-400" />
               S3 Folders ({folders.length})
             </h2>
-            <button
+            <Button
               onClick={loadFolders}
               disabled={isLoadingFolders}
-              className="p-2 rounded-lg hover:bg-white/10 transition-colors text-white/60 hover:text-white"
+              variant="ghost"
+              size="icon"
+              className="text-white/60 hover:text-white"
             >
               <RefreshCw className={cn("w-4 h-4", isLoadingFolders && "animate-spin")} />
-            </button>
+            </Button>
           </div>
 
           {isLoadingFolders && (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
+              <Loader2 className="w-8 h-8 animate-spin text-emerald-300" />
             </div>
           )}
 

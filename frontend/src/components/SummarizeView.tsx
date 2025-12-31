@@ -7,13 +7,14 @@ import { Skeleton } from './ui/Skeleton';
 import { useToast } from '../contexts/toastContext';
 import { Loader2, Sparkles, AlertTriangle } from 'lucide-react';
 import type { ThreadSummary } from '../schemas/summarize';
+import { Button } from './ui/Button';
 
 interface SummarizeViewProps {
   threadId: string;
 }
 
 export default function SummarizeView({ threadId }: SummarizeViewProps) {
-  const { toast } = useToast();
+  const { addToast: toast } = useToast();
   const {
     summarize,
     data: summarizeData,
@@ -24,10 +25,9 @@ export default function SummarizeView({ threadId }: SummarizeViewProps) {
   useEffect(() => {
     if (summarizeError) {
       toast({
-        variant: 'destructive',
-        title: 'Summarization Failed',
-        description:
-          'An unexpected error occurred while generating the summary.',
+        type: 'error',
+        message: 'Summarization Failed',
+        details: 'An unexpected error occurred while generating the summary.',
       });
     }
   }, [summarizeError, toast]);
@@ -40,10 +40,11 @@ export default function SummarizeView({ threadId }: SummarizeViewProps) {
 
   return (
     <div>
-      <button
+      <Button
         onClick={handleSummarize}
         disabled={isSummarizing}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm font-medium transition-all disabled:opacity-50"
+        variant="glass"
+        className="gap-2 text-sm font-medium"
       >
         {isSummarizing ? (
           <Loader2 className="w-4 h-4 animate-spin" />
@@ -51,7 +52,7 @@ export default function SummarizeView({ threadId }: SummarizeViewProps) {
           <Sparkles className="w-4 h-4" />
         )}
         Summarize
-      </button>
+      </Button>
 
       <div className="mt-4">
         {isSummarizing && <SummarySkeleton />}

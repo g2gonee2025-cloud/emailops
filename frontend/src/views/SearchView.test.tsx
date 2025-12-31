@@ -1,5 +1,5 @@
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import SearchView from './SearchView';
 import { AllTheProviders } from '../tests/testUtils'; // Wrapper for context providers
@@ -15,7 +15,7 @@ vi.mock('../hooks/useDebounce', () => ({
 }));
 
 vi.mock('../components/ui/Toast', async (importOriginal) => {
-  const actual = await importOriginal();
+  const actual = await importOriginal() as object;
   return {
     ...actual,
     useToast: () => ({
@@ -29,7 +29,7 @@ const { useSearch } = await import('../hooks/useSearch');
 
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom');
+  const actual = await vi.importActual('react-router-dom') as object;
   return {
     ...actual,
     useNavigate: () => mockNavigate,
@@ -70,7 +70,7 @@ describe('SearchView', () => {
   };
 
   it('renders the initial state correctly', () => {
-    (useSearch as vi.Mock).mockReturnValue({
+    (useSearch as Mock).mockReturnValue({
       data: null,
       isLoading: false,
       isError: false,
@@ -84,7 +84,7 @@ describe('SearchView', () => {
   });
 
   it('displays a loading state while fetching results', () => {
-    (useSearch as vi.Mock).mockReturnValue({
+    (useSearch as Mock).mockReturnValue({
       data: null,
       isLoading: true,
       isError: false,
@@ -99,7 +99,7 @@ describe('SearchView', () => {
   });
 
   it('displays search results when the query is successful', async () => {
-    (useSearch as vi.Mock).mockReturnValue({
+    (useSearch as Mock).mockReturnValue({
       data: mockData,
       isLoading: false,
       isError: false,
@@ -120,7 +120,7 @@ describe('SearchView', () => {
   });
 
   it('displays a "no results" message when the search yields no results', async () => {
-    (useSearch as vi.Mock).mockReturnValue({
+    (useSearch as Mock).mockReturnValue({
       data: { results: [], total_count: 0, query_time_ms: 10 },
       isLoading: false,
       isError: false,
@@ -137,7 +137,7 @@ describe('SearchView', () => {
   });
 
   it('displays an error message when the search fails', async () => {
-    (useSearch as vi.Mock).mockReturnValue({
+    (useSearch as Mock).mockReturnValue({
       data: null,
       isLoading: false,
       isError: true,
@@ -158,7 +158,7 @@ describe('SearchView', () => {
   });
 
   it('navigates to the correct thread when a result is clicked', async () => {
-    (useSearch as vi.Mock).mockReturnValue({
+    (useSearch as Mock).mockReturnValue({
       data: mockData,
       isLoading: false,
       isError: false,
@@ -176,7 +176,7 @@ describe('SearchView', () => {
   });
 
   it('clears the input when the clear button is clicked', async () => {
-    (useSearch as vi.Mock).mockReturnValue({
+    (useSearch as Mock).mockReturnValue({
       data: null,
       isLoading: false,
       isError: false,

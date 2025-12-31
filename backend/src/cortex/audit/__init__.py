@@ -9,8 +9,8 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-from datetime import UTC, datetime, timezone
-from typing import Any, Literal, Optional
+from datetime import UTC, datetime
+from typing import Any, Literal
 from uuid import uuid4
 
 from cortex.db.models import AuditLog
@@ -18,6 +18,7 @@ from cortex.db.session import SessionLocal
 from cortex.observability import trace_operation
 from cortex.safety.policy_enforcer import PolicyDecision
 from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +50,7 @@ def log_audit_event(
     risk_level: Literal["low", "medium", "high"] = "low",
     correlation_id: str | None = None,
     metadata: dict[str, Any] | None = None,
-    db_session: SessionLocal | None = None,
+    db_session: Session | None = None,
 ) -> None:
     """
     Record an audit event to the database.
@@ -114,9 +115,9 @@ def log_audit_event(
             with SessionLocal() as session:
                 _write_audit_log(session)
 
-    except Exception as e:
+    except Exception:
         # Audit logging failure should not crash the app, but must be logged critically
-        logger.critical(f"AUDIT LOGGING FAILED: {e}", exc_info=True)
+        logger.critical("AUDIT LOGGING FAILED", exc_info=True)
 
 
 @trace_operation("tool_audit_log")
@@ -129,7 +130,7 @@ def tool_audit_log(
     policy_decision: PolicyDecision | None = None,
     correlation_id: str | None = None,
     metadata: dict[str, Any] | None = None,
-    db_session: Any | None = None,
+    db_session: Session | None = None,
 ) -> AuditEntry:
     """
     Create and persist an audit log entry.
@@ -245,8 +246,8 @@ def get_audit_trail(
 
             return query.all()
 
-    except Exception as e:
-        logger.error(f"Failed to query audit trail: {e}", exc_info=True)
+    except Exception:
+        logger.error("Failed to query audit trail", exc_info=True)
         return []
 
 
@@ -289,8 +290,10 @@ def get_audit_log_cli(
         )
         for r in results:
             correlation_id_str = (
-                r.audit_metadata.get("correlation_id") if r.audit_metadata else "N/A"
-            )
+                r.audit_metadata.get("correlation_id", "N/A")
+                if r.audit_metadata
+                else "N/A"
+            ) or "N/A"
             table.add_row(
                 str(r.ts),
                 r.action,
@@ -303,4 +306,4 @@ def get_audit_log_cli(
         console.print(table)
 
     except Exception as e:
-        console.print(f"[red]Error querying audit log: {e}[/red]")
+        console.print(f"[red]Error querying audit log: {e!s}[/red]")

@@ -31,7 +31,7 @@ describe('useAdmin', () => {
   });
 
   it('should run doctor', async () => {
-    const mockReport = { overall_status: 'healthy', checks: [] };
+    const mockReport = { overall_status: 'healthy' as const, checks: [] };
     vi.mocked(api.runDoctor).mockResolvedValue(mockReport);
 
     const { result } = renderHook(() => useAdmin(), { wrapper: AllTheProviders });

@@ -27,7 +27,7 @@ try:
 except ImportError:
     RICH_AVAILABLE = False
 
-console = Console() if RICH_AVAILABLE else None
+console: Console | None = Console() if RICH_AVAILABLE else None
 
 
 def cmd_db_stats(args: argparse.Namespace) -> None:
@@ -165,16 +165,28 @@ def cmd_db_migrate(args: argparse.Namespace) -> None:
     if args.dry_run:
         cmd.extend(["--sql"])
 
-    console.print(f"Running command: [cyan]{' '.join(cmd)}[/cyan]")
+    if console:
+        console.print(f"Running command: [cyan]{' '.join(cmd)}[/cyan]")
+    else:
+        print(f"Running command: {' '.join(cmd)}")
     result = subprocess.run(cmd, cwd=str(backend_dir), capture_output=True, text=True)
 
     if result.returncode == 0:
-        console.print("[green]✓ Migrations applied successfully.[/green]")
-        if args.dry_run:
-            console.print(result.stdout)
+        if console:
+            console.print("[green]✓ Migrations applied successfully.[/green]")
+            if args.dry_run:
+                console.print(result.stdout)
+        else:
+            print("✓ Migrations applied successfully.")
+            if args.dry_run:
+                print(result.stdout)
     else:
-        console.print("[red]✗ Migration failed.[/red]")
-        console.print(result.stderr)
+        if console:
+            console.print("[red]✗ Migration failed.[/red]")
+            console.print(result.stderr)
+        else:
+            print("✗ Migration failed.")
+            print(result.stderr)
         sys.exit(1)
 
 
@@ -224,7 +236,9 @@ def cmd_db_cleanup(args: argparse.Namespace) -> None:
         sys.exit(1)
 
 
-def setup_db_parser(subparsers: Any) -> None:
+def setup_db_parser(
+    subparsers: argparse._SubParsersAction,
+) -> None:
     """Add db subcommands to the CLI parser."""
     db_parser = subparsers.add_parser(
         "db",

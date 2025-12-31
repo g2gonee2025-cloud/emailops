@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedLayout from './components/Layout';
 
 // Helper for lazy loading views
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const lazyView = (importFunc: () => Promise<{ default: React.ComponentType<any> }>) => {
   const LazyComponent = lazy(importFunc);
   return (
@@ -29,11 +30,11 @@ export const AppRoutes = () => (
       <Route index element={<Navigate to="/dashboard" replace />} />
       <Route path="dashboard" element={DashboardView} />
       <Route path="ask" element={AskView} />
-      <Route path="search" element={<SearchView />} />
-      <Route path="thread/:id" element={<ThreadView />} />
-      <Route path="draft" element={<DraftView />} />
-      <Route path="ingest" element={<IngestionView />} />
-      <Route path="admin" element={<AdminDashboard />} />
+      <Route path="search" element={SearchView} />
+      <Route path="thread/:id" element={ThreadView} />
+      <Route path="draft" element={DraftView} />
+      <Route path="ingest" element={IngestionView} />
+      <Route path="admin" element={AdminDashboard} />
     </Route>
   </Routes>
 );

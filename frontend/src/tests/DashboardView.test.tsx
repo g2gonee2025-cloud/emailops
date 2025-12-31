@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from './testUtils';
 import DashboardView from '../views/DashboardView';
-import { vi } from 'vitest';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { api } from '../lib/api';
 import type { HealthResponse } from '../lib/api';
 
@@ -9,8 +9,15 @@ vi.mock('../lib/api');
 const mockedApi = vi.mocked(api);
 
 describe('DashboardView', () => {
+  beforeEach(() => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(global, 'setInterval').mockImplementation(() => 0 as unknown as NodeJS.Timeout);
+    vi.spyOn(global, 'clearInterval').mockImplementation(() => {});
+  });
+
   afterEach(() => {
-    vi.resetAllMocks();
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should display loading state initially', () => {
@@ -24,6 +31,7 @@ describe('DashboardView', () => {
     const mockHealth: HealthResponse = {
       status: 'healthy',
       version: '1.2.3',
+      environment: 'test',
     };
     mockedApi.fetchHealth.mockResolvedValue(mockHealth);
     render(<DashboardView />);
@@ -49,14 +57,13 @@ describe('DashboardView', () => {
   });
 
   it('should render all KPI cards and other sections', () => {
-    mockedApi.fetchHealth.mockResolvedValue({ status: 'healthy', version: '1.2.3' });
+    mockedApi.fetchHealth.mockResolvedValue({ status: 'healthy', version: '1.2.3', environment: 'test' });
     render(<DashboardView />);
 
     expect(screen.getByText('Mission Control')).toBeInTheDocument();
-    expect(screen.getByText('Pipeline Throughput')).toBeInTheDocument();
-    expect(screen.getByText('Active Connections')).toBeInTheDocument();
-    expect(screen.getByText('Vector Index')).toBeInTheDocument();
-    expect(screen.getByText('Security Gate')).toBeInTheDocument();
+    expect(screen.getByText('Total Emails Processed')).toBeInTheDocument();
+    expect(screen.getByText('Average Response Time')).toBeInTheDocument();
+    expect(screen.getByText('Open Rate')).toBeInTheDocument();
     expect(screen.getByText('Live Process Stream')).toBeInTheDocument();
     expect(screen.getByText('System Uptime')).toBeInTheDocument();
     expect(screen.getByText('Email Processing')).toBeInTheDocument();

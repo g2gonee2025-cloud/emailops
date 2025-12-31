@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 from cortex.audit import log_audit_event
 from cortex.config.loader import get_config
@@ -16,7 +16,6 @@ from cortex.context import tenant_id_ctx, user_id_ctx
 from cortex.domain_models.rag import Answer, RetrievalDiagnostics, ThreadSummary
 from cortex.llm.client import complete_json, complete_messages, complete_text
 from cortex.observability import trace_operation  # P2 Fix: Enable tracing
-from cortex.orchestration.graphs import build_summarize_graph
 from cortex.orchestration.nodes import (
     _extract_evidence_from_answer,
     node_assemble_context,
@@ -29,7 +28,6 @@ from cortex.prompts import (
 from cortex.rag_api.models import ChatMessage, ChatRequest, ChatResponse
 from cortex.retrieval.hybrid_search import KBSearchInput, tool_kb_search_hybrid
 from cortex.retrieval.query_classifier import (
-    QueryClassificationInput,
     tool_classify_query,
 )
 from cortex.retrieval.results import SearchResults

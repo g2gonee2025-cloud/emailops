@@ -8,12 +8,11 @@ Downloads conversation folders from DigitalOcean Spaces for processing.
 from __future__ import annotations
 
 import logging
-import os
 import tempfile
 from collections.abc import Iterator
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import boto3
 from botocore.config import Config

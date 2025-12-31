@@ -21,22 +21,26 @@ const mockMessages: SearchResult[] = [
     conversation_id: 'conv1',
     content: 'This is the first message.',
     score: 0.95,
-    role: 'user',
-    timestamp: '2024-01-01T12:00:00Z',
-    sender: 'test@example.com',
-    recipients: ['recipient@example.com'],
-    subject: 'Test Subject 1'
+    metadata: {
+      role: 'user',
+      timestamp: '2024-01-01T12:00:00Z',
+      sender: 'test@example.com',
+      recipients: ['recipient@example.com'],
+      subject: 'Test Subject 1'
+    }
   },
   {
     chunk_id: '2',
     conversation_id: 'conv2',
     content: 'This is the second message.',
     score: 0.85,
-    role: 'user',
-    timestamp: '2024-01-01T12:01:00Z',
-    sender: 'test2@example.com',
-    recipients: ['recipient2@example.com'],
-    subject: 'Test Subject 2'
+    metadata: {
+      role: 'user',
+      timestamp: '2024-01-01T12:01:00Z',
+      sender: 'test2@example.com',
+      recipients: ['recipient2@example.com'],
+      subject: 'Test Subject 2'
+    }
   },
 ];
 

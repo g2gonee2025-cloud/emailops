@@ -6,12 +6,8 @@ import type { HealthResponse } from '../lib/api';
 import { cn } from '../lib/utils';
 import {
   Activity,
-  Database,
   Mail,
-  Shield,
   TrendingUp,
-  Zap,
-  Server,
   Clock,
 } from 'lucide-react';
 import KPIGrid from '../components/dashboard/KPIGrid';
@@ -30,7 +26,7 @@ export default function DashboardView() {
 
   useEffect(() => {
     // Fetch health
-    api.fetchHealth().then(setHealth);
+    api.fetchHealth().then(setHealth).catch((err) => console.error('Health check failed', err));
 
     // Simulate log stream
     const messages = [
@@ -61,7 +57,10 @@ export default function DashboardView() {
       {/* Header */}
       <header className="flex justify-between items-center" data-testid="dashboard-header">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight mb-2 bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+          <h1
+            className="text-4xl font-display font-semibold tracking-tight mb-2 bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent"
+            data-testid="dashboard-title"
+          >
             Mission Control
           </h1>
           <p className="text-white/40">Real-time system monitoring and ingestion status.</p>
@@ -112,8 +111,8 @@ export default function DashboardView() {
                         ? 'text-red-400'
                         : log.level === 'WARN'
                           ? 'text-yellow-400'
-                          : log.level === 'DEBUG'
-                            ? 'text-purple-400'
+                        : log.level === 'DEBUG'
+                            ? 'text-cyan-400'
                             : 'text-blue-400',
                     )}
                   >

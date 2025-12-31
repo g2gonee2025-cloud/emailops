@@ -129,6 +129,7 @@ class TokenCounter:
 
     model: str = "cl100k_base"
     _encoding: Any = None
+    _fallback_token_lengths: list[int] | None = None
 
     def __post_init__(self):
         if _HAS_TIKTOKEN:
@@ -141,8 +142,10 @@ class TokenCounter:
         """Count tokens in text."""
         if self._encoding:
             return len(self._encoding.encode(text))
+        if not text:
+            return 0
         # Fallback: approximate as chars/4
-        return len(text) // 4
+        return max(1, len(text) // 4)
 
     def tokens_to_chars(self, tokens: int) -> int:
         """Approximate character count for a token count."""
@@ -153,15 +156,36 @@ class TokenCounter:
         """Encode text to token IDs."""
         if self._encoding:
             return self._encoding.encode(text)
-        # Fallback: just use characters
-        return list(text.encode("utf-8"))
+        if not text:
+            self._fallback_token_lengths = []
+            return []
+        token_count = self.count(text)
+        base_len = len(text) // token_count
+        remainder = len(text) % token_count
+        self._fallback_token_lengths = [
+            base_len + (1 if i < remainder else 0) for i in range(token_count)
+        ]
+        # Fallback: approximate tokens by evenly distributing characters
+        return list(range(token_count))
 
     def decode(self, tokens: list[int]) -> str:
         """Decode token IDs to text."""
         if self._encoding:
             return self._encoding.decode(tokens)
         # Fallback
-        return bytes(tokens).decode("utf-8", errors="replace")
+        if not tokens:
+            return ""
+        if self._fallback_token_lengths:
+            total_len = 0
+            for token in tokens:
+                if isinstance(token, int) and 0 <= token < len(
+                    self._fallback_token_lengths
+                ):
+                    total_len += self._fallback_token_lengths[token]
+                else:
+                    total_len += 1
+            return " " * total_len
+        return " " * len(tokens)
 
 
 # Sentence boundary patterns
@@ -424,6 +448,9 @@ class Chunker:
                     section_idx,
                 )
                 section_idx += 1
+
+            if token_end == total_tokens:
+                break
 
             next_token_pos = token_end - eff_overlap_tokens
             if next_token_pos <= token_pos:

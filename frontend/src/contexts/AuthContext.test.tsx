@@ -4,6 +4,11 @@ import { AuthProvider, useAuth } from './AuthContext';
 import { vi } from 'vitest';
 import { api } from '@/lib/api';
 
+const routerFuture = {
+  v7_startTransition: true,
+  v7_relativeSplatPath: true,
+};
+
 // Mock the api module
 vi.mock('@/lib/api', () => ({
   api: {
@@ -28,7 +33,7 @@ describe('AuthContext', () => {
   });
 
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <BrowserRouter>
+    <BrowserRouter future={routerFuture}>
       <AuthProvider>{children}</AuthProvider>
     </BrowserRouter>
   );

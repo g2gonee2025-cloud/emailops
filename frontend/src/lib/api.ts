@@ -5,7 +5,7 @@
  */
 
 import { z } from 'zod';
-import { DraftFormSchema } from '../schemas/draft';
+import { GeneratedDraftSchema } from '../schemas/draft';
 import { logger } from './logger';
 import {
   doctorReportSchema,
@@ -14,10 +14,11 @@ import {
   type StatusData,
 } from '../schemas/admin';
 
+export type { DoctorReport, StatusData };
+
 // =============================================================================
 // Type Definitions & Zod Schemas
 // =============================================================================
-
 export interface SearchResult {
   chunk_id: string;
   conversation_id: string;
@@ -105,11 +106,10 @@ export interface HealthResponse {
   version: string;
   environment: string;
 }
-
 // Draft Email Types
 const DraftEmailResponseSchema = z.object({
   correlation_id: z.string().optional(),
-  draft: DraftFormSchema,
+  draft: GeneratedDraftSchema,
   confidence: z.number(),
   iterations: z.number(),
 });

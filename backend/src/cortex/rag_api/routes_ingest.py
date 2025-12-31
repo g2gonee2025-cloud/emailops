@@ -11,7 +11,7 @@ import json
 import logging
 import uuid
 from datetime import datetime, timezone
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 import redis.asyncio as redis
 from cortex.common.redis import get_redis
@@ -35,7 +35,7 @@ class IngestFromS3Request(BaseModel):
     """Request to ingest conversations from S3/Spaces."""
 
     prefix: str = Field(default="Outlook/", description="S3 prefix to scan")
-    limit: int | None = Field(default=None, description="Max folders to process")
+    limit: int | None = Field(default=None, ge=1, description="Max folders to process")
     dry_run: bool = Field(
         default=False, description="If true, only list folders without ingesting"
     )
@@ -154,16 +154,30 @@ async def list_s3_folders(
 
         s3_folders = await run_in_threadpool(sync_list_folders)
 
-        response_folders = [
-            {
-                "prefix": folder.prefix,
-                "name": folder.name,
-                "file_count": len(folder.files),
-                "has_conversation": any("conversation.txt" in f for f in folder.files),
-                "has_manifest": any("manifest.json" in f for f in folder.files),
-            }
-            for folder in s3_folders
-        ]
+        def _root_files(folder: S3ConversationFolder) -> set[str]:
+            root_files: set[str] = set()
+            prefix_key = folder.prefix
+            for key in folder.files:
+                if not key.startswith(prefix_key):
+                    continue
+                relative = key[len(prefix_key) :]
+                if "/" in relative:
+                    continue
+                root_files.add(relative.lower())
+            return root_files
+
+        response_folders = []
+        for folder in s3_folders:
+            root_files = _root_files(folder)
+            response_folders.append(
+                {
+                    "prefix": folder.prefix,
+                    "name": folder.name,
+                    "file_count": len(folder.files),
+                    "has_conversation": "conversation.txt" in root_files,
+                    "has_manifest": "manifest.json" in root_files,
+                }
+            )
 
         return ListS3FoldersResponse(
             prefix=prefix,
@@ -295,9 +309,15 @@ async def get_ingestion_status(
     try:
         job_data = json.loads(job_data_raw)
     except json.JSONDecodeError:
-        logger.error(f"Failed to decode JSON for job {job_id}", exc_info=True)
+        logger.error("Failed to decode JSON for job %s", job_id, exc_info=True)
         raise HTTPException(
             status_code=500, detail=f"Could not parse status for job {job_id}"
+        )
+    # Validate that job_data is a dict
+    if not isinstance(job_data, dict):
+        logger.error("Invalid job data format for job %s: expected dict", job_id)
+        raise HTTPException(
+            status_code=500, detail=f"Invalid job data format for job {job_id}"
         )
 
     # Explicitly map fields to the response model to avoid validation errors
@@ -335,12 +355,12 @@ async def _process_s3_folders_with_embeddings(
     try:
         job_data_raw = await redis_client.get(job_key)
         if not job_data_raw:
-            logger.error(f"Job {job_id} not found in Redis for tenant {tenant_id}")
+            logger.error("Job %s not found in Redis for tenant %s", job_id, tenant_id)
             return
         job_data = json.loads(job_data_raw)
     except Exception as e:
         logger.error(
-            f"Failed to load or parse job {job_id} from Redis: {e}", exc_info=True
+            "Failed to load or parse job %s from Redis: %s", job_id, e, exc_info=True
         )
         error_job_data = {
             "status": "failed",
@@ -350,6 +370,21 @@ async def _process_s3_folders_with_embeddings(
         }
         await redis_client.set(job_key, json.dumps(error_job_data), ex=86400)
         return
+
+    if not isinstance(job_data, dict):
+        logger.error("Invalid job data format for job %s: expected dict", job_id)
+        error_job_data = {
+            "job_id": job_id,
+            "status": "failed",
+            "error": "Invalid job data format",
+            "message": "Critical error: invalid job data format.",
+            "completed_at": datetime.now(timezone.utc).isoformat(),
+        }
+        await redis_client.set(job_key, json.dumps(error_job_data), ex=86400)
+        return
+
+    # Propagate tenant context for downstream code that may rely on it
+    tenant_id_ctx.set(tenant_id)
 
     # Update status to 'processing' to give users accurate feedback that work has begun.
     job_data["status"] = "processing"
@@ -380,7 +415,10 @@ async def _process_s3_folders_with_embeddings(
         await redis_client.set(job_key, json.dumps(job_data), ex=86400)
 
         logger.info(
-            f"Ingestion job {job_id} completed: {stats.folders_processed} folders, {stats.chunks_created} chunks"
+            "Ingestion job %s completed: %d folders, %d chunks",
+            job_id,
+            stats.folders_processed,
+            stats.chunks_created,
         )
 
     except Exception as e:
@@ -414,7 +452,6 @@ def _process_push_ingest(
     from cortex.db.models import Chunk
     from cortex.db.session import SessionLocal, set_session_tenant
     from cortex.embeddings.client import EmbeddingsClient
-    from cortex.ingestion.models import IngestJobRequest
     from cortex.ingestion.text_preprocessor import get_text_preprocessor
     from cortex.ingestion.writer import ChunkRecord, DBWriter, ensure_chunk_metadata
     from sqlalchemy import delete
@@ -422,9 +459,27 @@ def _process_push_ingest(
     config = get_config()
     preprocessor = get_text_preprocessor()
 
-    chunk_size = request.chunk_size or config.processing.chunk_size
-    chunk_overlap = request.chunk_overlap or config.processing.chunk_overlap
-    min_tokens = request.min_tokens or 25
+    chunk_size = (
+        request.chunk_size
+        if request.chunk_size is not None
+        else config.processing.chunk_size
+    )
+    chunk_overlap = (
+        request.chunk_overlap
+        if request.chunk_overlap is not None
+        else config.processing.chunk_overlap
+    )
+    min_tokens = request.min_tokens if request.min_tokens is not None else 25
+
+    if chunk_overlap >= chunk_size:
+        raise HTTPException(
+            status_code=400, detail="chunk_overlap must be less than chunk_size"
+        )
+    if min_tokens > chunk_size:
+        raise HTTPException(
+            status_code=400,
+            detail="min_tokens must be less than or equal to chunk_size",
+        )
 
     embeddings_client = EmbeddingsClient() if request.generate_embeddings else None
 
@@ -448,6 +503,9 @@ def _process_push_ingest(
                 if document.document_id
                 else uuid.uuid4()
             )
+            chunk_source = (
+                "email_body" if document.text_type == "email" else "attachment"
+            )
 
             cleaned_text, cleaning_meta = preprocessor.prepare_for_indexing(
                 document.text,
@@ -470,8 +528,11 @@ def _process_push_ingest(
             chunk_texts = [chunk.text for chunk in chunk_models]
             embeddings: list[list[float]] = []
             if embeddings_client and chunk_texts:
-                embeddings = embeddings_client.embed_batch(chunk_texts)
+                embeddings = embeddings_client.embed_texts(chunk_texts)
+            if embeddings and len(embeddings) != len(chunk_models):
+                raise ValueError("Embedding count mismatch")
 
+            doc_chunks: list[dict[str, Any]] = []
             current_chunk_ids = []
             for idx, chunk in enumerate(chunk_models):
                 content_hash = chunk.metadata.get("content_hash", "")
@@ -500,21 +561,21 @@ def _process_push_ingest(
                     "char_end": chunk.char_end,
                     "section_path": chunk.section_path,
                     "extra_data": extra_data,
-                    "source": "external",
+                    "source": chunk_source,
                 }
                 if embeddings:
                     embedding_list = embeddings[idx]
-                    chunk_data["embedding"] = (
-                        embedding_list.tolist()
-                        if hasattr(embedding_list, "tolist")
-                        else list(embedding_list)
-                    )
+                    if embedding_list:
+                        chunk_data["embedding"] = (
+                            embedding_list.tolist()
+                            if hasattr(embedding_list, "tolist")
+                            else list(embedding_list)
+                        )
 
-                chunks_to_write.append(chunk_data)
+                doc_chunks.append(chunk_data)
 
             conversation_extra = {
                 "document_id": doc_key,
-                "source": document.source,
                 "metadata": document.metadata,
                 "ingest_type": "push",
                 "text_type": document.text_type,
@@ -532,12 +593,13 @@ def _process_push_ingest(
                 "extra_data": conversation_extra,
             }
             conversations_to_write.append(conversation_data)
+            chunks_to_write.extend(doc_chunks)
             cleanup_info[conversation_id] = current_chunk_ids
 
             documents_ingested += 1
             chunks_created += len(chunk_models)
             if embeddings:
-                embeddings_generated += len(embeddings)
+                embeddings_generated += sum(1 for embedding in embeddings if embedding)
 
         except Exception as exc:
             error_ref = document.document_id or document.title or "document"
@@ -557,19 +619,19 @@ def _process_push_ingest(
 
                 for chunk_data in chunks_to_write:
                     source = chunk_data.get("source", "attachment")
-                    chunk_data = ensure_chunk_metadata(chunk_data, source=source)
+                    processed_chunk = ensure_chunk_metadata(chunk_data, source=source)
                     record = ChunkRecord(
                         tenant_id=tenant_id,
-                        chunk_id=chunk_data["chunk_id"],
-                        conversation_id=chunk_data["conversation_id"],
-                        text=chunk_data["text"],
-                        chunk_type=chunk_data.get("chunk_type", "message_body"),
-                        embedding=chunk_data.get("embedding"),
-                        position=chunk_data.get("position", 0),
-                        char_start=chunk_data.get("char_start", 0),
-                        char_end=chunk_data.get("char_end", 0),
-                        section_path=chunk_data.get("section_path"),
-                        extra_data=chunk_data.get("extra_data"),
+                        chunk_id=processed_chunk["chunk_id"],
+                        conversation_id=processed_chunk["conversation_id"],
+                        text=processed_chunk["text"],
+                        chunk_type=processed_chunk.get("chunk_type", "message_body"),
+                        embedding=processed_chunk.get("embedding"),
+                        position=processed_chunk.get("position", 0),
+                        char_start=processed_chunk.get("char_start", 0),
+                        char_end=processed_chunk.get("char_end", 0),
+                        section_path=processed_chunk.get("section_path"),
+                        extra_data=processed_chunk.get("extra_data"),
                     )
                     writer.write_chunk(record)
 

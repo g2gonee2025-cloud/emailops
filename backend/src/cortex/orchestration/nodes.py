@@ -14,6 +14,7 @@ import uuid
 from pathlib import Path
 from typing import Any, Optional
 
+from cortex.common.exceptions import SecurityError
 from cortex.config.loader import EmailOpsConfig, get_config
 from cortex.domain_models.facts_ledger import CriticReview, FactsLedger
 from cortex.domain_models.rag import (
@@ -812,7 +813,7 @@ def node_classify_query(state: dict[str, Any]) -> dict[str, Any]:
 
     try:
         validate_for_injection(query)
-    except ValueError:
+    except SecurityError:
         logger.error("Potential injection attack detected in query.")
         return {"error": "Invalid input detected."}
 
@@ -976,7 +977,7 @@ def node_prepare_draft_query(state: dict[str, Any]) -> dict[str, Any]:
     explicit_query = state.get("explicit_query", "")
     try:
         validate_for_injection(explicit_query)
-    except ValueError:
+    except SecurityError:
         logger.error("Potential injection attack detected in explicit_query.")
         return {"error": "Invalid input detected."}
 
@@ -1223,6 +1224,7 @@ def node_audit_draft(state: dict[str, Any]) -> dict[str, Any]:
         "attachments": state.get("attachments", []),
         "check_external": True,
         "role": claims.get("role"),
+        "roles_verified": bool(claims),
     }
 
     decision = check_action("draft_email", metadata)

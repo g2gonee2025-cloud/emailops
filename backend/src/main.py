@@ -17,7 +17,6 @@ Provides:
 from __future__ import annotations
 
 import inspect
-import json
 import logging
 import os
 import time
@@ -43,13 +42,13 @@ from cortex.context import (
     tenant_id_ctx,
     user_id_ctx,
 )
-from cortex.observability import get_trace_context, init_observability
-from cortex.security.validators import validate_email_format
+from cortex.observability import get_logger, get_trace_context, init_observability
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from jwt.exceptions import PyJWTError as JWTError
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.responses import FileResponse
 
 # Version info - should match pyproject.toml
 APP_VERSION = "3.1.0"
@@ -57,7 +56,7 @@ APP_NAME = "Outlook Cortex (EmailOps Edition)"
 
 
 # JWT/JWKS helpers
-_jwt_decoder: Callable[[str], Any] | None = None  # Returns Awaitable[dict] or dict
+_jwt_decoder: Callable[[str], Awaitable[dict[str, Any]] | dict[str, Any]] | None = None
 _jwks_cache: dict[str, Any] = {}
 
 
@@ -106,7 +105,11 @@ def _create_jwks_decoder(
 
             public_key = algorithms.RSAAlgorithm.from_jwk(key_data)
 
-            decode_options = {}
+            decode_options = {
+                "require": ["exp"],
+                "verify_exp": True,
+                "verify_nbf": True,
+            }
             if not audience:
                 decode_options["verify_aud"] = False
             if not issuer:
@@ -120,11 +123,17 @@ def _create_jwks_decoder(
                 issuer=issuer if issuer else None,
                 options=decode_options,
             )
-        except JWTError as exc:
+        except jwt.PyJWTError as exc:
             raise SecurityError("Invalid JWT", threat_type="auth_invalid") from exc
-        except Exception as exc:
+        except SecurityError:
+            raise
+        except requests.RequestException as exc:
             raise SecurityError(
                 "Failed to load JWKS", threat_type="auth_invalid"
+            ) from exc
+        except Exception as exc:
+            raise SecurityError(
+                "JWT validation failed", threat_type="auth_invalid"
             ) from exc
 
     return decode
@@ -156,16 +165,31 @@ def _create_dev_secret_decoder(
     config: Any,
 ) -> Callable[[str], Awaitable[dict[str, Any]]]:
     """Create a dev-mode decoder using secret key."""
+    secret = getattr(config, "SECRET_KEY", None)
+    if not secret:
+        raise ConfigurationError(
+            "Missing SECRET_KEY for dev JWT decoding",
+            error_code="AUTH_SECRET_MISSING",
+        )
 
     async def decode_verified_secret(token: str) -> dict[str, Any]:
         try:
-            payload = jwt.decode(token, config.SECRET_KEY, algorithms=["HS256"])
+            payload = jwt.decode(
+                token,
+                secret,
+                algorithms=["HS256"],
+                options={
+                    "require": ["exp"],
+                    "verify_exp": True,
+                    "verify_nbf": True,
+                },
+            )
             return payload
         except jwt.ExpiredSignatureError:
             raise HTTPException(status_code=401, detail="Token has expired")
         except jwt.InvalidTokenError:
             raise HTTPException(status_code=401, detail="Invalid token")
-        except JWTError as exc:
+        except jwt.PyJWTError as exc:
             raise SecurityError("Invalid JWT", threat_type="auth_invalid") from exc
 
     return decode_verified_secret
@@ -180,38 +204,68 @@ async def _extract_identity(request: Request) -> tuple[str, str, dict[str, Any]]
     2. X-Tenant-ID and X-User-ID headers (dev fallback)
     3. Default values
     """
+    config = get_config()
+    is_prod_env = config.core.env in {"prod", "production"}
     tenant_id = "default"
     user_id = "anonymous"
     claims: dict[str, Any] = {}
 
     # Try JWT first
     auth_header = request.headers.get("Authorization", "")
-    if auth_header.startswith("Bearer ") and _jwt_decoder:
-        token = auth_header[7:]
+    auth_attempted = auth_header.startswith("Bearer ")
+    if auth_attempted:
+        if not _jwt_decoder:
+            raise SecurityError(
+                "JWT decoder not configured", threat_type="auth_configuration"
+            )
+        token = auth_header[7:].strip()
+        if not token:
+            raise HTTPException(status_code=401, detail="Missing bearer token")
         try:
             decoded = _jwt_decoder(token)
             # Handle both sync and async decoders
             if inspect.isawaitable(decoded):
                 claims = await decoded
             else:
-                claims = decoded
+                claims = decoded if isinstance(decoded, dict) else {}
 
             # Extract standard claims
             tenant_id = claims.get("tenant_id") or claims.get("tid") or tenant_id
             user_id = claims.get("sub") or claims.get("user_id") or user_id
-        except Exception as e:
-            logger.warning("JWT decode failed: %s", e)
+        except (HTTPException, SecurityError):
+            raise
+        except Exception as exc:
+            logger.exception("JWT decode failed")
+            raise SecurityError("Invalid JWT", threat_type="auth_invalid") from exc
 
     # Fallback to headers (dev mode)
-    if tenant_id == "default":
-        tenant_id = request.headers.get("X-Tenant-ID", "default")
-    if user_id == "anonymous":
-        user_id = request.headers.get("X-User-ID", "anonymous")
+    if not auth_attempted and not is_prod_env:
+        if tenant_id == "default":
+            header_tenant = request.headers.get("X-Tenant-ID", "").strip()
+            if header_tenant:
+                tenant_id = header_tenant
+        if user_id == "anonymous":
+            header_user = request.headers.get("X-User-ID", "").strip()
+            if header_user:
+                user_id = header_user
 
     return tenant_id, user_id, claims
 
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
+_LOG_LEVELS = {
+    "info": logging.INFO,
+    "warning": logging.WARNING,
+    "error": logging.ERROR,
+}
+
+
+def _log_event(level: str, event: str, data: dict[str, Any]) -> None:
+    if isinstance(logger, logging.Logger):
+        logger.log(_LOG_LEVELS[level], event, extra={"event": event, **data})
+    else:
+        log_fn = getattr(logger, level)
+        log_fn(event, **data)
 
 
 # ---------------------------------------------------------------------------
@@ -303,9 +357,9 @@ class StructuredLoggingMiddleware(BaseHTTPMiddleware):
         start_time = time.time()
 
         # Get context values
-        correlation_id = correlation_id_ctx.get(None)
-        tenant_id = tenant_id_ctx.get(None)
-        user_id = user_id_ctx.get(None)
+        correlation_id = correlation_id_ctx.get()
+        tenant_id = tenant_id_ctx.get()
+        user_id = user_id_ctx.get()
         trace_ctx = get_trace_context()
 
         try:
@@ -314,7 +368,6 @@ class StructuredLoggingMiddleware(BaseHTTPMiddleware):
 
             # Log successful request
             log_entry = {
-                "event": "request_completed",
                 "method": request.method,
                 "path": request.url.path,
                 "status_code": response.status_code,
@@ -328,22 +381,20 @@ class StructuredLoggingMiddleware(BaseHTTPMiddleware):
 
             # Log level based on status code
             if response.status_code >= 500:
-                logger.error(json.dumps(log_entry))
+                _log_event("error", "request_completed", log_entry)
             elif response.status_code >= 400:
-                logger.warning(json.dumps(log_entry))
+                _log_event("warning", "request_completed", log_entry)
             else:
-                logger.info(json.dumps(log_entry))
+                _log_event("info", "request_completed", log_entry)
 
             return response
 
         except Exception as e:
             duration_ms = (time.time() - start_time) * 1000
             log_entry = {
-                "event": "request_failed",
                 "method": request.method,
                 "path": request.url.path,
                 "error_type": type(e).__name__,
-                "error_message": str(e),
                 "duration_ms": round(duration_ms, 2),
                 "correlation_id": correlation_id,
                 "tenant_id": tenant_id,
@@ -351,7 +402,7 @@ class StructuredLoggingMiddleware(BaseHTTPMiddleware):
                 "trace_id": trace_ctx.get("trace_id"),
                 "span_id": trace_ctx.get("span_id"),
             }
-            logger.error(json.dumps(log_entry))
+            _log_event("error", "request_failed", log_entry)
             raise
 
 
@@ -364,9 +415,10 @@ def create_error_response(
     message: str,
     error_code: str | None = None,
     context: dict[str, Any] | None = None,
+    correlation_id: str | None = None,
 ) -> JSONResponse:
     """Create a structured error response with correlation ID."""
-    correlation_id = correlation_id_ctx.get()
+    correlation_id = correlation_id or correlation_id_ctx.get("unknown")
 
     body = {
         "error": {
@@ -379,10 +431,24 @@ def create_error_response(
 
     # Only include non-sensitive context
     if context:
+        sensitive_markers = (
+            "password",
+            "api_key",
+            "secret",
+            "token",
+            "credential",
+            "authorization",
+            "refresh_token",
+            "access_token",
+            "id_token",
+        )
         safe_context = {
             k: v
             for k, v in context.items()
-            if k not in ("password", "api_key", "secret", "token", "credential")
+            if not (
+                isinstance(k, str)
+                and any(marker in k.lower() for marker in sensitive_markers)
+            )
         }
         if safe_context:
             body["error"]["context"] = safe_context
@@ -419,20 +485,23 @@ async def cortex_error_handler(request: Request, exc: Exception) -> JSONResponse
     return create_error_response(
         status_code=status_code,
         error_type=type(exc).__name__,
-        message=exc.message,
-        error_code=exc.error_code,
+        message=getattr(exc, "message", str(exc)),
+        error_code=getattr(exc, "error_code", None),
         context=exc.context,
+        correlation_id=getattr(request.state, "correlation_id", None),
     )
 
 
 async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """Handler for unexpected exceptions."""
     logger.exception(f"Unhandled exception: {exc}")
+    correlation_id = getattr(request.state, "correlation_id", None)
     return create_error_response(
         status_code=500,
         error_type="InternalServerError",
         message="An unexpected error occurred. Please contact support.",
         error_code="INTERNAL_ERROR",
+        correlation_id=correlation_id,
     )
 
 
@@ -476,8 +545,10 @@ def setup_security(app: FastAPI) -> None:
     2. Validate JWT tokens on protected routes
     3. Extract claims and populate context vars
     """
+    global _jwt_decoder
     try:
         config = get_config()
+        is_prod_env = config.core.env in {"prod", "production"}
         jwks_url = os.getenv("OUTLOOKCORTEX_OIDC_JWKS_URL") or os.getenv(
             "OIDC_JWKS_URL"
         )
@@ -501,14 +572,18 @@ def setup_security(app: FastAPI) -> None:
 
         if jwks_url:
             logger.info("Security: JWT validation enabled via JWKS %s", jwks_url)
-        elif config.core.env == "prod":
+        elif is_prod_env:
             logger.warning(
-                "Security: prod environment without JWKS configuration; JWT validation will be header-only"
+                "Security: prod environment without JWKS configuration; bearer tokens will be rejected"
             )
         else:
             logger.info("Security: dev mode with header-based identity fallback")
-    except Exception as e:
-        logger.warning("Failed to setup security: %s", e)
+    except Exception:
+        logger.warning("Failed to setup security")
+        logger.debug("Security setup exception", exc_info=True)
+        env = os.getenv("ENV", "production")
+        if env in {"prod", "production"}:
+            _jwt_decoder = _create_prod_reject_decoder()
 
 
 # ---------------------------------------------------------------------------
@@ -703,6 +778,81 @@ def create_app() -> FastAPI:
 
 # Create the application instance
 app = create_app()
+
+
+# ---------------------------------------------------------------------------
+# Static File Serving (SPA Support)
+# ---------------------------------------------------------------------------
+# Mount static files *after* creating app but before returning if we were doing it inside factory.
+# However, since app is created via factory and we need to mount on the instance,
+# we can do it here or inside factory.
+# Doing it outside allows us to use 'app' generated by factory.
+
+# Actually, let's move this INSIDE create_app for better encapsulation,
+# but we need to verify frontend_dist path.
+
+
+def _mount_static_files(app: FastAPI):
+    import os
+
+    project_root = os.getcwd()
+    # Support both flat and nested structures (workspace vs docker)
+    potential_paths = [
+        os.path.join(project_root, "frontend/dist"),
+        os.path.join(project_root, "../frontend/dist"),
+    ]
+
+    frontend_dist = next((p for p in potential_paths if os.path.isdir(p)), None)
+
+    if not frontend_dist:
+        logger.warning(
+            f"Frontend dist not found in {potential_paths}. SPA will not be served."
+        )
+        return
+
+    logger.info(f"Serving frontend from {frontend_dist}")
+
+    # 1. Mount assets
+    assets_path = os.path.join(frontend_dist, "assets")
+    if os.path.isdir(assets_path):
+        app.mount("/assets", StaticFiles(directory=assets_path), name="assets")
+
+    # 2. Serve static root files (favicon, etc.)
+    # We can handle specific files or just let the catch-all handle them if we are careful.
+
+    favicon_path = os.path.join(frontend_dist, "favicon.ico")
+    if os.path.isfile(favicon_path):
+
+        @app.get("/favicon.ico", include_in_schema=False)
+        async def favicon():
+            return FileResponse(favicon_path)
+
+    # 3. Catch-all for SPA
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def serve_spa(full_path: str):
+        # Allow API routes to bubble up 404 if not matched (handled by FastAPI router order? No, this is last)
+        # Actually, FastAPI matches routes in order. The API routers are included earlier.
+        # So this catch-all will only fire if no other route matches.
+
+        # We should NOT serve index.html for api requests that 404
+        if (
+            full_path.startswith("api/")
+            or full_path.startswith("docs")
+            or full_path.startswith("redoc")
+        ):
+            raise HTTPException(status_code=404, detail="Not Found")
+
+        # Check if the file exists in root (e.g. vite.svg)
+        file_path = os.path.join(frontend_dist, full_path)
+        if os.path.isfile(file_path):
+            return FileResponse(file_path)
+
+        # Fallback to index.html
+        return FileResponse(os.path.join(frontend_dist, "index.html"))
+
+
+_mount_static_files(app)
+
 
 # Initialize Prometheus instrumentation
 try:

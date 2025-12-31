@@ -60,7 +60,7 @@ def cmd_index_stats(args: argparse.Namespace) -> None:
                 )
 
     except Exception as e:
-        print(f"{_colorize('ERROR:', 'red')} {e}")
+        print(f"{_colorize('ERROR:', 'red')} {e}", file=sys.stderr)
         sys.exit(1)
 
 

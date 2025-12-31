@@ -15,3 +15,15 @@ export const DraftFormSchema = z.object({
  * Represents the structure of the data for the email draft form.
  */
 export type DraftForm = z.infer<typeof DraftFormSchema>;
+
+/**
+ * @description Zod schema for the generated email draft.
+ */
+export const GeneratedDraftSchema = z.object({
+  subject: z.string(),
+  body: z.string(),
+  to: z.array(z.string()),
+  cc: z.array(z.string()),
+});
+
+export type GeneratedDraft = z.infer<typeof GeneratedDraftSchema>;

@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { useSearch } from './useSearch';
 import React from 'react';
-import { vi } from 'vitest';
+import { describe, it, expect, vi, afterEach, type Mocked } from 'vitest';
 
 // Mock the API module
 vi.mock('../lib/api', () => ({
@@ -12,7 +12,7 @@ vi.mock('../lib/api', () => ({
   },
 }));
 
-const mockedApi = api as jest.Mocked<typeof api>;
+const mockedApi = api as Mocked<typeof api>;
 
 const createTestQueryClient = () =>
   new QueryClient({

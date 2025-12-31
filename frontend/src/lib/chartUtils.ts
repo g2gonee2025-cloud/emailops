@@ -19,7 +19,7 @@ export type TimeSeriesDataPoint = {
  * @param name - The name to assign to the plotted value in the chart data.
  * @returns A new array of `TimeSeriesDataPoint` objects.
  */
-export function mapToChartData<T extends Record<string, any>>(
+export function mapToChartData<T extends object>(
   data: T[],
   dateKey: keyof T,
   valueKey: keyof T,
@@ -27,7 +27,7 @@ export function mapToChartData<T extends Record<string, any>>(
 ): TimeSeriesDataPoint[] {
   if (!data) return [];
   return data.map((item) => ({
-    date: item[dateKey],
+    date: item[dateKey] as string,
     [name]: item[valueKey] as number,
   }));
 }
@@ -65,7 +65,7 @@ export function mergeChartData(
 export const xAxisFormatter = (tick: string) => {
     try {
       return format(parseISO(tick), 'MMM d');
-    } catch (e) {
+    } catch (_e) {
       return tick;
     }
   };

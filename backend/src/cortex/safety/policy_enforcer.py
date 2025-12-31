@@ -15,8 +15,21 @@ from pydantic import BaseModel, ConfigDict, Field
 
 logger = logging.getLogger(__name__)
 
-# Load the policy configuration
-POLICY_CONFIG = PolicyConfig()
+_POLICY_CONFIG: PolicyConfig | None = None
+
+
+def _get_policy_config() -> PolicyConfig:
+    global _POLICY_CONFIG
+    if _POLICY_CONFIG is None:
+        try:
+            _POLICY_CONFIG = PolicyConfig()
+        except Exception as exc:
+            logger.exception("Failed to load policy configuration.")
+            raise RuntimeError("Policy configuration failed to load.") from exc
+    return _POLICY_CONFIG
+
+
+PolicyViolation = tuple[str, str]
 
 
 class PolicyDecision(BaseModel):
@@ -45,77 +58,141 @@ class PolicyDecision(BaseModel):
 # -----------------------------------------------------------------------------
 
 
-def _check_recipient_policy(metadata: dict[str, Any]) -> str | None:
+def _check_recipient_policy(metadata: dict[str, Any]) -> PolicyViolation | None:
     """Check recipient-related policies."""
-    recipients = metadata.get("recipients", [])
+    recipients_value = metadata.get("recipients")
+
+    if recipients_value is None:
+        return None
+
+    recipients: list[str]
+    if isinstance(recipients_value, str):
+        recipients = [recipients_value]
+    elif isinstance(recipients_value, (list, tuple, set)):
+        recipients = [r for r in recipients_value if isinstance(r, str)]
+        if recipients_value and not recipients:
+            return ("invalid_recipients", "Invalid recipient metadata")
+    else:
+        try:
+            recipients = [r for r in list(recipients_value) if isinstance(r, str)]
+            if recipients_value and not recipients:
+                return ("invalid_recipients", "Invalid recipient metadata")
+        except TypeError:
+            return ("invalid_recipients", "Invalid recipient metadata")
 
     if not recipients:
         return None
 
     # Check recipient count
-    if len(recipients) > POLICY_CONFIG.max_recipients_auto_approve:
-        return f"Too many recipients ({len(recipients)} > {POLICY_CONFIG.max_recipients_auto_approve})"
+    config = _get_policy_config()
+    if len(recipients) > config.max_recipients_auto_approve:
+        return (
+            "recipient_count",
+            f"Too many recipients ({len(recipients)} > {config.max_recipients_auto_approve})",
+        )
 
     # Check for external domains
-    external_domain_pattern = POLICY_CONFIG.get_external_domain_pattern()
+    external_domain_pattern = config.get_external_domain_pattern()
     external_recipients = [
         r
         for r in recipients
         if isinstance(r, str) and external_domain_pattern.search(r)
     ]
     if external_recipients and metadata.get("check_external", True):
-        return f"External recipients detected: {', '.join(external_recipients[:3])}"
+        return (
+            "external_recipients",
+            f"External recipients detected (count={len(external_recipients)})",
+        )
 
     return None
 
 
-def _check_content_policy(metadata: dict[str, Any]) -> str | None:
+def _check_content_policy(metadata: dict[str, Any]) -> PolicyViolation | None:
     """Check content-related policies."""
     content = metadata.get("content", "") or ""
     subject = metadata.get("subject", "") or ""
     full_text = f"{subject} {content}"
 
-    sensitive_patterns = POLICY_CONFIG.get_sensitive_patterns()
+    sensitive_patterns = _get_policy_config().get_sensitive_patterns()
     for pattern in sensitive_patterns:
         if pattern.search(full_text):
-            return f"Sensitive content detected (pattern: {pattern.pattern[:30]}...)"
+            return ("sensitive_content", "Sensitive content detected")
 
     return None
 
 
-def _check_attachment_policy(metadata: dict[str, Any]) -> str | None:
+def _check_attachment_policy(metadata: dict[str, Any]) -> PolicyViolation | None:
     """Check attachment-related policies."""
-    attachments = metadata.get("attachments", [])
+    attachments_value = metadata.get("attachments")
+
+    if not attachments_value:
+        return None
+
+    if isinstance(attachments_value, dict):
+        attachments = [attachments_value]
+    elif isinstance(attachments_value, (list, tuple, set)):
+        attachments = list(attachments_value)
+    else:
+        try:
+            attachments = list(attachments_value)
+        except TypeError:
+            return ("invalid_attachment_metadata", "Invalid attachment metadata")
 
     if not attachments:
         return None
 
+    if any(not isinstance(attachment, dict) for attachment in attachments):
+        return ("invalid_attachment_metadata", "Invalid attachment metadata")
+
     # Check for dangerous extensions
-    dangerous_extensions = POLICY_CONFIG.dangerous_extensions
+    dangerous_extensions = _get_policy_config().dangerous_extensions
     for attachment in attachments:
-        filename = attachment.get("filename", "").lower()
+        filename = attachment.get("filename", "")
+        if not isinstance(filename, str):
+            continue
+        filename = filename.lower()
         for ext in dangerous_extensions:
             if filename.endswith(ext):
-                return f"Dangerous attachment type: {ext}"
+                return ("dangerous_attachment", f"Dangerous attachment type: {ext}")
 
     # Check total size
-    total_size = sum(a.get("size", 0) for a in attachments)
-    max_size_mb = POLICY_CONFIG.max_attachment_size_mb
-    max_size_bytes = metadata.get("max_attachment_size", max_size_mb * 1024 * 1024)
+    total_size = 0
+    invalid_size = False
+    for attachment in attachments:
+        size = attachment.get("size", 0)
+        try:
+            size_value = int(size)
+        except (TypeError, ValueError):
+            invalid_size = True
+            size_value = 0
+        if size_value < 0:
+            invalid_size = True
+            size_value = 0
+        total_size += size_value
+
+    if invalid_size:
+        return ("invalid_attachment_size", "Invalid attachment size metadata")
+
+    max_size_mb = _get_policy_config().max_attachment_size_mb
+    max_size_bytes = max_size_mb * 1024 * 1024
 
     if total_size > max_size_bytes:
-        return f"Attachment size exceeds limit ({total_size} > {max_size_bytes})"
+        return (
+            "attachment_size",
+            f"Attachment size exceeds limit ({total_size} > {max_size_bytes})",
+        )
 
     return None
 
 
 def _determine_risk_level(action: str) -> Literal["low", "medium", "high"]:
     """Determine the risk level for an action."""
-    if action in POLICY_CONFIG.low_risk_actions:
+    config = _get_policy_config()
+    if action in config.low_risk_actions:
         return "low"
-    elif action in POLICY_CONFIG.medium_risk_actions:
+    elif action in config.medium_risk_actions:
         return "medium"
-    elif action in POLICY_CONFIG.high_risk_actions:
+    elif action in config.high_risk_actions:
         return "high"
     else:
         # Unknown actions default to medium risk
@@ -129,7 +206,7 @@ def _determine_risk_level(action: str) -> Literal["low", "medium", "high"]:
 
 
 @trace_operation("check_action")
-def check_action(action: str, metadata: dict[str, Any]) -> PolicyDecision:
+def check_action(action: str, metadata: dict[str, Any] | None = None) -> PolicyDecision:
     """
     Check if an action is allowed based on policies.
 
@@ -147,37 +224,47 @@ def check_action(action: str, metadata: dict[str, Any]) -> PolicyDecision:
         PolicyDecision with allow/deny/require_approval
     """
     risk_level = _determine_risk_level(action)
-    violations: list[str] = []
+    violations: list[PolicyViolation] = []
 
     # Run policy checks (defaults to safe empty structures if keys missing)
-    if recipient_issue := _check_recipient_policy(metadata or {}):
+    safe_meta = metadata if isinstance(metadata, dict) else {}
+
+    if recipient_issue := _check_recipient_policy(safe_meta):
         violations.append(recipient_issue)
 
-    if content_issue := _check_content_policy(metadata or {}):
+    if content_issue := _check_content_policy(safe_meta):
         violations.append(content_issue)
 
-    if attachment_issue := _check_attachment_policy(metadata or {}):
+    if attachment_issue := _check_attachment_policy(safe_meta):
         violations.append(attachment_issue)
 
     # Determine decision based on risk level and violations
     decision: Literal["allow", "deny", "require_approval"]
     reason: str
 
+    violation_messages = [message for _, message in violations]
+    violation_codes = [code for code, _ in violations]
+
     if violations:
         # Any violation on high-risk action = deny
         if risk_level == "high":
             decision = "deny"
-            reason = f"Policy violation on high-risk action: {'; '.join(violations)}"
+            reason = (
+                "Policy violation on high-risk action: "
+                f"{'; '.join(violation_messages)}"
+            )
         # Violations on medium-risk = require approval
         elif risk_level == "medium":
             decision = "require_approval"
-            reason = f"Policy check required: {'; '.join(violations)}"
+            reason = f"Policy check required: {'; '.join(violation_messages)}"
         # Violations on low-risk = still allow but log
         else:
             decision = "allow"
-            reason = f"Allowed with warnings: {'; '.join(violations)}"
+            reason = f"Allowed with warnings: {'; '.join(violation_messages)}"
             logger.warning(
-                f"Low-risk action '{action}' has policy warnings: {violations}"
+                "Low-risk action '%s' has policy warnings (%d).",
+                action,
+                len(violations),
             )
     else:
         # No violations
@@ -189,10 +276,8 @@ def check_action(action: str, metadata: dict[str, Any]) -> PolicyDecision:
             decision = "allow"
             reason = "No policy violations"
 
-    safe_meta = metadata or {}
-
     # Check for explicit deny list
-    if safe_meta.get("force_deny"):
+    if safe_meta.get("force_deny") is True:
         decision = "deny"
         reason = "Explicitly denied by policy"
 
@@ -201,11 +286,25 @@ def check_action(action: str, metadata: dict[str, Any]) -> PolicyDecision:
     # Admin can bypass "require_approval" but NOT "deny".
     if decision != "deny":
         # Check roles (support both singular 'role' and list 'user_roles' for compatibility)
-        roles = safe_meta.get("user_roles", []) or []
-        if isinstance(roles, list) and safe_meta.get("role"):
-            roles.append(safe_meta.get("role"))
+        roles: list[str] = []
+        roles_value = safe_meta.get("user_roles")
+        if isinstance(roles_value, str):
+            roles.append(roles_value)
+        elif isinstance(roles_value, (list, tuple, set)):
+            roles.extend([role for role in roles_value if isinstance(role, str)])
+        elif roles_value is not None:
+            try:
+                roles.extend(
+                    [role for role in list(roles_value) if isinstance(role, str)]
+                )
+            except TypeError:
+                roles = []
 
-        if "admin" in roles:
+        role_value = safe_meta.get("role")
+        if isinstance(role_value, str):
+            roles.append(role_value)
+
+        if safe_meta.get("roles_verified") is True and "admin" in roles:
             decision = "allow"
             reason = "Admin bypass enabled"
 
@@ -215,8 +314,9 @@ def check_action(action: str, metadata: dict[str, Any]) -> PolicyDecision:
         reason=reason,
         risk_level=risk_level,
         metadata={
-            "violations": violations,
-            "original_metadata_keys": list(metadata.keys()),
+            "violation_codes": violation_codes,
+            "violation_count": len(violation_codes),
+            "original_metadata_keys": list(safe_meta.keys()),
         },
     )
 
@@ -228,4 +328,4 @@ def require_policy_approval(decision: PolicyDecision) -> bool:
 
 def is_action_allowed(decision: PolicyDecision) -> bool:
     """Check if an action is allowed (either directly or after approval)."""
-    return decision.decision in ("allow", "require_approval")
+    return decision.decision == "allow"

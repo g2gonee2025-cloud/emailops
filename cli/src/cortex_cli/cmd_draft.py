@@ -1,7 +1,10 @@
 """
+from __future__ import annotations
+
 Draft command for Cortex CLI.
 """
 
+import argparse
 import os
 import uuid
 
@@ -10,7 +13,9 @@ from rich.console import Console
 from rich.syntax import Syntax
 
 
-def setup_draft_parser(parser):
+def setup_draft_parser(
+    parser: argparse._SubParsersAction,
+) -> None:
     """
     Setup the parser for the 'draft' command.
     """
@@ -22,7 +27,7 @@ def setup_draft_parser(parser):
     draft_parser.set_defaults(func=run_draft_command)
 
 
-def run_draft_command(args):
+def run_draft_command(args: argparse.Namespace) -> None:
     """
     Run the 'draft' command.
     """

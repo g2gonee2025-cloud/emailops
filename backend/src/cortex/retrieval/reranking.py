@@ -7,7 +7,6 @@ Implements §8.7 of the Canonical Blueprint.
 import asyncio
 import ipaddress
 import logging
-from typing import Optional
 from urllib.parse import urlparse
 
 import httpx

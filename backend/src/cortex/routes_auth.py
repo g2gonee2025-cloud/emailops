@@ -56,6 +56,17 @@ MOCK_USERS = {
     "admin": {"password": "admin", "tenant_id": "acme-corp", "roles": ["admin"]},
     "user": {"password": "user", "tenant_id": "acme-corp", "roles": ["user"]},
     "demo": {"password": "demo", "tenant_id": "demo-tenant", "roles": ["user"]},
+    # Email-style users for frontend compatibility
+    "testuser@emailops.ai": {
+        "password": "test",
+        "tenant_id": "acme-corp",
+        "roles": ["admin"],
+    },
+    "admin@emailops.ai": {
+        "password": "admin",
+        "tenant_id": "acme-corp",
+        "roles": ["admin"],
+    },
 }
 
 

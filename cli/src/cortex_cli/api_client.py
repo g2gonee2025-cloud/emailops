@@ -11,9 +11,8 @@ class ApiClient:
     """A client for interacting with the Cortex API."""
 
     def __init__(self, base_url: str | None = None, token: str | None = None) -> None:
-        self.base_url = base_url or os.getenv(
-            "CORTEX_API_URL", "http://localhost:8000/api/v1"
-        )
+        env_url = os.getenv("CORTEX_API_URL", "http://localhost:8000/api/v1")
+        self.base_url: str = base_url if base_url is not None else env_url
         self.token = token or os.getenv("CORTEX_API_TOKEN")
 
         headers = {
@@ -32,7 +31,7 @@ class ApiClient:
         try:
             response = self.client.post(endpoint, json=data)
             response.raise_for_status()
-            return response.json()
+            return response.json()  # type: ignore
         except httpx.HTTPStatusError as e:
             raise CortexError(f"API request failed: {e.response.text}") from e
         except httpx.RequestError as e:

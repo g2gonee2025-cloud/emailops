@@ -135,7 +135,7 @@ def generate_summary(
     return result
 
 
-def main():
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
         description="Simple Summary Backfill (no embedding)"
     )
@@ -144,7 +144,7 @@ def main():
     )
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--workers", type=int, default=5)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     total = count_missing_conversations(args.tenant_id)
     if args.limit:

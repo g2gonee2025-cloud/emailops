@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { api, SearchResponse, ApiError } from '../lib/api';
+import { api, type SearchResponse, type ApiError } from '../lib/api';
 
 interface UseSearchParams {
   query: string;

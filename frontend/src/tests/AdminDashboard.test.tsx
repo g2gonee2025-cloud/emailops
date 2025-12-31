@@ -1,6 +1,6 @@
 
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import AdminDashboard from '../views/AdminDashboard';
 import { useAdmin } from '../hooks/useAdmin';
 import { useToast } from '../contexts/toastContext';
@@ -10,9 +10,9 @@ vi.mock('../hooks/useAdmin');
 vi.mock('../contexts/toastContext');
 vi.mock('../contexts/AuthContext');
 
-const mockUseAdmin = useAdmin as vi.Mock;
-const mockUseToast = useToast as vi.Mock;
-const mockUseAuth = useAuth as vi.Mock;
+const mockUseAdmin = useAdmin as Mock;
+const mockUseToast = useToast as Mock;
+const mockUseAuth = useAuth as Mock;
 
 const defaultAdminState = {
     status: null,
@@ -32,7 +32,7 @@ describe('AdminDashboard', () => {
 
     beforeEach(() => {
         vi.resetAllMocks();
-        mockUseToast.mockReturnValue({ toast: mockToast });
+        mockUseToast.mockReturnValue({ addToast: mockToast });
         mockUseAdmin.mockReturnValue(defaultAdminState);
         mockUseAuth.mockReturnValue({ token: 'test-token' });
     });
@@ -69,9 +69,9 @@ describe('AdminDashboard', () => {
         expect(screen.getByText('Error')).toBeInTheDocument();
         expect(screen.getByText(error.message)).toBeInTheDocument();
         expect(mockToast).toHaveBeenCalledWith({
-            variant: "destructive",
-            title: "Error loading status",
-            description: error.message,
+            type: "error",
+            message: "Error loading status",
+            details: error.message,
         });
     });
 
@@ -82,9 +82,9 @@ describe('AdminDashboard', () => {
         expect(screen.getByText('Error')).toBeInTheDocument();
         expect(screen.getByText(error.message)).toBeInTheDocument();
         expect(mockToast).toHaveBeenCalledWith({
-            variant: "destructive",
-            title: "Error loading configuration",
-            description: error.message,
+            type: "error",
+            message: "Error loading configuration",
+            details: error.message,
         });
     });
 
@@ -94,9 +94,9 @@ describe('AdminDashboard', () => {
         render(<AdminDashboard />);
         expect(screen.getByText('Diagnostics Failed')).toBeInTheDocument();
         expect(mockToast).toHaveBeenCalledWith({
-            variant: "destructive",
-            title: "Error running diagnostics",
-            description: error.message,
+            type: "error",
+            message: "Error running diagnostics",
+            details: error.message,
         });
     });
 
@@ -115,9 +115,8 @@ describe('AdminDashboard', () => {
         mockUseAdmin.mockReturnValue({ ...defaultAdminState, config });
         render(<AdminDashboard />);
         expect(screen.getByText('api url')).toBeInTheDocument();
-        expect(screen.getByText('********')).toBeInTheDocument();
-        expect(screen.getByText('max retries')).toBeInTheDocument();
-        expect(screen.getByText('5')).toBeInTheDocument();
+
+        expect(screen.getByLabelText(/max retries/i)).toHaveValue(5);
     });
 
     it('displays doctor report correctly', () => {

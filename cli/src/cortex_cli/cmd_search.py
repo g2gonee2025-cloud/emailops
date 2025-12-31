@@ -18,7 +18,9 @@ from .style import colorize
 API_BASE_URL = os.getenv("CORTEX_API_URL", "http://127.0.0.1:8000/api/v1")
 
 
-def setup_search_parser(subparsers: argparse._SubParsersAction) -> None:
+def setup_search_parser(
+    subparsers: argparse._SubParsersAction,
+) -> None:
     """Setup search command parser."""
     search_parser = subparsers.add_parser(
         "search",

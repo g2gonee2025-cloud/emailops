@@ -121,7 +121,7 @@ def get_conversations_without_graphs(
     tenant_id: str | None, limit: int | None
 ) -> list[tuple[uuid.UUID, str, str]]:
     """Fetch conversations with summaries but no graph edges in batches."""
-    conversations = []
+    conversations: list[tuple[uuid.UUID, str, str]] = []
     offset = 0
     with SessionLocal() as session:
         while True:
@@ -255,8 +255,8 @@ def run_backfill_graph(
     max_workers: int,
     limit: int | None,
     dry_run: bool,
-    progress_callback: Callable | None,
-):
+    progress_callback: Callable[[dict[str, Any]], None] | None,
+) -> dict[str, Any]:
     """Run the graph backfill using summaries with optimizations."""
     logger.info(
         f"Starting Optimized Graph Backfill. Workers: {max_workers}, "

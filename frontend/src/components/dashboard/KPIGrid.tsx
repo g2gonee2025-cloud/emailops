@@ -1,14 +1,14 @@
 import { Alert, AlertDescription, AlertTitle } from '../ui/Alert';
 import { Skeleton } from '../ui/Skeleton';
 import GlassCard from '../ui/GlassCard';
-import { AlertTriangle, TrendingUp } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 
 // Mock data for KPIs
 const mockKpis = [
-  { title: 'Total Emails Processed', value: '1,234,567', change: '+5.2%' },
-  { title: 'Average Response Time', value: '2.3 hours', change: '-1.5%' },
-  { title: 'Open Rate', value: '25.8%', change: '+0.8%' },
-  { title: 'Click-Through Rate', value: '4.2%', change: '+0.2%' },
+  { id: 'total-emails', title: 'Total Emails Processed', value: '1,234,567', change: '+5.2%' },
+  { id: 'avg-response-time', title: 'Average Response Time', value: '2.3 hours', change: '-1.5%' },
+  { id: 'open-rate', title: 'Open Rate', value: '25.8%', change: '+0.8%' },
+  { id: 'click-through-rate', title: 'Click-Through Rate', value: '4.2%', change: '+0.2%' },
 ];
 
 export default function KPIGrid() {
@@ -22,22 +22,23 @@ export default function KPIGrid() {
       ) : error ? (
         <KPIError />
       ) : (
-        mockKpis.map((kpi, index) => <KPICard key={index} {...kpi} />)
+        mockKpis.map((kpi) => <KPICard key={kpi.id} {...kpi} />)
       )}
     </div>
   );
 }
 
 interface KPICardProps {
+  id: string;
   title: string;
   value: string;
   change: string;
 }
 
-function KPICard({ title, value, change }: KPICardProps) {
+function KPICard({ id, title, value, change }: KPICardProps) {
   const isPositive = change.startsWith('+');
   return (
-    <GlassCard className="p-5">
+    <GlassCard className="p-5" data-testid={`kpi-card-${id}`}>
       <h3 className="text-sm font-medium text-white/50 uppercase tracking-wider">
         {title}
       </h3>

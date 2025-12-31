@@ -2,12 +2,9 @@ import { test, expect } from '@playwright/test';
 
 test.describe('DashboardView', () => {
   test('should render dashboard components after login', async ({ page }) => {
-    // Navigate to the login page to set up local storage
-    await page.goto('/login');
-
-    // Bypass login UI by setting auth token directly in local storage
-    await page.evaluate(() => {
-      localStorage.setItem('auth_token', 'dummy-e2e-token');
+    // Bypass login UI by setting auth token before app initialization
+    await page.addInitScript(() => {
+      window.localStorage.setItem('auth_token', 'dummy-e2e-token');
     });
 
     // Navigate to the root, which should redirect to the dashboard
@@ -27,10 +24,10 @@ test.describe('DashboardView', () => {
     await expect(page.getByTestId('health-status-card')).toBeVisible();
 
     // Verify all KPI cards are visible
-    await expect(page.getByTestId('kpi-card-pipeline-throughput')).toBeVisible();
-    await expect(page.getByTestId('kpi-card-active-connections')).toBeVisible();
-    await expect(page.getByTestId('kpi-card-vector-index')).toBeVisible();
-    await expect(page.getByTestId('kpi-card-security-gate')).toBeVisible();
+    await expect(page.getByTestId('kpi-card-total-emails')).toBeVisible();
+    await expect(page.getByTestId('kpi-card-avg-response-time')).toBeVisible();
+    await expect(page.getByTestId('kpi-card-open-rate')).toBeVisible();
+    await expect(page.getByTestId('kpi-card-click-through-rate')).toBeVisible();
 
     // Verify main grid cards are visible
     await expect(page.getByTestId('live-stream-card')).toBeVisible();

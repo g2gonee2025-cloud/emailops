@@ -1,11 +1,11 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useLogin } from '../../hooks/useLogin';
-import { vi, type Mock } from 'vitest';
-import { api, ApiError } from '@/lib/api';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
+import { api, ApiError } from '../../lib/api';
 
 // Mock the api module
-vi.mock('@/lib/api', () => ({
+vi.mock('../../lib/api', () => ({
   api: {
     login: vi.fn(),
     setAuthToken: vi.fn(),
@@ -28,7 +28,6 @@ const createWrapper = () => {
     },
   });
 
-  // eslint-disable-next-line react/display-name
   return ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );

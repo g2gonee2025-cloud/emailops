@@ -10,7 +10,7 @@ import asyncio
 import logging
 import uuid
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from cortex.config.loader import get_config
 from cortex.ingestion.text_preprocessor import get_text_preprocessor

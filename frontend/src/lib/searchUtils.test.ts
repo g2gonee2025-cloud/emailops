@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { serializeSearchQuery, parseSearchQuery, SearchParams } from './searchUtils';
+import { serializeSearchQuery, parseSearchQuery } from './searchUtils';
+import type { SearchParams } from './searchUtils';
 
 describe('searchUtils', () => {
   describe('serializeSearchQuery', () => {
@@ -9,7 +10,7 @@ describe('searchUtils', () => {
         k: 20,
         filters: { author: 'John Doe', status: 'open' },
       };
-      const expected = '?query=test+query&k=20&filters=%7B%22author%22%3A%22John+Doe%22%2C%22status%22%3A%22open%22%7D';
+
       expect(serializeSearchQuery(params)).toContain('query=test+query');
       expect(serializeSearchQuery(params)).toContain('k=20');
       expect(serializeSearchQuery(params)).toContain('filters=%7B%22author%22%3A%22John+Doe%22%2C%22status%22%3A%22open%22%7D');

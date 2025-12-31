@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { Button } from './ui/Button';
 
 interface Props {
   children: ReactNode;
@@ -24,16 +25,15 @@ class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
-          <div className="p-8 bg-white rounded-lg shadow-md dark:bg-gray-800">
-            <h1 className="mb-4 text-2xl font-bold text-center text-gray-800 dark:text-gray-200">Something went wrong.</h1>
-            <p className="mb-6 text-center text-gray-600 dark:text-gray-400">We're sorry for the inconvenience. Please try again.</p>
-            <button
-              onClick={() => this.setState({ hasError: false })}
-              className="px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
-            >
+        <div className="flex min-h-screen items-center justify-center p-6">
+          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-black/40 p-8 text-center shadow-2xl backdrop-blur-xl">
+            <h1 className="mb-3 text-2xl font-display font-semibold text-white">Something went wrong.</h1>
+            <p className="mb-6 text-sm text-white/50">
+              We're sorry for the inconvenience. Please try again.
+            </p>
+            <Button onClick={() => this.setState({ hasError: false })}>
               Try again
-            </button>
+            </Button>
           </div>
         </div>
       );

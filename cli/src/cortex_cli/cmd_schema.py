@@ -54,8 +54,8 @@ def cmd_schema_check(args: argparse.Namespace) -> None:
             texts.append("\n".join(chunks))
 
     extractor = GraphExtractor()
-    node_types = Counter()
-    relations = Counter()
+    node_types: Counter[str] = Counter()
+    relations: Counter[str] = Counter()
 
     logger.info("Extracting graphs sequentially...")
     for i, text in enumerate(texts):

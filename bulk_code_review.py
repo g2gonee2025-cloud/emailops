@@ -3,9 +3,9 @@
 Bulk Code Review Script (Dual-Model).
 
 Concurrently sends all project Python files to TWO LLMs for issue detection.
-Models: openai-gpt-oss-120b + r1-distill-llama-70b
 Context: Single file + depth-1 imports (no changes made, read-only analysis).
 """
+
 import argparse
 import ast
 import datetime
@@ -55,8 +55,8 @@ class BulkCodeReviewer:
     ]
 
     DEFAULT_MODELS: list[str] = [
-        "openai-gpt-oss-120b",
-        # "openai-gpt-5",
+        # "openai-gpt-oss-120b",
+        "openai-gpt-5",
     ]
 
     REVIEW_PROMPT: str = """

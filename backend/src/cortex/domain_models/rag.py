@@ -7,7 +7,7 @@ Implements §10 of the Canonical Blueprint - data models for orchestration.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 from uuid import UUID
 
 from cortex.common.models import SecureBaseModel

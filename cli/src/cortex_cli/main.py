@@ -269,7 +269,7 @@ def _show_status(json_output: bool = False) -> None:
     cwd = Path.cwd()
 
     # Collect data first
-    status_data = {
+    status_data: dict[str, Any] = {
         "environment": {
             "OUTLOOKCORTEX_ENV": os.getenv("OUTLOOKCORTEX_ENV", NOT_SET),
             "OUTLOOKCORTEX_DB_URL": (
@@ -1074,7 +1074,11 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
         # Capture all remaining arguments for the typer subcommand
         parser.add_argument("typer_args", nargs=argparse.REMAINDER)
 
+    from cortex_cli.cmd_audit import setup_audit_parser
+    from cortex_cli.cmd_fix import setup_fix_parser
+    from cortex_cli.cmd_index import setup_index_parser
     from cortex_cli.cmd_patch import setup_patch_parser
+    from cortex_cli.cmd_rechunk import setup_rechunk_parser
     from cortex_cli.cmd_schema import setup_schema_parser
 
     setup_backfill_parser(subparsers)
@@ -1089,7 +1093,11 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     setup_queue_parser(subparsers)
     setup_login_parser(subparsers)
     setup_graph_parser(subparsers)
+    setup_audit_parser(subparsers)
+    setup_fix_parser(subparsers)
+    setup_index_parser(subparsers)
     setup_patch_parser(subparsers)
+    setup_rechunk_parser(subparsers)
     setup_schema_parser(subparsers)
 
     # Parse arguments

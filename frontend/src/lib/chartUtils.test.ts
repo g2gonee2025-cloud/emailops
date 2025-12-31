@@ -32,8 +32,10 @@ describe('Chart Utils', () => {
     });
 
     it('should handle null or undefined input', () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result = mapToChartData(null as any, 'day', 'count', 'MyMetric');
         expect(result).toEqual([]);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result2 = mapToChartData(undefined as any, 'day', 'count', 'MyMetric');
         expect(result2).toEqual([]);
     });

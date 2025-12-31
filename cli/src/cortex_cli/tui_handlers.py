@@ -4,6 +4,7 @@ Moves complex logic out of the main loop.
 """
 
 import asyncio
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import questionary
@@ -19,7 +20,7 @@ PROMPT_DRY_RUN = "Dry run?"
 
 
 # --- Database ---
-def _handle_db():
+def _handle_db() -> None:
     action = questionary.select(
         "Database Management:", choices=["Stats", "Migrate", "Back"]
     ).ask()
@@ -29,19 +30,19 @@ def _handle_db():
 
     from cortex_cli.cmd_db import cmd_db_stats
 
-    class Args:
-        json = False
-        verbose = False
+    @dataclass
+    class DbArgs:
+        json: bool = False
+        verbose: bool = False
+        dry_run: bool = False
 
     if "Stats" in action:
         console.print("[dim]Fetching database stats...[/dim]")
-        cmd_db_stats(Args())
+        cmd_db_stats(DbArgs())
     elif "Migrate" in action:
         dry_run = questionary.confirm(PROMPT_DRY_RUN).ask()
 
-        args = Args()
-        args.dry_run = dry_run
-        args.verbose = False  # TUI default
+        args = DbArgs(dry_run=dry_run)
 
         try:
             # Import dynamically to avoid circular imports if any
@@ -78,7 +79,7 @@ def _handle_db():
 
 
 # --- Embeddings ---
-def _handle_embeddings():
+def _handle_embeddings() -> None:
     action = questionary.select(
         "Embeddings Management:", choices=["Stats", "Backfill", "Back"]
     ).ask()
@@ -88,30 +89,29 @@ def _handle_embeddings():
 
     from cortex_cli.cmd_embeddings import cmd_embeddings_backfill, cmd_embeddings_stats
 
-    class Args:
-        json = False
-        verbose = False
-        limit = None
-        batch_size = 64
-        dry_run = False
+    @dataclass
+    class EmbeddingsArgs:
+        json: bool = False
+        verbose: bool = False
+        limit: int | None = None
+        batch_size: int = 64
+        dry_run: bool = False
 
     if "Stats" in action:
-        cmd_embeddings_stats(Args())
+        cmd_embeddings_stats(EmbeddingsArgs())
     elif "Backfill" in action:
         limit = questionary.text("Limit (optional):").ask()
         dry_run = questionary.confirm(PROMPT_DRY_RUN, default=False).ask()
         limit_int = int(limit) if limit and limit.isdigit() else None
 
-        args = Args()
-        args.limit = limit_int
-        args.dry_run = dry_run
+        args = EmbeddingsArgs(limit=limit_int, dry_run=dry_run)
         cmd_embeddings_backfill(args)
 
     questionary.press_any_key_to_continue().ask()
 
 
 # --- S3 / Storage ---
-def _handle_s3():
+def _handle_s3() -> None:
     action = questionary.select(
         "S3/Spaces Storage:",
         choices=["List Buckets/Prefixes", "Ingest from S3", "Back"],
@@ -122,39 +122,34 @@ def _handle_s3():
 
     from cortex_cli.cmd_s3 import cmd_s3_ingest, cmd_s3_list
 
-    class Args:
-        json = False
-        verbose = False
-        prefix = ""
-        bucket = None
-        limit = 50
+    @dataclass
+    class S3Args:
+        json: bool = False
+        verbose: bool = False
+        prefix: str = ""
+        bucket: str | None = None
+        limit: int = 50
+        dry_run: bool = False
+        tenant: str = "default"
 
     if "List" in action:
         prefix = questionary.text("Prefix (optional):").ask()
-        args = Args()
-        args.prefix = prefix or ""
+        args = S3Args(prefix=prefix or "")
         cmd_s3_list(args)
     elif "Ingest" in action:
         prefix = questionary.text("Prefix to ingest:").ask()
         if not prefix:
             return
 
-        if not prefix:
-            return
-
         dry_run = questionary.confirm(PROMPT_DRY_RUN).ask()
-        args = Args()
-        args.prefix = prefix
-        args.dry_run = dry_run
-        args.tenant = "default"
-        # s3 ingest usually requires a source argument too, but let's check cmd_s3
+        args = S3Args(prefix=prefix, dry_run=dry_run)
         cmd_s3_ingest(args)
 
     questionary.press_any_key_to_continue().ask()
 
 
 # --- Import Data (Unified) ---
-def _handle_import_data(cli_main):
+def _handle_import_data(cli_main) -> None:
     """Unified import handler for local and S3 sources."""
     source_type = questionary.select(
         "Select data source:",
@@ -172,7 +167,7 @@ def _handle_import_data(cli_main):
     questionary.press_any_key_to_continue().ask()
 
 
-def _handle_local_import(cli_main):
+def _handle_local_import(cli_main) -> None:
     def validate_path(path):
         if not path:
             return "Please enter a path"
@@ -192,7 +187,7 @@ def _handle_local_import(cli_main):
     cli_main._run_ingest(source_path=str(source), dry_run=dry_run)
 
 
-def _handle_s3_import_flow():
+def _handle_s3_import_flow() -> None:
     from cortex_cli.cmd_s3 import cmd_s3_ingest, cmd_s3_list
 
     # First list available prefixes
@@ -202,10 +197,11 @@ def _handle_s3_import_flow():
 
     if list_first:
 
+        @dataclass
         class ListArgs:
-            json = False
-            prefix = ""
-            limit = 20
+            json: bool = False
+            prefix: str = ""
+            limit: int = 20
 
         cmd_s3_list(ListArgs())
         print()
@@ -214,16 +210,15 @@ def _handle_s3_import_flow():
     if not prefix:
         return
 
-    if not prefix:
-        return
-
     dry_run = questionary.confirm(PROMPT_DRY_RUN, default=False).ask()
 
+    @dataclass
     class IngestArgs:
-        json = False
-        verbose = False
-        tenant = "default"
-        dry_run = False
+        json: bool = False
+        verbose: bool = False
+        tenant: str = "default"
+        dry_run: bool = False
+        prefix: str = ""
 
     args = IngestArgs()
     args.prefix = prefix
@@ -233,7 +228,7 @@ def _handle_s3_import_flow():
 
 
 # --- Config ---
-def _view_config_section(cli_main):
+def _view_config_section(cli_main) -> None:
     section = questionary.select(
         "Select Section:",
         choices=[
@@ -258,7 +253,7 @@ def _view_config_section(cli_main):
 
 
 # --- RAG / Search ---
-def _handle_rag_menu():
+def _handle_rag_menu() -> None:
     while True:
         action = questionary.select(
             "Select AI Capability:",
@@ -284,7 +279,7 @@ def _handle_rag_menu():
             _interactive_summarize()
 
 
-def _interactive_search():
+def _interactive_search() -> None:
     query = questionary.text("Enter search query:").ask()
     if not query:
         return
@@ -332,7 +327,7 @@ def _interactive_search():
     questionary.press_any_key_to_continue().ask()
 
 
-def _interactive_answer():
+def _interactive_answer() -> None:
     query = questionary.text("Enter your question:").ask()
     if not query:
         return
@@ -376,7 +371,7 @@ def _interactive_answer():
     questionary.press_any_key_to_continue().ask()
 
 
-def _interactive_draft():
+def _interactive_draft() -> None:
     instructions = questionary.text("Drafting instructions:").ask()
     if not instructions:
         return
@@ -433,7 +428,7 @@ def _interactive_draft():
     questionary.press_any_key_to_continue().ask()
 
 
-def _interactive_summarize():
+def _interactive_summarize() -> None:
     thread_id = questionary.text("Thread ID:").ask()
     if not thread_id:
         return

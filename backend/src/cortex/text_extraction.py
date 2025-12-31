@@ -8,6 +8,9 @@ Implements §6.5 of the Canonical Blueprint.
 from __future__ import annotations
 
 import contextlib
+import csv
+import io
+import ipaddress
 import logging
 import os
 import re
@@ -16,6 +19,7 @@ import time
 from collections.abc import Callable, Iterable, Sequence
 from pathlib import Path
 from typing import Any, cast
+from urllib.parse import urlparse
 
 from cortex.utils import strip_control_chars
 
@@ -91,6 +95,35 @@ def _finalize_text(text: str, max_chars: int | None) -> str:
     return strip_control_chars(text)
 
 
+def _is_safe_tika_url(url: str) -> bool:
+    """Validate Tika endpoint to reduce SSRF exposure."""
+    try:
+        parsed = urlparse(url)
+    except ValueError:
+        return False
+    if parsed.scheme not in {"http", "https"}:
+        return False
+    hostname = parsed.hostname
+    if not hostname:
+        return False
+    host_lower = hostname.lower()
+    if host_lower in {"localhost", "127.0.0.1", "::1"}:
+        return False
+    if host_lower.endswith((".local", ".internal")):
+        return False
+    try:
+        ip_addr = ipaddress.ip_address(hostname)
+    except ValueError:
+        return True
+    return not (
+        ip_addr.is_private
+        or ip_addr.is_loopback
+        or ip_addr.is_link_local
+        or ip_addr.is_reserved
+        or ip_addr.is_multicast
+    )
+
+
 def _extract_with_tika(path: Path, max_chars: int | None) -> str:
     """Extract text using Apache Tika if available."""
     try:
@@ -99,10 +132,8 @@ def _extract_with_tika(path: Path, max_chars: int | None) -> str:
         tika_server_url = os.getenv("TIKA_SERVER_URL")
         # Validate URL to prevent arbitrary SSRF if variable is compromised
         if tika_server_url:
-            if not re.match(r"^https?://[a-zA-Z0-9.-]+(:\d+)?(/.*)?$", tika_server_url):
-                logger.warning(
-                    "Invalid TIKA_SERVER_URL format ignored: %s", tika_server_url
-                )
+            if not _is_safe_tika_url(tika_server_url):
+                logger.warning("Unsafe TIKA_SERVER_URL ignored: %s", tika_server_url)
             else:
                 os.environ.setdefault("TIKA_SERVER_ENDPOINT", tika_server_url)
     except ImportError:
@@ -112,7 +143,7 @@ def _extract_with_tika(path: Path, max_chars: int | None) -> str:
         logger.debug("Tika import/setup failed path=%s: %s", path, e)
         return ""
 
-    with contextlib.suppress(Exception):
+    try:
         # Tika parser can throw various connection errors
         parsed_raw = parser.from_file(str(path))  # type: ignore[attr-defined]
         if isinstance(parsed_raw, dict):
@@ -120,6 +151,8 @@ def _extract_with_tika(path: Path, max_chars: int | None) -> str:
             content = cast(str | None, parsed_dict.get("content"))
             if content:
                 return _finalize_text(content, max_chars)
+    except Exception as exc:
+        logger.warning("Tika parse failed for %s: %s", path, exc)
     logger.debug("Apache Tika produced no content for %s", path)
     return ""
 
@@ -169,14 +202,20 @@ def _extract_image_ocr(path: Path, max_chars: int | None) -> str:
     """Attempt OCR extraction for image-based attachments."""
     try:
         from PIL import Image  # type: ignore
-    except Exception:
+    except ImportError:
         logger.info("Pillow not installed; skipping image OCR for %s", path)
+        return ""
+    except Exception as exc:
+        logger.warning("Failed to import Pillow for %s: %s", path, exc)
         return ""
 
     try:
         import pytesseract  # type: ignore
-    except Exception:
+    except ImportError:
         logger.info("pytesseract not installed; skipping OCR for %s", path)
+        return ""
+    except Exception as exc:
+        logger.warning("Failed to import pytesseract for %s: %s", path, exc)
         return ""
 
     try:
@@ -193,33 +232,68 @@ def _extract_image_ocr(path: Path, max_chars: int | None) -> str:
 def _extract_pdf_with_ocr(path: Path, max_chars: int | None) -> str:
     """Fallback OCR for PDFs that contain no embedded text."""
     try:
-        from pdf2image import convert_from_path  # type: ignore
-    except Exception:
+        from pdf2image import convert_from_path, pdfinfo_from_path  # type: ignore
+    except ImportError:
         logger.info("pdf2image not installed; skipping PDF OCR for %s", path)
         return ""
-
-    try:
-        convert = cast(Callable[..., Sequence[Any]], convert_from_path)
-        images = convert(str(path))
     except Exception as exc:
-        logger.warning("Unable to rasterize PDF %s for OCR: %s", path, exc)
+        logger.warning("Failed to import pdf2image for %s: %s", path, exc)
         return ""
 
-    # Try importing once
     try:
         import pytesseract  # type: ignore
-
-        pytesseract_module = cast(Any, pytesseract)
-    except Exception:
+    except ImportError:
         logger.info("pytesseract not installed; skipping PDF OCR")
         return ""
+    except Exception as exc:
+        logger.warning("Failed to import pytesseract for %s: %s", path, exc)
+        return ""
 
+    pytesseract_module = cast(Any, pytesseract)
+    convert = cast(Callable[..., Sequence[Any]], convert_from_path)
     aggregated: list[str] = []
-    for image in images:
-        with contextlib.suppress(Exception):
-            text = cast(str, pytesseract_module.image_to_string(image))
+
+    page_count = 0
+    try:
+        info = pdfinfo_from_path(str(path))
+        page_count = int(info.get("Pages", 0))
+    except Exception as exc:
+        logger.warning("Unable to read PDF page count for %s: %s", path, exc)
+
+    def _process_images(images: Sequence[Any], page_num: int) -> None:
+        for image in images:
+            try:
+                text = cast(str, pytesseract_module.image_to_string(image))
+            except Exception as exc:
+                logger.warning("OCR failed for %s page %d: %s", path, page_num, exc)
+                continue
             if text and text.strip():
                 aggregated.append(text.strip())
+
+    if page_count > 0:
+        for page_num in range(1, page_count + 1):
+            try:
+                images = convert(
+                    str(path),
+                    first_page=page_num,
+                    last_page=page_num,
+                )
+            except Exception as exc:
+                logger.warning(
+                    "Unable to rasterize PDF %s page %d for OCR: %s",
+                    path,
+                    page_num,
+                    exc,
+                )
+                continue
+            _process_images(images, page_num)
+    else:
+        try:
+            images = convert(str(path))
+        except Exception as exc:
+            logger.warning("Unable to rasterize PDF %s for OCR: %s", path, exc)
+            return ""
+        _process_images(images, 0)
 
     if not aggregated:
         return ""
@@ -250,32 +324,42 @@ def _extract_pdf_tables(path: Path, max_chars: int | None) -> str:
     if not tables_output:
         try:
             import pdfplumber  # type: ignore
-        except Exception:
+        except ImportError:
             logger.info(
                 "pdfplumber not installed; skipping table extraction for %s", path
             )
+        except Exception as exc:
+            logger.warning("Failed to import pdfplumber for %s: %s", path, exc)
         else:
-            with contextlib.suppress(Exception):
+            try:
                 pdfplumber_module = cast(Any, pdfplumber)
                 with pdfplumber_module.open(str(path)) as pdf:
                     pages = cast(Sequence[Any], getattr(pdf, "pages", []))
                     for page_num, page in enumerate(pages, start=1):
-                        table = cast(
-                            Sequence[Sequence[str | None]] | None, page.extract_table()
+                        tables = cast(
+                            Sequence[Sequence[Sequence[str | None]]] | None,
+                            page.extract_tables(),
                         )
-                        if not table:
+                        if not tables:
                             continue
-                        csv_lines: list[str] = []
-                        for row in table:
-                            if not row or not any(row):
-                                continue
-                            normalized_row = [cell or "" for cell in row]
-                            csv_lines.append(",".join(normalized_row))
-                        if csv_lines:
-                            tables_output.append(
-                                f"[pdfplumber Table {page_num}]\n"
-                                + "\n".join(csv_lines)
-                            )
+                        for table_index, table in enumerate(tables, start=1):
+                            csv_buffer = io.StringIO()
+                            writer = csv.writer(csv_buffer)
+                            for row in table:
+                                if not row or not any(row):
+                                    continue
+                                normalized_row = [cell or "" for cell in row]
+                                writer.writerow(normalized_row)
+                            csv_data = csv_buffer.getvalue().strip()
+                            if csv_data:
+                                tables_output.append(
+                                    f"[pdfplumber Table {page_num}.{table_index}]\n"
+                                    + csv_data
+                                )
+            except Exception as exc:
+                logger.warning(
+                    "pdfplumber table extraction failed for %s: %s", path, exc
+                )
 
     if not tables_output:
         return ""
@@ -297,34 +381,44 @@ def _html_to_text(html: str) -> str:
             tag.decompose()
         text = cast(str, soup.get_text(separator=" ", strip=True))
         return re.sub(r"\s+", " ", text)
-    except Exception:
-        # Regex fallback: strip tags and collapse whitespace
-        text = re.sub(r"(?is)<(script|style|noscript)[^>]*>.*?</\1>", " ", html)
-        text = re.sub(r"<[^>]+>", " ", text)
-        return re.sub(r"\s+", " ", text)
+    except ImportError:
+        pass
+    except Exception as exc:
+        logger.warning("BeautifulSoup import failed: %s", exc)
+    # Regex fallback: strip tags and collapse whitespace
+    text = re.sub(r"(?is)<(script|style|noscript)[^>]*>.*?</\1>", " ", html)
+    text = re.sub(r"<[^>]+>", " ", text)
+    return re.sub(r"\s+", " ", text)
 
 
 def _extract_text_from_doc_win32(path: Path) -> str:
     """Use pywin32/Word to extract text from legacy .doc files on Windows."""
+    word = None
+    doc = None
     try:
         import win32com.client
 
         word = win32com.client.Dispatch("Word.Application")
         word.Visible = False
-        doc = None
-        try:
-            doc = word.Documents.Open(str(path.resolve()))
-            return strip_control_chars(doc.Content.Text or "")
-        finally:
-            if doc:
-                doc.Close(False)
-            word.Quit()
+        doc = word.Documents.Open(str(path.resolve()))
+        return strip_control_chars(doc.Content.Text or "")
     except ImportError:
         logger.info("pywin32 not installed; cannot process .doc files on Windows.")
         return ""
     except Exception as e:
         logger.error("Error processing .doc file %s with win32com: %s", path, e)
         return ""
+    finally:
+        if doc:
+            try:
+                doc.Close(False)
+            except Exception:
+                pass
+        if word:
+            try:
+                word.Quit()
+            except Exception:
+                pass
 
 
 def _extract_eml(path: Path) -> str:
@@ -333,7 +427,8 @@ def _extract_eml(path: Path) -> str:
         from email import policy
         from email.parser import BytesParser
 
-        msg = BytesParser(policy=policy.default).parsebytes(path.read_bytes())
+        with path.open("rb") as fh:
+            msg = BytesParser(policy=policy.default).parse(fh)
     except Exception as e:
         logger.warning("Failed to parse EML %s: %s", path, e)
         return ""
@@ -376,8 +471,11 @@ def _extract_msg(path: Path) -> str:
     """Parse Outlook .msg files if extract_msg is available."""
     try:
         import extract_msg  # type: ignore
-    except Exception:
+    except ImportError:
         logger.info("extract_msg not installed; skipping .msg file: %s", path)
+        return ""
+    except Exception as exc:
+        logger.warning("Failed to import extract_msg for %s: %s", path, exc)
         return ""
 
     extract_msg_module = cast(Any, extract_msg)

@@ -1,7 +1,8 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { api, DraftEmailResponse, ApiError } from '../lib/api';
+import { api, ApiError } from '../lib/api';
+import type { DraftEmailResponse } from '../lib/api';
 import { useDraftEmail } from './useDraft';
 import React from 'react';
 
@@ -32,6 +33,8 @@ describe('useDraftEmail', () => {
       draft: {
         subject: 'Test Subject',
         body: 'Test Body',
+        to: [],
+        cc: [],
       },
       confidence: 0.9,
       iterations: 1,

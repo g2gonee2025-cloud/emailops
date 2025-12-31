@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { z } from 'zod';
+
 import { validateIngestionManifest, DocumentSchema, ManifestSchema, validateManifest } from './ingestUtils';
 
 describe('Ingestion Utils', () => {

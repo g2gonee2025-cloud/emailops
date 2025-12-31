@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/Table";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Job } from "@/schemas/job";
+import { type Job } from "@/schemas/job";
 
 type JobTableProps = {
   jobs: Job[];

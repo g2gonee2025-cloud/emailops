@@ -136,13 +136,15 @@ def check_exports(config: Any, root: Path) -> tuple[bool, list[str], str | None]
         return False, [], str(e)
 
 
-def check_and_install_dependencies(provider: str, auto_install: bool, pip_timeout: int):
+def check_and_install_dependencies(
+    provider: str, auto_install: bool, pip_timeout: int
+) -> Any:
     """Stub for dependency check."""
 
     class DepReport:
-        installed = []
-        missing_critical = []
-        missing_optional = []
+        installed: list[str] = []
+        missing_critical: list[str] = []
+        missing_optional: list[str] = []
 
     return DepReport()
 

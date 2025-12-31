@@ -9,6 +9,24 @@ from __future__ import annotations
 
 from typing import Any
 
+SENSITIVE_CONTEXT_KEYS = {"raw_output", "query", "file_path"}
+REDACTED_VALUE = "[REDACTED]"
+
+
+def _redact_context(context: dict[str, Any]) -> dict[str, Any]:
+    redacted: dict[str, Any] = {}
+    for key, value in context.items():
+        if isinstance(key, str) and key.lower() in SENSITIVE_CONTEXT_KEYS:
+            redacted[key] = REDACTED_VALUE
+        else:
+            redacted[key] = value
+    return redacted
+
+
+def _pop_duplicate_kwargs(kwargs: dict[str, Any], keys: tuple[str, ...]) -> None:
+    for key in keys:
+        kwargs.pop(key, None)
+
 
 class CortexError(Exception):
     """
@@ -30,17 +48,18 @@ class CortexError(Exception):
         super().__init__(message)
         self.message = message
         self.error_code = error_code
-        self.context = context or {}
+        self.context = dict(context) if context is not None else {}
         if kwargs:
             self.context.update(kwargs)
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize exception for logging/reporting."""
+        safe_context = _redact_context(dict(self.context)) if self.context else {}
         return {
             "error_type": self.__class__.__name__,
             "message": self.message,
             "error_code": self.error_code,
-            "context": self.context,
+            "context": safe_context,
         }
 
 
@@ -60,6 +79,7 @@ class EmbeddingError(CortexError):
     """
 
     def __init__(self, message: str, retryable: bool = False, **kwargs: Any) -> None:
+        _pop_duplicate_kwargs(kwargs, ("retryable",))
         super().__init__(message, retryable=retryable, **kwargs)
         self.retryable = retryable
 
@@ -73,6 +93,7 @@ class ProcessingError(CortexError):
         retryable: bool = False,
         **kwargs: Any,
     ) -> None:
+        _pop_duplicate_kwargs(kwargs, ("retryable",))
         super().__init__(message, retryable=retryable, **kwargs)
         self.retryable = retryable
 
@@ -89,6 +110,7 @@ class ValidationError(CortexError):
         rule: str | None = None,
         **kwargs: Any,
     ) -> None:
+        _pop_duplicate_kwargs(kwargs, ("field", "rule"))
         super().__init__(message, field=field, rule=rule, **kwargs)
         self.field = field
         self.rule = rule
@@ -106,6 +128,7 @@ class ProviderError(CortexError):
         retryable: bool = False,
         **kwargs: Any,
     ) -> None:
+        _pop_duplicate_kwargs(kwargs, ("provider", "retryable"))
         super().__init__(message, provider=provider, retryable=retryable, **kwargs)
         self.provider = provider
         self.retryable = retryable
@@ -123,6 +146,7 @@ class FileOperationError(CortexError):
         operation: str | None = None,
         **kwargs: Any,
     ) -> None:
+        _pop_duplicate_kwargs(kwargs, ("file_path", "operation"))
         super().__init__(message, file_path=file_path, operation=operation, **kwargs)
         self.file_path = file_path
         self.operation = operation
@@ -139,6 +163,7 @@ class TransactionError(CortexError):
         transaction_id: str | None = None,
         **kwargs: Any,
     ) -> None:
+        _pop_duplicate_kwargs(kwargs, ("transaction_id",))
         super().__init__(message, transaction_id=transaction_id, **kwargs)
         self.transaction_id = transaction_id
 
@@ -154,6 +179,7 @@ class SecurityError(CortexError):
         threat_type: str | None = None,
         **kwargs: Any,
     ) -> None:
+        _pop_duplicate_kwargs(kwargs, ("threat_type",))
         super().__init__(message, threat_type=threat_type, **kwargs)
         self.threat_type = threat_type
 
@@ -173,6 +199,7 @@ class LLMOutputSchemaError(CortexError):
         repair_attempts: int = 0,
         **kwargs: Any,
     ) -> None:
+        _pop_duplicate_kwargs(kwargs, ("schema_name", "raw_output", "repair_attempts"))
         super().__init__(
             message,
             schema_name=schema_name,
@@ -196,6 +223,7 @@ class RetrievalError(CortexError):
         query: str | None = None,
         **kwargs: Any,
     ) -> None:
+        _pop_duplicate_kwargs(kwargs, ("query",))
         super().__init__(message, query=query, **kwargs)
         self.query = query
 
@@ -214,6 +242,7 @@ class RateLimitError(ProviderError):
         retry_after: float | None = None,
         **kwargs: Any,
     ) -> None:
+        _pop_duplicate_kwargs(kwargs, ("provider", "retry_after", "retryable"))
         super().__init__(
             message,
             provider=provider,
@@ -236,6 +265,7 @@ class CircuitBreakerOpenError(ProviderError):
         reset_at: float | None = None,
         **kwargs: Any,
     ) -> None:
+        _pop_duplicate_kwargs(kwargs, ("provider", "reset_at", "retryable"))
         super().__init__(
             message,
             provider=provider,
@@ -258,6 +288,7 @@ class PolicyViolationError(SecurityError):
         policy_name: str | None = None,
         **kwargs: Any,
     ) -> None:
+        _pop_duplicate_kwargs(kwargs, ("threat_type", "action", "policy_name"))
         super().__init__(
             message,
             threat_type="policy_violation",

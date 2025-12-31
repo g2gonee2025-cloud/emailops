@@ -48,7 +48,7 @@ MAGIC_NUMBER_FIXES = {
 }
 
 
-def fix_magic_numbers():
+def fix_magic_numbers() -> int:
     """Replace magic numbers with named constants."""
     print("\n🔢 Fixing magic numbers...")
     fixed_count = 0
@@ -117,7 +117,7 @@ DUPLICATE_IMPORT_FILES = [
 ]
 
 
-def fix_duplicate_imports():
+def fix_duplicate_imports() -> int:
     """Remove duplicate imports."""
     print("\n📦 Fixing duplicate imports...")
     fixed_count = 0
@@ -161,7 +161,7 @@ DUNDER_IMPORT_FILES = [
 ]
 
 
-def fix_dunder_imports():
+def fix_dunder_imports() -> int:
     """Replace __import__('module') with top-level import."""
     print("\n🔄 Fixing __import__ usage...")
     fixed_count = 0
@@ -208,7 +208,7 @@ HASATTR_FILES = [
 ]
 
 
-def fix_unnecessary_hasattr():
+def fix_unnecessary_hasattr() -> int:
     """Remove unnecessary hasattr checks for guaranteed attributes."""
     print("\n🧹 Removing unnecessary hasattr checks...")
     fixed_count = 0
@@ -263,7 +263,7 @@ class IfTrueTransformer(ast.NodeTransformer):
     An AST transformer that replaces 'if True:' blocks with their body.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.changed = False
 
     def visit_If(self, node):
@@ -286,7 +286,7 @@ class IfTrueTransformer(ast.NodeTransformer):
 # ============================================================================
 
 
-def fix_unused_imports():
+def fix_unused_imports() -> int:
     """Remove unused imports using autoflake."""
     print("\n🗑️ Removing unused imports...")
 
@@ -322,7 +322,7 @@ def fix_unused_imports():
 # ============================================================================
 
 
-def fix_import_sorting():
+def fix_import_sorting() -> int:
     """Sort imports using isort."""
     print("\n📋 Sorting imports...")
 
@@ -355,7 +355,7 @@ def fix_import_sorting():
 # ============================================================================
 
 
-def fix_formatting():
+def fix_formatting() -> int:
     """Fix formatting issues using ruff."""
     print("\n🎨 Formatting code...")
 
@@ -388,7 +388,7 @@ def fix_formatting():
 # ============================================================================
 
 
-def fix_lint_issues():
+def fix_lint_issues() -> int:
     """Fix auto-fixable lint issues using ruff."""
     print("\n🔧 Fixing lint issues...")
 
@@ -425,7 +425,7 @@ def fix_lint_issues():
 # ============================================================================
 
 
-def fix_specific_issues():
+def fix_specific_issues() -> int:
     """Fix specific issues identified in the report."""
     print("\n🎯 Fixing specific identified issues...")
     fixed_count = 0
@@ -513,7 +513,7 @@ def fix_specific_issues():
 # ============================================================================
 
 
-def main():
+def main() -> None:
     """Run all fixes."""
     print("=" * 60)
     print("🔧 AUTOMATED CODE ISSUE FIXER")

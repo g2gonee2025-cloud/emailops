@@ -35,6 +35,7 @@ describe('DraftView', () => {
       error: null,
       isPending: false,
       reset: mockReset,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
   });
 
@@ -62,13 +63,14 @@ describe('DraftView', () => {
       error: null,
       isPending: true,
       reset: mockReset,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
     renderComponent();
 
     // The Skeleton component from shadcn/ui doesn't have an implicit role.
     // We check for the presence of multiple elements with the animation class.
-    const skeletons = screen.getAllByText((content, element) => {
+    const skeletons = screen.getAllByText((_content, element) => {
       return element?.classList.contains('animate-pulse') ?? false;
     });
     expect(skeletons.length).toBeGreaterThan(5);
@@ -82,6 +84,8 @@ describe('DraftView', () => {
         to: ['test@example.com'],
         cc: [],
       },
+      confidence: 0.95,
+      iterations: 1,
     };
     vi.mocked(useDraftEmail).mockReturnValue({
       mutate: mockMutate,
@@ -89,6 +93,7 @@ describe('DraftView', () => {
       error: null,
       isPending: false,
       reset: mockReset,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
     renderComponent();
@@ -104,15 +109,16 @@ describe('DraftView', () => {
   });
 
   it('displays an error message when drafting fails and shows an alert', async () => {
-    const mockError: ApiError = {
-      message: 'Failed to generate draft.',
-    };
+    const mockError = new Error('Failed to generate draft.') as ApiError;
+    mockError.name = 'ApiError';
+    mockError.status = 500;
     vi.mocked(useDraftEmail).mockReturnValue({
       mutate: mockMutate,
       data: null,
       error: mockError,
       isPending: false,
       reset: mockReset,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
     renderComponent();
@@ -153,7 +159,9 @@ describe('DraftView', () => {
   it('resets the form and mutation when "New Draft" is clicked', async () => {
     const user = userEvent.setup();
     const mockDraft: DraftEmailResponse = {
-      draft: { subject: 'Old Subject', body: 'Old body' },
+      draft: { subject: 'Old Subject', body: 'Old body', to: [], cc: [] },
+      confidence: 0.9,
+      iterations: 1,
     };
 
     let data: DraftEmailResponse | null = mockDraft;
@@ -169,6 +177,7 @@ describe('DraftView', () => {
       error: null,
       isPending: false,
       reset: mockResetFn,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }) as any);
 
     const { rerender } = renderComponent();

@@ -2,6 +2,9 @@
 Queue CLI commands.
 """
 
+import argparse
+from typing import Any
+
 from cortex.queue import get_queue
 from rich.console import Console
 from rich.table import Table
@@ -9,7 +12,7 @@ from rich.table import Table
 console = Console()
 
 
-def cmd_queue_stats() -> None:
+def cmd_queue_stats(args: argparse.Namespace) -> None:
     """Display queue statistics."""
     q = get_queue()
     stats = q.get_queue_stats()
@@ -24,7 +27,7 @@ def cmd_queue_stats() -> None:
     console.print(table)
 
 
-def setup_queue_parser(subparsers):
+def setup_queue_parser(subparsers: Any) -> None:
     """Setup queue command parser."""
     queue_parser = subparsers.add_parser(
         "queue",
@@ -41,4 +44,4 @@ def setup_queue_parser(subparsers):
         "stats",
         help="Show queue statistics",
     )
-    stats_parser.set_defaults(func=lambda _: cmd_queue_stats())
+    stats_parser.set_defaults(func=cmd_queue_stats)

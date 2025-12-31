@@ -1,6 +1,6 @@
 
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import SearchView from '../views/SearchView';
 import { AllTheProviders } from './testUtils';
 import { useSearch } from '../hooks/useSearch';
@@ -33,8 +33,8 @@ vi.mock('../contexts/toastContext', async () => {
   };
 });
 
-const mockUseSearch = useSearch as jest.Mock;
-const mockUseDebounce = useDebounce as jest.Mock;
+const mockUseSearch = useSearch as Mock;
+const mockUseDebounce = useDebounce as Mock;
 
 const renderComponent = () => {
   return render(

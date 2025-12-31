@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { api, SummarizeResponse, ApiError } from '../lib/api';
+import { api, type SummarizeResponse, type ApiError } from '../lib/api';
 
 interface SummarizeVariables {
   threadId: string;

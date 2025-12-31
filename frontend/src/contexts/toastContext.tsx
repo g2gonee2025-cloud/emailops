@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { type ApiError } from '../lib/api';
 import { ToastContainer } from '../components/ui/Toast';

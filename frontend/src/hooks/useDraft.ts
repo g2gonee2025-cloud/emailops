@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { api, DraftEmailResponse, ApiError } from '../lib/api';
+import { api, type DraftEmailResponse, type ApiError } from '../lib/api';
 
 interface DraftEmailVariables {
   instruction: string;

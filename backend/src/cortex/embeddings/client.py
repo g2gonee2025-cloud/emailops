@@ -7,7 +7,7 @@ Provides a stable interface for embedding operations.
 from __future__ import annotations
 
 import threading
-from typing import Optional, cast
+from typing import cast
 
 import numpy as np
 from cortex.llm.client import embed_texts as _embed_texts

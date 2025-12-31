@@ -42,7 +42,7 @@ def _run_maintenance_resolve(args: argparse.Namespace) -> None:
 
 
 def setup_maintenance_parser(
-    subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]",
+    subparsers: "argparse._SubParsersAction",
 ) -> None:
     """Setup maintenance command parser."""
     maintenance_parser = subparsers.add_parser(

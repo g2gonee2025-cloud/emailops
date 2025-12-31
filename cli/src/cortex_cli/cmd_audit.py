@@ -10,8 +10,11 @@ from datetime import datetime
 from cortex.audit import get_audit_log_cli
 
 
-def setup_audit_parser(parser: argparse.ArgumentParser) -> None:
+def setup_audit_parser(
+    subparsers: argparse._SubParsersAction,
+) -> None:
     """Setup audit subcommand parser."""
+    parser = subparsers.add_parser("audit", help="View audit logs")
     parser.set_defaults(func=audit_log)
     parser.add_argument("tenant_id", help="Tenant ID for the audit log")
     parser.add_argument(

@@ -10,7 +10,6 @@ from rich.table import Table
 # This is a common pattern in this codebase.
 try:
     from cortex.safety.grounding import (
-        ClaimAnalysis,
         GroundingCheckInput,
         tool_check_grounding,
     )
@@ -26,7 +25,9 @@ except ImportError:
     )
 
 
-def setup_grounding_parser(parser: argparse.ArgumentParser):
+def setup_grounding_parser(
+    parser: argparse._SubParsersAction,
+) -> None:
     """Add grounding command to parser."""
     grounding_parser = parser.add_parser(
         "grounding", help="Tools for checking answer grounding"
@@ -55,7 +56,7 @@ def setup_grounding_parser(parser: argparse.ArgumentParser):
     check_parser.set_defaults(func=run_grounding_check)
 
 
-def run_grounding_check(args: argparse.Namespace):
+def run_grounding_check(args: argparse.Namespace) -> None:
     """Run the grounding check tool and display results."""
     console = Console()
 

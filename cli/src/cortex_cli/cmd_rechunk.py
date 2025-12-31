@@ -27,7 +27,7 @@ def cmd_db_rechunk(args: argparse.Namespace) -> None:
     results = {}
     task_id = progress.add_task("Starting re-chunking...", total=None)
 
-    def _update_progress(res):
+    def _update_progress(res: dict[str, int]) -> None:
         total = res.get("total", 0)
         processed = res.get("processed", 0)
         new = res.get("new", 0)

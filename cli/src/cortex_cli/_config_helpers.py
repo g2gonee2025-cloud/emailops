@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -25,25 +26,40 @@ def resolve_sender(sender: str | None) -> str:
 
     if sender:
         return sender
-    return SENDER_LOCKED
+    return str(SENDER_LOCKED)
 
 
 def _print_json_config(config: Any, section: str | None = None) -> None:
     """Print configuration in JSON format."""
     import json
 
+    if config is None:
+        print(
+            f"{_colorize('ERROR:', 'red')} Configuration is not available.",
+            file=sys.stderr,
+        )
+        return
     data = config.model_dump()
     if section:
         if section in data:
             data = {section: data[section]}
         else:
-            print(f"{_colorize('ERROR:', 'red')} Section '{section}' not found")
+            print(
+                f"{_colorize('ERROR:', 'red')} Section '{section}' not found",
+                file=sys.stderr,
+            )
             return
     print(json.dumps(data, indent=2, default=str))
 
 
 def _print_human_config(config: Any, section: str | None = None) -> None:
     """Print configuration in human-readable format."""
+    if config is None:
+        print(
+            f"{_colorize('ERROR:', 'red')} Configuration is not available.",
+            file=sys.stderr,
+        )
+        return
     title = f"Current Configuration ({section})" if section else "Current Configuration"
     print(f"{_colorize(f'{title}:', 'bold')}\n")
 
@@ -78,7 +94,10 @@ def _print_human_config(config: Any, section: str | None = None) -> None:
                 for k, v in attr.model_dump().items():
                     print(f"    {k:<20} {v}")
         else:
-            print(f"{_colorize('ERROR:', 'red')} Section '{section}' not found")
+            print(
+                f"{_colorize('ERROR:', 'red')} Section '{section}' not found",
+                file=sys.stderr,
+            )
 
     # If we are here and not looking for a section, we printed summary above.
 

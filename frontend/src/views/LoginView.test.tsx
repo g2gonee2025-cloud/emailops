@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '../tests/testUtils';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import LoginView from './LoginView';
 import * as useLoginHook from '../hooks/useLogin';
 import * as AuthContext from '../contexts/AuthContext';
@@ -24,13 +25,13 @@ vi.mock('../contexts/AuthContext', async () => {
     });
 
 describe('LoginView', () => {
-  const mockUseLogin = useLoginHook.useLogin as vi.Mock;
-  const mockUseAuth = AuthContext.useAuth as vi.Mock;
-  const mockUseNavigate = ReactRouterDom.useNavigate as vi.Mock;
+  const mockUseLogin = useLoginHook.useLogin as Mock;
+  const mockUseAuth = AuthContext.useAuth as Mock;
+  const mockUseNavigate = ReactRouterDom.useNavigate as Mock;
 
-  let mockLoginAsync: vi.Mock;
-  let mockSetToken: vi.Mock;
-  let mockNavigate: vi.Mock;
+  let mockLoginAsync: Mock;
+  let mockSetToken: Mock;
+  let mockNavigate: Mock;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -133,9 +134,15 @@ describe('LoginView', () => {
   });
 
   it('displays validation error for invalid email format', async () => {
+    const user = userEvent.setup();
     render(<LoginView />);
-    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'not-an-email' } });
-    fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
+
+    // Clear the input first just in case
+    const emailInput = screen.getByLabelText(/email/i);
+    await user.clear(emailInput);
+    await user.type(emailInput, 'not-an-email');
+
+    await user.click(screen.getByRole('button', { name: /sign in/i }));
 
     await waitFor(() => {
       expect(screen.getByText('Invalid email address')).toBeInTheDocument();

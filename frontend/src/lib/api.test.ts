@@ -134,7 +134,7 @@ describe('API Client', () => {
       localStorage.setItem('auth_token', token); // Sets token in localStorage
       (global.fetch as Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ status: 'ok' }),
+        json: async () => ({ status: 'ok', env: 'test', service: 'cortex', version: '1.0.0' }),
       });
 
       await api.fetchStatus();
@@ -148,7 +148,7 @@ describe('API Client', () => {
       localStorage.removeItem('auth_token'); // Removes token from localStorage
       (global.fetch as Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ status: 'ok' }),
+        json: async () => ({ status: 'ok', env: 'test', service: 'cortex', version: '1.0.0' }),
       });
 
       await api.fetchStatus();

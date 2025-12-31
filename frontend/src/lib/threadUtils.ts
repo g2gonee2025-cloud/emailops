@@ -10,7 +10,7 @@
  * making them easy to test and reason about.
  */
 
-import { ChatMessage, SearchResult } from './api';
+// Imports removed as they were unused
 
 /**
  * A generic type representing any object that has a timestamp.
@@ -36,15 +36,35 @@ export const sortByTimestamp = <T extends Timestamped>(
   order: 'asc' | 'desc' = 'asc',
 ): T[] => {
   return [...items].sort((a, b) => {
-    const tsA = 'metadata' in a ? a.metadata?.timestamp : a.timestamp;
-    const tsB = 'metadata' in b ? b.metadata?.timestamp : b.timestamp;
+    const getTimestamp = (item: T) => {
+      // Cast to Timestamped to access union properties safely
+      const t = item as unknown as Timestamped;
+      if ('timestamp' in t) {
+        return t.timestamp;
+      }
+      if ('metadata' in t) {
+        return t.metadata?.timestamp;
+      }
+      return undefined;
+    };
 
-    if (tsA === undefined || tsB === undefined) {
-      return 0;
-    }
+    const tsA = getTimestamp(a);
+    const tsB = getTimestamp(b);
+
+    // Explicitly handle undefined cases to ensure stable sort:
+    // If both are undefined, their relative order doesn't change.
+    // If only A is undefined, A goes to the end (after B).
+    // If only B is undefined, B goes to the end (after A).
+    if (tsA === undefined && tsB === undefined) return 0;
+    if (tsA === undefined) return 1;
+    if (tsB === undefined) return -1;
 
     const dateA = new Date(tsA).getTime();
     const dateB = new Date(tsB).getTime();
+
+    if (isNaN(dateA) || isNaN(dateB)) {
+      return 0;
+    }
 
     if (isNaN(dateA) || isNaN(dateB)) {
       return 0;

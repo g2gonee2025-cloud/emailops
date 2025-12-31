@@ -15,7 +15,7 @@ console = Console()
 STYLE_HIGHLIGHT = "fg:cyan bold"
 
 
-def _print_header():
+def _print_header() -> None:
     console.print(
         Panel.fit(
             "[bold cyan]EmailOps Cortex[/bold cyan] [dim]Interactive Mode[/dim]",
@@ -25,7 +25,7 @@ def _print_header():
     )
 
 
-def interactive_loop():
+def interactive_loop() -> None:
     """Main interactive loop."""
     # We don't import main here anymore unless needed for specific delegated tasks (like status)
     from cortex_cli import main as cli_main
@@ -104,7 +104,7 @@ def interactive_loop():
             questionary.press_any_key_to_continue().ask()
 
 
-def _handle_index(cli_main):
+def _handle_index(cli_main) -> None:
     provider = questionary.select(
         "Embedding Provider:",
         choices=["vertex", "openai", "local"],
@@ -123,7 +123,7 @@ def _handle_index(cli_main):
     questionary.press_any_key_to_continue().ask()
 
 
-def _handle_doctor():
+def _handle_doctor() -> None:
     checks = questionary.checkbox(
         "Select diagnostics to run:",
         choices=[
@@ -164,7 +164,7 @@ def _handle_doctor():
     questionary.press_any_key_to_continue().ask()
 
 
-def _handle_config(cli_main):
+def _handle_config(cli_main) -> None:
     """Show configuration directly without nested submenu."""
     action = questionary.select(
         "Configuration:",
@@ -184,7 +184,7 @@ def _handle_config(cli_main):
         questionary.press_any_key_to_continue().ask()
 
 
-def _view_rich_config():
+def _view_rich_config() -> None:
     try:
         from cortex.config.loader import get_config
         from rich.tree import Tree

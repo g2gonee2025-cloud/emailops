@@ -1,7 +1,7 @@
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { useDashboardMetrics } from './useDashboardMetrics';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { api } from '../lib/api';
 import React from 'react';
 
@@ -39,13 +39,13 @@ describe('useDashboardMetrics', () => {
     // Reset mocks before each test
     vi.clearAllMocks();
     // Provide default mocks for queries that run automatically
-    (api.fetchStatus as vi.Mock).mockResolvedValue({ status: 'ok', service: 'test', env: 'dev' });
-    (api.fetchConfig as vi.Mock).mockResolvedValue({ environment: 'dev', provider: 'test' });
+    (api.fetchStatus as Mock).mockResolvedValue({ status: 'ok', service: 'test', env: 'dev' });
+    (api.fetchConfig as Mock).mockResolvedValue({ environment: 'dev', provider: 'test' });
   });
 
   it('should fetch system status', async () => {
     const mockStatus = { status: 'ok', service: 'test', env: 'dev' };
-    (api.fetchStatus as vi.Mock).mockResolvedValue(mockStatus);
+    (api.fetchStatus as Mock).mockResolvedValue(mockStatus);
 
     const { result } = renderHook(() => useDashboardMetrics(), { wrapper: createWrapper() });
 
@@ -57,7 +57,7 @@ describe('useDashboardMetrics', () => {
 
   it('should fetch system config', async () => {
     const mockConfig = { environment: 'dev', provider: 'test' };
-    (api.fetchConfig as vi.Mock).mockResolvedValue(mockConfig);
+    (api.fetchConfig as Mock).mockResolvedValue(mockConfig);
 
     const { result } = renderHook(() => useDashboardMetrics(), { wrapper: createWrapper() });
 
@@ -74,7 +74,7 @@ describe('useDashboardMetrics', () => {
 
   it('should fetch doctor report when runCheck is called', async () => {
     const mockReport = { overall_status: 'healthy', checks: [] };
-    (api.runDoctor as vi.Mock).mockResolvedValue(mockReport);
+    (api.runDoctor as Mock).mockResolvedValue(mockReport);
 
     const { result } = renderHook(() => useDashboardMetrics(), { wrapper: createWrapper() });
 
@@ -98,7 +98,7 @@ describe('useDashboardMetrics', () => {
     it('should fetch ingestion status if jobId is provided', async () => {
       const jobId = 'test-job-123';
       const mockIngestionStatus = { job_id: jobId, status: 'completed' };
-      (api.getIngestionStatus as vi.Mock).mockResolvedValue(mockIngestionStatus);
+      (api.getIngestionStatus as Mock).mockResolvedValue(mockIngestionStatus);
 
       const { result } = renderHook(() => useDashboardMetrics(jobId), { wrapper: createWrapper() });
 
@@ -115,7 +115,7 @@ describe('useDashboardMetrics', () => {
         const runningStatus = { job_id: jobId, status: 'running', folders_processed: 1 };
         const completedStatus = { job_id: jobId, status: 'completed', folders_processed: 2 };
 
-        (api.getIngestionStatus as vi.Mock)
+        (api.getIngestionStatus as Mock)
           .mockResolvedValueOnce(runningStatus)
           .mockResolvedValueOnce(completedStatus);
 
@@ -144,7 +144,7 @@ describe('useDashboardMetrics', () => {
   describe('startIngestionMutation', () => {
     it('should call startIngestion on mutate', async () => {
       const mockIngestionResponse = { job_id: 'new-job-123', status: 'started' };
-      (api.startIngestion as vi.Mock).mockResolvedValue(mockIngestionResponse);
+      (api.startIngestion as Mock).mockResolvedValue(mockIngestionResponse);
       const { result } = renderHook(() => useDashboardMetrics(), { wrapper: createWrapper() });
 
       await act(async () => {

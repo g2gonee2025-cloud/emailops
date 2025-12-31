@@ -5,6 +5,11 @@ import { Sidebar } from './Sidebar';
 import { useAuth } from '../contexts/AuthContext';
 import { ToastProvider } from '../contexts/toastContext';
 
+const routerFuture = {
+  v7_startTransition: true,
+  v7_relativeSplatPath: true,
+};
+
 // Mock the useAuth hook
 vi.mock('../contexts/AuthContext');
 
@@ -24,7 +29,7 @@ describe('Sidebar', () => {
 
   const renderSidebar = () => {
     return render(
-      <MemoryRouter>
+      <MemoryRouter future={routerFuture}>
         <ToastProvider>
           <Sidebar />
         </ToastProvider>

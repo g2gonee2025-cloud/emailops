@@ -15,6 +15,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/Tooltip';
+import { Button } from './ui/Button';
 
 // Navigation Item Component
 interface NavItemProps {
@@ -30,10 +31,15 @@ const NavItem = ({ icon: Icon, label, to, isCollapsed }: NavItemProps) => {
 
   const linkContent = (
     <>
-      <Icon className={cn('w-5 h-5 transition-colors', isActive ? "text-blue-400" : "text-white/70 group-hover:text-white")} />
+      <Icon
+        className={cn(
+          'w-5 h-5 transition-colors',
+          isActive ? "text-emerald-300" : "text-white/70 group-hover:text-white"
+        )}
+      />
       {!isCollapsed && <span className="font-medium text-sm">{label}</span>}
       {!isCollapsed && isActive && (
-        <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+        <div className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
       )}
     </>
   );
@@ -42,7 +48,7 @@ const NavItem = ({ icon: Icon, label, to, isCollapsed }: NavItemProps) => {
     "w-full flex items-center gap-3 rounded-xl transition-all duration-200 group",
     isCollapsed ? "px-3.5 py-3" : "px-4 py-3",
     isActive
-      ? "bg-blue-600/20 text-blue-400 border border-blue-500/30"
+      ? "bg-emerald-500/15 text-emerald-200 border border-emerald-400/30"
       : "text-white/50 hover:text-white hover:bg-white/5 border border-transparent"
   );
 
@@ -90,22 +96,24 @@ export const Sidebar = () => {
       <div className="h-16 flex items-center border-b border-white/5 gap-3 relative">
         {!isCollapsed && (
           <div className={cn("flex items-center gap-3 pl-6", { "opacity-0": isCollapsed })}>
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20" aria-hidden="true">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/30" aria-hidden="true">
               <ShieldCheck className="text-white" size={18} />
             </div>
             <div>
-              <span className="font-bold text-lg tracking-tight">Cortex</span>
+              <span className="font-display font-semibold text-lg tracking-tight">Cortex</span>
               <span className="font-light text-lg opacity-60">UI</span>
             </div>
           </div>
         )}
-        <button
+        <Button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute top-1/2 -translate-y-1/2 -right-3.5 z-30 w-7 h-7 bg-gray-800 border border-white/10 rounded-full flex items-center justify-center text-white/60 hover:text-white hover:bg-gray-700 transition-all"
+          variant="ghost"
+          size="icon"
+          className="absolute top-1/2 -translate-y-1/2 -right-3.5 z-30 h-7 w-7 rounded-full border border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           <ChevronLeft className={cn("w-4 h-4 transition-transform", { "rotate-180": isCollapsed })} />
-        </button>
+        </Button>
       </div>
 
       {/* Navigation */}
@@ -121,14 +129,18 @@ export const Sidebar = () => {
 
       {/* Logout Button */}
       <div className="p-4 border-t border-white/5">
-        <button
+        <Button
           onClick={logout}
-          className={cn("w-full flex items-center gap-3 rounded-xl text-white/50 hover:text-white hover:bg-white/5 transition-all", isCollapsed ? "px-3.5 py-3 justify-center" : "px-4 py-3")}
+          variant="ghost"
+          className={cn(
+            "w-full gap-3 rounded-xl text-white/50 hover:text-white hover:bg-white/5",
+            isCollapsed ? "px-3.5 py-3 justify-center" : "px-4 py-3 justify-start"
+          )}
           aria-label={isCollapsed ? "Logout" : undefined}
         >
           <LogOut className="w-5 h-5" />
           {!isCollapsed && <span className="font-medium text-sm">Logout</span>}
-        </button>
+        </Button>
       </div>
 
       {/* Footer */}

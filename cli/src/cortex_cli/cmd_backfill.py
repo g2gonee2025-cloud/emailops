@@ -6,6 +6,8 @@ from __future__ import annotations
 
 import argparse
 import sys
+import traceback
+from typing import Any
 
 from cortex_cli.style import colorize as _colorize
 
@@ -14,30 +16,37 @@ def backfill_summaries(args: argparse.Namespace) -> None:
     """Backfill summaries for conversations."""
     try:
         from scripts.backfill_summaries_simple import main as backfill_main
-
-        # In a real scenario, you might refactor backfill_summaries_simple to be
-        # a library, but for this example, we'll call its main function and
-        # patch sys.argv.
-        original_argv = sys.argv
-        sys.argv = ["backfill_summaries_simple.py"]
-        if args.tenant_id:
-            sys.argv.extend(["--tenant-id", args.tenant_id])
-        if args.limit:
-            sys.argv.extend(["--limit", str(args.limit)])
-        if args.workers:
-            sys.argv.extend(["--workers", str(args.workers)])
-        backfill_main()
-        sys.argv = original_argv
     except ImportError as e:
-        print(f"{_colorize('ERROR:', 'red')} Could not import backfill script: {e}")
+        print(
+            f"{_colorize('ERROR:', 'red')} Could not import backfill script: {e}",
+            file=sys.stderr,
+        )
+        traceback.print_exc()
         sys.exit(1)
-    except Exception as e:
-        print(f"{_colorize('ERROR:', 'red')} {e}")
+
+    argv: list[str] = []
+    tenant_id = getattr(args, "tenant_id", None)
+    limit = getattr(args, "limit", None)
+    workers = getattr(args, "workers", None)
+    if tenant_id:
+        argv.extend(["--tenant-id", tenant_id])
+    if limit is not None:
+        argv.extend(["--limit", str(limit)])
+    if workers is not None:
+        argv.extend(["--workers", str(workers)])
+
+    try:
+        backfill_main(argv)
+    except SystemExit:
+        raise
+    except Exception:
+        print(f"{_colorize('ERROR:', 'red')} Backfill failed.", file=sys.stderr)
+        traceback.print_exc()
         sys.exit(1)
 
 
 def setup_backfill_parser(
-    subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
+    subparsers: Any,
 ) -> None:
     """Add backfill subcommands to the CLI parser."""
     backfill_parser = subparsers.add_parser(

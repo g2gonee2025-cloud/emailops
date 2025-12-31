@@ -1,18 +1,23 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter, useSearchParams } from 'react-router-dom';
-import { vi } from 'vitest';
+import { describe, it, expect, vi, type Mock } from 'vitest';
 
 import { FilterBar } from './FilterBar';
 
+const routerFuture = {
+  v7_startTransition: true,
+  v7_relativeSplatPath: true,
+};
+
 vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom');
+  const actual = await vi.importActual('react-router-dom') as object;
   return {
     ...actual,
     useSearchParams: vi.fn(),
   };
 });
 
-const mockUseSearchParams = useSearchParams as jest.Mock;
+const mockUseSearchParams = useSearchParams as Mock;
 
 describe('FilterBar', () => {
   it('renders and updates search params on filter change', async () => {
@@ -20,7 +25,7 @@ describe('FilterBar', () => {
     mockUseSearchParams.mockReturnValue([new URLSearchParams(), setSearchParams]);
 
     render(
-      <MemoryRouter>
+      <MemoryRouter future={routerFuture}>
         <FilterBar />
       </MemoryRouter>
     );

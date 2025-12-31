@@ -1,9 +1,15 @@
+/* eslint-disable react-refresh/only-export-components */
 import { render, type RenderOptions } from '@testing-library/react';
 import { type ReactElement } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from '../contexts/AuthContext';
 import { ToastProvider } from '../contexts/toastContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const routerFuture = {
+  v7_startTransition: true,
+  v7_relativeSplatPath: true,
+};
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -16,7 +22,7 @@ const queryClient = new QueryClient({
 export const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <BrowserRouter future={routerFuture}>
         <ToastProvider>
           <AuthProvider>
             {children}

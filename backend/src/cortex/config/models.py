@@ -11,8 +11,7 @@ import os
 import socket
 from ipaddress import ip_address
 from pathlib import Path
-from typing import Any, Literal, Optional
-from urllib.parse import urlparse
+from typing import Any, Literal
 
 from pydantic import (
     AnyHttpUrl,

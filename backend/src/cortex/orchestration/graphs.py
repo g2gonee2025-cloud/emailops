@@ -7,7 +7,6 @@ Implements §10.1 of the Canonical Blueprint.
 from __future__ import annotations
 
 import logging
-from typing import Optional, Protocol
 
 from cortex.orchestration.nodes import (
     node_assemble_context,

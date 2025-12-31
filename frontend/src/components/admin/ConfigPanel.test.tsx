@@ -1,8 +1,9 @@
 
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import ConfigPanel from './ConfigPanel';
-import { AppConfig } from '../../schemas/admin';
+import type { AppConfig } from '../../schemas/admin';
 import { AllTheProviders } from '../../tests/testUtils';
 
 
@@ -22,19 +23,21 @@ describe('ConfigPanel', () => {
 
     expect(screen.getByLabelText(/Api Url/i)).toHaveValue(mockConfig.api_url);
     expect(screen.getByLabelText(/Log Level/i)).toHaveValue(mockConfig.log_level);
-    expect(screen.getByLabelText(/Max Pool Size/i)).toHaveValue(mockConfig.max_pool_size?.toString());
+    expect(screen.getByLabelText(/Max Pool Size/i)).toHaveValue(mockConfig.max_pool_size);
   });
 
   it('calls onSave with the updated data when the form is submitted', async () => {
     const handleSave = vi.fn();
+    const user = userEvent.setup();
     render(
         <AllTheProviders>
             <ConfigPanel config={mockConfig} onSave={handleSave} isLoading={false} />
         </AllTheProviders>
     );
 
-    fireEvent.change(screen.getByLabelText(/Api Url/i), { target: { value: 'http://new-api.com' } });
-    fireEvent.click(screen.getByText(/Save Changes/i));
+    await user.clear(screen.getByLabelText(/Api Url/i));
+    await user.type(screen.getByLabelText(/Api Url/i), 'http://new-api.com');
+    await user.click(screen.getByText(/Save Changes/i));
 
     await vi.waitFor(() => {
         expect(handleSave).toHaveBeenCalledWith({
@@ -46,14 +49,16 @@ describe('ConfigPanel', () => {
 
   it('displays a validation error for invalid data', async () => {
     const handleSave = vi.fn();
+    const user = userEvent.setup();
     render(
         <AllTheProviders>
             <ConfigPanel config={mockConfig} onSave={handleSave} isLoading={false} />
         </AllTheProviders>
     );
 
-    fireEvent.change(screen.getByLabelText(/Api Url/i), { target: { value: 'not-a-url' } });
-    fireEvent.click(screen.getByText(/Save Changes/i));
+    await user.clear(screen.getByLabelText(/Api Url/i));
+    await user.type(screen.getByLabelText(/Api Url/i), 'not-a-url');
+    await user.click(screen.getByText(/Save Changes/i));
 
     expect(await screen.findByText(/invalid url/i)).toBeInTheDocument();
     expect(handleSave).not.toHaveBeenCalled();
@@ -61,14 +66,16 @@ describe('ConfigPanel', () => {
 
   it('correctly updates a number field', async () => {
     const handleSave = vi.fn();
+    const user = userEvent.setup();
     render(
         <AllTheProviders>
             <ConfigPanel config={mockConfig} onSave={handleSave} isLoading={false} />
         </AllTheProviders>
     );
 
-    fireEvent.change(screen.getByLabelText(/Max Pool Size/i), { target: { value: '20' } });
-    fireEvent.click(screen.getByText(/Save Changes/i));
+    await user.clear(screen.getByLabelText(/Max Pool Size/i));
+    await user.type(screen.getByLabelText(/Max Pool Size/i), '20');
+    await user.click(screen.getByText(/Save Changes/i));
 
     await vi.waitFor(() => {
         expect(handleSave).toHaveBeenCalledWith({
@@ -78,7 +85,8 @@ describe('ConfigPanel', () => {
       });
   });
 
-  it('toggles visibility for sensitive fields', () => {
+  it('toggles visibility for sensitive fields', async () => {
+    const user = userEvent.setup();
     const sensitiveConfig = { ...mockConfig, api_key: 'supersecret' };
     render(
         <AllTheProviders>
@@ -93,12 +101,12 @@ describe('ConfigPanel', () => {
     expect(revealButton).toBeInTheDocument();
 
     if (revealButton) {
-        fireEvent.click(revealButton);
+        await user.click(revealButton);
     }
     expect(apiKeyInput).toHaveAttribute('type', 'text');
 
     if (revealButton) {
-        fireEvent.click(revealButton);
+        await user.click(revealButton);
     }
     expect(apiKeyInput).toHaveAttribute('type', 'password');
     });
