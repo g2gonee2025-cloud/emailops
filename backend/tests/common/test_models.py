@@ -1,8 +1,10 @@
+from typing import ClassVar
+
 from cortex.common.models import SecureBaseModel
 
 
 class PiiModel(SecureBaseModel):
-    _PII_FIELDS: set[str] = {"secret"}
+    _PII_FIELDS: ClassVar[set[str]] = {"secret"}
     secret: str
     public: str
 
@@ -12,5 +14,6 @@ def test_secure_base_model_redacts_pii():
 
     model = PiiModel(secret="password", public="hello")
 
-    assert "secret='*****'" in repr(model)
-    assert "public='hello'" in repr(model)
+    repr_str = repr(model)
+    assert "'secret': '*****'" in repr_str
+    assert "'public': 'hello'" in repr_str

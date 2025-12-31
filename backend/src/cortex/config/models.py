@@ -99,6 +99,40 @@ def _is_local_host(host: str | None) -> bool:
         return False
 
 
+def _get_url_host(url: Any) -> str | None:
+    """Safely extract host from a Pydantic URL object or string."""
+    if url is None:
+        return None
+    # Try to get .host attribute (Pydantic URL types)
+    host = getattr(url, "host", None)
+    if host is not None:
+        return str(host)
+    # Fall back to parsing as string
+    if isinstance(url, str):
+        from urllib.parse import urlparse
+
+        parsed = urlparse(url)
+        return parsed.hostname
+    return None
+
+
+def _get_url_password(url: Any) -> str | None:
+    """Safely extract password from a Pydantic URL object or string."""
+    if url is None:
+        return None
+    # Try to get .password attribute (Pydantic URL types)
+    password = getattr(url, "password", None)
+    if password is not None:
+        return str(password)
+    # Fall back to parsing as string
+    if isinstance(url, str):
+        from urllib.parse import urlparse
+
+        parsed = urlparse(url)
+        return parsed.password
+    return None
+
+
 def _unwrap_secret(value: SecretStr | str | None) -> str | None:
     if isinstance(value, SecretStr):
         return value.get_secret_value()
@@ -166,7 +200,7 @@ class StorageConfig(BaseModel):
         """Require access/secret keys for non-local endpoints."""
         access_key = _unwrap_secret(self.access_key)
         secret_key = _unwrap_secret(self.secret_key)
-        if _is_local_host(self.endpoint_url.host):
+        if _is_local_host(_get_url_host(self.endpoint_url)):
             return self
         if access_key and secret_key:
             return self
@@ -281,9 +315,9 @@ class RedisConfig(BaseModel):
     @model_validator(mode="after")
     def validate_password(self) -> RedisConfig:
         """Require a password for non-local Redis endpoints."""
-        if _is_local_host(self.url.host):
+        if _is_local_host(_get_url_host(self.url)):
             return self
-        url_password = self.url.password
+        url_password = _get_url_password(self.url)
         password_value = _unwrap_secret(self.password)
         if url_password or password_value:
             return self
