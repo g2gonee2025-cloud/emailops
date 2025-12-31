@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import Any, Literal
 
 from cortex.domain_models.rag import Answer, EmailDraft, ThreadSummary
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 # -----------------------------------------------------------------------------
@@ -20,24 +20,20 @@ class SearchRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    query: str = Field(..., description="Search query text")
+    query: str = Field(..., min_length=1, description="Search query text")
     k: int = Field(default=10, ge=1, le=500, description="Number of results")
-    tenant_id: str | None = Field(
-        default=None, description="Tenant ID (auto-filled from context)"
-    )
-    user_id: str | None = Field(
-        default=None, description="User ID (auto-filled from context)"
-    )
     filters: dict[str, Any] = Field(
         default_factory=dict, description="Optional filters"
     )
-    fusion_method: str | None = Field(
+    fusion_method: Literal["rrf", "weighted_sum"] = Field(
         default="rrf", description="Fusion method (rrf or weighted_sum)"
     )
 
 
 class SearchResponse(BaseModel):
     """Search response payload."""
+
+    model_config = ConfigDict(extra="forbid")
 
     correlation_id: str | None = None
     results: list[dict[str, Any]] = Field(default_factory=list)
@@ -59,8 +55,6 @@ class AnswerRequest(BaseModel):
     thread_id: str | None = Field(default=None, description="Optional thread context")
     k: int = Field(default=10, ge=1, le=20, description="Number of context chunks")
     debug: bool = Field(default=False, description="Enable debug info")
-    tenant_id: str | None = None
-    user_id: str | None = None
 
 
 class AnswerResponse(BaseModel):
@@ -90,8 +84,6 @@ class DraftEmailRequest(BaseModel):
         default=None, description="Message to reply to"
     )
     tone: str = Field(default="professional", description="Email tone")
-    tenant_id: str | None = None
-    user_id: str | None = None
 
 
 class DraftEmailResponse(BaseModel):
@@ -117,8 +109,6 @@ class SummarizeThreadRequest(BaseModel):
     max_length: int = Field(
         default=500, ge=50, le=2000, description="Max summary length in words"
     )
-    tenant_id: str | None = None
-    user_id: str | None = None
 
 
 class SummarizeThreadResponse(BaseModel):
@@ -136,18 +126,22 @@ class SummarizeThreadResponse(BaseModel):
 class ChatMessage(BaseModel):
     """Chat message payload."""
 
+    model_config = ConfigDict(extra="forbid")
+
     role: Literal["system", "user", "assistant"]
-    content: str = Field(..., max_length=10000)
+    content: str = Field(..., min_length=1, max_length=10000)
 
 
 class ChatRequest(BaseModel):
     """Chat request payload."""
 
-    messages: list[ChatMessage]
+    model_config = ConfigDict(extra="forbid")
+
+    messages: list[ChatMessage] = Field(..., min_length=1)
     thread_id: str | None = Field(default=None, description="Optional thread context")
     k: int = Field(default=10, ge=1, le=20, description="Number of context chunks")
     max_length: int = Field(
-        default=500, ge=50, le=2000, description="Max summary length in words"
+        default=500, ge=50, le=2000, description="Max response length in words"
     )
     max_history: int | None = Field(
         default=None, ge=0, le=50, description="Max chat history entries"
@@ -157,6 +151,8 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     """Chat response payload."""
 
+    model_config = ConfigDict(extra="forbid")
+
     correlation_id: str | None = None
     action: Literal["answer", "search", "summarize"]
     reply: str
@@ -164,3 +160,26 @@ class ChatResponse(BaseModel):
     summary: ThreadSummary | None = None
     search_results: list[dict[str, Any]] | None = None
     debug_info: dict[str, Any] | None = None
+
+    @model_validator(mode="after")
+    def _validate_action_fields(self) -> ChatResponse:
+        if self.action == "answer":
+            if self.answer is None:
+                raise ValueError("answer is required for action 'answer'")
+            if self.summary is not None or self.search_results is not None:
+                raise ValueError(
+                    "summary/search_results must be empty for action 'answer'"
+                )
+        elif self.action == "summarize":
+            if self.summary is None:
+                raise ValueError("summary is required for action 'summarize'")
+            if self.answer is not None or self.search_results is not None:
+                raise ValueError(
+                    "answer/search_results must be empty for action 'summarize'"
+                )
+        elif self.action == "search":
+            if self.search_results is None:
+                raise ValueError("search_results is required for action 'search'")
+            if self.answer is not None or self.summary is not None:
+                raise ValueError("answer/summary must be empty for action 'search'")
+        return self

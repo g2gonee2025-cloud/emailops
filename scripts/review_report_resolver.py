@@ -548,6 +548,267 @@ def main() -> None:
                     status = "resolved"
                     resolution = "runtime supports PEP 604 unions"
                     method = "runtime_check"
+        elif issue.get("file") == "backend/src/cortex/rag_api/models.py":
+            if "SearchRequest.query has no min_length" in description:
+                if _file_contains(file_path, "query: str = Field(..., min_length=1"):
+                    status = "resolved"
+                    resolution = "query enforces minimum length"
+                    method = "validation_check"
+            elif "SearchRequest.fusion_method" in description:
+                if _file_contains(file_path, 'Literal["rrf", "weighted_sum"]'):
+                    status = "resolved"
+                    resolution = "fusion_method constrained to literals"
+                    method = "typing_check"
+            elif "Inconsistent extra-field handling" in description:
+                if (
+                    _file_contains(
+                        file_path,
+                        'class SearchResponse(BaseModel):\n    """Search response payload."""\n\n    model_config = ConfigDict(extra="forbid")',
+                    )
+                    and _file_contains(
+                        file_path,
+                        'class ChatMessage(BaseModel):\n    """Chat message payload."""\n\n    model_config = ConfigDict(extra="forbid")',
+                    )
+                    and _file_contains(
+                        file_path,
+                        'class ChatRequest(BaseModel):\n    """Chat request payload."""\n\n    model_config = ConfigDict(extra="forbid")',
+                    )
+                    and _file_contains(
+                        file_path,
+                        'class ChatResponse(BaseModel):\n    """Chat response payload."""\n\n    model_config = ConfigDict(extra="forbid")',
+                    )
+                ):
+                    status = "resolved"
+                    resolution = "extras forbidden across rag_api models"
+                    method = "style_check"
+            elif "ChatRequest.messages does not enforce a minimum" in description:
+                if _file_contains(
+                    file_path, "messages: list[ChatMessage] = Field(..., min_length=1"
+                ):
+                    status = "resolved"
+                    resolution = "messages list enforces minimum length"
+                    method = "validation_check"
+            elif "ChatMessage.content lacks a minimum length" in description:
+                if _file_contains(file_path, "content: str = Field(..., min_length=1"):
+                    status = "resolved"
+                    resolution = "chat message content enforces min length"
+                    method = "validation_check"
+            elif "ChatRequest.max_length description says" in description:
+                if _file_contains(file_path, "Max response length in words"):
+                    status = "resolved"
+                    resolution = "chat max_length description corrected"
+                    method = "doc_check"
+            elif "ChatResponse does not enforce consistency" in description:
+                if _file_contains(file_path, "_validate_action_fields"):
+                    status = "resolved"
+                    resolution = "chat response action consistency enforced"
+                    method = "logic_check"
+            elif "SearchRequest exposes tenant_id" in description:
+                if not _file_contains(file_path, "tenant_id: str | None"):
+                    status = "resolved"
+                    resolution = "tenant_id removed from request models"
+                    method = "security_check"
+            elif "SearchRequest exposes user_id" in description:
+                if not _file_contains(file_path, "user_id: str | None"):
+                    status = "resolved"
+                    resolution = "user_id removed from request models"
+                    method = "security_check"
+            elif "AnswerRequest exposes tenant_id" in description:
+                if not _file_contains(file_path, "tenant_id: str | None"):
+                    status = "resolved"
+                    resolution = "tenant_id removed from request models"
+                    method = "security_check"
+            elif "AnswerRequest exposes user_id" in description:
+                if not _file_contains(file_path, "user_id: str | None"):
+                    status = "resolved"
+                    resolution = "user_id removed from request models"
+                    method = "security_check"
+            elif "DraftEmailRequest exposes tenant_id" in description:
+                if not _file_contains(file_path, "tenant_id: str | None"):
+                    status = "resolved"
+                    resolution = "tenant_id removed from request models"
+                    method = "security_check"
+            elif "DraftEmailRequest exposes user_id" in description:
+                if not _file_contains(file_path, "user_id: str | None"):
+                    status = "resolved"
+                    resolution = "user_id removed from request models"
+                    method = "security_check"
+            elif "SummarizeThreadRequest exposes tenant_id" in description:
+                if not _file_contains(file_path, "tenant_id: str | None"):
+                    status = "resolved"
+                    resolution = "tenant_id removed from request models"
+                    method = "security_check"
+            elif "SummarizeThreadRequest exposes user_id" in description:
+                if not _file_contains(file_path, "user_id: str | None"):
+                    status = "resolved"
+                    resolution = "user_id removed from request models"
+                    method = "security_check"
+        elif issue.get("file") == "backend/src/cortex/rag_api/routes_chat.py":
+            if "get_summarize_graph checks only" in description:
+                if _file_contains(file_path, "graphs = getattr") and _file_contains(
+                    file_path, "isinstance(graphs, dict)"
+                ):
+                    status = "resolved"
+                    resolution = "summarize graph guarded for dict state"
+                    method = "null_check"
+            elif "_handle_search builds 'snippets'" in description:
+                if _file_contains(file_path, "results_list = results.results or []"):
+                    status = "resolved"
+                    resolution = "search snippets guard results list"
+                    method = "null_check"
+            elif "_run_search constructs KBSearchInput" in description:
+                if _file_contains(
+                    file_path, 'tenant_id_ctx.get("default")'
+                ) and _file_contains(file_path, 'user_id_ctx.get("anonymous")'):
+                    status = "resolved"
+                    resolution = "context defaults provided for search"
+                    method = "null_check"
+            elif "_run_search receives request.k directly" in description:
+                if _file_contains(
+                    file_path, "safe_k = request.k if request.k is not None else 10"
+                ):
+                    status = "resolved"
+                    resolution = "request.k normalized before search"
+                    method = "validation_check"
+            elif "_handle_summarize passes request.max_length" in description:
+                if _file_contains(
+                    file_path,
+                    "max_length = request.max_length if request.max_length is not None else 500",
+                ):
+                    status = "resolved"
+                    resolution = "summary max_length normalized"
+                    method = "validation_check"
+            elif "chat_endpoint catches all Exceptions" in description:
+                if _file_contains(
+                    file_path, 'logger.exception("Chat API failed")'
+                ) and _file_contains(file_path, 'detail="Internal Server Error"'):
+                    status = "resolved"
+                    resolution = "chat errors logged with generic response"
+                    method = "exception_check"
+            elif "returns str(exc) in HTTP 500 responses" in description:
+                if _file_contains(file_path, 'detail="Internal Server Error"'):
+                    status = "resolved"
+                    resolution = "chat errors no longer leak details"
+                    method = "security_check"
+            elif "raw search result 'highlights'" in description:
+                if _file_contains(file_path, "sanitize_retrieved_content"):
+                    status = "resolved"
+                    resolution = "highlights sanitized before LLM prompt"
+                    method = "security_check"
+            elif "_decide_action and the non-thread summarize path" in description:
+                if _file_contains(file_path, "sanitize=True"):
+                    status = "resolved"
+                    resolution = "history sanitized before LLM prompts"
+                    method = "security_check"
+            elif "_handle_summarize assumes final_state['summary']" in description:
+                if _file_contains(file_path, "ThreadSummary.model_validate"):
+                    status = "resolved"
+                    resolution = "summary type validated"
+                    method = "validation_check"
+            elif "current_user' dependency is injected" in description:
+                if _file_contains(file_path, "debug_allowed = _is_debug_allowed"):
+                    status = "resolved"
+                    resolution = "current_user used for debug gating"
+                    method = "style_check"
+            elif "debug_info includes the LLM's routing reason" in description:
+                if _file_contains(file_path, "request.debug and debug_allowed"):
+                    status = "resolved"
+                    resolution = "debug info gated by admin check"
+                    method = "security_check"
+            elif "_log_chat_audit uses tenant_id_ctx.get()" in description:
+                if _file_contains(
+                    file_path, 'tenant_id_ctx.get("default")'
+                ) and _file_contains(file_path, 'user_id_ctx.get("anonymous")'):
+                    status = "resolved"
+                    resolution = "audit uses default context identifiers"
+                    method = "logging_check"
+        elif issue.get("file") == "backend/src/cortex/retrieval/reranking.py":
+            if 'item.metadata["rerank_score"]' in description:
+                if _file_contains(file_path, "item.metadata = {}") and _file_contains(
+                    file_path, 'item.metadata["rerank_score"]'
+                ):
+                    status = "resolved"
+                    resolution = "metadata normalized before writes"
+                    method = "null_check"
+            elif "item.score directly" in description:
+                if _file_contains(file_path, "_safe_score(item.score)"):
+                    status = "resolved"
+                    resolution = "score normalized before arithmetic"
+                    method = "typing_check"
+            elif "alpha is not validated" in description:
+                if _file_contains(file_path, "_normalize_unit(alpha"):
+                    status = "resolved"
+                    resolution = "alpha normalized to [0, 1]"
+                    method = "validation_check"
+            elif "lambda_param is not validated" in description:
+                if _file_contains(file_path, "_normalize_unit(lambda_param"):
+                    status = "resolved"
+                    resolution = "lambda_param normalized to [0, 1]"
+                    method = "validation_check"
+            elif "Defaulting missing 'index' to 0" in description:
+                if _file_contains(file_path, 'idx = r.get("index")') and _file_contains(
+                    file_path, "if idx is None"
+                ):
+                    status = "resolved"
+                    resolution = "missing index entries skipped"
+                    method = "logic_check"
+            elif "top_n is not validated" in description:
+                if _file_contains(file_path, "top_n <= 0"):
+                    status = "resolved"
+                    resolution = "top_n validated before rerank"
+                    method = "validation_check"
+            elif "HTTP scheme is allowed" in description:
+                if _file_contains(file_path, "Reranker endpoint must use HTTPS"):
+                    status = "resolved"
+                    resolution = "HTTPS enforced for reranker"
+                    method = "security_check"
+            elif "SSRF precheck is TOCTOU-prone" in description:
+                if _file_contains(file_path, "allowed_host") and _file_contains(
+                    file_path, "trust_env=False"
+                ):
+                    status = "resolved"
+                    resolution = "reranker allowlist enforced; proxies disabled"
+                    method = "security_check"
+            elif "No allowlist or domain restriction" in description:
+                if _file_contains(file_path, "allowed_host") and _file_contains(
+                    file_path, "Reranker host is not allowlisted"
+                ):
+                    status = "resolved"
+                    resolution = "reranker host allowlist enforced"
+                    method = "security_check"
+            elif "Logs include the full URL" in description:
+                if _file_contains(file_path, "Invalid reranker URL for host"):
+                    status = "resolved"
+                    resolution = "validation logs omit full URL"
+                    method = "logging_check"
+            elif "Broad except Exception swallows" in description:
+                if _file_contains(
+                    file_path,
+                    "except (httpx.HTTPError, ValueError, json.JSONDecodeError)",
+                ):
+                    status = "resolved"
+                    resolution = "external errors handled explicitly"
+                    method = "exception_check"
+            elif "apply_mmr runs an O(n^2)" in description:
+                if _file_contains(file_path, "MAX_MMR_CANDIDATES"):
+                    status = "resolved"
+                    resolution = "MMR candidate cap added"
+                    method = "perf_check"
+            elif "No response size limits" in description:
+                if _file_contains(
+                    file_path, "MAX_RERANK_RESPONSE_BYTES"
+                ) and _file_contains(file_path, "resp.aread()"):
+                    status = "resolved"
+                    resolution = "reranker response size capped"
+                    method = "perf_check"
+            elif "_candidate_summary_text mutates item.metadata" in description:
+                if _file_contains(
+                    file_path,
+                    "meta = item.metadata if isinstance(item.metadata, dict) else {}",
+                ):
+                    status = "resolved"
+                    resolution = "candidate summary avoids metadata mutation"
+                    method = "style_check"
         elif issue.get("file") == "backend/src/main.py":
             if "unterminated string literal" in description:
                 if _is_parseable(file_path):

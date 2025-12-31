@@ -33,6 +33,7 @@ from cortex.retrieval.query_classifier import (
 from cortex.retrieval.results import SearchResults
 from cortex.security.defenses import sanitize_user_input
 from cortex.security.dependencies import get_current_user
+from cortex.security.validators import sanitize_retrieved_content
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
@@ -50,8 +51,9 @@ class ChatActionDecision(BaseModel):
 
 def get_summarize_graph(http_request: Request):
     """Get pre-compiled graph from app.state."""
-    if hasattr(http_request.app.state, "graphs"):
-        cached = http_request.app.state.graphs.get("summarize")
+    graphs = getattr(http_request.app.state, "graphs", None)
+    if isinstance(graphs, dict):
+        cached = graphs.get("summarize")
         if cached:
             return cached
     raise HTTPException(status_code=500, detail="Summarize graph not initialized")
@@ -65,8 +67,12 @@ def _trim_history(messages: list[ChatMessage], max_history: int) -> list[ChatMes
     return messages[-max_history:]
 
 
-def _format_history(messages: list[ChatMessage]) -> str:
-    return "\n".join(f"{msg.role}: {msg.content}" for msg in messages)
+def _format_history(messages: list[ChatMessage], sanitize: bool = False) -> str:
+    lines: list[str] = []
+    for msg in messages:
+        content = sanitize_user_input(msg.content) if sanitize else msg.content
+        lines.append(f"{msg.role}: {content}")
+    return "\n".join(lines)
 
 
 def _latest_user_message(messages: list[ChatMessage]) -> str | None:
@@ -79,6 +85,7 @@ def _latest_user_message(messages: list[ChatMessage]) -> str | None:
 async def _decide_action(
     request: ChatRequest, history: list[ChatMessage], latest_user: str
 ) -> ChatActionDecision:
+    safe_history = _format_history(history, sanitize=True)
     prompt = (
         "You are a routing assistant for EmailOps. Decide the next action.\n"
         "Choose one of: answer, search, summarize.\n"
@@ -88,7 +95,7 @@ async def _decide_action(
         f"Thread ID: {request.thread_id or 'none'}\n"
         f"Latest user message: <user_input>{latest_user}</user_input>\n\n"
         "Conversation history:\n"
-        f"{_format_history(history)}\n\n"
+        f"{safe_history}\n\n"
         "Return JSON with fields: action, reason."
     )
     raw = await run_in_threadpool(
@@ -122,8 +129,8 @@ def _build_retrieval_diagnostics(
 
 async def _run_search(query: str, k: int, classification: Any) -> SearchResults:
     tool_input = KBSearchInput(
-        tenant_id=tenant_id_ctx.get(),
-        user_id=user_id_ctx.get(),
+        tenant_id=tenant_id_ctx.get("default"),
+        user_id=user_id_ctx.get("anonymous"),
         query=query,
         k=k,
         classification=classification,
@@ -149,33 +156,52 @@ async def chat_endpoint(
     correlation_id = getattr(http_request.state, "correlation_id", None)
 
     latest_user, history = _validate_and_prepare_request(request)
+    debug_allowed = _is_debug_allowed(current_user)
 
     try:
         decision = await _decide_action(request, history, latest_user)
 
         if decision.action == "summarize":
             response = await _handle_summarize(
-                request, history, correlation_id, decision, http_request
+                request,
+                history,
+                correlation_id,
+                decision,
+                http_request,
+                debug_allowed,
             )
         elif decision.action == "search":
             response = await _handle_search(
-                request, latest_user, correlation_id, decision
+                request,
+                latest_user,
+                correlation_id,
+                decision,
+                debug_allowed,
             )
         else:
             response = await _handle_answer(
-                request, history, latest_user, correlation_id, decision
+                request,
+                history,
+                latest_user,
+                correlation_id,
+                decision,
+                debug_allowed,
             )
 
         _log_chat_audit(
-            tenant_id_ctx.get(), user_id_ctx.get(), request, response, correlation_id
+            tenant_id_ctx.get("default"),
+            user_id_ctx.get("anonymous"),
+            request,
+            response,
+            correlation_id,
         )
 
         return response
     except HTTPException:
         raise
-    except Exception as exc:
-        logger.error(f"Chat API failed: {exc}")
-        raise HTTPException(status_code=500, detail=str(exc))
+    except Exception:
+        logger.exception("Chat API failed")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
 def _validate_and_prepare_request(
@@ -199,6 +225,19 @@ def _validate_and_prepare_request(
     )
     history = _trim_history(request.messages, max_history)
     return latest_user, history
+
+
+def _is_debug_allowed(current_user: dict) -> bool:
+    if not current_user:
+        return False
+    roles: list[str] = []
+    role_value = current_user.get("role")
+    if isinstance(role_value, str):
+        roles.append(role_value)
+    roles_value = current_user.get("roles")
+    if isinstance(roles_value, list):
+        roles.extend([role for role in roles_value if isinstance(role, str)])
+    return "admin" in roles
 
 
 def _log_chat_audit(
@@ -237,13 +276,15 @@ async def _handle_summarize(
     correlation_id: str | None,
     decision: ChatActionDecision,
     http_request: Request,
+    debug_allowed: bool,
 ) -> ChatResponse:
     if request.thread_id:
+        max_length = request.max_length if request.max_length is not None else 500
         initial_state = {
             "tenant_id": tenant_id_ctx.get(),
             "user_id": user_id_ctx.get(),
             "thread_id": request.thread_id,
-            "max_length": request.max_length,
+            "max_length": max_length,
             "iteration_count": 0,
             "error": None,
             "correlation_id": correlation_id,
@@ -253,26 +294,35 @@ async def _handle_summarize(
         if final_state.get("error"):
             raise HTTPException(status_code=500, detail=final_state["error"])
         summary = final_state.get("summary")
-        if not summary:
+        if isinstance(summary, ThreadSummary):
+            summary_obj = summary
+        elif isinstance(summary, dict):
+            summary_obj = ThreadSummary.model_validate(summary)
+        else:
+            summary_obj = None
+        if not summary_obj or not summary_obj.summary_markdown:
             raise HTTPException(status_code=500, detail="No summary generated")
-        reply = summary.summary_markdown
+        reply = summary_obj.summary_markdown
     else:
+        safe_history = _format_history(history, sanitize=True)
         summary_prompt = (
             "Summarize the following conversation in markdown.\n\n"
             "<conversation_history>\n"
-            f"{_format_history(history)}\n"
+            f"{safe_history}\n"
             "</conversation_history>"
         )
         summary_text = await run_in_threadpool(complete_text, summary_prompt)
-        summary = ThreadSummary(summary_markdown=summary_text, key_points=[])
+        summary_obj = ThreadSummary(summary_markdown=summary_text, key_points=[])
         reply = summary_text
 
     return ChatResponse(
         correlation_id=correlation_id,
         action="summarize",
         reply=reply,
-        summary=summary,
-        debug_info={"reason": decision.reason} if request.debug else None,
+        summary=summary_obj,
+        debug_info=(
+            {"reason": decision.reason} if request.debug and debug_allowed else None
+        ),
     )
 
 
@@ -281,22 +331,26 @@ async def _handle_search(
     latest_user: str,
     correlation_id: str | None,
     decision: ChatActionDecision,
+    debug_allowed: bool,
 ) -> ChatResponse:
     classification = await run_in_threadpool(
         tool_classify_query,
         latest_user,
         True,  # use_llm
     )
-    results = await _run_search(latest_user, request.k, classification)
-    results_dicts = [r.model_dump() for r in results.results] if results.results else []
+    safe_k = request.k if request.k is not None else 10
+    results = await _run_search(latest_user, safe_k, classification)
+    results_list = results.results or []
+    results_dicts = [r.model_dump() for r in results_list]
     snippets = "\n".join(
-        f"{idx + 1}. {item.highlights[0] if item.highlights else ''}"
-        for idx, item in enumerate(results.results[:5])
+        f"{idx + 1}. <snippet>{sanitize_retrieved_content(item.highlights[0]) if item.highlights else ''}</snippet>"
+        for idx, item in enumerate(results_list[:5])
     )
+    safe_latest_user = sanitize_user_input(latest_user)
     reply_prompt = (
         "You are responding to a search request. Provide a concise response "
         "grounded in the search results.\n\n"
-        f"User request: <user_input>{latest_user}</user_input>\n\n"
+        f"User request: <user_input>{safe_latest_user}</user_input>\n\n"
         f"Search results:\n{snippets}"
     )
     reply = await run_in_threadpool(complete_text, reply_prompt)
@@ -305,7 +359,9 @@ async def _handle_search(
         action="search",
         reply=reply,
         search_results=results_dicts,
-        debug_info={"reason": decision.reason} if request.debug else None,
+        debug_info=(
+            {"reason": decision.reason} if request.debug and debug_allowed else None
+        ),
     )
 
 
@@ -315,13 +371,15 @@ async def _handle_answer(
     latest_user: str,
     correlation_id: str | None,
     decision: ChatActionDecision,
+    debug_allowed: bool,
 ) -> ChatResponse:
     classification = await run_in_threadpool(
         tool_classify_query,
         latest_user,
         True,  # use_llm
     )
-    results = await _run_search(latest_user, request.k, classification)
+    safe_k = request.k if request.k is not None else 10
+    results = await _run_search(latest_user, safe_k, classification)
     context_state = {
         "retrieval_results": results,
     }
@@ -342,7 +400,7 @@ async def _handle_answer(
         )
     else:
         # Sanitize all user-controllable inputs
-        safe_history = sanitize_user_input(_format_history(history))
+        safe_history = _format_history(history, sanitize=True)
         safe_context = sanitize_user_input(assembled_context)
         safe_query = sanitize_user_input(latest_user)
 
@@ -375,5 +433,7 @@ async def _handle_answer(
         action="answer",
         reply=answer.answer_markdown,
         answer=answer,
-        debug_info={"reason": decision.reason} if request.debug else None,
+        debug_info=(
+            {"reason": decision.reason} if request.debug and debug_allowed else None
+        ),
     )

@@ -6,10 +6,12 @@ Implements §8.7 of the Canonical Blueprint.
 
 import asyncio
 import ipaddress
+import json
 import logging
 from urllib.parse import urlparse
 
 import httpx
+from cortex.config.loader import get_config
 from cortex.retrieval.results import SearchResultItem
 
 logger = logging.getLogger(__name__)
@@ -17,6 +19,27 @@ logger = logging.getLogger(__name__)
 # Constants
 RERANK_TRUNCATION_CHARS = 4096
 RERANK_TIMEOUT_SECONDS = 15.0
+MAX_RERANK_RESPONSE_BYTES = 1_000_000
+MAX_MMR_CANDIDATES = 200
+
+
+def _safe_score(value: object) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _normalize_unit(value: object, name: str, default: float = 0.5) -> float:
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        logger.warning("%s is invalid; defaulting to %.2f", name, default)
+        return default
+    if 0.0 <= numeric <= 1.0:
+        return numeric
+    logger.warning("%s %.3f is out of range; clamping to [0, 1]", name, numeric)
+    return min(max(numeric, 0.0), 1.0)
 
 
 def _candidate_summary_text(item: SearchResultItem) -> str:
@@ -28,10 +51,7 @@ def _candidate_summary_text(item: SearchResultItem) -> str:
 
     This helps the model resolve navigational intent (dates, people) within the content.
     """
-    if item.metadata is None:
-        item.metadata = {}
-
-    meta = item.metadata
+    meta = item.metadata if isinstance(item.metadata, dict) else {}
     parts = []
 
     # Extract metadata fields (normalized by ingestion)
@@ -64,15 +84,20 @@ def rerank_results(
     if not results:
         return results
 
+    alpha = _normalize_unit(alpha, "alpha", default=0.5)
+
     max_lex = max((item.lexical_score or 0.0 for item in results), default=0.0)
     max_vec = max((item.vector_score or 0.0 for item in results), default=0.0)
 
     for item in results:
+        if not isinstance(getattr(item, "metadata", None), dict):
+            item.metadata = {}
         lex_component = (item.lexical_score or 0.0) / max_lex if max_lex > 0 else 0.0
         vec_component = (item.vector_score or 0.0) / max_vec if max_vec > 0 else 0.0
         rerank_score = alpha * vec_component + (1 - alpha) * lex_component
         item.rerank_score = rerank_score
-        item.score = 0.5 * item.score + 0.5 * rerank_score
+        base_score = _safe_score(item.score)
+        item.score = 0.5 * base_score + 0.5 * rerank_score
         item.metadata["rerank_score"] = rerank_score
 
     return sorted(results, key=lambda itm: itm.score, reverse=True)
@@ -86,6 +111,19 @@ async def call_external_reranker(
     """
     if not results:
         return []
+
+    if top_n is None:
+        top_n = len(results)
+    if top_n <= 0:
+        logger.warning("top_n must be positive; skipping external rerank")
+        return results
+
+    config = get_config()
+    allowed_endpoint = getattr(config.search, "reranker_endpoint", None)
+    if not allowed_endpoint:
+        raise ValueError("Reranker endpoint not configured")
+    if _normalize_endpoint(endpoint) != _normalize_endpoint(str(allowed_endpoint)):
+        raise ValueError("Reranker endpoint is not allowed")
 
     # Ensure metadata is a dict for all items to avoid None-safety issues
     for item in results:
@@ -109,9 +147,16 @@ async def call_external_reranker(
         if not rerank_url.endswith("/v1/rerank"):
             rerank_url = f"{rerank_url}/v1/rerank"
 
-        await _validate_reranker_url(rerank_url)
+        allowed_host = urlparse(str(allowed_endpoint)).hostname
+        if not allowed_host:
+            raise ValueError("Invalid reranker endpoint host")
 
-        async with httpx.AsyncClient() as client:
+        await _validate_reranker_url(rerank_url, {allowed_host})
+
+        async with httpx.AsyncClient(
+            follow_redirects=False,
+            trust_env=False,
+        ) as client:
             resp = await client.post(
                 rerank_url,
                 json={
@@ -124,18 +169,43 @@ async def call_external_reranker(
             resp.raise_for_status()
 
         # Response is {"results": [{"index": int, "relevance_score": float}, ...]}
-        response_data = resp.json()
+        content_length = resp.headers.get("content-length")
+        if content_length:
+            try:
+                if int(content_length) > MAX_RERANK_RESPONSE_BYTES:
+                    raise ValueError("Reranker response too large")
+            except ValueError:
+                raise ValueError("Invalid reranker response length") from None
+        content = await resp.aread()
+        if len(content) > MAX_RERANK_RESPONSE_BYTES:
+            raise ValueError("Reranker response too large")
+
+        response_data = json.loads(content)
+        if not isinstance(response_data, dict):
+            raise ValueError("Invalid reranker response format")
         rankings = response_data.get("results", [])
+        if not isinstance(rankings, list):
+            raise ValueError("Invalid reranker response format")
 
         reranked = []
         for r in rankings:
-            idx = r.get("index", 0)
+            if not isinstance(r, dict):
+                continue
+            idx = r.get("index")
+            if idx is None:
+                continue
+            try:
+                idx = int(idx)
+            except (TypeError, ValueError):
+                continue
+            if idx < 0:
+                continue
             if idx >= len(candidates):
                 continue
             item = candidates[idx]
 
             # Update score with the high-fidelity cross-encoder score
-            rerank_score = r.get("relevance_score", r.get("score", 0.0))
+            rerank_score = _safe_score(r.get("relevance_score", r.get("score", 0.0)))
             item.rerank_score = rerank_score
             item.score = rerank_score
             item.metadata["rerank_score"] = rerank_score
@@ -146,36 +216,52 @@ async def call_external_reranker(
         reranked.sort(key=lambda x: x.rerank_score or 0, reverse=True)
         return reranked
 
-    except Exception as e:
-        logger.error(f"External reranker failed (falling back to fusion scores): {e}")
+    except (httpx.HTTPError, ValueError, json.JSONDecodeError):
+        logger.exception("External reranker failed (falling back to fusion scores)")
         return results
 
 
-async def _validate_reranker_url(url: str) -> None:
+def _normalize_endpoint(url: str) -> str:
+    parsed = urlparse(url)
+    host = parsed.hostname or ""
+    scheme = (parsed.scheme or "").lower()
+    port = f":{parsed.port}" if parsed.port else ""
+    return f"{scheme}://{host}{port}"
+
+
+async def _validate_reranker_url(url: str, allowed_hosts: set[str]) -> None:
     """
     Validate the reranker URL to prevent SSRF vulnerabilities.
     """
     try:
         parsed = urlparse(url)
-        if not parsed.scheme or parsed.scheme.lower() not in ["https", "http"]:
-            raise ValueError(f"Invalid URL scheme: {parsed.scheme}")
+        if parsed.scheme.lower() != "https":
+            raise ValueError("Reranker endpoint must use HTTPS")
 
         hostname = parsed.hostname
         if not hostname:
             raise ValueError("Missing hostname")
+        if hostname not in allowed_hosts:
+            raise ValueError("Reranker host is not allowlisted")
 
         loop = asyncio.get_running_loop()
         addr_info = await loop.getaddrinfo(hostname, None)
+        if not addr_info:
+            raise ValueError("Unable to resolve hostname")
 
         for _family, _, _, _, sockaddr in addr_info:
             ip_str = sockaddr[0]
             ip = ipaddress.ip_address(ip_str)
             if not ip.is_global:
-                raise ValueError(f"Resolved IP is not global: {ip_str}")
+                raise ValueError("Resolved IP is not global")
 
     except Exception as e:
-        logger.error(f"Invalid reranker URL '{url}': {e}")
-        raise ValueError(f"Invalid reranker URL: {url}") from e
+        logger.error(
+            "Invalid reranker URL for host '%s': %s",
+            urlparse(url).hostname,
+            e,
+        )
+        raise ValueError("Invalid reranker URL") from e
 
 
 def _tokenize_for_similarity(text: str) -> set[str]:
@@ -208,15 +294,29 @@ def apply_mmr(
     if not results:
         return results
 
-    limit = limit or len(results)
+    lambda_param = _normalize_unit(lambda_param, "lambda_param", default=0.5)
+    if limit is None:
+        limit = len(results)
+    elif limit <= 0:
+        logger.warning("limit must be positive; skipping MMR")
+        return results
+
+    if len(results) > MAX_MMR_CANDIDATES:
+        candidates_sorted = sorted(results, key=lambda r: r.score or 0.0, reverse=True)
+        candidates = candidates_sorted[:MAX_MMR_CANDIDATES]
+        remainder = candidates_sorted[MAX_MMR_CANDIDATES:]
+    else:
+        candidates = results.copy()
+        remainder = []
+
+    limit = min(limit, len(candidates))
     selected: list[SearchResultItem] = []
-    candidates = results.copy()
 
     while candidates and len(selected) < limit:
         best_idx = 0
         best_score = float("-inf")
         for idx, candidate in enumerate(candidates):
-            relevance = candidate.score or 0.0
+            relevance = _safe_score(candidate.score)
             if selected:
                 redundancy = max(
                     _text_similarity(candidate, chosen) for chosen in selected
@@ -231,4 +331,5 @@ def apply_mmr(
 
     # Append any remaining candidates to preserve ordering info
     selected.extend(candidates)
+    selected.extend(remainder)
     return selected

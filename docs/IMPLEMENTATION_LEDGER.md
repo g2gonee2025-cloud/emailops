@@ -1501,8 +1501,8 @@ This ledger tracks the **exact state of implementation** for each checklist step
 
 ## Review Report Fixes (Safety + Security + LLM Client) (Ad Hoc)
 
-- **Status:** completed_pending_verification
-- **Last updated:** 2025-12-31 04:42 UTC
+- **Status:** verified
+- **Last updated:** 2025-12-31 05:24 UTC
 - **Responsible run ID:** run-review-report-safety-20251231-02
 
 ### Scope & files
@@ -1538,6 +1538,118 @@ This ledger tracks the **exact state of implementation** for each checklist step
 ### Concerns & open issues
 
 - Remaining open issues tracked in `review_report.json`; next likely targets include `backend/src/cortex/rag_api/models.py` and `backend/src/cortex/retrieval/reranking.py`.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-03
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (RAG API Models) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 05:37 UTC
+- **Responsible run ID:** run-review-report-rag-models-20251231-01
+
+### Scope & files
+
+- **Summary:** Harden RAG API request/response models with validation, extra-field handling, and action consistency.
+- **Files touched:**
+  - `backend/src/cortex/rag_api/models.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Enforced min lengths, strict fusion_method literals, and consistent extra-field forbidding.
+- Removed tenant_id/user_id from external request models to prevent spoofing.
+- Validated ChatResponse action/field consistency and corrected chat max_length description.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; next likely targets include `backend/src/cortex/rag_api/routes_chat.py` and `backend/src/cortex/retrieval/reranking.py`.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-04
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (RAG API Chat Routes) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 05:41 UTC
+- **Responsible run ID:** run-review-report-chat-20251231-01
+
+### Scope & files
+
+- **Summary:** Harden chat routing and summarization behaviors with safer defaults, sanitization, and debug gating.
+- **Files touched:**
+  - `backend/src/cortex/rag_api/routes_chat.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Guarded summarize graph lookup and normalized search/summarize parameters.
+- Sanitized history and retrieved snippets before LLM routing/response prompts.
+- Gated debug_info by admin role and removed error detail leakage.
+- Validated summary payload types and stabilized audit context defaults.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; next likely targets include `backend/src/cortex/retrieval/reranking.py`.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-05
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Retrieval Reranking) (Ad Hoc)
+
+- **Status:** completed_pending_verification
+- **Last updated:** 2025-12-31 05:47 UTC
+- **Responsible run ID:** run-review-report-reranking-20251231-01
+
+### Scope & files
+
+- **Summary:** Harden reranking validation, SSRF defenses, and MMR performance safeguards.
+- **Files touched:**
+  - `backend/src/cortex/retrieval/reranking.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Normalized alpha/lambda, guarded scores/metadata, and removed metadata mutation in formatter.
+- Enforced HTTPS, allowlisted reranker host, and capped response size with proxy bypass.
+- Avoided invalid index defaults, added top_n validation, and capped MMR candidate set.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; next likely targets include `backend/src/cortex/config/audit_config.py`.
 
 ### Verification history
 
