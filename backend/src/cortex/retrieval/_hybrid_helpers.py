@@ -170,7 +170,9 @@ def _convert_fts_to_items(
                 score=res.score,
                 conversation_id=res.conversation_id,
                 attachment_id=res.attachment_id,
-                is_attachment=res.is_attachment,
+                is_attachment=(
+                    bool(res.is_attachment) if res.is_attachment is not None else False
+                ),
                 highlights=highlights,
                 snippet=snippet,
                 content=content,

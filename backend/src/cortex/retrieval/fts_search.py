@@ -7,12 +7,18 @@ Adapted for Conversation-based schema (conversation_id instead of thread_id/mess
 
 from __future__ import annotations
 
+import hashlib
 import logging
+import uuid
+from html import escape
 from typing import Any
 
 from cortex.intelligence.query_expansion import expand_for_fts
 from pydantic import BaseModel, Field
-from sqlalchemy import text
+from sqlalchemy import bindparam, text
+from sqlalchemy.dialects.postgresql import ARRAY, TEXT
+from sqlalchemy.dialects.postgresql import UUID as PGUUID
+from sqlalchemy.exc import DataError, ProgrammingError
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
@@ -24,6 +30,8 @@ logger = logging.getLogger(__name__)
 
 # Keep config centralized so it's easy to swap (for non-English tenants, etc.)
 _FTS_CONFIG = "english"
+_TS_RANK_NORMALIZATION = 32
+_MAX_FTS_TEXT_CHARS = 4000
 
 # ts_headline defaults to HTML (<b>...</b>). PostgreSQL docs warn the output is
 # not guaranteed to be safe for direct inclusion in web pages, so we use
@@ -59,57 +67,70 @@ def search_conversations_fts(
     if not query:
         return []
 
-    # Expand query with synonyms for better recall.
+    query_hash = hashlib.sha256(query.encode("utf-8")).hexdigest()
     expanded_query = expand_for_fts(query)
-    logger.debug(f"Original FTS query: '{query}', Expanded: '{expanded_query}'")
+    logger.debug("FTS query expanded", extra={"query_hash": query_hash})
 
     # Search conversations by subject (weight A) and summary (weight B)
-    stmt = text(
-        """
+    query_template = """
         WITH q AS (
-            SELECT to_tsquery(:cfg, :query) AS tsq
+            SELECT {tsquery_func}(:cfg, :query) AS tsq
+        ),
+        docs AS (
+            SELECT
+                conv.conversation_id,
+                conv.subject,
+                conv.summary_text,
+                setweight(to_tsvector(:cfg, COALESCE(conv.subject, '')), 'A') ||
+                setweight(to_tsvector(:cfg, COALESCE(conv.summary_text, '')), 'B') AS document
+            FROM conversations conv
+            WHERE conv.tenant_id = :tenant_id
         )
         SELECT
-            conv.conversation_id,
-            conv.subject,
+            docs.conversation_id,
+            docs.subject,
             ts_rank_cd(
-                setweight(to_tsvector(:cfg, COALESCE(conv.subject, '')), 'A') ||
-                setweight(to_tsvector(:cfg, COALESCE(conv.summary_text, '')), 'B'),
-                q.tsq, 32
+                docs.document,
+                q.tsq, :rank_norm
             ) AS score,
             ts_headline(:cfg,
-                COALESCE(conv.subject, '') || ' | ' || COALESCE(conv.summary_text, ''),
+                COALESCE(docs.subject, '') || ' | ' || COALESCE(docs.summary_text, ''),
                 q.tsq, :headline_opts
             ) AS snippet
-        FROM conversations conv, q
-        WHERE
-            conv.tenant_id = :tenant_id
-            AND (
-                setweight(to_tsvector(:cfg, COALESCE(conv.subject, '')), 'A') ||
-                setweight(to_tsvector(:cfg, COALESCE(conv.summary_text, '')), 'B')
-            ) @@ q.tsq
+        FROM docs
+        CROSS JOIN q
+        WHERE docs.document @@ q.tsq
         ORDER BY score DESC
         LIMIT :limit
     """
-    )
 
-    results = session.execute(
-        stmt,
-        {
-            "query": expanded_query,
-            "tenant_id": tenant_id,
-            "limit": limit,
-            "cfg": _FTS_CONFIG,
-            "headline_opts": _HEADLINE_OPTIONS,
-        },
-    ).fetchall()
+    params = {
+        "query": expanded_query,
+        "tenant_id": tenant_id,
+        "limit": limit,
+        "cfg": _FTS_CONFIG,
+        "headline_opts": _HEADLINE_OPTIONS,
+        "rank_norm": _TS_RANK_NORMALIZATION,
+    }
+
+    try:
+        stmt = text(query_template.format(tsquery_func="to_tsquery"))
+        results = session.execute(stmt, params).fetchall()
+    except (DataError, ProgrammingError):
+        logger.warning(
+            "Invalid FTS query; falling back to plainto_tsquery",
+            extra={"query_hash": query_hash},
+        )
+        params["query"] = query
+        stmt = text(query_template.format(tsquery_func="plainto_tsquery"))
+        results = session.execute(stmt, params).fetchall()
 
     return [
         FTSResult(
             conversation_id=str(row.conversation_id),
             subject=str(row.subject or ""),
             score=float(row.score or 0.0),
-            snippet=str(row.snippet or ""),
+            snippet=escape(str(row.snippet or "")),
         )
         for row in results
     ]
@@ -120,11 +141,11 @@ class ChunkFTSResult(BaseModel):
 
     chunk_id: str
     conversation_id: str
-    chunk_type: str
+    chunk_type: str | None = None
     score: float
     snippet: str
     text: str
-    is_attachment: bool = False
+    is_attachment: bool | None = None
     attachment_id: str | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
 
@@ -150,9 +171,25 @@ def search_chunks_fts(
     if not query:
         return []
 
-    # Expand query with synonyms for better recall.
+    if conversation_ids is not None and not conversation_ids:
+        return []
+
+    query_hash = hashlib.sha256(query.encode("utf-8")).hexdigest()
     expanded_query = expand_for_fts(query)
-    logger.debug(f"Original FTS query: '{query}', Expanded: '{expanded_query}'")
+    logger.debug("FTS query expanded", extra={"query_hash": query_hash})
+
+    conversation_id_list: list[uuid.UUID] | None = None
+    if conversation_ids is not None:
+        conversation_id_list = []
+        for conv_id in conversation_ids:
+            try:
+                conversation_id_list.append(uuid.UUID(str(conv_id)))
+            except (TypeError, ValueError):
+                logger.warning(
+                    "Invalid conversation_id filter for FTS query",
+                    extra={"query_hash": query_hash},
+                )
+                return []
 
     params: dict[str, Any] = {
         "query": expanded_query,
@@ -160,15 +197,15 @@ def search_chunks_fts(
         "limit": limit,
         "cfg": _FTS_CONFIG,
         "headline_opts": _HEADLINE_OPTIONS,
+        "rank_norm": _TS_RANK_NORMALIZATION,
+        "max_text_chars": _MAX_FTS_TEXT_CHARS,
     }
 
     where_clauses = ["c.tenant_id = :tenant_id", "c.tsv_text @@ q.tsq"]
 
-    if conversation_ids:
-        where_clauses.append(
-            "c.conversation_id = ANY(CAST(:conversation_ids AS UUID[]))"
-        )
-        params["conversation_ids"] = conversation_ids
+    if conversation_id_list is not None:
+        where_clauses.append("c.conversation_id = ANY(:conversation_ids)")
+        params["conversation_ids"] = conversation_id_list
 
     # Attachment filter
     if is_attachment is not None:
@@ -188,38 +225,61 @@ def search_chunks_fts(
     # string at once, which is less prone to future injection vulnerabilities.
     query_str = """
         WITH q AS (
-            SELECT to_tsquery(:cfg, :query) AS tsq
+            SELECT {tsquery_func}(:cfg, :query) AS tsq
         )
         SELECT
             c.chunk_id,
             c.conversation_id,
             c.chunk_type,
-            c.text,
+            LEFT(c.text, :max_text_chars) AS text,
             c.is_attachment,
             c.attachment_id,
             c.extra_data,
-            ts_rank_cd(c.tsv_text, q.tsq, 32) AS score,
-            ts_headline(:cfg, c.text, q.tsq, :headline_opts) AS snippet
-        FROM chunks c, q
+            ts_rank_cd(c.tsv_text, q.tsq, :rank_norm) AS score,
+            ts_headline(
+                :cfg,
+                LEFT(c.text, :max_text_chars),
+                q.tsq,
+                :headline_opts
+            ) AS snippet
+        FROM chunks c
+        CROSS JOIN q
         WHERE """
     query_str += where_sql
     query_str += " ORDER BY score DESC LIMIT :limit"
 
-    stmt = text(query_str)
+    stmt = text(query_str.format(tsquery_func="to_tsquery")).bindparams(
+        bindparam("conversation_ids", type_=ARRAY(PGUUID(as_uuid=True))),
+        bindparam("file_types", type_=ARRAY(TEXT())),
+    )
 
-    results = session.execute(stmt, params).fetchall()
+    try:
+        results = session.execute(stmt, params).fetchall()
+    except (DataError, ProgrammingError):
+        logger.warning(
+            "Invalid FTS query; falling back to plainto_tsquery",
+            extra={"query_hash": query_hash},
+        )
+        params["query"] = query
+        fallback_stmt = text(
+            query_str.format(tsquery_func="plainto_tsquery")
+        ).bindparams(
+            bindparam("conversation_ids", type_=ARRAY(PGUUID(as_uuid=True))),
+            bindparam("file_types", type_=ARRAY(TEXT())),
+        )
+        results = session.execute(fallback_stmt, params).fetchall()
 
     return [
         ChunkFTSResult(
             chunk_id=str(row.chunk_id),
             conversation_id=str(row.conversation_id),
-            chunk_type=str(row.chunk_type or "message_body"),
+            chunk_type=str(row.chunk_type) if row.chunk_type is not None else None,
             score=float(row.score or 0.0),
-            snippet=str(row.snippet or ""),
+            snippet=escape(str(row.snippet or "")),
             text=str(row.text or ""),
-            is_attachment=bool(row.is_attachment),
+            is_attachment=row.is_attachment if row.is_attachment is not None else None,
             attachment_id=str(row.attachment_id) if row.attachment_id else None,
-            metadata=dict(row.extra_data) if row.extra_data else {},
+            metadata=row.extra_data if isinstance(row.extra_data, dict) else {},
         )
         for row in results
     ]

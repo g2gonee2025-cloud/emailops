@@ -5,6 +5,7 @@ import sys
 from typing import Any
 
 from cortex_cli.style import colorize as _colorize
+from rich.console import Console
 
 
 def cmd_discover_schema(args: argparse.Namespace) -> None:
@@ -16,13 +17,19 @@ def cmd_discover_schema(args: argparse.Namespace) -> None:
 
         tenant_id = getattr(args, "tenant_id", "default")
         sample_size = getattr(args, "sample_size", 20)
+        show_entities = getattr(args, "show_entities", False)
 
         print(f"\n{_colorize('GRAPH SCHEMA DISCOVERY', 'bold')}\n")
         print(f"  Tenant:      {_colorize(tenant_id, 'cyan')}")
         print(f"  Sample Size: {_colorize(str(sample_size), 'cyan')}")
         print(f"\n  {_colorize('⏳', 'yellow')} Discovering schema...")
 
-        discover_schema_logic(tenant_id=tenant_id, sample_size=sample_size)
+        discover_schema_logic(
+            tenant_id=tenant_id,
+            sample_size=sample_size,
+            console=Console(),
+            show_entities=show_entities,
+        )
 
         print(f"\n  {_colorize('✓', 'green')} Schema discovery complete!")
 
@@ -67,6 +74,11 @@ def setup_graph_parser(subparsers: Any) -> None:
         type=int,
         default=20,
         help="Number of conversations to sample (default: 20)",
+    )
+    discover_parser.add_argument(
+        "--show-entities",
+        action="store_true",
+        help="Include sample entity names in the report output",
     )
     discover_parser.set_defaults(func=cmd_discover_schema)
 

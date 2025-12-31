@@ -152,6 +152,21 @@ export interface LoginResponse {
   expires_in: number;
 }
 
+// Thread Types
+export interface Message {
+  message_id: string;
+  sender: string;
+  content: string;
+  timestamp: string;
+}
+
+export interface Thread {
+  thread_id: string;
+  subject: string;
+  participants: string[];
+  messages: Message[];
+}
+
 // =============================================================================
 // API Client
 // =============================================================================
@@ -377,6 +392,10 @@ export const api = {
       body: JSON.stringify({ documents, generate_embeddings: generateEmbeddings }),
       signal,
     });
+  },
+
+  fetchThread: (threadId: string, signal?: AbortSignal): Promise<Thread> => {
+    return request<Thread>(`/api/v1/thread/${threadId}`, { signal });
   },
 
   // ---------------------------------------------------------------------------

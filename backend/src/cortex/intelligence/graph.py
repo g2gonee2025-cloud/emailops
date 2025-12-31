@@ -13,7 +13,12 @@ import logging
 from typing import Any
 
 import networkx as nx
-from cortex.llm.async_runtime import AsyncLLMRuntime
+from cortex.llm.async_runtime import (
+    AsyncLLMRuntime,
+    LLMOutputSchemaError,
+    ProviderError,
+)
+from cortex.llm.async_runtime import ValidationError as LLMValidationError
 
 # Constants
 DEFAULT_CHUNK_SIZE = 8000
@@ -23,7 +28,7 @@ DEFAULT_OVERLAP = 500
 logger = logging.getLogger(__name__)
 
 
-# --- Prompts (Reasoning Model Optimized: No System Prompt, XML Structure) ---
+# --- Prompts (Reasoning Model Optimized: System + XML Structure) ---
 
 # Valid entity types for schema enforcement
 VALID_NODE_TYPES = [
@@ -187,6 +192,8 @@ GRAPH_SCHEMA = {
 
 def _normalize_relation(relation: str) -> str:
     """Normalize relation to UPPER_SNAKE_CASE and validate against ontology."""
+    if not isinstance(relation, str):
+        return "RELATED_TO"
     normalized = relation.strip().upper().replace(" ", "_").replace("-", "_")
     # Map common variations that are semantically equivalent and safe
     relation_map = {
@@ -220,8 +227,8 @@ class GraphExtractor:
 
     def __init__(self) -> None:
         self.llm = AsyncLLMRuntime()
-        self.chunk_size = 8000  # Conservative chunk size for reasoning models (leaving room for output)
-        self.overlap = 500
+        self.chunk_size = DEFAULT_CHUNK_SIZE
+        self.overlap = DEFAULT_OVERLAP
 
     async def extract_graph(self, text: str) -> nx.DiGraph:
         """
@@ -234,7 +241,9 @@ class GraphExtractor:
         # 1. Chunking Strategy
         chunks = self._chunk_text(text)
 
-        logger.info(f"Extracting graph from {len(text)} chars (Chunks: {len(chunks)})")
+        logger.info(
+            "Extracting graph from %d chars (Chunks: %d)", len(text), len(chunks)
+        )
 
         # 2. Extract Sub-Graphs sequentially to prevent OOM
         sub_graphs = []
@@ -245,7 +254,11 @@ class GraphExtractor:
         # 3. Merge Graphs
         # Run the CPU-bound merge operation in a thread pool to avoid blocking the event loop.
         loop = asyncio.get_running_loop()
-        final_G = await loop.run_in_executor(None, self._merge_graphs, sub_graphs)
+        try:
+            final_G = await loop.run_in_executor(None, self._merge_graphs, sub_graphs)
+        except Exception:
+            logger.exception("Graph merge failed; returning unmerged subgraphs")
+            final_G = nx.compose_all(sub_graphs) if sub_graphs else nx.DiGraph()
         return final_G
 
     def _chunk_text(self, text: str) -> list[str]:
@@ -255,19 +268,31 @@ class GraphExtractor:
 
         chunks = []
         start = 0
+        chunk_size = max(1, int(self.chunk_size))
+        overlap = max(0, min(int(self.overlap), chunk_size - 1))
+        if overlap != self.overlap:
+            logger.warning(
+                "Overlap adjusted to %d to fit chunk_size %d", overlap, chunk_size
+            )
         while start < len(text):
-            end = min(start + self.chunk_size, len(text))
+            end = min(start + chunk_size, len(text))
             # Try to break at newline if possible to respect boundaries
             if end < len(text):
                 # Search for last newline in the overlap area
                 last_newline = text.rfind("\n", start, end)
-                if (
-                    last_newline > start + self.chunk_size // 2
-                ):  # Don't backtrack too much
+                if last_newline > start + chunk_size // 2:  # Don't backtrack too much
                     end = last_newline
 
+            if end <= start:
+                end = min(start + chunk_size, len(text))
+
             chunks.append(text[start:end])
-            start = end - self.overlap
+            if end == len(text):
+                break
+            next_start = max(0, end - overlap)
+            if next_start <= start:
+                next_start = end
+            start = next_start
         return chunks
 
     async def _process_chunk(self, chunk_text: str, index: int) -> nx.DiGraph:
@@ -288,105 +313,184 @@ class GraphExtractor:
                 max_tokens=4000,
             )
             return self._parse_json_to_graph(response_json)
-        except Exception as e:
-            logger.warning(f"Graph extraction failed for chunk {index}: {e}")
+        except (ProviderError, LLMOutputSchemaError, LLMValidationError) as e:
+            logger.warning(
+                "Graph extraction failed for chunk %d: %s",
+                index,
+                e,
+                exc_info=True,
+            )
             return nx.DiGraph()
 
     def _parse_json_to_graph(self, data: dict[str, Any]) -> nx.DiGraph:
         """Parses Validated JSON into a NetworkX graph."""
         G = nx.DiGraph()
-        try:
-            nodes = data.get("nodes", [])
-            edges = data.get("edges", [])
+        if not isinstance(data, dict):
+            return G
 
-            for node in nodes:
-                # Basic cleaning: strip whitespace
-                name = node["name"].strip()
-                node_type = node.get("type", "UNKNOWN").strip().upper()
-                # Validate type
-                if node_type not in VALID_NODE_TYPES:
-                    node_type = "UNKNOWN"
-                # Extract properties
-                properties = node.get("properties", {})
-                G.add_node(name, type=node_type, properties=properties)
+        nodes = data.get("nodes", [])
+        edges = data.get("edges", [])
+        if not isinstance(nodes, list):
+            nodes = []
+        if not isinstance(edges, list):
+            edges = []
 
-            for edge in edges:
-                src = edge["source"].strip()
-                tgt = edge["target"].strip()
+        for node in nodes:
+            if not isinstance(node, dict):
+                continue
+            name = node.get("name")
+            if not isinstance(name, str):
+                continue
+            name = name.strip()
+            if not name:
+                continue
+            node_type = node.get("type", "UNKNOWN")
+            if not isinstance(node_type, str):
+                node_type = "UNKNOWN"
+            node_type = node_type.strip().upper()
+            if node_type not in VALID_NODE_TYPES:
+                node_type = "UNKNOWN"
+            properties = node.get("properties", {})
+            if not isinstance(properties, dict):
+                properties = {}
+            G.add_node(name, type=node_type, properties=properties)
 
-                # Ensure nodes exist
-                if not G.has_node(src):
-                    G.add_node(src, type="UNKNOWN", properties={})
-                if not G.has_node(tgt):
-                    G.add_node(tgt, type="UNKNOWN", properties={})
+        for edge in edges:
+            if not isinstance(edge, dict):
+                continue
+            src = edge.get("source")
+            tgt = edge.get("target")
+            if not isinstance(src, str) or not isinstance(tgt, str):
+                continue
+            src = src.strip()
+            tgt = tgt.strip()
+            if not src or not tgt:
+                continue
 
-                # Normalize relation
-                relation = _normalize_relation(edge.get("relation", "RELATED_TO"))
+            if not G.has_node(src):
+                G.add_node(src, type="UNKNOWN", properties={})
+            if not G.has_node(tgt):
+                G.add_node(tgt, type="UNKNOWN", properties={})
 
-                G.add_edge(
-                    src,
-                    tgt,
-                    relation=relation,
-                    description=edge.get("description", ""),
-                    source_chunk="llm",  # Metadata
-                )
-        except Exception as e:
-            logger.warning(f"Failed to parse graph JSON: {e}")
+            relation = _normalize_relation(edge.get("relation"))
+
+            G.add_edge(
+                src,
+                tgt,
+                relation=relation,
+                description=edge.get("description", ""),
+                source_chunk="llm",
+            )
         return G
 
     def _merge_graphs(self, graphs: list[nx.DiGraph]) -> nx.DiGraph:
         """
         Merges multiple subgraphs into one master graph using an optimized
-        clustering approach for fuzzy node matching.
+        clustering approach for case-insensitive + variant name matching.
         """
         if not graphs:
             return nx.DiGraph()
 
         # 1. Collect all unique nodes and their attributes from all subgraphs
-        all_nodes = {}
+        all_nodes: dict[str, dict[str, Any]] = {}
         for G in graphs:
             for node, attrs in G.nodes(data=True):
                 if node not in all_nodes:
-                    all_nodes[node] = attrs
+                    all_nodes[node] = dict(attrs)
                 else:
-                    # Merge attributes, prioritizing specific types over UNKNOWN
                     existing_attrs = all_nodes[node]
+                    existing_type = existing_attrs.get("type", "UNKNOWN")
+                    new_type = attrs.get("type", "UNKNOWN")
                     if (
-                        existing_attrs.get("type", "UNKNOWN") == "UNKNOWN"
-                        and attrs.get("type", "UNKNOWN") != "UNKNOWN"
+                        existing_type == "UNKNOWN"
+                        and new_type
+                        and new_type != "UNKNOWN"
                     ):
-                        existing_attrs["type"] = attrs.get("type")
+                        existing_attrs["type"] = new_type
+                    elif (
+                        new_type
+                        and new_type != "UNKNOWN"
+                        and existing_type not in ("UNKNOWN", new_type)
+                    ):
+                        variants = set(existing_attrs.get("type_variants", []))
+                        variants.update([existing_type, new_type])
+                        existing_attrs["type_variants"] = sorted(variants)
 
                     existing_props = existing_attrs.get("properties", {})
+                    if not isinstance(existing_props, dict):
+                        existing_props = {}
                     new_props = attrs.get("properties", {})
-                    existing_props.update(new_props)
+                    if isinstance(new_props, dict):
+                        existing_props.update(new_props)
                     existing_attrs["properties"] = existing_props
 
         # 2. Group nodes by normalized name (case-insensitive) - O(n) instead of O(n²)
         node_names = list(all_nodes.keys())
+        normalized_names = {name: name.strip().lower() for name in node_names}
         canonical_map: dict[str, str] = {}  # lowercase -> canonical (longest version)
 
         for name in node_names:
-            normalized = name.strip().lower()
+            normalized = normalized_names[name]
             if normalized not in canonical_map:
                 canonical_map[normalized] = name
-            else:
-                # Keep the longer version as canonical
-                if len(name) > len(canonical_map[normalized]):
-                    canonical_map[normalized] = name
+            elif len(name) > len(canonical_map[normalized]):
+                canonical_map[normalized] = name
+
+        # Merge shorter variants into longer canonical names when they are whole-word substrings.
+        names_by_length = sorted(node_names, key=len, reverse=True)
+        variant_map: dict[str, str] = {}
+        for short_name in sorted(node_names, key=len):
+            short_norm = normalized_names[short_name]
+            if not short_norm:
+                continue
+            for long_name in names_by_length:
+                if len(long_name) <= len(short_name):
+                    continue
+                long_norm = normalized_names[long_name]
+                if f" {short_norm} " in f" {long_norm} ":
+                    variant_map[short_name] = long_name
+                    break
 
         # Build node_map: each node -> its canonical version
-        node_map = {}
+        node_map: dict[str, str] = {}
         for name in node_names:
-            normalized = name.strip().lower()
-            node_map[name] = canonical_map[normalized]
+            normalized = normalized_names[name]
+            canonical = canonical_map[normalized]
+            node_map[name] = variant_map.get(name, canonical)
 
         # 3. Build the final graph
         final_G = nx.DiGraph()
 
-        # Add canonical nodes to the graph
-        for canonical_name in set(node_map.values()):
-            final_G.add_node(canonical_name, **all_nodes[canonical_name])
+        canonical_attrs: dict[str, dict[str, Any]] = {}
+        for name, attrs in all_nodes.items():
+            canonical_name = node_map[name]
+            existing = canonical_attrs.get(canonical_name, {})
+            merged = dict(existing)
+            existing_type = merged.get("type", "UNKNOWN")
+            new_type = attrs.get("type", "UNKNOWN")
+            if existing_type == "UNKNOWN" and new_type != "UNKNOWN":
+                merged["type"] = new_type
+            elif (
+                new_type
+                and new_type != "UNKNOWN"
+                and existing_type not in ("UNKNOWN", new_type)
+            ):
+                variants = set(merged.get("type_variants", []))
+                variants.update([existing_type, new_type])
+                merged["type_variants"] = sorted(variants)
+
+            merged_props = merged.get("properties", {})
+            if not isinstance(merged_props, dict):
+                merged_props = {}
+            new_props = attrs.get("properties", {})
+            if isinstance(new_props, dict):
+                merged_props.update(new_props)
+            merged["properties"] = merged_props
+
+            canonical_attrs[canonical_name] = merged
+
+        for canonical_name, attrs in canonical_attrs.items():
+            final_G.add_node(canonical_name, **attrs)
 
         # Add and remap edges
         for G in graphs:
@@ -400,6 +504,23 @@ class GraphExtractor:
                 if final_G.has_edge(src, tgt):
                     existing_desc = final_G[src][tgt].get("description", "")
                     new_desc = attrs.get("description", "")
+                    existing_relation = final_G[src][tgt].get("relation")
+                    new_relation = attrs.get("relation")
+                    if (
+                        new_relation
+                        and existing_relation
+                        and new_relation != existing_relation
+                    ):
+                        variants = set(final_G[src][tgt].get("relation_variants", []))
+                        variants.update([existing_relation, new_relation])
+                        final_G[src][tgt]["relation_variants"] = sorted(variants)
+                        if (
+                            existing_relation == "RELATED_TO"
+                            and new_relation != "RELATED_TO"
+                        ):
+                            final_G[src][tgt]["relation"] = new_relation
+                    elif new_relation and not existing_relation:
+                        final_G[src][tgt]["relation"] = new_relation
                     if new_desc not in existing_desc:
                         final_G[src][tgt]["description"] = (
                             f"{existing_desc}; {new_desc}"

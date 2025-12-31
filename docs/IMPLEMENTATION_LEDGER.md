@@ -1770,3 +1770,227 @@ This ledger tracks the **exact state of implementation** for each checklist step
 
 - [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-09
   Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Orchestration Nodes) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 10:46 UTC
+- **Responsible run ID:** run-review-report-nodes-20251231-01
+
+### Scope & files
+
+- **Summary:** Harden orchestration attachment selection and prompt handling.
+- **Files touched:**
+  - `backend/src/cortex/orchestration/nodes.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Validated guardrail inputs, added injection checks, and made message parsing resilient.
+- Fixed attachment size thresholds, allowlist matching, and logging behavior.
+- Improved stat handling, removed dead branches, and expanded quoted filename matching.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-10
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Domain Models & Tool Search) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 10:46 UTC
+- **Responsible run ID:** run-review-report-domain-models-20251231-01
+
+### Scope & files
+
+- **Summary:** Validate KBSearchInput, decouple domain conversion, and guard tool input construction.
+- **Files touched:**
+  - `backend/src/cortex/domain/models.py`
+  - `backend/src/cortex/tools/search.py`
+  - `backend/tests/test_domain_models.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Added query/tenant/user validation, limit caps, and ID normalization.
+- Removed magic defaults, copied filters defensively, and returned plain payloads.
+- Guarded RetrievalKBSearchInput construction and updated tests.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-10
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (CLI Rechunk) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 10:52 UTC
+- **Responsible run ID:** run-review-report-rechunk-20251231-01
+
+### Scope & files
+
+- **Summary:** Stream rechunking with token-based oversize checks and safer accounting.
+- **Files touched:**
+  - `cli/src/cortex_cli/operations/rechunk.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Switched oversize detection to token counts with char-span prefiltering.
+- Avoided deletions without replacements and fixed chunk position offsets.
+- Isolated progress callbacks, improved logging, and committed counts after success.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-12
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Summarize Routes) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 10:57 UTC
+- **Responsible run ID:** run-review-report-summarize-20251231-01
+
+### Scope & files
+
+- **Summary:** Harden summarize route safety, validation, and graph initialization.
+- **Files touched:**
+  - `backend/src/cortex/rag_api/routes_summarize.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Validated tenant/user context and enforced thread ownership checks.
+- Avoided leaking graph errors and unified error responses.
+- Offloaded graph compilation, validated graph outputs, and simplified audit logging.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-13
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Answer Routes) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 11:00 UTC
+- **Responsible run ID:** run-review-report-answer-20251231-01
+
+### Scope & files
+
+- **Summary:** Harden answer route validation, debug gating, and graph handling.
+- **Files touched:**
+  - `backend/src/cortex/rag_api/routes_answer.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Validated query and tenant/user context, and guarded graph availability.
+- Avoided leaking graph errors, normalized response handling, and added validation errors.
+- Scoped debug output to safe summaries and runtime environment gating.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-14
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Graph Extractor) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 11:05 UTC
+- **Responsible run ID:** run-review-report-graph-20251231-01
+
+### Scope & files
+
+- **Summary:** Harden graph extraction chunking, parsing, and merge behavior.
+- **Files touched:**
+  - `backend/src/cortex/intelligence/graph.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Fixed chunking overlap handling to prevent infinite loops and added safe logging.
+- Validated LLM outputs and normalized relations without masking programming errors.
+- Merged variant nodes and edge relations with conflict tracking and graceful fallbacks.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-15
+  Notes: Re-ran review_report_resolver; no drift detected.

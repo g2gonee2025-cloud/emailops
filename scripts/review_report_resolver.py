@@ -730,6 +730,295 @@ def main() -> None:
                     status = "resolved"
                     resolution = "audit uses default context identifiers"
                     method = "logging_check"
+        elif issue.get("file") == "backend/src/cortex/rag_api/routes_summarize.py":
+            if "Graph compilation is performed synchronously" in description:
+                if _file_contains(file_path, "asyncio.to_thread"):
+                    status = "resolved"
+                    resolution = "graph compilation moved off event loop"
+                    method = "perf_check"
+            elif "final_state is assumed to be a dict" in description:
+                if _file_contains(file_path, "isinstance(final_state, Mapping)"):
+                    status = "resolved"
+                    resolution = "final_state validated as mapping"
+                    method = "null_check"
+            elif "Access to final_state.get('summary')" in description:
+                if _file_contains(file_path, 'summary = final_state.get("summary")'):
+                    status = "resolved"
+                    resolution = "summary access guarded by mapping check"
+                    method = "null_check"
+            elif "correlation_id potentially None" in description:
+                models_path = Path("backend/src/cortex/rag_api/models.py")
+                if _file_contains(
+                    models_path, "SummarizeThreadResponse"
+                ) and _file_contains(models_path, "correlation_id: str | None"):
+                    status = "resolved"
+                    resolution = "response model allows optional correlation_id"
+                    method = "model_check"
+            elif "authorization/ownership check" in description:
+                if _file_contains(file_path, "Conversation") and _file_contains(
+                    file_path, "thread_uuid"
+                ):
+                    status = "resolved"
+                    resolution = "thread ownership validated before graph run"
+                    method = "security_check"
+            elif "Logs full error content" in description:
+                if _file_contains(
+                    file_path, "Summarize workflow error"
+                ) and not _file_contains(file_path, "final_state['error']"):
+                    status = "resolved"
+                    resolution = "graph errors logged without payload details"
+                    method = "security_check"
+            elif "Audit logging failures are caught" in description:
+                if not _file_contains(file_path, "Audit logging failed"):
+                    status = "resolved"
+                    resolution = "audit logging relies on internal guardrails"
+                    method = "exception_check"
+            elif "tenant_id_ctx.get() and user_id_ctx.get()" in description:
+                if _file_contains(file_path, "if not tenant_id or not user_id"):
+                    status = "resolved"
+                    resolution = "tenant/user context validated"
+                    method = "null_check"
+            elif "Audit call uses tenant_id and user_or_agent" in description:
+                if _file_contains(file_path, "tenant_id=tenant_id") and _file_contains(
+                    file_path, "user_or_agent=user_id"
+                ):
+                    status = "resolved"
+                    resolution = "audit uses validated context"
+                    method = "null_check"
+            elif "Condition `if not summary:`" in description:
+                if _file_contains(file_path, "if summary is None"):
+                    status = "resolved"
+                    resolution = "summary presence check narrowed"
+                    method = "logic_check"
+            elif "Leftover TODO-style comments" in description:
+                if not _file_contains(
+                    file_path, "... (docstring same)"
+                ) and not _file_contains(file_path, "P2 Fix"):
+                    status = "resolved"
+                    resolution = "placeholder comments removed"
+                    method = "style_check"
+            elif "Different error messages" in description:
+                if _file_contains(
+                    file_path, "Summarization failed"
+                ) and not _file_contains(file_path, "No summary generated"):
+                    status = "resolved"
+                    resolution = "error messages unified"
+                    method = "security_check"
+        elif issue.get("file") == "backend/src/cortex/rag_api/routes_answer.py":
+            if "request.app.state.graphs exists" in description:
+                if _file_contains(file_path, "graphs = getattr") and _file_contains(
+                    file_path, "isinstance(graphs, dict)"
+                ):
+                    status = "resolved"
+                    resolution = "graphs mapping validated before access"
+                    method = "null_check"
+            elif "Parameter annotated as StateGraph" in description:
+                if _file_contains(file_path, "graph: Any") and not _file_contains(
+                    file_path, "StateGraph"
+                ):
+                    status = "resolved"
+                    resolution = "graph type loosened to runtime contract"
+                    method = "typing_check"
+            elif "final_state is a mapping" in description:
+                if _file_contains(file_path, "isinstance(final_state, Mapping)"):
+                    status = "resolved"
+                    resolution = "final_state validated as mapping"
+                    method = "null_check"
+            elif "Logs internal error details" in description:
+                if _file_contains(
+                    file_path, "Answer graph execution error"
+                ) and not _file_contains(file_path, "final_state['error']"):
+                    status = "resolved"
+                    resolution = "graph error logging avoids payload"
+                    method = "security_check"
+            elif "Audit logging exceptions are caught" in description:
+                if not _file_contains(file_path, "Audit logging failed"):
+                    status = "resolved"
+                    resolution = "audit logging uses internal guardrails"
+                    method = "exception_check"
+            elif "Debug gating relies solely on an environment variable" in description:
+                if _file_contains(file_path, "def _debug_enabled") and _file_contains(
+                    file_path, 'os.getenv("ENVIRONMENT")'
+                ):
+                    status = "resolved"
+                    resolution = "debug gating evaluated at request time"
+                    method = "security_check"
+            elif "debug is enabled (in dev)" in description:
+                if _file_contains(file_path, '"retrieval":') and _file_contains(
+                    file_path, "result_count"
+                ):
+                    status = "resolved"
+                    resolution = "debug info limited to safe summary"
+                    method = "security_check"
+            elif "retrieval_results is passed through" in description:
+                if _file_contains(file_path, "retrieval_count") and _file_contains(
+                    file_path, "result_count"
+                ):
+                    status = "resolved"
+                    resolution = "retrieval debug output made serializable"
+                    method = "typing_check"
+            elif "broad except Exception converts" in description:
+                if _file_contains(file_path, "except ValidationError"):
+                    status = "resolved"
+                    resolution = "validation errors handled explicitly"
+                    method = "exception_check"
+            elif "tenant_id_ctx.get() and user_id_ctx.get()" in description:
+                if _file_contains(file_path, "if not tenant_id or not user_id"):
+                    status = "resolved"
+                    resolution = "tenant/user context validated"
+                    method = "null_check"
+            elif "request.query is assumed to be a non-null string" in description:
+                if _file_contains(file_path, "if not isinstance(request.query, str)"):
+                    status = "resolved"
+                    resolution = "query validated before hashing"
+                    method = "null_check"
+            elif "debug_info is constructed as a plain dict" in description:
+                models_path = Path("backend/src/cortex/rag_api/models.py")
+                if _file_contains(models_path, "debug_info: dict[str, Any] | None"):
+                    status = "resolved"
+                    resolution = "response model allows dict debug_info"
+                    method = "model_check"
+        elif issue.get("file") == "backend/src/cortex/intelligence/graph.py":
+            if "_chunk_text can enter an infinite loop" in description:
+                if _file_contains(file_path, "if end == len(text):"):
+                    status = "resolved"
+                    resolution = "chunker breaks on final slice"
+                    method = "logic_check"
+            elif "overlap < chunk_size" in description:
+                if _file_contains(file_path, "chunk_size - 1"):
+                    status = "resolved"
+                    resolution = "overlap normalized against chunk size"
+                    method = "validation_check"
+            elif "_merge_graphs loses node attributes" in description:
+                if _file_contains(file_path, "canonical_attrs") and _file_contains(
+                    file_path, "merged_props"
+                ):
+                    status = "resolved"
+                    resolution = "canonical node attributes merged from variants"
+                    method = "logic_check"
+            elif "relation conflicts on duplicate edges" in description:
+                if _file_contains(file_path, "relation_variants"):
+                    status = "resolved"
+                    resolution = "relation conflicts tracked on merge"
+                    method = "logic_check"
+            elif "deduplication strategy contradicts" in description:
+                if _file_contains(file_path, "variant_map") and _file_contains(
+                    file_path, "whole-word"
+                ):
+                    status = "resolved"
+                    resolution = "variant name coalescing added"
+                    method = "logic_check"
+            elif "Exceptions raised inside _merge_graphs" in description:
+                if _file_contains(file_path, "Graph merge failed"):
+                    status = "resolved"
+                    resolution = "merge errors handled with fallback"
+                    method = "exception_check"
+            elif (
+                "_process_chunk and _parse_json_to_graph catch broad Exception"
+                in description
+            ):
+                if _file_contains(
+                    file_path, "LLMOutputSchemaError"
+                ) and not _file_contains(file_path, "Failed to parse graph JSON"):
+                    status = "resolved"
+                    resolution = "LLM errors narrowed; parser hardened"
+                    method = "exception_check"
+            elif "_parse_json_to_graph assumes node" in description:
+                if _file_contains(file_path, "if not isinstance(name, str)"):
+                    status = "resolved"
+                    resolution = "node/edge fields validated before use"
+                    method = "typing_check"
+            elif "_normalize_relation assumes relation is a string" in description:
+                if _file_contains(file_path, "if not isinstance(relation, str)"):
+                    status = "resolved"
+                    resolution = "relation normalization handles non-strings"
+                    method = "typing_check"
+            elif "logger.info uses f-string" in description:
+                if _file_contains(file_path, "Extracting graph from %d chars"):
+                    status = "resolved"
+                    resolution = "lazy logging used"
+                    method = "perf_check"
+            elif "Magic numbers" in description:
+                if _file_contains(file_path, "DEFAULT_CHUNK_SIZE") and _file_contains(
+                    file_path, "DEFAULT_OVERLAP"
+                ):
+                    status = "resolved"
+                    resolution = "chunk sizing uses constants"
+                    method = "style_check"
+            elif "Comment inconsistency" in description:
+                if not _file_contains(file_path, "No System Prompt"):
+                    status = "resolved"
+                    resolution = "comments updated to match behavior"
+                    method = "style_check"
+        elif issue.get("file") == "backend/src/cortex/retrieval/fts_search.py":
+            if "empty conversation_ids list" in description:
+                if _file_contains(
+                    file_path, "conversation_ids is not None and not conversation_ids"
+                ):
+                    status = "resolved"
+                    resolution = "empty conversation_ids returns no results"
+                    method = "logic_check"
+            elif "to_tsquery without validation" in description:
+                if _file_contains(file_path, "plainto_tsquery"):
+                    status = "resolved"
+                    resolution = "invalid tsquery falls back to plainto_tsquery"
+                    method = "exception_check"
+            elif "Debug logging includes the raw" in description:
+                if not _file_contains(file_path, "Original FTS query"):
+                    status = "resolved"
+                    resolution = "raw queries removed from logs"
+                    method = "security_check"
+            elif "ts_headline output" in description:
+                if _file_contains(file_path, "escape("):
+                    status = "resolved"
+                    resolution = "snippets escaped before returning"
+                    method = "security_check"
+            elif "file_types is bound to ANY" in description:
+                if _file_contains(
+                    file_path, 'bindparam("file_types"'
+                ) and _file_contains(file_path, "ARRAY(TEXT())"):
+                    status = "resolved"
+                    resolution = "file_types bound as text array"
+                    method = "type_check"
+            elif "bool(row.is_attachment)" in description:
+                if _file_contains(
+                    file_path, "row.is_attachment if row.is_attachment is not None"
+                ):
+                    status = "resolved"
+                    resolution = "attachment flag preserves nulls"
+                    method = "null_check"
+            elif "dict(row.extra_data)" in description:
+                if _file_contains(file_path, "isinstance(row.extra_data, dict)"):
+                    status = "resolved"
+                    resolution = "extra_data guarded for mapping"
+                    method = "null_check"
+            elif "to_tsvector/setweight computations" in description:
+                if _file_contains(file_path, "docs AS") and _file_contains(
+                    file_path, "document"
+                ):
+                    status = "resolved"
+                    resolution = "FTS document vector computed once"
+                    method = "perf_check"
+            elif "selecting and returning the full c.text" in description:
+                if _file_contains(file_path, "LEFT(c.text"):
+                    status = "resolved"
+                    resolution = "FTS text limited for bandwidth"
+                    method = "perf_check"
+            elif "Magic number 32" in description:
+                if _file_contains(file_path, "_TS_RANK_NORMALIZATION"):
+                    status = "resolved"
+                    resolution = "rank normalization extracted to constant"
+                    method = "style_check"
+            elif "implicit cross join syntax" in description:
+                if _file_contains(file_path, "CROSS JOIN q"):
+                    status = "resolved"
+                    resolution = "explicit CROSS JOIN used"
+                    method = "style_check"
+            elif "defaulting chunk_type to 'message_body'" in description:
+                if not _file_contains(file_path, "message_body"):
+                    status = "resolved"
+                    resolution = "chunk_type no longer defaulted"
+                    method = "logic_check"
         elif issue.get("file") == "backend/src/cortex/retrieval/reranking.py":
             if 'item.metadata["rerank_score"]' in description:
                 if _file_contains(file_path, "item.metadata = {}") and _file_contains(
@@ -986,6 +1275,159 @@ def main() -> None:
                     status = "resolved"
                     resolution = "participants/messages validated before use"
                     method = "null_check"
+        elif issue.get("file") == "backend/src/cortex/domain/models.py":
+            if "Defaulting tenant_id" in description:
+                if _file_contains(file_path, "tenant_id is required"):
+                    status = "resolved"
+                    resolution = "tenant_id is required for tool input"
+                    method = "security_check"
+            elif "Defaulting user_id" in description:
+                if _file_contains(file_path, "user_id is required"):
+                    status = "resolved"
+                    resolution = "user_id is required for tool input"
+                    method = "security_check"
+            elif "No upper bound on limit" in description:
+                if _file_contains(file_path, "le=MAX_KB_LIMIT"):
+                    status = "resolved"
+                    resolution = "limit capped via model constraint"
+                    method = "validation_check"
+            elif "No validation preventing empty string queries" in description:
+                if _file_contains(file_path, "query cannot be empty"):
+                    status = "resolved"
+                    resolution = "empty queries rejected"
+                    method = "validation_check"
+            elif "Empty strings for tenant_id" in description:
+                if _file_contains(
+                    file_path, "_normalize_optional_ids"
+                ) and _file_contains(file_path, "value.strip()"):
+                    status = "resolved"
+                    resolution = "tenant_id empty strings normalized"
+                    method = "validation_check"
+            elif "Empty strings for user_id" in description:
+                if _file_contains(
+                    file_path, "_normalize_optional_ids"
+                ) and _file_contains(file_path, "value.strip()"):
+                    status = "resolved"
+                    resolution = "user_id empty strings normalized"
+                    method = "validation_check"
+            elif 'magic string constants ("default", "cli-user")' in description:
+                if not _file_contains(file_path, '"default"') and not _file_contains(
+                    file_path, '"cli-user"'
+                ):
+                    status = "resolved"
+                    resolution = "magic default identifiers removed"
+                    method = "style_check"
+            elif "directly imports a retrieval-layer model" in description:
+                if not _file_contains(file_path, "cortex.retrieval"):
+                    status = "resolved"
+                    resolution = "retrieval-layer import removed"
+                    method = "architecture_check"
+            elif "returns a retrieval-layer model" in description:
+                if _file_contains(file_path, "def to_tool_input") and _file_contains(
+                    file_path, "return {"
+                ):
+                    status = "resolved"
+                    resolution = "to_tool_input returns a plain payload"
+                    method = "architecture_check"
+            elif "fusion_strategy is constrained" in description:
+                if _file_contains(file_path, "FUSION_STRATEGY_MAP"):
+                    status = "resolved"
+                    resolution = "fusion strategies mapped explicitly"
+                    method = "typing_check"
+            elif "Mapping fusion_strategy to fusion_method" in description:
+                if _file_contains(file_path, "Unsupported fusion_strategy"):
+                    status = "resolved"
+                    resolution = "fusion mapping validated explicitly"
+                    method = "typing_check"
+            elif "Construction of RetrievalKBSearchInput is not guarded" in description:
+                tool_path = Path("backend/src/cortex/tools/search.py")
+                if _file_contains(tool_path, "ValidationError") and _file_contains(
+                    tool_path, "invalid input"
+                ):
+                    status = "resolved"
+                    resolution = "retrieval input validation guarded in tool wrapper"
+                    method = "exception_check"
+            elif "filters dict is passed by reference" in description:
+                if _file_contains(file_path, "dict(self.filters)"):
+                    status = "resolved"
+                    resolution = "filters copied before passing downstream"
+                    method = "logic_check"
+        elif issue.get("file") == "cli/src/cortex_cli/operations/rechunk.py":
+            if "Oversized detection uses character length" in description:
+                if _file_contains(file_path, "token_counter.count") and _file_contains(
+                    file_path, "max_tokens"
+                ):
+                    status = "resolved"
+                    resolution = "oversize detection uses token counts"
+                    method = "logic_check"
+            elif "chunks_deleted is incremented" in description:
+                if _file_contains(
+                    file_path, 'results["chunks_deleted"] = total_deleted'
+                ):
+                    status = "resolved"
+                    resolution = "deletes counted after commit"
+                    method = "logic_check"
+            elif "new_chunks_created reflects" in description:
+                if _file_contains(
+                    file_path, 'results["new_chunks_created"] = total_new'
+                ):
+                    status = "resolved"
+                    resolution = "creates counted after commit"
+                    method = "logic_check"
+            elif "Original chunk is deleted unconditionally" in description:
+                if _file_contains(file_path, "if not new_models") and _file_contains(
+                    file_path, "Skipping rechunk"
+                ):
+                    status = "resolved"
+                    resolution = "original chunk retained when no replacements"
+                    method = "logic_check"
+            elif "Potential TypeError when computing char_start" in description:
+                if _file_contains(file_path, "base_char_start"):
+                    status = "resolved"
+                    resolution = "char offsets normalized before arithmetic"
+                    method = "null_check"
+            elif "Re-raising with 'raise e'" in description:
+                if not _file_contains(file_path, "raise e"):
+                    status = "resolved"
+                    resolution = "exceptions re-raised with original traceback"
+                    method = "exception_check"
+            elif "Error logging omits exc_info" in description:
+                if _file_contains(file_path, 'logger.error("Failed to rechunk"'):
+                    status = "resolved"
+                    resolution = "errors logged with traceback"
+                    method = "logging_check"
+            elif "progress_callback are not isolated" in description:
+                if _file_contains(file_path, "Progress callback failed"):
+                    status = "resolved"
+                    resolution = "callback failures logged without aborting"
+                    method = "exception_check"
+            elif "Loads all oversized chunks into memory" in description:
+                if _file_contains(file_path, "yield_per"):
+                    status = "resolved"
+                    resolution = "query streamed in batches"
+                    method = "perf_check"
+            elif "Applying func.length" in description:
+                if not _file_contains(file_path, "func.length"):
+                    status = "resolved"
+                    resolution = "length check avoids text scan"
+                    method = "perf_check"
+            elif "Magic number 200 used for overlap_tokens" in description:
+                if _file_contains(file_path, "DEFAULT_OVERLAP_TOKENS"):
+                    status = "resolved"
+                    resolution = "overlap tokens extracted to constant"
+                    method = "style_check"
+            elif "Truthiness check for tenant_id" in description:
+                if _file_contains(
+                    file_path, "tenant_id is not None"
+                ) and _file_contains(file_path, "normalized_tenant"):
+                    status = "resolved"
+                    resolution = "tenant_id normalized explicitly"
+                    method = "logic_check"
+            elif "reuse bad_chunk.position" in description:
+                if _file_contains(file_path, "base_position + model.position"):
+                    status = "resolved"
+                    resolution = "new chunk positions offset from base"
+                    method = "logic_check"
         elif issue.get("file") == "backend/src/cortex/config/audit_config.py":
             if "redacted placeholder" in description:
                 if _file_contains(
@@ -1744,6 +2186,209 @@ def main() -> None:
                 ):
                     status = "resolved"
                     resolution = "issues type is consistent"
+                    method = "style_check"
+        elif issue.get("file") == "backend/src/cortex/audit/__init__.py":
+            if "Hash computation" in description:
+                if _file_has_all(
+                    file_path,
+                    ["input_data is not None", "output_data is not None"],
+                ):
+                    status = "resolved"
+                    resolution = "hashing runs for falsy inputs"
+                    method = "logic_check"
+            elif "tool_audit_log computes output_hash" in description:
+                if _file_contains(file_path, "if output_snapshot is not None"):
+                    status = "resolved"
+                    resolution = "output hash computed for empty snapshots"
+                    method = "logic_check"
+            elif "commits a caller-provided db_session" in description:
+                if _file_contains(
+                    file_path, "_write_audit_log(db_session, commit=False)"
+                ):
+                    status = "resolved"
+                    resolution = "caller session is flushed, not committed"
+                    method = "transaction_check"
+            elif "broadly catches all exceptions" in description:
+                if _file_contains(
+                    file_path, 'logger.exception("AUDIT LOGGING FAILED")'
+                ) and _file_contains(file_path, "return False"):
+                    status = "resolved"
+                    resolution = "failures logged and surfaced via return value"
+                    method = "exception_check"
+            elif "does not perform a rollback" in description:
+                if _file_contains(file_path, "session.rollback()"):
+                    status = "resolved"
+                    resolution = "rollback added on write failure"
+                    method = "exception_check"
+            elif "get_audit_trail catches all exceptions" in description:
+                if not _file_contains(file_path, "Failed to query audit trail"):
+                    status = "resolved"
+                    resolution = "query errors no longer swallowed"
+                    method = "exception_check"
+            elif "datetime.UTC" in description:
+                if _file_contains(file_path, "timezone.utc"):
+                    status = "resolved"
+                    resolution = "UTC handling uses timezone.utc"
+                    method = "compat_check"
+            elif "risk_level is annotated as Literal" in description:
+                if _file_contains(file_path, "_normalize_risk_level"):
+                    status = "resolved"
+                    resolution = "risk level normalized"
+                    method = "typing_check"
+            elif "astext" in description:
+                if _file_contains(file_path, ".as_string()"):
+                    status = "resolved"
+                    resolution = "JSONB access uses as_string"
+                    method = "compat_check"
+            elif "since parameter may be a naive datetime" in description:
+                if _file_contains(file_path, "_normalize_since") and _file_contains(
+                    file_path, "since = _normalize_since"
+                ):
+                    status = "resolved"
+                    resolution = "since normalized to UTC"
+                    method = "timezone_check"
+            elif "limit parameter" in description:
+                if _file_contains(file_path, "limit = max(1, min(limit, 1000))"):
+                    status = "resolved"
+                    resolution = "limit clamped"
+                    method = "validation_check"
+            elif "Each audit log write opens a new session" in description:
+                if _file_contains(file_path, "session.flush()"):
+                    status = "resolved"
+                    resolution = "caller session allows batching"
+                    method = "perf_check"
+        elif issue.get("file") == "backend/src/cortex/ingestion/s3_source.py":
+            if "groups by the immediate parent folder" in description:
+                if _file_contains(file_path, 'Delimiter="/"') and _file_contains(
+                    file_path, "CommonPrefixes"
+                ):
+                    status = "resolved"
+                    resolution = "folders grouped by top-level prefixes"
+                    method = "logic_check"
+            elif "limit handling relies on truthiness" in description:
+                if _file_contains(file_path, "limit is not None"):
+                    status = "resolved"
+                    resolution = "limit handled explicitly"
+                    method = "logic_check"
+            elif "Final-yield condition" in description:
+                if _file_contains(file_path, "folder_count >= limit"):
+                    status = "resolved"
+                    resolution = "limit respected for final yield"
+                    method = "logic_check"
+            elif "close() swallows all exceptions" in description:
+                if _file_contains(file_path, "Failed to close S3 client"):
+                    status = "resolved"
+                    resolution = "close failures logged"
+                    method = "exception_check"
+            elif "conversation_exists() catches all exceptions" in description:
+                if _file_contains(file_path, "except ClientError") and _file_contains(
+                    file_path, "error_code"
+                ):
+                    status = "resolved"
+                    resolution = "non-404 errors surfaced"
+                    method = "exception_check"
+            elif "StreamingBody without explicitly closing" in description:
+                if _file_contains(file_path, "close_fn") and _file_contains(
+                    file_path, "body.read()"
+                ):
+                    status = "resolved"
+                    resolution = "StreamingBody closed after read"
+                    method = "resource_check"
+            elif "get_json_object() may raise ClientError" in description:
+                if _file_contains(file_path, "Failed to load JSON object"):
+                    status = "resolved"
+                    resolution = "JSON errors wrapped with context"
+                    method = "exception_check"
+            elif "get_text_object() may raise ClientError" in description:
+                if _file_contains(file_path, "Failed to load text object"):
+                    status = "resolved"
+                    resolution = "text errors wrapped with context"
+                    method = "exception_check"
+            elif "paginates without using a Delimiter" in description:
+                if _file_contains(file_path, 'Delimiter="/"'):
+                    status = "resolved"
+                    resolution = "delimiter used for folder listing"
+                    method = "perf_check"
+            elif "Docstring says default prefix" in description:
+                if _file_contains(file_path, "default: Outlook/"):
+                    status = "resolved"
+                    resolution = "docstring default updated"
+                    method = "doc_check"
+            elif "union operator" in description:
+                if _file_contains(file_path, "Optional[") and not _file_contains(
+                    file_path, " | "
+                ):
+                    status = "resolved"
+                    resolution = "typing uses Optional for compatibility"
+                    method = "typing_check"
+            elif "critical connection parameters" in description:
+                if _file_contains(file_path, "Missing required S3 configuration"):
+                    status = "resolved"
+                    resolution = "config validated on init"
+                    method = "null_check"
+        elif issue.get("file") == "backend/src/cortex/intelligence/graph_discovery.py":
+            if "ORDER BY func.random" in description:
+                if not _file_contains(file_path, "func.random"):
+                    status = "resolved"
+                    resolution = "sampling avoids random ordering"
+                    method = "perf_check"
+            elif "N+1 query pattern" in description:
+                if _file_contains(file_path, "Chunk.conversation_id.in_(conv_ids)"):
+                    status = "resolved"
+                    resolution = "chunks fetched in a single query"
+                    method = "perf_check"
+            elif "Selecting Chunk.chunk_id" in description:
+                if _file_contains(
+                    file_path, "select(Chunk.conversation_id, Chunk.text)"
+                ):
+                    status = "resolved"
+                    resolution = "only necessary columns selected"
+                    method = "perf_check"
+            elif "Filtering by Chunk.position" in description:
+                if _file_contains(file_path, "Chunk.char_start == 0"):
+                    status = "resolved"
+                    resolution = "first chunk per section selected"
+                    method = "logic_check"
+            elif "asyncio.run inside a function" in description:
+                if _file_contains(file_path, "asyncio.get_running_loop()"):
+                    status = "resolved"
+                    resolution = "running loop guarded"
+                    method = "exception_check"
+            elif "Catching broad Exception" in description:
+                if _file_contains(file_path, 'logger.exception("Extraction failed'):
+                    status = "resolved"
+                    resolution = "tracebacks logged for extraction errors"
+                    method = "exception_check"
+            elif "gc.collect()" in description:
+                if not _file_contains(file_path, "gc.collect"):
+                    status = "resolved"
+                    resolution = "manual gc removed from tasks"
+                    method = "perf_check"
+            elif "Printing potentially sensitive identifiers" in description:
+                if _file_contains(file_path, "tenant_hash") and _file_contains(
+                    file_path, "show_entities"
+                ):
+                    status = "resolved"
+                    resolution = "tenant info masked and entity output optional"
+                    method = "security_check"
+            elif "Accumulating all entity names" in description:
+                if _file_contains(file_path, "entity_sample") and _file_contains(
+                    file_path, "entity_seen"
+                ):
+                    status = "resolved"
+                    resolution = "reservoir sampling used for entity names"
+                    method = "perf_check"
+            elif "Magic numbers" in description:
+                if _file_contains(file_path, "_MAX_TEXT_CHARS"):
+                    status = "resolved"
+                    resolution = "magic numbers replaced with constants"
+                    method = "style_check"
+            elif "Direct console printing within a library function" in description:
+                if _file_contains(file_path, "_emit_message") and _file_contains(
+                    file_path, "console: Optional[Console]"
+                ):
+                    status = "resolved"
+                    resolution = "console output made optional"
                     method = "style_check"
         elif issue.get("file") == "cli/src/cortex_cli/cmd_backfill.py":
             if "sys.argv is reassigned and only restored" in description:

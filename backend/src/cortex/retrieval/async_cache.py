@@ -1,7 +1,7 @@
 """
 Query Embedding Cache.
 
-Implements thread-safe, TTL-based caching for query embeddings
+Implements async-safe, TTL-based caching for query embeddings
 to avoid redundant API calls for repeated queries.
 
 Ported from reference code feature_search_draft.py.
@@ -10,6 +10,7 @@ Ported from reference code feature_search_draft.py.
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import logging
 import time
 from collections import OrderedDict
@@ -18,7 +19,7 @@ from typing import Any
 import numpy as np
 
 # Constants
-LOG_QUERY_TRUNCATE_LEN = 50
+LOG_QUERY_HASH_LEN = 8
 
 
 logger = logging.getLogger(__name__)
@@ -43,6 +44,10 @@ class QueryEmbeddingCache:
         ttl_seconds: float = DEFAULT_CACHE_TTL_SECONDS,
         max_size: int = DEFAULT_MAX_CACHE_SIZE,
     ):
+        if ttl_seconds <= 0:
+            raise ValueError("ttl_seconds must be positive")
+        if max_size <= 0:
+            raise ValueError("max_size must be positive")
         # Use OrderedDict for O(1) LRU
         self._cache: OrderedDict[str, tuple[float, np.ndarray]] = OrderedDict()
         self._lock = asyncio.Lock()
@@ -65,20 +70,27 @@ class QueryEmbeddingCache:
                 return None
 
             timestamp, embedding = self._cache[key]
-            if (time.time() - timestamp) >= self._ttl:
+            if (time.monotonic() - timestamp) >= self._ttl:
                 # Expired - remove and return None
                 self._cache.pop(key)
-                logger.debug(
-                    "Cache miss (expired): query=%s", query[:LOG_QUERY_TRUNCATE_LEN]
-                )
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.debug(
+                        "Cache miss (expired): query_hash=%s",
+                        _hash_query(query),
+                    )
                 return None
 
             # Move to end (most recently used)
             self._cache.move_to_end(key)
             # Update timestamp to refresh TTL on access
-            self._cache[key] = (time.time(), embedding)
-            logger.debug("Cache hit: query=%s", query[:LOG_QUERY_TRUNCATE_LEN])
-            return embedding.copy()
+            self._cache[key] = (time.monotonic(), embedding)
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug(
+                    "Cache hit: query_hash=%s",
+                    _hash_query(query),
+                )
+            cached_embedding = embedding
+        return cached_embedding.copy()
 
     async def put(self, query: str, embedding: np.ndarray, model: str = "") -> None:
         """
@@ -86,6 +98,7 @@ class QueryEmbeddingCache:
 
         If max size exceeded, evicts oldest entry.
         """
+        embedding_arr = np.asarray(embedding)
         key = self._make_key(query, model)
         async with self._lock:
             # If exists, move to end
@@ -93,7 +106,7 @@ class QueryEmbeddingCache:
                 self._cache.move_to_end(key)
 
             # Store (or update)
-            self._cache[key] = (time.time(), embedding.copy())
+            self._cache[key] = (time.monotonic(), embedding_arr)
 
             # LRU eviction if over max size
             while len(self._cache) > self._max_size:
@@ -112,12 +125,15 @@ class QueryEmbeddingCache:
     async def stats(self) -> dict[str, Any]:
         """Return cache statistics."""
         async with self._lock:
-            now = time.time()
-            valid_count = sum(
-                1 for ts, _ in self._cache.values() if (now - ts) < self._ttl
-            )
+            now = time.monotonic()
+            expired_keys = [
+                key for key, (ts, _) in self._cache.items() if (now - ts) >= self._ttl
+            ]
+            for key in expired_keys:
+                self._cache.pop(key, None)
+            valid_count = len(self._cache)
             return {
-                "total_entries": len(self._cache),
+                "total_entries": valid_count,
                 "valid_entries": valid_count,
                 "max_size": self._max_size,
                 "ttl_seconds": self._ttl,
@@ -126,7 +142,14 @@ class QueryEmbeddingCache:
 
 # Global singleton instance
 _query_cache: QueryEmbeddingCache | None = None
-_cache_lock = asyncio.Lock()
+_cache_lock: asyncio.Lock | None = None
+
+
+def _get_cache_lock() -> asyncio.Lock:
+    global _cache_lock
+    if _cache_lock is None:
+        _cache_lock = asyncio.Lock()
+    return _cache_lock
 
 
 async def get_query_cache() -> QueryEmbeddingCache:
@@ -134,10 +157,16 @@ async def get_query_cache() -> QueryEmbeddingCache:
 
     global _query_cache
     if _query_cache is None:
-        async with _cache_lock:
+        async with _get_cache_lock():
             if _query_cache is None:
                 _query_cache = QueryEmbeddingCache()
     return _query_cache
+
+
+def _hash_query(query: Any) -> str:
+    value = "none" if query is None else str(query)
+    digest = hashlib.sha256(value.encode("utf-8")).hexdigest()
+    return digest[:LOG_QUERY_HASH_LEN]
 
 
 async def get_cached_query_embedding(

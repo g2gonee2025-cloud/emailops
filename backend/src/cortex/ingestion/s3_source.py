@@ -12,7 +12,7 @@ import tempfile
 from collections.abc import Iterator
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import boto3
 from botocore.config import Config
@@ -62,6 +62,19 @@ class S3SourceHandler:
         self._access_key = access_key or config.storage.access_key
         self._secret_key = secret_key or config.storage.secret_key
 
+        missing = [
+            name
+            for name, value in (
+                ("endpoint_url", self.endpoint_url),
+                ("region", self.region),
+                ("bucket", self.bucket),
+            )
+            if not value
+        ]
+        if missing:
+            missing_str = ", ".join(missing)
+            raise ValueError(f"Missing required S3 configuration: {missing_str}")
+
         self._client: Any | None = None
 
     @property
@@ -84,10 +97,12 @@ class S3SourceHandler:
     def close(self) -> None:
         """Close the S3 client."""
         if self._client:
-            try:
-                self._client.close()
-            except Exception:
-                pass
+            close_fn = getattr(self._client, "close", None)
+            if callable(close_fn):
+                try:
+                    close_fn()
+                except Exception:
+                    logger.warning("Failed to close S3 client", exc_info=True)
             self._client = None
 
     def __enter__(self) -> S3SourceHandler:
@@ -102,75 +117,43 @@ class S3SourceHandler:
         limit: int | None = None,
     ) -> Iterator[S3ConversationFolder]:
         """
-        Efficiently list conversation folders under a prefix using a single pass.
-
-        This method avoids the N+1 API call pattern by listing all objects
-        and grouping them by folder prefix in a streaming manner.
+        Efficiently list conversation folders under a prefix.
 
         Args:
-            prefix: S3 prefix to search under (default: raw/outlook/)
+            prefix: S3 prefix to search under (default: Outlook/)
             limit: Maximum number of folders to return
 
         Yields:
             S3ConversationFolder objects
         """
+        if limit is not None and limit <= 0:
+            return
+
+        normalized_prefix = prefix
+        if normalized_prefix and not normalized_prefix.endswith("/"):
+            normalized_prefix = f"{normalized_prefix}/"
+
         logger.info(
-            f"Efficiently listing conversation folders in s3://{self.bucket}/{prefix}"
+            "Efficiently listing conversation folders in s3://%s/%s",
+            self.bucket,
+            normalized_prefix,
         )
 
         paginator = self.client.get_paginator("list_objects_v2")
-        pages = paginator.paginate(Bucket=self.bucket, Prefix=prefix)
+        pages = paginator.paginate(
+            Bucket=self.bucket, Prefix=normalized_prefix, Delimiter="/"
+        )
 
-        current_folder_prefix: str | None = None
-        current_files: list[str] = []
-        current_max_mtime: datetime | None = None
         folder_count = 0
-
         for page in pages:
-            for obj in page.get("Contents", []):
-                key = obj["Key"]
-
-                # Determine the folder prefix for the object
-                if "/" not in key:
-                    continue  # Skip objects at the root of the prefix
-                folder_prefix = key.rsplit("/", 1)[0] + "/"
-
-                if folder_prefix != current_folder_prefix:
-                    # New folder detected, yield the completed previous one
-                    if current_folder_prefix:
-                        folder_name = current_folder_prefix.rstrip("/").split("/")[-1]
-                        yield S3ConversationFolder(
-                            prefix=current_folder_prefix,
-                            name=folder_name,
-                            files=current_files,
-                            last_modified=current_max_mtime,
-                        )
-                        folder_count += 1
-                        if limit and folder_count >= limit:
-                            return
-
-                    # Start tracking the new folder
-                    current_folder_prefix = folder_prefix
-                    current_files = []
-                    current_max_mtime = None
-
-                # Add file and update last_modified for the current folder
-                current_files.append(key)
-                last_modified = obj.get("LastModified")
-                if last_modified and (
-                    current_max_mtime is None or last_modified > current_max_mtime
-                ):
-                    current_max_mtime = last_modified
-
-        # Yield the last folder after the loop
-        if current_folder_prefix and (not limit or folder_count < limit):
-            folder_name = current_folder_prefix.rstrip("/").split("/")[-1]
-            yield S3ConversationFolder(
-                prefix=current_folder_prefix,
-                name=folder_name,
-                files=current_files,
-                last_modified=current_max_mtime,
-            )
+            for entry in page.get("CommonPrefixes", []):
+                folder_prefix = entry.get("Prefix")
+                if not folder_prefix:
+                    continue
+                yield self.build_folder(folder_prefix)
+                folder_count += 1
+                if limit is not None and folder_count >= limit:
+                    return
 
     def build_folder(self, prefix: str) -> S3ConversationFolder:
         """
@@ -259,18 +242,46 @@ class S3SourceHandler:
     def get_object_content(self, key: str) -> bytes:
         """Get raw content of an S3 object."""
         response = self.client.get_object(Bucket=self.bucket, Key=key)
-        return response["Body"].read()
+        body = response["Body"]
+        try:
+            return body.read()
+        finally:
+            close_fn = getattr(body, "close", None)
+            if callable(close_fn):
+                close_fn()
 
     def get_json_object(self, key: str) -> dict[str, Any]:
         """Get and parse a JSON object from S3."""
-        content = self.get_object_content(key)
-        decoded = strip_control_chars(content.decode("utf-8-sig"))
-        return parse_manifest_text(decoded, source=key)
+        try:
+            content = self.get_object_content(key)
+            decoded = strip_control_chars(content.decode("utf-8-sig"))
+            return parse_manifest_text(decoded, source=key)
+        except (ClientError, UnicodeDecodeError, ValueError) as exc:
+            logger.error(
+                "Failed to load JSON object from s3://%s/%s",
+                self.bucket,
+                key,
+                exc_info=True,
+            )
+            raise RuntimeError(
+                f"Failed to load JSON object from s3://{self.bucket}/{key}"
+            ) from exc
 
     def get_text_object(self, key: str) -> str:
         """Get text content of an S3 object."""
-        content = self.get_object_content(key)
-        return content.decode("utf-8-sig")
+        try:
+            content = self.get_object_content(key)
+            return content.decode("utf-8-sig")
+        except (ClientError, UnicodeDecodeError) as exc:
+            logger.error(
+                "Failed to load text object from s3://%s/%s",
+                self.bucket,
+                key,
+                exc_info=True,
+            )
+            raise RuntimeError(
+                f"Failed to load text object from s3://{self.bucket}/{key}"
+            ) from exc
 
     def upload_file(self, local_path: Path, key: str) -> None:
         """Upload a local file to S3.
@@ -288,8 +299,17 @@ class S3SourceHandler:
             conv_key = f"{folder_prefix}conversation.txt"
             self.client.head_object(Bucket=self.bucket, Key=conv_key)
             return True
-        except Exception:
-            return False
+        except ClientError as exc:
+            error_code = exc.response.get("Error", {}).get("Code", "")
+            if error_code in {"404", "NoSuchKey", "NotFound"}:
+                return False
+            logger.warning(
+                "Failed to check conversation existence for s3://%s/%s",
+                self.bucket,
+                folder_prefix,
+                exc_info=True,
+            )
+            raise
 
     def list_objects(self, prefix: str) -> Iterator[dict[str, Any]]:
         """
