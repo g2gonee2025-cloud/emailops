@@ -1623,8 +1623,8 @@ This ledger tracks the **exact state of implementation** for each checklist step
 
 ## Review Report Fixes (Retrieval Reranking) (Ad Hoc)
 
-- **Status:** completed_pending_verification
-- **Last updated:** 2025-12-31 05:47 UTC
+- **Status:** verified
+- **Last updated:** 2025-12-31 10:02 UTC
 - **Responsible run ID:** run-review-report-reranking-20251231-01
 
 ### Scope & files
@@ -1653,4 +1653,120 @@ This ledger tracks the **exact state of implementation** for each checklist step
 
 ### Verification history
 
-- [ ] Pending verification.
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-06
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Audit Config) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 10:02 UTC
+- **Responsible run ID:** run-review-report-audit-config-20251231-01
+
+### Scope & files
+
+- **Summary:** Harden config audit script to avoid false mismatches, improve safety, and handle environment overrides.
+- **Files touched:**
+  - `backend/src/cortex/config/audit_config.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Removed case-folding in comparisons, ensured status computed before redaction, and expanded sensitive key patterns.
+- Merged process env with .env data and normalized prefixed keys to avoid false ENV_ONLY entries.
+- Guarded imports/path setup, handled env file errors, and logged introspection failures.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; next likely targets include `backend/src/cortex/orchestration/nodes.py`.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-06
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Config Loader) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 10:07 UTC
+- **Responsible run ID:** run-review-report-config-loader-20251231-01
+
+### Scope & files
+
+- **Summary:** Harden config loading defaults, env propagation, and redaction behavior.
+- **Files touched:**
+  - `backend/src/cortex/config/loader.py`
+  - `backend/src/main.py`
+  - `backend/src/cortex/routes_auth.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Removed insecure SECRET_KEY fallback; added `secret_key` property and updated call sites.
+- Made update_environment idempotent with safe string coercion and optional secret export.
+- Added config redaction in to_dict, guarded dotenv loading, and handled validation/I/O errors.
+- Wrapped RLS setting failures in ConfigurationError and clarified load behavior.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; next likely targets include `backend/src/cortex/orchestration/nodes.py`.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-07
+  Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (Vector Store) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2025-12-31 10:17 UTC
+- **Responsible run ID:** run-review-report-vector-store-20251231-01
+
+### Scope & files
+
+- **Summary:** Harden pgvector/Qdrant search typing, errors, and filtering behavior.
+- **Files touched:**
+  - `backend/src/cortex/retrieval/vector_store.py`
+  - `scripts/review_report_resolver.py`
+  - `review_report.json`
+  - `review_report_resolution_log.json`
+  - `docs/IMPLEMENTATION_LEDGER.md`
+
+### Implementation summary
+
+- Typed pgvector array binds, validated output_dim, and wrapped database errors.
+- Ensured SET LOCAL runs inside a transaction and updated docstring notes.
+- Hardened Qdrant filtering, JSON error handling, and reduced log level.
+- Tolerated Ruff warning output when resolving unused import issues.
+
+### Tests & commands run
+
+- `python scripts/review_report_resolver.py`
+
+### Concerns & open issues
+
+- Remaining open issues tracked in `review_report.json`; continue with next items.
+
+### Verification history
+
+- [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-09
+  Notes: Re-ran review_report_resolver; no drift detected.

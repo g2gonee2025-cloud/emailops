@@ -16,7 +16,7 @@ from typing import Any
 
 from cortex.common.exceptions import ConfigurationError
 from dotenv import load_dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from .models import (
     CoreConfig,
@@ -41,10 +41,55 @@ from .models import (
     UnifiedConfig,
 )
 
-load_dotenv()
-
-
 logger = logging.getLogger(__name__)
+_dotenv_loaded = False
+
+
+def _ensure_dotenv_loaded() -> None:
+    global _dotenv_loaded
+    if _dotenv_loaded:
+        return
+    try:
+        load_dotenv()
+    except OSError as exc:
+        logger.warning("Failed to load .env file: %s", exc)
+    _dotenv_loaded = True
+
+
+_SENSITIVE_KEY_MARKERS = (
+    "key",
+    "secret",
+    "token",
+    "password",
+    "credential",
+    "auth",
+    "jwt",
+    "private",
+    "cert",
+    "api",
+)
+
+
+def _redact_value(value: Any) -> Any:
+    if value is None or value == "":
+        return value
+    return "***REDACTED***"
+
+
+def _redact_dict(data: Any) -> Any:
+    if isinstance(data, dict):
+        redacted: dict[str, Any] = {}
+        for key, value in data.items():
+            if isinstance(key, str) and any(
+                marker in key.lower() for marker in _SENSITIVE_KEY_MARKERS
+            ):
+                redacted[key] = _redact_value(value)
+            else:
+                redacted[key] = _redact_dict(value)
+        return redacted
+    if isinstance(data, list):
+        return [_redact_dict(item) for item in data]
+    return data
 
 
 class EmailOpsConfig(BaseModel):
@@ -80,12 +125,16 @@ class EmailOpsConfig(BaseModel):
     model_config = {"extra": "forbid"}
 
     @property
-    def SECRET_KEY(self) -> str:
-        """JWT secret key for token signing (dev fallback provided)."""
-        return (
-            os.environ.get("OUTLOOKCORTEX_SECRET_KEY")
-            or "dev-secret-key-change-in-production"
+    def secret_key(self) -> str | None:
+        """JWT secret key for token signing."""
+        return os.environ.get("OUTLOOKCORTEX_SECRET_KEY") or os.environ.get(
+            "SECRET_KEY"
         )
+
+    @property
+    def SECRET_KEY(self) -> str | None:
+        """Backward-compatible alias for secret_key."""
+        return self.secret_key
 
     @property
     def object_storage(self) -> StorageConfig:
@@ -97,88 +146,77 @@ class EmailOpsConfig(BaseModel):
         with path.open("w") as f:
             f.write(self.model_dump_json(indent=2))
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self, redact: bool = True) -> dict[str, Any]:
         """Convert to dictionary for serialization/GUI display."""
-        return self.model_dump()
+        data = self.model_dump()
+        if redact:
+            result = _redact_dict(data)
+            assert isinstance(result, dict)  # model_dump always returns dict
+            return result
+        return data
 
-    def update_environment(self) -> None:
+    def update_environment(self, include_secrets: bool = False) -> None:
         """Update environment variables from config (for child processes)."""
+
+        # include_secrets=True will export credential fields.
+        def _set_env(name: str, value: Any) -> None:
+            if value is None:
+                return
+            os.environ[name] = str(value)
+
         # GCP settings removed
 
         # Core settings
-        if self.core.provider:
-            os.environ["EMBED_PROVIDER"] = self.core.provider
+        _set_env("EMBED_PROVIDER", self.core.provider)
 
         # Embedding settings
-        os.environ["EMBED_MODEL"] = self.embedding.model_name
-        os.environ["EMBED_DIM"] = str(self.embedding.output_dimensionality)
-        os.environ["VERTEX_EMBED_MODEL"] = self.embedding.model_name
+        _set_env("EMBED_MODEL", self.embedding.model_name)
+        _set_env("EMBED_DIM", self.embedding.output_dimensionality)
+        _set_env("VERTEX_EMBED_MODEL", self.embedding.model_name)
         # VERTEX_MODEL env var mapping removed
 
         # DigitalOcean LLM controls
-        if self.digitalocean.scaling.token:
-            os.environ["DIGITALOCEAN_TOKEN"] = self.digitalocean.scaling.token
+        if include_secrets:
+            _set_env("DIGITALOCEAN_TOKEN", self.digitalocean.scaling.token)
 
         # DigitalOcean Endpoint (DOKS Inference)
-        if self.digitalocean.endpoint.BASE_URL:
-            os.environ["DO_LLM_BASE_URL"] = str(self.digitalocean.endpoint.BASE_URL)
-        if self.digitalocean.endpoint.api_key:
-            os.environ["DO_LLM_API_KEY"] = self.digitalocean.endpoint.api_key
-        os.environ["DO_LLM_COMPLETION_MODEL"] = (
-            self.digitalocean.endpoint.default_completion_model
+        _set_env("DO_LLM_BASE_URL", self.digitalocean.endpoint.BASE_URL)
+        if include_secrets:
+            _set_env("DO_LLM_API_KEY", self.digitalocean.endpoint.api_key)
+        _set_env(
+            "DO_LLM_COMPLETION_MODEL",
+            self.digitalocean.endpoint.default_completion_model,
         )
-        os.environ["DO_LLM_EMBEDDING_MODEL"] = (
-            self.digitalocean.endpoint.default_embedding_model
-        )
-
-        # Processing settings (apply environment overrides with type conversion)
-        def _coerce_int(name: str, current: int) -> int:
-            raw = os.getenv(name)
-            if raw is None or raw == "":
-                return current
-            try:
-                return int(raw)
-            except (TypeError, ValueError):
-                return current
-
-        self.processing.batch_size = _coerce_int(
-            "EMBED_BATCH", self.processing.batch_size
-        )
-        self.processing.num_workers = _coerce_int(
-            "NUM_WORKERS", self.processing.num_workers
-        )
-        self.processing.chunk_size = _coerce_int(
-            "CHUNK_SIZE", self.processing.chunk_size
-        )
-        self.processing.chunk_overlap = _coerce_int(
-            "CHUNK_OVERLAP", self.processing.chunk_overlap
+        _set_env(
+            "DO_LLM_EMBEDDING_MODEL",
+            self.digitalocean.endpoint.default_embedding_model,
         )
 
-        os.environ["EMBED_BATCH"] = str(self.processing.batch_size)
-        os.environ["NUM_WORKERS"] = str(self.processing.num_workers)
-        os.environ["CHUNK_SIZE"] = str(self.processing.chunk_size)
-        os.environ["CHUNK_OVERLAP"] = str(self.processing.chunk_overlap)
+        # Processing settings
+        _set_env("EMBED_BATCH", self.processing.batch_size)
+        _set_env("NUM_WORKERS", self.processing.num_workers)
+        _set_env("CHUNK_SIZE", self.processing.chunk_size)
+        _set_env("CHUNK_OVERLAP", self.processing.chunk_overlap)
 
         # Email settings
-        os.environ["SENDER_LOCKED_NAME"] = self.email.sender_locked_name
-        os.environ["SENDER_LOCKED_EMAIL"] = self.email.sender_locked_email
+        _set_env("SENDER_LOCKED_NAME", self.email.sender_locked_name)
+        _set_env("SENDER_LOCKED_EMAIL", self.email.sender_locked_email)
 
         # Directory settings
-        os.environ["INDEX_DIRNAME"] = self.directories.index_dirname
-        os.environ["CHUNK_DIRNAME"] = self.directories.chunk_dirname
+        _set_env("INDEX_DIRNAME", self.directories.index_dirname)
+        _set_env("CHUNK_DIRNAME", self.directories.chunk_dirname)
 
         # Storage settings
-        os.environ["S3_ENDPOINT"] = self.storage.endpoint_url
-        os.environ["S3_BUCKET_RAW"] = self.storage.bucket_raw
-        os.environ["S3_REGION"] = self.storage.region
-        if self.storage.access_key:
-            os.environ["S3_ACCESS_KEY"] = self.storage.access_key
-        if self.storage.secret_key:
-            os.environ["S3_SECRET_KEY"] = self.storage.secret_key
+        _set_env("S3_ENDPOINT", self.storage.endpoint_url)
+        _set_env("S3_BUCKET_RAW", self.storage.bucket_raw)
+        _set_env("S3_REGION", self.storage.region)
+        if include_secrets:
+            _set_env("S3_ACCESS_KEY", self.storage.access_key)
+            _set_env("S3_SECRET_KEY", self.storage.secret_key)
 
         # System settings
-        os.environ["LOG_LEVEL"] = self.system.log_level
-        os.environ["OUTLOOKCORTEX_DB_URL"] = self.database.url
+        _set_env("LOG_LEVEL", self.system.log_level)
+        _set_env("OUTLOOKCORTEX_DB_URL", self.database.url)
 
         # Credential file discovery removed
         # (Vertex AI dependencies removed)
@@ -189,9 +227,11 @@ class EmailOpsConfig(BaseModel):
         Load the configuration.
 
         If path is None, creates config from environment variables.
-        If path is provided, loads from JSON file with env overrides.
+        If path is provided, loads from JSON file (missing fields use env defaults).
         """
-        if path is None:
+        _ensure_dotenv_loaded()
+
+        def _build_default() -> EmailOpsConfig:
             try:
                 return cls()
             except Exception as e:
@@ -200,13 +240,24 @@ class EmailOpsConfig(BaseModel):
                     "Please ensure all required environment variables are set in your .env file."
                 ) from e
 
+        if path is None:
+            return _build_default()
+
         if not path.exists():
-            return cls()
+            return _build_default()
 
         try:
-            with path.open("r") as f:
+            with path.open("r", encoding="utf-8") as f:
                 data = json.load(f)
-            return cls.model_validate(data)
+            try:
+                return cls.model_validate(data)
+            except ValidationError as e:
+                logger.warning(
+                    "Config validation failed for %s: %s. Falling back to defaults.",
+                    path,
+                    e,
+                )
+                return _build_default()
         except json.JSONDecodeError:
             logger.warning(
                 "Corrupt JSON file at %s. Renaming and recreating with defaults.", path
@@ -222,7 +273,7 @@ class EmailOpsConfig(BaseModel):
                 logger.error("Failed to rename corrupt config file at %s: %s", path, e)
 
             # Create new default config
-            default_config = cls()
+            default_config = _build_default()
             try:
                 default_config.save(path)
                 logger.info("Created new default configuration file at %s.", path)
@@ -231,6 +282,9 @@ class EmailOpsConfig(BaseModel):
                     "Failed to save new default configuration at %s: %s", path, e
                 )
             return default_config
+        except OSError as e:
+            logger.error("Failed to read config file at %s: %s", path, e)
+            return _build_default()
 
     def get_secrets_dir(self) -> Path:
         """Get the secrets directory path, resolving relative paths."""
@@ -357,9 +411,16 @@ def set_rls_tenant(connection: Any, tenant_id: str) -> None:
     from sqlalchemy import text
 
     # Use parameters to prevent injection (even with regex check)
-    connection.execute(
-        text("SELECT set_config('app.current_tenant', :tid, false)"), {"tid": tenant_id}
-    )
+    try:
+        connection.execute(
+            text("SELECT set_config('app.current_tenant', :tid, false)"),
+            {"tid": tenant_id},
+        )
+    except Exception as exc:
+        raise ConfigurationError(
+            "Failed to set RLS tenant",
+            error_code="RLS_SET_FAILED",
+        ) from exc
 
 
 def validate_directories(config: EmailOpsConfig) -> list[str]:

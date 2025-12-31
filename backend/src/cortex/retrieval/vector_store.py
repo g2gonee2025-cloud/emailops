@@ -7,20 +7,34 @@ and Qdrant.
 
 from __future__ import annotations
 
+import json
 import logging
 import uuid
 from abc import ABC, abstractmethod
-from typing import Any, Optional
+from contextlib import nullcontext
+from typing import Any
 
 import numpy as np
 import requests
 from cortex.common.exceptions import RetrievalError
 from cortex.config.models import QdrantConfig
 from pydantic import BaseModel, Field
-from sqlalchemy import text
+from sqlalchemy import bindparam, text
+from sqlalchemy.dialects.postgresql import ARRAY, TEXT
+from sqlalchemy.dialects.postgresql import UUID as PGUUID
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
+
+
+def _normalize_output_dim(output_dim: int) -> int:
+    """Validate output dimension to avoid invalid SQL constructs."""
+    if isinstance(output_dim, bool) or not isinstance(output_dim, int):
+        raise ValueError("output_dim must be a positive integer")
+    if output_dim <= 0:
+        raise ValueError("output_dim must be a positive integer")
+    return output_dim
 
 
 def _validate_embedding(embedding: list[float], expected_dim: int) -> np.ndarray:
@@ -34,7 +48,7 @@ def _validate_embedding(embedding: list[float], expected_dim: int) -> np.ndarray
 
     try:
         emb_array = np.asarray(embedding, dtype=float)
-    except Exception:
+    except (TypeError, ValueError):
         raise RetrievalError(
             "Embedding must contain numeric values",
             query="vector_search",
@@ -105,7 +119,6 @@ def _process_qdrant_point(point: dict[str, Any]) -> VectorResult:
         score_value = float(score) if score is not None else 0.0
     except (TypeError, ValueError):
         score_value = 0.0
-    score_value = max(0.0, min(1.0, score_value))
 
     return VectorResult(
         chunk_id=chunk_id,
@@ -173,7 +186,7 @@ class PgvectorStore(VectorStore):
 
     def __init__(self, session: Session, output_dim: int) -> None:
         self._session = session
-        self._output_dim = output_dim
+        self._output_dim = _normalize_output_dim(output_dim)
 
     def search(
         self,
@@ -191,7 +204,7 @@ class PgvectorStore(VectorStore):
 
         CRITICAL: This method has been refactored to prevent SQL injection.
         - All parameters are passed via bind variables.
-        - Dynamic filters are handled with COALESCE and CASE statements.
+        - Dynamic filters are handled with optional filters and bound arrays.
 
         PERFORMANCE:
         - The `file_types` filter on `extra_data` will be slow without an
@@ -202,17 +215,20 @@ class PgvectorStore(VectorStore):
         limit = min(limit, 500)
         emb_array = _validate_embedding(embedding, self._output_dim)
 
-        # CRITICAL: Validate conversation_ids to prevent malformed UUID errors
-        if conversation_ids:
+        conversation_id_list: list[uuid.UUID] | None = None
+        if conversation_ids is not None:
+            conversation_id_list = []
             for conv_id in conversation_ids:
                 try:
-                    uuid.UUID(conv_id)
-                except ValueError:
+                    conversation_id_list.append(uuid.UUID(str(conv_id)))
+                except (TypeError, ValueError):
                     raise RetrievalError(
                         "Invalid conversation_id format",
                         query="vector_search",
                         context={"conversation_id": conv_id},
                     )
+
+        file_types_param = file_types or None
 
         # Convert embedding to pgvector text format for the query
         embedding_str = "[" + ",".join(map(str, emb_array.tolist())) + "]"
@@ -221,17 +237,13 @@ class PgvectorStore(VectorStore):
             "tenant_id": tenant_id,
             "query_vec": embedding_str,
             "limit": limit,
-            "conversation_ids": conversation_ids,
+            "conversation_ids": conversation_id_list,
             "is_attachment": is_attachment,
-            "file_types": file_types,
+            "file_types": file_types_param,
         }
 
         # Optional HNSW tuning for recall/speed tradeoff
-        if ef_search is not None:
-            # Set session-local configuration safely
-            self._session.execute(
-                text("SET LOCAL hnsw.ef_search = :ef_search"), {"ef_search": ef_search}
-            )
+        ef_search_value = int(ef_search) if ef_search is not None else None
 
         # Fully parameterized query to prevent SQL injection
         stmt = text(
@@ -248,15 +260,46 @@ class PgvectorStore(VectorStore):
             FROM chunks c
             WHERE c.tenant_id = :tenant_id
               AND c.embedding IS NOT NULL
-              AND (:conversation_ids IS NULL OR c.conversation_id = ANY(CAST(:conversation_ids AS UUID[])))
+              AND (:conversation_ids IS NULL OR c.conversation_id = ANY(:conversation_ids))
               AND (:is_attachment IS NULL OR c.is_attachment = :is_attachment)
-              AND (:file_types IS NULL OR (c.extra_data->>'file_type' = ANY(:file_types) OR c.extra_data->>'source_type' = ANY(:file_types)))
+              AND (
+                  :file_types IS NULL
+                  OR (
+                      c.extra_data->>'file_type' = ANY(:file_types)
+                      OR c.extra_data->>'source_type' = ANY(:file_types)
+                  )
+              )
             ORDER BY distance
             LIMIT :limit
         """
+        ).bindparams(
+            bindparam(
+                "conversation_ids",
+                type_=ARRAY(PGUUID(as_uuid=True)),
+            ),
+            bindparam("file_types", type_=ARRAY(TEXT())),
         )
 
-        results = self._session.execute(stmt, params).fetchall()
+        transaction_context = nullcontext()
+        if ef_search_value is not None and not self._session.in_transaction():
+            transaction_context = self._session.begin()
+
+        try:
+            with transaction_context:
+                if ef_search_value is not None:
+                    # Set session-local configuration safely
+                    self._session.execute(
+                        text("SET LOCAL hnsw.ef_search = :ef_search"),
+                        {"ef_search": ef_search_value},
+                    )
+                results = self._session.execute(stmt, params).fetchall()
+        except SQLAlchemyError as exc:
+            raise RetrievalError(
+                "Postgres vector search failed",
+                query="vector_search",
+                context={"error": str(exc)},
+            )
+
         return [_process_pgvector_row(row) for row in results]
 
 
@@ -265,7 +308,7 @@ class QdrantVectorStore(VectorStore):
 
     def __init__(self, config: QdrantConfig, output_dim: int) -> None:
         self._config = config
-        self._output_dim = output_dim
+        self._output_dim = _normalize_output_dim(output_dim)
 
     def _headers(self) -> dict[str, str]:
         headers = {"Content-Type": "application/json"}
@@ -309,7 +352,8 @@ class QdrantVectorStore(VectorStore):
                     "should": [
                         {"key": "file_type", "match": {"any": file_types}},
                         {"key": "source_type", "match": {"any": file_types}},
-                    ]
+                    ],
+                    "min_should": 1,
                 }
             )
 
@@ -348,20 +392,20 @@ class QdrantVectorStore(VectorStore):
                 query="vector_search",
                 context={
                     "status_code": response.status_code,
-                    "detail": response.text,
+                    "reason": response.reason,
                 },
             )
 
         try:
             data = response.json()
-        except requests.JSONDecodeError:
+        except (json.JSONDecodeError, ValueError):
             raise RetrievalError(
                 "Qdrant returned invalid JSON",
                 query="vector_search",
-                context={"response": response.text[:200]},
+                context={"status_code": response.status_code},
             )
         results = data.get("result", []) if isinstance(data, dict) else []
 
         out = [_process_qdrant_point(point) for point in results]
-        logger.info("Qdrant search returned %d chunks", len(out))
+        logger.debug("Qdrant search returned %d chunks", len(out))
         return out

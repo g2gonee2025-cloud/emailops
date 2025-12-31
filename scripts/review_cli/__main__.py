@@ -10,9 +10,24 @@ from pathlib import Path
 
 from rich.console import Console
 
-from .cli import main as interactive_main
-from .cli import print_config_summary, run_review
-from .config import PROVIDER_MODELS, Config, ReviewConfig, ScanConfig
+try:
+    from .cli import main as interactive_main
+    from .cli import print_config_summary, run_review
+    from .config import PROVIDER_MODELS, Config, ReviewConfig, ScanConfig
+except ImportError:
+    # Direct invocation: add project root to sys.path for `scripts.review_cli.*` imports
+    _project_root = Path(__file__).resolve().parent.parent.parent
+    if str(_project_root) not in sys.path:
+        sys.path.insert(0, str(_project_root))
+
+    from scripts.review_cli.cli import main as interactive_main
+    from scripts.review_cli.cli import print_config_summary, run_review
+    from scripts.review_cli.config import (
+        PROVIDER_MODELS,
+        Config,
+        ReviewConfig,
+        ScanConfig,
+    )
 
 console = Console()
 

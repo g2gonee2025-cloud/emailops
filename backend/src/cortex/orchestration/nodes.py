@@ -11,8 +11,9 @@ import json
 import logging
 import re
 import uuid
+from fnmatch import fnmatch
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from cortex.common.exceptions import SecurityError
 from cortex.config.loader import EmailOpsConfig, get_config
@@ -112,9 +113,26 @@ def _complete_with_guardrails(
     # This is a temporary measure during the security transition.
     # The `system` message provides the instructions and JSON schema info.
     # The `user` message provides the data.
-    system_content = next((m["content"] for m in messages if m["role"] == "system"), "")
-    user_content = next((m["content"] for m in messages if m["role"] == "user"), "")
-    reconstructed_prompt = f"{system_content}\n\n{user_content}"
+    system_content = ""
+    user_content = ""
+    for message in messages:
+        if not isinstance(message, dict):
+            continue
+        role = message.get("role")
+        content = message.get("content")
+        if not isinstance(content, str):
+            continue
+        if role == "system" and not system_content:
+            system_content = content
+        elif role == "user" and not user_content:
+            user_content = content
+
+    if user_content:
+        validate_for_injection(user_content)
+
+    reconstructed_prompt = f"{system_content}\n\n{user_content}".strip()
+    if not reconstructed_prompt:
+        raise ValueError("Cannot perform completion with empty messages.")
 
     raw = complete_json(prompt=reconstructed_prompt, schema=schema)
     try:
@@ -146,12 +164,6 @@ def _extract_patterns(
         ref = match.group(group).strip()
         lower_ref = ref.lower()
         if (min_len == 0 or len(ref) > min_len) and lower_ref not in seen:
-            # Additional check for quoted refs (Pattern 2 logic)
-            if pattern.pattern.startswith("[\"']") and not (
-                "_" in ref or any(c.isupper() for c in ref)
-            ):
-                continue
-
             seen.add(lower_ref)
             mentions.append(ref)
 
@@ -190,13 +202,15 @@ def extract_document_mentions(text: str) -> list[str]:
     )
 
     # Pattern 2: Quoted file references
-    quoted_pattern = re.compile(r'["\']([A-Z][A-Za-z0-9\s_\-]{2,30})["\']')
+    quoted_pattern = re.compile(r'["\']([A-Za-z0-9][A-Za-z0-9\s_\-.]{2,60})["\']')
     for match in quoted_pattern.finditer(text):
         try:
             ref = match.group(1).strip()
             lower_ref = ref.lower()
             # Only include if it looks like a document name (has capital or underscore)
-            if lower_ref not in seen and ("_" in ref or any(c.isupper() for c in ref)):
+            if lower_ref not in seen and (
+                "_" in ref or any(c.isupper() for c in ref) or "." in ref
+            ):
                 seen.add(lower_ref)
                 mentions.append(ref)
         except (ValueError, KeyError, TypeError) as e:
@@ -284,12 +298,31 @@ async def _safe_stat_mb(path: Path) -> float:
     """Safely get file size in MB."""
     try:
         # Use to_thread to avoid blocking the event loop with sync file I/O
-        if await asyncio.to_thread(path.exists):
-            stat_result = await asyncio.to_thread(path.stat)
-            return stat_result.st_size / (1024 * 1024)
+        stat_result = await asyncio.to_thread(path.stat)
+        return stat_result.st_size / (1024 * 1024)
+    except FileNotFoundError:
         return 0.0
-    except Exception:
+    except OSError as exc:
+        logger.warning("Failed to stat attachment %s: %s", path, exc, exc_info=True)
         return 0.0
+
+
+def _is_allowed_path(path: Path, base_dir: Path, patterns: list[str]) -> bool:
+    """Match allowlist patterns against relative path or filename."""
+    if not patterns:
+        return True
+    rel_path = None
+    try:
+        rel_path = path.resolve().relative_to(base_dir).as_posix()
+    except (ValueError, OSError):
+        rel_path = None
+    name = path.name
+    for pattern in patterns:
+        if rel_path and fnmatch(rel_path, pattern):
+            return True
+        if fnmatch(name, pattern):
+            return True
+    return False
 
 
 async def _select_attachments_from_mentions(
@@ -306,7 +339,7 @@ async def _select_attachments_from_mentions(
         else Path.cwd()
     )
     allowed_patterns = cfg.file_patterns.allowed_file_patterns
-    attach_max_mb = float(cfg.limits.max_attachment_text_chars / (1024 * 1024))
+    attach_max_mb = float(cfg.limits.skip_attachment_over_mb)
     limit = max_attachments
 
     if not mentions:
@@ -335,9 +368,7 @@ async def _select_attachments_from_mentions(
                 if await _safe_stat_mb(validated_path) > attach_max_mb:
                     continue
 
-                if not any(
-                    validated_path.match(pattern) for pattern in allowed_patterns
-                ):
+                if not _is_allowed_path(validated_path, base_dir, allowed_patterns):
                     continue
 
                 out.append(
@@ -345,7 +376,13 @@ async def _select_attachments_from_mentions(
                 )
                 if len(out) >= int(limit):
                     break
-        except Exception:
+        except (OSError, ValueError, TypeError) as exc:
+            logger.debug(
+                "Skipping attachment candidate %s: %s",
+                c.get("path"),
+                exc,
+                exc_info=True,
+            )
             continue
     return out
 
@@ -361,7 +398,7 @@ async def _select_all_available_attachments(
         else Path.cwd()
     )
     allowed_patterns = cfg.file_patterns.allowed_file_patterns
-    attach_max_mb = float(cfg.limits.max_attachment_text_chars / (1024 * 1024))
+    attach_max_mb = float(cfg.limits.skip_attachment_over_mb)
 
     selected: list[dict[str, Any]] = []
     seen_paths = set()
@@ -386,7 +423,7 @@ async def _select_all_available_attachments(
                 continue
 
             validated_path = result.value
-            if not any(validated_path.match(pattern) for pattern in allowed_patterns):
+            if not _is_allowed_path(validated_path, base_dir, allowed_patterns):
                 continue
 
             if await _safe_stat_mb(validated_path) > attach_max_mb:
@@ -399,7 +436,13 @@ async def _select_all_available_attachments(
 
             if len(selected) >= int(max_attachments):
                 break
-        except Exception:
+        except (OSError, ValueError, TypeError) as exc:
+            logger.debug(
+                "Skipping attachment candidate %s: %s",
+                c.get("path"),
+                exc,
+                exc_info=True,
+            )
             continue
     return selected
 
@@ -459,8 +502,12 @@ def tool_email_get_thread(
 
             # Build participants from conversation.participants JSONB
             participants_dict: dict[str, ThreadParticipant] = {}
-            if conversation.participants:
-                for p in conversation.participants:
+            participants = conversation.participants
+            if isinstance(participants, list):
+                for p in participants:
+                    if not isinstance(p, dict):
+                        logger.debug("Skipping non-dict participant entry: %s", type(p))
+                        continue
                     email = p.get("smtp", p.get("email", ""))
                     if email and email not in participants_dict:
                         participants_dict[email] = ThreadParticipant(
@@ -468,11 +515,19 @@ def tool_email_get_thread(
                             name=p.get("name"),
                             role=p.get("role", "participant"),
                         )
+            elif participants:
+                logger.warning(
+                    "Unexpected participants payload type: %s", type(participants)
+                )
 
             # Build thread messages from conversation.messages JSONB
             thread_messages: list[ThreadMessage] = []
-            if conversation.messages:
-                for msg in conversation.messages:
+            messages = conversation.messages
+            if isinstance(messages, list):
+                for msg in messages:
+                    if not isinstance(msg, dict):
+                        logger.debug("Skipping non-dict message entry: %s", type(msg))
+                        continue
                     msg_id = msg.get("message_id", str(uuid.uuid4()))
                     from_addr = msg.get("from", msg.get("sender", ""))
                     to_addrs = msg.get("to", [])
@@ -509,6 +564,8 @@ def tool_email_get_thread(
                             is_inbound=False,  # Would need more logic to determine
                         )
                     )
+            elif messages:
+                logger.warning("Unexpected messages payload type: %s", type(messages))
 
             # If no structured messages, create one from summary or chunks
             if not thread_messages:

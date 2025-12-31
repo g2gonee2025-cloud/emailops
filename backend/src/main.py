@@ -165,7 +165,7 @@ def _create_dev_secret_decoder(
     config: Any,
 ) -> Callable[[str], Awaitable[dict[str, Any]]]:
     """Create a dev-mode decoder using secret key."""
-    secret = getattr(config, "SECRET_KEY", None)
+    secret = getattr(config, "secret_key", None)
     if not secret:
         raise ConfigurationError(
             "Missing SECRET_KEY for dev JWT decoding",

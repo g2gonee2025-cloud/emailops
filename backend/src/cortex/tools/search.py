@@ -10,6 +10,7 @@ from cortex.retrieval.hybrid_search import (
     tool_kb_search_hybrid as retrieval_tool_kb_search_hybrid,
 )
 from cortex.retrieval.results import SearchResults
+from pydantic import ValidationError
 
 RetrievalKBSearchInput = HybridSearchInput
 
@@ -21,7 +22,12 @@ async def tool_kb_search_hybrid(
 
     if args is None:
         raise ValueError("tool_kb_search_hybrid: 'args' cannot be None")
-    tool_input = (
-        args if isinstance(args, RetrievalKBSearchInput) else args.to_tool_input()
-    )
+    if isinstance(args, RetrievalKBSearchInput):
+        tool_input = args
+    else:
+        payload = args.to_tool_input()
+        try:
+            tool_input = RetrievalKBSearchInput(**payload)
+        except (ValidationError, TypeError) as exc:
+            raise ValueError("tool_kb_search_hybrid: invalid input") from exc
     return await retrieval_tool_kb_search_hybrid(tool_input)

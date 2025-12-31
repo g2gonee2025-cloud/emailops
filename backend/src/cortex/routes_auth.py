@@ -94,7 +94,7 @@ async def login(request: LoginRequest) -> LoginResponse:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     # Create JWT payload
-    if not config.SECRET_KEY:
+    if not config.secret_key:
         raise HTTPException(
             status_code=500, detail="Server misconfiguration: missing SECRET_KEY"
         )
@@ -112,7 +112,7 @@ async def login(request: LoginRequest) -> LoginResponse:
     }
 
     try:
-        token = jwt.encode(payload, config.SECRET_KEY, algorithm="HS256")
+        token = jwt.encode(payload, config.secret_key, algorithm="HS256")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Token generation failed: {e!s}")
 

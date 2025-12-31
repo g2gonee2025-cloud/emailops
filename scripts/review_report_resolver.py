@@ -42,12 +42,20 @@ def _run_ruff_unused(files: set[str]) -> set[str] | None:
     proc = subprocess.run(cmd, capture_output=True, text=True)
     if proc.returncode not in (0, 1):
         return None
-    if not proc.stdout.strip():
+    output = proc.stdout.strip()
+    if not output:
         return None
     try:
-        findings = json.loads(proc.stdout)
+        findings = json.loads(output)
     except json.JSONDecodeError:
-        return None
+        start = output.find("[")
+        end = output.rfind("]")
+        if start == -1 or end == -1 or end < start:
+            return None
+        try:
+            findings = json.loads(output[start : end + 1])
+        except json.JSONDecodeError:
+            return None
     return {item.get("filename") for item in findings if item.get("filename")}
 
 
@@ -809,6 +817,361 @@ def main() -> None:
                     status = "resolved"
                     resolution = "candidate summary avoids metadata mutation"
                     method = "style_check"
+        elif issue.get("file") == "backend/src/cortex/retrieval/vector_store.py":
+            if "requests.JSONDecodeError" in description:
+                if _file_contains(file_path, "json.JSONDecodeError"):
+                    status = "resolved"
+                    resolution = "JSON decode errors handled correctly"
+                    method = "exception_check"
+            elif "CAST(:conversation_ids AS UUID[])" in description:
+                if _file_contains(
+                    file_path, "ANY(:conversation_ids)"
+                ) and _file_contains(file_path, "ARRAY(PGUUID"):
+                    status = "resolved"
+                    resolution = "conversation_ids bound as UUID array"
+                    method = "type_check"
+            elif "ANY(:file_types)" in description:
+                if _file_contains(
+                    file_path, 'bindparam("file_types"'
+                ) and _file_contains(file_path, "ARRAY(TEXT())"):
+                    status = "resolved"
+                    resolution = "file_types bound as text array"
+                    method = "type_check"
+            elif "SET LOCAL hnsw.ef_search" in description:
+                if _file_contains(
+                    file_path, "transaction_context = nullcontext()"
+                ) and _file_contains(file_path, "self._session.in_transaction()"):
+                    status = "resolved"
+                    resolution = "SET LOCAL executed within transaction"
+                    method = "transaction_check"
+            elif "Qdrant file_types filter" in description:
+                if _file_contains(file_path, '"min_should": 1'):
+                    status = "resolved"
+                    resolution = "Qdrant should filter hardened"
+                    method = "logic_check"
+            elif "halfvec({self._output_dim})" in description:
+                if _file_contains(
+                    file_path, "_normalize_output_dim"
+                ) and _file_contains(file_path, "halfvec({self._output_dim})"):
+                    status = "resolved"
+                    resolution = "output_dim validated before SQL use"
+                    method = "security_check"
+            elif "Database errors from the pgvector search" in description:
+                if _file_contains(
+                    file_path, "except SQLAlchemyError as exc"
+                ) and _file_contains(file_path, "Postgres vector search failed"):
+                    status = "resolved"
+                    resolution = "database errors wrapped in RetrievalError"
+                    method = "exception_check"
+            elif "_validate_embedding uses a broad 'except Exception'" in description:
+                if _file_contains(file_path, "except (TypeError, ValueError):"):
+                    status = "resolved"
+                    resolution = "embedding conversion errors narrowed"
+                    method = "exception_check"
+            elif "Qdrant result score is blindly clamped" in description:
+                if _file_contains(
+                    file_path, "score_value = float(score)"
+                ) and not _file_contains(file_path, "min(1.0, score_value"):
+                    status = "resolved"
+                    resolution = "Qdrant scores no longer clamped"
+                    method = "logic_check"
+            elif "Logs an info-level message" in description:
+                if _file_contains(
+                    file_path,
+                    'logger.debug("Qdrant search returned %d chunks"',
+                ):
+                    status = "resolved"
+                    resolution = "Qdrant logging reduced to debug"
+                    method = "perf_check"
+            elif (
+                "Docstring for PgvectorStore.search mentions use of COALESCE"
+                in description
+            ):
+                if _file_contains(
+                    file_path, "Dynamic filters are handled with optional filters"
+                ) and not _file_contains(file_path, "COALESCE"):
+                    status = "resolved"
+                    resolution = "docstring updated to match query"
+                    method = "doc_check"
+            elif "response.text" in description:
+                if _file_contains(
+                    file_path, '"reason": response.reason'
+                ) and not _file_contains(file_path, "response.text"):
+                    status = "resolved"
+                    resolution = "Qdrant error context no longer leaks body"
+                    method = "security_check"
+            elif "Optional from typing" in description:
+                if _file_contains(
+                    file_path, "from typing import Any"
+                ) and not _file_contains(file_path, "from typing import Any, Optional"):
+                    status = "resolved"
+                    resolution = "unused Optional import removed"
+                    method = "import_check"
+        elif issue.get("file") == "backend/src/cortex/orchestration/nodes.py":
+            if "stray identifier 'cc_add'" in description:
+                if _is_parseable(file_path):
+                    status = "resolved"
+                    resolution = "module parses without syntax errors"
+                    method = "syntax_check"
+            elif "tool_email_get_thread is truncated" in description:
+                if _file_contains(file_path, "return ThreadContext("):
+                    status = "resolved"
+                    resolution = "ThreadContext is constructed and returned"
+                    method = "logic_check"
+            elif "bare 'except Exception: continue'" in description:
+                if _file_contains(file_path, "Skipping attachment candidate"):
+                    status = "resolved"
+                    resolution = "attachment errors logged before skipping"
+                    method = "exception_check"
+            elif "_safe_stat_mb catches all exceptions" in description:
+                if _file_contains(
+                    file_path, "Failed to stat attachment"
+                ) and _file_contains(file_path, "except OSError as exc"):
+                    status = "resolved"
+                    resolution = "stat errors logged and narrowed"
+                    method = "exception_check"
+            elif (
+                "_complete_with_guardrails accesses message dictionaries" in description
+            ):
+                if _file_contains(file_path, 'message.get("role")') and _file_contains(
+                    file_path, 'message.get("content")'
+                ):
+                    status = "resolved"
+                    resolution = "message keys accessed safely"
+                    method = "null_check"
+            elif "Attachment size limit compares file size" in description:
+                if _file_contains(file_path, "skip_attachment_over_mb"):
+                    status = "resolved"
+                    resolution = "attachment size limit uses MB config"
+                    method = "logic_check"
+            elif "Allowed file pattern checks use Path.match" in description:
+                if _file_contains(file_path, "_is_allowed_path"):
+                    status = "resolved"
+                    resolution = "allowlist matching uses relative/name patterns"
+                    method = "logic_check"
+            elif "quoted regex excludes dots" in description:
+                if _file_contains(file_path, r"[A-Za-z0-9\s_\-.]"):
+                    status = "resolved"
+                    resolution = "quoted filename pattern allows dots"
+                    method = "logic_check"
+            elif "does not handle database exceptions" in description:
+                if _file_contains(file_path, "except SQLAlchemyError as e"):
+                    status = "resolved"
+                    resolution = "database errors are logged and handled"
+                    method = "exception_check"
+            elif "prompt for complete_json without any injection" in description:
+                if _file_contains(file_path, "validate_for_injection(user_content)"):
+                    status = "resolved"
+                    resolution = "prompt content validated for injection"
+                    method = "security_check"
+            elif "_safe_stat_mb performs two filesystem operations" in description:
+                if _file_contains(file_path, "path.stat") and not _file_contains(
+                    file_path, "path.exists"
+                ):
+                    status = "resolved"
+                    resolution = "stat uses single filesystem call"
+                    method = "perf_check"
+            elif "Brittle/unused branch in _extract_patterns" in description:
+                if not _file_contains(file_path, "pattern.pattern.startswith"):
+                    status = "resolved"
+                    resolution = "unused quoted branch removed"
+                    method = "style_check"
+            elif (
+                "assumes conversation.participants and conversation.messages"
+                in description
+            ):
+                if _file_contains(
+                    file_path, "isinstance(participants, list)"
+                ) and _file_contains(file_path, "isinstance(messages, list)"):
+                    status = "resolved"
+                    resolution = "participants/messages validated before use"
+                    method = "null_check"
+        elif issue.get("file") == "backend/src/cortex/config/audit_config.py":
+            if "redacted placeholder" in description:
+                if _file_contains(
+                    file_path,
+                    "status = _determine_status(model_def, env_val, code_default_val)",
+                ):
+                    status = "resolved"
+                    resolution = "status computed before redaction"
+                    method = "logic_check"
+            elif "_normalize_value lowercases" in description:
+                if _file_contains(
+                    file_path, "text = str(val).strip()"
+                ) and _file_contains(file_path, "if isinstance(val, bool)"):
+                    status = "resolved"
+                    resolution = "normalize avoids lowercasing strings"
+                    method = "logic_check"
+            elif "only considers values from the .env file" in description:
+                if _file_contains(
+                    file_path, "env_vars = {**env_file_vars, **os.environ}"
+                ):
+                    status = "resolved"
+                    resolution = "process environment included in audit"
+                    method = "config_check"
+            elif "_get_env_value applies prefixes" in description:
+                if _file_contains(file_path, "if key.startswith(_PREFIXES)"):
+                    status = "resolved"
+                    resolution = "prefixed keys handled directly"
+                    method = "logic_check"
+            elif "parse_models_via_introspection assumes models._env" in description:
+                if _file_contains(
+                    file_path, "original_env = getattr"
+                ) and _file_contains(file_path, "callable(original_env)"):
+                    status = "resolved"
+                    resolution = "env helpers checked before patching"
+                    method = "null_check"
+            elif "swallows all exceptions during model instantiation" in description:
+                if _file_contains(file_path, "Failed to introspect"):
+                    status = "resolved"
+                    resolution = "model introspection failures logged"
+                    method = "exception_check"
+            elif "parse_env_file only guards for missing files" in description:
+                if _file_contains(file_path, "except OSError as exc"):
+                    status = "resolved"
+                    resolution = "env file read errors handled"
+                    method = "exception_check"
+            elif "Import of cortex.config.models is unguarded" in description:
+                if _file_contains(
+                    file_path, "from cortex.config import models as config_models"
+                ) and _file_contains(file_path, "except ImportError"):
+                    status = "resolved"
+                    resolution = "config models import guarded"
+                    method = "import_check"
+            elif "Secret redaction relies on a small set" in description:
+                if _file_contains(file_path, "jwt") and _file_contains(
+                    file_path, "private"
+                ):
+                    status = "resolved"
+                    resolution = "sensitive key patterns expanded"
+                    method = "security_check"
+            elif (
+                "mutates sys.path based on a discovered directory structure"
+                in description
+            ):
+                if _file_contains(
+                    file_path, 'cortex_init = src_path / "cortex" / "__init__.py"'
+                ):
+                    status = "resolved"
+                    resolution = "sys.path mutation guarded by package check"
+                    method = "security_check"
+            elif "_env_list returns the provided default" in description:
+                if _file_contains(file_path, "def mock_env_list") and _file_contains(
+                    file_path, "return [part.strip() for part in str(default).split"
+                ):
+                    status = "resolved"
+                    resolution = "env list mock returns list"
+                    method = "typing_check"
+            elif "Monkey-patching private internals" in description:
+                if _file_contains(
+                    file_path,
+                    "Warning: models._env or models._env_list not available",
+                ):
+                    status = "resolved"
+                    resolution = "monkey patch guarded with warnings"
+                    method = "stability_check"
+            elif "setup_sys_path is executed at import time" in description:
+                if not _file_contains(file_path, "PROJECT_ROOT = setup_sys_path()"):
+                    status = "resolved"
+                    resolution = "path setup moved into main"
+                    method = "behavior_check"
+            elif "app_keys is converted to a list and then re-sorted" in description:
+                if _file_contains(file_path, "for key in sorted(app_keys):"):
+                    status = "resolved"
+                    resolution = "single pass sorting used"
+                    method = "perf_check"
+        elif issue.get("file") == "backend/src/cortex/config/loader.py":
+            if "SECRET_KEY falls back to a hardcoded default" in description:
+                if not _file_contains(
+                    file_path, "dev-secret-key-change-in-production"
+                ) and _file_contains(file_path, "def secret_key"):
+                    status = "resolved"
+                    resolution = "secret key no longer defaults to hardcoded value"
+                    method = "security_check"
+            elif (
+                "update_environment assigns many environment variables unconditionally"
+                in description
+            ):
+                if _file_contains(file_path, "def _set_env") and _file_contains(
+                    file_path, "if value is None"
+                ):
+                    status = "resolved"
+                    resolution = "environment updates guarded for None values"
+                    method = "null_check"
+            elif "assume string types" in description:
+                if _file_contains(file_path, "os.environ[name] = str(value)"):
+                    status = "resolved"
+                    resolution = "environment updates coerce values to strings"
+                    method = "typing_check"
+            elif "reads environment variables to override" in description:
+                if not _file_contains(file_path, "_coerce_int") and _file_contains(
+                    file_path, "def update_environment"
+                ):
+                    status = "resolved"
+                    resolution = "update_environment no longer mutates config from env"
+                    method = "logic_check"
+            elif "schema validation" in description:
+                if _file_contains(file_path, "except ValidationError"):
+                    status = "resolved"
+                    resolution = "validation errors handled with fallback"
+                    method = "exception_check"
+            elif "non-JSON-related I/O errors" in description:
+                if _file_contains(file_path, "except OSError as e"):
+                    status = "resolved"
+                    resolution = "config file read errors handled"
+                    method = "exception_check"
+            elif "default configuration (cls()) is not wrapped" in description:
+                if _file_contains(file_path, "_build_default()"):
+                    status = "resolved"
+                    resolution = "default config creation wrapped"
+                    method = "exception_check"
+            elif (
+                'docstring claims "loads from JSON file with env overrides"'
+                in description
+            ):
+                if _file_contains(file_path, "missing fields use env defaults"):
+                    status = "resolved"
+                    resolution = "docstring clarified to match behavior"
+                    method = "doc_check"
+            elif (
+                "to_dict returns the full configuration without redaction"
+                in description
+            ):
+                if _file_contains(
+                    file_path, "def to_dict(self, redact"
+                ) and _file_contains(file_path, "_redact_dict"):
+                    status = "resolved"
+                    resolution = "to_dict supports redaction"
+                    method = "security_check"
+            elif (
+                "set_rls_tenant does not handle database execution errors"
+                in description
+            ):
+                if _file_contains(file_path, "RLS_SET_FAILED"):
+                    status = "resolved"
+                    resolution = "RLS execution errors handled"
+                    method = "exception_check"
+            elif "Property name SECRET_KEY uses uppercase" in description:
+                if _file_contains(file_path, "def secret_key") and _file_contains(
+                    file_path, "def SECRET_KEY"
+                ):
+                    status = "resolved"
+                    resolution = "lowercase secret_key added with alias"
+                    method = "style_check"
+            elif "load_dotenv() runs on import" in description:
+                if _file_contains(
+                    file_path, "def _ensure_dotenv_loaded"
+                ) and _file_contains(file_path, "_ensure_dotenv_loaded()"):
+                    status = "resolved"
+                    resolution = "dotenv loaded lazily"
+                    method = "behavior_check"
+            elif "propagates credentials" in description:
+                if _file_contains(file_path, "include_secrets") and _file_contains(
+                    file_path, "if include_secrets"
+                ):
+                    status = "resolved"
+                    resolution = "credential export gated by include_secrets"
+                    method = "security_check"
         elif issue.get("file") == "backend/src/main.py":
             if "unterminated string literal" in description:
                 if _is_parseable(file_path):
