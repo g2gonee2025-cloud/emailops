@@ -174,24 +174,33 @@ class TestApplyFiltersToSql:
         """Test from_emails generates correct JSONB SQL."""
         f = SearchFilters(from_emails={"test@example.com"})
         clause, params = apply_filters_to_sql(f)
+        # Implementation uses EXISTS subquery with bool_or pattern
+        assert "EXISTS" in clause
         assert "p->>'role' = 'sender'" in clause
-        assert "lower(p->>'smtp') = ANY(:from_emails)" in clause
+        assert "lower(p->>'smtp')" in clause
+        assert ":from_emails" in clause
         assert params["from_emails"] == ["test@example.com"]
 
     def test_to_emails_filter(self):
         """Test to_emails generates correct JSONB SQL."""
         f = SearchFilters(to_emails={"test@example.com"})
         clause, params = apply_filters_to_sql(f)
+        # Implementation uses EXISTS subquery with bool_or pattern
+        assert "EXISTS" in clause
         assert "p->>'role' = 'recipient'" in clause
-        assert "lower(p->>'smtp') = ANY(:to_emails)" in clause
+        assert "lower(p->>'smtp')" in clause
+        assert ":to_emails" in clause
         assert params["to_emails"] == ["test@example.com"]
 
     def test_cc_emails_filter(self):
         """Test cc_emails generates correct JSONB SQL."""
         f = SearchFilters(cc_emails={"test@example.com"})
         clause, params = apply_filters_to_sql(f)
+        # Implementation uses EXISTS subquery with bool_or pattern
+        assert "EXISTS" in clause
         assert "p->>'role' = 'cc'" in clause
-        assert "lower(p->>'smtp') = ANY(:cc_emails)" in clause
+        assert "lower(p->>'smtp')" in clause
+        assert ":cc_emails" in clause
         assert params["cc_emails"] == ["test@example.com"]
 
     def test_file_types_filter(self):

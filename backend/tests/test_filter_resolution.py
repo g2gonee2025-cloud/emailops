@@ -18,13 +18,45 @@ class TestFilterResolution:
             assert result is None
 
     def test_only_conv_ids_returns_list(self):
-        """Test that only conv_ids returns the list directly without DB query."""
+        """Test that conv_ids filter returns results (validated against DB)."""
+        from uuid import uuid4
+
+        # Use random UUIDs that don't exist in DB - should return empty list
+        uuid1 = str(uuid4())
+        uuid2 = str(uuid4())
+
         with get_db_session() as session:
-            filters = SearchFilters(conv_ids={"uuid-1", "uuid-2"})
+            filters = SearchFilters(conv_ids={uuid1, uuid2})
+            result = _resolve_filter_conversation_ids(session, filters, "default")
+
+            # Random UUIDs don't exist, so result should be empty list
+            assert result is not None
+            assert result == []
+
+    def test_conv_ids_with_existing_ids(self):
+        """Test that conv_ids filter with real IDs returns those IDs."""
+        from cortex.db.models import Conversation
+
+        with get_db_session() as session:
+            # Get real conversation IDs from DB
+            existing = (
+                session.query(Conversation.conversation_id)
+                .filter(Conversation.tenant_id == "default")
+                .limit(2)
+                .all()
+            )
+
+            if len(existing) < 1:
+                import pytest
+
+                pytest.skip("No conversations in database")
+
+            real_ids = {str(row[0]) for row in existing}
+            filters = SearchFilters(conv_ids=real_ids)
             result = _resolve_filter_conversation_ids(session, filters, "default")
 
             assert result is not None
-            assert set(result) == {"uuid-1", "uuid-2"}
+            assert set(result) == real_ids
 
     def test_subject_filter_returns_matching_conversations(self):
         """Test that subject filter returns conversations from live DB."""

@@ -140,9 +140,9 @@ This ledger tracks the **exact state of implementation** for each checklist step
 
 ## Step S02 – Configuration & Secrets Wiring
 
-- **Status:** verified
-- **Last updated:** 2025-12-10 07:30 UTC
-- **Responsible run ID:** run-002
+- **Status:** completed_pending_verification
+- **Last updated:** 2025-12-31 15:32 UTC
+- **Responsible run ID:** run-2025-12-31-mcp
 
 ### Scope & files
 
@@ -156,6 +156,7 @@ This ledger tracks the **exact state of implementation** for each checklist step
 
 - Confirmed `cortex.config.loader` implements Pydantic models for all configuration sections.
 - Verified `.env` contains all required keys (DB, S3, LLM/Gradient, DOKS).
+- Added `POSTGRES_CONNECTION_STRING` alias in `.env` for the MCP Postgres server.
 - Validated `loader.py` logic:
   - Supports `OUTLOOKCORTEX_` prefix with fallback.
   - Handles legacy `EMAILOPS_` compatibility.
@@ -166,11 +167,13 @@ This ledger tracks the **exact state of implementation** for each checklist step
 
 - All mandatory config keys from blueprint are defined in `.env`.
 - `OUTLOOKCORTEX_DB_URL` is correctly mapped.
+- `POSTGRES_CONNECTION_STRING` mirrors `OUTLOOKCORTEX_DB_URL` for MCP tooling.
 - `DO_token` and `DO_LLM_API_KEY` are present for Gradient/DOKS.
 
 ### Tests & commands run
 
 - `python verify_config.py` – PASSED
+- MCP env alias update only; tests not re-run for this change.
 
 ### Edge cases considered
 

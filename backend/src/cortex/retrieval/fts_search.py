@@ -248,10 +248,18 @@ def search_chunks_fts(
     query_str += where_sql
     query_str += " ORDER BY score DESC LIMIT :limit"
 
-    stmt = text(query_str.format(tsquery_func="to_tsquery")).bindparams(
-        bindparam("conversation_ids", type_=ARRAY(PGUUID(as_uuid=True))),
-        bindparam("file_types", type_=ARRAY(TEXT())),
-    )
+    # Build bindparams conditionally based on which filters are active
+    bind_params_list = []
+    if conversation_id_list is not None:
+        bind_params_list.append(
+            bindparam("conversation_ids", type_=ARRAY(PGUUID(as_uuid=True)))
+        )
+    if file_types:
+        bind_params_list.append(bindparam("file_types", type_=ARRAY(TEXT())))
+
+    stmt = text(query_str.format(tsquery_func="to_tsquery"))
+    if bind_params_list:
+        stmt = stmt.bindparams(*bind_params_list)
 
     try:
         results = session.execute(stmt, params).fetchall()
@@ -261,12 +269,9 @@ def search_chunks_fts(
             extra={"query_hash": query_hash},
         )
         params["query"] = query
-        fallback_stmt = text(
-            query_str.format(tsquery_func="plainto_tsquery")
-        ).bindparams(
-            bindparam("conversation_ids", type_=ARRAY(PGUUID(as_uuid=True))),
-            bindparam("file_types", type_=ARRAY(TEXT())),
-        )
+        fallback_stmt = text(query_str.format(tsquery_func="plainto_tsquery"))
+        if bind_params_list:
+            fallback_stmt = fallback_stmt.bindparams(*bind_params_list)
         results = session.execute(fallback_stmt, params).fetchall()
 
     return [
