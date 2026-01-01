@@ -5,7 +5,10 @@ def scrub_json_string(json_string: str) -> str:
     """
     Remove null characters from a JSON string.
     """
-    return json_string.replace("\\u0000", "")
+    if not json_string:
+        return json_string
+    cleaned = json_string.replace("\x00", "")
+    return cleaned.replace("\\u0000", "")
 
 
 def scrub_json(data: Any) -> Any:
@@ -13,7 +16,11 @@ def scrub_json(data: Any) -> Any:
     Recursively remove null characters from JSON data.
     """
     if isinstance(data, dict):
-        return {k: scrub_json(v) for k, v in data.items()}
+        cleaned: dict[Any, Any] = {}
+        for key, value in data.items():
+            cleaned_key = scrub_json_string(key) if isinstance(key, str) else key
+            cleaned[cleaned_key] = scrub_json(value)
+        return cleaned
     if isinstance(data, list):
         return [scrub_json(elem) for elem in data]
     if isinstance(data, str):

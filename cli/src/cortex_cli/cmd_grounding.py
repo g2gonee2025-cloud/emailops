@@ -12,6 +12,13 @@ from rich.table import Table
 
 logger = logging.getLogger(__name__)
 
+try:
+    from cortex.safety.grounding import GroundingCheckInput as GroundingCheckInput
+    from cortex.safety.grounding import tool_check_grounding as tool_check_grounding
+except Exception:
+    GroundingCheckInput = None
+    tool_check_grounding = None
+
 
 def _find_backend_src() -> Path | None:
     current = Path(__file__).resolve()
@@ -87,9 +94,11 @@ def run_grounding_check(args: argparse.Namespace) -> None:
 
     try:
         _ensure_backend_on_path()
-        grounding_module = import_module("cortex.safety.grounding")
-        GroundingCheckInput = grounding_module.GroundingCheckInput
-        tool_check_grounding = grounding_module.tool_check_grounding
+        global GroundingCheckInput, tool_check_grounding
+        if GroundingCheckInput is None or tool_check_grounding is None:
+            grounding_module = import_module("cortex.safety.grounding")
+            GroundingCheckInput = grounding_module.GroundingCheckInput
+            tool_check_grounding = grounding_module.tool_check_grounding
 
         input_data = GroundingCheckInput(
             answer_candidate=getattr(args, "answer", ""),
@@ -148,7 +157,7 @@ def run_grounding_check(args: argparse.Namespace) -> None:
         console.print(f"[bold red]Error[/bold red]: {exc}")
         console.print("Please ensure all necessary backend dependencies are installed.")
         sys.exit(1)
-    except Exception:
+    except Exception as exc:
         logger.exception("Grounding check failed.")
-        console.print("[bold red]An unexpected error occurred[/bold red].")
+        console.print("[bold red]An unexpected error occurred[/bold red]: " f"{exc}")
         sys.exit(1)

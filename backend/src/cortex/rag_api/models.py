@@ -138,6 +138,10 @@ class ChatRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     messages: list[ChatMessage] = Field(..., min_length=1)
+    debug: bool = Field(
+        default=False,
+        description="Enable debug information in the response (admin only).",
+    )
     thread_id: str | None = Field(default=None, description="Optional thread context")
     k: int = Field(default=10, ge=1, le=20, description="Number of context chunks")
     max_length: int = Field(

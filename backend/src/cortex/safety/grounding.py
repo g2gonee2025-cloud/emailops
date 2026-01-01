@@ -7,9 +7,10 @@ Verifies that LLM-generated answers are supported by retrieved context/facts.
 
 from __future__ import annotations
 
+import json
 import logging
 import re
-from typing import Literal
+from typing import Any, Literal
 
 import numpy as np
 import numpy.linalg as npla
@@ -18,6 +19,7 @@ from pydantic import BaseModel, Field
 logger = logging.getLogger(__name__)
 
 from cortex.embeddings.client import get_embeddings_client
+from cortex.safety.guardrails_client import validate_with_repair
 
 # -----------------------------------------------------------------------------
 # Constants
@@ -67,7 +69,9 @@ class ClaimAnalysis(BaseModel):
     confidence: float = Field(
         ..., ge=0.0, le=1.0, description="Confidence in the assessment"
     )
-    method: GroundingMethod = Field(..., description="The method used for verification")
+    method: GroundingMethod = Field(
+        "not_applicable", description="The method used for verification"
+    )
 
 
 class ClaimAnalysisInput(BaseModel):
@@ -85,6 +89,15 @@ class ClaimAnalysisInput(BaseModel):
     )
     method: GroundingMethod | None = Field(
         None, description="The method used for verification"
+    )
+
+
+class ClaimExtractionResult(BaseModel):
+    """Result of extracting factual claims from text."""
+
+    claims: list[str] = Field(
+        default_factory=list,
+        description="List of factual claims that can be verified",
     )
 
 
@@ -114,7 +127,7 @@ class GroundingCheck(BaseModel):
         0.0, ge=0.0, le=1.0, description="Ratio of supported claims"
     )
     method: GroundingMethod = Field(
-        ..., description="The primary method used for the check"
+        "not_applicable", description="The primary method used for the check"
     )
 
 
@@ -133,6 +146,46 @@ class GroundingCheckInput(BaseModel):
     answer_candidate: str = Field(..., description="The answer to verify")
     facts: list[str] = Field(default_factory=list, description="Retrieved facts")
     use_llm: bool = Field(True, description="Whether to use LLM-based grounding")
+
+
+def _complete_json_messages(
+    messages: list[dict[str, str]],
+    schema: dict[str, Any],
+    *,
+    max_tokens: int = 2048,
+) -> str:
+    from cortex.common.exceptions import ProviderError
+    from cortex.llm.client import complete_messages
+
+    schema_json = json.dumps(schema, indent=2)
+    instructions = (
+        "Respond with a single valid JSON object that conforms to this JSON Schema:\n"
+        f"{schema_json}\n\n"
+        "Do not include markdown. Return ONLY the JSON object."
+    )
+    payload = [dict(m) for m in messages if isinstance(m, dict)]
+    inserted = False
+    for message in payload:
+        if message.get("role") == "system" and isinstance(message.get("content"), str):
+            message["content"] = f"{message['content']}\n\n{instructions}"
+            inserted = True
+            break
+    if not inserted:
+        payload.insert(0, {"role": "system", "content": instructions})
+
+    kwargs: dict[str, Any] = {
+        "temperature": 0.0,
+        "max_tokens": max_tokens,
+        "response_format": {"type": "json_object"},
+    }
+    try:
+        return complete_messages(payload, **kwargs)
+    except ProviderError as exc:
+        msg = str(exc).lower()
+        if "response_format" in msg or "json_object" in msg:
+            kwargs.pop("response_format", None)
+            return complete_messages(payload, **kwargs)
+        raise
 
 
 # -----------------------------------------------------------------------------
@@ -235,7 +288,6 @@ def extract_claims_llm(text: str) -> list[str]:
     More accurate than heuristics but requires LLM call.
     """
     try:
-        from cortex.llm.client import complete_json
         from cortex.prompts import (
             SYSTEM_EXTRACT_CLAIMS,
             USER_EXTRACT_CLAIMS,
@@ -252,29 +304,15 @@ def extract_claims_llm(text: str) -> list[str]:
         if len(messages) < 2:
             raise ValueError("Prompt construction returned insufficient messages")
 
-        # Reconstruct prompt for the deprecated `complete_json`
-        system_content = messages[0].get("content")
-        user_content = messages[1].get("content")
-        if system_content is None or user_content is None:
-            raise ValueError("Prompt messages missing content")
-        reconstructed_prompt = f"{system_content}\n\n{user_content}"
-
-        result = complete_json(
-            prompt=reconstructed_prompt,
-            schema={
-                "type": "object",
-                "properties": {
-                    "claims": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "List of factual claims that can be verified",
-                    }
-                },
-                "required": ["claims"],
-            },
+        raw_output = _complete_json_messages(
+            messages,
+            ClaimExtractionResult.model_json_schema(),
+            max_tokens=1024,
         )
-
-        return result.get("claims", [])
+        parsed = validate_with_repair(
+            raw_output, ClaimExtractionResult, "claim-extract"
+        )
+        return parsed.claims
     except ImportError as e:
         logger.error(
             f"LLM dependencies not found for claim extraction: {e}. Install with `pip install cortex-llm`."
@@ -499,7 +537,6 @@ def check_grounding_llm(
     This is the most accurate method but requires LLM call.
     """
     try:
-        from cortex.llm.client import complete_json
         from cortex.prompts import (
             SYSTEM_GROUNDING_CHECK,
             USER_GROUNDING_CHECK,
@@ -527,19 +564,15 @@ def check_grounding_llm(
         if len(messages) < 2:
             raise ValueError("Prompt construction returned insufficient messages")
 
-        # Reconstruct prompt for the deprecated `complete_json`
-        system_content = messages[0].get("content")
-        user_content = messages[1].get("content")
-        if system_content is None or user_content is None:
-            raise ValueError("Prompt messages missing content")
-        reconstructed_prompt = f"{system_content}\n\n{user_content}"
-
-        result = complete_json(
-            prompt=reconstructed_prompt,
-            schema=GroundingAnalysisResult.model_json_schema(),
+        raw_output = _complete_json_messages(
+            messages,
+            GroundingAnalysisResult.model_json_schema(),
         )
-
-        analysis = GroundingAnalysisResult(**result)
+        analysis = validate_with_repair(
+            raw_output,
+            GroundingAnalysisResult,
+            "grounding-check",
+        )
 
         claim_analyses_with_method = []
         for claim in analysis.claims:

@@ -7,7 +7,10 @@ import asyncio
 from dataclasses import dataclass, field
 from pathlib import Path
 
-import questionary
+try:
+    import questionary
+except ImportError:
+    questionary = None
 from rich import box
 from rich.console import Console
 from rich.markdown import Markdown
@@ -19,8 +22,16 @@ console = Console()
 PROMPT_DRY_RUN = "Dry run?"
 
 
+def _require_questionary() -> None:
+    if questionary is None:
+        console.print("[bold red]Error:[/bold red] questionary is not installed.")
+        console.print("Install it with: pip install questionary")
+        raise SystemExit(1)
+
+
 # --- Database ---
 def _handle_db() -> None:
+    _require_questionary()
     action = questionary.select(
         "Database Management:", choices=["Stats", "Migrate", "Back"]
     ).ask()
@@ -80,6 +91,7 @@ def _handle_db() -> None:
 
 # --- Embeddings ---
 def _handle_embeddings() -> None:
+    _require_questionary()
     action = questionary.select(
         "Embeddings Management:", choices=["Stats", "Backfill", "Back"]
     ).ask()
@@ -112,6 +124,7 @@ def _handle_embeddings() -> None:
 
 # --- S3 / Storage ---
 def _handle_s3() -> None:
+    _require_questionary()
     action = questionary.select(
         "S3/Spaces Storage:",
         choices=["List Buckets/Prefixes", "Ingest from S3", "Back"],
@@ -151,6 +164,7 @@ def _handle_s3() -> None:
 # --- Import Data (Unified) ---
 def _handle_import_data(cli_main) -> None:
     """Unified import handler for local and S3 sources."""
+    _require_questionary()
     source_type = questionary.select(
         "Select data source:",
         choices=["📁 Local Filesystem", "☁️ S3/DigitalOcean Spaces", "🔙 Back"],
@@ -168,6 +182,8 @@ def _handle_import_data(cli_main) -> None:
 
 
 def _handle_local_import(cli_main) -> None:
+    _require_questionary()
+
     def validate_path(path):
         if not path:
             return "Please enter a path"
@@ -188,6 +204,7 @@ def _handle_local_import(cli_main) -> None:
 
 
 def _handle_s3_import_flow() -> None:
+    _require_questionary()
     from cortex_cli.cmd_s3 import cmd_s3_ingest, cmd_s3_list
 
     # First list available prefixes
@@ -229,6 +246,7 @@ def _handle_s3_import_flow() -> None:
 
 # --- Config ---
 def _view_config_section(cli_main) -> None:
+    _require_questionary()
     section = questionary.select(
         "Select Section:",
         choices=[
@@ -254,6 +272,7 @@ def _view_config_section(cli_main) -> None:
 
 # --- RAG / Search ---
 def _handle_rag_menu() -> None:
+    _require_questionary()
     while True:
         action = questionary.select(
             "Select AI Capability:",
@@ -280,6 +299,7 @@ def _handle_rag_menu() -> None:
 
 
 def _interactive_search() -> None:
+    _require_questionary()
     query = questionary.text("Enter search query:").ask()
     if not query:
         return
@@ -328,6 +348,7 @@ def _interactive_search() -> None:
 
 
 def _interactive_answer() -> None:
+    _require_questionary()
     query = questionary.text("Enter your question:").ask()
     if not query:
         return
@@ -372,6 +393,7 @@ def _interactive_answer() -> None:
 
 
 def _interactive_draft() -> None:
+    _require_questionary()
     instructions = questionary.text("Drafting instructions:").ask()
     if not instructions:
         return
@@ -429,6 +451,7 @@ def _interactive_draft() -> None:
 
 
 def _interactive_summarize() -> None:
+    _require_questionary()
     thread_id = questionary.text("Thread ID:").ask()
     if not thread_id:
         return

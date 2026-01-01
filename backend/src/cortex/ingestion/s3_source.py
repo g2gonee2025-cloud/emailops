@@ -334,6 +334,14 @@ class S3SourceHandler:
             for content in page.get("Contents", []):
                 yield content
 
+    def delete_object(self, key: str) -> None:
+        """
+        Delete an object from S3.
+        Args:
+            key: S3 key to delete.
+        """
+        self.client.delete_object(Bucket=self.bucket, Key=key)
+
 
 def create_s3_source() -> S3SourceHandler:
     """Factory function to create S3 source handler from config."""

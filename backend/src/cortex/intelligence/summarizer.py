@@ -13,19 +13,18 @@ from cortex.llm.runtime import LLMRuntime
 
 # Constants
 CHARS_PER_TOKEN_ESTIMATE = 4
-PROMPT_TEMPLATE = (
+SYSTEM_PROMPT = (
     "You are an expert AI assistant analyzing an email conversation thread.\n"
-    "Generate a comprehensive summary of the following conversation.\n"
+    "Generate a comprehensive summary of the conversation.\n"
     "Focus on:\n"
     "1. The main topic or request.\n"
     "2. Key decisions made.\n"
     "3. Action items or next steps.\n"
-    "4. Important entities (people, dates, project names).\n\n"
-    "Conversation:\n"
-    "{conversation}\n\n"
-    "Summary:"
+    "4. Important entities (people, dates, project names).\n"
+    "Return only the summary in markdown."
 )
-PROMPT_OVERHEAD_CHARS = len(PROMPT_TEMPLATE.format(conversation=""))
+USER_PROMPT = "Conversation:\n{conversation}"
+PROMPT_OVERHEAD_CHARS = len(SYSTEM_PROMPT) + len(USER_PROMPT.format(conversation=""))
 
 
 logger = logging.getLogger(__name__)
@@ -60,11 +59,13 @@ class ConversationSummarizer:
             # Ideally use Tiktoken, but for now just prevent OOM/Context overflow
             text = text[:max_chars]
 
-        prompt = PROMPT_TEMPLATE.format(conversation=text)
-
         try:
             # Temperature 0.2 is low-creativity, stable for summaries (not strictly deterministic but close)
-            result = self.llm.complete_text(prompt, temperature=0.2)
+            messages = [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": USER_PROMPT.format(conversation=text)},
+            ]
+            result = self.llm.complete_messages(messages, temperature=0.2)
             return result or ""  # P2 Fix: Guard against None return
         except Exception:
             logger.exception("Summary generation failed")

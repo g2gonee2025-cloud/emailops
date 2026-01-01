@@ -7,14 +7,16 @@ Implements §9.6 of the Canonical Blueprint.
 from __future__ import annotations
 
 import hashlib
+import json
 import logging
 from typing import Any, Literal
 
 from cortex.audit import log_audit_event
+from cortex.common.exceptions import ProviderError
 from cortex.config.loader import get_config
 from cortex.context import tenant_id_ctx, user_id_ctx
 from cortex.domain_models.rag import Answer, RetrievalDiagnostics, ThreadSummary
-from cortex.llm.client import complete_json, complete_messages, complete_text
+from cortex.llm.client import complete_messages
 from cortex.observability import trace_operation  # P2 Fix: Enable tracing
 from cortex.orchestration.nodes import (
     _extract_evidence_from_answer,
@@ -31,6 +33,7 @@ from cortex.retrieval.query_classifier import (
     tool_classify_query,
 )
 from cortex.retrieval.results import SearchResults
+from cortex.safety.guardrails_client import validate_with_repair
 from cortex.security.defenses import sanitize_user_input
 from cortex.security.dependencies import get_current_user
 from cortex.security.validators import sanitize_retrieved_content
@@ -47,6 +50,50 @@ class ChatActionDecision(BaseModel):
 
     action: Literal["answer", "search", "summarize"]
     reason: str
+
+
+def _complete_json_messages(
+    messages: list[dict[str, str]],
+    model_cls: type[BaseModel],
+    correlation_id: str | None,
+) -> BaseModel:
+    schema = model_cls.model_json_schema()
+    schema_json = json.dumps(schema, indent=2)
+    instructions = (
+        "Respond with a single valid JSON object that conforms to this JSON Schema:\n"
+        f"{schema_json}\n\n"
+        "Do not include markdown. Return ONLY the JSON object."
+    )
+    payload = [dict(m) for m in messages if isinstance(m, dict)]
+    inserted = False
+    for message in payload:
+        if message.get("role") == "system" and isinstance(message.get("content"), str):
+            message["content"] = f"{message['content']}\n\n{instructions}"
+            inserted = True
+            break
+    if not inserted:
+        payload.insert(0, {"role": "system", "content": instructions})
+
+    kwargs: dict[str, Any] = {
+        "temperature": 0.0,
+        "max_tokens": 512,
+        "response_format": {"type": "json_object"},
+    }
+    try:
+        raw_output = complete_messages(payload, **kwargs)
+    except ProviderError as exc:
+        msg = str(exc).lower()
+        if "response_format" in msg or "json_object" in msg:
+            kwargs.pop("response_format", None)
+            raw_output = complete_messages(payload, **kwargs)
+        else:
+            raise
+
+    return validate_with_repair(
+        raw_output,
+        model_cls,
+        correlation_id or "chat-route",
+    )
 
 
 def get_summarize_graph(http_request: Request):
@@ -83,25 +130,38 @@ def _latest_user_message(messages: list[ChatMessage]) -> str | None:
 
 
 async def _decide_action(
-    request: ChatRequest, history: list[ChatMessage], latest_user: str
+    request: ChatRequest,
+    history: list[ChatMessage],
+    latest_user: str,
+    correlation_id: str | None = None,
 ) -> ChatActionDecision:
     safe_history = _format_history(history, sanitize=True)
-    prompt = (
+    safe_latest_user = sanitize_user_input(latest_user)
+    system_prompt = (
         "You are a routing assistant for EmailOps. Decide the next action.\n"
         "Choose one of: answer, search, summarize.\n"
         "- Use summarize when the user requests a summary of an email thread or the conversation.\n"
         "- Use search when you need to look up documents or knowledge base results.\n"
-        "- Otherwise answer directly using available context.\n\n"
-        f"Thread ID: {request.thread_id or 'none'}\n"
-        f"Latest user message: <user_input>{latest_user}</user_input>\n\n"
-        "Conversation history:\n"
-        f"{safe_history}\n\n"
+        "- Otherwise answer directly using available context.\n"
         "Return JSON with fields: action, reason."
     )
-    raw = await run_in_threadpool(
-        complete_json, prompt=prompt, schema=ChatActionDecision.model_json_schema()
+    user_prompt = (
+        f"Thread ID: {request.thread_id or 'none'}\n"
+        f"Latest user message: <user_input>{safe_latest_user}</user_input>\n\n"
+        "Conversation history:\n"
+        f"{safe_history}"
     )
-    return ChatActionDecision.model_validate(raw)
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt},
+    ]
+    decision = await run_in_threadpool(
+        _complete_json_messages,
+        messages,
+        ChatActionDecision,
+        correlation_id,
+    )
+    return decision
 
 
 def _build_retrieval_diagnostics(
@@ -135,7 +195,14 @@ async def _run_search(query: str, k: int, classification: Any) -> SearchResults:
         k=k,
         classification=classification,
     )
-    return await run_in_threadpool(tool_kb_search_hybrid, tool_input)
+    result_wrapper = await tool_kb_search_hybrid(tool_input)
+    if hasattr(result_wrapper, "is_err") and result_wrapper.is_err():
+        tool_error = result_wrapper.unwrap_err()
+        logger.error("Chat search tool failed: %s", tool_error)
+        raise HTTPException(status_code=500, detail="Search failed")
+    if hasattr(result_wrapper, "unwrap"):
+        return result_wrapper.unwrap()
+    return result_wrapper
 
 
 @router.post("/chat", response_model=ChatResponse)
@@ -159,7 +226,7 @@ async def chat_endpoint(
     debug_allowed = _is_debug_allowed(current_user)
 
     try:
-        decision = await _decide_action(request, history, latest_user)
+        decision = await _decide_action(request, history, latest_user, correlation_id)
 
         if decision.action == "summarize":
             response = await _handle_summarize(
@@ -227,8 +294,8 @@ def _validate_and_prepare_request(
     return latest_user, history
 
 
-def _is_debug_allowed(current_user: dict) -> bool:
-    if not current_user:
+def _is_debug_allowed(current_user: dict | None) -> bool:
+    if not current_user or not isinstance(current_user, dict):
         return False
     roles: list[str] = []
     role_value = current_user.get("role")
@@ -306,12 +373,16 @@ async def _handle_summarize(
     else:
         safe_history = _format_history(history, sanitize=True)
         summary_prompt = (
-            "Summarize the following conversation in markdown.\n\n"
-            "<conversation_history>\n"
-            f"{safe_history}\n"
-            "</conversation_history>"
+            "<conversation_history>\n" f"{safe_history}\n" "</conversation_history>"
         )
-        summary_text = await run_in_threadpool(complete_text, summary_prompt)
+        summary_messages = [
+            {
+                "role": "system",
+                "content": "Summarize the following conversation in markdown.",
+            },
+            {"role": "user", "content": summary_prompt},
+        ]
+        summary_text = await run_in_threadpool(complete_messages, summary_messages)
         summary_obj = ThreadSummary(summary_markdown=summary_text, key_points=[])
         reply = summary_text
 
@@ -348,12 +419,20 @@ async def _handle_search(
     )
     safe_latest_user = sanitize_user_input(latest_user)
     reply_prompt = (
-        "You are responding to a search request. Provide a concise response "
-        "grounded in the search results.\n\n"
         f"User request: <user_input>{safe_latest_user}</user_input>\n\n"
         f"Search results:\n{snippets}"
     )
-    reply = await run_in_threadpool(complete_text, reply_prompt)
+    reply_messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are responding to a search request. Provide a concise response "
+                "grounded in the search results."
+            ),
+        },
+        {"role": "user", "content": reply_prompt},
+    ]
+    reply = await run_in_threadpool(complete_messages, reply_messages)
     return ChatResponse(
         correlation_id=correlation_id,
         action="search",

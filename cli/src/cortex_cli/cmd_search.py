@@ -184,7 +184,7 @@ def _run_search_command(args: argparse.Namespace) -> None:
 
     try:
         with httpx.Client(base_url=API_BASE_URL, headers=headers) as client:
-            response = client.post("search", json=payload, timeout=60)
+            response = client.post("/search", json=payload, timeout=60)
             response.raise_for_status()
             try:
                 results_data = response.json()

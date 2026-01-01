@@ -49,7 +49,7 @@ class SecureBaseModel(BaseModel):
             return set()
 
         pii_keys: set[str] = set()
-        for field_name, field_info in self.model_fields.items():
+        for field_name, field_info in type(self).model_fields.items():
             alias = field_info.alias
             is_pii = field_name in self._PII_FIELDS or (
                 alias is not None and alias in self._PII_FIELDS

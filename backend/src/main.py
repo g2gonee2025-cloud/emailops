@@ -641,7 +641,13 @@ async def lifespan(app: FastAPI):
     yield
 
     # On shutdown: Gracefully close the Redis client
-    await app.state.redis.close()
+    redis_client = app.state.redis
+    if hasattr(redis_client, "aclose"):
+        await redis_client.aclose()
+    else:
+        close_result = redis_client.close()
+        if inspect.isawaitable(close_result):
+            await close_result
 
     logger.info(f"Shutting down {APP_NAME}")
 

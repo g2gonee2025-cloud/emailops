@@ -1,13 +1,37 @@
+import os
 import shutil
 import tempfile
 import unittest
+from contextlib import contextmanager
 from pathlib import Path
 
+from cortex.config.loader import reset_config
 from cortex.ingestion.conv_loader import (
     _load_conversation_text,
     load_conversation,
     load_summary,
 )
+
+
+@contextmanager
+def _override_export_root(value: str):
+    old_prefixed = os.environ.get("OUTLOOKCORTEX_EXPORT_ROOT")
+    old_legacy = os.environ.get("EXPORT_ROOT")
+    os.environ["OUTLOOKCORTEX_EXPORT_ROOT"] = value
+    os.environ["EXPORT_ROOT"] = value
+    reset_config()
+    try:
+        yield
+    finally:
+        if old_prefixed is not None:
+            os.environ["OUTLOOKCORTEX_EXPORT_ROOT"] = old_prefixed
+        else:
+            os.environ.pop("OUTLOOKCORTEX_EXPORT_ROOT", None)
+        if old_legacy is not None:
+            os.environ["EXPORT_ROOT"] = old_legacy
+        else:
+            os.environ.pop("EXPORT_ROOT", None)
+        reset_config()
 
 
 class TestConvLoader(unittest.TestCase):
@@ -46,77 +70,45 @@ class TestConvLoader(unittest.TestCase):
         data = load_summary(self.convo_dir)
         self.assertEqual(data, {})
 
-    @unittest.skip(
-        "Requires EXPORT_ROOT config override - security test should use production config"
-    )
     def test_load_conversation_valid(self):
         """Test loading a valid conversation with real file processing."""
         import json
-        import os
-
-        from cortex.config.loader import reset_config
 
         # Setup files
         (self.convo_dir / "Conversation.txt").write_text("Body")
         manifest_data = {"id": 1, "subject": "Test", "sender": "test@example.com"}
         (self.convo_dir / "manifest.json").write_text(json.dumps(manifest_data))
 
-        # Set export_root via environment variable for config
-        old_env = os.environ.get("EXPORT_ROOT")
-        os.environ["EXPORT_ROOT"] = str(self.test_dir)
-        reset_config()  # Clear cached config so new env var is picked up
-
-        try:
+        with _override_export_root(str(self.test_dir)):
             result = load_conversation(self.convo_dir)
 
             self.assertIsNotNone(result)
             self.assertEqual(result["conversation_txt"], "Body")
             self.assertEqual(result["manifest"]["id"], 1)
-        finally:
-            if old_env is not None:
-                os.environ["EXPORT_ROOT"] = old_env
-            elif "EXPORT_ROOT" in os.environ:
-                del os.environ["EXPORT_ROOT"]
-            reset_config()  # Restore original config
 
     def test_load_conversation_invalid_path(self):
         """Test loading from non-existent path returns None."""
-        import os
-
-        os.environ["EXPORT_ROOT"] = "/secure_root"
-        try:
+        with _override_export_root("/secure_root"):
             result = load_conversation(Path("/non/existent"))
             self.assertIsNone(result)
-        finally:
-            del os.environ["EXPORT_ROOT"]
 
     def test_load_conversation_not_dir(self):
         """Test loading from file (not directory) returns None."""
-        import os
-
-        os.environ["EXPORT_ROOT"] = str(self.test_dir)
-        try:
+        with _override_export_root(str(self.test_dir)):
             f = self.test_dir / "file"
             f.touch()
             result = load_conversation(f)
             self.assertIsNone(result)
-        finally:
-            del os.environ["EXPORT_ROOT"]
 
     def test_load_conversation_path_traversal(self):
         """Test that path traversal attempts are blocked."""
-        import os
-
         secure_root = self.test_dir.resolve()
-        os.environ["EXPORT_ROOT"] = str(secure_root)
-        try:
+        with _override_export_root(str(secure_root)):
             # Attempt to access a path outside the secure root
             malicious_path = self.test_dir / ".." / ".."
             result = load_conversation(malicious_path)
             # Assert that the operation was blocked (returned None)
             self.assertIsNone(result)
-        finally:
-            del os.environ["EXPORT_ROOT"]
 
 
 if __name__ == "__main__":

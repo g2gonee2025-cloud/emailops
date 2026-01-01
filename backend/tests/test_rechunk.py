@@ -14,7 +14,6 @@ def mock_session():
         yield session
 
 
-@pytest.mark.skip(reason="rechunk module does not exist - tests obsolete")
 class TestRechunkFailed:
     @patch("cortex.ingestion.rechunk.SessionLocal")
     @patch("cortex.ingestion.rechunk.chunk_text")

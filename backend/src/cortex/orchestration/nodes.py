@@ -15,7 +15,7 @@ from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any
 
-from cortex.common.exceptions import SecurityError
+from cortex.common.exceptions import ProviderError, SecurityError
 from cortex.config.loader import EmailOpsConfig, get_config
 from cortex.domain_models.facts_ledger import CriticReview, FactsLedger
 from cortex.domain_models.rag import (
@@ -33,7 +33,7 @@ from cortex.domain_models.rag import (
     ThreadSummary,
     ToneStyle,
 )
-from cortex.llm.client import complete_json, complete_messages, complete_text
+from cortex.llm.client import complete_messages
 from cortex.observability import get_logger, trace_operation
 from cortex.orchestration.redacted import Redacted
 from cortex.prompts import (
@@ -56,7 +56,6 @@ from cortex.prompts import (
     USER_SUMMARIZE_FINAL,
     USER_SUMMARIZE_IMPROVER,
     construct_prompt_messages,
-    get_prompt,
 )
 from cortex.retrieval.hybrid_search import (
     KBSearchInput,
@@ -72,7 +71,7 @@ from cortex.safety.policy_enforcer import check_action
 from cortex.security.defenses import sanitize_user_input
 from cortex.security.injection_defense import validate_for_injection
 from cortex.security.validators import sanitize_retrieved_content, validate_file_result
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import aliased
 
@@ -101,49 +100,53 @@ def _complete_with_guardrails(
 ):
     """Run structured completion with guardrails repair fallback."""
     schema = model_cls.model_json_schema()
-
-    # The `complete_json` function is deprecated. We should be moving towards
-    # a pattern where the model is guided to produce JSON via system prompts
-    # and we parse the result from `complete_messages`.
-    # For now, we adapt to what `complete_json` expects.
     if not messages:
         raise ValueError("Cannot perform completion with empty messages.")
 
-    # Reconstruct a single "prompt" string for the deprecated function.
-    # This is a temporary measure during the security transition.
-    # The `system` message provides the instructions and JSON schema info.
-    # The `user` message provides the data.
-    system_content = ""
-    user_content = ""
     for message in messages:
         if not isinstance(message, dict):
             continue
-        role = message.get("role")
-        content = message.get("content")
-        if not isinstance(content, str):
+        if message.get("role") != "user":
             continue
-        if role == "system" and not system_content:
-            system_content = content
-        elif role == "user" and not user_content:
-            user_content = content
+        content = message.get("content")
+        if isinstance(content, str) and content:
+            validate_for_injection(content)
 
-    if user_content:
-        validate_for_injection(user_content)
+    schema_json = json.dumps(schema, indent=2)
+    instructions = (
+        "Respond with a single valid JSON object that conforms to this JSON Schema:\n"
+        f"{schema_json}\n\n"
+        "Do not include markdown. Return ONLY the JSON object."
+    )
+    payload = [dict(m) for m in messages if isinstance(m, dict)]
+    inserted = False
+    for message in payload:
+        if message.get("role") == "system" and isinstance(message.get("content"), str):
+            message["content"] = f"{message['content']}\n\n{instructions}"
+            inserted = True
+            break
+    if not inserted:
+        payload.insert(0, {"role": "system", "content": instructions})
 
-    reconstructed_prompt = f"{system_content}\n\n{user_content}".strip()
-    if not reconstructed_prompt:
-        raise ValueError("Cannot perform completion with empty messages.")
-
-    raw = complete_json(prompt=reconstructed_prompt, schema=schema)
+    kwargs: dict[str, Any] = {
+        "temperature": 0.0,
+        "max_tokens": 2048,
+        "response_format": {"type": "json_object"},
+    }
     try:
-        return model_cls.model_validate(raw)
-    except ValidationError:
-        raw_payload = json.dumps(raw, ensure_ascii=False)
-        return validate_with_repair(
-            raw_payload,
-            model_cls,
-            correlation_id or str(uuid.uuid4()),
-        )
+        raw_output = complete_messages(payload, **kwargs)
+    except ProviderError as exc:
+        msg = str(exc).lower()
+        if "response_format" in msg or "json_object" in msg:
+            kwargs.pop("response_format", None)
+            raw_output = complete_messages(payload, **kwargs)
+        else:
+            raise
+    return validate_with_repair(
+        raw_output,
+        model_cls,
+        correlation_id or str(uuid.uuid4()),
+    )
 
 
 # -----------------------------------------------------------------------------
@@ -297,8 +300,7 @@ def _extract_entity_mentions(text: str) -> list[str]:
 async def _safe_stat_mb(path: Path) -> float:
     """Safely get file size in MB."""
     try:
-        # Use to_thread to avoid blocking the event loop with sync file I/O
-        stat_result = await asyncio.to_thread(path.stat)
+        stat_result = path.stat()
         return stat_result.st_size / (1024 * 1024)
     except FileNotFoundError:
         return 0.0

@@ -268,6 +268,7 @@ outlook-cortex/
 │   │   │   │   ├── conv_loader.py      # load_conversation(...)
 │   │   │   │   ├── text_preprocessor.py
 │   │   │   │   ├── mailroom.py         # orchestration entry for ingest jobs
+│   │   │   │   ├── rechunk.py          # rechunk skipped/oversized chunks
 │   │   │   │   ├── parser_email.py
 │   │   │   │   ├── quoted_masks.py
 │   │   │   │   ├── pii.py
@@ -284,6 +285,7 @@ outlook-cortex/
 │   │   │   ├── rag_api/
 │   │   │   │   ├── routes_search.py
 │   │   │   │   ├── routes_answer.py
+│   │   │   │   ├── routes_chat.py
 │   │   │   │   ├── routes_draft.py
 │   │   │   │   └── routes_summarize.py
 │   │   │   ├── orchestration/
@@ -420,7 +422,7 @@ class ProcessingConfig(BaseModel):
 * **SecurityConfig:** `allow_parent_traversal`, `blocked_extensions`.
 * **SensitiveConfig:** API keys (never logged).
 * **FilePatternsConfig:** allowed file patterns for processing.
-* **SystemConfig:** `log_level`, timeouts, cache settings.
+* **SystemConfig:** `log_level`, timeouts, cache settings, optional `tika_server_endpoint`.
 * **UnifiedConfig:** runtime session config (temperature, chat history).
 
 `cortex.config.loader.get_config()` exposes a **thread‑safe singleton**.
@@ -2483,6 +2485,23 @@ class ThreadSummary(BaseModel):
     quality_scores: Dict[str, Any]
 ```
 
+#### Chat
+
+```python
+class ChatMessage(BaseModel):
+    role: Literal["system", "user", "assistant"]
+    content: str
+
+class ChatResponse(BaseModel):
+    correlation_id: Optional[str] = None
+    action: Literal["answer", "search", "summarize"]
+    reply: str
+    answer: Optional[Answer] = None
+    summary: Optional[ThreadSummary] = None
+    search_results: Optional[List[Dict[str, Any]]] = None
+    debug_info: Optional[Dict[str, Any]] = None
+```
+
 #### Grounding & policy
 
 ```python
@@ -2554,6 +2573,16 @@ class SummarizeThreadRequest(BaseModel):
     options: Dict[str, Any] = Field(default_factory=dict)
 ```
 
+```python
+class ChatRequest(BaseModel):
+    messages: List[ChatMessage]
+    debug: bool = False
+    thread_id: Optional[str] = None
+    k: Optional[int] = 10
+    max_length: Optional[int] = 500
+    max_history: Optional[int] = None
+```
+
 ### §9.2 HTTP endpoints
 
 All endpoints use FastAPI with Pydantic models for request/response.
@@ -2566,6 +2595,8 @@ All endpoints use FastAPI with Pydantic models for request/response.
   Request: `DraftEmailRequest` → Response: `EmailDraft`
 * `POST /api/v1/summarize-thread`
   Request: `SummarizeThreadRequest` → Response: `ThreadSummary`
+* `POST /api/v1/chat`
+  Request: `ChatRequest` → Response: `ChatResponse`
 
 Standard error responses:
 

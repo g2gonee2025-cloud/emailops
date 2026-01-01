@@ -60,26 +60,33 @@ def setup_login_parser(
         action="store_true",
         help="Print the access token to stdout.",
     )
-    login_parser.set_defaults(func=_run_login)
+    login_parser.set_defaults(func=lambda args: _run_login(args, exit_on_error=True))
 
 
-def _run_login(args: argparse.Namespace) -> None:
+def _run_login(args: argparse.Namespace, exit_on_error: bool = False) -> bool:
     """Execute the login command."""
-    username = (args.username or "").strip()
+    username = (getattr(args, "username", "") or "").strip()
     if not username:
         print(colorize("Username is required.", "red"))
-        sys.exit(1)
+        if exit_on_error:
+            sys.exit(1)
+        return False
 
-    if args.password_stdin:
+    password = getattr(args, "password", None)
+    if password:
+        password = str(password).strip()
+    elif bool(getattr(args, "password_stdin", False)):
         password = sys.stdin.read().strip()
     else:
         password = getpass.getpass("Password: ")
 
     if not password:
         print(colorize("Password is required.", "red"))
-        sys.exit(1)
+        if exit_on_error:
+            sys.exit(1)
+        return False
 
-    host = (args.host or "").strip()
+    host = (getattr(args, "host", "") or "").strip()
     if "://" not in host:
         host = f"https://{host}"
 
@@ -87,17 +94,21 @@ def _run_login(args: argparse.Namespace) -> None:
         base_url = httpx.URL(host)
     except Exception:
         print(colorize("Invalid host URL.", "red"))
-        sys.exit(1)
+        if exit_on_error:
+            sys.exit(1)
+        return False
 
     if base_url.scheme != "https":
         is_local = base_url.host in {"localhost", "127.0.0.1", "::1"}
-        if not is_local and not args.allow_http:
+        if not is_local and not bool(getattr(args, "allow_http", False)):
             print(colorize("Refusing to send credentials over insecure HTTP.", "red"))
-            sys.exit(1)
+            if exit_on_error:
+                sys.exit(1)
+            return False
 
     token_path = (
-        Path(args.token_path).expanduser()
-        if args.token_path
+        Path(getattr(args, "token_path", "")).expanduser()
+        if getattr(args, "token_path", None)
         else get_default_token_path()
     )
     token_path.parent.mkdir(parents=True, exist_ok=True)
@@ -121,35 +132,59 @@ def _run_login(args: argparse.Namespace) -> None:
             if not token:
                 raise RuntimeError("Login response did not include an access token.")
 
-            token_path.write_text(f"{token}\n", encoding="utf-8")
+            token_saved = True
             try:
-                os.chmod(token_path, 0o600)
-            except OSError:
-                pass
+                token_path.write_text(f"{token}\n", encoding="utf-8")
+                try:
+                    os.chmod(token_path, 0o600)
+                except OSError:
+                    pass
+            except OSError as exc:
+                token_saved = False
+                print(
+                    colorize(
+                        f"Warning: failed to save token to {token_path}: {exc}",
+                        "yellow",
+                    )
+                )
 
             print(colorize("Login successful!", "green"))
-            print(
-                f"Access token saved to {token_path} "
-                "(export CORTEX_API_TOKEN to override)."
-            )
-            if args.show_token:
+            if token_saved:
+                print(
+                    f"Access token saved to {token_path} "
+                    "(export CORTEX_API_TOKEN to override)."
+                )
+            else:
+                print("Access token not saved; export CORTEX_API_TOKEN to override.")
+            show_token = bool(getattr(args, "show_token", True))
+            if show_token:
                 print(f"Access Token: {token}")
+            return True
     except httpx.HTTPStatusError as e:
+        response = e.response
         detail = None
         try:
-            payload = e.response.json()
+            payload = response.json()
         except ValueError:
             payload = None
         if isinstance(payload, dict):
             detail = payload.get("detail")
-        message = f"Login failed: {e.response.status_code} {e.response.reason_phrase}"
-        if detail:
+        error_text = response.text or response.reason_phrase or "Request failed"
+        message = f"Login failed: {response.status_code} {error_text}"
+        if detail and detail not in error_text:
             message = f"{message} ({detail})"
         print(colorize(message, "red"))
-        sys.exit(1)
+        if exit_on_error:
+            sys.exit(1)
+        return False
     except httpx.RequestError as e:
-        print(colorize(f"An error occurred while requesting {e.request.url!r}.", "red"))
-        sys.exit(1)
+        url = str(e.request.url) if e.request else "unknown"
+        print(colorize(f"An error occurred while requesting '{url}'.", "red"))
+        if exit_on_error:
+            sys.exit(1)
+        return False
     except Exception as e:
         print(colorize(f"Login failed: {e}", "red"))
-        sys.exit(1)
+        if exit_on_error:
+            sys.exit(1)
+        return False

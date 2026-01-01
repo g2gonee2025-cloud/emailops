@@ -4,7 +4,10 @@ Interactive TUI for Cortex CLI.
 
 import sys
 
-import questionary
+try:
+    import questionary
+except ImportError:
+    questionary = None
 from rich.console import Console
 from rich.panel import Panel
 
@@ -25,8 +28,16 @@ def _print_header() -> None:
     )
 
 
+def _require_questionary() -> None:
+    if questionary is None:
+        console.print("[bold red]Error:[/bold red] questionary is not installed.")
+        console.print("Install it with: pip install questionary")
+        raise SystemExit(1)
+
+
 def interactive_loop() -> None:
     """Main interactive loop."""
+    _require_questionary()
     # We don't import main here anymore unless needed for specific delegated tasks (like status)
     from cortex_cli import main as cli_main
     from cortex_cli.tui_handlers import (
@@ -105,6 +116,7 @@ def interactive_loop() -> None:
 
 
 def _handle_index(cli_main) -> None:
+    _require_questionary()
     provider = questionary.select(
         "Embedding Provider:",
         choices=["vertex", "openai", "local"],
@@ -124,6 +136,7 @@ def _handle_index(cli_main) -> None:
 
 
 def _handle_doctor() -> None:
+    _require_questionary()
     checks = questionary.checkbox(
         "Select diagnostics to run:",
         choices=[
@@ -166,6 +179,7 @@ def _handle_doctor() -> None:
 
 def _handle_config(cli_main) -> None:
     """Show configuration directly without nested submenu."""
+    _require_questionary()
     action = questionary.select(
         "Configuration:",
         choices=["View All (Tree)", "View as JSON", "Validate", "Back"],

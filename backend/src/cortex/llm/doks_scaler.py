@@ -111,7 +111,7 @@ class DOApiClient:
         token_value = (
             token.get_secret_value() if isinstance(token, SecretStr) else token
         )
-        self.token = token_value or os.environ.get("DIGITALOCEAN_TOKEN", "")
+        self.token = token_value or ""
         self.base_url = base_url.rstrip("/")
         self.timeout_s = timeout_s
         self.dry_run = dry_run

@@ -114,11 +114,16 @@ class QueryExpander:
         if not self._llm_runtime:
             return set()
 
-        prompt = f"List up to {max_count} single-word synonyms for the word '{term}'. Return only the words, comma-separated, no explanation."
+        prompt = (
+            f"List up to {max_count} single-word synonyms for the word '{term}'. "
+            "Return only the words, comma-separated, no explanation."
+        )
         try:
             # User requested GPT-OSS-120B for fallback intelligence
-            response = self._llm_runtime.complete_text(
-                prompt, temperature=0.0, max_tokens=50
+            response = self._llm_runtime.complete_messages(
+                [{"role": "user", "content": prompt}],
+                temperature=0.0,
+                max_tokens=50,
             )
             # Parse comma-separated response
             synonyms = {

@@ -999,6 +999,10 @@ class SystemConfig(BaseModel):
     file_encoding_cache_size: int = Field(
         default=128, ge=16, le=1024, description="File encoding cache size"
     )
+    tika_server_endpoint: AnyHttpUrl | None = Field(
+        default_factory=lambda: _env("TIKA_SERVER_ENDPOINT", None),
+        description="Optional Tika server endpoint (e.g., http://localhost:9998)",
+    )
     pip_timeout: int = Field(
         default=300, ge=30, le=1800, description="Pip command timeout"
     )

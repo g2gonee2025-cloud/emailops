@@ -22,10 +22,14 @@ def setup_draft_parser(parser: Any) -> None:
     draft_parser.add_argument("--thread-id", help="Thread context")
     draft_parser.add_argument("--reply-to-message-id", help="Message to reply to")
     draft_parser.add_argument("--tone", default="professional", help="Email tone")
-    draft_parser.set_defaults(func=run_draft_command)
+    draft_parser.set_defaults(func=_run_draft_cli)
 
 
-def run_draft_command(args: argparse.Namespace) -> None:
+def _run_draft_cli(args: argparse.Namespace) -> None:
+    run_draft_command(args, exit_on_error=True)
+
+
+def run_draft_command(args: argparse.Namespace, exit_on_error: bool = False) -> bool:
     """
     Run the 'draft' command.
     """
@@ -35,7 +39,9 @@ def run_draft_command(args: argparse.Namespace) -> None:
     instruction = getattr(args, "instruction", None)
     if not instruction:
         console.print("[red]Draft instruction is required.[/red]")
-        raise SystemExit(1)
+        if exit_on_error:
+            raise SystemExit(1)
+        return False
 
     try:
         data = {
@@ -57,10 +63,14 @@ def run_draft_command(args: argparse.Namespace) -> None:
                 response_data = res.json()
             except ValueError:
                 console.print("[red]Invalid JSON response from server.[/red]")
-                raise SystemExit(1)
+                if exit_on_error:
+                    raise SystemExit(1)
+                return False
             if not isinstance(response_data, dict):
                 console.print("[red]Unexpected response format from server.[/red]")
-                raise SystemExit(1)
+                if exit_on_error:
+                    raise SystemExit(1)
+                return False
 
             draft_content = "No draft generated."
             draft_payload = response_data.get("draft")
@@ -89,10 +99,18 @@ def run_draft_command(args: argparse.Namespace) -> None:
     except httpx.HTTPStatusError as e:
         message = escape(e.response.text) if e.response.text else "Request failed."
         console.print(f"[red]Error: {e.response.status_code} - {message}[/red]")
-        raise SystemExit(1)
+        if exit_on_error:
+            raise SystemExit(1)
+        return False
     except httpx.RequestError as e:
         console.print(f"[red]Request failed: {e}[/red]")
-        raise SystemExit(1)
+        if exit_on_error:
+            raise SystemExit(1)
+        return False
     except Exception as e:
         console.print(f"[red]An unexpected error occurred: {e}[/red]")
-        raise SystemExit(1)
+        if exit_on_error:
+            raise SystemExit(1)
+        return False
+
+    return True

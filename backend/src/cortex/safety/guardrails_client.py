@@ -14,10 +14,14 @@ import threading
 import warnings
 from typing import Any, TypeVar
 
-from cortex.common.exceptions import LLMOutputSchemaError
-from cortex.llm.client import complete_json
+from cortex.common.exceptions import LLMOutputSchemaError, ProviderError
+from cortex.llm.client import complete_messages
 from cortex.observability import trace_operation
-from cortex.prompts import get_prompt
+from cortex.prompts import (
+    SYSTEM_GUARDRAILS_REPAIR,
+    USER_GUARDRAILS_REPAIR,
+    construct_prompt_messages,
+)
 from pydantic import BaseModel, Field, ValidationError
 
 logger = logging.getLogger(__name__)
@@ -72,31 +76,25 @@ def attempt_llm_repair(
     Returns:
         RepairAttempt with success status and repaired JSON if successful
     """
-    # Format schema for repair prompt
     schema_json = target_model.model_json_schema()
     current_validation_errors = validation_errors[:]
 
     for attempt in range(max_attempts):
-        # Format errors for repair prompt
         errors_text = (
             "\n".join(f"- {err}" for err in current_validation_errors)
             or "- Unknown validation error"
         )
-
-        full_prompt = get_prompt(
-            "GUARDRAILS_REPAIR",
-            error=errors_text,
-            invalid_json=json.dumps(invalid_json, indent=2),
-            target_schema=json.dumps(schema_json, indent=2),
-            validation_errors=errors_text,
-        )
-        full_prompt += "\n\nRespond with ONLY valid JSON that satisfies the schema."
         try:
-            # Use JSON mode for repair
-            repaired = complete_json(
-                prompt=full_prompt,
-                schema=schema_json,
+            messages = construct_prompt_messages(
+                system_prompt_template=SYSTEM_GUARDRAILS_REPAIR,
+                user_prompt_template=USER_GUARDRAILS_REPAIR,
+                error=errors_text,
+                invalid_json=json.dumps(invalid_json, indent=2),
+                target_schema=json.dumps(schema_json, indent=2),
+                validation_errors=errors_text,
             )
+            raw_output = _complete_json_messages(messages, schema_json)
+            repaired = _parse_json_output(raw_output)
 
             # Validate repaired output
             validated = target_model.model_validate(repaired)
@@ -109,19 +107,66 @@ def attempt_llm_repair(
 
         except ValidationError as e:
             logger.warning(
-                f"Repair attempt {attempt + 1} failed",
-                extra={"errors": [str(err) for err in e.errors()]},
+                "Repair attempt %d failed", attempt + 1, extra={"errors": e.errors()}
             )
-            # Update errors for next attempt
             current_validation_errors = [str(err) for err in e.errors()]
+        except json.JSONDecodeError as e:
+            logger.warning("Repair attempt %d returned invalid JSON", attempt + 1)
+            current_validation_errors = [f"Invalid JSON: {e}"]
         except Exception as e:
-            logger.warning(f"Repair attempt {attempt + 1} failed with error: {e}")
+            logger.warning("Repair attempt %d failed with error: %s", attempt + 1, e)
+            current_validation_errors = [str(e)]
 
     return RepairAttempt(
         success=False,
         error_message="Repair failed after maximum attempts",
         original_errors=validation_errors,
     )
+
+
+def _complete_json_messages(
+    messages: list[dict[str, str]],
+    schema: dict[str, Any],
+) -> str:
+    schema_json = json.dumps(schema, indent=2)
+    instructions = (
+        "Respond with a single valid JSON object that conforms to this JSON Schema:\n"
+        f"{schema_json}\n\n"
+        "Do not include markdown. Return ONLY the JSON object."
+    )
+    payload = [dict(m) for m in messages]
+    inserted = False
+    for message in payload:
+        if message.get("role") == "system" and isinstance(message.get("content"), str):
+            message["content"] = f"{message['content']}\n\n{instructions}"
+            inserted = True
+            break
+    if not inserted:
+        payload.insert(0, {"role": "system", "content": instructions})
+
+    kwargs: dict[str, Any] = {
+        "temperature": 0.0,
+        "max_tokens": 2048,
+        "response_format": {"type": "json_object"},
+    }
+    try:
+        return complete_messages(payload, **kwargs)
+    except ProviderError as exc:
+        msg = str(exc).lower()
+        if "response_format" in msg or "json_object" in msg:
+            kwargs.pop("response_format", None)
+            return complete_messages(payload, **kwargs)
+        raise
+
+
+def _parse_json_output(raw_output: str) -> dict[str, Any]:
+    try:
+        return json.loads(raw_output)
+    except json.JSONDecodeError as e:
+        match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", raw_output)
+        if match:
+            return json.loads(match.group(1))
+        raise e
 
 
 def validate_with_repair(

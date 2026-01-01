@@ -140,9 +140,9 @@ This ledger tracks the **exact state of implementation** for each checklist step
 
 ## Step S02 – Configuration & Secrets Wiring
 
-- **Status:** completed_pending_verification
-- **Last updated:** 2025-12-31 15:32 UTC
-- **Responsible run ID:** run-2025-12-31-mcp
+- **Status:** verified
+- **Last updated:** 2025-12-31 18:47 UTC
+- **Responsible run ID:** run-2025-12-31-cli-gui
 
 ### Scope & files
 
@@ -155,7 +155,7 @@ This ledger tracks the **exact state of implementation** for each checklist step
 ### Implementation summary
 
 - Confirmed `cortex.config.loader` implements Pydantic models for all configuration sections.
-- Verified `.env` contains all required keys (DB, S3, LLM/Gradient, DOKS).
+- Re-verified `.env` and environment keys; `OUTLOOKCORTEX_DO_LLM_API_KEY` and `OUTLOOKCORTEX_DO_LLM_BASE_URL` are set, and the Postgres alias matches.
 - Added `POSTGRES_CONNECTION_STRING` alias in `.env` for the MCP Postgres server.
 - Validated `loader.py` logic:
   - Supports `OUTLOOKCORTEX_` prefix with fallback.
@@ -168,12 +168,14 @@ This ledger tracks the **exact state of implementation** for each checklist step
 - All mandatory config keys from blueprint are defined in `.env`.
 - `OUTLOOKCORTEX_DB_URL` is correctly mapped.
 - `POSTGRES_CONNECTION_STRING` mirrors `OUTLOOKCORTEX_DB_URL` for MCP tooling.
-- `DO_token` and `DO_LLM_API_KEY` are present for Gradient/DOKS.
+- `OUTLOOKCORTEX_DO_LLM_API_KEY` and `OUTLOOKCORTEX_DO_LLM_BASE_URL` are present for the DigitalOcean LLM endpoint.
+- `DO_TOKEN` is required only when DOKS GPU scaler fields are configured.
 
 ### Tests & commands run
 
-- `python verify_config.py` – PASSED
-- MCP env alias update only; tests not re-run for this change.
+- `python scripts/verification/verify_config.py` – PASSED
+- `.env` key presence check (no values logged) – DigitalOcean LLM endpoint keys present
+- Config probe (no secrets logged): scaler fields unset, endpoint + api key set
 
 ### Edge cases considered
 
@@ -192,6 +194,8 @@ This ledger tracks the **exact state of implementation** for each checklist step
 
 - [x] Verified on 2025-12-10 by run run-002
   Notes: verify_config.py passed.
+- [x] Verified on 2025-12-31 by run run-2025-12-31-cli-gui
+  Notes: Prefixed DigitalOcean LLM keys are present; scaler config is unset; `POSTGRES_CONNECTION_STRING` matches `OUTLOOKCORTEX_DB_URL`.
 
 ---
 
@@ -3023,3 +3027,110 @@ This ledger tracks the **exact state of implementation** for each checklist step
 
 - [x] Verified on 2025-12-31 by run run-review-report-verify-20251231-42
   Notes: Re-ran review_report_resolver; no drift detected.
+
+---
+
+## Review Report Fixes (CLI + GUI Hardening) (Ad Hoc)
+
+- **Status:** verified
+- **Last updated:** 2026-01-01 04:11 UTC
+- **Responsible run ID:** run-2025-12-31-cli-gui
+
+### Scope & files
+
+- **Summary:** Hardened CLI command handling, test coverage alignment, GUI config wiring, and warning cleanups with pytest config consolidation and CLI test discovery.
+- **Files touched:**
+  - `cli/src/cortex_cli/style.py`
+  - `cli/src/cortex_cli/cmd_rechunk.py`
+  - `cli/src/cortex_cli/cmd_test.py`
+  - `cli/src/cortex_cli/cmd_audit.py`
+  - `cli/src/cortex_cli/cmd_graph.py`
+  - `cli/src/cortex_cli/cmd_index.py`
+  - `cli/src/cortex_cli/indexing/utils.py`
+  - `cli/src/cortex_cli/cmd_db.py`
+  - `cli/src/cortex_cli/cmd_fix.py`
+  - `cli/src/cortex_cli/cmd_grounding.py`
+  - `cli/src/cortex_cli/cmd_login.py`
+  - `cli/src/cortex_cli/cmd_search.py`
+  - `cli/src/cortex_cli/cmd_schema.py`
+  - `cli/src/cortex_cli/tui.py`
+  - `cli/src/cortex_cli/tui_handlers.py`
+  - `cli/src/cortex_cli/main.py`
+  - `ui/emailops_ui.py`
+  - `backend/src/cortex/safety/grounding.py`
+  - `backend/src/cortex/orchestration/nodes.py`
+  - `backend/src/cortex/intelligence/query_expansion.py`
+  - `backend/src/cortex/intelligence/summarizer.py`
+  - `backend/src/cortex/safety/guardrails_client.py`
+  - `backend/src/cortex/rag_api/routes_chat.py`
+  - `backend/src/cortex/common/models.py`
+  - `backend/src/main.py`
+  - `backend/src/cortex/ingestion/rechunk.py`
+  - `backend/src/cortex/rag_api/models.py`
+  - `backend/tests/test_conv_loader.py`
+  - `backend/tests/test_rechunk.py`
+  - `backend/tests/test_routes_chat_unit.py`
+  - `pytest.ini`
+  - `pyproject.toml`
+  - `docs/CANONICAL_BLUEPRINT.md`
+
+### Implementation summary
+
+- **CLI:** Added safer output handling, input validation, and explicit error paths across audit, graph, index, rechunk, and test commands; restored `_run_search` and observability init wiring for `main.py`; wired `fix-issues` to run the bulk fixer from the project root and added tolerant symlink scanning; made login/draft flows testable without forced exits; fixed search API path and schema CLI output to align with expectations.
+- **TUI:** Made `questionary` optional with explicit runtime checks for clearer failures while keeping tests patchable.
+- **GUI (Streamlit):** Load `.env` before config import, handle config initialization failures, map index and batch defaults from config, and align provider defaults/options.
+- **Grounding models:** Defaulted `method` fields to allow CLI tests to construct results without explicit method values.
+- **Orchestration:** Avoided thread-based file stat in `_safe_stat_mb` to prevent async hangs.
+- **Query expansion:** Switched LLM synonym lookup to `complete_messages` to avoid deprecated completion paths.
+- **Summarizer:** Switched summary generation to message-based completions with separated system/user roles.
+- **Guardrails + chat routing:** Migrated JSON and text completions to the message-based API with schema instructions and repair fallback.
+- **Grounding checks:** Switched LLM claim extraction and grounding analysis to message-based JSON completions with repair fallback.
+- **Warnings:** Disabled pytest-timeout config, updated Pydantic field access to class-level, and preferred Redis `aclose` with a safe fallback.
+- **Pytest config:** Removed redundant `pyproject.toml` pytest settings so `pytest.ini` is the single config source.
+- **Pytest coverage:** Expanded `testpaths` to include CLI tests in root `pytest` runs.
+- **Pytest addopts:** Restored explicit `addopts` while keeping coverage flags commented until `pytest-cov` is available.
+- **Chat API:** Added `debug` to `ChatRequest`, hardened debug gating when dependencies are bypassed, and awaited async search results to prevent coroutine leaks; un-xfailed chat route tests.
+- **Blueprint:** Documented chat request/response models and `/api/v1/chat` endpoint to align with implementation.
+- **Ingestion tests:** Implemented `rechunk_failed` for skipped chunks and updated conv loader tests to override prefixed export root and reset config, enabling all previously skipped tests.
+- **Blueprint layout:** Added `ingestion/rechunk.py` and `rag_api/routes_chat.py` to the repo tree overview.
+- **Blueprint config:** Noted optional `tika_server_endpoint` in `SystemConfig`.
+- **UI config defaults:** Prefer OUTLOOKCORTEX-prefixed env vars and config-derived export root for Streamlit defaults.
+
+### Tests & commands run
+
+- `cd frontend && npm run build`
+- `cd frontend && npm run test`
+- `cd frontend && npm run lint`
+- `pytest cli/tests` (pass; pytest config warning for unknown `timeout` option)
+- `pytest cli/tests/test_cmd_fix.py` (pass; pytest config warning for unknown `timeout` option)
+- `pytest` (interrupted after ~5m while running backend suite; hang during integration tests)
+- `pytest -m unit` (0 selected; 373 deselected; pytest config warning for unknown `timeout` option)
+- `pytest backend/tests/orchestration/test_nodes.py -vv -x`
+- `pytest backend/tests/test_bare_except.py -vv`
+- `pytest backend/tests/test_chunker.py -vv`
+- `pytest backend/tests/test_hybrid_search.py -vv -x` (interrupted during integration test)
+- `pytest backend/tests/test_hybrid_search.py -vv -x` (pass with live infrastructure)
+- `pytest` (pass; 366 passed, 4 skipped, 3 xfailed; warnings: unknown `timeout` config, Pydantic `model_fields` deprecation, Redis `close` deprecation)
+- `pytest backend/tests/test_query_expansion.py -vv` (pass with live infrastructure)
+- `pytest backend/tests/test_nodes_unit.py -vv` (pass with live infrastructure)
+- `pytest backend/tests/test_routes_chat_unit.py -vv` (pass; 3 xfailed)
+- `pytest backend/tests/unit/safety/test_grounding.py -vv`
+- `pytest backend/tests/common/test_models.py -vv`
+- `pytest backend/tests/test_summarize_api.py -vv`
+- `pytest` (pass; 366 passed, 4 skipped, 3 xfailed; pytest warns that `pyproject.toml` config is ignored in favor of `pytest.ini`)
+- `pytest` (pass; 366 passed, 4 skipped, 3 xfailed)
+- `pytest` (pass; 415 passed, 4 skipped, 3 xfailed)
+- `pytest` (failed; missing pytest-cov plugin for `--cov` flags)
+- `pytest` (pass; 415 passed, 4 skipped, 3 xfailed)
+- `pytest backend/tests/test_routes_chat_unit.py -vv --runxfail` (failed; coroutine passed into `node_assemble_context`)
+- `pytest backend/tests/test_routes_chat_unit.py -vv --runxfail` (pass; 4 passed)
+- `pytest backend/tests/test_routes_chat_unit.py -vv` (pass; 4 passed)
+- `pytest` (pass; 418 passed, 4 skipped)
+- Tests not rerun after blueprint update.
+- `pytest backend/tests/test_rechunk.py -vv` (pass; 3 passed)
+- `pytest backend/tests/test_conv_loader.py -vv` (failed; export_root override ignored due to prefixed env)
+- `pytest backend/tests/test_conv_loader.py -vv` (pass; 9 passed)
+- `pytest` (pass; 422 passed)
+- Tests not rerun after blueprint layout update.
+- Tests not rerun after blueprint config update.
+- Tests not rerun after Streamlit env-default adjustments.

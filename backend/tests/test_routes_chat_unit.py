@@ -23,9 +23,6 @@ class TestRoutesChat:
         req.state.correlation_id = "test-corr-id"
         return req
 
-    @pytest.mark.xfail(
-        reason="Upstream bug: TypeError unhashable QueryClassificationInput"
-    )
     @pytest.mark.asyncio
     async def test_chat_endpoint_simple_greeting(self, mock_request):
         """Test chat endpoint with a simple greeting - live LLM call."""
@@ -42,9 +39,6 @@ class TestRoutesChat:
         assert hasattr(resp, "reply")
         assert resp.correlation_id == "test-corr-id"
 
-    @pytest.mark.xfail(
-        reason="Upstream bug: TypeError unhashable QueryClassificationInput"
-    )
     @pytest.mark.asyncio
     async def test_chat_endpoint_search_query(self, mock_request):
         """Test chat endpoint with search-like query - live LLM call."""
@@ -76,9 +70,6 @@ class TestRoutesChat:
         assert hasattr(decision, "reason")
         assert decision.action in ("answer", "search", "summarize", "draft", "clarify")
 
-    @pytest.mark.xfail(
-        reason="Upstream bug: TypeError unhashable QueryClassificationInput"
-    )
     @pytest.mark.asyncio
     async def test_chat_with_context(self, mock_request):
         """Test chat with conversation context - live LLM call."""

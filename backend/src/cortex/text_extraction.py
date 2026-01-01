@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Any, cast
 from urllib.parse import urlparse
 
+from cortex.config.loader import get_config
 from cortex.utils import strip_control_chars
 
 logger = logging.getLogger(__name__)
@@ -129,7 +130,12 @@ def _extract_with_tika(path: Path, max_chars: int | None) -> str:
     try:
         from tika import parser  # type: ignore
 
-        tika_server_url = os.getenv("TIKA_SERVER_URL")
+        config = get_config()
+        tika_server_url = (
+            str(config.system.tika_server_endpoint)
+            if config.system.tika_server_endpoint
+            else os.getenv("TIKA_SERVER_URL")
+        )
         # Validate URL to prevent arbitrary SSRF if variable is compromised
         if tika_server_url:
             if not _is_safe_tika_url(tika_server_url):

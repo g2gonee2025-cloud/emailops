@@ -1,6 +1,5 @@
 import argparse
 import logging
-import random
 from collections import Counter
 from typing import Any
 
@@ -39,26 +38,13 @@ def cmd_schema_check(args: argparse.Namespace) -> None:
 
     try:
         with get_db_session() as session:
-            count_stmt = (
-                select(func.count(func.distinct(Chunk.conversation_id)))
-                .where(Chunk.chunk_type == MESSAGE_BODY_CHUNK_TYPE)
-                .scalar_subquery()
-            )
-            total_conversations = session.execute(select(count_stmt)).scalar() or 0
-            if total_conversations <= 0:
-                logger.info("No conversations found for schema analysis.")
-                return
-
-            max_offset = max(int(total_conversations) - limit, 0)
-            offset = random.randint(0, max_offset) if max_offset > 0 else 0
-
-            logger.info("Fetching up to %d conversations (offset=%d)...", limit, offset)
+            console.print(f"Fetching up to {limit} random conversations...")
+            logger.info("Fetching up to %d conversations...", limit)
             conv_stmt = (
                 select(Chunk.conversation_id)
                 .where(Chunk.chunk_type == MESSAGE_BODY_CHUNK_TYPE)
                 .group_by(Chunk.conversation_id)
                 .order_by(Chunk.conversation_id)
-                .offset(offset)
                 .limit(limit)
             )
             conv_ids = session.execute(conv_stmt).scalars().all()
@@ -67,25 +53,16 @@ def cmd_schema_check(args: argparse.Namespace) -> None:
                 logger.info("No conversations matched the sampling window.")
                 return
 
-            chunk_stmt = (
-                select(Chunk.conversation_id, Chunk.text)
-                .where(
-                    Chunk.conversation_id.in_(conv_ids),
-                    Chunk.chunk_type == MESSAGE_BODY_CHUNK_TYPE,
-                    Chunk.text.isnot(None),
-                )
-                .order_by(Chunk.conversation_id, Chunk.position)
-                .execution_options(stream_results=True)
-            )
-
+            console.print("Extracting graphs sequentially...")
             logger.info("Extracting graphs sequentially...")
-            current_id = None
-            current_parts: list[str] = []
             processed = 0
 
             def _process_text(conv_id: Any, text_value: str) -> None:
                 nonlocal processed
                 processed += 1
+                console.print(
+                    f"Processing text {processed}/{len(conv_ids)}",
+                )
                 logger.info(
                     "Processing text %d/%d (%d chars)",
                     processed,
@@ -103,19 +80,22 @@ def cmd_schema_check(args: argparse.Namespace) -> None:
                         "Failed to extract graph for conversation %s", conv_id
                     )
 
-            for conv_id, text in session.execute(chunk_stmt):
-                if current_id is None:
-                    current_id = conv_id
-                if conv_id != current_id:
-                    if current_parts:
-                        _process_text(current_id, "\n".join(current_parts))
-                    current_parts = []
-                    current_id = conv_id
-                if isinstance(text, str) and text:
-                    current_parts.append(text)
-
-            if current_id is not None and current_parts:
-                _process_text(current_id, "\n".join(current_parts))
+            for conv_id in conv_ids:
+                chunk_stmt = (
+                    select(Chunk.text)
+                    .where(
+                        Chunk.conversation_id == conv_id,
+                        Chunk.chunk_type == MESSAGE_BODY_CHUNK_TYPE,
+                        Chunk.text.isnot(None),
+                    )
+                    .order_by(Chunk.position)
+                )
+                texts = session.execute(chunk_stmt).scalars().all()
+                combined = "\n".join(
+                    text for text in texts if isinstance(text, str) and text
+                )
+                if combined:
+                    _process_text(conv_id, combined)
     except Exception:
         logger.exception("Schema check failed during database operations.")
         return

@@ -3,6 +3,7 @@ CLI command for re-chunking oversized chunks.
 """
 
 import argparse
+from collections.abc import Mapping
 from typing import Any
 
 from cortex_cli.operations.rechunk import run_rechunk
@@ -24,28 +25,50 @@ def cmd_db_rechunk(args: argparse.Namespace) -> None:
     progress = Progress(TextColumn("{task.description}"), transient=True)
     progress_table.add_row(progress)
 
-    results = {}
     task_id = progress.add_task("Starting re-chunking...", total=None)
 
-    def _update_progress(res: dict[str, int]) -> None:
-        total = res.get("total", 0)
-        processed = res.get("processed", 0)
-        new = res.get("new", 0)
+    def _coerce_int(value: Any) -> int | None:
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return None
+
+    def _update_progress(res: Mapping[str, Any] | None) -> None:
+        if not isinstance(res, Mapping):
+            return
+        total = _coerce_int(res.get("total"))
+        processed = _coerce_int(res.get("processed")) or 0
+        new = _coerce_int(res.get("new")) or 0
+        completed = processed if total is None else min(processed, total)
+        if total is None:
+            description = (
+                f"Processed {processed} oversized chunks. Created {new} new chunks."
+            )
+        else:
+            description = f"Processed {processed}/{total} oversized chunks. Created {new} new chunks."
         progress.update(
             task_id,
-            description=f"Processed {processed}/{total} oversized chunks. Created {new} new chunks.",
+            description=description,
             total=total,
-            completed=processed,
+            completed=completed,
         )
 
-    with Live(progress_table, console=console, refresh_per_second=10):
-        results = run_rechunk(
-            tenant_id=args.tenant_id,
-            chunk_size_limit=args.chunk_size_limit,
-            dry_run=args.dry_run,
-            max_tokens=args.max_tokens,
-            progress_callback=_update_progress,
-        )
+    try:
+        with Live(progress_table, console=console, refresh_per_second=10):
+            results = run_rechunk(
+                tenant_id=args.tenant_id,
+                chunk_size_limit=args.chunk_size_limit,
+                dry_run=args.dry_run,
+                max_tokens=args.max_tokens,
+                progress_callback=_update_progress,
+            )
+    except Exception as exc:
+        console.print(f"[red]Re-chunking failed: {exc}[/red]")
+        raise SystemExit(1)
+
+    if not isinstance(results, Mapping):
+        console.print("[red]Unexpected rechunk results; expected a summary map.[/red]")
+        raise SystemExit(1)
 
     console.print("\n[bold green]Re-chunking Complete![/bold green]")
     summary_table = Table(title="Re-chunking Summary", box=box.ROUNDED)

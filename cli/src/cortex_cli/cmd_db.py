@@ -11,7 +11,7 @@ import argparse
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol
 
 from cortex_cli.operations.backfill_graph import run_backfill_graph
 from cortex_cli.style import colorize as _colorize
@@ -28,6 +28,10 @@ except ImportError:
     RICH_AVAILABLE = False
 
 console: Console | None = Console() if RICH_AVAILABLE else None
+
+
+class _Subparsers(Protocol):
+    def add_parser(self, *args: Any, **kwargs: Any) -> argparse.ArgumentParser: ...
 
 
 def cmd_db_stats(args: argparse.Namespace) -> None:
@@ -237,7 +241,7 @@ def cmd_db_cleanup(args: argparse.Namespace) -> None:
 
 
 def setup_db_parser(
-    subparsers: argparse._SubParsersAction,
+    subparsers: _Subparsers,
 ) -> None:
     """Add db subcommands to the CLI parser."""
     db_parser = subparsers.add_parser(

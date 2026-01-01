@@ -2,6 +2,7 @@
 
 import argparse
 import sys
+import traceback
 from typing import Any
 
 from cortex_cli.style import colorize as _colorize
@@ -17,12 +18,18 @@ def cmd_discover_schema(args: argparse.Namespace) -> None:
 
         tenant_id = getattr(args, "tenant_id", "default")
         sample_size = getattr(args, "sample_size", 20)
+        if not isinstance(sample_size, int) or sample_size <= 0:
+            print(
+                f"{_colorize('ERROR:', 'red')} --sample-size must be a positive integer.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
         show_entities = getattr(args, "show_entities", False)
 
         print(f"\n{_colorize('GRAPH SCHEMA DISCOVERY', 'bold')}\n")
         print(f"  Tenant:      {_colorize(tenant_id, 'cyan')}")
         print(f"  Sample Size: {_colorize(str(sample_size), 'cyan')}")
-        print(f"\n  {_colorize('⏳', 'yellow')} Discovering schema...")
+        print(f"\n  {_colorize('...', 'yellow')} Discovering schema...")
 
         discover_schema_logic(
             tenant_id=tenant_id,
@@ -31,7 +38,7 @@ def cmd_discover_schema(args: argparse.Namespace) -> None:
             show_entities=show_entities,
         )
 
-        print(f"\n  {_colorize('✓', 'green')} Schema discovery complete!")
+        print(f"\n  {_colorize('OK', 'green')} Schema discovery complete!")
 
     except ImportError as e:
         print(
@@ -40,6 +47,7 @@ def cmd_discover_schema(args: argparse.Namespace) -> None:
         )
         sys.exit(1)
     except Exception as e:
+        traceback.print_exc(file=sys.stderr)
         print(f"{_colorize('ERROR:', 'red')} {e}", file=sys.stderr)
         sys.exit(1)
 
@@ -86,5 +94,6 @@ def setup_graph_parser(subparsers: Any) -> None:
     def _default_graph_handler(args: argparse.Namespace) -> None:
         if not args.graph_command:
             graph_parser.print_help()
+            raise SystemExit(1)
 
     graph_parser.set_defaults(func=_default_graph_handler)

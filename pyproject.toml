@@ -92,12 +92,3 @@ strict = true
 ignore_missing_imports = true
 mypy_path = ["backend/src"]
 explicit_package_bases = true
-
-[tool.pytest.ini_options]
-asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "function"
-testpaths = ["backend/tests", "cli/tests"]
-filterwarnings = [
-    "ignore::DeprecationWarning",
-    "ignore::pytest.PytestUnknownMarkWarning",
-]

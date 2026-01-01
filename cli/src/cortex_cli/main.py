@@ -62,6 +62,17 @@ from cortex_cli._config_helpers import (
 )
 from cortex_cli.style import colorize as _colorize
 
+try:
+    from cortex.observability import init_observability
+except ImportError:
+
+    def init_observability(*_args: Any, **_kwargs: Any) -> None:  # type: ignore[no-redef]
+        return None
+
+
+if TYPE_CHECKING:
+    from cortex.common.types import Result
+
 
 # Minimal protocol for the config object to satisfy static analysis when imports fail
 class CoreConfig(Protocol):
@@ -395,6 +406,27 @@ def _show_config(
 # =============================================================================
 
 
+def _validate_directory_for_cli(path: str) -> Result[Path, str]:
+    from cortex.common.types import Err
+    from cortex.security.validators import validate_directory_result
+
+    base_directory = None if Path(path).is_absolute() else Path.cwd()
+    validated = validate_directory_result(
+        path,
+        base_directory=base_directory,
+        must_exist=False,
+    )
+    if validated.is_err():
+        return validated
+
+    resolved = validated.value
+    if not resolved.exists():
+        return Err(f"Path does not exist: {resolved}")
+    if not resolved.is_dir():
+        return Err(f"Path is not a directory: {resolved}")
+    return validated
+
+
 def _run_validate(
     path: str,
     json_output: bool = False,
@@ -404,9 +436,7 @@ def _run_validate(
     """
     import json
 
-    from cortex.security.validators import validate_directory_result
-
-    validated_path = validate_directory_result(path, must_exist=True)
+    validated_path = _validate_directory_for_cli(path)
     if validated_path.is_err():
         print(f"{_colorize('ERROR:', 'red')} Invalid path: {validated_path.error}")
         sys.exit(1)
@@ -417,14 +447,6 @@ def _run_validate(
         print(f"{_colorize('▶ EXPORT VALIDATION (B1)', 'bold')}\n")
         print(f"  Target:    {_colorize(str(target_path), 'cyan')}")
         print()
-
-    if not target_path.exists():
-        msg = f"Path does not exist: {target_path}"
-        if json_output:
-            print(json.dumps({"error": msg, "success": False}))
-        else:
-            print(f"  {_colorize('✗', 'red')} {msg}")
-        sys.exit(1)
 
     try:
         from cortex.ingestion.conv_manifest.validation import (
@@ -505,10 +527,8 @@ def _run_ingest(
     import json
     import uuid
 
-    from cortex.security.validators import validate_directory_result
-
     # Validate source path before use
-    validated_source = validate_directory_result(source_path, must_exist=True)
+    validated_source = _validate_directory_for_cli(source_path)
     if validated_source.is_err():
         print(
             f"{_colorize('ERROR:', 'red')} Invalid source path: {validated_source.error}"
@@ -712,11 +732,9 @@ def _run_index(
     """
     import json
 
-    from cortex.security.validators import validate_directory_result
-
-    validated_root = validate_directory_result(root, must_exist=True)
+    validated_root = _validate_directory_for_cli(root)
     if validated_root.is_err():
-        print(f"{_colorize('ERROR:', 'red')} Invalid root path: {validated_root.err()}")
+        print(f"{_colorize('ERROR:', 'red')} Invalid root path: {validated_root.error}")
         sys.exit(1)
     root_path = validated_root.value
 
@@ -797,6 +815,58 @@ def _run_index(
         else:
             print(f"\n  {_colorize('ERROR:', 'red')} {e}")
         sys.exit(1)
+
+
+def _run_search(
+    query: str,
+    tenant_id: str = "default",
+    user_id: str = "cli-user",
+    top_k: int = 5,
+    json_output: bool = False,
+) -> None:
+    """Run a lightweight search against the local retrieval stack."""
+    import asyncio
+    import json
+
+    try:
+        from cortex.retrieval.hybrid_search import KBSearchInput, tool_kb_search_hybrid
+    except ImportError as exc:
+        msg = f"Could not load retrieval module: {exc}"
+        if json_output:
+            print(json.dumps({"error": msg, "success": False}))
+        else:
+            print(f"ERROR: {msg}")
+        raise SystemExit(1)
+
+    if not json_output:
+        print("Searching...")
+
+    search_input = KBSearchInput(
+        tenant_id=tenant_id,
+        user_id=user_id,
+        query=query,
+        k=top_k,
+    )
+    result = tool_kb_search_hybrid(search_input)
+    if asyncio.iscoroutine(result):
+        result = asyncio.run(result)
+
+    if getattr(result, "is_err", lambda: False)():
+        err = result.unwrap_err()
+        message = getattr(err, "message", str(err))
+        if json_output:
+            print(json.dumps({"error": message, "success": False}))
+        else:
+            print(f"ERROR: {message}")
+        raise SystemExit(1)
+
+    results = result.unwrap() if hasattr(result, "unwrap") else result
+    if json_output:
+        payload = results.model_dump() if hasattr(results, "model_dump") else results
+        print(json.dumps(payload, default=str))
+        return
+    items = getattr(results, "results", [])
+    print(f"Found {len(items)} result(s).")
 
 
 # =============================================================================
@@ -970,10 +1040,8 @@ def main(args: list[str] | None = None) -> None:
     # Initialize observability §12.3
     # This should be one of the first things to run
     try:
-        from cortex.observability import init_observability
-
         init_observability(service_name="cortex-cli")
-    except ImportError:
+    except Exception:
         # If cortex backend is not installed, CLI should still function
         pass
     if args is None:
@@ -1075,7 +1143,7 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
         parser.add_argument("typer_args", nargs=argparse.REMAINDER)
 
     from cortex_cli.cmd_audit import setup_audit_parser
-    from cortex_cli.cmd_fix import setup_fix_parser
+    from cortex_cli.cmd_fix import setup_fix_issues_parser, setup_fix_parser
     from cortex_cli.cmd_index import setup_index_parser
     from cortex_cli.cmd_patch import setup_patch_parser
     from cortex_cli.cmd_rechunk import setup_rechunk_parser
@@ -1095,6 +1163,7 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     setup_graph_parser(subparsers)
     setup_audit_parser(subparsers)
     setup_fix_parser(subparsers)
+    setup_fix_issues_parser(subparsers)
     setup_index_parser(subparsers)
     setup_patch_parser(subparsers)
     setup_rechunk_parser(subparsers)

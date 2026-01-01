@@ -38,19 +38,26 @@ def run_tests(args: Namespace) -> None:
     """
     Execute pytest with the given arguments.
     """
-    print(colorize("▶ RUNNING TESTS", "bold"))
-    command = [sys.executable, "-m", "pytest", *args.pytest_args]
+    print(colorize("RUNNING TESTS", "bold"))
+    pytest_args = getattr(args, "pytest_args", None) or []
+    if not isinstance(pytest_args, list):
+        pytest_args = [str(pytest_args)]
+    command = [sys.executable, "-m", "pytest", *pytest_args]
     try:
-        subprocess.run(command, check=True)
-        print(colorize("✓ Tests passed", "green"))
-    except subprocess.CalledProcessError:
-        print(colorize("✗ Tests failed", "red"))
-        sys.exit(1)
+        result = subprocess.run(command, check=False)
+    except KeyboardInterrupt:
+        print(colorize("Tests interrupted", "yellow"))
+        sys.exit(130)
     except FileNotFoundError:
         print(
             colorize(
-                "✗ Error: pytest not found. Please install it with 'pip install pytest'",
+                "Error: pytest not found. Please install it with 'pip install pytest'",
                 "red",
             )
         )
         sys.exit(1)
+    if result.returncode == 0:
+        print(colorize("Tests passed", "green"))
+        return
+    print(colorize(f"Tests failed (exit code {result.returncode})", "red"))
+    sys.exit(result.returncode)

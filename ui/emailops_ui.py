@@ -44,52 +44,7 @@ except ImportError:
     st = None  # type: ignore[assignment]
     STREAMLIT_AVAILABLE = False
 
-# ---------- Path Setup ----------
-# Add project roots to path to allow importing cortex modules
-current_dir = Path(__file__).resolve().parent
-PROJECT_ROOT = current_dir.parent
-sys.path.append(str(PROJECT_ROOT / "backend" / "src"))
-sys.path.append(str(PROJECT_ROOT / "cli" / "src"))
-sys.path.append(str(PROJECT_ROOT / "workers" / "src"))
 
-# ---------- Cortex Imports ----------
-try:
-    from cortex.config.loader import get_config
-    from cortex.orchestration.graphs import build_draft_graph, build_summarize_graph
-    from cortex.retrieval.hybrid_search import KBSearchInput, tool_kb_search_hybrid
-
-    config = get_config()
-    CORTEX_AVAILABLE = True
-except ImportError as e:
-    logger = logging.getLogger("emailops.ui")
-    logger.error("Failed to import Cortex modules: %s", e)
-    if STREAMLIT_AVAILABLE:
-        st.error(f"❌ Failed to import Cortex modules: {e}")
-        st.info(
-            "This usually means a dependency is missing. Try running: pip install langgraph"
-        )
-    CORTEX_AVAILABLE = False
-
-    # Fallback config
-    class FallbackConfig:
-        class Core:
-            env = "dev"
-            provider = "vertex"
-
-        class Index:
-            dirname = "_index"
-
-        core = Core()
-        INDEX_DIRNAME = "_index"
-        CHUNK_DIRNAME = "_chunks"
-        DEFAULT_BATCH_SIZE = 64
-        DEFAULT_CHUNK_SIZE = 1600
-        DEFAULT_CHUNK_OVERLAP = 200
-
-    config = FallbackConfig()
-
-
-# ---------- Page Configuration ----------
 def _load_env_defaults(dotenv_path: Path | None = None) -> None:
     """Populate os.environ with entries from a .env file without overriding existing values."""
     path = dotenv_path or (Path.cwd() / ".env")
@@ -124,7 +79,100 @@ def _load_env_defaults(dotenv_path: Path | None = None) -> None:
 
 _load_env_defaults()
 
+# ---------- Path Setup ----------
+# Add project roots to path to allow importing cortex modules
+current_dir = Path(__file__).resolve().parent
+PROJECT_ROOT = current_dir.parent
+sys.path.append(str(PROJECT_ROOT / "backend" / "src"))
+sys.path.append(str(PROJECT_ROOT / "cli" / "src"))
+sys.path.append(str(PROJECT_ROOT / "workers" / "src"))
 
+# ---------- Cortex Imports ----------
+try:
+    from cortex.config.loader import get_config
+    from cortex.orchestration.graphs import build_draft_graph, build_summarize_graph
+    from cortex.retrieval.hybrid_search import KBSearchInput, tool_kb_search_hybrid
+
+    config = get_config()
+    CORTEX_AVAILABLE = True
+except Exception as e:
+    logger = logging.getLogger("emailops.ui")
+    logger.error("Failed to initialize Cortex modules: %s", e, exc_info=True)
+    if STREAMLIT_AVAILABLE:
+        st.error(f"❌ Failed to initialize Cortex modules: {e}")
+        if isinstance(e, ImportError):
+            st.info(
+                "This usually means a dependency is missing. Try running: pip install langgraph"
+            )
+    CORTEX_AVAILABLE = False
+
+    # Fallback config
+    class FallbackConfig:
+        class Core:
+            env = "dev"
+            provider = "digitalocean"
+
+        class Directories:
+            index_dirname = "_index"
+            chunk_dirname = "_chunks"
+
+        class Processing:
+            batch_size = 64
+            chunk_size = 1600
+            chunk_overlap = 200
+
+        core = Core()
+        directories = Directories()
+        processing = Processing()
+        INDEX_DIRNAME = "_index"
+        CHUNK_DIRNAME = "_chunks"
+        DEFAULT_BATCH_SIZE = 64
+        DEFAULT_CHUNK_SIZE = 1600
+        DEFAULT_CHUNK_OVERLAP = 200
+
+    config = FallbackConfig()
+
+
+def _get_index_dirname() -> str:
+    directories = getattr(config, "directories", None)
+    if directories and getattr(directories, "index_dirname", None):
+        return directories.index_dirname
+    return getattr(config, "INDEX_DIRNAME", "_index")
+
+
+def _get_default_batch_size() -> int:
+    processing = getattr(config, "processing", None)
+    value = getattr(processing, "batch_size", None) if processing else None
+    if value is None:
+        value = getattr(config, "DEFAULT_BATCH_SIZE", 64)
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return 64
+
+
+def _get_env_value(*keys: str) -> str | None:
+    for key in keys:
+        value = os.getenv(key)
+        if value:
+            return value
+    return None
+
+
+def _get_default_export_root() -> str:
+    env_value = _get_env_value(
+        "OUTLOOKCORTEX_EXPORT_ROOT",
+        "EMAILOPS_EXPORT_ROOT",
+        "EXPORT_ROOT",
+    )
+    if env_value:
+        return env_value.strip()
+    directories = getattr(config, "directories", None)
+    value = getattr(directories, "export_root", None) if directories else None
+    return value.strip() if isinstance(value, str) else ""
+
+
+# ---------- Page Configuration ----------
 if STREAMLIT_AVAILABLE:
     st.set_page_config(
         page_title="EmailOps Dashboard",
@@ -600,7 +648,7 @@ def _check_setup_status() -> dict[str, bool]:
 
     # Check index
     if er:
-        index_dir = Path(er) / config.INDEX_DIRNAME
+        index_dir = Path(er) / _get_index_dirname()
         if index_dir.exists() and (index_dir / "mapping.json").exists():
             status["index_exists"] = True
 
@@ -612,14 +660,23 @@ if not STREAMLIT_AVAILABLE:
 else:
     # ---------- Session State Initialization ----------
     if "provider" not in st.session_state:
-        st.session_state.provider = "vertex"
+        provider_env = _get_env_value(
+            "OUTLOOKCORTEX_EMBED_PROVIDER",
+            "EMAILOPS_EMBED_PROVIDER",
+            "EMBED_PROVIDER",
+        )
+        config_provider = getattr(getattr(config, "core", None), "provider", None)
+        st.session_state.provider = provider_env or config_provider or "digitalocean"
     if "PROJECT_ROOT" not in st.session_state:
         st.session_state.PROJECT_ROOT = str(PROJECT_ROOT)
     if "export_root" not in st.session_state:
-        export_env = os.getenv("EMAILOPS_EXPORT_ROOT")
-        st.session_state.export_root = export_env.strip() if export_env else ""
+        st.session_state.export_root = _get_default_export_root()
     if "index_root" not in st.session_state:
-        index_env = os.getenv("EMAILOPS_INDEX_ROOT")
+        index_env = _get_env_value(
+            "OUTLOOKCORTEX_INDEX_ROOT",
+            "EMAILOPS_INDEX_ROOT",
+            "INDEX_ROOT",
+        )
         if index_env:
             st.session_state.index_root = index_env.strip()
         else:
@@ -680,7 +737,7 @@ else:
         index_root = st.text_input(
             "Index Output Root",
             value=st.session_state.get("index_root", export_root),
-            help=f"Directory where {config.INDEX_DIRNAME} folder will be created",
+            help=f"Directory where {_get_index_dirname()} folder will be created",
             key="index_root_input",
         )
         st.session_state.index_root = index_root
@@ -852,7 +909,7 @@ else:
             else:
                 export_path = Path(export_value)
                 index_base = Path(index_value or export_value)
-                index_dir = index_base / config.INDEX_DIRNAME
+                index_dir = index_base / _get_index_dirname()
 
                 if index_dir.exists():
                     index_file = index_dir / "index.faiss"
@@ -977,17 +1034,18 @@ else:
         col1, col2, col3 = st.columns(3)
 
         provider_options = [
-            "vertex",
+            "digitalocean",
             "openai",
             "cohere",
             "huggingface",
             "local",
             "qwen",
+            "vertex",
         ]
-        default_provider = st.session_state.get("provider", "vertex")
+        default_provider = st.session_state.get("provider", "digitalocean")
         if default_provider not in provider_options:
-            default_provider = "vertex"
-        batch_default = int(os.getenv("EMBED_BATCH", config.DEFAULT_BATCH_SIZE))
+            default_provider = "digitalocean"
+        batch_default = int(os.getenv("EMBED_BATCH", _get_default_batch_size()))
 
         with col1:
             provider = st.selectbox(
