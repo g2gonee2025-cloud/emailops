@@ -25,9 +25,9 @@ export const GeneratedDraftSchema = z.object({
   body_markdown: z.string(),
   to: z.array(z.string()),
   cc: z.array(z.string()),
-}).transform((data) => ({
-  ...data,
-  body: data.body_markdown,
+}).transform(({ body_markdown, ...rest }) => ({
+  ...rest,
+  body: body_markdown,
 }));
 
 export type GeneratedDraft = z.infer<typeof GeneratedDraftSchema>;
