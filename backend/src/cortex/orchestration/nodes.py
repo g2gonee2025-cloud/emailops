@@ -1351,12 +1351,15 @@ def node_load_thread(state: dict[str, Any]) -> dict[str, Any]:
 
     Blueprint §10.4:
     * Fetch messages for thread using tool_email_get_thread
+    * If no thread_id is provided, skip loading (allows drafting without context)
     """
     thread_id = state.get("thread_id")
     tenant_id = state.get("tenant_id")
 
     if not thread_id:
-        return {"error": "No thread_id provided"}
+        # No thread_id provided - this is valid for drafting new emails without context
+        logger.info("No thread_id provided, skipping thread load (drafting without context)")
+        return {"thread_context": None, "_thread_context_obj": None}
 
     # Use the standardized tool
     thread_context = tool_email_get_thread(thread_id, tenant_id)
