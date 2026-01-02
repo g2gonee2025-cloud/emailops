@@ -11,19 +11,42 @@ from rich.console import Console
 from rich.prompt import Confirm, IntPrompt, Prompt
 from rich.table import Table
 
-from .config import (
-    DEFAULT_SCAN_DIRS,
-    EXTENSION_GROUPS,
-    PROVIDER_MODELS,
-    Config,
-    ReviewConfig,
-    ScanConfig,
-)
-from .providers.jules import JulesProvider
-from .providers.openai_compat import OpenAICompatProvider
-from .reports.reporter import Reporter
-from .reviewers.code_reviewer import CodeReviewer
-from .scanners.file_scanner import FileScanner
+try:
+    from .config import (
+        DEFAULT_SCAN_DIRS,
+        EXTENSION_GROUPS,
+        PROVIDER_MODELS,
+        Config,
+        ReviewConfig,
+        ScanConfig,
+    )
+    from .providers.jules import JulesProvider
+    from .providers.openai_compat import OpenAICompatProvider
+    from .reports.reporter import Reporter
+    from .reviewers.code_reviewer import CodeReviewer
+    from .scanners.file_scanner import FileScanner
+except ImportError:
+    # Direct execution fallback
+    import sys
+    from pathlib import Path
+
+    _project_root = Path(__file__).resolve().parent.parent.parent
+    if str(_project_root) not in sys.path:
+        sys.path.insert(0, str(_project_root))
+
+    from scripts.review_cli.config import (
+        DEFAULT_SCAN_DIRS,
+        EXTENSION_GROUPS,
+        PROVIDER_MODELS,
+        Config,
+        ReviewConfig,
+        ScanConfig,
+    )
+    from scripts.review_cli.providers.jules import JulesProvider
+    from scripts.review_cli.providers.openai_compat import OpenAICompatProvider
+    from scripts.review_cli.reports.reporter import Reporter
+    from scripts.review_cli.reviewers.code_reviewer import CodeReviewer
+    from scripts.review_cli.scanners.file_scanner import FileScanner
 
 logging.basicConfig(
     level=logging.INFO,
@@ -235,6 +258,9 @@ async def run_review(config: Config) -> None:
 
 def main() -> None:
     """Main entry point."""
+    from dotenv import load_dotenv
+
+    load_dotenv()
     try:
         config = run_interactive()
         print_config_summary(config)
