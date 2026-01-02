@@ -1033,7 +1033,17 @@ def node_prepare_draft_query(state: dict[str, Any]) -> dict[str, Any]:
     Blueprint §10.3:
     * Combine explicit query and thread context
     """
-    explicit_query = state.get("explicit_query", "")
+    explicit_query_raw = state.get("explicit_query")
+
+    # Ensure explicit_query is a string (handles None, SecretStr, and other types)
+    if explicit_query_raw is None:
+        explicit_query = ""
+    elif isinstance(explicit_query_raw, str):
+        explicit_query = explicit_query_raw
+    else:
+        # Handle SecretStr and other non-string types by converting to string
+        explicit_query = str(explicit_query_raw) if explicit_query_raw else ""
+
     try:
         validate_for_injection(explicit_query)
     except SecurityError:
