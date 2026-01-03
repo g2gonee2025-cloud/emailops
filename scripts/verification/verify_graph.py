@@ -4,15 +4,23 @@ Verify Graph RAG Extraction (Live LLM).
 
 import logging
 import sys
+import os
+import traceback
 
-# Ensure backend/src is in path
-sys.path.append("backend/src")
+
+def configure_sys_path():
+    """Add project root to sys.path to allow for absolute imports."""
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    backend_src = os.path.join(project_root, "backend", "src")
+    if backend_src not in sys.path:
+        sys.path.insert(0, backend_src)
+
+
+configure_sys_path()
 
 from cortex.db.models import EntityEdge, EntityNode
 from cortex.intelligence.graph import GraphExtractor
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -25,12 +33,15 @@ def test_graph_extractor_live():
     logger.info("Initializing GraphExtractor (Live LLM)...")
     extractor = GraphExtractor()
 
-    logger.info(f"Extracting graph from text: '{text}'...")
+    logger.info("Extracting graph from text...")
     try:
         G = extractor.extract_graph(text)
     except Exception as e:
         logger.error(f"Extraction failed: {e}")
         raise
+
+    if G is None:
+        raise ValueError("Graph extraction returned None.")
 
     # Verify Nodes (LLM-dependent, so we check for existence of meaningful nodes)
     logger.info(
@@ -38,38 +49,33 @@ def test_graph_extractor_live():
     )
 
     if G.number_of_nodes() == 0:
-        logger.warning("No nodes extracted! Check LLM response/credentials.")
-        # Don't assert strictly on 0 if LLM is being finicky, but warn.
-        # Actually, for verification success, we probably want at least one node.
-        # But let's see what happens.
-
-    for node, data in G.nodes(data=True):
-        logger.info(f"Node: {node} ({data})")
-
-    for u, v, data in G.edges(data=True):
-        logger.info(f"Edge: {u} -> {v} ({data})")
+        raise ValueError("No nodes were extracted from the text.")
 
     # Loose assertions for live test
     # We expect "Alice" and "Project Alpha" at minimum
-    node_names = [n.lower() for n in G.nodes]
-    assert any("alice" in n for n in node_names), "Expected 'Alice' in nodes"
-    # assert any("project" in n for n in node_names), "Expected 'Project' in nodes"
+    node_names = [str(n).lower() for n in G.nodes if isinstance(n, str)]
+    if not any("alice" in n for n in node_names):
+        raise ValueError("Verification failed: Expected 'Alice' to be in the extracted nodes.")
 
     logger.info("GraphExtractor Live Test Passed!")
 
 
 def verify_db_schema():
-    """Verify EntityNode and EntityEdge exist in models."""
-    assert hasattr(EntityNode, "__tablename__")
-    assert hasattr(EntityEdge, "__tablename__")
+    """Verify EntityNode and EntityEdge have the expected __tablename__ attribute."""
+    if not hasattr(EntityNode, "__tablename__"):
+        raise AttributeError("EntityNode model is missing the '__tablename__' attribute.")
+    if not hasattr(EntityEdge, "__tablename__"):
+        raise AttributeError("EntityEdge model is missing the '__tablename__' attribute.")
     logger.info("Graph DB Schema Passed!")
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     try:
         verify_db_schema()
         test_graph_extractor_live()
-        print("GRAPH VERIFICATION SUCCESSFUL")
+        logger.info("GRAPH VERIFICATION SUCCESSFUL")
     except Exception as e:
-        print(f"GRAPH VERIFICATION FAILED: {e}")
+        logger.error("GRAPH VERIFICATION FAILED")
+        logger.error(traceback.format_exc())
         sys.exit(1)
