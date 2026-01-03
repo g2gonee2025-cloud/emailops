@@ -14,19 +14,8 @@ SONAR_ADMIN_USER = os.environ.get("SONAR_ADMIN_USER")
 SONAR_ADMIN_PASSWORD = os.environ.get("SONAR_ADMIN_PASSWORD")
 REQUEST_TIMEOUT = 10  # seconds
 
-# Environment-aware SSL verification (S4830 fix)
-# Enable SSL verification by default, only disable in local dev with explicit flag
-DEV_MODE = os.environ.get("EMAILOPS_DEV_MODE", "false").lower() == "true"
-DISABLE_SSL_VERIFY = os.environ.get("SONAR_DISABLE_SSL_VERIFY", "false").lower() == "true"
-VERIFY_SSL = not (DEV_MODE and DISABLE_SSL_VERIFY)
-
-if not VERIFY_SSL:
-    import warnings
-    warnings.warn(
-        "SSL certificate verification is disabled. This should only be used in local development.",
-        category=SecurityWarning,
-        stacklevel=2
-    )
+# Always enable SSL verification in production environment
+VERIFY_SSL = True
 
 
 def generate_random_string(length=8):
@@ -51,9 +40,7 @@ def main():
     """
     Generates a SonarQube token and updates the .env file.
     
-    Security fixes applied:
-    - S4830: SSL certificate validation enabled by default
-    - Environment-aware SSL verification with explicit dev mode flag
+    Security: SSL certificate validation is always enabled.
     """
     if not SONAR_ADMIN_USER or not SONAR_ADMIN_PASSWORD:
         print(
@@ -67,14 +54,14 @@ def main():
 
     try:
         print(f"Generating token '{token_name}'...")
-        print(f"SSL certificate verification: {'ENABLED' if VERIFY_SSL else 'DISABLED (dev mode)'}")
+        print("SSL certificate verification: ENABLED")
         
         r = requests.post(
             f"{SONAR_URL}/api/user_tokens/generate",
             params={"name": token_name},
             auth=(SONAR_ADMIN_USER, SONAR_ADMIN_PASSWORD),
             timeout=REQUEST_TIMEOUT,
-            verify=VERIFY_SSL,  # S4830: SSL verification enabled by default
+            verify=VERIFY_SSL,
         )
 
         if r.status_code != 200:
