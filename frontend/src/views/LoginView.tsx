@@ -31,17 +31,12 @@ export default function LoginView() {
   });
 
   const onSubmit = async (formData: LoginForm) => {
-    logger.info('LoginView: Login attempt started', { email: formData.email });
-    const startTime = performance.now();
+    logger.info('LoginView: Login attempt started');
 
     try {
       await loginAsync([formData.email, formData.password]);
     } catch (_e) {
-      const elapsed = performance.now() - startTime;
-      logger.error('LoginView: Login attempt failed', {
-        email: formData.email,
-        elapsed_ms: elapsed.toFixed(2),
-      });
+      logger.debug('LoginView: Login attempt failed (details logged in useLogin hook)');
     }
   };
 

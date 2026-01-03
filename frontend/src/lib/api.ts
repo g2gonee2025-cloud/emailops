@@ -230,7 +230,7 @@ export const request = async <T>(
       let errorDetails;
       try {
         errorDetails = await response.json();
-      } catch (error_) {
+      } catch (_error) {
         logger.warn('Could not parse JSON error response', {
           status: response.status,
           statusText: response.statusText,
