@@ -171,6 +171,9 @@ export interface Thread {
 // API Client
 // =============================================================================
 
+// API Base URL - uses environment variable or defaults to relative path for Vite proxy
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
 // Custom Error for API responses
 export class ApiError extends Error {
   status: number;
@@ -209,7 +212,8 @@ export const request = async <T>(
   };
 
   try {
-    const response = await fetch(endpoint, config);
+    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+    const response = await fetch(url, config);
 
     if (!response.ok) {
       let errorDetails;
