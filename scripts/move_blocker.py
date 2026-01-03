@@ -1,30 +1,88 @@
+import argparse
+import logging
 import os
+import sys
+from urllib.parse import urlparse
 
 import boto3
+from botocore.exceptions import ClientError
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
-def run():
-    s3 = boto3.client(
-        "s3",
-        endpoint_url=os.getenv("OUTLOOKCORTEX_S3_ENDPOINT"),
-        aws_access_key_id=os.getenv("OUTLOOKCORTEX_S3_ACCESS_KEY"),
-        aws_secret_access_key=os.getenv("OUTLOOKCORTEX_S3_SECRET_KEY"),
-        region_name="tor1",
-    )
-    bucket = os.getenv("OUTLOOKCORTEX_S3_BUCKET_RAW", "emailops-storage-tor1")
-    src = "Outlook/TML-2024-11-19_3CA775 - H&C - Imports & Exports - Actuals/attachments/FINAL OCTOBER 2023- SEPT 17 2024.xlsx"
-    dest = "Outlook/skipped_files/FINAL OCTOBER 2023- SEPT 17 2024.xlsx"
+def main():
+    """
+    Moves an object in an S3-compatible storage.
+    """
+    parser = argparse.ArgumentParser(description="Move an object in S3.")
+    parser.add_argument("src", help="The source key of the object to move.")
+    parser.add_argument("dest", help="The destination key for the object.")
+    args = parser.parse_args()
 
-    print(f"Moving {src} to {dest}...")
-    try:
-        s3.copy_object(
-            Bucket=bucket, CopySource={"Bucket": bucket, "Key": src}, Key=dest
+    # --- Configuration and Validation ---
+    endpoint_url = os.getenv("OUTLOOKCORTEX_S3_ENDPOINT")
+    access_key = os.getenv("OUTLOOKCORTEX_S3_ACCESS_KEY")
+    secret_key = os.getenv("OUTLOOKCORTEX_S3_SECRET_KEY")
+    bucket_name = os.getenv("OUTLOOKCORTEX_S3_BUCKET_RAW")
+    region_name = os.getenv("OUTLOOKCORTEX_S3_REGION")
+
+    required_vars = {
+        "OUTLOOKCORTEX_S3_ENDPOINT": endpoint_url,
+        "OUTLOOKCORTEX_S3_ACCESS_KEY": access_key,
+        "OUTLOOKCORTEX_S3_SECRET_KEY": secret_key,
+        "OUTLOOKCORTEX_S3_BUCKET_RAW": bucket_name,
+    }
+
+    for var_name, value in required_vars.items():
+        if not value:
+            logging.error(f"Error: Environment variable {var_name} is not set.")
+            sys.exit(1)
+
+    # Security: Validate endpoint URL
+    parsed_url = urlparse(endpoint_url)
+    if parsed_url.scheme != "https":
+        logging.error(
+            f"Error: Insecure endpoint URL '{endpoint_url}'. "
+            "Only https:// is supported."
         )
-        s3.delete_object(Bucket=bucket, Key=src)
-        print("Done.")
+        sys.exit(1)
+
+    try:
+        # --- S3 Client Initialization ---
+        s3 = boto3.client(
+            "s3",
+            endpoint_url=endpoint_url,
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key,
+            region_name=region_name,
+        )
+
+        # --- S3 Operations ---
+        copy_source = {"Bucket": bucket_name, "Key": args.src}
+
+        logging.info(f"Attempting to move object in bucket '{bucket_name}'.")
+        logging.warning(
+            "This is a non-atomic operation (copy then delete). "
+            "If the script fails, the object may be duplicated or remain in the source location."
+        )
+
+        s3.copy_object(Bucket=bucket_name, CopySource=copy_source, Key=args.dest)
+        s3.delete_object(Bucket=bucket_name, Key=args.src)
+
+        logging.info("Object moved successfully.")
+
+    except ClientError as e:
+        # Catch specific boto3 client errors
+        logging.error(f"An S3 client error occurred: {e}", exc_info=True)
+        sys.exit(1)
     except Exception as e:
-        print(f"Failed to move object: {e}")
+        # Catch other potential errors (e.g., client instantiation)
+        logging.error(f"An unexpected error occurred: {e}", exc_info=True)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
-    run()
+    main()
