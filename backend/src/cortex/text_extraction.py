@@ -235,28 +235,28 @@ def _extract_image_ocr(path: Path, max_chars: int | None) -> str:
     return _finalize_text(text, max_chars)
 
 
-def _ocr_page_images(
+def _process_pdf_page_for_ocr(
     images: Sequence[Any],
-    pytesseract_module: Any,
-    path: Path,
     page_num: int,
-) -> list[str]:
-    """Helper to run OCR on a list of images for a given page."""
-    page_texts: list[str] = []
+    pytesseract_module: Any,
+    aggregated: list[str],
+    path: Path,
+) -> None:
+    """Helper to process a single PDF page's images for OCR."""
     for image in images:
         try:
             text = cast(str, pytesseract_module.image_to_string(image))
-            if text and text.strip():
-                page_texts.append(text.strip())
         except Exception as exc:
             logger.warning("OCR failed for %s page %d: %s", path, page_num, exc)
-    return page_texts
+            continue
+        if text and text.strip():
+            aggregated.append(text.strip())
 
 
 def _extract_pdf_with_ocr(path: Path, max_chars: int | None) -> str:
     """Fallback OCR for PDFs that contain no embedded text."""
     try:
-        from pdf2image import convert_from_path, pdfinfo_from_path  # type: ignore
+        from pdf2image import convert_from_path, pdfinfo_from_path
     except ImportError:
         logger.info("pdf2image not installed; skipping PDF OCR for %s", path)
         return ""
@@ -265,7 +265,7 @@ def _extract_pdf_with_ocr(path: Path, max_chars: int | None) -> str:
         return ""
 
     try:
-        import pytesseract  # type: ignore
+        import pytesseract
     except ImportError:
         logger.info("pytesseract not installed; skipping PDF OCR")
         return ""
@@ -281,15 +281,18 @@ def _extract_pdf_with_ocr(path: Path, max_chars: int | None) -> str:
         info = pdfinfo_from_path(str(path))
         page_count = int(info.get("Pages", 0))
     except Exception as exc:
-        logger.warning("Unable to read PDF page count for %s: %s", path, exc)
-        page_count = 0
+        logger.warning(
+            "Unable to read PDF page count for %s, will try full document OCR: %s",
+            path,
+            exc,
+        )
 
     if page_count > 0:
         for page_num in range(1, page_count + 1):
             try:
                 images = convert(str(path), first_page=page_num, last_page=page_num)
-                aggregated.extend(
-                    _ocr_page_images(images, pytesseract_module, path, page_num)
+                _process_pdf_page_for_ocr(
+                    images, page_num, pytesseract_module, aggregated, path
                 )
             except Exception as exc:
                 logger.warning(
@@ -299,11 +302,12 @@ def _extract_pdf_with_ocr(path: Path, max_chars: int | None) -> str:
                     exc,
                 )
     else:
+        # Fallback for when page count is unknown or zero
         try:
             images = convert(str(path))
-            aggregated.extend(_ocr_page_images(images, pytesseract_module, path, 0))
+            _process_pdf_page_for_ocr(images, 0, pytesseract_module, aggregated, path)
         except Exception as exc:
-            logger.warning("Unable to rasterize PDF %s for OCR: %s", path, exc)
+            logger.warning("Unable to rasterize entire PDF %s for OCR: %s", path, exc)
 
     if not aggregated:
         return ""
@@ -311,68 +315,55 @@ def _extract_pdf_with_ocr(path: Path, max_chars: int | None) -> str:
     return _finalize_text("\n".join(aggregated), max_chars)
 
 
-def _extract_tables_with_camelot(path: Path) -> list[str]:
-    """Extract tables from a PDF using the Camelot library."""
+def _extract_pdf_tables_with_camelot(path: Path) -> list[str]:
+    """Extracts tables from a PDF using the Camelot library."""
     tables_output: list[str] = []
     try:
-        import camelot  # type: ignore
+        import camelot
 
-        camelot_module = cast(Any, camelot)
-        camelot_tables = cast(
-            Sequence[Any], camelot_module.read_pdf(str(path), pages="all")
-        )
+        camelot_tables = camelot.read_pdf(str(path), pages="all")
         for index, table in enumerate(camelot_tables):
-            df = cast(Any, getattr(table, "df", None))
+            df = table.df
             csv_data = df.to_csv(index=False, header=True) if df is not None else ""
             tables_output.append(f"[Camelot Table {index + 1}]\n{csv_data}")
     except ImportError:
-        logger.info("Camelot not installed; falling back to pdfplumber for %s", path)
+        logger.info(
+            "Camelot not installed; skipping Camelot table extraction for %s", path
+        )
     except Exception as exc:
         logger.warning("Camelot table extraction failed for %s: %s", path, exc)
     return tables_output
 
 
-def _pdfplumber_table_to_csv(table: Sequence[Sequence[str | None]]) -> str:
-    """Convert a single table extracted by pdfplumber to a CSV string."""
-    csv_buffer = io.StringIO()
-    writer = csv.writer(csv_buffer)
-    for row in table:
-        if not row or not any(row):
-            continue
-        normalized_row = [cell or "" for cell in row]
-        writer.writerow(normalized_row)
-    return csv_buffer.getvalue().strip()
-
-
-def _extract_tables_with_pdfplumber(path: Path) -> list[str]:
-    """Extract tables from a PDF using the pdfplumber library."""
+def _extract_pdf_tables_with_pdfplumber(path: Path) -> list[str]:
+    """Extracts tables from a PDF using the pdfplumber library."""
     tables_output: list[str] = []
     try:
-        import pdfplumber  # type: ignore
-    except ImportError:
-        logger.info("pdfplumber not installed; skipping table extraction for %s", path)
-        return []
-    except Exception as exc:
-        logger.warning("Failed to import pdfplumber for %s: %s", path, exc)
-        return []
+        import pdfplumber
 
-    try:
-        pdfplumber_module = cast(Any, pdfplumber)
-        with pdfplumber_module.open(str(path)) as pdf:
-            pages = cast(Sequence[Any], getattr(pdf, "pages", []))
-            for page_num, page in enumerate(pages, start=1):
-                tables = cast(
-                    Sequence[Sequence[Sequence[str | None]]] | None,
-                    page.extract_tables(),
-                )
+        with pdfplumber.open(str(path)) as pdf:
+            for page_num, page in enumerate(pdf.pages, start=1):
+                tables = page.extract_tables()
                 if not tables:
                     continue
-                for table_index, table_data in enumerate(tables, start=1):
-                    csv_data = _pdfplumber_table_to_csv(table_data)
+                for table_index, table in enumerate(tables, start=1):
+                    csv_buffer = io.StringIO()
+                    writer = csv.writer(csv_buffer)
+                    for row in table:
+                        if not row or not any(row):
+                            continue
+                        normalized_row = [cell or "" for cell in row]
+                        writer.writerow(normalized_row)
+                    csv_data = csv_buffer.getvalue().strip()
                     if csv_data:
                         tables_output.append(
                             f"[pdfplumber Table {page_num}.{table_index}]\n{csv_data}"
                         )
+    except ImportError:
+        logger.info(
+            "pdfplumber not installed; skipping pdfplumber table extraction for %s",
+            path,
+        )
     except Exception as exc:
         logger.warning("pdfplumber table extraction failed for %s: %s", path, exc)
     return tables_output
@@ -380,10 +371,9 @@ def _extract_tables_with_pdfplumber(path: Path) -> list[str]:
 
 def _extract_pdf_tables(path: Path, max_chars: int | None) -> str:
     """Extract tables from PDFs using Camelot or pdfplumber when possible."""
-    tables_output = _extract_tables_with_camelot(path)
-
+    tables_output = _extract_pdf_tables_with_camelot(path)
     if not tables_output:
-        tables_output = _extract_tables_with_pdfplumber(path)
+        tables_output = _extract_pdf_tables_with_pdfplumber(path)
 
     if not tables_output:
         return ""
@@ -391,38 +381,52 @@ def _extract_pdf_tables(path: Path, max_chars: int | None) -> str:
     return _finalize_text("\n\n".join(tables_output), max_chars)
 
 
-def _html_to_text_bs(html: str) -> str:
+def _html_to_text_bs(html: str) -> str | None:
     """Convert HTML to text using BeautifulSoup."""
-    from bs4 import BeautifulSoup  # type: ignore
+    try:
+        from bs4 import BeautifulSoup
 
-    soup = cast(Any, BeautifulSoup(html, "html.parser"))
-    # Remove script/style
-    for tag in cast(Iterable[Any], soup(["script", "style", "noscript"])):
-        tag.decompose()
-    text = cast(str, soup.get_text(separator=" ", strip=True))
-    return re.sub(r"\s+", " ", text)
+        soup = BeautifulSoup(html, "html.parser")
+        for tag in soup(["script", "style", "noscript"]):
+            tag.decompose()
+        text = soup.get_text(separator=" ", strip=True)
+        return re.sub(r"\s+", " ", text)
+    except ImportError:
+        logger.info(
+            "BeautifulSoup not installed, falling back to regex for HTML parsing."
+        )
+    except Exception as exc:
+        logger.warning("BeautifulSoup parsing failed: %s", exc)
+    return None
 
 
 def _html_to_text_regex(html: str) -> str:
-    """Fallback HTML to text conversion using regex."""
+    """Convert HTML to text using regex as a fallback."""
     text = re.sub(r"(?is)<(script|style|noscript)[^>]*>.*?</\1>", " ", html)
     text = re.sub(r"<[^>]+>", " ", text)
-    return re.sub(r"\s+", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
 
 
 def _html_to_text(html: str) -> str:
     """Best-effort conversion of HTML to text; falls back to regex strip."""
     if not html:
         return ""
-    try:
-        return _html_to_text_bs(html)
-    except ImportError:
-        logger.info("BeautifulSoup not installed; falling back to regex for HTML.")
-    except Exception as exc:
-        logger.warning(
-            "BeautifulSoup processing failed, falling back to regex: %s", exc
-        )
-    return _html_to_text_regex(html)
+
+    text = _html_to_text_bs(html)
+    if text is None:
+        text = _html_to_text_regex(html)
+
+    return text
+
+
+def _cleanup_word_com(word: Any | None, doc: Any | None) -> None:
+    """Safely close Word COM objects."""
+    if doc:
+        with contextlib.suppress(Exception):
+            doc.Close(False)
+    if word:
+        with contextlib.suppress(Exception):
+            word.Quit()
 
 
 def _extract_text_from_doc_win32(path: Path) -> str:
@@ -443,16 +447,52 @@ def _extract_text_from_doc_win32(path: Path) -> str:
         logger.error("Error processing .doc file %s with win32com: %s", path, e)
         return ""
     finally:
-        if doc:
-            try:
-                doc.Close(False)
-            except Exception:
-                pass
-        if word:
-            try:
-                word.Quit()
-            except Exception:
-                pass
+        _cleanup_word_com(word, doc)
+
+
+def _get_eml_headers(msg: Any) -> list[str]:
+    """Extracts relevant headers from an email message object."""
+    headers = []
+    for hdr in ("From", "To", "Cc", "Bcc", "Subject", "Date"):
+        if value := msg.get(hdr):
+            headers.append(f"{hdr}: {value}")
+    return headers
+
+
+def _get_multipart_eml_body(msg: Any) -> list[str]:
+    """Extracts body from a multipart email message, preferring plain text."""
+    plain_bodies: list[str] = []
+    html_bodies: list[str] = []
+    for part in msg.walk():
+        ctype = part.get_content_type()
+        if ctype == "text/plain":
+            with contextlib.suppress(Exception):
+                plain_bodies.append(part.get_content())
+        elif ctype == "text/html":
+            with contextlib.suppress(Exception):
+                html_bodies.append(_html_to_text(part.get_content()))
+    return plain_bodies if plain_bodies else html_bodies
+
+
+def _get_singlepart_eml_body(msg: Any) -> list[str]:
+    """Extracts body from a single part email message."""
+    bodies: list[str] = []
+    with contextlib.suppress(Exception):
+        content = msg.get_content()
+        if msg.get_content_type() == "text/html":
+            bodies.append(_html_to_text(content))
+        else:
+            bodies.append(content)
+    return bodies
+
+
+def _get_eml_body(msg: Any) -> str:
+    """Extracts the body from an email message object."""
+    if msg.is_multipart():
+        bodies = _get_multipart_eml_body(msg)
+    else:
+        bodies = _get_singlepart_eml_body(msg)
+    return "\n\n".join(bodies)
 
 
 def _extract_eml_headers(msg: Any) -> list[str]:
@@ -503,59 +543,54 @@ def _extract_eml(path: Path) -> str:
         logger.warning("Failed to parse EML %s: %s", path, e)
         return ""
 
-    headers = _extract_eml_headers(msg)
-    body = _extract_eml_body(msg)
+    headers = _get_eml_headers(msg)
+    body = _get_eml_body(msg)
 
-    parts = headers + ["", body] if body else headers
+    parts = headers
+    if body:
+        parts.append("")  # blank line between headers and body
+        parts.append(body)
+
     return strip_control_chars("\n".join(parts)).strip()
 
 
-def _get_msg_body(msg_obj: Any) -> str:
-    """Extracts the body from an extract_msg message object."""
-    try:
-        html_body = cast(str | None, getattr(msg_obj, "htmlBody", None))
-        if html_body:
-            return _html_to_text(html_body)
-    except Exception:
-        pass
-    return cast(str | None, getattr(msg_obj, "body", "")) or ""
-
-
-def _get_msg_headers(msg_obj: Any) -> list[str]:
-    """Extracts headers from an extract_msg message object."""
-    headers: list[str] = []
-    for key in ("from", "to", "cc", "bcc", "subject", "date"):
-        val = cast(str | None, getattr(msg_obj, key, None))
-        if val:
-            headers.append(f"{key.capitalize()}: {val}")
-    return headers
-
-
-def _close_msg_safely(msg_obj: Any, path: Path) -> None:
-    """Safely close an extract_msg message object, trying multiple methods."""
-    if msg_obj is None:
+def _close_msg_file_handle(m: Any, path: Path) -> None:
+    """Safely closes the file handle of a .msg file."""
+    if m is None:
         return
     try:
-        # First, try a standard .close() method
-        close_candidate = cast(Any, msg_obj).close
-        if callable(close_candidate):
-            close_candidate()
-            return
-    except AttributeError:
-        pass
+        close_fn = getattr(m, "close", None)
+        if callable(close_fn):
+            close_fn()
+        else:
+            exit_fn = getattr(m, "__exit__", None)
+            if callable(exit_fn):
+                exit_fn(None, None, None)
     except Exception as close_error:
-        logger.debug("Failed on .close() for MSG %s: %s", path, close_error)
-        return  # Stop trying if .close() exists but fails
+        logger.debug("Failed to close MSG handle for %s: %s", path, close_error)
 
+
+def _extract_msg_content(m: Any) -> str:
+    """Extracts content from a .msg file object."""
+    body = ""
     try:
-        # Fallback to context manager __exit__
-        exit_candidate = cast(Any, msg_obj).__exit__
-        if callable(exit_candidate):
-            exit_candidate(None, None, None)
-    except AttributeError:
-        logger.debug("MSG object for %s has no close method.", path)
-    except Exception as exit_error:
-        logger.debug("Failed on .__exit__() for MSG %s: %s", path, exit_error)
+        html = cast(str | None, getattr(m, "htmlBody", None))
+        if html:
+            body = _html_to_text(html)
+    except Exception:
+        body = ""
+
+    if not body:
+        body = cast(str | None, getattr(m, "body", "")) or ""
+
+    headers: list[str] = []
+    for k in ("from", "to", "cc", "bcc", "subject", "date"):
+        val = cast(str | None, getattr(m, k, None))
+        if val:
+            headers.append(f"{k.capitalize()}: {val}")
+
+    text = "\n".join([*headers, "", body])
+    return strip_control_chars(text)
 
 
 def _extract_msg(path: Path) -> str:
@@ -569,73 +604,84 @@ def _extract_msg(path: Path) -> str:
         logger.warning("Failed to import extract_msg for %s: %s", path, exc)
         return ""
 
-    msg_obj: Any | None = None
+    m: Any | None = None
     try:
-        msg_obj = extract_msg.Message(str(path))
-        body = _get_msg_body(msg_obj)
-        headers = _get_msg_headers(msg_obj)
-        text = "\n".join([*headers, "", body])
-        return strip_control_chars(text)
+        m = extract_msg.Message(str(path))
+        return _extract_msg_content(m)
     except Exception as e:
         logger.warning("Failed to parse MSG %s: %s", path, e)
         return ""
     finally:
-        _close_msg_safely(msg_obj, path)
+        _close_msg_file_handle(m, path)
 
 
-def _extract_docx_content(path: Path, max_chars: int | None) -> str:
-    """Extract content from a .docx file using python-docx."""
-    import docx
-
-    document = docx.Document(str(path))
+def _get_docx_text_parts(document: Any) -> list[str]:
+    """Extracts text parts from a .docx document object."""
     parts: list[str] = []
+    for paragraph in getattr(document, "paragraphs", []):
+        if paragraph_text := getattr(paragraph, "text", ""):
+            if paragraph_text.strip():
+                parts.append(paragraph_text)
+    for table in getattr(document, "tables", []):
+        for row in getattr(table, "rows", []):
+            for cell in getattr(row, "cells", []):
+                if cell_text := getattr(cell, "text", ""):
+                    if cell_text.strip():
+                        parts.append(cell_text)
+    return parts
 
-    for paragraph in document.paragraphs:
-        if paragraph.text and paragraph.text.strip():
-            parts.append(paragraph.text)
-    for table in document.tables:
-        for row in table.rows:
-            for cell in row.cells:
-                if cell.text and cell.text.strip():
-                    parts.append(cell.text)
 
-    text = "\n".join(parts)
-    return _finalize_text(text, max_chars)
+def _extract_docx(path: Path, max_chars: int | None) -> str:
+    """Extracts text from a .docx file."""
+    try:
+        import docx
+
+        document = docx.Document(str(path))
+        parts = _get_docx_text_parts(document)
+        text = "\n".join(parts)
+        if max_chars is not None and len(text) > max_chars:
+            text = text[:max_chars]
+        return strip_control_chars(text)
+    except ImportError:
+        logger.info("python-docx not installed, skipping .docx file: %s", path)
+    except Exception as e:
+        logger.warning("Failed to read .docx file %s: %s", path, e)
+    return ""
 
 
-def _extract_doc_content(path: Path, max_chars: int | None) -> str:
-    """Extract content from a legacy .doc file."""
+def _extract_doc(path: Path, max_chars: int | None) -> str:
+    """Extracts text from a legacy .doc file."""
     if os.name == "nt":
-        win_text = _extract_text_from_doc_win32(path)
-        if win_text:
-            return _finalize_text(win_text, max_chars)
+        if win_text := _extract_text_from_doc_win32(path):
+            return win_text[:max_chars] if max_chars else win_text
 
-    # Cross-platform best-effort: try textract if installed
     try:
         import textract
 
         raw = textract.process(str(path))
-        text = raw.decode("utf-8", errors="ignore")
-        return _finalize_text(text, max_chars)
-    except Exception:
-        logger.info(
-            "No supported reader for legacy .doc file on this platform: %s", path
-        )
-        return ""
+        txt = raw.decode("utf-8", errors="ignore")
+        return strip_control_chars(txt[:max_chars] if max_chars else txt)
+    except ImportError:
+        logger.info("textract not installed, cannot process .doc file: %s", path)
+    except Exception as e:
+        logger.warning("textract failed for .doc file %s: %s", path, e)
+    return ""
 
 
 def _extract_word_document(path: Path, suffix: str, max_chars: int | None) -> str:
     """Extract text from Word documents (.docx, .doc)."""
-    try:
-        if suffix == ".docx":
-            return _extract_docx_content(path, max_chars)
-        return _extract_doc_content(path, max_chars)
-    except ImportError:
-        logger.info("python-docx/textract not installed, skipping Word file: %s", path)
-        return ""
-    except Exception as e:
-        logger.warning("Failed to read Word document %s: %s", path, e)
-        return ""
+    if suffix == ".docx":
+        return _extract_docx(path, max_chars)
+    return _extract_doc(path, max_chars)
+
+
+def _extract_text_from_shape(shape: Any) -> str | None:
+    """Extracts text from a PowerPoint shape if it has a text attribute."""
+    if hasattr(shape, "text"):
+        t = getattr(shape, "text", "") or ""
+        if t.strip():
+            return t
+    return None
 
 
 def _get_shape_text(shape: Any) -> str | None:
@@ -650,6 +696,15 @@ def _extract_powerpoint(path: Path, max_chars: int | None) -> str:
     """Extract text from PowerPoint files."""
     try:
         from pptx import Presentation
+
+        prs = Presentation(str(path))
+        parts: list[str] = []
+        for slide in prs.slides:
+            for shape in slide.shapes:
+                if text := _extract_text_from_shape(shape):
+                    parts.append(text)
+        text = "\n".join(parts)
+        return strip_control_chars(text[:max_chars] if max_chars else text)
     except ImportError:
         logger.info("python-pptx not installed, skipping PowerPoint file: %s", path)
         return ""
@@ -741,62 +796,63 @@ def _extract_pdf(path: Path, max_chars: int | None) -> str:
         return ""
 
 
+def _open_excel_file_with_fallback(path: Path, suffix: str, pd: Any) -> Any:
+    """Opens an Excel file with a fallback engine if the primary one fails."""
+    from typing import Literal
+
+    engine: Literal["openpyxl", "xlrd"] = "openpyxl" if suffix == ".xlsx" else "xlrd"
+    try:
+        return pd.ExcelFile(str(path), engine=engine)
+    except Exception:
+        return pd.ExcelFile(str(path), engine=None)
+
+
+def _process_excel_sheet(
+    xl: Any, sheet_name: str, pd: Any, max_cells: int = 200000
+) -> str:
+    """Processes a single sheet of an Excel file and returns it as a CSV string."""
+    df = pd.read_excel(xl, sheet_name=sheet_name, dtype=str)
+    if df.size > max_cells and len(df.shape) > 1:
+        max_rows = max_cells // df.shape[1]
+        df = df.head(max_rows)
+    return f"[Sheet: {sheet_name}]\n{df.to_csv(index=False)}"
+
+
 def _extract_excel(path: Path, suffix: str, max_chars: int | None) -> str:
     """Extract text from Excel files."""
     try:
-        from typing import Literal
-
-        import pandas as pd  # type: ignore
-
-        engine: Literal["openpyxl", "xlrd"] = (
-            "openpyxl" if suffix == ".xlsx" else "xlrd"
-        )
-
-        # Try explicit engine first, then fall back to pandas auto-detection
-        def _iter_sheets(_engine: Literal["openpyxl", "xlrd"] | None):
-            if _engine:
-                return pd.ExcelFile(str(path), engine=_engine)
-            return pd.ExcelFile(str(path))
-
-        xl = None
-        try:
-            xl = _iter_sheets(engine)
-        except Exception:
-            xl = _iter_sheets(None)
-
-        parts: list[str] = []
-        acc = 0
-        budget = max_chars if max_chars is not None else None
-        max_cells = 200000  # Default max cells limit
-
-        # Ensure the handle is closed even if exceptions occur
-        with xl:
-            for sheet_name in xl.sheet_names:
-                try:
-                    df = pd.read_excel(xl, sheet_name=sheet_name, dtype=str)
-                    if df.size > max_cells and len(df.shape) > 1:
-                        max_rows = max_cells // df.shape[1]
-                        df = df.head(max_rows)
-                    chunk = f"[Sheet: {sheet_name}]\n{df.to_csv(index=False)}"
-                    remain = None if budget is None else (budget - acc)
-                    if remain is not None and remain <= 0:
-                        break
-                    if remain is not None and len(chunk) > remain:
-                        chunk = chunk[:remain]
-                    parts.append(chunk)
-                    acc += len(chunk)
-                except Exception as e:
-                    logger.warning(
-                        "Failed reading sheet '%s' in %s: %s", sheet_name, path, e
-                    )
-        text = "\n".join(parts)
-        return strip_control_chars(text)
+        import pandas as pd
     except ImportError:
         logger.info("pandas/openpyxl/xlrd not installed, skipping Excel file: %s", path)
         return ""
+
+    try:
+        xl = _open_excel_file_with_fallback(path, suffix, pd)
     except Exception as e:
         logger.warning("Failed to read Excel file %s: %s", path, e)
         return ""
+
+    parts: list[str] = []
+    acc = 0
+    budget = max_chars if max_chars is not None else None
+
+    with xl:
+        for sheet_name in xl.sheet_names:
+            if budget is not None and acc >= budget:
+                break
+            try:
+                chunk = _process_excel_sheet(xl, sheet_name, pd)
+                remain = None if budget is None else (budget - acc)
+                if remain is not None and len(chunk) > remain:
+                    chunk = chunk[:remain]
+                parts.append(chunk)
+                acc += len(chunk)
+            except Exception as e:
+                logger.warning(
+                    "Failed reading sheet '%s' in %s: %s", sheet_name, path, e
+                )
+
+    return strip_control_chars("\n".join(parts))
 
 
 def extract_text(path: Path, *, max_chars: int | None = None) -> str:
