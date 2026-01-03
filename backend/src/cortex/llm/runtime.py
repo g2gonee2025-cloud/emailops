@@ -311,6 +311,49 @@ class VLLMProvider(BaseProvider):
         self._embed_client: Any | None = None
         self._lock = threading.RLock()
 
+    def _resolve_llm_base_url(self) -> str:
+        """Resolves the LLM base URL from configuration or environment variables."""
+        # 1. Try unified config nesting (EmailOpsConfig)
+        if hasattr(_config, "digitalocean"):
+            do_cfg = _config.digitalocean
+            endpoint_cfg = getattr(do_cfg, "endpoint", None)
+            if endpoint_cfg and endpoint_cfg.BASE_URL:
+                return str(endpoint_cfg.BASE_URL)
+
+        # 2. Try simple config / env fallback (prefer LLM_ENDPOINT for DO Inference)
+        return getattr(_config, "llm_base_url", None) or os.getenv(
+            "LLM_ENDPOINT",
+            os.getenv(
+                "OUTLOOKCORTEX_DO_LLM_BASE_URL",
+                "https://inference.do-ai.run/v1",
+            ),
+        )
+
+    def _resolve_llm_api_key(self) -> Optional[str]:
+        """Resolves the LLM API key from configuration or environment variables."""
+        # 1. Try unified config nesting
+        if hasattr(_config, "digitalocean"):
+            do_cfg = _config.digitalocean
+            endpoint_cfg = getattr(do_cfg, "endpoint", None)
+            if endpoint_cfg and endpoint_cfg.api_key:
+                return endpoint_cfg.api_key
+
+        # 2. Try simple config / env fallback
+        config_key = getattr(_config, "llm_api_key", None)
+        if config_key == "EMPTY":
+            config_key = None
+
+        env_key = os.getenv("LLM_API_KEY")
+        if env_key == "EMPTY":
+            env_key = None
+
+        api_key = (
+            config_key
+            or env_key
+            or os.getenv("DO_LLM_API_KEY", os.getenv("KIMI_API_KEY", "EMPTY"))
+        )
+        return api_key if api_key != "EMPTY" else None
+
     # ------------- LLM client (MiniMax-M2 via OpenAI-compatible server) -------------
     @property
     def llm_client(self):
@@ -326,49 +369,8 @@ class VLLMProvider(BaseProvider):
                     "Missing dependency 'openai'. Install with: pip install -U openai"
                 ) from e
 
-            # Resolve Base URL
-            base_url = None
-            # 1. Try unified config nesting (EmailOpsConfig)
-            if hasattr(_config, "digitalocean"):
-                do_cfg = _config.digitalocean
-                endpoint_cfg = getattr(do_cfg, "endpoint", None)
-                if endpoint_cfg and endpoint_cfg.BASE_URL:
-                    base_url = str(endpoint_cfg.BASE_URL)
-
-            # 2. Try simple config / env fallback (prefer LLM_ENDPOINT for DO Inference)
-            if not base_url:
-                base_url = getattr(_config, "llm_base_url", None) or os.getenv(
-                    "LLM_ENDPOINT",
-                    os.getenv(
-                        "OUTLOOKCORTEX_DO_LLM_BASE_URL",
-                        "https://inference.do-ai.run/v1",
-                    ),
-                )
-
-            # Resolve API Key
-            api_key = None
-            # 1. Try unified config nesting
-            if hasattr(_config, "digitalocean"):
-                do_cfg = _config.digitalocean
-                endpoint_cfg = getattr(do_cfg, "endpoint", None)
-                if endpoint_cfg and endpoint_cfg.api_key:
-                    api_key = endpoint_cfg.api_key
-
-            # 2. Try simple config / env fallback
-            if not api_key:
-                config_key = getattr(_config, "llm_api_key", None)
-                if config_key == "EMPTY":
-                    config_key = None
-
-                env_key = os.getenv("LLM_API_KEY")
-                if env_key == "EMPTY":
-                    env_key = None
-
-                api_key = (
-                    config_key
-                    or env_key
-                    or os.getenv("DO_LLM_API_KEY", os.getenv("KIMI_API_KEY", "EMPTY"))
-                )
+            base_url = self._resolve_llm_base_url()
+            api_key = self._resolve_llm_api_key()
 
             # Resolve actual model name for logging context (used in complete_text but good to know here)
             # Note: The client is generic, but we log the INTENDED model if known from env.
@@ -406,7 +408,7 @@ class VLLMProvider(BaseProvider):
             base_url = (
                 os.getenv("EMBED_ENDPOINT")
                 or os.getenv("DO_LLM_BASE_URL")
-                or "http://embeddings-api.emailops.svc.cluster.local"
+                or "https://embeddings-api.emailops.svc.cluster.local"
             )
 
             # Ensure /v1 suffix
@@ -425,48 +427,50 @@ class VLLMProvider(BaseProvider):
         # No-op: client is lazy-loaded in embed_client property
         pass
 
+    def _get_embed_model_name(self) -> str:
+        """Resolves the embedding model name from configuration."""
+        if hasattr(_config, "embedding"):
+            embed_cfg = _config.embedding
+            if embed_cfg and embed_cfg.model_name:
+                return embed_cfg.model_name
+
+        return getattr(_config, "embed_model", None) or os.getenv(
+            "EMBED_MODEL",
+            os.getenv("KALM_EMBED_MODEL", "tencent/KaLM-Embedding-Gemma3-12B-2511"),
+        )
+
+    def _get_embed_batch_size(self) -> int:
+        """Resolves the embedding batch size from configuration."""
+        embedding_cfg = getattr(_config, "embedding", None)
+        # Default batch size 256 for H100/H200 efficiency
+        return getattr(embedding_cfg, "batch_size", 256) if embedding_cfg else 256
+
+    def _process_embedding_batch(
+        self, batch: list[str], model_name: str
+    ) -> list[list[float]]:
+        """Processes a single batch of documents for embedding."""
+        client = self.embed_client
+        resp = client.embeddings.create(
+            input=batch, model=model_name, encoding_format="float"
+        )
+
+        # Extract embeddings and sort by index to ensure order
+        batch_data = sorted(resp.data, key=lambda x: x.index)
+        return [d.embedding for d in batch_data]
+
     # ------------- Retrieval embeddings -------------
     def embed_documents(self, documents: list[str]) -> np.ndarray:
         if not documents:
             return np.array([], dtype=np.float32)
 
-        client = self.embed_client
-
-        # Resolve model name
-        model_name = None
-        if hasattr(_config, "embedding"):
-            embed_cfg = _config.embedding
-            if embed_cfg and embed_cfg.model_name:
-                model_name = embed_cfg.model_name
-
-        if not model_name:
-            model_name = getattr(_config, "embed_model", None) or os.getenv(
-                "EMBED_MODEL",
-                os.getenv("KALM_EMBED_MODEL", "tencent/KaLM-Embedding-Gemma3-12B-2511"),
-            )
-
-        # Batching
-        embedding_cfg = getattr(_config, "embedding", None)
-        # Default batch size 256 for H100/H200 efficiency
-        batch_size = getattr(embedding_cfg, "batch_size", 256) if embedding_cfg else 256
-
+        model_name = self._get_embed_model_name()
+        batch_size = self._get_embed_batch_size()
         all_embeddings = []
 
         try:
             for i in range(0, len(documents), batch_size):
                 batch = documents[i : i + batch_size]
-
-                # Replace newlines if configured (common for retrieval)
-                # For Gemma-3-Embedding, it's usually robust, but consistency helps.
-                # batch = [d.replace("\n", " ") for d in batch]
-
-                resp = client.embeddings.create(
-                    input=batch, model=model_name, encoding_format="float"
-                )
-
-                # Extract embeddings and sort by index to ensure order
-                batch_data = sorted(resp.data, key=lambda x: x.index)
-                batch_embeddings = [d.embedding for d in batch_data]
+                batch_embeddings = self._process_embedding_batch(batch, model_name)
                 all_embeddings.extend(batch_embeddings)
 
             arr = np.asarray(all_embeddings, dtype=np.float32)
@@ -680,7 +684,7 @@ class LLMRuntime:
             self._inflight = max(0, self._inflight - 1)
 
     # ------------- Core execution wrapper with resilience -------------
-    def _execute(self, operation: str, func, *args, **kwargs):
+    def _execute(self, func, *args, **kwargs):
         """
         Execute `func` with:
 
@@ -726,208 +730,100 @@ class LLMRuntime:
         finally:
             self._track_request_end()
 
+    def _get_embedding_config(self) -> tuple[str, bool, int]:
+        """Reads embedding configuration."""
+        embed_mode = "auto"
+        cpu_fallback_enabled = True
+        expected_dim = getattr(_config, "embed_dim", 3840)
+
+        if hasattr(_config, "embedding"):
+            embed_cfg = _config.embedding
+            embed_mode = getattr(embed_cfg, "embed_mode", "auto")
+            cpu_fallback_enabled = getattr(embed_cfg, "cpu_fallback_enabled", True)
+            if embed_cfg and embed_cfg.output_dimensionality:
+                expected_dim = embed_cfg.output_dimensionality
+
+        return embed_mode, cpu_fallback_enabled, expected_dim
+
+    def _try_cpu_embedding(
+        self, texts: list[str], context: str
+    ) -> Optional[np.ndarray]:
+        """Attempts to get embeddings from the CPU provider."""
+        try:
+            from cortex.llm.gguf_provider import GGUFProvider
+
+            gguf = GGUFProvider()
+            if gguf.is_available_sync():
+                logger.info("Using CPU GGUF for %s embedding", context)
+                return gguf.embed_sync(texts)
+            logger.warning("GGUF model not available for CPU %s embedding", context)
+        except Exception as e:
+            logger.error("CPU %s embedding failed: %s", context, e)
+        return None
+
+    def _validate_vectors(self, vectors: Any, expected_dim: int) -> np.ndarray:
+        """Validates and normalizes the embedding vectors."""
+        if not isinstance(vectors, np.ndarray):
+            vectors = np.asarray(vectors, dtype=np.float32)
+
+        if vectors.ndim == 1:
+            vectors = vectors.reshape(1, -1)
+
+        if vectors.ndim != 2:
+            raise ProviderError(
+                f"Embedding output must be 2D, got shape {vectors.shape}"
+            )
+
+        vectors = BaseProvider.normalize_l2(vectors)
+
+        if vectors.shape[1] != expected_dim:
+            raise ProviderError(
+                f"Embedding dimension mismatch: expected {expected_dim}, got {vectors.shape[1]}"
+            )
+
+        if not np.all(np.isfinite(vectors)):
+            raise ProviderError("Embedding contains non-finite values")
+
+        return vectors
+
+    def _embed_texts(self, texts: list[str], embed_func, context: str) -> np.ndarray:
+        """Generic embedding method with validation and fallback logic."""
+        if not texts or any(not isinstance(t, str) or not t.strip() for t in texts):
+            raise ValidationError(f"{context} must be a list of non-empty strings")
+
+        embed_mode, cpu_fallback, expected_dim = self._get_embedding_config()
+        vectors, gpu_error = None, None
+
+        if embed_mode == "cpu":
+            vectors = self._try_cpu_embedding(texts, context)
+        elif embed_mode == "gpu":
+            vectors = self._execute(embed_func, texts)
+        else:  # auto mode
+            try:
+                vectors = self._execute(embed_func, texts)
+            except (ProviderError, ConnectionError, TimeoutError) as e:
+                gpu_error = e
+                logger.warning(
+                    "GPU %s embedding failed, checking CPU fallback: %s", context, e
+                )
+                if cpu_fallback:
+                    vectors = self._try_cpu_embedding(texts, f"fallback for {context}")
+
+        if vectors is None:
+            if gpu_error:
+                raise gpu_error
+            raise ProviderError(f"No embedding provider available for {context}")
+
+        return self._validate_vectors(vectors, expected_dim)
+
     # ---------------- Public API: embeddings (document/query) ----------------
     def embed_documents(self, documents: list[str]) -> np.ndarray:
-        if not documents:
-            raise ValidationError("documents must be non-empty")
-        if any(not isinstance(t, str) or not t.strip() for t in documents):
-            raise ValidationError("documents must be non-empty strings")
-
-        expected_dim = 3840
-        if hasattr(_config, "embedding"):
-            embed_cfg = _config.embedding
-            if embed_cfg and embed_cfg.output_dimensionality:
-                expected_dim = embed_cfg.output_dimensionality
-        else:
-            expected_dim = getattr(_config, "embed_dim", 3840)
-
-        # Determine embed mode from config
-        embed_mode = "auto"  # default
-        cpu_fallback_enabled = True
-        if hasattr(_config, "embedding"):
-            embed_cfg = _config.embedding
-            embed_mode = getattr(embed_cfg, "embed_mode", "auto")
-            cpu_fallback_enabled = getattr(embed_cfg, "cpu_fallback_enabled", True)
-
-        vectors = None
-        gpu_error = None
-
-        # CPU-only mode: skip GPU entirely
-        if embed_mode == "cpu":
-            try:
-                from cortex.llm.gguf_provider import GGUFProvider
-
-                gguf = GGUFProvider()
-                if gguf.is_available_sync():
-                    logger.info(
-                        "Using CPU GGUF for document embedding (embed_mode=cpu)"
-                    )
-                    vectors = gguf.embed_sync(documents)
-                else:
-                    raise ProviderError(
-                        "GGUF model not available but embed_mode=cpu requires it"
-                    )
-            except ImportError as e:
-                raise ProviderError(f"GGUF provider not available: {e}") from e
-
-        # GPU-only mode: no fallback
-        elif embed_mode == "gpu":
-            vectors = self._execute(
-                "embed_documents", self.primary.embed_documents, documents
-            )
-
-        # Auto mode: GPU first, CPU fallback if enabled
-        else:  # embed_mode == "auto"
-            try:
-                vectors = self._execute(
-                    "embed_documents", self.primary.embed_documents, documents
-                )
-            except (ProviderError, ConnectionError, TimeoutError) as e:
-                gpu_error = e
-                logger.warning("GPU embedding failed, checking CPU fallback: %s", e)
-
-                if cpu_fallback_enabled:
-                    try:
-                        from cortex.llm.gguf_provider import GGUFProvider
-
-                        gguf = GGUFProvider()
-                        if gguf.is_available_sync():
-                            logger.info(
-                                "Using CPU GGUF fallback for document embedding"
-                            )
-                            vectors = gguf.embed_sync(documents)
-                        else:
-                            logger.warning("GGUF model not available for CPU fallback")
-                    except Exception as fallback_error:
-                        logger.error("CPU fallback also failed: %s", fallback_error)
-
-        # If no vectors from either source, raise original error
-        if vectors is None:
-            if gpu_error:
-                raise gpu_error
-            raise ProviderError("No embedding provider available")
-
-        if not isinstance(vectors, np.ndarray):
-            vectors = np.asarray(vectors, dtype=np.float32)
-
-        if vectors.ndim == 1:
-            vectors = vectors.reshape(1, -1)
-
-        if vectors.ndim != 2:
-            raise ProviderError(
-                f"Embedding output must be 2D, got shape {vectors.shape}"
-            )
-
-        vectors = BaseProvider.normalize_l2(vectors)
-
-        if vectors.shape[1] != expected_dim:
-            raise ProviderError(
-                f"Embedding dimension mismatch: expected {expected_dim}, got {vectors.shape[1]}"
-            )
-
-        if not np.all(np.isfinite(vectors)):
-            raise ProviderError("Embedding contains non-finite values")
-
-        return vectors
+        return self._embed_texts(
+            documents, self.primary.embed_documents, "documents"
+        )
 
     def embed_queries(self, queries: list[str]) -> np.ndarray:
-        if not queries:
-            raise ValidationError("queries must be non-empty")
-        if any(not isinstance(t, str) or not t.strip() for t in queries):
-            raise ValidationError("queries must be non-empty strings")
-
-        expected_dim = 3840
-        if hasattr(_config, "embedding"):
-            embed_cfg = _config.embedding
-            if embed_cfg and embed_cfg.output_dimensionality:
-                expected_dim = embed_cfg.output_dimensionality
-        else:
-            expected_dim = getattr(_config, "embed_dim", 3840)
-
-        # Determine embed mode from config
-        embed_mode = "auto"  # default
-        cpu_fallback_enabled = True
-        if hasattr(_config, "embedding"):
-            embed_cfg = _config.embedding
-            embed_mode = getattr(embed_cfg, "embed_mode", "auto")
-            cpu_fallback_enabled = getattr(embed_cfg, "cpu_fallback_enabled", True)
-
-        vectors = None
-        gpu_error = None
-
-        # CPU-only mode: skip GPU entirely
-        if embed_mode == "cpu":
-            try:
-                from cortex.llm.gguf_provider import GGUFProvider
-
-                gguf = GGUFProvider()
-                if gguf.is_available_sync():
-                    logger.info("Using CPU GGUF for query embedding (embed_mode=cpu)")
-                    vectors = gguf.embed_sync(queries)
-                else:
-                    raise ProviderError(
-                        "GGUF model not available but embed_mode=cpu requires it"
-                    )
-            except ImportError as e:
-                raise ProviderError(f"GGUF provider not available: {e}") from e
-
-        # GPU-only mode: no fallback
-        elif embed_mode == "gpu":
-            vectors = self._execute(
-                "embed_queries", self.primary.embed_queries, queries
-            )
-
-        # Auto mode: GPU first, CPU fallback if enabled
-        else:  # embed_mode == "auto"
-            try:
-                vectors = self._execute(
-                    "embed_queries", self.primary.embed_queries, queries
-                )
-            except (ProviderError, ConnectionError, TimeoutError) as e:
-                gpu_error = e
-                logger.warning("GPU embedding failed, checking CPU fallback: %s", e)
-
-                if cpu_fallback_enabled:
-                    try:
-                        from cortex.llm.gguf_provider import GGUFProvider
-
-                        gguf = GGUFProvider()
-                        if gguf.is_available_sync():
-                            logger.info("Using CPU GGUF fallback for query embedding")
-                            vectors = gguf.embed_sync(queries)
-                        else:
-                            logger.warning("GGUF model not available for CPU fallback")
-                    except Exception as fallback_error:
-                        logger.error("CPU fallback also failed: %s", fallback_error)
-
-        # If no vectors from either source, raise original error
-        if vectors is None:
-            if gpu_error:
-                raise gpu_error
-            raise ProviderError("No embedding provider available")
-
-        if not isinstance(vectors, np.ndarray):
-            vectors = np.asarray(vectors, dtype=np.float32)
-
-        if vectors.ndim == 1:
-            vectors = vectors.reshape(1, -1)
-
-        if vectors.ndim != 2:
-            raise ProviderError(
-                f"Embedding output must be 2D, got shape {vectors.shape}"
-            )
-
-        vectors = BaseProvider.normalize_l2(vectors)
-
-        if vectors.shape[1] != expected_dim:
-            raise ProviderError(
-                f"Embedding dimension mismatch: expected {expected_dim}, got {vectors.shape[1]}"
-            )
-
-        if not np.all(np.isfinite(vectors)):
-            raise ProviderError("Embedding contains non-finite values")
-
-        return vectors
+        return self._embed_texts(queries, self.primary.embed_queries, "queries")
 
     # Back-compat: embed_texts defaults to document embeddings (RAG ingestion)
     def embed_texts(self, texts: list[str]) -> np.ndarray:
@@ -939,7 +835,7 @@ class LLMRuntime:
         if not isinstance(messages, list) or not messages:
             raise ValidationError("`messages` must be a non-empty list of dicts")
 
-        result = self._execute("completion", self.primary.complete, messages, **kwargs)
+        result = self._execute(self.primary.complete, messages, **kwargs)
 
         if not isinstance(result, str) or not result.strip():
             raise LLMOutputSchemaError(
@@ -970,6 +866,32 @@ class LLMRuntime:
         # We prioritize the new messages list.
         kwargs.pop("messages", None)
         return self.complete_messages(messages, **kwargs)
+
+    def _call_model_for_json(
+        self, msgs: list[dict[str, str]], base_kwargs: dict[str, Any]
+    ) -> str:
+        """Helper to call the model for JSON, handling response_format fallback."""
+        try:
+            return self.complete_messages(msgs, **base_kwargs)
+        except ProviderError as e:
+            msg = str(e).lower()
+            if "response_format" in msg or "json_object" in msg:
+                base_kwargs.pop("response_format", None)
+                return self.complete_messages(msgs, **base_kwargs)
+            raise
+
+    def _parse_and_validate_json(
+        self, raw_output: str, schema: dict[str, Any]
+    ) -> tuple[Optional[dict[str, Any]], Optional[str]]:
+        """Tries to parse and then validate JSON, returning (data, error_string)."""
+        try:
+            parsed = _try_load_json(raw_output or "")
+            validation_error = _validate_json_schema(parsed, schema)
+            if validation_error:
+                return None, validation_error
+            return parsed, None
+        except (ValueError, Exception) as e:
+            return None, str(e)
 
     # ---------------- Public API: JSON completion (UNSAFE) ----------------
     def complete_json(
@@ -1004,69 +926,44 @@ class LLMRuntime:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": prompt},
         ]
+        base_kwargs = {
+            "temperature": 0.0,
+            "max_tokens": 2048,
+            "response_format": {"type": "json_object"},
+            **kwargs,
+        }
 
-        def _call_model_for_json(msgs: list[dict[str, str]]) -> str:
-            base_kwargs = dict(kwargs)
-            base_kwargs.setdefault("temperature", 0.0)
-            base_kwargs.setdefault("max_tokens", 2048)
-            base_kwargs.setdefault("response_format", {"type": "json_object"})
-            try:
-                # Use the new secure method
-                return self.complete_messages(msgs, **base_kwargs)
-            except ProviderError as e:
-                # Some OpenAI-compatible servers may not implement response_format.
-                msg = str(e).lower()
-                if "response_format" in msg or "json_object" in msg:
-                    base_kwargs.pop("response_format", None)
-                    return self.complete_messages(msgs, **base_kwargs)
-                raise
-
-        raw_output: str | None = None
-        last_error: str | None = None
+        raw_output = self._call_model_for_json(initial_messages, base_kwargs)
+        last_error = None
 
         for attempt in range(max_repair_attempts + 1):
-            if attempt == 0:
-                raw_output = _call_model_for_json(initial_messages)
-            else:
-                from cortex.prompts import (
-                    SYSTEM_GUARDRAILS_REPAIR,
-                    USER_GUARDRAILS_REPAIR,
-                    construct_prompt_messages,
-                )
-
-                # Use the proper repair prompt templates
-                repair_messages = construct_prompt_messages(
-                    system_prompt_template=SYSTEM_GUARDRAILS_REPAIR,
-                    user_prompt_template=USER_GUARDRAILS_REPAIR,
-                    error=last_error or "Unknown",
-                    invalid_json=raw_output or "",
-                    target_schema=schema_json,
-                    validation_errors=last_error or "N/A",
-                )
-                raw_output = _call_model_for_json(repair_messages)
-
-            try:
-                # Robust extraction first
-                parsed = _try_load_json(raw_output or "")
-
-                validation_error = _validate_json_schema(parsed, schema)
-                if validation_error:
-                    last_error = validation_error
-                    logger.warning(
-                        "JSON schema validation failed (attempt %d): %s",
-                        attempt + 1,
-                        validation_error,
-                    )
-                    continue
+            parsed, error = self._parse_and_validate_json(raw_output, schema)
+            if parsed is not None:
                 return parsed
-            except ValueError as e:
-                # _try_load_json raises ValueError on parsing failure
-                last_error = str(e)
-                logger.warning("JSON decode failed (attempt %d): %s", attempt + 1, e)
 
-            except Exception as e:
-                last_error = str(e)
-                logger.warning("JSON completion error (attempt %d): %s", attempt + 1, e)
+            last_error = error
+            logger.warning(
+                "JSON validation failed (attempt %d): %s", attempt + 1, last_error
+            )
+
+            if attempt >= max_repair_attempts:
+                break
+
+            from cortex.prompts import (
+                SYSTEM_GUARDRAILS_REPAIR,
+                USER_GUARDRAILS_REPAIR,
+                construct_prompt_messages,
+            )
+
+            repair_messages = construct_prompt_messages(
+                system_prompt_template=SYSTEM_GUARDRAILS_REPAIR,
+                user_prompt_template=USER_GUARDRAILS_REPAIR,
+                error=last_error or "Unknown",
+                invalid_json=raw_output or "",
+                target_schema=schema_json,
+                validation_errors=last_error or "N/A",
+            )
+            raw_output = self._call_model_for_json(repair_messages, base_kwargs)
 
         raise LLMOutputSchemaError(
             message=(
@@ -1098,47 +995,86 @@ def _validate_json_schema(data: dict[str, Any], schema: dict[str, Any]) -> str |
 def _extract_first_balanced_json_object(s: object) -> str | None:
     """
     Finds the first balanced JSON object (from '{' to '}') in a string.
-    Properly handles nested braces, strings with braces, and escaped characters.
+    Handles nested braces, strings with braces, and escaped characters.
     """
-    if not isinstance(s, str):
-        return None
-
-    if not s or "{" not in s:
+    if not isinstance(s, str) or "{" not in s:
         return None
 
     first_brace = s.find("{")
     if first_brace == -1:
         return None
 
-    balance = 0
-    in_string = False
-    escape_next = False
+    balance, in_string, escape_next = 0, False, False
 
-    try:
-        # We only care about finding the matching closing brace for the first opening brace
-        for i, char in enumerate(s[first_brace:]):
-            if escape_next:
-                escape_next = False
+    for i, char in enumerate(s[first_brace:]):
+        if escape_next:
+            escape_next = False
+            continue
+
+        if char == "\\":
+            escape_next = True
+            continue
+
+        if char == '"':
+            in_string = not in_string
+
+        if not in_string:
+            if char == "{":
+                balance += 1
+            elif char == "}":
+                balance -= 1
+
+            if balance == 0:
+                return s[first_brace : first_brace + i + 1]
+    return None
+
+
+def _remove_think_tags(s: str) -> str:
+    """
+    Safely remove <think>...</think> blocks from a string without using regex
+    to avoid ReDoS vulnerabilities.
+    """
+    parts = []
+    last_pos = 0
+    while True:
+        # Find start tag, case-insensitively
+        s_lower = s.lower()
+        start_tag_pos = s_lower.find("<think>", last_pos)
+        if start_tag_pos == -1:
+            parts.append(s[last_pos:])
+            break
+
+        # Find end tag, case-insensitively, after the start tag
+        end_tag_pos = s_lower.find("</think>", start_tag_pos + len("<think>"))
+        if end_tag_pos == -1:
+            # No closing tag found for this opening tag, so treat the rest as content.
+            parts.append(s[last_pos:])
+            break
+
+        # Append content before the tag
+        parts.append(s[last_pos:start_tag_pos])
+        # Move past the </think> tag for the next search
+        last_pos = end_tag_pos + len("</think>")
+
+    return "".join(parts).strip()
+
+
+def _try_parse_from_fenced_blocks(s: str) -> Optional[dict[str, Any]]:
+    """Tries to find and parse a JSON object within fenced code blocks."""
+    import re
+
+    fenced_matches = re.finditer(
+        r"```(?:json|json5|hjson)?\s*([\s\S]*?)\s*```", s, flags=re.IGNORECASE
+    )
+    for m in fenced_matches:
+        block = _extract_first_balanced_json_object(m.group(1))
+        if block:
+            try:
+                obj = json.loads(block)
+                if isinstance(obj, dict):
+                    return obj
+            except json.JSONDecodeError:
                 continue
-
-            if char == "\\":
-                escape_next = True
-                continue
-
-            if char == '"':
-                in_string = not in_string
-
-            if not in_string:
-                if char == "{":
-                    balance += 1
-                elif char == "}":
-                    balance -= 1
-
-                if balance == 0 and i > 0:
-                    return s[first_brace : first_brace + i + 1]
-    except (TypeError, IndexError):
-        # Handle cases where s is not a string or slicing fails
-        return None
     return None
 
 
@@ -1148,22 +1084,13 @@ def _try_load_json(data: Any) -> dict[str, Any]:
     Handles fenced code blocks and partial strings.
     """
     if isinstance(data, dict):
-        return data  # type: ignore
+        return data
 
     if not data:
         raise ValueError("Empty data for JSON parsing")
 
-    s = data
-    if isinstance(data, bytes):
-        s = data.decode("utf-8")
-
-    s = str(s).strip()
-
-    # 0. Pre-processing: Remove reasoning traces (e.g., <think>...</think>)
-    import re
-
-    # Remove <think>...</think> (DOTALL to span newlines)
-    s = re.sub(r"<think>.*?</think>", "", s, flags=re.DOTALL | re.IGNORECASE).strip()
+    s = data.decode("utf-8") if isinstance(data, bytes) else str(data)
+    s = _remove_think_tags(s.strip())
 
     # 1. Try direct parse
     try:
@@ -1174,27 +1101,11 @@ def _try_load_json(data: Any) -> dict[str, Any]:
         pass
 
     # 2. Try fenced block extraction
-    import re
+    if (parsed_obj := _try_parse_from_fenced_blocks(s)) is not None:
+        return parsed_obj
 
-    # Match ```json ... ``` or just ``` ... ```
-    fenced_matches = list(
-        re.finditer(
-            r"```(?:json|json5|hjson)?\s*([\s\S]*?)\s*```", s, flags=re.IGNORECASE
-        )
-    )
-    for m in fenced_matches:
-        block = _extract_first_balanced_json_object(m.group(1))
-        if block:
-            try:
-                obj = json.loads(block)
-                if isinstance(obj, dict):
-                    return obj
-            except json.JSONDecodeError:
-                pass
-
-    # 3. Fallback: find first balanced object in entire string
-    block = _extract_first_balanced_json_object(s)
-    if block:
+    # 3. Fallback: find first balanced object
+    if (block := _extract_first_balanced_json_object(s)) is not None:
         try:
             obj = json.loads(block)
             if isinstance(obj, dict):
