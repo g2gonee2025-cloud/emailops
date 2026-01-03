@@ -4,39 +4,44 @@ import GlassCard from '../ui/GlassCard';
 import { AlertTriangle, BarChart3 } from 'lucide-react';
 
 export interface KPIData {
-  id: string;
-  title: string;
-  value: string;
-  change: string;
+  readonly id: string;
+  readonly title: string;
+  readonly value: string;
+  readonly change: string;
 }
 
 interface KPIGridProps {
-  kpis?: KPIData[];
-  isLoading?: boolean;
-  error?: Error | null;
+  readonly kpis?: readonly KPIData[];
+  readonly isLoading?: boolean;
+  readonly error?: Error | null;
 }
 
 export default function KPIGrid({ kpis = [], isLoading = false, error = null }: KPIGridProps) {
+  const renderContent = () => {
+    if (isLoading) {
+      return <KPISkeleton />;
+    }
+    if (error) {
+      return <KPIError />;
+    }
+    if (kpis.length === 0) {
+      return <KPIEmpty />;
+    }
+    return kpis.map((kpi) => <KPICard key={kpi.id} {...kpi} />);
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {isLoading ? (
-        <KPISkeleton />
-      ) : error ? (
-        <KPIError />
-      ) : kpis.length === 0 ? (
-        <KPIEmpty />
-      ) : (
-        kpis.map((kpi) => <KPICard key={kpi.id} {...kpi} />)
-      )}
+      {renderContent()}
     </div>
   );
 }
 
 interface KPICardProps {
-  id: string;
-  title: string;
-  value: string;
-  change: string;
+  readonly id: string;
+  readonly title: string;
+  readonly value: string;
+  readonly change: string;
 }
 
 function KPICard({ id, title, value, change }: KPICardProps) {
@@ -61,10 +66,11 @@ function KPICard({ id, title, value, change }: KPICardProps) {
 }
 
 function KPISkeleton() {
+  const skeletonItems = Array.from({ length: 4 }, (_, i) => `skeleton-${i}`);
   return (
     <>
-      {Array.from({ length: 4 }).map((_, index) => (
-        <GlassCard key={index} className="p-5">
+      {skeletonItems.map((key) => (
+        <GlassCard key={key} className="p-5">
           <Skeleton className="h-4 w-3/4" />
           <Skeleton className="h-8 w-1/2 mt-2" />
         </GlassCard>
