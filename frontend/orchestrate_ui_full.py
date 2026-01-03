@@ -54,6 +54,25 @@ ApprovalMode = str  # "none" | "auto" | "manual"
 logger = logging.getLogger("jules_ui_orchestrator")
 
 
+def _parse_env_file(env_path: Path) -> str | None:
+    """Parse a .env file and return the API key if found."""
+    try:
+        if not env_path.exists():
+            return None
+        for line in env_path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            k, v = line.split("=", 1)
+            k = k.strip()
+            v = v.strip().strip('"').strip("'")
+            if k in ("JULES_API_KEY_ALT", "JULES_API_KEY") and v:
+                return v
+    except Exception:
+        return None
+    return None
+
+
 def load_api_key() -> str:
     """Load Jules API key from env or .env file."""
     key = os.environ.get("JULES_API_KEY_ALT") or os.environ.get("JULES_API_KEY")
@@ -62,20 +81,9 @@ def load_api_key() -> str:
 
     # Lightweight .env support
     for env_path in (Path(".env"), Path("frontend/.env")):
-        try:
-            if not env_path.exists():
-                continue
-            for line in env_path.read_text(encoding="utf-8").splitlines():
-                line = line.strip()
-                if not line or line.startswith("#") or "=" not in line:
-                    continue
-                k, v = line.split("=", 1)
-                k = k.strip()
-                v = v.strip().strip('"').strip("'")
-                if k in ("JULES_API_KEY_ALT", "JULES_API_KEY") and v:
-                    return v
-        except Exception:
-            continue
+        key_from_file = _parse_env_file(env_path)
+        if key_from_file:
+            return key_from_file
 
     return ""
 
@@ -317,41 +325,33 @@ async def poll_session(
             sess = await get_session(http, api_key, session_name)
         except RuntimeError as e:
             if str(e) == "rate_limited":
-                # back off on 429 during polling
                 await asyncio.sleep(POLL_INTERVAL_SECONDS * 2)
-                continue
-            await asyncio.sleep(POLL_INTERVAL_SECONDS)
+            else:
+                await asyncio.sleep(POLL_INTERVAL_SECONDS)
             continue
 
         state = sess.get("state")
-        sess_url = sess.get("url")
+        if state in SESSION_TERMINAL_STATES or state in SESSION_STOP_STATES:
+            return {
+                "session_name": session_name,
+                "state": state,
+                "session_url": sess.get("url"),
+                "pr_urls": extract_pr_urls(sess),
+                "raw": sess,
+            }
 
         if state == SESSION_PLAN_STATE:
             if approval_mode == "auto":
                 ok = await approve_plan(http, api_key, session_name)
                 if ok:
                     logger.info("Approved plan for %s", session_name)
-                await asyncio.sleep(POLL_INTERVAL_SECONDS)
-                continue
-
-            # manual: keep waiting, but print URL once
-            if not printed_approval_hint:
+            elif not printed_approval_hint:  # Manual mode
                 logger.warning(
-                    "Session awaiting plan approval: %s (%s)", session_name, sess_url
+                    "Session awaiting plan approval: %s (%s)",
+                    session_name,
+                    sess.get("url"),
                 )
                 printed_approval_hint = True
-            await asyncio.sleep(POLL_INTERVAL_SECONDS)
-            continue
-
-        if state in SESSION_TERMINAL_STATES or state in SESSION_STOP_STATES:
-            pr_urls = extract_pr_urls(sess)
-            return {
-                "session_name": session_name,
-                "state": state,
-                "session_url": sess_url,
-                "pr_urls": pr_urls,
-                "raw": sess,
-            }
 
         await asyncio.sleep(POLL_INTERVAL_SECONDS)
 
@@ -471,6 +471,11 @@ def make_task(file: str, task: str, prompt: str) -> dict[str, str]:
 # JOB DEFINITIONS: 200 total (25 + 45 + 80 + 50)
 # ------------------------------------------------------------------------------
 
+FILE_API_TS = "frontend/src/lib/api.ts"
+FILE_MAIN_TSX = "frontend/src/main.tsx"
+FILE_MESSAGE_LIST = "frontend/src/components/thread/MessageList.tsx"
+FILE_DOCTOR_PANEL = "frontend/src/components/admin/DoctorPanel.tsx"
+
 # Batch 1 (25): Bedrock
 B1_W1 = [
     make_task(
@@ -516,7 +521,7 @@ B1_W2 = [
         "Export a <QueryProvider> wrapper component.",
     ),
     make_task(
-        "frontend/src/lib/api.ts",
+        FILE_API_TS,
         "Harden API client",
         "Refactor API client so EVERY request uses getHeaders() (auth coverage, including runDoctor). "
         "Add request<T> wrapper: handles response.ok, parses JSON safely, throws typed ApiError {status, message, details?}. "
@@ -534,41 +539,14 @@ B1_W2 = [
         "Listen for a custom window event (e.g., `api:error`) and show a global error toast.",
     ),
     make_task(
-        "frontend/src/main.tsx",
+        FILE_MAIN_TSX,
         "Wire providers",
         "Ensure provider order: BrowserRouter -> QueryProvider -> ToastProvider -> AuthProvider -> App. "
         "Avoid multiple routers/providers and ensure strict mode is consistent.",
     ),
 ]
 
-B1_W3 = [
-    # make_task(
-    #     "frontend/src/App.tsx",
-    #     "Convert tabs to routes",
-    #     "Replace activeTab/tab switching with react-router-dom Routes. Define routes: /login, /dashboard, /search, /thread/:id, /ask, /draft, /ingest, /admin. "
-    #     "Use a Layout route for authenticated pages, and redirect unauth users to /login.",
-    # ),
-    # make_task(
-    #     "frontend/src/components/Layout.tsx",
-    #     "Create Layout",
-    #     "CREATE FILE. Layout contains Sidebar and <Outlet/> for main content. Add <main id='main-content'> landmark and support skip-link focus target.",
-    # ),
-    # make_task(
-    #     "frontend/src/components/Sidebar.tsx",
-    #     "Create Sidebar",
-    #     "CREATE FILE. Sidebar navigation built with <NavLink>. Ensure active styles, keyboard focus, aria-labels, and a compact responsive mode.",
-    # ),
-    # make_task(
-    #     "frontend/src/routes.tsx",
-    #     "Route definitions",
-    #     "CREATE FILE. Centralize route definitions and add lazy-loading helper wrappers for views (React.lazy + Suspense fallback).",
-    # ),
-    # make_task(
-    #     "frontend/src/components/ErrorBoundary.tsx",
-    #     "Error boundary",
-    #     "CREATE FILE. Implement an ErrorBoundary component that shows a friendly message and retry option. Use it at app-shell level.",
-    # ),
-]
+B1_W3 = []
 
 B1_W4 = [
     make_task(
@@ -628,8 +606,6 @@ B1_W5 = [
 ]
 
 BATCH_1: list[tuple[str, list[dict[str, str]]]] = [
-    # ("B1.W1 Deps & CI", B1_W1),
-    # ("B1.W2 Data/Auth Core", B1_W2),
     ("B1.W3 Routing Shell", B1_W3),
     ("B1.W4 Unit/Integration Tests", B1_W4),
     ("B1.W5 Cleanup", B1_W5),
@@ -886,7 +862,7 @@ B3_W6 = [
         "CREATE FILE. Helpers to map metrics to Recharts datasets, plus formatters.",
     ),
     make_task(
-        "frontend/src/components/thread/MessageList.tsx",
+        FILE_MESSAGE_LIST,
         "MessageList component",
         "CREATE FILE. Virtualized message list using react-virtuoso.",
     ),
@@ -921,7 +897,7 @@ B3_W6 = [
         "CREATE FILE. Draft template selector using Select; supports saved templates.",
     ),
     make_task(
-        "frontend/src/components/admin/DoctorPanel.tsx",
+        FILE_DOCTOR_PANEL,
         "DoctorPanel component",
         "CREATE FILE. Doctor results panel with copy/download actions.",
     ),
@@ -1180,6 +1156,69 @@ def print_dry_run(batch_id: str, batch: list[tuple[str, list[dict[str, str]]]]) 
             logger.info("    • %s -> %s", t["file"], t["task"])
 
 
+def _log_pr_urls(wave_name: str, wave_result: dict[str, Any]) -> None:
+    """Log any PR URLs found in the wave results."""
+    pr_urls: list[str] = []
+    for sess in wave_result.get("polled", []) or []:
+        pr_urls.extend(sess.get("pr_urls", []) or [])
+
+    if pr_urls:
+        logger.info("PRs from %s:", wave_name)
+        for u in sorted(list(set(pr_urls))):
+            logger.info("  %s", u)
+    else:
+        logger.info(
+            "No PR URLs detected for %s (may still be in outputs, or no change).",
+            wave_name,
+        )
+
+
+def _check_for_wave_failures(
+    wave_name: str, wave_result: dict[str, Any], continue_on_failure: bool
+) -> bool:
+    """
+    Check for failures in the wave result.
+    Returns True if the batch should stop, False otherwise.
+    """
+    creation_failures = [
+        f
+        for f in wave_result.get("failures", [])
+        if f.get("status") in ("failed", "error")
+    ]
+    non_success_states = {"FAILED", "PAUSED", "AWAITING_USER_FEEDBACK", "TIMEOUT"}
+    bad_sessions = [
+        s
+        for s in wave_result.get("polled", [])
+        if s.get("state") in non_success_states
+    ]
+
+    if (creation_failures or bad_sessions) and not continue_on_failure:
+        logger.error(
+            "Wave %s has failures/paused/timeout sessions. Stopping batch. "
+            "Re-run with --continue-on-failure to proceed.",
+            wave_name,
+        )
+        return True  # Stop the batch
+
+    return False  # Continue
+
+
+async def _pause_if_needed(pause_between_waves: bool, is_last_wave: bool) -> None:
+    """Pause for user input if configured and not the last wave."""
+    if not pause_between_waves or is_last_wave:
+        return
+
+    if sys.stdin.isatty():
+        await asyncio.to_thread(
+            input,
+            "Merge the PRs from this wave (if any), then press Enter to continue to the next wave...",
+        )
+    else:
+        logger.warning(
+            "pause-between-waves enabled but no TTY; continuing without pause."
+        )
+
+
 async def run_batch(
     batch_id: str,
     batch: list[tuple[str, list[dict[str, str]]]],
@@ -1193,6 +1232,7 @@ async def run_batch(
     out_dir: Path,
     continue_on_failure: bool,
 ) -> Path:
+    """Main batch execution orchestrator."""
     out_dir.mkdir(parents=True, exist_ok=True)
     run_id = time.strftime("%Y%m%d-%H%M%S")
     batch_report_path = out_dir / f"ui_batch_{batch_id}_{run_id}.json"
@@ -1219,20 +1259,18 @@ async def run_batch(
             )
 
             wave_result = await run_wave(
-                http=http,
-                api_key=api_key,
-                source_name=source_name,
-                starting_branch=starting_branch,
-                approval_mode=approval_mode,
-                wave_name=wave_name,
-                wave_tasks=wave_tasks,
-                concurrency=concurrency,
-                max_session_minutes=max_session_minutes,
+                http,
+                api_key,
+                source_name,
+                starting_branch,
+                approval_mode,
+                wave_name,
+                wave_tasks,
+                concurrency,
+                max_session_minutes,
             )
 
             results["waves"].append(wave_result)
-
-            # Persist after each wave
             batch_report_path.write_text(
                 json.dumps(results, indent=2), encoding="utf-8"
             )
@@ -1243,55 +1281,14 @@ async def run_batch(
                 )
                 break
 
-            # Surface PR URLs
-            pr_urls: list[str] = []
-            for sess in wave_result.get("polled", []) or []:
-                for u in sess.get("pr_urls", []) or []:
-                    pr_urls.append(u)
-            if pr_urls:
-                logger.info("PRs from %s:", wave_name)
-                for u in pr_urls:
-                    logger.info("  %s", u)
-            else:
-                logger.info(
-                    "No PR URLs detected for %s (may still be in outputs, or no change).",
-                    wave_name,
-                )
+            _log_pr_urls(wave_name, wave_result)
 
-            # Stop on failures unless overridden
-            creation_failures = [
-                f
-                for f in (wave_result.get("failures", []) or [])
-                if f.get("status") in ("failed", "error", "rate_limited")
-            ]
-            non_success_states = {
-                "FAILED",
-                "PAUSED",
-                "AWAITING_USER_FEEDBACK",
-                "TIMEOUT",
-            }
-            bad_sessions = [
-                s
-                for s in (wave_result.get("polled", []) or [])
-                if s.get("state") in non_success_states
-            ]
-
-            if (creation_failures or bad_sessions) and not continue_on_failure:
-                logger.error(
-                    "Wave %s has failures/paused/timeout sessions. Stopping batch. Re-run with --continue-on-failure to proceed.",
-                    wave_name,
-                )
+            if _check_for_wave_failures(
+                wave_name, wave_result, continue_on_failure
+            ):
                 break
 
-            if pause_between_waves and idx < len(batch):
-                if sys.stdin.isatty():
-                    input(
-                        "Merge the PRs from this wave (if any), then press Enter to continue to the next wave..."
-                    )
-                else:
-                    logger.warning(
-                        "pause-between-waves enabled but no TTY; continuing without pause."
-                    )
+            await _pause_if_needed(pause_between_waves, idx == len(batch))
 
     logger.info("Batch report written to: %s", batch_report_path)
     return batch_report_path
@@ -1360,10 +1357,6 @@ def main() -> None:
         sys.exit("Missing Jules API key. Set JULES_API_KEY (or JULES_API_KEY_ALT).")
 
     batch = BATCHES[args.batch]
-    # expected = EXPECTED_COUNTS[args.batch]
-    # actual = _count_tasks(batch)
-    # if actual != expected:
-    #     sys.exit(f"Internal error: Batch {args.batch} has {actual} tasks, expected {expected}. Refuse to run.")
 
     # Validate each wave has unique target files
     _ensure_unique_files_in_wave(batch)
