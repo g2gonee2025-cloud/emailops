@@ -27,7 +27,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: qdrant
-          image: qdrant/qdrant:latest
+          image: qdrant/qdrant:v1.9.1
           imagePullPolicy: Always
           ports:
             - containerPort: 6333
@@ -62,6 +62,7 @@ spec:
             requests:
               cpu: "50m"
               memory: "512Mi"
+              ephemeral-storage: "1Gi"
             limits:
               cpu: "1000m"
               memory: "2Gi"
