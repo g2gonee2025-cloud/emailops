@@ -24,7 +24,7 @@ except ImportError:  # Tkinter is not installed
     tk = None
     filedialog = None
 
-URL_FULLMATCH_RE = re.compile(r"(?:https?://\S+)", re.IGNORECASE)
+URL_FULLMATCH_RE = re.compile(r"https?://\S+", re.IGNORECASE)
 
 
 BOILERPLATE_KEYWORDS = [
@@ -207,15 +207,8 @@ def clean_conversation_text(raw: str) -> str:
     return "\n".join(final_lines).strip() + "\n"
 
 
-def choose_root_directory() -> str:
-    """Let the user pick the root directory.
-
-    Priority:
-    1) Command-line argument (if provided);
-    2) GUI folder picker via Tkinter (if available);
-    3) Text prompt fallback.
-    """
-    # 1) CLI arg
+def _get_root_from_cli() -> str | None:
+    """Check for a root directory provided via command-line arguments."""
     if len(sys.argv) > 1:
         candidate = Path(sys.argv[1]).expanduser()
         if candidate.is_dir():
@@ -224,38 +217,42 @@ def choose_root_directory() -> str:
             return str(resolved)
         else:
             print(f"Path from command line is not a directory: {candidate}")
+    return None
 
-    # 2) GUI folder picker
-    if tk is not None and filedialog is not None:
-        root = None
-        try:
-            root = tk.Tk()
-            root.withdraw()
-            root.attributes("-topmost", True)
-            selected = filedialog.askdirectory(
-                title="Select ROOT directory (folder that contains conversation subfolders)"
-            )
-            if selected:
-                selected_path = Path(selected)
-                if selected_path.is_dir():
-                    resolved = selected_path.resolve()
-                    print(f"Selected root directory: {resolved}")
-                    return str(resolved)
-        except Exception as e:  # TclError or others
-            print(
-                f"GUI directory picker not available ({e}). Falling back to console input."
-            )
-        finally:
-            if root:
-                root.destroy()
 
-    # 3) Console input fallback
+def _get_root_from_gui() -> str | None:
+    """Use a GUI folder picker to select the root directory."""
+    if tk is None or filedialog is None:
+        return None
+
+    root = None
+    try:
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes("-topmost", True)
+        selected = filedialog.askdirectory(
+            title="Select ROOT directory (folder that contains conversation subfolders)"
+        )
+        if selected:
+            selected_path = Path(selected)
+            if selected_path.is_dir():
+                resolved = selected_path.resolve()
+                print(f"Selected root directory: {resolved}")
+                return str(resolved)
+    except Exception as e:  # TclError or others
+        print(f"GUI directory picker not available ({e}). Falling back to console input.")
+    finally:
+        if root:
+            root.destroy()
+    return None
+
+
+def _get_root_from_console() -> str:
+    """Prompt the user to enter the root directory path in the console."""
     while True:
         try:
             path = (
-                input(
-                    "Enter path to root directory (folder that contains conversation subfolders): "
-                )
+                input("Enter path to root directory (folder that contains conversation subfolders): ")
                 .strip()
                 .strip('"')
                 .strip("'")
@@ -269,7 +266,17 @@ def choose_root_directory() -> str:
             sys.exit(1)
 
 
-def find_conversation_files(root_dir: Union[str, Path]) -> List[Path]:
+def choose_root_directory() -> str:
+    """Let the user pick the root directory, trying CLI, GUI, and console in order."""
+    # Priority: 1) CLI arg, 2) GUI picker, 3) Console fallback
+    if path := _get_root_from_cli():
+        return path
+    if path := _get_root_from_gui():
+        return path
+    return _get_root_from_console()
+
+
+def find_conversation_files(root_dir: str | Path) -> List[Path]:
     """Return list of Conversation.txt files at:
     - root_dir/Conversation.txt (if present)
     - root_dir/*/Conversation.txt (1 level of subfolders only)
