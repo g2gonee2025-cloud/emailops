@@ -6,6 +6,8 @@ import { cn } from '../lib/utils';
 import { Send, Bot, User, Loader2, Sparkles, FileText } from 'lucide-react';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
+import { ConversationSelector } from '../components/ui/ConversationSelector';
+import { Label } from '../components/ui/Label';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -18,6 +20,7 @@ export default function AskView() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedThreadId, setSelectedThreadId] = useState<string | undefined>(undefined);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -50,7 +53,7 @@ export default function AskView() {
       }));
       apiMessages.push({ role: 'user', content: userMessage.content });
 
-      const response = await api.chat(apiMessages);
+      const response = await api.chat(apiMessages, selectedThreadId);
 
       const assistantMessage: Message = {
         role: 'assistant',
@@ -80,6 +83,17 @@ export default function AskView() {
           Ask Cortex
         </h1>
         <p className="text-white/40 mt-1">Query your knowledge base with natural language</p>
+        <div className="mt-4 max-w-md">
+          <Label className="text-sm font-medium text-white/60 mb-2 block">
+            Conversation Context (optional)
+          </Label>
+          <ConversationSelector
+            value={selectedThreadId}
+            onValueChange={setSelectedThreadId}
+            placeholder="Select a conversation to focus on..."
+            disabled={isLoading}
+          />
+        </div>
       </header>
 
       {/* Messages */}

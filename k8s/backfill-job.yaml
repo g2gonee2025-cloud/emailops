@@ -215,7 +215,7 @@ spec:
         - name: registry-sf-registry
       containers:
         - name: backfill
-          image: registry.digitalocean.com/sf-registry/emailops-backend:1.0.0
+          image: registry.digitalocean.com/sf-registry/emailops-backend:v1.0.0
           command:
             [
               "python3",
@@ -238,6 +238,7 @@ spec:
               memory: "4Gi"
               cpu: "1000m"
           env:
+            # Using HTTP for internal cluster communication is acceptable here.
             - name: EMBED_ENDPOINT
               value: "http://embeddings-api.emailops.svc.cluster.local:80/v1" # NOSONAR
             - name: PYTHONPATH

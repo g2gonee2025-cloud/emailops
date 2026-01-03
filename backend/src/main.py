@@ -53,6 +53,8 @@ from starlette.responses import FileResponse
 # Version info - should match pyproject.toml
 APP_VERSION = "3.1.0"
 APP_NAME = "Outlook Cortex (EmailOps Edition)"
+API_V1_PREFIX = "/api/v1"
+INVALID_JWT_ERROR = "Invalid JWT"
 
 
 # JWT/JWKS helpers
@@ -105,26 +107,9 @@ def _create_jwks_decoder(
 
             public_key = algorithms.RSAAlgorithm.from_jwk(key_data)
 
-            decode_options = {
-                "require": ["exp"],
-                "verify_exp": True,
-                "verify_nbf": True,
-            }
-            if not audience:
-                decode_options["verify_aud"] = False
-            if not issuer:
-                decode_options["verify_iss"] = False
-
-            return jwt.decode(
-                token,
-                public_key,
-                algorithms=["RS256"],
-                audience=audience if audience else None,
-                issuer=issuer if issuer else None,
-                options=decode_options,
-            )
+            return _decode_jwt_with_jwks(token, public_key, audience, issuer)
         except jwt.PyJWTError as exc:
-            raise SecurityError("Invalid JWT", threat_type="auth_invalid") from exc
+            raise SecurityError(INVALID_JWT_ERROR, threat_type="auth_invalid") from exc
         except SecurityError:
             raise
         except requests.RequestException as exc:
@@ -139,6 +124,30 @@ def _create_jwks_decoder(
     return decode
 
 
+def _decode_jwt_with_jwks(
+    token: str, public_key: Any, audience: str | None, issuer: str | None
+) -> dict[str, Any]:
+    """Decode a JWT token using the provided JWKS public key and options."""
+    decode_options = {
+        "require": ["exp"],
+        "verify_exp": True,
+        "verify_nbf": True,
+    }
+    if not audience:
+        decode_options["verify_aud"] = False
+    if not issuer:
+        decode_options["verify_iss"] = False
+
+    return jwt.decode(
+        token,
+        public_key,
+        algorithms=["RS256"],
+        audience=audience if audience else None,
+        issuer=issuer if issuer else None,
+        options=decode_options,
+    )
+
+
 def _find_jwks_key(jwks: dict[str, Any], token: str) -> dict[str, Any]:
     """Find the matching key in JWKS for the given token."""
     headers = jwt.get_unverified_header(token)
@@ -149,10 +158,10 @@ def _find_jwks_key(jwks: dict[str, Any], token: str) -> dict[str, Any]:
     raise SecurityError("JWT key id not found in JWKS", threat_type="auth_invalid")
 
 
-def _create_prod_reject_decoder() -> Callable[[str], Awaitable[dict[str, Any]]]:
+def _create_prod_reject_decoder() -> Callable[[str], dict[str, Any]]:
     """Create a decoder that rejects all tokens in production without JWKS."""
 
-    async def reject(_: str) -> dict[str, Any]:
+    def reject(_: str) -> dict[str, Any]:
         raise SecurityError(
             "JWKS configuration required in production",
             threat_type="auth_configuration",
@@ -190,9 +199,66 @@ def _create_dev_secret_decoder(
         except jwt.InvalidTokenError:
             raise HTTPException(status_code=401, detail="Invalid token")
         except jwt.PyJWTError as exc:
-            raise SecurityError("Invalid JWT", threat_type="auth_invalid") from exc
+            raise SecurityError(INVALID_JWT_ERROR, threat_type="auth_invalid") from exc
 
     return decode_verified_secret
+
+
+async def _process_jwt_token(
+    auth_header: str,
+) -> tuple[str | None, str | None, dict[str, Any]]:
+    """Process the JWT from the Authorization header."""
+    if not auth_header.startswith("Bearer "):
+        return None, None, {}
+
+    if not _jwt_decoder:
+        raise SecurityError(
+            "JWT decoder not configured", threat_type="auth_configuration"
+        )
+    token = auth_header[7:].strip()
+    if not token:
+        raise HTTPException(status_code=401, detail="Missing bearer token")
+    try:
+        decoded = _jwt_decoder(token)
+        # Handle both sync and async decoders
+        if inspect.isawaitable(decoded):
+            claims = await decoded
+        else:
+            claims = decoded if isinstance(decoded, dict) else {}
+
+        # Extract standard claims
+        tenant_id = claims.get("tenant_id") or claims.get("tid")
+        user_id = claims.get("sub") or claims.get("user_id")
+        return tenant_id, user_id, claims
+    except (HTTPException, SecurityError):
+        raise
+    except Exception as exc:
+        logger.exception("JWT decode failed")
+        raise SecurityError(INVALID_JWT_ERROR, threat_type="auth_invalid") from exc
+
+
+def _process_fallback_headers(
+    request: Request, tenant_id: str, user_id: str
+) -> tuple[str, str]:
+    """Extract identity from headers in dev mode if not already set."""
+    config = get_config()
+    is_prod_env = config.core.env in {"prod", "production"}
+
+    if is_prod_env:
+        return tenant_id, user_id
+
+    final_tenant_id = tenant_id
+    final_user_id = user_id
+
+    if tenant_id == "default":
+        header_tenant = request.headers.get("X-Tenant-ID", "").strip()
+        if header_tenant:
+            final_tenant_id = header_tenant
+    if user_id == "anonymous":
+        header_user = request.headers.get("X-User-ID", "").strip()
+        if header_user:
+            final_user_id = header_user
+    return final_tenant_id, final_user_id
 
 
 async def _extract_identity(request: Request) -> tuple[str, str, dict[str, Any]]:
@@ -204,50 +270,20 @@ async def _extract_identity(request: Request) -> tuple[str, str, dict[str, Any]]
     2. X-Tenant-ID and X-User-ID headers (dev fallback)
     3. Default values
     """
-    config = get_config()
-    is_prod_env = config.core.env in {"prod", "production"}
     tenant_id = "default"
     user_id = "anonymous"
     claims: dict[str, Any] = {}
 
-    # Try JWT first
     auth_header = request.headers.get("Authorization", "")
     auth_attempted = auth_header.startswith("Bearer ")
+
     if auth_attempted:
-        if not _jwt_decoder:
-            raise SecurityError(
-                "JWT decoder not configured", threat_type="auth_configuration"
-            )
-        token = auth_header[7:].strip()
-        if not token:
-            raise HTTPException(status_code=401, detail="Missing bearer token")
-        try:
-            decoded = _jwt_decoder(token)
-            # Handle both sync and async decoders
-            if inspect.isawaitable(decoded):
-                claims = await decoded
-            else:
-                claims = decoded if isinstance(decoded, dict) else {}
-
-            # Extract standard claims
-            tenant_id = claims.get("tenant_id") or claims.get("tid") or tenant_id
-            user_id = claims.get("sub") or claims.get("user_id") or user_id
-        except (HTTPException, SecurityError):
-            raise
-        except Exception as exc:
-            logger.exception("JWT decode failed")
-            raise SecurityError("Invalid JWT", threat_type="auth_invalid") from exc
-
-    # Fallback to headers (dev mode)
-    if not auth_attempted and not is_prod_env:
-        if tenant_id == "default":
-            header_tenant = request.headers.get("X-Tenant-ID", "").strip()
-            if header_tenant:
-                tenant_id = header_tenant
-        if user_id == "anonymous":
-            header_user = request.headers.get("X-User-ID", "").strip()
-            if header_user:
-                user_id = header_user
+        jwt_tenant_id, jwt_user_id, claims = await _process_jwt_token(auth_header)
+        tenant_id = jwt_tenant_id or tenant_id
+        user_id = jwt_user_id or user_id
+    else:
+        # Fallback to headers (dev mode)
+        tenant_id, user_id = _process_fallback_headers(request, tenant_id, user_id)
 
     return tenant_id, user_id, claims
 
@@ -456,7 +492,7 @@ def create_error_response(
     return JSONResponse(status_code=status_code, content=body)
 
 
-async def cortex_error_handler(request: Request, exc: Exception) -> JSONResponse:
+def cortex_error_handler(request: Request, exc: Exception) -> JSONResponse:
     """
     Global exception handler for CortexError hierarchy.
 
@@ -469,7 +505,7 @@ async def cortex_error_handler(request: Request, exc: Exception) -> JSONResponse
     """
     if not isinstance(exc, CortexError):
         # Shouldn't happen, but fallback
-        return await generic_exception_handler(request, exc)
+        return generic_exception_handler(request, exc)
 
     status_code = 500
 
@@ -492,7 +528,7 @@ async def cortex_error_handler(request: Request, exc: Exception) -> JSONResponse
     )
 
 
-async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """Handler for unexpected exceptions."""
     logger.exception(f"Unhandled exception: {exc}")
     correlation_id = getattr(request.state, "correlation_id", None)
@@ -532,7 +568,7 @@ def setup_opentelemetry(app: FastAPI) -> None:
 # ---------------------------------------------------------------------------
 # OIDC/JWT Security Integration Stub (§11.1)
 # ---------------------------------------------------------------------------
-def setup_security(app: FastAPI) -> None:
+def setup_security() -> None:
     """
     Configure OIDC/JWT security integration.
 
@@ -559,16 +595,15 @@ def setup_security(app: FastAPI) -> None:
 
         _configure_jwt_decoder(jwks_url=jwks_url, audience=audience, issuer=issuer)
 
-        if jwks_url and (
-            jwks_url.startswith("http://") or jwks_url.startswith("https://")
-        ):
-            # Simple validation to ensure scheme
-            pass
-        elif jwks_url:
-            logger.warning(
-                "Potential insecurity: JWKS URL %s does not start with http/https",
-                jwks_url,
-            )
+        if jwks_url:
+            if jwks_url.startswith("http://"):
+                logger.warning(
+                    "SECURITY: JWKS URL is using insecure HTTP protocol: %s", jwks_url
+                )
+            elif not jwks_url.startswith("https://"):
+                logger.warning(
+                    "SECURITY: JWKS URL does not use https protocol: %s", jwks_url
+                )
 
         if jwks_url:
             logger.info("Security: JWT validation enabled via JWKS %s", jwks_url)
@@ -719,7 +754,7 @@ def create_app() -> FastAPI:
     # ---------------------------------------------------------------------------
     # Security Setup (§11.1)
     # ---------------------------------------------------------------------------
-    setup_security(app)
+    setup_security()
 
     # ---------------------------------------------------------------------------
     # Include API Routers
@@ -732,19 +767,23 @@ def create_app() -> FastAPI:
         routes_ingest,
         routes_search,
         routes_summarize,
+        routes_threads,
     )
 
     # Conditionally include the mock auth router only in dev environments
     if config.core.env == "dev":
-        app.include_router(routes_auth.router, prefix="/api/v1")
+        app.include_router(routes_auth.router, prefix=API_V1_PREFIX)
 
-    app.include_router(routes_admin.router, prefix="/api/v1")
-    app.include_router(routes_search.router, prefix="/api/v1", tags=["search"])
-    app.include_router(routes_answer.router, prefix="/api/v1", tags=["answer"])
-    app.include_router(routes_draft.router, prefix="/api/v1", tags=["draft"])
-    app.include_router(routes_summarize.router, prefix="/api/v1", tags=["summarize"])
-    app.include_router(routes_chat.router, prefix="/api/v1", tags=["chat"])
-    app.include_router(routes_ingest.router, prefix="/api/v1", tags=["ingestion"])
+    app.include_router(routes_admin.router, prefix=API_V1_PREFIX)
+    app.include_router(routes_search.router, prefix=API_V1_PREFIX, tags=["search"])
+    app.include_router(routes_answer.router, prefix=API_V1_PREFIX, tags=["answer"])
+    app.include_router(routes_draft.router, prefix=API_V1_PREFIX, tags=["draft"])
+    app.include_router(
+        routes_summarize.router, prefix=API_V1_PREFIX, tags=["summarize"]
+    )
+    app.include_router(routes_chat.router, prefix=API_V1_PREFIX, tags=["chat"])
+    app.include_router(routes_ingest.router, prefix=API_V1_PREFIX, tags=["ingestion"])
+    app.include_router(routes_threads.router, prefix=API_V1_PREFIX, tags=["threads"])
 
     # ---------------------------------------------------------------------------
     # Core Endpoints: /health and /version
