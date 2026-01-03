@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Check, ChevronDown, Loader2, Search, X } from 'lucide-react';
-import { api, ThreadListItem } from '../../lib/api';
+import { api } from '../../lib/api';
+import type { ThreadListItem } from '../../lib/api';
 import { cn } from '../../lib/utils';
 import { Input } from './Input';
 
