@@ -1,28 +1,32 @@
 import { Alert, AlertDescription, AlertTitle } from '../ui/Alert';
 import { Skeleton } from '../ui/Skeleton';
 import GlassCard from '../ui/GlassCard';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, BarChart3 } from 'lucide-react';
 
-// Mock data for KPIs
-const mockKpis = [
-  { id: 'total-emails', title: 'Total Emails Processed', value: '1,234,567', change: '+5.2%' },
-  { id: 'avg-response-time', title: 'Average Response Time', value: '2.3 hours', change: '-1.5%' },
-  { id: 'open-rate', title: 'Open Rate', value: '25.8%', change: '+0.8%' },
-  { id: 'click-through-rate', title: 'Click-Through Rate', value: '4.2%', change: '+0.2%' },
-];
+export interface KPIData {
+  id: string;
+  title: string;
+  value: string;
+  change: string;
+}
 
-export default function KPIGrid() {
-  const isLoading = false;
-  const error = null;
+interface KPIGridProps {
+  kpis?: KPIData[];
+  isLoading?: boolean;
+  error?: Error | null;
+}
 
+export default function KPIGrid({ kpis = [], isLoading = false, error = null }: KPIGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {isLoading ? (
         <KPISkeleton />
       ) : error ? (
         <KPIError />
+      ) : kpis.length === 0 ? (
+        <KPIEmpty />
       ) : (
-        mockKpis.map((kpi) => <KPICard key={kpi.id} {...kpi} />)
+        kpis.map((kpi) => <KPICard key={kpi.id} {...kpi} />)
       )}
     </div>
   );
@@ -79,6 +83,20 @@ function KPIError() {
             There was an error loading the KPI data. Please try again later.
         </AlertDescription>
         </Alert>
+    </div>
+  );
+}
+
+function KPIEmpty() {
+  return (
+    <div className="lg:col-span-4">
+      <GlassCard className="p-8 flex flex-col items-center justify-center text-center">
+        <BarChart3 className="w-12 h-12 text-white/20 mb-4" />
+        <h3 className="text-lg font-medium text-white/60 mb-2">No KPI Data Available</h3>
+        <p className="text-sm text-white/40">
+          KPI metrics will appear here once data is available.
+        </p>
+      </GlassCard>
     </div>
   );
 }

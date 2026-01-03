@@ -69,13 +69,11 @@ export default function AdminDashboard() {
         }
     }, [doctorError, addToast]);
 
-    const handleSaveConfig = (newConfig: AppConfig) => {
-        console.log("Saving new config:", newConfig);
-        // This is a placeholder. In a real app, you'd call a mutation here.
+    const handleSaveConfig = (_newConfig: AppConfig) => {
         addToast({
-            type: 'info',
-            message: "Configuration Saved",
-            details: "Changes have been saved successfully.",
+            type: 'warning',
+            message: "Configuration Save Not Available",
+            details: "Configuration updates require a backend API endpoint. Contact your administrator.",
         });
     };
 

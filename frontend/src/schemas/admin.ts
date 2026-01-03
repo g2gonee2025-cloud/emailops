@@ -59,10 +59,9 @@ export function redactObject<T>(obj: T): T {
 
 /**
  * Schema for the application configuration.
- * This is a placeholder and should be updated with the actual config structure.
+ * Validates configuration fields returned from the backend API.
  */
 export const ConfigSchema = z.object({
-    // Example fields - replace with actual config fields
     api_url: z.string().url().optional(),
     log_level: z.enum(['DEBUG', 'INFO', 'WARNING', 'ERROR']).optional(),
     max_pool_size: z.coerce.number().int().positive().optional(),
