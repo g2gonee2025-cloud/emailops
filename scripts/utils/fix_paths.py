@@ -1,57 +1,68 @@
 import re
+import ast
 from pathlib import Path
 
 
-def fix_file(path: Path):
+def has_path_import(content: str) -> bool:
     """
-    Normalize hard-coded sys.path manipulations in a Python source file.
+    Check if 'from pathlib import Path' is present using AST parsing.
 
-    Parameters
-    ----------
-    path : Path
-        Path to the file to process.
-
-    Side effects
-    ------------
-    Reads the file, applies regex-based replacements to known sys.path-append
-    patterns, and overwrites the file if any changes are made.
+    Falls back to regex for syntactically invalid files.
     """
-    content = path.read_text(encoding="utf-8")
+    try:
+        tree = ast.parse(content)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom) and node.module == "pathlib":
+                for alias in node.names:
+                    if alias.name == "Path" or alias.name == "*":
+                        return True
+    except SyntaxError:
+        # Fallback for files with syntax errors that ast can't parse
+        import_pattern = re.compile(
+            r"^\s*from\s+pathlib\s+import\s+.*(?:Path|\*).*", re.MULTILINE
+        )
+        return bool(import_pattern.search(content))
+    return False
 
+
+PROJECT_ROOT_DEPTH = 2
+replacement = f'sys.path.append(str(Path(__file__).resolve().parents[{PROJECT_ROOT_DEPTH}] / "backend" / "src"))'
+
+
+def fix_file_content(content: str) -> str | None:
+    """
+    Normalize hard-coded sys.path manipulations in a Python source file content.
+
+    If changes are needed, returns the new content, otherwise returns None.
+    """
     # Pattern 1: Common os.getcwd() pattern
-    pattern1 = (
+    path_pattern = re.compile(
         r'sys\.path\.append\(os\.path\.join\(os\.getcwd\(\), "backend", "src"\)\)'
     )
 
-    # Replacement for depth 2 (scripts/category/script.py)
-    # We need to ensure Path is imported if not already, but usually it's easier to just inject the whole block cleanly
-    # if we match the pattern.
+    if not path_pattern.search(content):
+        return None
 
-    replacement = (
-        'sys.path.append(str(Path(__file__).resolve().parents[2] / "backend" / "src"))'
-    )
+    if not has_path_import(content):
+        # Find the last import statement to add the new import after it
+        last_import_match = list(
+            re.finditer(r"^(?:from\s.+)?import\s.+(?:\n|$)", content, re.MULTILINE)
+        )
+        if last_import_match:
+            insert_pos = last_import_match[-1].end()
+            content = (
+                content[:insert_pos]
+                + "from pathlib import Path\n"
+                + content[insert_pos:]
+            )
+        else:
+            # No imports found, add at the top
+            content = "from pathlib import Path\n" + content
 
-    if re.search(pattern1, content):
-        print(f"Fixing {path}")
+    new_content = path_pattern.sub(replacement, content)
+    return new_content
 
-        # Ensure pathlib is imported
-        if not re.search(
-            r"^\s*from\s+pathlib\s+import\s+(\*|(?:[^#\n]*\bPath\b(?!\s+as)))",
-            content,
-            re.M,
-        ) and not re.search(r"^\s*import\s+pathlib\b(?!\s+as\b)", content, re.M):
-            # Add import after first import or at top
-            if "import os" in content:
-                content = content.replace(
-                    "import os", "import os\nfrom pathlib import Path"
-                )
-            elif "import sys" in content:
-                content = content.replace(
-                    "import sys", "import sys\nfrom pathlib import Path"
-                )
 
-        new_content = re.sub(pattern1, replacement, content)
-        path.write_text(new_content, encoding="utf-8")
 
 
 def main():
@@ -63,7 +74,18 @@ def main():
         if not subdir.exists():
             continue
         for py_file in subdir.glob("*.py"):
-            fix_file(py_file)
+            try:
+                content = py_file.read_text(encoding="utf-8")
+                new_content = fix_file_content(content)
+                if new_content:
+                    print(f"Fixing {py_file}")
+                    py_file.write_text(new_content, encoding="utf-8")
+            except (
+                IOError,
+                OSError,
+                UnicodeDecodeError,
+            ) as e:
+                print(f"Error processing file {py_file}: {e}")
 
 
 if __name__ == "__main__":
