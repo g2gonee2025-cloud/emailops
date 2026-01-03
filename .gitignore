@@ -76,3 +76,4 @@ node_modules/
 .envrc
 textureAtlas.png
 \n# Script outputs\ntool_check_output.txt
+artifacts/qdrant/

@@ -767,6 +767,7 @@ def create_app() -> FastAPI:
         routes_ingest,
         routes_search,
         routes_summarize,
+        routes_threads,
     )
 
     # Conditionally include the mock auth router only in dev environments
@@ -777,9 +778,12 @@ def create_app() -> FastAPI:
     app.include_router(routes_search.router, prefix=API_V1_PREFIX, tags=["search"])
     app.include_router(routes_answer.router, prefix=API_V1_PREFIX, tags=["answer"])
     app.include_router(routes_draft.router, prefix=API_V1_PREFIX, tags=["draft"])
-    app.include_router(routes_summarize.router, prefix=API_V1_PREFIX, tags=["summarize"])
+    app.include_router(
+        routes_summarize.router, prefix=API_V1_PREFIX, tags=["summarize"]
+    )
     app.include_router(routes_chat.router, prefix=API_V1_PREFIX, tags=["chat"])
     app.include_router(routes_ingest.router, prefix=API_V1_PREFIX, tags=["ingestion"])
+    app.include_router(routes_threads.router, prefix=API_V1_PREFIX, tags=["threads"])
 
     # ---------------------------------------------------------------------------
     # Core Endpoints: /health and /version

@@ -132,6 +132,7 @@ from cortex_cli.cmd_doctor import main as doctor_main
 # Help Text Constants
 # -----------------------------------------------------------------------------
 
+JSON_OUTPUT_HELP = "Output results as JSON"
 NOT_SET = "not set"
 
 CORE_COMMANDS = [
@@ -427,20 +428,50 @@ def _validate_directory_for_cli(path: str) -> Result[Path, str]:
     return validated
 
 
-def _run_validate(
-    path: str,
-    json_output: bool = False,
-) -> None:
-    """
-    Validate export folder structure (B1).
-    """
-    import json
-
+def _validate_and_get_path(path: str) -> Path:
+    """Validate the given path and return a Path object."""
     validated_path = _validate_directory_for_cli(path)
     if validated_path.is_err():
         print(f"{_colorize('ERROR:', 'red')} Invalid path: {validated_path.error}")
         sys.exit(1)
-    target_path = validated_path.value
+    return validated_path.value
+
+
+def _perform_scan_and_refresh(target_path: Path, json_output: bool) -> Any:
+    """Perform the scan and refresh operation."""
+    from cortex.ingestion.conv_manifest.validation import scan_and_refresh
+
+    if not json_output:
+        print(f"  {_colorize('⏳', 'yellow')} Scanning and validating...")
+    return scan_and_refresh(target_path)
+
+
+def _print_validation_report(report: Any, json_output: bool) -> None:
+    """Print the validation report."""
+    import json
+
+    if json_output:
+        print(report.model_dump_json())
+    else:
+        print(f"\n  {_colorize('Results:', 'cyan')}")
+        print(f"    Folders Scanned:   {report.folders_scanned}")
+        print(f"    Manifests Created: {report.manifests_created}")
+        print(f"    Manifests Updated: {report.manifests_updated}")
+
+        if report.problems:
+            print(f"\n  {_colorize('Problems Found:', 'red')}")
+            for p in report.problems:
+                print(f"    • {p.folder}: {p.issue}")
+        else:
+            print(f"\n  {_colorize('✓', 'green')} No problems found.")
+        print()
+
+
+def _run_validate(path: str, json_output: bool = False) -> None:
+    """Validate export folder structure (B1)."""
+    import json
+
+    target_path = _validate_and_get_path(path)
 
     if not json_output:
         _print_banner()
@@ -449,48 +480,27 @@ def _run_validate(
         print()
 
     try:
-        from cortex.ingestion.conv_manifest.validation import (
-            scan_and_refresh as _scan_and_refresh,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
-        )
-
-        _scan_and_refresh = cast(Any, _scan_and_refresh)
-        scan_and_refresh: Callable[[Path], Any]
-        scan_and_refresh = cast(Callable[[Path], Any], _scan_and_refresh)
-
-        if not json_output:
-            print(f"  {_colorize('⏳', 'yellow')} Scanning and validating...")
-
-        report: Any = scan_and_refresh(target_path)
-
-        if json_output:
-            print(report.model_dump_json())
-        else:
-            print(f"\n  {_colorize('Results:', 'cyan')}")
-            print(f"    Folders Scanned:   {report.folders_scanned}")
-            print(f"    Manifests Created: {report.manifests_created}")
-            print(f"    Manifests Updated: {report.manifests_updated}")
-
-            if report.problems:
-                print(f"\n  {_colorize('Problems Found:', 'red')}")
-                for p in report.problems:
-                    print(f"    • {p.folder}: {p.issue}")
-            else:
-                print(f"\n  {_colorize('✓', 'green')} No problems found.")
-            print()
-
+        report = _perform_scan_and_refresh(target_path, json_output)
+        _print_validation_report(report, json_output)
     except ImportError as e:
         msg = f"Could not load validation module: {e}"
         if json_output:
             print(json.dumps({"error": msg, "success": False}))
         else:
             print(f"\n  {_colorize('ERROR:', 'red')} {msg}")
-        sys.exit(1)
+        raise
+    except ValueError as e:
+        if json_output:
+            print(json.dumps({"error": str(e), "success": False}))
+        else:
+            print(f"\n  {_colorize('ERROR:', 'red')} {e}")
+        raise
     except Exception as e:
         if json_output:
             print(json.dumps({"error": str(e), "success": False}))
         else:
             print(f"\n  {_colorize('ERROR:', 'red')} {e}")
-        sys.exit(1)
+        raise
 
 
 def _run_pipeline(args: argparse.Namespace) -> None:
@@ -509,42 +519,20 @@ def _run_pipeline(args: argparse.Namespace) -> None:
     )
 
 
-def _run_ingest(
-    source_path: str,
-    tenant_id: str = "default",
-    dry_run: bool = False,
-    verbose: bool = False,
-    json_output: bool = False,
-) -> None:
-    """
-    Ingest email exports into the system.
-
-    Processes conversation folders containing:
-    - Conversation.txt (email transcript)
-    - manifest.json (metadata)
-    - attachments/ (extracted files)
-    """
+def _validate_ingest_source(source_path: str, json_output: bool) -> Path:
+    """Validate the source path for ingestion."""
     import json
-    import uuid
 
-    # Validate source path before use
     validated_source = _validate_directory_for_cli(source_path)
     if validated_source.is_err():
-        print(
-            f"{_colorize('ERROR:', 'red')} Invalid source path: {validated_source.error}"
-        )
+        error_msg = f"Invalid source path: {validated_source.error}"
+        if json_output:
+            print(json.dumps({"error": error_msg, "success": False}))
+        else:
+            print(f"{_colorize('ERROR:', 'red')} {error_msg}")
         sys.exit(1)
 
     source = validated_source.value
-
-    if not json_output:
-        _print_banner()
-        print(f"{_colorize('▶ EMAIL INGESTION', 'bold')}\n")
-        print(f"  Source:    {_colorize(str(source), 'cyan')}")
-        print(f"  Tenant:    {_colorize(tenant_id, 'cyan')}")
-        print(f"  Dry Run:   {_colorize(str(dry_run), 'yellow' if dry_run else 'dim')}")
-        print()
-
     if not source.exists():
         msg = f"Source path does not exist: {source}"
         if json_output:
@@ -552,17 +540,20 @@ def _run_ingest(
         else:
             print(f"  {_colorize('✗', 'red')} {msg}")
         sys.exit(1)
+    return source
 
-    # Discover conversation folders
+
+def _discover_conversations(source: Path, json_output: bool) -> list[Path]:
+    """Discover conversation folders in the source path."""
+    import json
+
     conversations: list[Path] = []
     if source.is_dir():
-        # Check if source IS a conversation folder
         if (source / "Conversation.txt").exists() or (
             source / "manifest.json"
         ).exists():
             conversations = [source]
         else:
-            # Scan for conversation subfolders
             for item in source.iterdir():
                 if item.is_dir() and (
                     (item / "Conversation.txt").exists()
@@ -584,131 +575,46 @@ def _run_ingest(
             print("      ├── manifest.json")
             print("      └── attachments/")
         sys.exit(1)
+    return conversations
+
+
+def _handle_ingest_dry_run(conversations: list[Path], json_output: bool) -> None:
+    """Handle the dry run logic for ingestion."""
+    import json
 
     if not json_output:
+        print(f"{_colorize('DRY RUN - No changes will be made', 'yellow')}\n")
+        for i, conv in enumerate(conversations[:10], 1):
+            print(f"    {i}. {conv.name}")
+        if len(conversations) > 10:
+            print(f"    ... and {len(conversations) - 10} more")
+        print()
+    else:
         print(
-            f"  {_colorize('✓', 'green')} Found {len(conversations)} conversation(s)\n"
+            json.dumps(
+                {
+                    "success": True,
+                    "dry_run": True,
+                    "conversations_found": len(conversations),
+                    "conversations": [str(c) for c in conversations[:20]],
+                }
+            )
         )
 
-    if dry_run:
-        if not json_output:
-            print(f"{_colorize('DRY RUN - No changes will be made', 'yellow')}\n")
-            for i, conv in enumerate(conversations[:10], 1):
-                print(f"    {i}. {conv.name}")
-            if len(conversations) > 10:
-                print(f"    ... and {len(conversations) - 10} more")
-            print()
-        else:
-            print(
-                json.dumps(
-                    {
-                        "success": True,
-                        "dry_run": True,
-                        "conversations_found": len(conversations),
-                        "conversations": [str(c) for c in conversations[:20]],
-                    }
-                )
-            )
-        return
 
-    # Actually run ingestion
+def _perform_ingestion(
+    conversations: list[Path],
+    tenant_id: str,
+    verbose: bool,
+    json_output: bool,
+) -> None:
+    """Perform the ingestion process for the given conversations."""
+    import json
+    import uuid
+
     try:
-        from cortex.ingestion.mailroom import (
-            IngestJob as _IngestJob,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
-        )
-        from cortex.ingestion.mailroom import (
-            process_job as _process_job,  # type: ignore[reportUnknownVariableType]
-        )
-
-        _IngestJob = cast(Any, _IngestJob)
-        _process_job = cast(Any, _process_job)
-        IngestJob: type[Any]
-        process_job: Callable[[Any], Any]
-        IngestJob = cast(type[Any], _IngestJob)
-        process_job = cast(Callable[[Any], Any], _process_job)
-
-        results: list[Any] = []
-        success_count = 0
-        fail_count = 0
-
-        for i, conv in enumerate(conversations, 1):
-            if not json_output:
-                print(
-                    f"  [{i}/{len(conversations)}] Processing: {conv.name}...",
-                    end=" ",
-                    flush=True,
-                )
-
-            job: Any = IngestJob(
-                job_id=uuid.uuid4(),
-                tenant_id=tenant_id,
-                source_type="local_upload",
-                source_uri=str(conv),
-            )
-
-            try:
-                summary: Any = process_job(job)
-                if summary.aborted_reason:
-                    fail_count += 1
-                    if not json_output:
-                        print(f"{_colorize('FAILED', 'red')}")
-                        if verbose:
-                            print(f"       Reason: {summary.aborted_reason}")
-                else:
-                    success_count += 1
-                    if not json_output:
-                        print(
-                            f"{_colorize('OK', 'green')} ({summary.messages_ingested} msg, {summary.attachments_parsed} att)"
-                        )
-
-                results.append(
-                    {
-                        "path": str(conv),
-                        "success": not summary.aborted_reason,
-                        "messages": summary.messages_ingested,
-                        "attachments": summary.attachments_parsed,
-                        "error": summary.aborted_reason,
-                    }
-                )
-            except Exception as e:
-                fail_count += 1
-                if not json_output:
-                    print(f"{_colorize('ERROR', 'red')}")
-                    if verbose:
-                        print(f"       {e}")
-                results.append(
-                    {
-                        "path": str(conv),
-                        "success": False,
-                        "error": str(e),
-                    }
-                )
-
-        if json_output:
-            print(
-                json.dumps(
-                    {
-                        "success": fail_count == 0,
-                        "total": len(conversations),
-                        "succeeded": success_count,
-                        "failed": fail_count,
-                        "results": results,
-                    }
-                )
-            )
-        else:
-            print()
-            print(f"{_colorize('═' * 50, 'cyan')}")
-            if fail_count == 0:
-                print(
-                    f"\n  {_colorize('✓', 'green')} All {success_count} conversation(s) ingested successfully!"
-                )
-            else:
-                print(f"\n  {_colorize('⚠', 'yellow')} Completed with errors:")
-                print(f"    Succeeded: {_colorize(str(success_count), 'green')}")
-                print(f"    Failed:    {_colorize(str(fail_count), 'red')}")
-            print()
-
+        from cortex.ingestion.mailroom import IngestJob as IngestJob
+        from cortex.ingestion.mailroom import process_job as process_job
     except ImportError as e:
         msg = f"Could not load ingestion module: {e}"
         if json_output:
@@ -716,60 +622,160 @@ def _run_ingest(
         else:
             print(f"\n  {_colorize('ERROR:', 'red')} {msg}")
             print(f"  Run {_colorize('cortex doctor --auto-install', 'cyan')} first")
-        sys.exit(1)
+        raise
+
+    results: list[Any] = []
+    success_count = 0
+    fail_count = 0
+
+    for i, conv in enumerate(conversations, 1):
+        if not json_output:
+            print(
+                f"  [{i}/{len(conversations)}] Processing: {conv.name}...",
+                end=" ",
+                flush=True,
+            )
+
+        ingest_job = IngestJob(
+            job_id=uuid.uuid4(),
+            tenant_id=tenant_id,
+            source_type="local_upload",
+            source_uri=str(conv),
+        )
+
+        try:
+            summary = process_job(ingest_job)
+            success = not summary.aborted_reason
+            if success:
+                success_count += 1
+                if not json_output:
+                    print(
+                        f"{_colorize('OK', 'green')} ({summary.messages_ingested} msg, {summary.attachments_parsed} att)"
+                    )
+            else:
+                fail_count += 1
+                if not json_output:
+                    print(f"{_colorize('FAILED', 'red')}")
+                    if verbose:
+                        print(f"       Reason: {summary.aborted_reason}")
+            results.append(
+                {
+                    "path": str(conv),
+                    "success": success,
+                    "messages": summary.messages_ingested,
+                    "attachments": summary.attachments_parsed,
+                    "error": summary.aborted_reason,
+                }
+            )
+        except Exception as e:
+            fail_count += 1
+            if not json_output:
+                print(f"{_colorize('ERROR', 'red')}")
+                if verbose:
+                    print(f"       {e}")
+            results.append({"path": str(conv), "success": False, "error": str(e)})
+
+    if json_output:
+        print(
+            json.dumps(
+                {
+                    "success": fail_count == 0,
+                    "total": len(conversations),
+                    "succeeded": success_count,
+                    "failed": fail_count,
+                    "results": results,
+                }
+            )
+        )
+    else:
+        print()
+        print(f"{_colorize('═' * 50, 'cyan')}")
+        if fail_count == 0:
+            print(
+                f"\n  {_colorize('✓', 'green')} All {success_count} conversation(s) ingested successfully!"
+            )
+        else:
+            print(f"\n  {_colorize('⚠', 'yellow')} Completed with errors:")
+            print(f"    Succeeded: {_colorize(str(success_count), 'green')}")
+            print(f"    Failed:    {_colorize(str(fail_count), 'red')}")
+        print()
 
 
-def _run_index(
-    root: str = ".",
-    provider: str = "digitalocean",
-    workers: int = 4,
-    limit: int | None = None,
-    force: bool = False,
+def _run_ingest(
+    source_path: str,
+    tenant_id: str = "default",
+    dry_run: bool = False,
+    verbose: bool = False,
     json_output: bool = False,
 ) -> None:
-    """
-    Build or rebuild the search index with embeddings.
-    """
+    """Ingest email exports into the system."""
+    source = _validate_ingest_source(source_path, json_output)
+
+    if not json_output:
+        _print_banner()
+        print(f"{_colorize('▶ EMAIL INGESTION', 'bold')}\n")
+        print(f"  Source:    {_colorize(str(source), 'cyan')}")
+        print(f"  Tenant:    {_colorize(tenant_id, 'cyan')}")
+        print(f"  Dry Run:   {_colorize(str(dry_run), 'yellow' if dry_run else 'dim')}")
+        print()
+
+    conversations = _discover_conversations(source, json_output)
+
+    if not json_output:
+        print(
+            f"  {_colorize('✓', 'green')} Found {len(conversations)} conversation(s)\n"
+        )
+
+    if dry_run:
+        _handle_ingest_dry_run(conversations, json_output)
+        return
+
+    _perform_ingestion(conversations, tenant_id, verbose, json_output)
+
+
+def _validate_index_root(root: str, json_output: bool) -> Path:
+    """Validate the root path for indexing."""
     import json
 
     validated_root = _validate_directory_for_cli(root)
     if validated_root.is_err():
-        print(f"{_colorize('ERROR:', 'red')} Invalid root path: {validated_root.error}")
+        error_msg = f"Invalid root path: {validated_root.error}"
+        if json_output:
+            print(json.dumps({"error": error_msg, "success": False}))
+        else:
+            print(f"{_colorize('ERROR:', 'red')} {error_msg}")
         sys.exit(1)
-    root_path = validated_root.value
+    return validated_root.value
 
-    if not json_output:
-        _print_banner()
-        print(f"{_colorize('▶ INDEX BUILDER', 'bold')}\n")
-        print(f"  Root:      {_colorize(str(root_path), 'cyan')}")
-        print(f"  Provider:  {_colorize(provider, 'cyan')}")
-        print(f"  Workers:   {_colorize(str(workers), 'cyan')}")
-        if limit:
-            print(f"  Limit:     {_colorize(str(limit), 'yellow')}")
-        if force:
-            print(
-                f"  {_colorize('Force: recomputing index regardless of cache state', 'yellow')}"
-            )
-        print()
+
+def _perform_indexing(
+    root_path: Path,
+    provider: str,
+    workers: int,
+    limit: int | None,
+    force: bool,
+    json_output: bool,
+) -> None:
+    """Perform the indexing process."""
+    import json
 
     try:
         from cortex_workers.reindex_jobs.parallel_indexer import (
-            parallel_index_conversations as _parallel_index_conversations,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
+            parallel_index_conversations,
         )
+    except ImportError as e:
+        msg = f"Could not load indexer module: {e}"
+        if json_output:
+            print(json.dumps({"error": msg, "success": False}))
+        else:
+            print(f"\n  {_colorize('ERROR:', 'red')} {msg}")
+        raise
 
-        _parallel_index_conversations = cast(Any, _parallel_index_conversations)
-        parallel_index_conversations: Callable[..., tuple[Any, Any]]
-        parallel_index_conversations = cast(
-            Callable[..., tuple[Any, Any]], _parallel_index_conversations
-        )
+    if not json_output:
+        print(f"  {_colorize('⏳', 'yellow')} Starting parallel indexing...")
+        print()
 
-        if not json_output:
-            print(f"  {_colorize('⏳', 'yellow')} Starting parallel indexing...")
-            print()
-
-        embeddings: Any
-        mappings: Any
-
+    try:
         embeddings, mappings = parallel_index_conversations(
             root=root_path,
             provider=provider,
@@ -801,30 +807,46 @@ def _run_index(
             else:
                 print(f"\n  {_colorize('⚠', 'yellow')} No conversations found to index")
             print()
-
-    except ImportError as e:
-        msg = f"Could not load indexer module: {e}"
-        if json_output:
-            print(json.dumps({"error": msg, "success": False}))
-        else:
-            print(f"\n  {_colorize('ERROR:', 'red')} {msg}")
-        sys.exit(1)
-    except Exception as e:
+    except IOError as e:
         if json_output:
             print(json.dumps({"error": str(e), "success": False}))
         else:
             print(f"\n  {_colorize('ERROR:', 'red')} {e}")
-        sys.exit(1)
+        raise
 
 
-def _run_search(
-    query: str,
-    tenant_id: str = "default",
-    user_id: str = "cli-user",
-    top_k: int = 5,
+def _run_index(
+    root: str = ".",
+    provider: str = "digitalocean",
+    workers: int = 4,
+    limit: int | None = None,
+    force: bool = False,
     json_output: bool = False,
 ) -> None:
-    """Run a lightweight search against the local retrieval stack."""
+    """Build or rebuild the search index with embeddings."""
+    root_path = _validate_index_root(root, json_output)
+
+    if not json_output:
+        _print_banner()
+        print(f"{_colorize('▶ INDEX BUILDER', 'bold')}\n")
+        print(f"  Root:      {_colorize(str(root_path), 'cyan')}")
+        print(f"  Provider:  {_colorize(provider, 'cyan')}")
+        print(f"  Workers:   {_colorize(str(workers), 'cyan')}")
+        if limit:
+            print(f"  Limit:     {_colorize(str(limit), 'yellow')}")
+        if force:
+            print(
+                f"  {_colorize('Force: recomputing index regardless of cache state', 'yellow')}"
+            )
+        print()
+
+    _perform_indexing(root_path, provider, workers, limit, force, json_output)
+
+
+def _perform_search(
+    query: str, tenant_id: str, user_id: str, top_k: int, json_output: bool
+) -> None:
+    """Perform the search and print the results."""
     import asyncio
     import json
 
@@ -836,16 +858,10 @@ def _run_search(
             print(json.dumps({"error": msg, "success": False}))
         else:
             print(f"ERROR: {msg}")
-        raise SystemExit(1)
-
-    if not json_output:
-        print("Searching...")
+        raise
 
     search_input = KBSearchInput(
-        tenant_id=tenant_id,
-        user_id=user_id,
-        query=query,
-        k=top_k,
+        tenant_id=tenant_id, user_id=user_id, query=query, k=top_k
     )
     result = tool_kb_search_hybrid(search_input)
     if asyncio.iscoroutine(result):
@@ -864,9 +880,25 @@ def _run_search(
     if json_output:
         payload = results.model_dump() if hasattr(results, "model_dump") else results
         print(json.dumps(payload, default=str))
-        return
-    items = getattr(results, "results", [])
-    print(f"Found {len(items)} result(s).")
+    else:
+        items = getattr(results, "results", [])
+        print(f"Found {len(items)} result(s).")
+        for i, item in enumerate(items, 1):
+            print(f"  {i}. {item.text}")
+
+
+def _run_search(
+    query: str,
+    tenant_id: str = "default",
+    user_id: str = "cli-user",
+    top_k: int = 5,
+    json_output: bool = False,
+) -> None:
+    """Run a lightweight search against the local retrieval stack."""
+    if not json_output:
+        print("Searching...")
+
+    _perform_search(query, tenant_id, user_id, top_k, json_output)
 
 
 # =============================================================================
@@ -874,24 +906,13 @@ def _run_search(
 # =============================================================================
 
 
-def _run_answer(
-    query: str,
-    tenant_id: str = "default",
-    user_id: str = "cli-user",
-    json_output: bool = False,
+def _call_answer_api(
+    query: str, tenant_id: str, user_id: str, json_output: bool
 ) -> None:
-    """
-    Ask questions about your emails using RAG.
-    """
+    """Call the answer API and print the result."""
     import json
 
     from cortex_cli.api_client import get_api_client
-
-    if not json_output:
-        _print_banner()
-        print(f"{_colorize('▶ ASK CORTEX', 'bold')}\n")
-        print(f"  Query:   {_colorize(query, 'cyan')}")
-        print()
 
     try:
         if not json_output:
@@ -925,13 +946,86 @@ def _run_answer(
             print(json.dumps({"error": msg, "success": False}))
         else:
             print(f"\n  {_colorize('ERROR:', 'red')} {msg}")
-        sys.exit(1)
-    except Exception as e:
+        raise
+    except IOError as e:
         if json_output:
             print(json.dumps({"error": str(e), "success": False}))
         else:
             print(f"\n  {_colorize('ERROR:', 'red')} {e}")
-        sys.exit(1)
+        raise
+
+
+def _run_answer(
+    query: str,
+    tenant_id: str = "default",
+    user_id: str = "cli-user",
+    json_output: bool = False,
+) -> None:
+    """Ask questions about your emails using RAG."""
+    if not json_output:
+        _print_banner()
+        print(f"{_colorize('▶ ASK CORTEX', 'bold')}\n")
+        print(f"  Query:   {_colorize(query, 'cyan')}")
+        print()
+
+    _call_answer_api(query, tenant_id, user_id, json_output)
+
+
+async def _execute_summarization_graph(
+    thread_id: str, tenant_id: str, user_id: str
+) -> Any:
+    """Execute the summarization graph."""
+    from cortex.orchestration.graphs import build_summarize_graph
+
+    graph = build_summarize_graph().compile()
+    initial_state = {
+        "tenant_id": tenant_id,
+        "user_id": user_id,
+        "thread_id": thread_id,
+        "thread_context": None,
+        "facts_ledger": None,
+        "critique": None,
+        "iteration_count": 0,
+        "summary": None,
+        "error": None,
+    }
+    return await graph.ainvoke(initial_state)
+
+
+def _handle_summarization_result(final_state: Any, json_output: bool) -> None:
+    """Handle the result of the summarization graph."""
+    import json
+
+    error = (
+        final_state.get("error")
+        if isinstance(final_state, dict)
+        else getattr(final_state, "error", None)
+    )
+    if error:
+        raise ValueError(error)
+
+    summary = (
+        final_state.get("summary")
+        if isinstance(final_state, dict)
+        else getattr(final_state, "summary", None)
+    )
+
+    if json_output:
+        print(
+            json.dumps(summary.model_dump() if summary else {}, indent=2, default=str)
+        )
+    else:
+        if summary:
+            print(f"\n{_colorize('SUMMARY:', 'bold')}")
+            print(f"{summary.summary_markdown}\n")
+
+            if summary.facts_ledger:
+                print(f"{_colorize('FACTS LEDGER:', 'dim')}")
+                for key, value in summary.facts_ledger.items():
+                    print(f"  • {key}: {value}")
+        else:
+            print(f"  {_colorize('⚠', 'yellow')} No summary generated.")
+        print()
 
 
 def _run_summarize(
@@ -940,9 +1034,7 @@ def _run_summarize(
     user_id: str = "cli-user",
     json_output: bool = False,
 ) -> None:
-    """
-    Summarize an email thread.
-    """
+    """Summarize an email thread."""
     import asyncio
     import json
 
@@ -953,68 +1045,13 @@ def _run_summarize(
         print()
 
     try:
-        from cortex.orchestration.graphs import (
-            build_summarize_graph as _build_summarize_graph,  # type: ignore[import]; type: ignore[reportUnknownVariableType]
-        )
-
-        _build_summarize_graph = cast(Any, _build_summarize_graph)
-        build_summarize_graph: Callable[[], Any]
-        build_summarize_graph = cast(Callable[[], Any], _build_summarize_graph)
-
         if not json_output:
             print(f"  {_colorize('⏳', 'yellow')} Summarizing...")
 
-        async def _execute() -> Any:
-            graph = build_summarize_graph().compile()
-            initial_state: dict[str, Any] = {
-                "tenant_id": tenant_id,
-                "user_id": user_id,
-                "thread_id": thread_id,
-                "thread_context": None,
-                "facts_ledger": None,
-                "critique": None,
-                "iteration_count": 0,
-                "summary": None,
-                "error": None,
-            }
-            result = await graph.ainvoke(initial_state)
-            return result
-
-        final_state: Any = asyncio.run(_execute())
-
-        # Handle both dict and object-like state access
-        error = (
-            final_state.get("error")
-            if isinstance(final_state, dict)
-            else getattr(final_state, "error", None)
+        final_state = asyncio.run(
+            _execute_summarization_graph(thread_id, tenant_id, user_id)
         )
-        if error:
-            raise Exception(error)
-
-        summary: Any | None = (
-            final_state.get("summary")
-            if isinstance(final_state, dict)
-            else getattr(final_state, "summary", None)
-        )
-
-        if json_output:
-            print(
-                json.dumps(
-                    summary.model_dump() if summary else {}, indent=2, default=str
-                )
-            )
-        else:
-            if summary:
-                print(f"\n{_colorize('SUMMARY:', 'bold')}")
-                print(f"{summary.summary_markdown}\n")
-
-                if summary.facts_ledger:
-                    print(f"{_colorize('FACTS LEDGER:', 'dim')}")
-                    for key, value in summary.facts_ledger.items():
-                        print(f"  • {key}: {value}")
-            else:
-                print(f"  {_colorize('⚠', 'yellow')} No summary generated.")
-            print()
+        _handle_summarization_result(final_state, json_output)
 
     except ImportError as e:
         msg = f"Could not load RAG module: {e}"
@@ -1022,13 +1059,13 @@ def _run_summarize(
             print(json.dumps({"error": msg, "success": False}))
         else:
             print(f"\n  {_colorize('ERROR:', 'red')} {msg}")
-        sys.exit(1)
+        raise
     except Exception as e:
         if json_output:
             print(json.dumps({"error": str(e), "success": False}))
         else:
             print(f"\n  {_colorize('ERROR:', 'red')} {e}")
-        sys.exit(1)
+        raise
 
 
 def main(args: list[str] | None = None) -> None:
@@ -1099,75 +1136,7 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
     _setup_core_commands(subparsers)
     _setup_rag_commands(subparsers)
     _setup_utility_commands(subparsers)
-
-    # Register plugin subcommand groups
-    import typer
-    from cortex_cli.cmd_backfill import setup_backfill_parser
-    from cortex_cli.cmd_db import setup_db_parser
-    from cortex_cli.cmd_embeddings import setup_embeddings_parser
-    from cortex_cli.cmd_graph import setup_graph_parser
-    from cortex_cli.cmd_grounding import setup_grounding_parser
-    from cortex_cli.cmd_login import setup_login_parser
-    from cortex_cli.cmd_maintenance import setup_maintenance_parser
-    from cortex_cli.cmd_queue import setup_queue_parser
-    from cortex_cli.cmd_s3 import setup_s3_parser
-    from cortex_cli.cmd_safety import setup_safety_parser
-    from cortex_cli.cmd_search import setup_search_parser
-    from cortex_cli.cmd_test import setup_test_parser
-    from rich.console import Console
-
-    # A bit of a hack to integrate Typer apps with argparse
-    def setup_typer_command(subparsers, name, typer_app, help_text=""):
-        parser = subparsers.add_parser(name, help=help_text, add_help=False)
-
-        def _run_typer(args):
-            try:
-                # Pass remaining args to typer app directly
-                typer_args = args.typer_args if args.typer_args else []
-                # Filter out empty strings that argparse.REMAINDER might capture
-                typer_args = [a for a in typer_args if a]
-                typer_app(typer_args, standalone_mode=False)
-            except typer.Exit as e:
-                if e.code != 0:
-                    console = Console()
-                    console.print(f"[bold red]Error:[/bold red] {e}")
-            except SystemExit:
-                # Handle typer's SystemExit for --help
-                pass
-            except Exception as e:
-                console = Console()
-                console.print(f"[bold red]An unexpected error occurred:[/bold red] {e}")
-
-        parser.set_defaults(func=lambda args: _run_typer(args))
-        # Capture all remaining arguments for the typer subcommand
-        parser.add_argument("typer_args", nargs=argparse.REMAINDER)
-
-    from cortex_cli.cmd_audit import setup_audit_parser
-    from cortex_cli.cmd_fix import setup_fix_issues_parser, setup_fix_parser
-    from cortex_cli.cmd_index import setup_index_parser
-    from cortex_cli.cmd_patch import setup_patch_parser
-    from cortex_cli.cmd_rechunk import setup_rechunk_parser
-    from cortex_cli.cmd_schema import setup_schema_parser
-
-    setup_backfill_parser(subparsers)
-    setup_db_parser(subparsers)
-    setup_embeddings_parser(subparsers)
-    setup_s3_parser(subparsers)
-    setup_maintenance_parser(subparsers)
-    setup_test_parser(subparsers)
-    setup_search_parser(subparsers)
-    setup_grounding_parser(subparsers)
-    setup_safety_parser(subparsers)
-    setup_queue_parser(subparsers)
-    setup_login_parser(subparsers)
-    setup_graph_parser(subparsers)
-    setup_audit_parser(subparsers)
-    setup_fix_parser(subparsers)
-    setup_fix_issues_parser(subparsers)
-    setup_index_parser(subparsers)
-    setup_patch_parser(subparsers)
-    setup_rechunk_parser(subparsers)
-    setup_schema_parser(subparsers)
+    _setup_plugin_commands(subparsers)
 
     # Parse arguments
     parsed_args = parser.parse_args(args)
@@ -1189,8 +1158,8 @@ For more information, see docs/CANONICAL_BLUEPRINT.md
         sys.exit(1)
 
 
-def _setup_core_commands(subparsers: Any) -> None:
-    """Setup core CLI commands: ingest, index, search, validate."""
+def _setup_ingest_parser(subparsers: Any) -> None:
+    """Setup the ingest command parser."""
     ingest_parser = subparsers.add_parser(
         "ingest",
         help="Process and ingest email exports",
@@ -1213,9 +1182,7 @@ The ingestion pipeline:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     ingest_parser.add_argument(
-        "source",
-        metavar="PATH",
-        help="Path to email export folder(s)",
+        "source", metavar="PATH", help="Path to email export folder(s)"
     )
     ingest_parser.add_argument(
         "--tenant",
@@ -1231,16 +1198,9 @@ The ingestion pipeline:
         help="Scan and validate without making changes",
     )
     ingest_parser.add_argument(
-        "--verbose",
-        "-v",
-        action="store_true",
-        help="Show detailed progress and errors",
+        "--verbose", "-v", action="store_true", help="Show detailed progress and errors"
     )
-    ingest_parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Output results as JSON",
-    )
+    ingest_parser.add_argument("--json", action="store_true", help=JSON_OUTPUT_HELP)
     ingest_parser.set_defaults(
         func=lambda args: _run_ingest(
             source_path=args.source,
@@ -1251,7 +1211,9 @@ The ingestion pipeline:
         )
     )
 
-    # Pipeline command
+
+def _setup_pipeline_parser(subparsers: Any) -> None:
+    """Setup the pipeline command parser."""
     pipeline_parser = subparsers.add_parser(
         "pipeline",
         help="Run the unified ingestion pipeline",
@@ -1272,15 +1234,9 @@ Examples:
         help="S3 prefix or local path to scan (default: Outlook/)",
     )
     pipeline_parser.add_argument(
-        "--tenant",
-        default="default",
-        help="Tenant ID to associate with data",
+        "--tenant", default="default", help="Tenant ID to associate with data"
     )
-    pipeline_parser.add_argument(
-        "--limit",
-        type=int,
-        help="Max folders to process",
-    )
+    pipeline_parser.add_argument("--limit", type=int, help="Max folders to process")
     pipeline_parser.add_argument(
         "--concurrency",
         type=int,
@@ -1298,19 +1254,14 @@ Examples:
         help="Preview what would be processed without making changes",
     )
     pipeline_parser.add_argument(
-        "--verbose",
-        "-v",
-        action="store_true",
-        help="Enable verbose/debug output",
+        "--verbose", "-v", action="store_true", help="Enable verbose/debug output"
     )
-    pipeline_parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Output results as JSON",
-    )
+    pipeline_parser.add_argument("--json", action="store_true", help=JSON_OUTPUT_HELP)
     pipeline_parser.set_defaults(func=lambda args: _run_pipeline(args))
 
-    # Validate command
+
+def _setup_validate_parser(subparsers: Any) -> None:
+    """Setup the validate command parser."""
     validate_parser = subparsers.add_parser(
         "validate",
         help="Validate export folder structure (B1)",
@@ -1326,18 +1277,19 @@ This command:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     validate_parser.add_argument(
-        "path",
-        metavar="PATH",
-        help="Path to export root or conversation folder",
+        "path", metavar="PATH", help="Path to export root or conversation folder"
     )
-    validate_parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Output results as JSON",
-    )
+    validate_parser.add_argument("--json", action="store_true", help=JSON_OUTPUT_HELP)
     validate_parser.set_defaults(
         func=lambda args: _run_validate(path=args.path, json_output=args.json)
     )
+
+
+def _setup_core_commands(subparsers: Any) -> None:
+    """Setup core CLI commands: ingest, index, search, validate."""
+    _setup_ingest_parser(subparsers)
+    _setup_pipeline_parser(subparsers)
+    _setup_validate_parser(subparsers)
 
 
 from cortex_cli.cmd_draft import setup_draft_parser
@@ -1345,7 +1297,6 @@ from cortex_cli.cmd_draft import setup_draft_parser
 
 def _setup_rag_commands(subparsers: Any) -> None:
     """Setup RAG CLI commands: answer, draft, summarize."""
-    # Answer command
     answer_parser = subparsers.add_parser(
         "answer",
         help="Ask questions about your emails",
@@ -1359,11 +1310,7 @@ The system will:
         """,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    answer_parser.add_argument(
-        "query",
-        metavar="QUESTION",
-        help="The question to ask",
-    )
+    answer_parser.add_argument("query", metavar="QUESTION", help="The question to ask")
     answer_parser.add_argument(
         "--tenant",
         "-t",
@@ -1371,21 +1318,15 @@ The system will:
         metavar="ID",
         help="Tenant ID (default: 'default')",
     )
-    answer_parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Output results as JSON",
-    )
+    answer_parser.add_argument("--json", action="store_true", help=JSON_OUTPUT_HELP)
     answer_parser.set_defaults(
         func=lambda args: _run_answer(
             query=args.query, tenant_id=args.tenant, json_output=args.json
         )
     )
 
-    # Draft command
     setup_draft_parser(subparsers)
 
-    # Summarize command
     summarize_parser = subparsers.add_parser(
         "summarize",
         help="Summarize email threads",
@@ -1400,9 +1341,7 @@ The system will:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     summarize_parser.add_argument(
-        "thread_id",
-        metavar="UUID",
-        help="ID of the thread to summarize",
+        "thread_id", metavar="UUID", help="ID of the thread to summarize"
     )
     summarize_parser.add_argument(
         "--tenant",
@@ -1411,11 +1350,7 @@ The system will:
         metavar="ID",
         help="Tenant ID (default: 'default')",
     )
-    summarize_parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Output results as JSON",
-    )
+    summarize_parser.add_argument("--json", action="store_true", help=JSON_OUTPUT_HELP)
     summarize_parser.set_defaults(
         func=lambda args: _run_summarize(
             thread_id=args.thread_id, tenant_id=args.tenant, json_output=args.json
@@ -1627,6 +1562,70 @@ Run comprehensive system diagnostics including:
         description="Run the auto-fix script to resolve low-hanging fruit issues.",
     )
     autofix_parser.set_defaults(func=lambda _: _run_autofix())
+
+
+def _setup_plugin_commands(subparsers: Any) -> None:
+    """Register plugin subcommand groups."""
+    import typer
+    from cortex_cli.cmd_audit import setup_audit_parser
+    from cortex_cli.cmd_backfill import setup_backfill_parser
+    from cortex_cli.cmd_db import setup_db_parser
+    from cortex_cli.cmd_embeddings import setup_embeddings_parser
+    from cortex_cli.cmd_fix import setup_fix_issues_parser, setup_fix_parser
+    from cortex_cli.cmd_graph import setup_graph_parser
+    from cortex_cli.cmd_grounding import setup_grounding_parser
+    from cortex_cli.cmd_index import setup_index_parser
+    from cortex_cli.cmd_login import setup_login_parser
+    from cortex_cli.cmd_maintenance import setup_maintenance_parser
+    from cortex_cli.cmd_patch import setup_patch_parser
+    from cortex_cli.cmd_queue import setup_queue_parser
+    from cortex_cli.cmd_rechunk import setup_rechunk_parser
+    from cortex_cli.cmd_s3 import setup_s3_parser
+    from cortex_cli.cmd_safety import setup_safety_parser
+    from cortex_cli.cmd_schema import setup_schema_parser
+    from cortex_cli.cmd_search import setup_search_parser
+    from cortex_cli.cmd_test import setup_test_parser
+    from rich.console import Console
+
+    def setup_typer_command(subparsers, name, typer_app, help_text=""):
+        parser = subparsers.add_parser(name, help=help_text, add_help=False)
+
+        def _run_typer(args):
+            try:
+                typer_args = [a for a in (args.typer_args or []) if a]
+                typer_app(typer_args, standalone_mode=False)
+            except typer.Exit as e:
+                if e.code != 0:
+                    Console().print(f"[bold red]Error:[/bold red] {e}")
+            except SystemExit:
+                pass
+            except Exception as e:
+                Console().print(
+                    f"[bold red]An unexpected error occurred:[/bold red] {e}"
+                )
+
+        parser.set_defaults(func=_run_typer)
+        parser.add_argument("typer_args", nargs=argparse.REMAINDER)
+
+    setup_backfill_parser(subparsers)
+    setup_db_parser(subparsers)
+    setup_embeddings_parser(subparsers)
+    setup_s3_parser(subparsers)
+    setup_maintenance_parser(subparsers)
+    setup_test_parser(subparsers)
+    setup_search_parser(subparsers)
+    setup_grounding_parser(subparsers)
+    setup_safety_parser(subparsers)
+    setup_queue_parser(subparsers)
+    setup_login_parser(subparsers)
+    setup_graph_parser(subparsers)
+    setup_audit_parser(subparsers)
+    setup_fix_parser(subparsers)
+    setup_fix_issues_parser(subparsers)
+    setup_index_parser(subparsers)
+    setup_patch_parser(subparsers)
+    setup_rechunk_parser(subparsers)
+    setup_schema_parser(subparsers)
 
 
 def _run_autofix():

@@ -14,6 +14,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 import threading
 import time
 from abc import ABC, abstractmethod
@@ -34,6 +35,11 @@ logger = logging.getLogger("cortex.llm.async_runtime")
 # =============================================================================
 # Config & exception integration
 # =============================================================================
+try:
+    import jsonschema
+except ImportError:
+    jsonschema = None
+
 
 try:
     # If we are inside the Cortex stack, use its config & exceptions.
@@ -350,7 +356,7 @@ class AsyncLLMRuntime:
         self.retry_config = cast(RetryLike, _retry_cfg)
         self._max_retries = self.retry_config.max_retries
 
-    async def _execute(self, operation: str, func, *args, **kwargs):
+    async def _execute(self, func, *args, **kwargs):
         """
         Execute `func` with resilience.
         """
@@ -394,9 +400,7 @@ class AsyncLLMRuntime:
                 "prompt must be a non-empty string if 'messages' is not provided"
             )
 
-        result = await self._execute(
-            "completion", self.primary.complete, prompt=prompt, **kwargs
-        )
+        result = await self._execute(self.primary.complete, prompt=prompt, **kwargs)
 
         if not isinstance(result, str) or not result.strip():
             raise LLMOutputSchemaError(
@@ -406,6 +410,25 @@ class AsyncLLMRuntime:
             )
 
         return result
+
+    def _create_json_repair_prompt(
+        self, last_error: str, raw_output: str, schema_json: str
+    ) -> list[dict[str, str]]:
+        """Creates a prompt to ask the model to repair a JSON output."""
+        return [
+            {"role": "system", "content": "You are a JSON correction expert."},
+            {
+                "role": "user",
+                "content": (
+                    "The following JSON output is invalid. "
+                    "Fix it so it becomes valid JSON matching the schema.\n\n"
+                    f"Original error:\n{last_error}\n\n"
+                    f"Invalid JSON:\n{raw_output}\n\n"
+                    f"Required JSON Schema:\n{schema_json}\n\n"
+                    "Respond with ONLY the corrected JSON object."
+                ),
+            },
+        ]
 
     async def async_complete_json(
         self,
@@ -419,7 +442,7 @@ class AsyncLLMRuntime:
                 raise ValidationError("prompt string must not be empty")
             messages = [{"role": "user", "content": prompt}]
         elif isinstance(prompt, list) and prompt:
-            messages = [dict(m) for m in prompt]  # Create a mutable copy
+            messages = [dict(m) for m in prompt]
         else:
             raise ValidationError(
                 "prompt must be a non-empty string or list of messages"
@@ -427,25 +450,26 @@ class AsyncLLMRuntime:
 
         schema_json = json.dumps(schema, indent=2)
         json_instructions = (
-            f"\n\n"
-            f"Respond with a single valid JSON object that conforms to this JSON Schema:\n"
-            f"{schema_json}\n\n"
-            f"Do not include markdown. Return ONLY the JSON object."
+            f"\n\nRespond with a single valid JSON object that conforms to this JSON Schema:\n"
+            f"{schema_json}\n\nDo not include markdown. Return ONLY the JSON object."
         )
         messages[-1]["content"] += json_instructions
 
         async def _call_model_for_json(current_messages: list[dict[str, Any]]) -> str:
-            base_kwargs = dict(kwargs)
-            base_kwargs.setdefault("temperature", 0.0)
-            base_kwargs.setdefault("max_tokens", 2048)
-            base_kwargs.setdefault("response_format", {"type": "json_object"})
-            base_kwargs["messages"] = current_messages
+            base_kwargs = {
+                "temperature": 0.0,
+                "max_tokens": 2048,
+                "response_format": {"type": "json_object"},
+                **kwargs,
+                "messages": current_messages,
+            }
             try:
-                # Pass dummy prompt string since 'messages' is in kwargs
                 return await self.async_complete_text("", **base_kwargs)
             except ProviderError as e:
-                msg = str(e).lower()
-                if "response_format" in msg or "json_object" in msg:
+                if (
+                    "response_format" in str(e).lower()
+                    or "json_object" in str(e).lower()
+                ):
                     base_kwargs.pop("response_format", None)
                     return await self.async_complete_text("", **base_kwargs)
                 raise
@@ -454,29 +478,17 @@ class AsyncLLMRuntime:
         last_error: str | None = None
 
         for attempt in range(max_repair_attempts + 1):
-            current_prompt_messages = messages
-            if attempt == 0:
-                pass  # Use original messages
-            else:
-                current_prompt_messages = [
-                    {"role": "system", "content": "You are a JSON correction expert."},
-                    {
-                        "role": "user",
-                        "content": (
-                            "The following JSON output is invalid. "
-                            "Fix it so it becomes valid JSON matching the schema.\n\n"
-                            f"Original error:\n{last_error}\n\n"
-                            f"Invalid JSON:\n{raw_output}\n\n"
-                            f"Required JSON Schema:\n{schema_json}\n\n"
-                            "Respond with ONLY the corrected JSON object."
-                        ),
-                    },
-                ]
+            current_prompt_messages = (
+                messages
+                if attempt == 0
+                else self._create_json_repair_prompt(
+                    str(last_error), str(raw_output), schema_json
+                )
+            )
             raw_output = await _call_model_for_json(current_prompt_messages)
 
             try:
                 parsed = _try_load_json(raw_output or "")
-
                 validation_error = _validate_json_schema(parsed, schema)
                 if validation_error:
                     last_error = validation_error
@@ -487,20 +499,14 @@ class AsyncLLMRuntime:
                     )
                     continue
                 return parsed
-            except ValueError as e:
-                # _try_load_json raises ValueError on parsing failure
+            except (ValueError, Exception) as e:
                 last_error = str(e)
-                logger.warning("JSON decode failed (attempt %d): %s", attempt + 1, e)
-
-            except Exception as e:
-                last_error = str(e)
-                logger.warning("JSON completion error (attempt %d): %s", attempt + 1, e)
+                logger.warning(
+                    "JSON processing failed (attempt %d): %s", attempt + 1, last_error
+                )
 
         raise LLMOutputSchemaError(
-            message=(
-                "Failed to generate valid JSON after "
-                f"{max_repair_attempts + 1} attempts: {last_error}"
-            ),
+            message=f"Failed to generate valid JSON after {max_repair_attempts + 1} attempts: {last_error}",
             schema_name=schema.get("title", "unknown"),
             raw_output=(raw_output[:1000] if raw_output else None),
             repair_attempts=max_repair_attempts,
@@ -512,92 +518,98 @@ class AsyncLLMRuntime:
 # JSON helpers
 # =============================================================================
 def _validate_json_schema(data: dict[str, Any], schema: dict[str, Any]) -> str | None:
-    try:
-        import jsonschema
-
-        jsonschema.validate(data, schema)
+    if not jsonschema:
         return None
-    except ImportError:
+    try:
+        jsonschema.validate(data, schema)
         return None
     except Exception as e:
         return str(e)
 
 
 def _extract_first_balanced_json_object(s: object) -> str | None:
-    if not isinstance(s, str):
+    if not isinstance(s, str) or "{" not in s:
         return None
-    if not s or "{" not in s:
-        return None
+
     first_brace = s.find("{")
     if first_brace == -1:
         return None
+
     balance = 0
     in_string = False
     escape_next = False
-    try:
-        for i, char in enumerate(s[first_brace:]):
-            if escape_next:
-                escape_next = False
-                continue
-            if char == "\\":
-                escape_next = True
-                continue
-            if char == '"':
-                in_string = not in_string
-            if not in_string:
-                if char == "{":
-                    balance += 1
-                elif char == "}":
-                    balance -= 1
-                if balance == 0 and i > 0:
-                    return s[first_brace : first_brace + i + 1]
-    except Exception:
-        pass
+    for i, char in enumerate(s[first_brace:]):
+        if escape_next:
+            escape_next = False
+            continue
+        if char == "\\":
+            escape_next = True
+            continue
+        if char == '"':
+            in_string = not in_string
+        if not in_string:
+            if char == "{":
+                balance += 1
+            elif char == "}":
+                balance -= 1
+            if balance == 0:
+                return s[first_brace : first_brace + i + 1]
     return None
 
 
-def _try_load_json(data: Any) -> dict[str, Any]:
-    if isinstance(data, dict):
-        return data
-    if not data:
-        raise ValueError("Empty data for JSON parsing")
-    s = data
-    if isinstance(data, bytes):
-        s = data.decode("utf-8")
-    s = str(s).strip()
-    import re
+def _parse_json_from_fenced_block(s: str) -> dict[str, Any] | None:
+    """
+    Extracts and parses JSON from the first markdown fenced block.
 
-    s = re.sub(r"<think>.*?</think>", "", s, flags=re.DOTALL | re.IGNORECASE).strip()
-    try:
-        obj = json.loads(s)
-        if isinstance(obj, dict):
-            return obj
-    except json.JSONDecodeError:
-        pass
-    import re
-
-    fenced_matches = list(
-        re.finditer(
-            r"```(?:json|json5|hjson)?\\s*([\\s\\S]*?)\\s*```", s, flags=re.IGNORECASE
-        )
+    The regex is designed to be ReDoS-safe by capturing content first,
+    then stripping whitespace in Python, avoiding adjacent unbounded quantifiers.
+    """
+    fenced_matches = re.finditer(
+        r"```(?:json|json5|hjson)?(.*?)```", s, flags=re.DOTALL | re.IGNORECASE
     )
     for m in fenced_matches:
-        block = _extract_first_balanced_json_object(m.group(1))
+        content = m.group(1).strip()
+        block = _extract_first_balanced_json_object(content)
         if block:
             try:
                 obj = json.loads(block)
                 if isinstance(obj, dict):
                     return obj
             except json.JSONDecodeError:
-                pass
-    block = _extract_first_balanced_json_object(s)
-    if block:
+                continue
+    return None
+
+
+def _try_load_json(data: Any) -> dict[str, Any]:
+    """Attempts to parse a JSON object from various formats in a string."""
+    if isinstance(data, dict):
+        return data
+    if not data:
+        raise ValueError("Empty data for JSON parsing")
+
+    s = str(data).strip()
+    s = re.sub(r"<think>.*?</think>", "", s, flags=re.DOTALL | re.IGNORECASE).strip()
+
+    try:
+        obj = json.loads(s)
+        if isinstance(obj, dict):
+            return obj
+    except json.JSONDecodeError:
+        pass
+
+    parsed_from_block = _parse_json_from_fenced_block(s)
+    if parsed_from_block:
+        return parsed_from_block
+
+    balanced_block = _extract_first_balanced_json_object(s)
+    if balanced_block:
         try:
-            obj = json.loads(block)
+            obj = json.loads(balanced_block)
             if isinstance(obj, dict):
                 return obj
         except json.JSONDecodeError:
             pass
+
     raise ValueError(
         f"Failed to parse JSON from string: {s[:500]!r} (Total len: {len(s)})"
     )
