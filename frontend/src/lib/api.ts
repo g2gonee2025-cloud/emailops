@@ -362,7 +362,7 @@ export const api = {
     tone = 'professional',
     signal?: AbortSignal,
   ): Promise<DraftEmailResponse> => {
-    const response = await request<unknown>('/api/v1/draft', {
+    const response = await request<unknown>('/api/v1/draft-email', {
       method: 'POST',
       body: JSON.stringify({ instruction, thread_id: threadId, tone }),
       signal,

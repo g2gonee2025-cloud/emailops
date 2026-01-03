@@ -1033,7 +1033,17 @@ def node_prepare_draft_query(state: dict[str, Any]) -> dict[str, Any]:
     Blueprint §10.3:
     * Combine explicit query and thread context
     """
-    explicit_query = state.get("explicit_query", "")
+    explicit_query_raw = state.get("explicit_query")
+
+    # Ensure explicit_query is a string (handles None, SecretStr, and other types)
+    if explicit_query_raw is None:
+        explicit_query = ""
+    elif isinstance(explicit_query_raw, str):
+        explicit_query = explicit_query_raw
+    else:
+        # Handle SecretStr and other non-string types by converting to string
+        explicit_query = str(explicit_query_raw) if explicit_query_raw else ""
+
     try:
         validate_for_injection(explicit_query)
     except SecurityError:
@@ -1351,12 +1361,15 @@ def node_load_thread(state: dict[str, Any]) -> dict[str, Any]:
 
     Blueprint §10.4:
     * Fetch messages for thread using tool_email_get_thread
+    * If no thread_id is provided, skip loading (allows drafting without context)
     """
     thread_id = state.get("thread_id")
     tenant_id = state.get("tenant_id")
 
     if not thread_id:
-        return {"error": "No thread_id provided"}
+        # No thread_id provided - this is valid for drafting new emails without context
+        logger.info("No thread_id provided, skipping thread load (drafting without context)")
+        return {"thread_context": None, "_thread_context_obj": None}
 
     # Use the standardized tool
     thread_context = tool_email_get_thread(thread_id, tenant_id)

@@ -18,12 +18,16 @@ export type DraftForm = z.infer<typeof DraftFormSchema>;
 
 /**
  * @description Zod schema for the generated email draft.
+ * Maps backend field `body_markdown` to frontend field `body` for compatibility.
  */
 export const GeneratedDraftSchema = z.object({
   subject: z.string(),
-  body: z.string(),
+  body_markdown: z.string(),
   to: z.array(z.string()),
   cc: z.array(z.string()),
-});
+}).transform(({ body_markdown, ...rest }) => ({
+  ...rest,
+  body: body_markdown,
+}));
 
 export type GeneratedDraft = z.infer<typeof GeneratedDraftSchema>;
