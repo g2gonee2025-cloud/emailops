@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { type ApiError } from '../lib/api';
 import { ToastContainer } from '../components/ui/Toast';
 
@@ -50,12 +50,12 @@ export function useToast(): ToastContextType {
 
 const MAX_TOAST_DURATION = 15000;
 
-export function ToastProvider({ children }: { children: React.ReactNode }) {
+export function ToastProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   const addToast = useCallback(
     ({ message, type = 'info', duration = 5000, details }: AddToastParams) => {
-      const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const id = crypto.randomUUID();
       const cappedDuration = Math.min(duration, MAX_TOAST_DURATION);
       setToasts(prev => [...prev, { id, message, type, duration: cappedDuration, details }]);
     },
@@ -80,13 +80,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       addToast({ message, details, type: 'error', duration: 10000 });
     };
 
-    window.addEventListener('api:error', handleApiError);
+    globalThis.addEventListener('api:error', handleApiError);
     return () => {
-      window.removeEventListener('api:error', handleApiError);
+      globalThis.removeEventListener('api:error', handleApiError);
     };
   }, [addToast]);
 
-  const value: ToastContextType = { toasts, addToast, removeToast };
+  const value = useMemo(() => ({ toasts, addToast, removeToast }), [toasts, addToast, removeToast]);
 
   return (
     <ToastContext.Provider value={value}>

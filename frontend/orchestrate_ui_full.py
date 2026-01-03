@@ -1187,9 +1187,7 @@ def _check_for_wave_failures(
     ]
     non_success_states = {"FAILED", "PAUSED", "AWAITING_USER_FEEDBACK", "TIMEOUT"}
     bad_sessions = [
-        s
-        for s in wave_result.get("polled", [])
-        if s.get("state") in non_success_states
+        s for s in wave_result.get("polled", []) if s.get("state") in non_success_states
     ]
 
     if (creation_failures or bad_sessions) and not continue_on_failure:
@@ -1283,9 +1281,7 @@ async def run_batch(
 
             _log_pr_urls(wave_name, wave_result)
 
-            if _check_for_wave_failures(
-                wave_name, wave_result, continue_on_failure
-            ):
+            if _check_for_wave_failures(wave_name, wave_result, continue_on_failure):
                 break
 
             await _pause_if_needed(pause_between_waves, idx == len(batch))

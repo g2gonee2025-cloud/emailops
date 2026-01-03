@@ -208,12 +208,13 @@ spec:
   backoffLimit: 2
   template:
     spec:
+      automountServiceAccountToken: false
       restartPolicy: OnFailure
       imagePullSecrets:
         - name: registry-sf-registry
       containers:
         - name: backfill
-          image: registry.digitalocean.com/sf-registry/emailops-backend:latest
+          image: registry.digitalocean.com/sf-registry/emailops-backend:v1.0.0
           command:
             [
               "python3",
@@ -227,7 +228,15 @@ spec:
           volumeMounts:
             - name: script-vol
               mountPath: /tmp/scripts
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "100m"
+            limits:
+              memory: "4Gi"
+              cpu: "1000m"
           env:
+            # Using HTTP for internal cluster communication is acceptable here.
             - name: EMBED_ENDPOINT
               value: "http://embeddings-api.emailops.svc.cluster.local:80/v1"
             - name: PYTHONPATH

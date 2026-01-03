@@ -9,10 +9,10 @@ import { useDraftEmail } from '../hooks/useDraft';
 import GlassCard from '../components/ui/GlassCard';
 import { Button } from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Textarea';
-import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { ConversationSelector } from '@/components/ui/ConversationSelector';
 import { useToast } from '../contexts/toastContext';
 
 const TONES = [
@@ -195,14 +195,12 @@ export default function DraftView() {
               {/* Thread Context (Optional) */}
               <div className="space-y-2">
                 <Label htmlFor="threadId" className="text-sm font-medium text-white/60">
-                  Thread ID (optional)
+                  Conversation (optional)
                 </Label>
-                <Input
-                  id="threadId"
-                  type="text"
-                  {...register('threadId')}
-                  placeholder="Leave empty to draft without context"
-                  className="font-mono text-sm"
+                <ConversationSelector
+                  value={watch('threadId') || undefined}
+                  onValueChange={(value) => setValue('threadId', value || '', { shouldValidate: true })}
+                  placeholder="Select a conversation for context..."
                   disabled={isPending}
                 />
               </div>

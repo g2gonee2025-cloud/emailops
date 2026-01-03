@@ -6,8 +6,9 @@ In production, this would be replaced by an external IdP (Keycloak, Auth0, etc.)
 """
 
 import logging
+import os
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import jwt
@@ -53,17 +54,29 @@ class LoginResponse(BaseModel):
 # Mock user database (dev only)
 # WARNING: These are development credentials. In production, use a real IDP.
 MOCK_USERS = {
-    "admin": {"password": "admin", "tenant_id": "acme-corp", "roles": ["admin"]},
-    "user": {"password": "user", "tenant_id": "acme-corp", "roles": ["user"]},
-    "demo": {"password": "demo", "tenant_id": "demo-tenant", "roles": ["user"]},
+    "admin": {
+        "password": os.getenv("MOCK_USER_ADMIN_PASSWORD", "admin"),
+        "tenant_id": "acme-corp",
+        "roles": ["admin"],
+    },
+    "user": {
+        "password": os.getenv("MOCK_USER_USER_PASSWORD", "user"),
+        "tenant_id": "acme-corp",
+        "roles": ["user"],
+    },
+    "demo": {
+        "password": os.getenv("MOCK_USER_DEMO_PASSWORD", "demo"),
+        "tenant_id": "demo-tenant",
+        "roles": ["user"],
+    },
     # Email-style users for frontend compatibility
     "testuser@emailops.ai": {
-        "password": "test",
+        "password": os.getenv("MOCK_USER_TESTUSER_PASSWORD", "test"),
         "tenant_id": "acme-corp",
         "roles": ["admin"],
     },
     "admin@emailops.ai": {
-        "password": "admin",
+        "password": os.getenv("MOCK_USER_ADMIN_EMAIL_PASSWORD", "admin"),
         "tenant_id": "acme-corp",
         "roles": ["admin"],
     },
@@ -99,7 +112,7 @@ async def login(request: LoginRequest) -> LoginResponse:
             status_code=500, detail="Server misconfiguration: missing SECRET_KEY"
         )
 
-    now_utc = datetime.utcnow()
+    now_utc = datetime.now(timezone.utc)
     expires_seconds = 86400  # 24 hours
 
     payload: dict[str, Any] = {

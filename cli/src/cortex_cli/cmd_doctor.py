@@ -54,7 +54,7 @@ def _get_api_url(config: Any) -> str:
         api_host = config.api.host
     if hasattr(config, "api") and config.api.port:
         api_port = config.api.port
-    return f"http://{api_host}:{api_port}"
+    return f"https://{api_host}:{api_port}"
 
 
 def _print_report_human(report: dict[str, Any]) -> None:
@@ -111,13 +111,13 @@ def check_postgres(config: Any) -> tuple[bool, str | None]:
         return False, str(e)
 
 
-def check_redis(config: Any) -> tuple[bool, str | None]:
+def check_redis() -> tuple[bool, str | None]:
     """Check Redis connectivity."""
     # Placeholder - implement real check if needed or rely on backend
     return True, None
 
 
-def check_reranker(config: Any) -> tuple[bool, str | None]:
+def check_reranker() -> tuple[bool, str | None]:
     """Check reranker connectivity."""
     # Placeholder - implement real check if needed
     return True, None
@@ -136,9 +136,7 @@ def check_exports(config: Any, root: Path) -> tuple[bool, list[str], str | None]
         return False, [], str(e)
 
 
-def check_and_install_dependencies(
-    provider: str, auto_install: bool, pip_timeout: int
-) -> Any:
+def check_and_install_dependencies() -> Any:
     """Stub for dependency check."""
 
     class DepReport:
@@ -149,7 +147,7 @@ def check_and_install_dependencies(
     return DepReport()
 
 
-def _probe_embeddings(provider: str) -> tuple[bool, int | None]:
+def _probe_embeddings() -> tuple[bool, int | None]:
     """Stub to probe embeddings."""
     # Logic to probe embeddings would go here
     return True, 768
@@ -249,12 +247,7 @@ def _test_preprocessor_import() -> tuple[bool, str | None]:
     try:
         from cortex.ingestion.text_preprocessor import TextPreprocessor
 
-        if TextPreprocessor:
-            return True, None
-        return (
-            False,
-            "TextPreprocessor class not found",
-        )  # Should not happen if import works
+        return True, None
     except ImportError:
         return False, "Failed to import text preprocessor"
     except Exception as e:
@@ -353,6 +346,26 @@ def _run_index_check(args: Any, config: Any, root: Path) -> tuple[dict[str, Any]
     return info, error_flag
 
 
+def _print_ingest_check_report(
+    success: bool, details: dict[str, Any], error: str | None
+) -> None:
+    """Prints the report for the ingest check."""
+    if not success:
+        print(f"  {_c('⚠', 'yellow')} Ingest check: {error}")
+    else:
+        print(f"  {_c('✓', 'green')} Ingest capability OK")
+        if details.get("sample_found"):
+            print(f"    Sample conversation found: {_c('✓', 'green')}")
+        if details.get("loader_ok"):
+            print(f"    Conversation loader:       {_c('✓', 'green')}")
+            if details.get("loaded_subject"):
+                print(
+                    f"      Subject: {_c(details['loaded_subject'][:40] + '...', 'dim')}"
+                )
+        if details.get("preprocessor_ok"):
+            print(f"    Text preprocessor:         {_c('✓', 'green')}")
+
+
 def _run_ingest_check(
     args: Any, config: Any, root: Path
 ) -> tuple[bool | None, dict[str, Any], str | None, bool]:
@@ -366,20 +379,7 @@ def _run_ingest_check(
     warning_flag = not success
 
     if not args.json:
-        if not success:
-            print(f"  {_c('⚠', 'yellow')} Ingest check: {error}")
-        else:
-            print(f"  {_c('✓', 'green')} Ingest capability OK")
-            if details.get("sample_found"):
-                print(f"    Sample conversation found: {_c('✓', 'green')}")
-            if details.get("loader_ok"):
-                print(f"    Conversation loader:       {_c('✓', 'green')}")
-                if details.get("loaded_subject"):
-                    print(
-                        f"      Subject: {_c(details['loaded_subject'][:40] + '...', 'dim')}"
-                    )
-            if details.get("preprocessor_ok"):
-                print(f"    Text preprocessor:         {_c('✓', 'green')}")
+        _print_ingest_check_report(success, details, error)
 
     return success, details, error, warning_flag
 
@@ -401,6 +401,73 @@ def _configure_logging(verbose: bool) -> None:
         fmt = logging.Formatter("[%(levelname)s] %(message)s")
         handler.setFormatter(fmt)
         logger.addHandler(handler)
+
+
+def _run_local_checks(args: argparse.Namespace, config: Any) -> None:
+    """Run local health checks."""
+    if not args.json:
+        print(f"{_c('Cortex Doctor (Local Mode)', 'bold')}")
+    root = Path(args.root).resolve()
+    # DB
+    db_res = _run_db_check(args, config)
+    # Index
+    _idx_info, idx_err = _run_index_check(args, config, root)
+    # Ingest
+    ing_res = _run_ingest_check(args, config, root)
+    # Summarize (simplified)
+    if not args.json:
+        print("\nLocal checks completed.")
+    if db_res[2] or idx_err or ing_res[3]:
+        sys.exit(2)
+    sys.exit(0)
+
+
+def _run_api_checks(args: argparse.Namespace, config: Any) -> None:
+    """Run API-based health checks."""
+    api_url = _get_api_url(config)
+    doctor_endpoint = f"{api_url}/api/v1/admin/doctor"
+    if not args.json:
+        print(f"Contacting Cortex backend at {_c(api_url, 'cyan')}...")
+    try:
+        import os
+
+        token = os.getenv("CORTEX_API_TOKEN")
+        headers = {}
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+        with httpx.Client(timeout=30.0) as client:
+            response = client.post(doctor_endpoint, headers=headers)
+            response.raise_for_status()
+            report = response.json()
+        if args.json:
+            print(json.dumps(report, indent=2))
+        else:
+            _print_report_human(report)
+        exit_code = _get_exit_code(report.get("overall_status", "unknown"))
+        sys.exit(exit_code)
+    except httpx.RequestError as e:
+        logger.error(f"API request failed: {e}")
+        if not args.json:
+            print(
+                f"\n{_c('Error:', 'red')} Could not connect to the Cortex backend at {_c(doctor_endpoint, 'bold')}."
+            )
+            print("Please ensure the backend service is running.")
+        sys.exit(2)
+    except httpx.HTTPStatusError as e:
+        logger.error(
+            f"API returned an error: {e.response.status_code} {e.response.text}"
+        )
+        if not args.json:
+            print(
+                f"\n{_c('Error:', 'red')} The API returned a status code of {e.response.status_code}."
+            )
+            print("Response:", e.response.text)
+        sys.exit(2)
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {e}", exc_info=True)
+        if not args.json:
+            print(f"\n{_c('An unexpected error occurred.', 'red')}")
+        sys.exit(2)
 
 
 def main() -> None:
@@ -428,92 +495,17 @@ def main() -> None:
     parser.add_argument("--check-ingest", action="store_true", help="Check ingest")
     parser.add_argument("--check-reranker", action="store_true", help="Check reranker")
     parser.add_argument("--pip-timeout", type=int, default=300, help="Pip timeout")
-
     args = parser.parse_args()
     _configure_logging(args.verbose)
-
     config = get_config()
-
     # If specific checks are requested, run in local mode
     any_local_check = (
         args.check_index or args.check_db or args.check_redis or args.check_ingest
     )
-
     if any_local_check:
-        if not args.json:
-            print(f"{_c('Cortex Doctor (Local Mode)', 'bold')}")
-
-        root = Path(args.root).resolve()
-
-        # Run requested checks
-        # DB
-        db_res = _run_db_check(args, config)
-
-        # Index
-        _idx_info, idx_err = _run_index_check(args, config, root)
-
-        # Ingest
-        ing_res = _run_ingest_check(args, config, root)
-
-        # Summarize (simplified)
-        if not args.json:
-            print("\nLocal checks completed.")
-
-        if db_res[2] or idx_err or ing_res[3]:
-            sys.exit(2)
-        sys.exit(0)
-
-    # Default: API Mode
-    api_url = _get_api_url(config)
-    doctor_endpoint = f"{api_url}/api/v1/admin/doctor"
-
-    if not args.json:
-        print(f"Contacting Cortex backend at {_c(api_url, 'cyan')}...")
-
-    try:
-        import os
-
-        token = os.getenv("CORTEX_API_TOKEN")
-        headers = {}
-        if token:
-            headers["Authorization"] = f"Bearer {token}"
-
-        with httpx.Client(timeout=30.0) as client:
-            response = client.post(doctor_endpoint, headers=headers)
-            response.raise_for_status()
-            report = response.json()
-
-        if args.json:
-            print(json.dumps(report, indent=2))
-        else:
-            _print_report_human(report)
-
-        exit_code = _get_exit_code(report.get("overall_status", "unknown"))
-        sys.exit(exit_code)
-
-    except httpx.RequestError as e:
-        logger.error(f"API request failed: {e}")
-        if not args.json:
-            print(
-                f"\n{_c('Error:', 'red')} Could not connect to the Cortex backend at {_c(doctor_endpoint, 'bold')}."
-            )
-            print("Please ensure the backend service is running.")
-        sys.exit(2)
-    except httpx.HTTPStatusError as e:
-        logger.error(
-            f"API returned an error: {e.response.status_code} {e.response.text}"
-        )
-        if not args.json:
-            print(
-                f"\n{_c('Error:', 'red')} The API returned a status code of {e.response.status_code}."
-            )
-            print("Response:", e.response.text)
-        sys.exit(2)
-    except Exception as e:
-        logger.error(f"An unexpected error occurred: {e}", exc_info=True)
-        if not args.json:
-            print(f"\n{_c('An unexpected error occurred.', 'red')}")
-        sys.exit(2)
+        _run_local_checks(args, config)
+    else:
+        _run_api_checks(args, config)
 
 
 if __name__ == "__main__":

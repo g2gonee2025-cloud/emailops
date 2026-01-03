@@ -93,6 +93,22 @@ class DraftGenerationOutput(BaseModel):
     )
 
 
+def _prepare_completion_payload(
+    messages: list[dict[str, str]], instructions: str
+) -> list[dict[str, str]]:
+    """Inject instructions into the system message of a completion payload."""
+    payload = [dict(m) for m in messages if isinstance(m, dict)]
+    inserted = False
+    for message in payload:
+        if message.get("role") == "system" and isinstance(message.get("content"), str):
+            message["content"] = f"{message['content']}\n\n{instructions}"
+            inserted = True
+            break
+    if not inserted:
+        payload.insert(0, {"role": "system", "content": instructions})
+    return payload
+
+
 def _complete_with_guardrails(
     messages: list[dict[str, str]],
     model_cls: type[BaseModel],
@@ -118,15 +134,7 @@ def _complete_with_guardrails(
         f"{schema_json}\n\n"
         "Do not include markdown. Return ONLY the JSON object."
     )
-    payload = [dict(m) for m in messages if isinstance(m, dict)]
-    inserted = False
-    for message in payload:
-        if message.get("role") == "system" and isinstance(message.get("content"), str):
-            message["content"] = f"{message['content']}\n\n{instructions}"
-            inserted = True
-            break
-    if not inserted:
-        payload.insert(0, {"role": "system", "content": instructions})
+    payload = _prepare_completion_payload(messages, instructions)
 
     kwargs: dict[str, Any] = {
         "temperature": 0.0,
@@ -197,7 +205,7 @@ def extract_document_mentions(text: str) -> list[str]:
     _extract_patterns(
         text,
         re.compile(
-            r"\b([\w\-_.]+\.(?:pdf|docx?|xlsx?|pptx?|txt|csv|eml|msg|png|jpg|jpeg|gif))\b",
+            r"\b([\w\-.]+\.(?:pdf|docx?|xlsx?|pptx?|txt|csv|eml|msg|png|jpg|jpeg|gif))\b",
             re.IGNORECASE,
         ),
         seen,
@@ -231,7 +239,7 @@ def extract_document_mentions(text: str) -> list[str]:
     _extract_patterns(
         text,
         re.compile(
-            r"(?:attached|attachment|enclosed|enclosure)[:\s]+([A-Za-z0-9\s_\-]+?)(?:\.|,|\s|$)",
+            r"(?:attached|attachment|enclosed|enclosure)[:\s]+([A-Za-z0-9\s_-]+)(?:\.|,|\s|$)",
             re.IGNORECASE,
         ),
         seen,
@@ -252,7 +260,7 @@ def _extract_entity_mentions(text: str) -> list[str]:
     quoted = re.findall(r'["\']([^"\']{2,100})["\']', text)
     candidates.update(s.strip() for s in quoted if s.strip())
 
-    capitalized_phrases = re.findall(r"\b(?:[A-Z][\w&]*(?:\s+[A-Z][\w&]*)+)\b", text)
+    capitalized_phrases = re.findall(r"\b[A-Z][\w&]*(?:\s+[A-Z][\w&]*)+\b", text)
     candidates.update(s.strip() for s in capitalized_phrases if s.strip())
 
     single_caps = re.findall(r"\b[A-Z][a-z]{2,}\b", text)
@@ -297,7 +305,7 @@ def _extract_entity_mentions(text: str) -> list[str]:
     ]
 
 
-async def _safe_stat_mb(path: Path) -> float:
+def _safe_stat_mb(path: Path) -> float:
     """Safely get file size in MB."""
     try:
         stat_result = path.stat()
@@ -327,7 +335,48 @@ def _is_allowed_path(path: Path, base_dir: Path, patterns: list[str]) -> bool:
     return False
 
 
-async def _select_attachments_from_mentions(
+def _process_attachment_candidate(
+    candidate: dict[str, Any],
+    wanted: set[str],
+    base_dir: Path,
+    allowed_patterns: list[str],
+    attach_max_mb: float,
+) -> dict[str, Any] | None:
+    """Validate and process a single attachment candidate."""
+    try:
+        path_str = str(candidate.get("path") or "")
+        if not path_str or not Path(path_str).suffix:
+            return None
+
+        name = str(candidate.get("attachment_name") or Path(path_str).name).lower()
+
+        if name and any(w in name for w in wanted):
+            p = Path(path_str)
+            result = validate_file_result(
+                str(p), base_directory=base_dir, must_exist=True
+            )
+            if not result.is_ok():
+                return None
+
+            validated_path = result.value
+            if _safe_stat_mb(validated_path) > attach_max_mb:
+                return None
+
+            if not _is_allowed_path(validated_path, base_dir, allowed_patterns):
+                return None
+
+            return {"path": str(validated_path), "filename": validated_path.name}
+    except (OSError, ValueError, TypeError) as exc:
+        logger.debug(
+            "Skipping attachment candidate %s: %s",
+            candidate.get("path"),
+            exc,
+            exc_info=True,
+        )
+    return None
+
+
+def _select_attachments_from_mentions(
     context_snippets: list[dict[str, Any]],
     mentions: list[str],
     *,
@@ -351,45 +400,127 @@ async def _select_attachments_from_mentions(
     out: list[dict[str, Any]] = []
 
     for c in context_snippets or []:
-        try:
-            path_str = str(c.get("path") or "")
-            if not path_str or not Path(path_str).suffix:
-                continue
-
-            name = str(c.get("attachment_name") or Path(path_str).name).lower()
-
-            if name and any(w in name for w in wanted):
-                p = Path(path_str)
-                result = validate_file_result(
-                    str(p), base_directory=base_dir, must_exist=True
-                )
-                if not result.is_ok():
-                    continue
-
-                validated_path = result.value
-                if await _safe_stat_mb(validated_path) > attach_max_mb:
-                    continue
-
-                if not _is_allowed_path(validated_path, base_dir, allowed_patterns):
-                    continue
-
-                out.append(
-                    {"path": str(validated_path), "filename": validated_path.name}
-                )
-                if len(out) >= int(limit):
-                    break
-        except (OSError, ValueError, TypeError) as exc:
-            logger.debug(
-                "Skipping attachment candidate %s: %s",
-                c.get("path"),
-                exc,
-                exc_info=True,
-            )
-            continue
+        attachment = _process_attachment_candidate(
+            c, wanted, base_dir, allowed_patterns, attach_max_mb
+        )
+        if attachment:
+            out.append(attachment)
+            if len(out) >= limit:
+                break
     return out
 
 
-async def _select_all_available_attachments(
+def _parse_thread_participants(
+    participants_json: Any,
+) -> dict[str, ThreadParticipant]:
+    """Parse participant data from conversation JSONB."""
+    participants_dict: dict[str, ThreadParticipant] = {}
+    if not isinstance(participants_json, list):
+        if participants_json:
+            logger.warning(
+                "Unexpected participants payload type: %s", type(participants_json)
+            )
+        return participants_dict
+
+    for p in participants_json:
+        if not isinstance(p, dict):
+            logger.debug("Skipping non-dict participant entry: %s", type(p))
+            continue
+        email = p.get("smtp", p.get("email", ""))
+        if email and email not in participants_dict:
+            participants_dict[email] = ThreadParticipant(
+                email=email,
+                name=p.get("name"),
+                role=p.get("role", "participant"),
+            )
+    return participants_dict
+
+
+def _parse_thread_messages(
+    messages_json: Any, conversation: Any
+) -> list[ThreadMessage]:
+    """Parse message data from conversation JSONB."""
+    if not isinstance(messages_json, list):
+        if messages_json:
+            logger.warning("Unexpected messages payload type: %s", type(messages_json))
+        return []
+
+    thread_messages: list[ThreadMessage] = []
+    for msg in messages_json:
+        if not isinstance(msg, dict):
+            logger.debug("Skipping non-dict message entry: %s", type(msg))
+            continue
+
+        sent_at = msg.get("sent_at", msg.get("date"))
+        if isinstance(sent_at, str):
+            try:
+                from datetime import datetime
+
+                sent_at = datetime.fromisoformat(sent_at.replace("Z", "+00:00"))
+            except ValueError:
+                sent_at = None
+
+        to_addrs = msg.get("to", [])
+        cc_addrs = msg.get("cc", [])
+        thread_messages.append(
+            ThreadMessage(
+                message_id=msg.get("message_id", str(uuid.uuid4())),
+                sent_at=sent_at,
+                recv_at=sent_at,
+                from_addr=msg.get("from", msg.get("sender", "")),
+                to_addrs=to_addrs if isinstance(to_addrs, list) else [to_addrs],
+                cc_addrs=cc_addrs if isinstance(cc_addrs, list) else [cc_addrs],
+                subject=msg.get("subject", conversation.subject or ""),
+                body_markdown=msg.get("body", msg.get("text", "")),
+                is_inbound=False,
+            )
+        )
+    return thread_messages
+
+
+def _process_available_attachment(
+    candidate: dict[str, Any],
+    base_dir: Path,
+    allowed_patterns: list[str],
+    attach_max_mb: float,
+    seen_paths: set[str],
+) -> dict[str, Any] | None:
+    """Validate and process a single available attachment."""
+    try:
+        path_str = str(candidate.get("path") or "")
+        if not path_str:
+            return None
+
+        p = Path(path_str)
+        if not p.suffix:
+            return None
+
+        if str(p) in seen_paths:
+            return None
+
+        result = validate_file_result(str(p), base_directory=base_dir, must_exist=True)
+        if not result.is_ok():
+            return None
+
+        validated_path = result.value
+        if not _is_allowed_path(validated_path, base_dir, allowed_patterns):
+            return None
+
+        if _safe_stat_mb(validated_path) > attach_max_mb:
+            return None
+
+        return {"path": str(validated_path), "filename": validated_path.name}
+    except (OSError, ValueError, TypeError) as exc:
+        logger.debug(
+            "Skipping attachment candidate %s: %s",
+            candidate.get("path"),
+            exc,
+            exc_info=True,
+        )
+    return None
+
+
+def _select_all_available_attachments(
     context_snippets: list[dict[str, Any]], *, max_attachments: int = 3
 ) -> list[dict[str, Any]]:
     """Select any valid attachments found in context (heuristic fallback)."""
@@ -406,46 +537,14 @@ async def _select_all_available_attachments(
     seen_paths = set()
 
     for c in context_snippets or []:
-        try:
-            path_str = str(c.get("path") or "")
-            if not path_str:
-                continue
-
-            p = Path(path_str)
-            if not p.suffix:
-                continue
-
-            if str(p) in seen_paths:
-                continue
-
-            result = validate_file_result(
-                str(p), base_directory=base_dir, must_exist=True
-            )
-            if not result.is_ok():
-                continue
-
-            validated_path = result.value
-            if not _is_allowed_path(validated_path, base_dir, allowed_patterns):
-                continue
-
-            if await _safe_stat_mb(validated_path) > attach_max_mb:
-                continue
-
-            selected.append(
-                {"path": str(validated_path), "filename": validated_path.name}
-            )
-            seen_paths.add(str(validated_path))
-
-            if len(selected) >= int(max_attachments):
+        attachment = _process_available_attachment(
+            c, base_dir, allowed_patterns, attach_max_mb, seen_paths
+        )
+        if attachment:
+            selected.append(attachment)
+            seen_paths.add(attachment["path"])
+            if len(selected) >= max_attachments:
                 break
-        except (OSError, ValueError, TypeError) as exc:
-            logger.debug(
-                "Skipping attachment candidate %s: %s",
-                c.get("path"),
-                exc,
-                exc_info=True,
-            )
-            continue
     return selected
 
 
@@ -502,72 +601,10 @@ def tool_email_get_thread(
                 logger.warning("Conversation not found: %s", thread_uuid)
                 return None
 
-            # Build participants from conversation.participants JSONB
-            participants_dict: dict[str, ThreadParticipant] = {}
-            participants = conversation.participants
-            if isinstance(participants, list):
-                for p in participants:
-                    if not isinstance(p, dict):
-                        logger.debug("Skipping non-dict participant entry: %s", type(p))
-                        continue
-                    email = p.get("smtp", p.get("email", ""))
-                    if email and email not in participants_dict:
-                        participants_dict[email] = ThreadParticipant(
-                            email=email,
-                            name=p.get("name"),
-                            role=p.get("role", "participant"),
-                        )
-            elif participants:
-                logger.warning(
-                    "Unexpected participants payload type: %s", type(participants)
-                )
-
-            # Build thread messages from conversation.messages JSONB
-            thread_messages: list[ThreadMessage] = []
-            messages = conversation.messages
-            if isinstance(messages, list):
-                for msg in messages:
-                    if not isinstance(msg, dict):
-                        logger.debug("Skipping non-dict message entry: %s", type(msg))
-                        continue
-                    msg_id = msg.get("message_id", str(uuid.uuid4()))
-                    from_addr = msg.get("from", msg.get("sender", ""))
-                    to_addrs = msg.get("to", [])
-                    cc_addrs = msg.get("cc", [])
-                    subject = msg.get("subject", conversation.subject or "")
-                    body = msg.get("body", msg.get("text", ""))
-                    sent_at = msg.get("sent_at", msg.get("date"))
-
-                    # Parse sent_at if string
-                    if isinstance(sent_at, str):
-                        try:
-                            from datetime import datetime
-
-                            sent_at = datetime.fromisoformat(
-                                sent_at.replace("Z", "+00:00")
-                            )
-                        except ValueError:
-                            sent_at = None
-
-                    thread_messages.append(
-                        ThreadMessage(
-                            message_id=msg_id,
-                            sent_at=sent_at,
-                            recv_at=sent_at,  # Use same as sent_at
-                            from_addr=from_addr,
-                            to_addrs=(
-                                to_addrs if isinstance(to_addrs, list) else [to_addrs]
-                            ),
-                            cc_addrs=(
-                                cc_addrs if isinstance(cc_addrs, list) else [cc_addrs]
-                            ),
-                            subject=subject,
-                            body_markdown=body,
-                            is_inbound=False,  # Would need more logic to determine
-                        )
-                    )
-            elif messages:
-                logger.warning("Unexpected messages payload type: %s", type(messages))
+            participants_dict = _parse_thread_participants(conversation.participants)
+            thread_messages = _parse_thread_messages(
+                conversation.messages, conversation
+            )
 
             # If no structured messages, create one from summary or chunks
             if not thread_messages:
@@ -617,6 +654,178 @@ def tool_email_get_thread(
             tenant_id,
         )
         return None
+
+
+def load_conversation_files_context(
+    conversation_id: uuid.UUID | str,
+    tenant_id: str,
+    max_total_chars: int = 100000,
+) -> str | None:
+    """
+    Load all conversation files (except manifest.json and attachments_log.csv) into context.
+
+    This function loads the full conversation content from the storage_uri path,
+    including Conversation.txt and all attachment text, to provide complete context
+    for drafting or answering questions about a specific conversation.
+
+    Args:
+        conversation_id: UUID of the conversation to load
+        tenant_id: Tenant ID for RLS
+        max_total_chars: Maximum total characters to include (default 100k)
+
+    Returns:
+        Formatted context string with all conversation files, or None if not found
+    """
+    from cortex.db.models import Conversation
+    from cortex.db.session import SessionLocal, set_session_tenant
+    from cortex.ingestion.conv_loader import load_conversation
+    from cortex.security.validators import sanitize_retrieved_content
+
+    try:
+        conv_uuid = uuid.UUID(str(conversation_id))
+    except ValueError:
+        logger.warning("Invalid conversation_id format: %s", conversation_id)
+        return None
+
+    try:
+        with SessionLocal() as session:
+            set_session_tenant(session, tenant_id)
+
+            conversation = (
+                session.query(Conversation)
+                .filter(
+                    Conversation.conversation_id == conv_uuid,
+                    Conversation.tenant_id == tenant_id,
+                )
+                .first()
+            )
+
+            if not conversation:
+                logger.warning("Conversation not found: %s", conv_uuid)
+                return None
+
+            storage_uri = conversation.storage_uri
+            if not storage_uri:
+                logger.warning(
+                    "No storage_uri for conversation %s, falling back to DB content",
+                    conv_uuid,
+                )
+                return _build_context_from_db(conversation)
+
+            convo_dir = Path(storage_uri)
+            if not convo_dir.exists() or not convo_dir.is_dir():
+                logger.warning(
+                    "Storage path does not exist: %s, falling back to DB content",
+                    storage_uri,
+                )
+                return _build_context_from_db(conversation)
+
+            conv_data = load_conversation(
+                convo_dir,
+                include_attachment_text=True,
+                max_total_attachment_text=max_total_chars // 2,
+            )
+
+            if not conv_data:
+                logger.warning(
+                    "Failed to load conversation from %s, falling back to DB content",
+                    storage_uri,
+                )
+                return _build_context_from_db(conversation)
+
+            context_parts = []
+            total_chars = 0
+
+            conversation_txt = conv_data.get("conversation_txt", "")
+            if conversation_txt:
+                safe_text = sanitize_retrieved_content(conversation_txt)
+                context_parts.append("--- CONVERSATION ---\n" + safe_text)
+                total_chars += len(safe_text)
+
+            attachments = conv_data.get("attachments", [])
+            for att in attachments:
+                if total_chars >= max_total_chars:
+                    context_parts.append("\n[TRUNCATED: Maximum context size reached]")
+                    break
+
+                att_path = att.get("path", "")
+                att_text = att.get("text", "")
+
+                if not att_text:
+                    continue
+
+                filename = Path(att_path).name if att_path else "unknown"
+                if filename.lower() in ("manifest.json", "attachments_log.csv"):
+                    continue
+
+                safe_att_text = sanitize_retrieved_content(att_text)
+                remaining = max_total_chars - total_chars
+                if len(safe_att_text) > remaining:
+                    safe_att_text = safe_att_text[:remaining] + "\n[TRUNCATED]"
+
+                context_parts.append(
+                    f"\n--- ATTACHMENT: {filename} ---\n{safe_att_text}"
+                )
+                total_chars += len(safe_att_text)
+
+            if not context_parts:
+                return _build_context_from_db(conversation)
+
+            return "\n".join(context_parts)
+
+    except Exception:
+        logger.exception(
+            "Error loading conversation files for %s",
+            conversation_id,
+        )
+        return None
+
+
+def _build_context_from_db(conversation: Any) -> str | None:
+    """Build context string from database conversation record as fallback."""
+    from cortex.security.validators import sanitize_retrieved_content
+
+    context_parts = []
+
+    if conversation.subject:
+        context_parts.append(f"Subject: {conversation.subject}")
+
+    if (
+        conversation.smart_subject
+        and conversation.smart_subject != conversation.subject
+    ):
+        context_parts.append(f"Smart Subject: {conversation.smart_subject}")
+
+    messages = conversation.messages
+    if isinstance(messages, list):
+        context_parts.append("\n--- MESSAGES ---")
+        for msg in messages:
+            if not isinstance(msg, dict):
+                continue
+            from_addr = msg.get("from", msg.get("sender", ""))
+            subject = msg.get("subject", "")
+            body = msg.get("body", msg.get("text", ""))
+            date = msg.get("sent_at", msg.get("date", ""))
+
+            if from_addr:
+                context_parts.append(f"From: {from_addr}")
+            if date:
+                context_parts.append(f"Date: {date}")
+            if subject:
+                context_parts.append(f"Subject: {subject}")
+            if body:
+                safe_body = sanitize_retrieved_content(body)
+                context_parts.append(f"\n{safe_body}\n")
+            context_parts.append("---")
+
+    if conversation.summary_text:
+        safe_summary = sanitize_retrieved_content(conversation.summary_text)
+        context_parts.append(f"\n--- SUMMARY ---\n{safe_summary}")
+
+    if not context_parts:
+        return None
+
+    return "\n".join(context_parts)
 
 
 def _extract_evidence_from_answer(
@@ -758,26 +967,30 @@ def node_query_graph(state: dict[str, Any]) -> dict[str, Any]:
 
     if not query or not tenant_id:
         return {"graph_context": Redacted("")}
+
     mentions = _extract_entity_mentions(query)
     if not mentions:
         return {"graph_context": Redacted("")}
 
     try:
         nodes, edges = _fetch_graph_entities(tenant_id, mentions)
-        if not nodes:
-            return {"graph_context": Redacted("")}
-
-        context_lines = _build_graph_context_lines(nodes, edges)
-        if not context_lines:
-            return {"graph_context": Redacted("")}
-
-        graph_context = "Knowledge Graph Facts:\n" + "\n".join(
-            f"- {line}" for line in context_lines
-        )
-        return {"graph_context": Redacted(graph_context)}
+        return {"graph_context": _build_graph_context(nodes, edges)}
     except Exception as e:
         logger.error(f"Graph query failed: {e}")
         return {"graph_context": Redacted("")}
+
+
+def _build_graph_context(nodes: list[Any], edges: list[Any]) -> Redacted:
+    """Build the graph context from nodes and edges."""
+    if not nodes:
+        return Redacted("")
+    context_lines = _build_graph_context_lines(nodes, edges)
+    if not context_lines:
+        return Redacted("")
+    graph_context = "Knowledge Graph Facts:\n" + "\n".join(
+        f"- {line}" for line in context_lines
+    )
+    return Redacted(graph_context)
 
 
 def _fetch_graph_entities(
@@ -935,6 +1148,7 @@ def node_generate_answer(state: dict[str, Any]) -> dict[str, Any]:
 
     Blueprint §3.6:
     * Generate response with citations
+    * When thread_id is provided, load full conversation context
     """
     query_obj = state.get("query", "")
     try:
@@ -954,8 +1168,22 @@ def node_generate_answer(state: dict[str, Any]) -> dict[str, Any]:
     except AttributeError:
         pass
 
+    thread_id = state.get("thread_id")
+    tenant_id = state.get("tenant_id")
+    conversation_context = ""
+    if thread_id and tenant_id:
+        conversation_context = (
+            load_conversation_files_context(thread_id, tenant_id) or ""
+        )
+        if conversation_context:
+            logger.info(
+                "Loaded full conversation context for thread %s (%d chars)",
+                thread_id,
+                len(conversation_context),
+            )
+
     combined_context = "\n\n".join(
-        part for part in [context, graph_context] if part
+        part for part in [conversation_context, context, graph_context] if part
     ).strip()
 
     if not combined_context:
@@ -971,11 +1199,6 @@ def node_generate_answer(state: dict[str, Any]) -> dict[str, Any]:
         }
 
     try:
-        # We want the LLM to generate the answer text.
-        # Constructing the full Answer object via JSON might be too complex for the LLM
-        # to get the EvidenceItem UUIDs right without very specific prompting.
-        # For now, let's get the text answer and construct a basic Answer object.
-
         messages = construct_prompt_messages(
             system_prompt_template=SYSTEM_ANSWER_QUESTION,
             user_prompt_template=USER_ANSWER_QUESTION,
@@ -1061,11 +1284,30 @@ def node_draft_email_initial(state: dict[str, Any]) -> dict[str, Any]:
 
     Blueprint §10.3:
     * Draft based on context and query
+    * When thread_id is provided, load full conversation context including attachments
     """
     from cortex.config.loader import get_config
 
     query = state.get("explicit_query", "")
     context = state.get("assembled_context", "")
+
+    thread_id = state.get("thread_id")
+    tenant_id = state.get("tenant_id")
+    conversation_files_context = ""
+    if thread_id and tenant_id:
+        conversation_files_context = (
+            load_conversation_files_context(thread_id, tenant_id) or ""
+        )
+        if conversation_files_context:
+            logger.info(
+                "Loaded full conversation files context for draft thread %s (%d chars)",
+                thread_id,
+                len(conversation_files_context),
+            )
+            if context:
+                context = conversation_files_context + "\n\n" + context
+            else:
+                context = conversation_files_context
 
     # Get sender info from config
     config = get_config()
@@ -1180,26 +1422,7 @@ def node_improve_draft(state: dict[str, Any]) -> dict[str, Any]:
             state.get("correlation_id"),
         )
 
-        # Construct full EmailDraft with defaults, preserving original metadata where possible
-        new_draft = EmailDraft(
-            to=draft_structured.to or draft.to,
-            cc=draft_structured.cc or draft.cc,
-            subject=draft_structured.subject or draft.subject,
-            body_markdown=draft_structured.body_markdown,
-            tone_style=draft.tone_style,
-            val_scores=DraftValidationScores(
-                factuality=0.0,
-                citation_coverage=0.0,
-                tone_fit=0.0,
-                safety=0.0,
-                overall=0.0,
-                thresholds={},
-            ),
-            next_actions=[
-                NextAction(description=na.get("description", str(na)))
-                for na in draft_structured.next_actions
-            ],
-        )
+        new_draft = _create_new_draft_from_structured(draft_structured, draft)
 
         return {"draft": new_draft, "iteration_count": iteration + 1}
     except Exception as e:
@@ -1207,7 +1430,32 @@ def node_improve_draft(state: dict[str, Any]) -> dict[str, Any]:
         return {"error": f"Improvement failed: {e!s}"}
 
 
-async def node_select_attachments(state: dict[str, Any]) -> dict[str, Any]:
+def _create_new_draft_from_structured(
+    draft_structured: DraftGenerationOutput, draft: EmailDraft
+) -> EmailDraft:
+    """Create a new EmailDraft from a structured output and an old draft."""
+    return EmailDraft(
+        to=draft_structured.to or draft.to,
+        cc=draft_structured.cc or draft.cc,
+        subject=draft_structured.subject or draft.subject,
+        body_markdown=draft_structured.body_markdown,
+        tone_style=draft.tone_style,
+        val_scores=DraftValidationScores(
+            factuality=0.0,
+            citation_coverage=0.0,
+            tone_fit=0.0,
+            safety=0.0,
+            overall=0.0,
+            thresholds={},
+        ),
+        next_actions=[
+            NextAction(description=na.get("description", str(na)))
+            for na in draft_structured.next_actions
+        ],
+    )
+
+
+def node_select_attachments(state: dict[str, Any]) -> dict[str, Any]:
     """
     Select attachments to include in the email.
 
@@ -1240,9 +1488,7 @@ async def node_select_attachments(state: dict[str, Any]) -> dict[str, Any]:
     # Strategy 1: Explicit mentions in the generated draft body
     body_mentions = extract_document_mentions(draft.body_markdown)
     if body_mentions:
-        selected.extend(
-            await _select_attachments_from_mentions(snippets, body_mentions)
-        )
+        selected.extend(_select_attachments_from_mentions(snippets, body_mentions))
 
     # Strategy 2: If user explicitly asked in query "attach the report", etc.
     # (We rely on retrieval having found it and put it in snippets)
@@ -1251,7 +1497,7 @@ async def node_select_attachments(state: dict[str, Any]) -> dict[str, Any]:
     if query_mentions:
         # Avoid duplicates
         current_names = {s["filename"] for s in selected}
-        from_query = await _select_attachments_from_mentions(snippets, query_mentions)
+        from_query = _select_attachments_from_mentions(snippets, query_mentions)
         for f in from_query:
             if f["filename"] not in current_names:
                 selected.append(f)
@@ -1259,9 +1505,7 @@ async def node_select_attachments(state: dict[str, Any]) -> dict[str, Any]:
     # Strategy 3: Heuristic - if query has "attach" but no specific file named,
     # grab most relevant attachment from context
     if "attach" in query.lower() and not selected:
-        selected.extend(
-            await _select_all_available_attachments(snippets, max_attachments=1)
-        )
+        selected.extend(_select_all_available_attachments(snippets, max_attachments=1))
 
     # Update draft in state
     draft.attachments = [
@@ -1368,7 +1612,9 @@ def node_load_thread(state: dict[str, Any]) -> dict[str, Any]:
 
     if not thread_id:
         # No thread_id provided - this is valid for drafting new emails without context
-        logger.info("No thread_id provided, skipping thread load (drafting without context)")
+        logger.info(
+            "No thread_id provided, skipping thread load (drafting without context)"
+        )
         return {"thread_context": None, "_thread_context_obj": None}
 
     # Use the standardized tool
@@ -1391,6 +1637,23 @@ def node_load_thread(state: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _generate_facts_ledger(
+    thread_context: str, correlation_id: str | None
+) -> FactsLedger:
+    """Generate a facts ledger from the thread context."""
+    messages = construct_prompt_messages(
+        system_prompt_template=SYSTEM_SUMMARIZE_ANALYST,
+        user_prompt_template=USER_SUMMARIZE_ANALYST,
+        thread_context=sanitize_user_input(thread_context),
+    )
+    facts = _complete_with_guardrails(
+        messages,
+        FactsLedger,
+        correlation_id,
+    )
+    return facts
+
+
 def node_summarize_analyst(state: dict[str, Any]) -> dict[str, Any]:
     """
     Analyst: Extract facts ledger.
@@ -1403,16 +1666,7 @@ def node_summarize_analyst(state: dict[str, Any]) -> dict[str, Any]:
         return {}
 
     try:
-        messages = construct_prompt_messages(
-            system_prompt_template=SYSTEM_SUMMARIZE_ANALYST,
-            user_prompt_template=USER_SUMMARIZE_ANALYST,
-            thread_context=sanitize_user_input(thread_context),
-        )
-        facts = _complete_with_guardrails(
-            messages,
-            FactsLedger,
-            state.get("correlation_id"),
-        )
+        facts = _generate_facts_ledger(thread_context, state.get("correlation_id"))
         return {"facts_ledger": facts}
     except Exception as e:
         logger.error(f"Analyst failed: {e}")
