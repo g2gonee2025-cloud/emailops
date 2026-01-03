@@ -7,20 +7,15 @@ try:
     root_real = root_dir.resolve(strict=True)
     backend_src_real = backend_src.resolve(strict=True)
     backend_src_real.relative_to(root_real)
-except Exception:
+except (FileNotFoundError, ValueError):
     backend_src_real = None
 if backend_src_real and backend_src_real.is_dir():
     sys.path.append(str(backend_src_real))
 import unittest
-from pathlib import Path
-
-# Ensure backend/src is in path
-sys.path.append(str(Path("backend/src").resolve()))
 
 
 class TestProductionReadiness(unittest.TestCase):
     def test_s08_queue_module(self: "TestProductionReadiness") -> None:
-        print("\nTesting S08 (Queue) Availability...")
         import cortex.queue
 
         self.assertTrue(
@@ -36,32 +31,32 @@ class TestProductionReadiness(unittest.TestCase):
         # Test basic in-memory queue logic
         q = cortex.queue.InMemoryQueue()
         job_id = q.enqueue("test_job", {"foo": "bar"}, priority=10)
-        assert job_id is not None
+        self.assertIsNotNone(job_id)
         job = q.dequeue(["test_job"])
-        assert job is not None
-        assert job["id"] == job_id
+        self.assertIsNotNone(job)
+        self.assertEqual(job["id"], job_id)
         q.ack(job_id)
-        print("PASS: Queue module validates")
 
     def test_s09_observability_module(self):
-        print("\nTesting S09 (Observability) Availability...")
         import cortex.observability
 
-        assert hasattr(
-            cortex.observability, "init_observability"
-        ), "init_observability missing"
-        assert hasattr(
-            cortex.observability, "trace_operation"
-        ), "trace_operation decorator missing"
-        print("PASS: Observability module validates")
+        self.assertTrue(
+            hasattr(cortex.observability, "init_observability"),
+            "init_observability missing",
+        )
+        self.assertTrue(
+            hasattr(cortex.observability, "trace_operation"),
+            "trace_operation decorator missing",
+        )
 
     def test_s10_ci_configuration(self):
-        print("\nTesting S10 (CI/CD) Configuration...")
         self.assertTrue(
-            Path(".pre-commit-config.yaml").exists(), "Pre-commit config missing"
+            (root_dir / ".pre-commit-config.yaml").exists(),
+            "Pre-commit config missing",
         )
-        self.assertTrue(Path("backend/Dockerfile").exists(), "Dockerfile missing")
-        print("PASS: Dockerfile and pre-commit config exist")
+        self.assertTrue(
+            (root_dir / "backend/Dockerfile").exists(), "Dockerfile missing"
+        )
 
 
 if __name__ == "__main__":
