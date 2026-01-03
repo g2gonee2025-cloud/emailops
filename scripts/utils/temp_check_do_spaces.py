@@ -28,7 +28,9 @@ def main() -> None:
 
     search_prefix = "Outlook/"
     limit = 10
-    logging.info(f"\nListing up to {limit} conversation folders under '{search_prefix}'...")
+    logging.info(
+        f"\nListing up to {limit} conversation folders under '{search_prefix}'..."
+    )
     folders = list(handler.list_conversation_folders(prefix=search_prefix, limit=limit))
 
     if not folders:
@@ -51,7 +53,9 @@ def main() -> None:
 
     data = handler.stream_conversation_data(sample)
     if not isinstance(data, dict):
-        logging.error(f"Failed to stream data for folder '{sample.name}', received invalid data.")
+        logging.error(
+            f"Failed to stream data for folder '{sample.name}', received invalid data."
+        )
         return
 
     conversation_txt = data.get("conversation_txt", "")

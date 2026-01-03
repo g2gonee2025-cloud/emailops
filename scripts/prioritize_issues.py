@@ -37,7 +37,7 @@ FIXED_FILES = {
 }
 
 
-def _load_report_data(report_path: Path) -> Optional[dict[str, Any]]:
+def _load_report_data(report_path: Path) -> dict[str, Any] | None:
     """Loads and validates the report data from a JSON file."""
     if not report_path.exists():
         logger.error("Report not found at %s", report_path)
@@ -88,7 +88,7 @@ def _process_issues(
 
 
 def _log_prioritized_files(
-    file_scores: list[tuple[int, str, list[dict[str, Any]]]]
+    file_scores: list[tuple[int, str, list[dict[str, Any]]]],
 ) -> None:
     """Logs the top N prioritized files and their high-priority issues."""
     logger.info("Found issues in %d files (excluding fixed).", len(file_scores))
@@ -105,9 +105,7 @@ def _log_prioritized_files(
             desc = i.get("description")
             if not isinstance(desc, str):
                 desc = ""
-            logger.info(
-                "  %d. [%s] %s...", idx + 1, i.get("category"), desc[:100]
-            )
+            logger.info("  %d. [%s] %s...", idx + 1, i.get("category"), desc[:100])
 
 
 def prioritize_issues() -> None:
@@ -123,9 +121,7 @@ def prioritize_issues() -> None:
         _log_prioritized_files(file_scores)
 
     except (TypeError, KeyError) as e:
-        logger.error(
-            "Failed to process report due to unexpected data structure: %s", e
-        )
+        logger.error("Failed to process report due to unexpected data structure: %s", e)
         return
 
 

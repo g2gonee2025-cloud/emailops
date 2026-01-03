@@ -1,10 +1,9 @@
 import logging
 import sys
 
+from cortex.config.loader import get_config
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
-
-from cortex.config.loader import get_config
 
 # --- Configuration Constants ---
 # Schema identifiers

@@ -1,7 +1,7 @@
+import json
 import logging
 import os
 import sys
-import json
 
 import requests
 
@@ -21,6 +21,7 @@ def mask(s):
     if not s or len(s) < 8:
         return "[REDACTED]"
     return s[:4] + "..." + s[-4:] + f" (len={len(s)})"
+
 
 def main():
     logging.info("--- DEBUG START ---")
@@ -55,7 +56,10 @@ def main():
             logging.warning("DO_LLM_API_KEY is not set. Skipping raw request test.")
         else:
             url = "https://inference.do-ai.run/v1/chat/completions"
-            headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+            headers = {
+                "Authorization": f"Bearer {key}",
+                "Content-Type": "application/json",
+            }
             data = {
                 "model": "gpt-oss-120b",
                 "messages": [{"role": "user", "content": "ping"}],
@@ -67,7 +71,9 @@ def main():
             try:
                 body = resp.json()
                 if "error" in body:
-                    logging.warning(f"Raw Response Body contains error: {body['error']}")
+                    logging.warning(
+                        f"Raw Response Body contains error: {body['error']}"
+                    )
                 else:
                     logging.info("Raw Response Body: [REDACTED]")
             except json.JSONDecodeError:
@@ -76,6 +82,7 @@ def main():
         logging.exception("Raw request failed")
 
     logging.info("--- DEBUG END ---")
+
 
 if __name__ == "__main__":
     main()

@@ -54,11 +54,11 @@ class ReviewConfig(BaseModel):
     model: str = "openai-gpt-5"
     max_workers: int = Field(default=4, gt=0)
     dry_run: bool = False
-    output_file: Path = Field(default="review_report.json")
+    output_file: str = Field(default="review_report.json")
     incremental_save: bool = True
 
     @model_validator(mode="after")
-    def validate_model(self) -> "ReviewConfig":
+    def validate_model(self) -> ReviewConfig:
         """Validate that the model is valid for the selected provider."""
         provider_models = PROVIDER_MODELS.get(self.provider)
         if not provider_models:

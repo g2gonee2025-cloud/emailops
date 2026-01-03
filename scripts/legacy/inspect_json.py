@@ -1,31 +1,45 @@
-
-import sys
 import json
-from typing import Any
+import sys
 from pathlib import Path
+from typing import Any
 
 # Add the backend src directory to the Python path
 _BACKEND_SRC = Path(__file__).resolve().parents[2] / "backend" / "src"
 sys.path.insert(0, str(_BACKEND_SRC))
 
+from cortex.common.exceptions import ConfigurationError
+from cortex.config.loader import get_config
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
-from cortex.config.loader import get_config
-from cortex.common.exceptions import ConfigurationError
-
 
 EMPTY_JSON_OBJECT = "{}"
 _SENSITIVE_KEY_MARKERS = (
-    "key", "secret", "token", "password", "credential", "auth",
-    "jwt", "private", "cert", "api", "email", "name", "subject",
-    "from", "to", "cc", "bcc",
+    "key",
+    "secret",
+    "token",
+    "password",
+    "credential",
+    "auth",
+    "jwt",
+    "private",
+    "cert",
+    "api",
+    "email",
+    "name",
+    "subject",
+    "from",
+    "to",
+    "cc",
+    "bcc",
 )
+
 
 def _redact_value(value: Any) -> Any:
     """Return a redacted placeholder for a value."""
     if value is None or value == "":
         return value
     return "***REDACTED***"
+
 
 def redact_sensitive_data(data: Any) -> Any:
     """Recursively redact sensitive information from a data structure."""
@@ -38,7 +52,9 @@ def redact_sensitive_data(data: Any) -> Any:
     if isinstance(data, dict):
         redacted: dict[str, Any] = {}
         for key, value in data.items():
-            if isinstance(key, str) and any(marker in key.lower() for marker in _SENSITIVE_KEY_MARKERS):
+            if isinstance(key, str) and any(
+                marker in key.lower() for marker in _SENSITIVE_KEY_MARKERS
+            ):
                 redacted[key] = _redact_value(value)
             else:
                 redacted[key] = redact_sensitive_data(value)
@@ -91,7 +107,9 @@ def inspect_metadata() -> None:
                 LIMIT 5
             """
             )
-            result_msg = conn.execute(sql_msg, {"empty_json": EMPTY_JSON_OBJECT}).fetchall()
+            result_msg = conn.execute(
+                sql_msg, {"empty_json": EMPTY_JSON_OBJECT}
+            ).fetchall()
 
             if not result_msg:
                 print("No non-empty metadata found in messages.")

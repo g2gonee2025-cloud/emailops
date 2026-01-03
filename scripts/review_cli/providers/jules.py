@@ -129,7 +129,9 @@ class JulesProvider(ReviewProvider):
 
             if data is not None:
                 session_id = data.get("name", "unknown")
-                logger.info("Created Jules session for %s: %s", file_path_str, session_id)
+                logger.info(
+                    "Created Jules session for %s: %s", file_path_str, session_id
+                )
                 return ReviewResult(
                     file=file_path_str,
                     summary=f"Jules session created: {session_id}",
@@ -146,20 +148,46 @@ class JulesProvider(ReviewProvider):
                 )
 
         except RetryError as e:
-            logger.error("API request for %s failed after multiple retries: %s", file_path_str, e)
-            return ReviewResult(file=file_path_str, error=f"Request failed after retries: {e}", model="jules")
+            logger.error(
+                "API request for %s failed after multiple retries: %s", file_path_str, e
+            )
+            return ReviewResult(
+                file=file_path_str,
+                error=f"Request failed after retries: {e}",
+                model="jules",
+            )
         except aiohttp.ClientResponseError as e:
-            logger.error("API request for %s failed with status %d: %s", file_path_str, e.status, e.message)
-            return ReviewResult(file=file_path_str, error=f"HTTP {e.status}: {e.message}", model="jules")
-        except (aiohttp.ClientError, AsyncTimeoutError) as e:
+            logger.error(
+                "API request for %s failed with status %d: %s",
+                file_path_str,
+                e.status,
+                e.message,
+            )
+            return ReviewResult(
+                file=file_path_str, error=f"HTTP {e.status}: {e.message}", model="jules"
+            )
+        except (TimeoutError, aiohttp.ClientError) as e:
             logger.error("API request for %s failed: %s", file_path_str, e)
-            return ReviewResult(file=file_path_str, error=f"Request failed: {e}", model="jules")
+            return ReviewResult(
+                file=file_path_str, error=f"Request failed: {e}", model="jules"
+            )
         except JSONDecodeError as e:
             logger.error("Failed to decode JSON response for %s: %s", file_path_str, e)
-            return ReviewResult(file=file_path_str, error=f"Invalid JSON response: {e}", model="jules")
+            return ReviewResult(
+                file=file_path_str, error=f"Invalid JSON response: {e}", model="jules"
+            )
         except Exception as e:
-            logger.error("An unexpected error occurred for %s: %s", file_path_str, e, exc_info=True)
-            return ReviewResult(file=file_path_str, error=f"An unexpected error occurred: {e}", model="jules")
+            logger.error(
+                "An unexpected error occurred for %s: %s",
+                file_path_str,
+                e,
+                exc_info=True,
+            )
+            return ReviewResult(
+                file=file_path_str,
+                error=f"An unexpected error occurred: {e}",
+                model="jules",
+            )
 
     async def close(self) -> None:
         if self._session and not self._session.closed:

@@ -441,7 +441,9 @@ class AsyncLLMRuntime:
         elif isinstance(prompt, list) and prompt:
             messages = [dict(m) for m in prompt]
         else:
-            raise ValidationError("prompt must be a non-empty string or list of messages")
+            raise ValidationError(
+                "prompt must be a non-empty string or list of messages"
+            )
 
         schema_json = json.dumps(schema, indent=2)
         json_instructions = (

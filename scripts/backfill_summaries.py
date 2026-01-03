@@ -98,9 +98,7 @@ def process_conversation_task(
 
             # Abort if in dry-run mode before expensive API calls
             if dry_run:
-                logger.info(
-                    f"[DRY RUN] Would process conversation {conversation_id}."
-                )
+                logger.info(f"[DRY RUN] Would process conversation {conversation_id}.")
                 return True
 
             # 2. Generate Summary (with truncation)
@@ -197,7 +195,10 @@ def main():
         "--force", action="store_true", help="Reprocess even if summary exists."
     )
     parser.add_argument(
-        "--tenant", type=str, default=None, help="Tenant ID filter. If not provided, processes all tenants."
+        "--tenant",
+        type=str,
+        default=None,
+        help="Tenant ID filter. If not provided, processes all tenants.",
     )
     parser.add_argument(
         "--workers", type=int, default=4, help="Number of concurrent workers."
@@ -245,7 +246,11 @@ def main():
                 if not args.force:
                     stmt = stmt.where(Conversation.summary_text.is_(None))
 
-                stmt = stmt.order_by(Conversation.created_at).offset(offset).limit(batch_limit)
+                stmt = (
+                    stmt.order_by(Conversation.created_at)
+                    .offset(offset)
+                    .limit(batch_limit)
+                )
                 rows = session.execute(stmt).all()
 
                 if not rows:

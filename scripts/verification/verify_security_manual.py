@@ -18,9 +18,11 @@ try:
     from cortex.safety.policy_enforcer import check_action
     from cortex.security.injection_defense import contains_injection
 except (IndexError, FileNotFoundError, ImportError) as e:
-    print(f"ERROR: Could not set up python path and imports. "
-          f"Please run this script from the root of the repository. Details: {e}",
-          file=sys.stderr)
+    print(
+        f"ERROR: Could not set up python path and imports. "
+        f"Please run this script from the root of the repository. Details: {e}",
+        file=sys.stderr,
+    )
     sys.exit(1)
 
 logger = logging.getLogger(__name__)
@@ -56,7 +58,9 @@ def verify_policy_enforcer():
 
     # Test content policy via check_action
     safe_content = "Here is the project report."
-    UNSAFE_CONTENT_WITH_FAKE_API_KEY = "CONFIDENTIAL: The new API key is sk-12345abcde-fgh."  # nosec
+    UNSAFE_CONTENT_WITH_FAKE_API_KEY = (
+        "CONFIDENTIAL: The new API key is sk-12345abcde-fgh."  # nosec
+    )
 
     # NOTE: The `check_action` function returns a Pydantic model (`PolicyDecision`),
     # so direct attribute access (e.g., `.decision`, `.metadata`) is type-safe

@@ -1,0 +1,4046 @@
+{
+  "total": 449,
+  "issues": [
+    {
+      "key": "e76db00d-3c10-4c92-bdaf-255ad09b4cc3",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Remove duplicates in this character class.",
+      "file": "emailops-vertex-ai:backend/src/cortex/orchestration/nodes.py",
+      "line": 242,
+      "rule": "python:S5869"
+    },
+    {
+      "key": "cec37a9e-1dd7-4a9c-bbea-1d500d77e527",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/orchestration/nodes.py",
+      "line": 451,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "3f324e2e-238d-4238-96e8-7872d076c901",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/orchestration/nodes.py",
+      "line": 671,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "694fdbbe-d314-4810-85f0-587588aee5fe",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 23 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/orchestration/nodes.py",
+      "line": 796,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "c6565325-c8ab-48b1-b29c-a6d85e3aa012",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/orchestration/nodes.py",
+      "line": 843,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "bd3e03e5-65fc-4b86-aa2e-528c42b4ba6c",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Remove this commented out code.",
+      "file": "emailops-vertex-ai:backend/src/cortex/orchestration/nodes.py",
+      "line": 1105,
+      "rule": "python:S125"
+    },
+    {
+      "key": "ac683214-dd21-493e-8d9f-509a82781f29",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 25 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/orchestration/nodes.py",
+      "line": 1157,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "6e1d7726-be59-48e5-846a-cea1a35ebb9a",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/orchestration/nodes.py",
+      "line": 1293,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "99879a06-85cf-42f2-b64b-04b784c02e2d",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/orchestration/nodes.py",
+      "line": 1470,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "d56d90b2-0a9f-420d-9d01-98adab49886f",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 25 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/queue.py",
+      "line": 379,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "e1c130d9-e89c-4923-9ea4-e32f0c9e1147",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/queue.py",
+      "line": 601,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "8978c466-7833-4d20-9dcd-6d55380be78e",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/cmd_s3.py",
+      "line": 37,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "2096d87d-5925-4e94-aabb-3cff543de920",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 22 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/cmd_s3.py",
+      "line": 145,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "76d50258-a819-49ab-b2c8-94bb9f459d49",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 55 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/cmd_s3.py",
+      "line": 251,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "d8771cde-2b05-4635-b64e-606a7a9c3417",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"Output as JSON\" 3 times.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/cmd_s3.py",
+      "line": 516,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "2a589afe-6f7c-431a-9164-9901dd7f5f2c",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Specify a memory limit for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/examples/autosharding/statefulset.yaml",
+      "line": 25,
+      "rule": "kubernetes:S6864"
+    },
+    {
+      "key": "870bc1a3-20db-49d1-a565-5a5e921568ce",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a CPU request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/examples/autosharding/statefulset.yaml",
+      "line": 25,
+      "rule": "kubernetes:S6892"
+    },
+    {
+      "key": "aead423f-ae7f-48d8-8cd7-02be0df73883",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a memory request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/examples/autosharding/statefulset.yaml",
+      "line": 25,
+      "rule": "kubernetes:S6873"
+    },
+    {
+      "key": "e530acc3-02b9-4e00-a8cb-81d0e664511c",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a storage request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/examples/autosharding/statefulset.yaml",
+      "line": 25,
+      "rule": "kubernetes:S6897"
+    },
+    {
+      "key": "465f8606-8686-482e-b9f5-8fcaa907027c",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Specify a memory limit for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/examples/daemonsetsharding/daemonset.yaml",
+      "line": 23,
+      "rule": "kubernetes:S6864"
+    },
+    {
+      "key": "966b54b1-f699-46e0-81cc-d3181969097c",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a memory request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/examples/daemonsetsharding/daemonset.yaml",
+      "line": 23,
+      "rule": "kubernetes:S6873"
+    },
+    {
+      "key": "d7ee1043-bd76-4dae-9112-7fb268ff5b91",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a CPU request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/examples/daemonsetsharding/daemonset.yaml",
+      "line": 23,
+      "rule": "kubernetes:S6892"
+    },
+    {
+      "key": "dbf589ad-4f22-4dd2-b16e-e886382b6b5e",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a storage request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/examples/daemonsetsharding/daemonset.yaml",
+      "line": 23,
+      "rule": "kubernetes:S6897"
+    },
+    {
+      "key": "0d6073aa-7574-4bfc-b452-911805743a93",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a CPU request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/examples/daemonsetsharding/deployment-unscheduled-pods-fetching.yaml",
+      "line": 24,
+      "rule": "kubernetes:S6892"
+    },
+    {
+      "key": "8e12849c-1e01-45cb-ae0f-61d1adee45cf",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Specify a memory limit for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/examples/daemonsetsharding/deployment-unscheduled-pods-fetching.yaml",
+      "line": 24,
+      "rule": "kubernetes:S6864"
+    },
+    {
+      "key": "ccd5d2d0-3645-4bb7-a3b0-5c218f031e74",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a memory request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/examples/daemonsetsharding/deployment-unscheduled-pods-fetching.yaml",
+      "line": 24,
+      "rule": "kubernetes:S6873"
+    },
+    {
+      "key": "cda43a6b-1f8f-4d26-aae0-7dc6b33df9a2",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a storage request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/examples/daemonsetsharding/deployment-unscheduled-pods-fetching.yaml",
+      "line": 24,
+      "rule": "kubernetes:S6897"
+    },
+    {
+      "key": "48bb020a-b368-4806-bfa9-cdc06de760fe",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a memory request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/examples/daemonsetsharding/deployment.yaml",
+      "line": 24,
+      "rule": "kubernetes:S6873"
+    },
+    {
+      "key": "6fabb1f1-ebb5-4669-b57b-25dc0cc412e1",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Specify a memory limit for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/examples/daemonsetsharding/deployment.yaml",
+      "line": 24,
+      "rule": "kubernetes:S6864"
+    },
+    {
+      "key": "d6d1b48d-bfd5-4950-a5bd-35d25467d849",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a CPU request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/examples/daemonsetsharding/deployment.yaml",
+      "line": 24,
+      "rule": "kubernetes:S6892"
+    },
+    {
+      "key": "daf04ad7-d781-4cc8-8d8a-f52907e928c0",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a storage request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/examples/daemonsetsharding/deployment.yaml",
+      "line": 24,
+      "rule": "kubernetes:S6897"
+    },
+    {
+      "key": "45a5e9bf-bc9d-463d-b520-cea661568cdc",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a memory request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/examples/standard/deployment.yaml",
+      "line": 24,
+      "rule": "kubernetes:S6873"
+    },
+    {
+      "key": "4f5def54-3309-4ba1-b384-0706a45bcdc8",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Specify a memory limit for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/examples/standard/deployment.yaml",
+      "line": 24,
+      "rule": "kubernetes:S6864"
+    },
+    {
+      "key": "b74781bc-71eb-4523-9407-0683d91a3719",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a storage request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/examples/standard/deployment.yaml",
+      "line": 24,
+      "rule": "kubernetes:S6897"
+    },
+    {
+      "key": "f992723a-e3df-4024-abc4-48be18296a9e",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a CPU request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/examples/standard/deployment.yaml",
+      "line": 24,
+      "rule": "kubernetes:S6892"
+    },
+    {
+      "key": "a0a93789-3ae4-4aab-a584-3a4cdba6d522",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 33 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/discovery/discovery.go",
+      "line": 119,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "aaafd179-cb0c-4a46-a907-a544c0d3cb11",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 20 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/discovery/discovery.go",
+      "line": 194,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "302dddd6-3a5a-4408-8efe-661a5b2f4d24",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"failed to update custom resource stores\" 4 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/discovery/discovery.go",
+      "line": 207,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "1a3184b2-ded0-44f9-9ea8-4cdaf0b3423e",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 19 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/discovery/types.go",
+      "line": 91,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "8c8e525c-c5c5-4e9e-bad2-2cad1c60eb24",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"FieldSelector is used\" 4 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/builder.go",
+      "line": 532,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "98f45ef4-4281-4aa9-9fbc-3e5d865bfdb0",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"Did not expect error while setting resources (--resources).\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/builder_test.go",
+      "line": 98,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "490a81d3-b2e4-4e66-9987-db987e8ca758",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"Test error for Desc: %s. Got Error: %v\" 5 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/builder_test.go",
+      "line": 99,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "ae6725a6-50e3-4361-88fe-15a3876a991b",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"Test error for Desc: %s\\n Want: \\n%+v\\n Got: \\n%#+v\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/builder_test.go",
+      "line": 113,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "1a2c8d5e-1fe8-40cf-9cd8-8a273556548e",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"certificate-test\" 6 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/certificatesigningrequest_test.go",
+      "line": 44,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "fc655468-a231-4ef7-88de-0ed50255b03e",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 23 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/cronjob.go",
+      "line": 46,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "8285c7a9-df04-4fd6-897e-8f12adeb3842",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"app.k8s.io/owner\" 4 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/cronjob_test.go",
+      "line": 118,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "234bbc18-9147-4f76-9f3a-6140556a46be",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"0 */6 * * *\" 4 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/cronjob_test.go",
+      "line": 143,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "b25319f9-c64b-44be-bb78-a8be146ab2b8",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 31 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/deployment.go",
+      "line": 61,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "5b282553-3f54-4e7a-8205-088ddeae187c",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/endpoint.go",
+      "line": 43,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "4aca6851-59b2-4b45-8ab7-9043c14e81b1",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"127.0.0.1\" 4 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/endpoint_test.go",
+      "line": 60,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "740ddc74-99b4-4431-b6d0-6271c41e6b5e",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"10.0.0.1\" 4 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/endpoint_test.go",
+      "line": 60,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "102a4401-fb35-40b3-98a0-b0c75b384a6e",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"10.0.0.10\" 4 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/endpoint_test.go",
+      "line": 63,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "2a449af3-3ccf-456a-80d7-f3751297a137",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"single-foobar\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/endpoint_test.go",
+      "line": 117,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "863ebaba-3f78-419d-a105-107a0d85070f",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 26 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/endpointslice.go",
+      "line": 134,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "5a53277b-1034-4321-909b-c67b490a5a0c",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 17 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/horizontalpodautoscaler.go",
+      "line": 185,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "6be7e45b-fe49-41c8-905e-a4af09a10c0b",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 17 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/horizontalpodautoscaler.go",
+      "line": 244,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "42a762ed-32a8-42f3-adc0-284f896eb6fe",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 41 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/ingress.go",
+      "line": 44,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "17828bdf-704a-406a-bf54-72d340321344",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 63 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/job.go",
+      "line": 46,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "25d89d7e-a15f-4a6a-a6ee-d25fff81364b",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"kube-master\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/lease_test.go",
+      "line": 36,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "b6b25844-16e3-4278-99bf-ca07a4e2b16f",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 19 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/node.go",
+      "line": 307,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "a87df6be-5ee3-408d-a3a2-41fe8264222a",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 19 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/node.go",
+      "line": 391,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "cd520f8d-5e1b-460d-9957-0c457e3c5093",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"127.0.0.1\" 6 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/node_test.go",
+      "line": 36,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "af832da9-8b83-46da-a359-1745e2d7a49f",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"6a934e21-5207-4a84-baea-3a952d926c80\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/node_test.go",
+      "line": 45,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "717f2a97-ccdc-4303-bfcc-6a5cd589ecb3",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"1.2.3.4\" 4 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/node_test.go",
+      "line": 48,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "232440b0-5a02-40bd-b281-fadf488d7d37",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"172.24.10.0/24\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/node_test.go",
+      "line": 53,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "35e53d16-0962-4cc3-a0fe-3359ef8b482a",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"nvidia.com/gpu\" 4 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/node_test.go",
+      "line": 115,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "4f228398-7bb4-4cb6-8695-0aa19ef15ca2",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 28 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/persistentvolume.go",
+      "line": 225,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "bb7350e9-1556-443b-b378-717fc3f497c5",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"test-pv-available\" 18 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/persistentvolume_test.go",
+      "line": 62,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "fa45db0c-5cdd-4d66-8ca6-1e5fdac30e13",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"test-driver\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/persistentvolume_test.go",
+      "line": 399,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "dea24652-92b8-4298-bc98-fd8e98950a56",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"test-volume-handle\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/persistentvolume_test.go",
+      "line": 400,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "7aa23fba-72a9-4f78-8097-f1f54cd0afa4",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"/mnt/data\" 4 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/persistentvolume_test.go",
+      "line": 424,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "1dff7bbf-81ce-4a5b-a368-2776df056c8f",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"mysql-server\" 5 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/persistentvolume_test.go",
+      "line": 517,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "9ef95bf2-f3fa-485c-84cc-8e4aed5cd047",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"app.k8s.io/owner\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/persistentvolume_test.go",
+      "line": 608,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "a0002734-9087-4cf3-b0b2-22f2b518a7b4",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/persistentvolumeclaim.go",
+      "line": 43,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "1dbc5066-0697-4d6a-ba55-ba9bc15d5e6a",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 26 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/pod.go",
+      "line": 168,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "e6a45484-d530-48ba-83b4-6a81be44dceb",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 26 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/pod.go",
+      "line": 232,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "989a4917-756d-4ea9-9985-03972f672bed",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 26 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/pod.go",
+      "line": 735,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "bbe35511-0628-47f8-a211-ae182187fb28",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 26 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/pod.go",
+      "line": 799,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "ec246394-f46a-486c-9741-a1eabd7d0979",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"k8s.gcr.io/hyperkube1_spec\" 9 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/pod_test.go",
+      "line": 50,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "fa6e2f88-8688-4266-aae5-aab7a5941206",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"k8s.gcr.io/hyperkube1\" 4 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/pod_test.go",
+      "line": 58,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "5766cc32-5818-45d9-8148-9f36b9bfa66f",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"docker://sha256:aaa\" 4 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/pod_test.go",
+      "line": 59,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "ee569c37-95ff-4221-9e3f-645e8eaf5680",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"docker://ab123\" 4 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/pod_test.go",
+      "line": 60,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "0b944aca-1364-4b54-a60b-2c9439ec517d",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"k8s.gcr.io/hyperkube2_spec\" 10 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/pod_test.go",
+      "line": 82,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "e8ae6a5a-52fb-48ec-95a7-62d5ae5df2aa",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"k8s.gcr.io/hyperkube3_spec\" 5 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/pod_test.go",
+      "line": 86,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "47221387-aaf6-4f45-8c63-7e1a6ac9d931",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"k8s.gcr.io/initfoo_spec\" 7 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/pod_test.go",
+      "line": 92,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "8f4eb8a0-b655-4a45-9bf1-a8c22149f264",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"k8s.gcr.io/hyperkube2\" 4 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/pod_test.go",
+      "line": 101,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "5541e888-1db5-472d-a25a-a77c646d6abf",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"docker://sha256:bbb\" 4 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/pod_test.go",
+      "line": 102,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "b18b02d6-b5ae-4d8f-a052-1f4ccd2dead7",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"docker://cd456\" 4 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/pod_test.go",
+      "line": 103,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "04711596-54ec-433e-9844-45d1771a4b47",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"1.1.1.1\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/pod_test.go",
+      "line": 1022,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "9bb7822e-1038-4d75-be44-fc69b018e9cd",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"1.2.3.4\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/pod_test.go",
+      "line": 1023,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "029b7c7a-96c4-4904-a66f-4eba479d24cb",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"nvidia.com/gpu\" 4 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/pod_test.go",
+      "line": 1715,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "32e5ac29-f358-4d90-b419-518c946e2781",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 20 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/replicaset.go",
+      "line": 44,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "cc361545-a204-4ef2-959c-be98a9604114",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 16 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/service.go",
+      "line": 42,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "17f3b32f-096f-48ff-b300-ce1e2888417e",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 17 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/statefulset.go",
+      "line": 43,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "5bf30048-eade-41d7-b301-95b62bccb71a",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"kubernetes.io/rbd\" 4 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/storageclass_test.go",
+      "line": 38,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "08a361d9-e1e6-4c8d-b696-b6cff9103235",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"pod.alpha.kubernetes.io/opaque-int-resource-foo\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/utils_test.go",
+      "line": 33,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "9d6640f1-3af0-4c3d-9303-d11b394a6e67",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"resourceName input=%s, expected value=%v\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/utils_test.go",
+      "line": 47,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "2e644e9a-7952-4825-843e-813880679429",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"Got %v but expected %v\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/store/utils_test.go",
+      "line": 50,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "506b0d6c-eb72-4ae2-9ce4-bd2c4e2cd650",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 36 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/wrapper.go",
+      "line": 36,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "66939c3c-2e6c-4e9b-911b-e68fa8206003",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"Changes detected\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/internal/wrapper.go",
+      "line": 67,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "a1b5118a-1dfe-438a-9c7f-fbfa47d1741f",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"not-empty\" 8 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/allowdenylist/allowdenylist_test.go",
+      "line": 30,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "2b942493-bcc9-4f8c-abd5-dc43739922e2",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"expected New() to not fail\" 9 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/allowdenylist/allowdenylist_test.go",
+      "line": 39,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "41b0004e-48b3-4480-8a39-7dc84365b461",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 44 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/allowdenylist/allowdenylist_test.go",
+      "line": 70,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "3b1734e9-d913-42a0-bbda-e4f3df68bced",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"expected IsIncluded() to not fail\" 7 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/allowdenylist/allowdenylist_test.go",
+      "line": 85,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "3ac2730b-44af-47fc-924a-5d35e85d4651",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"expected included item to be included\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/allowdenylist/allowdenylist_test.go",
+      "line": 88,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "e5d30806-b104-449b-a289-6171d5ec886a",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"expected Parse() to not fail, but got error : %v\" 5 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/allowdenylist/allowdenylist_test.go",
+      "line": 101,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "7f352238-2678-4721-9bd4-08e2ae385c9f",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 16 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/allowdenylist/allowdenylist_test.go",
+      "line": 180,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "bd95d90c-2397-4199-8949-01203119d398",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"expected status %q but got %q\" 4 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/allowdenylist/allowdenylist_test.go",
+      "line": 258,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "270fb7f6-7625-4ee0-8f8a-ebf64199ac08",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 42 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/app/server.go",
+      "line": 90,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "d93b948b-98e1-4716-8cbf-4d8db5154d8c",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 32 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/app/server.go",
+      "line": 400,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "249a7385-a1ea-4776-93e7-79fe84ab13b5",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"http://localhost:8080/metrics\" 6 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/app/server_test.go",
+      "line": 116,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "27aa89a2-fb2b-4a2c-a44a-0f75a046b530",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"expected 200 status code but got %v\" 7 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/app/server_test.go",
+      "line": 127,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "8d3aae71-0429-41b5-839f-91d6600ecf0f",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 20 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/app/server_test.go",
+      "line": 146,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "db1b371a-bfb5-4d71-9401-be86453ed2ce",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"failed to insert sample pod %v\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/app/server_test.go",
+      "line": 153,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "aa2c5b74-b3fc-4146-a9e5-01ac9f647d9d",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"expected different output length, expected \\n\\n%s\\n\\ngot\\n\\n%s\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/app/server_test.go",
+      "line": 383,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "32ecfd3b-e5fc-486a-8b4d-001351590f16",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"expected:\\n\\n%v\\n, but got:\\n\\n%v\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/app/server_test.go",
+      "line": 388,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "a87a73e4-c7d6-46f8-94ea-a8976f6cc902",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 25 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/app/server_test.go",
+      "line": 443,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "0a7bdb0f-afc0-4884-9591-1547a3a477f9",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 16 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/app/server_test.go",
+      "line": 984,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "26f08f56-0734-48c9-95f8-1e8a9a32720f",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/customresourcestate/config.go",
+      "line": 173,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "df56a043-a6cb-4847-8261-63f724820d8d",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"metrics for testing\" 6 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/customresourcestate/custom_resource_metrics_test.go",
+      "line": 58,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "608139d3-e65a-407d-b985-09ecc7a8ed29",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"%s: %w\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/customresourcestate/registry_factory.go",
+      "line": 50,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "507c321a-12ec-4a6f-9480-e025c59613f8",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 17 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/customresourcestate/registry_factory.go",
+      "line": 156,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "d6b1b9f5-492f-4cf5-b076-934cbe548156",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 45 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/customresourcestate/registry_factory.go",
+      "line": 221,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "79500ff1-033d-4e6b-bbe6-070449f7d56c",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 22 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/customresourcestate/registry_factory.go",
+      "line": 313,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "f04d1ca0-a4d8-469a-b82a-84c92e6e308a",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 20 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/customresourcestate/registry_factory.go",
+      "line": 518,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "a4bc2acf-28d7-4687-90e8-673e8d9ebe9b",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 108 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/customresourcestate/registry_factory.go",
+      "line": 582,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "1c0c7227-af0b-4a60-a614-0826a2d1467a",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 18 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/customresourcestate/registry_factory.go",
+      "line": 714,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "d18c642b-7f2a-493c-ab59-cb7f1c016148",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"type-a\" 5 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/customresourcestate/registry_factory_test.go",
+      "line": 53,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "4bc71e1b-e5b0-4788-ad88-5af2603e7d18",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"type-b\" 5 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/customresourcestate/registry_factory_test.go",
+      "line": 54,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "2398d92b-66f5-48a6-a1dd-453d3cda6382",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 19 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/metrics_store/metrics_writer.go",
+      "line": 54,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "2dbc20b2-a0cb-48f4-884b-90cdaacba800",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 32 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/metrics_store/metrics_writer.go",
+      "line": 95,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "6a7b1940-cd83-4524-95d3-dc1e5a85af52",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"Info 2 about services\" 8 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/metrics_store/metrics_writer_test.go",
+      "line": 66,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "eff59b17-6620-435e-b5ec-b49cb35f8579",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"Info 1 about services\" 8 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/metrics_store/metrics_writer_test.go",
+      "line": 66,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "2f5d49c3-a65a-46a0-9666-136acef46874",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"failed to write metrics: %v\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/metrics_store/metrics_writer_test.go",
+      "line": 94,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "1f8d9484-58a1-44e2-99c1-5634519f4e2f",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"Invalid metrics header on line 0, got %s, want %s\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/metrics_store/metrics_writer_test.go",
+      "line": 103,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "07ae13a6-7bf5-4d34-9152-c6242127a6dd",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"# HELP foo foo_help\\n# TYPE foo gauge\" 10 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/metrics_store/metrics_writer_test.go",
+      "line": 283,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "784d3ab1-5749-46b5-a937-d5ee8d234419",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"# HELP foo foo_help\\n# TYPE foo info\" 9 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/metrics_store/metrics_writer_test.go",
+      "line": 284,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "180a2ad4-d0ce-40fb-9b24-c1a2847bd36f",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"# HELP foo foo_help\\n# TYPE foo stateset\" 8 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/metrics_store/metrics_writer_test.go",
+      "line": 285,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "cc5c9339-7ef3-4ce8-9e2e-d4e9b89ffcbd",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"# HELP foo foo_help\\n# TYPE foo counter\" 10 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/metrics_store/metrics_writer_test.go",
+      "line": 286,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "9ea5e61b-ed87-4ac2-a5ce-5038769f0631",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 20 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/metricshandler/metrics_handler.go",
+      "line": 106,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "de71c129-c1ad-481d-8879-0b59320460d6",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 17 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/metricshandler/metrics_handler.go",
+      "line": 194,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "eb2a3cf7-b311-4a29-8a3a-bf21f088ca93",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"did not expect NewMetricFamilyFilter to fail, the error is %v\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/optin/optin_test.go",
+      "line": 46,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "fc05b80e-4add-4121-acb8-f443cc910da3",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"./kube-state-metrics\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/options/options_test.go",
+      "line": 32,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "8bb7eecf-b8aa-42cf-9007-70b68c650ad8",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 30 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/options/types.go",
+      "line": 237,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "037e0b32-c151-4060-a56d-8d17ac469b32",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"kube-system\" 6 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/options/types_test.go",
+      "line": 75,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "ef98d953-2115-4d22-81eb-c653fec4bf01",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"empty DeniedNamespaces\" 4 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/options/types_test.go",
+      "line": 96,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "aff21f28-ce46-4e5b-a2a0-a314788fabd4",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"all DeniedNamespaces\" 4 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/options/types_test.go",
+      "line": 101,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "456ab7b0-2d35-4f0c-b641-a01a274dea88",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"Test error for Desc: %s. Want: %+v. Got: %+v.\" 4 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/options/types_test.go",
+      "line": 116,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "69b679a0-07ec-48a5-9953-9ddfe6e2228b",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"some-system\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/options/types_test.go",
+      "line": 137,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "2351f021-7ce1-4e71-b0ec-f9790c0afb9c",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"general case\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/options/types_test.go",
+      "line": 141,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "6ad84f31-fdf0-48c0-a599-96e40e83e8c2",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"case2-system\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/options/types_test.go",
+      "line": 143,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "85a77e80-0980-45b7-a35c-07c4a0691aa3",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"case1-system\" 3 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/options/types_test.go",
+      "line": 143,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "e5e3821e-96e6-4917-9738-7d35b4876057",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"k8s-node-1\" 4 times.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/options/types_test.go",
+      "line": 171,
+      "rule": "go:S1192"
+    },
+    {
+      "key": "8257f80b-3339-492d-87f5-92a1b4f26313",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Add a nested comment explaining why this function is empty or complete the implementation.",
+      "file": "emailops-vertex-ai:kube-state-metrics/pkg/util/proc/reaper_unsupported.go",
+      "line": 24,
+      "rule": "go:S1186"
+    },
+    {
+      "key": "3dc6595d-75ef-4293-8445-9de1d6e56ff1",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 37 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/e2e/auth-filter_test.go",
+      "line": 35,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "152ebd30-8bf0-4eaf-8b8d-88080b35ac13",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 26 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/e2e/discovery_test.go",
+      "line": 139,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "a607be4f-8b9b-4430-b8c6-81fdda3d6e7a",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 18 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/e2e/hot-reload-kubeconfig_test.go",
+      "line": 35,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "d8f4447d-fd68-4a49-8fa3-164cf0bfac94",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 28 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/e2e/main_test.go",
+      "line": 98,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "6b609e7b-7611-440d-8508-11b958bb260d",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 18 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/e2e/main_test.go",
+      "line": 145,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "8dec3b57-cb85-48cc-8009-baea762a0b8c",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 16 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/e2e/main_test.go",
+      "line": 247,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "62e92892-8886-47ab-82c4-3328c28a6a3f",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to reduce its Cognitive Complexity from 19 to the 15 allowed.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/e2e/object-limits_test.go",
+      "line": 36,
+      "rule": "go:S3776"
+    },
+    {
+      "key": "961418b0-067b-48ad-aa4c-5d5008496539",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Bind this resource's automounted service account to RBAC or disable automounting.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/e2e/testdata/pods.yaml",
+      "line": 25,
+      "rule": "kubernetes:S6865"
+    },
+    {
+      "key": "03b12699-5ef6-49a9-860e-612193399364",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Specify a memory limit for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/e2e/testdata/pods.yaml",
+      "line": 26,
+      "rule": "kubernetes:S6864"
+    },
+    {
+      "key": "127f1b2d-1c5b-42b0-a1d8-965c9f019048",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a memory request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/e2e/testdata/pods.yaml",
+      "line": 26,
+      "rule": "kubernetes:S6873"
+    },
+    {
+      "key": "31044fc3-04ea-4f54-8eea-df8e61051fec",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a CPU request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/e2e/testdata/pods.yaml",
+      "line": 26,
+      "rule": "kubernetes:S6892"
+    },
+    {
+      "key": "fcb3bfd1-2162-44b7-8801-b47cbfa63d9f",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a storage request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/e2e/testdata/pods.yaml",
+      "line": 26,
+      "rule": "kubernetes:S6897"
+    },
+    {
+      "key": "9534d205-dcbf-4fb6-9d3a-467377af401c",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Bind this resource's automounted service account to RBAC or disable automounting.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/e2e/testdata/pods.yaml",
+      "line": 62,
+      "rule": "kubernetes:S6865"
+    },
+    {
+      "key": "29c3b046-3bf2-40be-82c5-356a56ab9174",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a memory request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/e2e/testdata/pods.yaml",
+      "line": 63,
+      "rule": "kubernetes:S6873"
+    },
+    {
+      "key": "2ae27367-a051-4da3-8018-212406664878",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a CPU request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/e2e/testdata/pods.yaml",
+      "line": 63,
+      "rule": "kubernetes:S6892"
+    },
+    {
+      "key": "82309677-dd64-48d2-b456-d0fbe5742149",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a storage request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/e2e/testdata/pods.yaml",
+      "line": 63,
+      "rule": "kubernetes:S6897"
+    },
+    {
+      "key": "a72dc242-d4c7-48a5-be50-557edd6e4c23",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Specify a memory limit for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/e2e/testdata/pods.yaml",
+      "line": 63,
+      "rule": "kubernetes:S6864"
+    },
+    {
+      "key": "f48ba82c-7ed7-43a0-839f-ffc929f82577",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Bind this resource's automounted service account to RBAC or disable automounting.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/manifests/daemonset.yaml",
+      "line": 15,
+      "rule": "kubernetes:S6865"
+    },
+    {
+      "key": "40a68a48-18b6-4ca9-9856-4a2144c05023",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Specify a memory limit for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/manifests/daemonset.yaml",
+      "line": 16,
+      "rule": "kubernetes:S6864"
+    },
+    {
+      "key": "9ba7b49b-a48e-4e68-9ab9-2f0af1063ad6",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a CPU request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/manifests/daemonset.yaml",
+      "line": 16,
+      "rule": "kubernetes:S6892"
+    },
+    {
+      "key": "a6bde5f8-a090-4d4f-b9db-07f3a0675a1d",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a storage request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/manifests/daemonset.yaml",
+      "line": 16,
+      "rule": "kubernetes:S6897"
+    },
+    {
+      "key": "dd0e5923-cff8-42e8-a0ed-b225fe01e4d8",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a memory request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/manifests/daemonset.yaml",
+      "line": 16,
+      "rule": "kubernetes:S6873"
+    },
+    {
+      "key": "a65bd6c8-9c2e-487f-b9ff-3d60ac5d30de",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Use a specific version tag for the image.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/manifests/daemonset.yaml",
+      "line": 17,
+      "rule": "kubernetes:S6596"
+    },
+    {
+      "key": "2fd0ce33-95c5-43f1-a34e-793245dcbdd3",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Bind this resource's automounted service account to RBAC or disable automounting.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/manifests/job.yaml",
+      "line": 11,
+      "rule": "kubernetes:S6865"
+    },
+    {
+      "key": "107e47be-d969-4b4d-9402-19bdb1da562c",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a memory request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/manifests/job.yaml",
+      "line": 12,
+      "rule": "kubernetes:S6873"
+    },
+    {
+      "key": "41770ecc-a24a-4754-aaf7-1309552e4549",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a CPU request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/manifests/job.yaml",
+      "line": 12,
+      "rule": "kubernetes:S6892"
+    },
+    {
+      "key": "aa637197-c487-4773-8d5a-50d368762419",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a storage request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/manifests/job.yaml",
+      "line": 12,
+      "rule": "kubernetes:S6897"
+    },
+    {
+      "key": "ea5c6169-0047-46d9-bab4-30613adfe6cc",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Specify a memory limit for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/manifests/job.yaml",
+      "line": 12,
+      "rule": "kubernetes:S6864"
+    },
+    {
+      "key": "f19a0f00-7630-4cab-879d-44e1ba16e0d4",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Use a specific version tag for the image.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/manifests/job.yaml",
+      "line": 13,
+      "rule": "kubernetes:S6596"
+    },
+    {
+      "key": "1083c9a4-ce2d-4c5b-a747-a001e654eb1b",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Bind this resource's automounted service account to RBAC or disable automounting.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/manifests/replicationcontroller.yaml",
+      "line": 14,
+      "rule": "kubernetes:S6865"
+    },
+    {
+      "key": "5a91df5f-90b1-4d30-be96-4d890caf68a5",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a storage request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/manifests/replicationcontroller.yaml",
+      "line": 15,
+      "rule": "kubernetes:S6897"
+    },
+    {
+      "key": "79eb2bfe-d312-4317-bb10-1cf72092dc36",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a CPU request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/manifests/replicationcontroller.yaml",
+      "line": 15,
+      "rule": "kubernetes:S6892"
+    },
+    {
+      "key": "ba1f0011-df44-4687-99f9-b524bf7b0576",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Use a specific version tag for the image.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/manifests/replicationcontroller.yaml",
+      "line": 16,
+      "rule": "kubernetes:S6596"
+    },
+    {
+      "key": "50d70828-fdac-49c8-b070-11fe71cbb947",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Bind this resource's automounted service account to RBAC or disable automounting.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/manifests/statefulset.yaml",
+      "line": 15,
+      "rule": "kubernetes:S6865"
+    },
+    {
+      "key": "8140ec96-1338-47cb-8f7f-cc1907754e3d",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a storage request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/manifests/statefulset.yaml",
+      "line": 16,
+      "rule": "kubernetes:S6897"
+    },
+    {
+      "key": "b74da396-1c59-453b-a846-76160a27559b",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a CPU request for this container.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/manifests/statefulset.yaml",
+      "line": 16,
+      "rule": "kubernetes:S6892"
+    },
+    {
+      "key": "214c56e6-5bf4-4e02-a7db-14073a34f1d6",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Use a specific version tag for the image.",
+      "file": "emailops-vertex-ai:kube-state-metrics/tests/manifests/statefulset.yaml",
+      "line": 17,
+      "rule": "kubernetes:S6596"
+    },
+    {
+      "key": "87931a27-16bf-430b-80b2-b8f43379f462",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/llm/async_runtime.py",
+      "line": 433,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "af0671e0-18da-4d11-9abd-ec4ca44ff8c7",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/llm/async_runtime.py",
+      "line": 530,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "0b94111b-e841-4cf8-905b-b924b9a5857c",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/main.py",
+      "line": 546,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "6309992f-4b96-45df-828e-87feb3cf29ee",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 34 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/main.py",
+      "line": 605,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "4131e672-f52c-4477-bd24-1b26a2823599",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/main.py",
+      "line": 846,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "f7becad5-14fb-433e-8b9b-627841f78ff1",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 24 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/main.py",
+      "line": 909,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "aa4fa8ad-98fc-46ea-8a04-24edfc47e936",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/main.py",
+      "line": 995,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "0ddb80cc-863c-4870-b2ce-133e128824b3",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Remove this unused function declaration.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/main.py",
+      "line": 1590,
+      "rule": "python:S5603"
+    },
+    {
+      "key": "1216ea51-a363-4fe4-9da7-a223afedb5ca",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Reraise this exception to stop the application as the user expects",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/main.py",
+      "line": 1600,
+      "rule": "python:S5754"
+    },
+    {
+      "key": "f3b4b1cc-71f0-4f05-aaed-40860b1abb33",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Simplify this regular expression to reduce its complexity from 23 to the 20 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/ingestion/pii.py",
+      "line": 123,
+      "rule": "python:S5843"
+    },
+    {
+      "key": "2ca18b9f-3166-4a11-98ad-93a2f9a1b880",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/text_extraction.py",
+      "line": 467,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "089e6d0b-0c21-4d90-8551-472181e002a9",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"<think>\" 3 times.",
+      "file": "emailops-vertex-ai:backend/src/cortex/llm/runtime.py",
+      "line": 579,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "b04c5bf5-114d-4177-b5b8-1b2e84de1d1d",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/llm/runtime.py",
+      "line": 737,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "05841c0c-5414-4a3f-bacd-93c38aa4afa0",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 22 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/llm/runtime.py",
+      "line": 840,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "db04c032-7a67-4622-96fa-aef7189714cf",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"</think>\" 3 times.",
+      "file": "emailops-vertex-ai:backend/src/cortex/llm/runtime.py",
+      "line": 1003,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "519ec567-b9c2-4c40-87a2-c83fce3c9d36",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/prioritize_issues.py",
+      "line": 40,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "0c9fc15a-ccd3-409d-801e-9e4960ad361e",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/review_cli/providers/jules.py",
+      "line": 48,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "5f449045-5329-4ea7-843b-1f7ffd9f731f",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 22 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/ops/wait_for_node.py",
+      "line": 10,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "ced50c04-4ffc-46d8-bac0-156fb42b0098",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Unwrap this unnecessarily grouped subpattern.",
+      "file": "emailops-vertex-ai:scripts/utils/clean_conversation.py",
+      "line": 27,
+      "rule": "python:S6395"
+    },
+    {
+      "key": "e2eda297-cb21-4961-ad7f-41e846710246",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/utils/clean_conversation.py",
+      "line": 210,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "d04b16b3-68b5-4e86-8d9d-64c7d246d53a",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Use a union type expression for this type hint.",
+      "file": "emailops-vertex-ai:scripts/utils/clean_conversation.py",
+      "line": 272,
+      "rule": "python:S6546"
+    },
+    {
+      "key": "7bb86c29-4e4a-4e75-8688-3169a8aa3543",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 28 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/utils/move_tests.py",
+      "line": 126,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "d5da2cf8-f091-419f-b4fc-3ca312b61fca",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 24 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/utils/list_space_files_simple.py",
+      "line": 29,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "9e4b8cd4-39d1-4bc8-9161-e27c31470263",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 36 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/ingestion/fetch_s3_manifests.py",
+      "line": 25,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "8565d447-7fc2-449f-b884-5394288a641c",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 25 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/verification/verify_embeddings_live.py",
+      "line": 24,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "b88f7546-b70b-4470-9e3d-667c3f2f38e4",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/review_cli/reviewers/code_reviewer.py",
+      "line": 129,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "2383dcf4-9572-4a29-9389-e608b7ab8f61",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 26 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/review_cli/__main__.py",
+      "line": 126,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "a59c7e1c-9250-4cf6-8b8a-68f166150866",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"test@example.com\" 3 times.",
+      "file": "emailops-vertex-ai:scripts/verification/verify_idempotency.py",
+      "line": 67,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "c3037553-b178-45a8-ad48-cab49675cca4",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"2025-01-01T10:00:00Z\" 3 times.",
+      "file": "emailops-vertex-ai:scripts/verification/verify_idempotency.py",
+      "line": 73,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "eeefa22a-9a5f-43ae-8d11-85d692ddc56f",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/verification/verify_idempotency.py",
+      "line": 97,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "68b14508-5aa7-44e2-afb8-03e7ca4fc601",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 33 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/review_cli/scanners/file_scanner.py",
+      "line": 80,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "9248eb36-c4d5-459b-aa8a-5d64f0f56fa1",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Remove duplicates in this character class.",
+      "file": "emailops-vertex-ai:scripts/review_cli/scanners/file_scanner.py",
+      "line": 108,
+      "rule": "python:S5869"
+    },
+    {
+      "key": "024d45c8-d95d-414c-8d51-5ad015fde5d5",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 43 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/review_cli/scanners/file_scanner.py",
+      "line": 145,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "aaa39a25-f70b-4363-8ff7-afe756a4cfc9",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 32 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/utils/sample_validate.py",
+      "line": 17,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "98cbf094-dd37-4aa6-8655-b0c0f45c74a4",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 43 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/verification/k8s_validate.py",
+      "line": 12,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "8d361878-0096-4c00-8f74-f6a50def4e46",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 29 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/ingestion/fetch_schema_variations.py",
+      "line": 62,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "d651a7f3-b9b3-4514-b0e2-92ca5b886890",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Return a value of type \"str\" instead of \"NoneType\" or update function \"_mask_url\" type hint.",
+      "file": "emailops-vertex-ai:scripts/verification/verify_config.py",
+      "line": 54,
+      "rule": "python:S5886"
+    },
+    {
+      "key": "4efd8198-625b-493c-9573-41326a3ee47e",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 25 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/backfill_summaries.py",
+      "line": 77,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "6c2ad2a3-2a67-4384-8825-f37487ec4362",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 25 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/backfill_summaries.py",
+      "line": 181,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "62e74f80-6705-47b9-ab3c-7953a3ed2205",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 37 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/utils/upload_to_spaces.py",
+      "line": 130,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "75537994-e7c8-462c-9725-adbe6877aeb0",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Add the 'ExpectedBucketOwner' parameter to verify S3 bucket ownership.",
+      "file": "emailops-vertex-ai:scripts/move_blocker.py",
+      "line": 72,
+      "rule": "python:S7608"
+    },
+    {
+      "key": "19fedd52-8add-44e8-99b4-59480dd249ad",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Add the 'ExpectedBucketOwner' parameter to verify S3 bucket ownership.",
+      "file": "emailops-vertex-ai:scripts/move_blocker.py",
+      "line": 73,
+      "rule": "python:S7608"
+    },
+    {
+      "key": "03319c70-e6d3-416c-b9d8-25cc70edc01a",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 26 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/verification/verify_s3_manifests.py",
+      "line": 59,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "92b9b23f-afc0-415f-89b4-2abdcc0991f9",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/verification/verify_s3_manifests.py",
+      "line": 93,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "0e814f4e-b560-40bc-a159-ee94f01c03df",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/verification/verify_participants.py",
+      "line": 125,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "7c5899ea-5bf3-40ba-b3cf-34de569403ba",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/check_upload_progress.py",
+      "line": 46,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "2b4cf8eb-f21d-408b-8a5d-d834c6444895",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/ingestion/s3_cli.py",
+      "line": 42,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "9e4e57d5-9f24-442b-a34d-585439f136d4",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 32 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/ingestion/s3_cli.py",
+      "line": 116,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "4b514f14-f9b6-4a2b-b380-a2a21b254dd2",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Use a union type expression for this type hint.",
+      "file": "emailops-vertex-ai:scripts/utils/generate_secrets.py",
+      "line": 9,
+      "rule": "python:S6546"
+    },
+    {
+      "key": "d7f07c30-b6ae-4933-ae8a-faed139d94bb",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 45 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/ops/backfill_participants.py",
+      "line": 27,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "8bf61a14-8a61-4ce0-8a14-f55ace4d98ec",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/utils/temp_check_do_spaces.py",
+      "line": 11,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "4fbe5f78-4120-42cd-8cdd-c2b53f6dd7bf",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Add the 'ExpectedBucketOwner' parameter to verify S3 bucket ownership.",
+      "file": "emailops-vertex-ai:scripts/utils/debug_manifest.py",
+      "line": 75,
+      "rule": "python:S7608"
+    },
+    {
+      "key": "f82b7b1b-7410-4778-91d6-5013873384da",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 30 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/legacy/analyze_diffs.py",
+      "line": 17,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "78d58483-3e4b-4b43-8b05-50d0463e74e2",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 26 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/run_db_cleanup.py",
+      "line": 34,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "824c06b0-b395-447a-b028-4915c07edfda",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Add replacement fields or use a normal string instead of an f-string.",
+      "file": "emailops-vertex-ai:scripts/download_gguf.py",
+      "line": 82,
+      "rule": "python:S3457"
+    },
+    {
+      "key": "0c2881f9-a29a-4926-a2ba-bc5c7bc43dfe",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/fix_all_syntax.py",
+      "line": 39,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "912f7e68-020d-4ca8-a13f-35b0e32f36d6",
+      "severity": "CRITICAL",
+      "type": "VULNERABILITY",
+      "message": "Enable server certificate validation on this SSL/TLS connection.",
+      "file": "emailops-vertex-ai:scripts/setup_sonar_auth.py",
+      "line": 50,
+      "rule": "python:S4830"
+    },
+    {
+      "key": "1a968a03-bb6d-4d72-839b-2519d87dfc2a",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Don't use `datetime.datetime.utcnow` to create this datetime object.",
+      "file": "emailops-vertex-ai:db_smoke_test.py",
+      "line": 42,
+      "rule": "python:S6903"
+    },
+    {
+      "key": "c06d3773-0100-4a85-be0f-bdba860f7bde",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 22 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/ingestion/rechunk.py",
+      "line": 27,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "a9143c03-16a7-4e5d-b628-a3809160be60",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 24 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/cmd_draft.py",
+      "line": 32,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "bc7d419b-4721-444b-9bee-f91c80471e3c",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/cmd_grounding.py",
+      "line": 91,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "984c3143-4e1a-469a-b135-24c427a85859",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 50 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/cmd_login.py",
+      "line": 66,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "3cad7790-c789-4c1d-a76b-ab99875b617b",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"storage_smoke_test.txt\" 3 times.",
+      "file": "emailops-vertex-ai:storage_smoke_test.py",
+      "line": 23,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "578e3458-6007-492b-ac4a-6e8bfa5c92ff",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"emailops.ui\" 4 times.",
+      "file": "emailops-vertex-ai:ui/emailops_ui.py",
+      "line": 75,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "eed8beb8-cd4c-43a1-8df9-e0954584e85d",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 26 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/retrieval/fts_search.py",
+      "line": 153,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "1f526120-8d42-4f2d-aa65-b43b500dd17b",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/config/models.py",
+      "line": 32,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "2eaa27a5-93d0-48ff-bd5f-c629bed8824c",
+      "severity": "BLOCKER",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to not always return the same value.",
+      "file": "emailops-vertex-ai:backend/src/cortex/config/models.py",
+      "line": 199,
+      "rule": "python:S3516"
+    },
+    {
+      "key": "ce031f36-e72a-465a-9396-7ee20dab3db4",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"Database configuration unavailable\" 3 times.",
+      "file": "emailops-vertex-ai:backend/src/cortex/db/session.py",
+      "line": 101,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "30cf1942-a793-46c3-9a6a-ae8249843c5d",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 26 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/domain_models/facts_ledger.py",
+      "line": 74,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "fc2b81fc-d21a-4f7d-be50-4548cbfeaafa",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 22 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/embeddings/client.py",
+      "line": 34,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "b303ec32-8a27-416f-9603-c6acd30624b7",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/ingestion/mailroom.py",
+      "line": 521,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "450b7155-42cd-469e-a178-a93935574f08",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"cortex.orchestration.graphs\" 3 times.",
+      "file": "emailops-vertex-ai:backend/src/cortex/orchestration/__init__.py",
+      "line": 13,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "39a2a050-0172-40a8-b0cf-9341299e9cc8",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"cortex.orchestration.nodes\" 19 times.",
+      "file": "emailops-vertex-ai:backend/src/cortex/orchestration/__init__.py",
+      "line": 17,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "5f72658f-2799-4af0-9f62-464e888a2b37",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"cortex.orchestration.states\" 3 times.",
+      "file": "emailops-vertex-ai:backend/src/cortex/orchestration/__init__.py",
+      "line": 37,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "5531b391-f057-4905-8185-7519fbcf35c9",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/rag_api/routes_search.py",
+      "line": 31,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "e13145b4-3753-4728-b7be-ace547160be3",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"Search failed\" 3 times.",
+      "file": "emailops-vertex-ai:backend/src/cortex/rag_api/routes_search.py",
+      "line": 76,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "57d0dbcd-780b-485d-aa55-d38761f91661",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/retrieval/filter_resolution.py",
+      "line": 69,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "2c229087-ed93-48f5-8347-836c41adce3b",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/retrieval/filters.py",
+      "line": 243,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "9ebdada1-2d5a-4a6a-b275-03ba2c8257f4",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 30 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/security/auth.py",
+      "line": 65,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "a531a8e1-e5de-4470-986c-aa7aaea58626",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/_config_helpers.py",
+      "line": 56,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "6baedca9-8660-41c0-9fcb-d22e4a9d28a0",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/_s3_uploader.py",
+      "line": 131,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "d648f862-c51e-4d95-b43f-524cf24cda78",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 26 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/cmd_safety.py",
+      "line": 53,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "1e41ae94-1310-41d8-b004-d1923031d7f1",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 37 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/cmd_search.py",
+      "line": 77,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "4e094fa3-1889-4359-b634-dd6406a61d54",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 30 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/cmd_search.py",
+      "line": 148,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "ba02c633-99a4-4bdc-9517-0ffc435bf3ad",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/audit/__init__.py",
+      "line": 56,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "36966ff1-804e-4484-8ed9-fa1354ac6ac8",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 29 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/intelligence/graph.py",
+      "line": 325,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "d7f9b84f-6455-4996-a478-b35e1943da72",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 77 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/intelligence/graph.py",
+      "line": 386,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "b31df31d-d7e0-45a2-a1c9-d37a2960e2b4",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 37 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/intelligence/graph_discovery.py",
+      "line": 101,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "cade4472-3408-472d-80a7-85f7ec74273d",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"Graph not initialized\" 3 times.",
+      "file": "emailops-vertex-ai:backend/src/cortex/rag_api/routes_answer.py",
+      "line": 36,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "f7fc59dc-5209-4695-8957-a2f36c0893ab",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 25 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/rag_api/routes_answer.py",
+      "line": 50,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "516d33b9-cb8e-499b-a6f2-47fb655cb206",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"Answer workflow failed\" 4 times.",
+      "file": "emailops-vertex-ai:backend/src/cortex/rag_api/routes_answer.py",
+      "line": 97,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "fb9f1037-b5f2-4c89-aab5-b7fde1ecabbf",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"Summarization failed\" 4 times.",
+      "file": "emailops-vertex-ai:backend/src/cortex/rag_api/routes_summarize.py",
+      "line": 117,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "1a3922fe-7042-4425-991c-5cd75bde5174",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/retrieval/_hybrid_helpers.py",
+      "line": 148,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "3b1b404e-480e-4026-9606-4c24f0efc7fe",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 40 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/operations/rechunk.py",
+      "line": 21,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "d26d8ee8-3647-44fc-bd91-9e219dca8e08",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/config/audit_config.py",
+      "line": 257,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "a7cda9d2-abac-4003-a67a-92df5498451f",
+      "severity": "BLOCKER",
+      "type": "CODE_SMELL",
+      "message": "Rename method \"SECRET_KEY\" to prevent any misunderstanding/clash with method \"secret_key\" defined on line 128",
+      "file": "emailops-vertex-ai:backend/src/cortex/config/loader.py",
+      "line": 135,
+      "rule": "python:S1845"
+    },
+    {
+      "key": "3a4275f9-dc9f-4af8-b2ec-0febb4755f87",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/rag_api/models.py",
+      "line": 169,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "c0bf4e90-5919-4068-ba18-37210746112e",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 32 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/retrieval/reranking.py",
+      "line": 106,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "188505a1-e597-4fa8-a363-08f1788e416b",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/retrieval/reranking.py",
+      "line": 287,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "cf8bfea8-0bb4-46a9-85e7-6d027cbbd091",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"now()\" 8 times.",
+      "file": "emailops-vertex-ai:backend/migrations/versions/001_initial_schema.py",
+      "line": 61,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "f255f654-d7e9-4f2b-afe2-6bd20b8fdc87",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"conversations.conversation_id\" 3 times.",
+      "file": "emailops-vertex-ai:backend/migrations/versions/001_initial_schema.py",
+      "line": 105,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "258a92fb-88d7-4812-8a79-486656d7d993",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 30 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/chunking/chunker.py",
+      "line": 360,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "115f090a-5771-4743-85d2-444eba5d5038",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 40 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/indexer.py",
+      "line": 101,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "055b1583-959e-411e-84ea-11fdcaa64646",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 22 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/observability.py",
+      "line": 452,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "af65b280-9aaa-4d3a-9cdc-5bbb31c5337c",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 51 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/rag_api/routes_ingest.py",
+      "line": 519,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "2860b1bd-add5-48b4-93d2-455dc0bab79c",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/retrieval/_hybrid_helpers.py",
+      "line": 85,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "496b059f-76a1-4c49-b6f9-0cba69be31a4",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Merge this if statement with the enclosing one.",
+      "file": "emailops-vertex-ai:backend/src/cortex/retrieval/_hybrid_helpers.py",
+      "line": 137,
+      "rule": "python:S1066"
+    },
+    {
+      "key": "2fd1124e-72e0-433b-a272-5f89062f6c57",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/retrieval/graph_search.py",
+      "line": 79,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "e4cd0ef9-762e-471e-8d65-d213dce1c687",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/retrieval/graph_search.py",
+      "line": 410,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "8969d3e9-69f0-43a5-8803-888960104ed0",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/retrieval/hybrid_search.py",
+      "line": 148,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "683e1574-9883-4086-8ff5-5a8c705a613e",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 39 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/retrieval/hybrid_search.py",
+      "line": 276,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "3d291eb6-ee7c-4ba3-a148-8ca98be39636",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"cortex.safety.guardrails_client\" 3 times.",
+      "file": "emailops-vertex-ai:backend/src/cortex/safety/__init__.py",
+      "line": 42,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "ba61914e-a853-49cb-862f-4592da660ff7",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"cortex.safety.grounding\" 5 times.",
+      "file": "emailops-vertex-ai:backend/src/cortex/safety/__init__.py",
+      "line": 46,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "1d33e565-2ee4-448d-b826-aa548e46f19a",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Change this argument; Function \"contains_injection\" expects a different type",
+      "file": "emailops-vertex-ai:backend/src/cortex/security/test_injection_defense.py",
+      "line": 31,
+      "rule": "python:S5655"
+    },
+    {
+      "key": "d4fe96b5-45b7-42ce-b654-ac881cbd53e1",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \".scss\" 3 times.",
+      "file": "emailops-vertex-ai:bulk_code_review_all.py",
+      "line": 92,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "c63d5100-8e57-44e3-b311-9ec5b0aa6103",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 23 to the 15 allowed.",
+      "file": "emailops-vertex-ai:bulk_code_review_all.py",
+      "line": 461,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "ef5bf2b6-abaa-4842-9147-da1d868660a9",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 30 to the 15 allowed.",
+      "file": "emailops-vertex-ai:bulk_code_review_all.py",
+      "line": 520,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "619d9191-4580-4d85-97ad-d4017a76b906",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/cmd_db.py",
+      "line": 157,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "27ccdc8d-a2d8-40b6-9c4c-65453c8895cf",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/cmd_pipeline.py",
+      "line": 19,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "ddf8b5c8-b804-4d78-9299-bba25bd8649c",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 23 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/s3_check.py",
+      "line": 9,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "87d0357c-d6cb-4621-ac77-72473ff49503",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/tui.py",
+      "line": 38,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "5682a17d-c754-410a-9256-2b2c2a8969c0",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Add missing parameters language.",
+      "file": "emailops-vertex-ai:scripts/review_cli/providers/jules.py",
+      "line": 48,
+      "rule": "python:S2638"
+    },
+    {
+      "key": "d5a414ef-8a73-4459-a507-949d0f5334b2",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 32 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/review_cli/providers/openai_compat.py",
+      "line": 118,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "4ffea89a-5d60-48d8-aec9-31461ac87170",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 32 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/review_cli/reports/reporter.py",
+      "line": 90,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "b258b7c4-bb64-49e7-8f06-7536bf8d1d9c",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Either merge this branch with the identical one on line \"435\" or change one of the implementations.",
+      "file": "emailops-vertex-ai:backend/src/cortex/intelligence/graph.py",
+      "line": 437,
+      "rule": "python:S1871"
+    },
+    {
+      "key": "34b6c878-a52c-4a18-954a-a17da820d07b",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/llm/gguf_provider.py",
+      "line": 153,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "aa4e2018-1b48-4e74-b781-69a840e78863",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 26 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/llm/runtime.py",
+      "line": 491,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "4d2ce661-f29c-4d80-bb22-f9e8d4662b55",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Remove this commented out code.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/cmd_db.py",
+      "line": 43,
+      "rule": "python:S125"
+    },
+    {
+      "key": "6b6804d8-9ec9-4e31-a81c-9479d8db47e5",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/orchestration/test_nodes.py",
+      "line": 25,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "697bd741-b187-40e4-bc86-a4c74c76d06a",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/orchestration/test_nodes.py",
+      "line": 32,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "629642e6-8db1-4b1d-8e6a-b71ca3f40654",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/orchestration/test_nodes.py",
+      "line": 41,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "7bef6999-a1e3-4759-b27f-83f67a81b6e5",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/orchestration/test_nodes.py",
+      "line": 49,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "920c7c3d-e6b5-4c7c-87db-2bcd84e5079d",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 38 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/ingestion/conv_manifest/validation.py",
+      "line": 40,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "f4947e1a-f20c-404b-a18a-005c03b05eeb",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.",
+      "file": "emailops-vertex-ai:bulk_code_review.py",
+      "line": 303,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "90412341-6e4e-428e-a59b-0d0b25b27b8a",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 27 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/ingestion/download_sample.py",
+      "line": 15,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "26fce080-b8e4-497c-8171-30af1d76a0cf",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/ingestion/mailroom.py",
+      "line": 131,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "b949196a-f627-4a9a-832c-02ad16f2b0d2",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/llm/gguf_provider.py",
+      "line": 66,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "0b2ed7b3-99b3-4aab-a231-e6a2eff83a1b",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 28 to the 15 allowed.",
+      "file": "emailops-vertex-ai:bulk_jules_review.py",
+      "line": 84,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "d3a791a6-b902-48a3-bb16-9377738cd05f",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.",
+      "file": "emailops-vertex-ai:merge_all_prs.py",
+      "line": 25,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "b54b4696-32ea-4a09-816e-dbe3380917dd",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"jules_batch_report.json\" 3 times.",
+      "file": "emailops-vertex-ai:retry_failed_sessions.py",
+      "line": 103,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "bb2b6037-e607-4392-9746-184768a1dd14",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Use an asynchronous file API instead of synchronous open() in this async function.",
+      "file": "emailops-vertex-ai:retry_failed_sessions.py",
+      "line": 191,
+      "rule": "python:S7493"
+    },
+    {
+      "key": "9d4a771d-110c-4ecd-8268-f03e85810113",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Use an asynchronous file API instead of synchronous open() in this async function.",
+      "file": "emailops-vertex-ai:summarize_jules_outcomes.py",
+      "line": 80,
+      "rule": "python:S7493"
+    },
+    {
+      "key": "6b549eee-d654-47c7-8df3-a82530314fb4",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 26 to the 15 allowed.",
+      "file": "emailops-vertex-ai:bulk_code_review.py",
+      "line": 350,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "128c9c63-aa87-40c8-8cb2-5b8aea7cc867",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.",
+      "file": "emailops-vertex-ai:bulk_jules_review.py",
+      "line": 207,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "c9f6e195-4194-4b48-a0a2-d95ded383dc9",
+      "severity": "BLOCKER",
+      "type": "CODE_SMELL",
+      "message": "Refactor this method to not always return the same value.",
+      "file": "emailops-vertex-ai:backend/src/cortex/config/models.py",
+      "line": 538,
+      "rule": "python:S3516"
+    },
+    {
+      "key": "cfe3c7bd-fcdb-4c06-a95a-97af765c1045",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Simplify this regular expression to reduce its complexity from 25 to the 20 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/ingestion/quoted_masks.py",
+      "line": 23,
+      "rule": "python:S5843"
+    },
+    {
+      "key": "81b46a5a-c87f-4870-9197-a0dbd5aed037",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Use an asynchronous file API instead of synchronous open() in this async function.",
+      "file": "emailops-vertex-ai:backend/tests/test_atomic_io.py",
+      "line": 103,
+      "rule": "python:S7493"
+    },
+    {
+      "key": "9d3493ec-adc0-4921-bc1f-a98207da4c60",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 34 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/ingestion/core_manifest.py",
+      "line": 344,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "06c93144-5400-498c-a15f-fff7e8ce5a71",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/test_async_cache.py",
+      "line": 86,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "0bb3bbc6-a2b0-4375-881f-becb96cb2ee9",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/test_async_cache.py",
+      "line": 100,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "4e83dd5a-0fea-463e-bb7e-ff59c7f58823",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/test_async_cache.py",
+      "line": 101,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "66ba5d45-2525-40d3-8fa5-deeae07b8166",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/test_async_cache.py",
+      "line": 116,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "12504e31-325a-4e51-823d-5875ec6f33e9",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/ingestion/backfill.py",
+      "line": 189,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "e990670b-a033-450f-9bbd-f555f26d6c9d",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 44 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/retrieval/filters.py",
+      "line": 130,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "41158bc5-3a19-4aed-ab2a-af332a242955",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 25 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/ingestion/fetch_real_deep_search.py",
+      "line": 14,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "9a7fa452-6e40-4379-bb57-3d52d6446582",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/security/validators.py",
+      "line": 379,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "681fc982-0f24-496e-86de-7831afd320fe",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 43 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/verification/validate_ingestion_results.py",
+      "line": 23,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "dbd88022-1ed7-4801-a80b-b3ed61bdb135",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/intelligence/query_expansion.py",
+      "line": 83,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "5552078d-7c25-4e71-81f7-6dac12e72053",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/llm/doks_scaler.py",
+      "line": 643,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "49d33275-2496-4d06-bc5f-0acbe0561c35",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Either remove or fill this block of code.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/cmd_patch.py",
+      "line": 15,
+      "rule": "python:S108"
+    },
+    {
+      "key": "6545868c-e616-4894-a599-4db220413bb9",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"Embeddings API\" 4 times.",
+      "file": "emailops-vertex-ai:backend/src/cortex/health.py",
+      "line": 88,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "9291e7e9-1e9e-4ef7-8423-06fbbca83445",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/unit/safety/test_grounding.py",
+      "line": 55,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "8f9c8752-46b8-4ec9-b075-4a11ffb0a02d",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 26 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/cmd_db.py",
+      "line": 37,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "4b145eb5-85f1-4467-8f5e-2cc16e7f9767",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:cli/tests/test_cmd_search.py",
+      "line": 84,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "3ba1a7f7-779e-4dcb-a6a0-297a0e2b830b",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"Reranker API\" 7 times.",
+      "file": "emailops-vertex-ai:backend/src/cortex/health.py",
+      "line": 127,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "07b41e35-8015-4782-ab3c-e59b18098c85",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/unit/safety/test_grounding.py",
+      "line": 85,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "ad6be793-7b22-4f3a-b32b-9a06034c1cb6",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/unit/safety/test_grounding.py",
+      "line": 86,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "bd1a0bdd-9e82-437f-beca-24c9d16fd24f",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/unit/safety/test_grounding.py",
+      "line": 98,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "9977c312-2d7f-4f4d-9c29-ce3fba3de455",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/unit/safety/test_grounding.py",
+      "line": 99,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "bcb982d5-aad5-41a8-90ac-3c06a401f686",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/unit/safety/test_grounding.py",
+      "line": 115,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "659b5fba-7694-45f1-8c6b-db6c0e61e544",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/unit/safety/test_grounding.py",
+      "line": 129,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "f299727e-92ff-40ca-a2d4-182b457a95e0",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Remove this commented out code.",
+      "file": "emailops-vertex-ai:bulk_jules_review.py",
+      "line": 95,
+      "rule": "python:S125"
+    },
+    {
+      "key": "f5797332-7daf-4f1a-a93a-f22985e4f24a",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Use an asynchronous file API instead of synchronous open() in this async function.",
+      "file": "emailops-vertex-ai:bulk_jules_review.py",
+      "line": 276,
+      "rule": "python:S7493"
+    },
+    {
+      "key": "d4e77778-2aac-431c-92b5-09c7d6d2f857",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Reraise this exception to stop the application as the user expects",
+      "file": "emailops-vertex-ai:cli/tests/test_main_refactored.py",
+      "line": 238,
+      "rule": "python:S5754"
+    },
+    {
+      "key": "44b7a03e-5601-4eab-994e-dad7d952a54b",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 23 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/operations/backfill_graph.py",
+      "line": 158,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "52f32d57-04d5-4c15-b618-b58c2f7d7f02",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/backfill_graph.py",
+      "line": 172,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "8c792519-5c05-40a2-8960-e4c465f9bb8e",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Remove the unused function parameter \"prompts\".",
+      "file": "emailops-vertex-ai:backend/src/cortex/prompts/__init__.py",
+      "line": 348,
+      "rule": "python:S1172"
+    },
+    {
+      "key": "4a3eb4bd-b8bd-4950-976f-8b415f766c9b",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 25 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/apply_per_issue_patches.py",
+      "line": 118,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "f6b75c3a-0ee5-4932-86ee-c3064ce262d4",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/apply_per_issue_patches.py",
+      "line": 210,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "bdebad1a-a3e5-4289-a172-f535278c5cbe",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/ops/manage_embeddings.py",
+      "line": 28,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "76875033-03f4-4948-a754-edbed6147f27",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 23 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/verify_and_fix_patches.py",
+      "line": 131,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "c9e05b43-0df1-4ed1-9503-6d79a84d90b9",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/verify_and_fix_patches.py",
+      "line": 201,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "fe71db11-e7e4-45ef-bb7f-d9ba78bc69a3",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 41 to the 15 allowed.",
+      "file": "emailops-vertex-ai:workers/src/cortex_workers/maintenance/resolve_entities.py",
+      "line": 29,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "c0071da9-e878-4c39-8aa7-50fc06878132",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.",
+      "file": "emailops-vertex-ai:workers/src/cortex_workers/maintenance/resolve_entities.py",
+      "line": 138,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "2d3add00-d553-4998-af4f-f9d959495a87",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/test_vector_store_unit.py",
+      "line": 47,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "11beb800-b296-45a0-934c-87c809247722",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/test_vector_store_unit.py",
+      "line": 62,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "fca49be0-0eec-4b7a-87ea-115b77cc9a74",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/test_vector_store_unit.py",
+      "line": 108,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "eb157a8d-54bb-49ab-9b50-80b8b1d400f7",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/test_doks_scaler.py",
+      "line": 26,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "268a69f3-7d1c-44f4-b5b7-cdbf6f634207",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/test_doks_scaler.py",
+      "line": 28,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "7d7fff87-4acf-462b-91ef-996e056877ba",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/test_doks_scaler.py",
+      "line": 30,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "1a0a22b6-3644-42fe-ad91-7709c221daec",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/test_doks_scaler.py",
+      "line": 41,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "71e9916b-6ea8-4dbf-8215-3794835d0bde",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/test_doks_scaler.py",
+      "line": 188,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "8a00edf1-d8b0-4bb1-9c88-e6dbd350be3e",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/test_doks_scaler.py",
+      "line": 190,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "34a7dc4e-9058-450d-8cfd-b3aa3fb08dd4",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/test_nodes_unit.py",
+      "line": 400,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "48e40ae0-d3d1-4abf-908e-ba2cca080532",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Change this argument; Function \"backfill_embeddings\" expects a different type",
+      "file": "emailops-vertex-ai:backend/tests/unit/test_backfill.py",
+      "line": 71,
+      "rule": "python:S5655"
+    },
+    {
+      "key": "78ab3c4c-a814-4ef8-a66a-5d442207ae57",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "The return value of \"__getitem__\" must be used.",
+      "file": "emailops-vertex-ai:backend/tests/unit/test_email_processing_coverage.py",
+      "line": 62,
+      "rule": "python:S2201"
+    },
+    {
+      "key": "ce64dc64-cb7d-43c6-b3ef-a63ff18bf4b6",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/test_hybrid_search.py",
+      "line": 94,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "01400190-84b2-4335-b24f-33c4868ea136",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Bind this resource's automounted service account to RBAC or disable automounting.",
+      "file": "emailops-vertex-ai:k8s/ai-bundle.yaml",
+      "line": 30,
+      "rule": "kubernetes:S6865"
+    },
+    {
+      "key": "84fd4227-b25f-4002-92e4-1178e884b661",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Specify a storage limit for this container.",
+      "file": "emailops-vertex-ai:k8s/ai-bundle.yaml",
+      "line": 31,
+      "rule": "kubernetes:S6870"
+    },
+    {
+      "key": "94f8a5a0-6815-4a02-b44a-7a2bb72118e2",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a storage request for this container.",
+      "file": "emailops-vertex-ai:k8s/ai-bundle.yaml",
+      "line": 31,
+      "rule": "kubernetes:S6897"
+    },
+    {
+      "key": "9b5d19cf-4488-435a-820e-589c921c085a",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Use a specific version tag for the image instead of \"latest\".",
+      "file": "emailops-vertex-ai:k8s/ai-bundle.yaml",
+      "line": 32,
+      "rule": "kubernetes:S6596"
+    },
+    {
+      "key": "fbad7b12-2482-4a5c-a692-37d5255a0cec",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Bind this resource's automounted service account to RBAC or disable automounting.",
+      "file": "emailops-vertex-ai:k8s/sonarqube.yaml",
+      "line": 17,
+      "rule": "kubernetes:S6865"
+    },
+    {
+      "key": "2011b129-6b17-475c-94de-ef7e2010425d",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a storage request for this container.",
+      "file": "emailops-vertex-ai:k8s/sonarqube.yaml",
+      "line": 18,
+      "rule": "kubernetes:S6897"
+    },
+    {
+      "key": "11052de7-3f00-44d8-9c30-c419ece59a0d",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Remove the unused function parameter \"tenant_ns\".",
+      "file": "emailops-vertex-ai:backend/src/cortex/ingestion/mailroom.py",
+      "line": 315,
+      "rule": "python:S1172"
+    },
+    {
+      "key": "14f188c9-8f3d-4caf-8819-1335c377968e",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Remove the unused function parameter \"conversation_id\".",
+      "file": "emailops-vertex-ai:backend/src/cortex/ingestion/mailroom.py",
+      "line": 621,
+      "rule": "python:S1172"
+    },
+    {
+      "key": "78d85f06-baf6-4666-aa6f-3ce96529847e",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Remove the unused function parameter \"tenant_id\".",
+      "file": "emailops-vertex-ai:backend/src/cortex/ingestion/mailroom.py",
+      "line": 621,
+      "rule": "python:S1172"
+    },
+    {
+      "key": "c55a8441-6dd9-439f-9dd7-c948e26a2645",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Remove the unused function parameter \"tenant_id\".",
+      "file": "emailops-vertex-ai:backend/src/cortex/ingestion/backfill.py",
+      "line": 59,
+      "rule": "python:S1172"
+    },
+    {
+      "key": "dc1eb5d2-2dd8-4882-8aee-b589918c949d",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Remove this commented out code.",
+      "file": "emailops-vertex-ai:backend/tests/test_ported_logic.py",
+      "line": 55,
+      "rule": "python:S125"
+    },
+    {
+      "key": "21ef1981-3d3e-4965-9705-8b763b2c4bf2",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Reraise this exception to stop the application as the user expects",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/tui.py",
+      "line": 172,
+      "rule": "python:S5754"
+    },
+    {
+      "key": "565fc46b-93ab-4926-aeea-4003754ebffb",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a storage request for this container.",
+      "file": "emailops-vertex-ai:k8s/llm-minimax-deployment.yaml",
+      "line": 26,
+      "rule": "kubernetes:S6897"
+    },
+    {
+      "key": "55424e66-428e-47bc-a7bb-686a9334bdda",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Use a specific version tag for the image instead of \"latest\".",
+      "file": "emailops-vertex-ai:k8s/llm-minimax-deployment.yaml",
+      "line": 27,
+      "rule": "kubernetes:S6596"
+    },
+    {
+      "key": "63190825-8030-4f99-86e2-dc06a278a031",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Remove this assignment to local variable 'factor'; the value is never used.",
+      "file": "emailops-vertex-ai:backend/src/cortex/chunking/chunker.py",
+      "line": 315,
+      "rule": "python:S1854"
+    },
+    {
+      "key": "5d15044d-2486-46ae-a83a-070955dba22e",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/llm/runtime.py",
+      "line": 958,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "0a40954e-aa9f-4ee2-a483-e08190e61041",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/test_reranking.py",
+      "line": 38,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "a0f7b05d-c679-4718-b3b0-ad14a419f403",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/test_reranking.py",
+      "line": 39,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "b38235c6-b177-48dc-9c4d-a3664b0d2c35",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/test_reranking.py",
+      "line": 46,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "feb003d8-26fc-4875-9642-248add6e9b46",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 31 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/indexing/metadata.py",
+      "line": 440,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "14180410-1bb3-4136-b078-be3b02f7c811",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 40 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/indexing/metadata.py",
+      "line": 569,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "b3cae7a8-1228-4ac5-b179-1545793b9a64",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 23 to the 15 allowed.",
+      "file": "emailops-vertex-ai:cli/src/cortex_cli/indexing/metadata.py",
+      "line": 694,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "e4654dc2-64a4-4faa-ae6d-50c9704c6f14",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a storage request for this container.",
+      "file": "emailops-vertex-ai:k8s/overlays/tor1/retrieval-api.yaml",
+      "line": 35,
+      "rule": "kubernetes:S6897"
+    },
+    {
+      "key": "3b2971b6-ab21-4c24-ac86-5197c380998a",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Use a specific version tag for the image instead of \"latest\".",
+      "file": "emailops-vertex-ai:k8s/overlays/tor1/retrieval-api.yaml",
+      "line": 36,
+      "rule": "kubernetes:S6596"
+    },
+    {
+      "key": "e12cc0a9-707d-4c8a-ad94-a635fde5c9c6",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a storage request for this container.",
+      "file": "emailops-vertex-ai:k8s/qdrant.yaml",
+      "line": 29,
+      "rule": "kubernetes:S6897"
+    },
+    {
+      "key": "3a4fac6f-528d-425f-b101-e06228dc3181",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Use a specific version tag for the image instead of \"latest\".",
+      "file": "emailops-vertex-ai:k8s/qdrant.yaml",
+      "line": 30,
+      "rule": "kubernetes:S6596"
+    },
+    {
+      "key": "70d82d2e-6a00-47cf-820e-1e669f441995",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/verification/audit_env_vars.py",
+      "line": 58,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "ca6adde8-e674-41af-99fc-cd6c810ffa29",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "message": "Do not perform equality checks with floating point values.",
+      "file": "emailops-vertex-ai:backend/tests/test_summarize_api.py",
+      "line": 33,
+      "rule": "python:S1244"
+    },
+    {
+      "key": "a1dde145-71db-4332-a43d-3ffe9d5a2275",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Bind this resource's automounted service account to RBAC or disable automounting.",
+      "file": "emailops-vertex-ai:k8s/reranker-qwen-8b.yaml",
+      "line": 25,
+      "rule": "kubernetes:S6865"
+    },
+    {
+      "key": "3bf21988-1f33-4094-96dc-27ba9c61ca4a",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a CPU request for this container.",
+      "file": "emailops-vertex-ai:k8s/reranker-qwen-8b.yaml",
+      "line": 26,
+      "rule": "kubernetes:S6892"
+    },
+    {
+      "key": "a301ee51-af49-474f-b210-dd4c11c3bb20",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Specify a storage limit for this container.",
+      "file": "emailops-vertex-ai:k8s/reranker-qwen-8b.yaml",
+      "line": 26,
+      "rule": "kubernetes:S6870"
+    },
+    {
+      "key": "d145b8e7-c2b3-47ce-bb6e-e8c3323b6179",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a storage request for this container.",
+      "file": "emailops-vertex-ai:k8s/reranker-qwen-8b.yaml",
+      "line": 26,
+      "rule": "kubernetes:S6897"
+    },
+    {
+      "key": "efef2893-0eca-4adc-a5e8-581010c3ced4",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 41 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/verification/verify_complex.py",
+      "line": 17,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "ddab202f-f5d9-4080-85a1-1610e54c138a",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"Conversation.txt\" 3 times.",
+      "file": "emailops-vertex-ai:scripts/verification/verify_complex.py",
+      "line": 73,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "3838272b-b17b-4fa8-b27f-3444d0201fff",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"manifest.json\" 4 times.",
+      "file": "emailops-vertex-ai:scripts/verification/verify_complex.py",
+      "line": 106,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "01f51b74-c90e-4568-8d1e-be44be8648d4",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Bind this resource's automounted service account to RBAC or disable automounting.",
+      "file": "emailops-vertex-ai:k8s/gpu-buffer.yaml",
+      "line": 18,
+      "rule": "kubernetes:S6865"
+    },
+    {
+      "key": "603d968b-f6db-45f0-a14d-87838787fcfe",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a storage request for this container.",
+      "file": "emailops-vertex-ai:k8s/gpu-buffer.yaml",
+      "line": 19,
+      "rule": "kubernetes:S6897"
+    },
+    {
+      "key": "b4673787-1d72-4e22-83f4-61ae52d408c3",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.",
+      "file": "emailops-vertex-ai:scripts/ingestion/batch_ingest.py",
+      "line": 83,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "8d0ab102-1568-4239-b905-25d50fe5db22",
+      "severity": "BLOCKER",
+      "type": "BUG",
+      "message": "Add 1 missing arguments; 'process_folder' expects 2 positional arguments.",
+      "file": "emailops-vertex-ai:scripts/ingestion/batch_ingest.py",
+      "line": 126,
+      "rule": "python:S930"
+    },
+    {
+      "key": "49d644a4-1f42-4882-9567-56a48d30905e",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"2025-01-01T10:00:00Z\" 3 times.",
+      "file": "emailops-vertex-ai:scripts/verification/verify_mass_manifests.py",
+      "line": 47,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "f108cc03-8009-4bbf-9b86-3a2bc9643d51",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Add the 'ExpectedBucketOwner' to the 'ExtraArgs' parameter to verify S3 bucket ownership.",
+      "file": "emailops-vertex-ai:scripts/verification/k8s_validate.py",
+      "line": 104,
+      "rule": "python:S7608"
+    },
+    {
+      "key": "90cbd8fa-332b-44dd-89dc-e2386dd81317",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Bind this resource's automounted service account to RBAC or disable automounting.",
+      "file": "emailops-vertex-ai:k8s/minimax-m2-llm.yaml",
+      "line": 35,
+      "rule": "kubernetes:S6865"
+    },
+    {
+      "key": "96be9ef6-763f-432c-986a-ea4d5e6db4c4",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a storage request for this container.",
+      "file": "emailops-vertex-ai:k8s/minimax-m2-llm.yaml",
+      "line": 36,
+      "rule": "kubernetes:S6897"
+    },
+    {
+      "key": "c13140c5-3113-47b4-9f7b-9746e8dde082",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Specify a storage limit for this container.",
+      "file": "emailops-vertex-ai:k8s/minimax-m2-llm.yaml",
+      "line": 36,
+      "rule": "kubernetes:S6870"
+    },
+    {
+      "key": "6214097f-6f5c-4c35-ad71-a5a00d870694",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Use a specific version tag for the image instead of \"latest\".",
+      "file": "emailops-vertex-ai:k8s/minimax-m2-llm.yaml",
+      "line": 37,
+      "rule": "kubernetes:S6596"
+    },
+    {
+      "key": "1eef33ed-a1d8-4394-b682-aa967f36327c",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Use a paginator to retrieve all results from this boto3 operation.",
+      "file": "emailops-vertex-ai:scripts/check/check_s3.py",
+      "line": 55,
+      "rule": "python:S7622"
+    },
+    {
+      "key": "3f6a86ed-aead-4d15-9282-37dde392914f",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Add the 'ExpectedBucketOwner' parameter to verify S3 bucket ownership.",
+      "file": "emailops-vertex-ai:scripts/check/check_s3.py",
+      "line": 55,
+      "rule": "python:S7608"
+    },
+    {
+      "key": "d62162db-299a-4e52-b911-235a9e482f2c",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Define a constant instead of duplicating this literal \"Conversation.txt\" 3 times.",
+      "file": "emailops-vertex-ai:backend/src/cortex/ingestion/conv_loader.py",
+      "line": 24,
+      "rule": "python:S1192"
+    },
+    {
+      "key": "67d556cf-8f5b-4a5b-a8c1-69b9de6001bb",
+      "severity": "BLOCKER",
+      "type": "BUG",
+      "message": "Add 1 missing arguments; 'extract_attachment_text' expects 2 positional arguments.",
+      "file": "emailops-vertex-ai:backend/src/cortex/ingestion/conv_loader.py",
+      "line": 59,
+      "rule": "python:S930"
+    },
+    {
+      "key": "e617bdc2-85e6-4e80-9198-e0cfc972d3ed",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 29 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/observability.py",
+      "line": 373,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "282d9826-0072-43ac-8fce-4438eb85267c",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Add the 'ExpectedBucketOwner' to the 'ExtraArgs' parameter to verify S3 bucket ownership.",
+      "file": "emailops-vertex-ai:scripts/utils/sample_validate.py",
+      "line": 92,
+      "rule": "python:S7608"
+    },
+    {
+      "key": "990d1eb1-c2fe-49ff-927d-e9295504c78e",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 29 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/llm/doks_scaler.py",
+      "line": 301,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "a5847738-48e0-4b10-9707-04da09402f67",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Merge this if statement with the enclosing one.",
+      "file": "emailops-vertex-ai:backend/src/cortex/chunking/chunker.py",
+      "line": 273,
+      "rule": "python:S1066"
+    },
+    {
+      "key": "42222b44-19a2-4e90-8e09-2e813418c77c",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "message": "Bind this resource's automounted service account to RBAC or disable automounting.",
+      "file": "emailops-vertex-ai:k8s/backend-deployment.yaml",
+      "line": 24,
+      "rule": "kubernetes:S6865"
+    },
+    {
+      "key": "169cd4d0-a217-49a9-9142-78601a883135",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Specify a storage request for this container.",
+      "file": "emailops-vertex-ai:k8s/backend-deployment.yaml",
+      "line": 25,
+      "rule": "kubernetes:S6897"
+    },
+    {
+      "key": "caa24a3d-01ec-4804-85af-49e4d618c000",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Remove the unused function parameter \"tenant_id\".",
+      "file": "emailops-vertex-ai:backend/src/cortex/ingestion/text_preprocessor.py",
+      "line": 70,
+      "rule": "python:S1172"
+    },
+    {
+      "key": "055b2072-be5a-494f-bcdd-31852670db3b",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 22 to the 15 allowed.",
+      "file": "emailops-vertex-ai:ui/emailops_ui.py",
+      "line": 48,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "283d46f9-6ec8-45be-b8b9-313b0af8191d",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.",
+      "file": "emailops-vertex-ai:ui/emailops_ui.py",
+      "line": 544,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "5acd22c3-c605-4590-bfa8-1311ae2682ca",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "message": "Return a value of type \"MapReduceEmbeddingDriver\" instead of \"DistributedMapReduceDriver\" or update function \"get_mapreduce_driver\" type hint.",
+      "file": "emailops-vertex-ai:workers/src/cortex_workers/reindex_jobs/mapreduce_driver.py",
+      "line": 789,
+      "rule": "python:S5886"
+    },
+    {
+      "key": "d30feaa2-b3ab-417d-8aee-14139208aec5",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/text_extraction.py",
+      "line": 744,
+      "rule": "python:S3776"
+    },
+    {
+      "key": "94284a55-0c50-4caa-ad51-6b512443f79d",
+      "severity": "CRITICAL",
+      "type": "CODE_SMELL",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.",
+      "file": "emailops-vertex-ai:backend/src/cortex/text_extraction.py",
+      "line": 692,
+      "rule": "python:S3776"
+    }
+  ]
+}

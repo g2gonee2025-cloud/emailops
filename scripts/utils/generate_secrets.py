@@ -6,7 +6,7 @@ from textwrap import dedent
 from typing import Union
 
 
-def load_env_file(filepath: Union[str, Path] = ".env") -> dict[str, str]:
+def load_env_file(filepath: str | Path = ".env") -> dict[str, str]:
     """
     Load .env file, handling comments, quotes, and variable expansions.
     This avoids dependencies like python-dotenv for simple use cases.
@@ -25,14 +25,14 @@ def load_env_file(filepath: Union[str, Path] = ".env") -> dict[str, str]:
                     continue
 
                 # Regex to parse 'KEY=VALUE' pairs, handling optional quotes
-                match = re.match(r'^\s*([\w.-]+)\s*=\s*(.*?)?\s*$', line)
+                match = re.match(r"^\s*([\w.-]+)\s*=\s*(.*?)?\s*$", line)
                 if match:
                     key, val = match.groups()
                     # Remove surrounding quotes (single or double)
                     if val and val[0] == val[-1] and val[0] in ('"', "'"):
                         val = val[1:-1]
                     env_vars[key] = val
-    except (IOError, UnicodeDecodeError) as e:
+    except (OSError, UnicodeDecodeError) as e:
         raise ValueError(f"Error reading or parsing {filepath}: {e}") from e
 
     return env_vars
@@ -95,7 +95,7 @@ def generate_secrets_yaml() -> None:
             f.write(yaml_content)
         # SECURITY: Restrict file permissions to owner-only.
         output_path.chmod(0o600)
-    except (IOError, PermissionError) as e:
+    except (OSError, PermissionError) as e:
         print(
             f"Error: Could not write to {output_path}. Check permissions. {e}",
             file=sys.stderr,

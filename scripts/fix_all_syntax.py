@@ -15,7 +15,7 @@ def fix_file(path, dry_run=True):
     Returns True if the file was modified, False otherwise.
     """
     try:
-        with open(path, "r", encoding="utf-8", errors="surrogateescape") as f:
+        with open(path, encoding="utf-8", errors="surrogateescape") as f:
             content = f.read()
 
         if "__all__" not in content:
@@ -31,7 +31,7 @@ def fix_file(path, dry_run=True):
                 with open(path, "w", encoding="utf-8") as f:
                     f.write(new_content)
             return True
-    except (IOError, UnicodeDecodeError) as e:
+    except (OSError, UnicodeDecodeError) as e:
         print(f"Error processing {path}: {e}", file=sys.stderr)
     return False
 
@@ -86,10 +86,16 @@ def main():
                 if fix_file(path, dry_run=dry_run):
                     count += 1
 
-    print(f"\nTotal files to be fixed: {count}" if dry_run else f"\nTotal fixed files: {count}")
+    print(
+        f"\nTotal files to be fixed: {count}"
+        if dry_run
+        else f"\nTotal fixed files: {count}"
+    )
 
     if dry_run and count > 0:
-        print("To apply these changes, run the script again with the --no-dry-run flag.")
+        print(
+            "To apply these changes, run the script again with the --no-dry-run flag."
+        )
 
 
 if __name__ == "__main__":

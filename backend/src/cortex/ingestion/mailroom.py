@@ -16,7 +16,7 @@ import tempfile
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 from urllib.parse import urlparse
 
 from cortex.ingestion.core_manifest import resolve_subject
@@ -55,7 +55,8 @@ def process_job(job: IngestJobRequest) -> IngestJobSummary:
 
         try:
             temp_dir, local_convo_dir = _resolve_source(job)
-
+            if local_convo_dir is None:
+                raise ValueError("Failed to resolve source directory for ingestion")
             summary = asyncio.run(_ingest_conversation(local_convo_dir, job, summary))
 
         finally:
@@ -128,7 +129,7 @@ def _download_s3_source(source_uri: str) -> tuple[Path, Path]:
     return temp_dir, local_dir
 
 
-def _load_sftp_private_key(pkey_path: str) -> Optional[Any]:
+def _load_sftp_private_key(pkey_path: str) -> Any | None:
     """Try loading an SFTP private key with common formats."""
     try:
         import paramiko
@@ -141,11 +142,10 @@ def _load_sftp_private_key(pkey_path: str) -> Optional[Any]:
         paramiko.Ed25519Key,
         paramiko.RSAKey,
         paramiko.ECDSAKey,
-        paramiko.DSSKey,
     ):
         try:
             return key_class.from_private_key_file(pkey_path)
-        except paramiko.ssh_exception.SSHException:
+        except paramiko.SSHException:
             continue
     return None
 

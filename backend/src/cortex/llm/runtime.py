@@ -581,7 +581,9 @@ class VLLMProvider(BaseProvider):
             reasoning = raw_reasoning.strip() if isinstance(raw_reasoning, str) else ""
 
             if reasoning and THINK_OPEN_TAG not in content:
-                content = f"{THINK_OPEN_TAG}{reasoning}{THINK_CLOSE_TAG}\n{content}".strip()
+                content = (
+                    f"{THINK_OPEN_TAG}{reasoning}{THINK_CLOSE_TAG}\n{content}".strip()
+                )
             return content
         except Exception as e:
             raise ProviderError(f"LLM failed: {e}") from e
@@ -738,7 +740,9 @@ class LLMRuntime:
             logger.error("CPU GGUF embedding failed for %s: %s", text_type, e)
             return None
 
-    def _validate_embeddings(self, vectors: np.ndarray | None, expected_dim: int) -> np.ndarray:
+    def _validate_embeddings(
+        self, vectors: np.ndarray | None, expected_dim: int
+    ) -> np.ndarray:
         """Validate, normalize, and reshape embedding vectors."""
         if vectors is None:
             raise ProviderError("Embedding provider returned no vectors.")
@@ -749,7 +753,9 @@ class LLMRuntime:
             vectors = vectors.reshape(1, -1)
 
         if vectors.ndim != 2:
-            raise ProviderError(f"Embedding output must be 2D, got shape {vectors.shape}")
+            raise ProviderError(
+                f"Embedding output must be 2D, got shape {vectors.shape}"
+            )
 
         vectors = BaseProvider.normalize_l2(vectors)
 
@@ -786,11 +792,17 @@ class LLMRuntime:
         if embed_mode == "cpu":
             vectors = self._run_cpu_embedding(texts, text_type)
             if vectors is None:
-                raise ProviderError("GGUF model not available but embed_mode=cpu requires it")
+                raise ProviderError(
+                    "GGUF model not available but embed_mode=cpu requires it"
+                )
         elif embed_mode == "gpu":
-            vectors = self._embed_gpu_with_fallback(texts, text_type, cpu_fallback=False)
+            vectors = self._embed_gpu_with_fallback(
+                texts, text_type, cpu_fallback=False
+            )
         else:  # auto mode
-            vectors = self._embed_gpu_with_fallback(texts, text_type, cpu_fallback=cpu_fallback)
+            vectors = self._embed_gpu_with_fallback(
+                texts, text_type, cpu_fallback=cpu_fallback
+            )
 
         if vectors is None:
             raise ProviderError("No embedding provider available")
@@ -845,9 +857,7 @@ class LLMRuntime:
         kwargs.pop("messages", None)
         return self.complete_messages(messages, **kwargs)
 
-    def _call_model_for_json(
-        self, msgs: list[dict[str, str]], **kwargs: Any
-    ) -> str:
+    def _call_model_for_json(self, msgs: list[dict[str, str]], **kwargs: Any) -> str:
         """Call the LLM with settings optimized for JSON output."""
         base_kwargs = dict(kwargs)
         base_kwargs.setdefault("temperature", 0.0)
@@ -946,7 +956,10 @@ class LLMRuntime:
                 break
 
             raw_output = self._repair_json(
-                raw_output, last_error or "Unknown validation error", schema_json, **kwargs
+                raw_output,
+                last_error or "Unknown validation error",
+                schema_json,
+                **kwargs,
             )
 
         raise LLMOutputSchemaError(

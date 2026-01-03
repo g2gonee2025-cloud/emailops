@@ -3,13 +3,11 @@ import sys
 import urllib.parse
 from pathlib import Path
 
+from cortex.config.loader import get_config
+from cortex.db.models import Conversation
 from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-
-from cortex.config.loader import get_config
-from cortex.db.models import Conversation
-
 
 SAMPLE_IDS_LIMIT = 5
 
@@ -59,16 +57,19 @@ async def check_summaries():
                 func.count(Conversation.conversation_id),
                 func.count(
                     case(
-                        (Conversation.summary_text.is_(None), Conversation.conversation_id)
+                        (
+                            Conversation.summary_text.is_(None),
+                            Conversation.conversation_id,
+                        )
                     )
                 ),
                 func.count(
-                    case((Conversation.summary_text == "", Conversation.conversation_id))
+                    case(
+                        (Conversation.summary_text == "", Conversation.conversation_id)
+                    )
                 ),
             )
-            total_count, null_count, empty_count = (
-                await session.execute(stmt)
-            ).one()
+            total_count, null_count, empty_count = (await session.execute(stmt)).one()
 
             # 4. Valid Summaries
             valid_count = total_count - null_count - empty_count

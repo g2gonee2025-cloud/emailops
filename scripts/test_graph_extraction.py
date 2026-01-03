@@ -1,11 +1,14 @@
-import unittest
-import logging
 import asyncio
+import logging
+import unittest
+
 from cortex.intelligence.graph import GraphExtractor
 from dotenv import load_dotenv
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 load_dotenv(".env")
 
@@ -23,6 +26,7 @@ The payment deadline is next week.
 Thanks,
 Test User
 """
+
 
 class TestGraphExtraction(unittest.TestCase):
     async def test_extraction(self):
@@ -64,6 +68,7 @@ class TestGraphExtraction(unittest.TestCase):
 
         self.assertTrue(node_count > 0 or edge_count > 0, "Graph should not be empty.")
         logging.info("SUCCESS: Graph extraction yielded results.")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -3,8 +3,8 @@ Verify Graph RAG Extraction (Live LLM).
 """
 
 import logging
-import sys
 import os
+import sys
 import traceback
 
 
@@ -55,7 +55,9 @@ def test_graph_extractor_live():
     # We expect "Alice" and "Project Alpha" at minimum
     node_names = [str(n).lower() for n in G.nodes if isinstance(n, str)]
     if not any("alice" in n for n in node_names):
-        raise ValueError("Verification failed: Expected 'Alice' to be in the extracted nodes.")
+        raise ValueError(
+            "Verification failed: Expected 'Alice' to be in the extracted nodes."
+        )
 
     logger.info("GraphExtractor Live Test Passed!")
 
@@ -63,19 +65,25 @@ def test_graph_extractor_live():
 def verify_db_schema():
     """Verify EntityNode and EntityEdge have the expected __tablename__ attribute."""
     if not hasattr(EntityNode, "__tablename__"):
-        raise AttributeError("EntityNode model is missing the '__tablename__' attribute.")
+        raise AttributeError(
+            "EntityNode model is missing the '__tablename__' attribute."
+        )
     if not hasattr(EntityEdge, "__tablename__"):
-        raise AttributeError("EntityEdge model is missing the '__tablename__' attribute.")
+        raise AttributeError(
+            "EntityEdge model is missing the '__tablename__' attribute."
+        )
     logger.info("Graph DB Schema Passed!")
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+    )
     try:
         verify_db_schema()
         test_graph_extractor_live()
         logger.info("GRAPH VERIFICATION SUCCESSFUL")
-    except Exception as e:
+    except Exception:
         logger.error("GRAPH VERIFICATION FAILED")
         logger.error(traceback.format_exc())
         sys.exit(1)

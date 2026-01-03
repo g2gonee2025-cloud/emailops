@@ -23,12 +23,10 @@ except FileNotFoundError as e:
     sys.exit(1)
 
 
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
-
-
 from cortex.rag_api.routes_ingest import router as ingest_router
 from cortex.rag_api.routes_search import router as search_router
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 
 app = FastAPI()
 app.include_router(ingest_router)
@@ -44,7 +42,10 @@ def verify_api_definitions():
         # other than 404 means the route exists.
         print(f"GET /ingest/s3/folders status: {response.status_code}")
         if response.status_code == 404:
-            print("Error: Ingest route '/ingest/s3/folders' not found (404).", file=sys.stderr)
+            print(
+                "Error: Ingest route '/ingest/s3/folders' not found (404).",
+                file=sys.stderr,
+            )
             sys.exit(1)
 
         # Test Search Route existence
@@ -52,7 +53,10 @@ def verify_api_definitions():
         response = client.post("/search", json={})
         print(f"POST /search status (expected 422): {response.status_code}")
         if response.status_code != 422:
-            print(f"Error: Search route '/search' returned unexpected status {response.status_code}. Expected 422.", file=sys.stderr)
+            print(
+                f"Error: Search route '/search' returned unexpected status {response.status_code}. Expected 422.",
+                file=sys.stderr,
+            )
             sys.exit(1)
 
 

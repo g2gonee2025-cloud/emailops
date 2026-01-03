@@ -42,14 +42,16 @@ def analyze_diffs():
         # Calculate expected values
         try:
             expected_hash = _calculate_conversation_hash(conv_txt)
-        except IOError as e:
+        except OSError as e:
             print(f"Warning: Could not read {conv_txt}: {e}")
             continue
 
         attachments_dir = conv_dir / "attachments"
         expected_att_count = 0
         if attachments_dir.exists() and attachments_dir.is_dir():
-            expected_att_count = sum(1 for item in attachments_dir.iterdir() if item.is_file())
+            expected_att_count = sum(
+                1 for item in attachments_dir.iterdir() if item.is_file()
+            )
 
         # Compare
         reasons = []

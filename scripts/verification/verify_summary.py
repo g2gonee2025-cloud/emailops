@@ -23,7 +23,6 @@ else:
 
 from cortex.db.models import Chunk
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -31,8 +30,8 @@ def test_conversation_summarizer():
     """Test the summarizer logic in isolation."""
     # Mock LLM Runtime
     with patch("cortex.intelligence.summarizer.LLMRuntime") as MockLLM:
-        from cortex.intelligence.summarizer import ConversationSummarizer
         import numpy as np
+        from cortex.intelligence.summarizer import ConversationSummarizer
 
         mock_instance = MockLLM.return_value
         mock_instance.complete_text.return_value = (

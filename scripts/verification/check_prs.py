@@ -1,9 +1,8 @@
 import subprocess
 import sys
-from typing import List, Tuple
 
 
-def run_command(cmd: List[str]) -> subprocess.CompletedProcess:
+def run_command(cmd: list[str]) -> subprocess.CompletedProcess:
     """Execute a command and return the completed process result."""
     try:
         return subprocess.run(cmd, capture_output=True, text=True, check=False)
@@ -12,7 +11,7 @@ def run_command(cmd: List[str]) -> subprocess.CompletedProcess:
         sys.exit(1)
 
 
-def get_unmerged_prs(main_branch: str) -> List[Tuple[str, str]]:
+def get_unmerged_prs(main_branch: str) -> list[tuple[str, str]]:
     """Get all unmerged PR branches."""
     # Check if gh is installed
     gh_check = run_command(["gh", "--version"])
@@ -34,9 +33,7 @@ def get_unmerged_prs(main_branch: str) -> List[Tuple[str, str]]:
     pr_branches = [f"origin/{line.strip()}" for line in res.stdout.splitlines()]
 
     # Get all branches that are not merged into the main branch
-    unmerged_res = run_command(
-        ["git", "branch", "-r", "--no-merged", main_branch]
-    )
+    unmerged_res = run_command(["git", "branch", "-r", "--no-merged", main_branch])
     if unmerged_res.returncode != 0:
         print(
             f"Failed to get unmerged branches: {unmerged_res.stderr}", file=sys.stderr

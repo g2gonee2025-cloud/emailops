@@ -68,7 +68,9 @@ def try_provision(slug: str, node_count: int) -> bool:
         print(f"SUCCESS: Provisioned {slug}")
         return True
     except FileNotFoundError:
-        print("Error: 'doctl' command not found. Is DigitalOcean CLI installed and in your PATH?")
+        print(
+            "Error: 'doctl' command not found. Is DigitalOcean CLI installed and in your PATH?"
+        )
         sys.exit(1)
     except OSError as e:
         print(f"Error executing 'doctl': {e}", file=sys.stderr)
@@ -83,7 +85,9 @@ def try_provision(slug: str, node_count: int) -> bool:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Provision GPU nodes with retry logic.")
+    parser = argparse.ArgumentParser(
+        description="Provision GPU nodes with retry logic."
+    )
     parser.add_argument(
         "--count", type=int, default=1, help="Number of nodes to provision."
     )

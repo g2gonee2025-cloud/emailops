@@ -30,7 +30,9 @@ def analyze_tenant_data(tenant_id: str, db_url: str):
                 thread_count_result = fetch_one(
                     "SELECT count(*) FROM threads WHERE tenant_id = %s", (tenant_id,)
                 )
-                print(f"Threads: {thread_count_result[0] if thread_count_result else 0}")
+                print(
+                    f"Threads: {thread_count_result[0] if thread_count_result else 0}"
+                )
 
                 # 2. Messages
                 msg_count_result = fetch_one(
@@ -80,7 +82,7 @@ def analyze_tenant_data(tenant_id: str, db_url: str):
                         f"Chunk Spans (char_end - char_start) - Avg: {avg_span or 0:.1f}"
                     )
 
-    except psycopg2.Error as e:
+    except psycopg2.Error:
         # SECURITY: Do not print raw exception, which could leak sensitive data.
         print(
             "Error: A database error occurred. Check connection details and permissions.",
@@ -88,7 +90,7 @@ def analyze_tenant_data(tenant_id: str, db_url: str):
         )
         # EXCEPTION_HANDLING: Re-raise to provide a traceback and signal failure.
         raise
-    except Exception as e:
+    except Exception:
         # SECURITY: Do not print raw exception.
         print("Error: An unexpected error occurred.", file=sys.stderr)
         # EXCEPTION_HANDLING: Re-raise to provide a traceback and signal failure.
@@ -97,9 +99,7 @@ def analyze_tenant_data(tenant_id: str, db_url: str):
 
 def main():
     """Main function to parse arguments and run the analysis."""
-    parser = argparse.ArgumentParser(
-        description="Analyze tenant data in the database."
-    )
+    parser = argparse.ArgumentParser(description="Analyze tenant data in the database.")
     parser.add_argument(
         "--tenant-id",
         type=str,

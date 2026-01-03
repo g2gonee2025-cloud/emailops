@@ -25,10 +25,14 @@ class TestModelProfile:
         assert profile.name == "test-model"
         assert profile.params_total == pytest.approx(7.0)
         assert profile.context_length == 4096
-        assert profile.params_active == pytest.approx(7.0)  # Should default to params_total
+        assert profile.params_active == pytest.approx(
+            7.0
+        )  # Should default to params_total
         assert profile.quantization == "fp16"
         assert profile.additional_memory_gb == pytest.approx(4.0)
-        assert profile.kv_bytes_per_token == pytest.approx(DEFAULT_KV_CACHE_BYTES_PER_TOKEN)
+        assert profile.kv_bytes_per_token == pytest.approx(
+            DEFAULT_KV_CACHE_BYTES_PER_TOKEN
+        )
 
     def test_model_profile_with_params_active(self):
         """Test ModelProfile with explicit params_active (MoE model)."""

@@ -607,6 +607,7 @@ def _process_single_conversation(
 ) -> dict:
     """Process a single conversation and return the result."""
     import uuid
+
     from cortex.ingestion.mailroom import IngestJob, process_job
 
     if not json_output:
@@ -810,7 +811,7 @@ def _perform_indexing(
             else:
                 print(f"\n  {_colorize('⚠', 'yellow')} No conversations found to index")
             print()
-    except IOError as e:
+    except OSError as e:
         if json_output:
             print(json.dumps({"error": str(e), "success": False}))
         else:
@@ -819,7 +820,12 @@ def _perform_indexing(
 
 
 def _setup_indexing_run(
-    root: str, provider: str, workers: int, limit: int | None, force: bool, json_output: bool
+    root: str,
+    provider: str,
+    workers: int,
+    limit: int | None,
+    force: bool,
+    json_output: bool,
 ) -> Path:
     """Validate root and print header for indexing."""
     root_path = _validate_index_root(root, json_output)
@@ -960,7 +966,7 @@ def _call_answer_api(
         else:
             print(f"\n  {_colorize('ERROR:', 'red')} {msg}")
         raise
-    except IOError as e:
+    except OSError as e:
         if json_output:
             print(json.dumps({"error": str(e), "success": False}))
         else:

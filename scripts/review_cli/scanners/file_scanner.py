@@ -105,9 +105,9 @@ class FileScanner:
         # Check test files if skip_tests is enabled
         if self.config.skip_tests:
             # More precise test file matching
-            is_test = re.search(r"(^|[/_\\\])(tests?|__tests__)([/_\\\]]|$)", rel_path.lower()) or re.search(
-                r"(^|[/_])(test_.*|.*_test)\.py$", name.lower()
-            )
+            is_test = re.search(
+                r"(^|[/_\\\])(tests?|__tests__)([/_\\\]]|$)", rel_path.lower()
+            ) or re.search(r"(^|[/_])(test_.*|.*_test)\.py$", name.lower())
             if is_test:
                 return True
 
@@ -148,7 +148,11 @@ class FileScanner:
 
         for scan_dir_entry in self.config.directories:
             # Type guard for safety
-            scan_dir = Path(scan_dir_entry) if not isinstance(scan_dir_entry, Path) else scan_dir_entry
+            scan_dir = (
+                Path(scan_dir_entry)
+                if not isinstance(scan_dir_entry, Path)
+                else scan_dir_entry
+            )
 
             if not scan_dir.is_absolute():
                 scan_dir = self.project_root / scan_dir

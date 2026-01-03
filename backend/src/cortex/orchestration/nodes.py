@@ -113,7 +113,7 @@ def _complete_with_guardrails(
     messages: list[dict[str, str]],
     model_cls: type[BaseModel],
     correlation_id: str | None,
-):
+) -> Any:
     """Run structured completion with guardrails repair fallback."""
     schema = model_cls.model_json_schema()
     if not messages:
@@ -164,7 +164,7 @@ def _complete_with_guardrails(
 
 def _extract_patterns(
     text: str,
-    pattern: re.Pattern,
+    pattern: re.Pattern[str],
     seen: set[str],
     mentions: list[str],
     group: int = 1,
@@ -401,7 +401,7 @@ def _process_attachment_candidate(
             if not result.is_ok():
                 return None
 
-            validated_path = result.value
+            validated_path = result.unwrap()
             if _safe_stat_mb(validated_path) > attach_max_mb:
                 return None
 
@@ -545,7 +545,7 @@ def _process_available_attachment(
         if not result.is_ok():
             return None
 
-        validated_path = result.value
+        validated_path = result.unwrap()
         if not _is_allowed_path(validated_path, base_dir, allowed_patterns):
             return None
 
@@ -577,7 +577,7 @@ def _select_all_available_attachments(
     attach_max_mb = float(cfg.limits.skip_attachment_over_mb)
 
     selected: list[dict[str, Any]] = []
-    seen_paths = set()
+    seen_paths: set[str] = set()
 
     for c in context_snippets or []:
         attachment = _process_available_attachment(

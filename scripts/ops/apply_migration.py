@@ -5,6 +5,7 @@ from pathlib import Path
 
 import alembic.config
 
+
 def find_project_root(marker: str = "pyproject.toml") -> Path:
     """Locate the project root by searching for a marker file."""
     current_path = Path(__file__).resolve()
@@ -38,7 +39,7 @@ def main() -> None:
         if not db_url:
             logger.error("Database URL is not configured.")
             sys.exit(1)
-        if embed_dim is None: # Can be 0, so check for None
+        if embed_dim is None:  # Can be 0, so check for None
             logger.error("Embedding output dimensionality is not configured.")
             sys.exit(1)
 
@@ -55,7 +56,7 @@ def main() -> None:
             logger.info("Migrations applied successfully.")
         except Exception:
             logger.exception("Migration failed.")
-            sys.exit(1) # Propagate failure
+            sys.exit(1)  # Propagate failure
         finally:
             os.chdir(original_cwd)
 

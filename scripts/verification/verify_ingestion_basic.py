@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 from pathlib import Path
 
 try:
@@ -75,7 +75,9 @@ class TestSecurityAndIngestion(unittest.TestCase):
         cleaned, meta = processor.prepare_for_indexing(
             raw_text, text_type="attachment", tenant_id="test-tenant"
         )
-        self.assertNotIn("  ", cleaned, "Whitespace should be collapsed for attachments")
+        self.assertNotIn(
+            "  ", cleaned, "Whitespace should be collapsed for attachments"
+        )
         self.assertIsInstance(meta, dict)
         self.assertIn("pre_cleaned", meta)
         self.assertTrue(meta.get("pre_cleaned"))

@@ -12,7 +12,6 @@ from pathlib import Path
 import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
-
 from cortex.common.exceptions import ConfigurationError
 from cortex.config.loader import get_config
 

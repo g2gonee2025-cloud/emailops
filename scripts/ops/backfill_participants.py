@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 def backfill_participants(
-    limit: Optional[int] = None, dry_run: bool = False, batch_size: int = 100
+    limit: int | None = None, dry_run: bool = False, batch_size: int = 100
 ):
     """
     Backfill participants for conversations with NULL participants.
@@ -63,7 +63,7 @@ def backfill_participants(
 
         # Process in batches
         for i in range(0, total_conversations, batch_size):
-            batch = all_conversations[i:i + batch_size]
+            batch = all_conversations[i : i + batch_size]
             logger.info(
                 f"Processing batch {i // batch_size + 1}/{-(-total_conversations // batch_size)} (size: {len(batch)})"
             )
@@ -76,22 +76,32 @@ def backfill_participants(
                     conv_id, folder_name = row
 
                     if not folder_name:
-                        logger.warning(f"Skipping conversation {conv_id} due to NULL folder_name.")
+                        logger.warning(
+                            f"Skipping conversation {conv_id} due to NULL folder_name."
+                        )
                         skipped += 1
                         continue
 
                     # Build S3 prefix
                     prefix = f"Outlook/{folder_name}"
-                    folders = list(handler.list_conversation_folders(prefix=prefix, limit=1))
+                    folders = list(
+                        handler.list_conversation_folders(prefix=prefix, limit=1)
+                    )
 
                     if not folders or not hasattr(folders[0], "files"):
-                        logger.warning(f"No S3 folder or files found for: {folder_name}")
+                        logger.warning(
+                            f"No S3 folder or files found for: {folder_name}"
+                        )
                         skipped += 1
                         continue
 
                     # Find Conversation.txt
                     conv_txt_key = next(
-                        (f for f in folders[0].files if "conversation.txt" in f.lower()),
+                        (
+                            f
+                            for f in folders[0].files
+                            if "conversation.txt" in f.lower()
+                        ),
                         None,
                     )
 
@@ -103,25 +113,35 @@ def backfill_participants(
                     # Download and parse
                     content = handler.get_object_content(conv_txt_key)
                     text_content = content.decode("utf-8-sig", errors="replace")
-                    participants = extract_participants_from_conversation_txt(text_content)
+                    participants = extract_participants_from_conversation_txt(
+                        text_content
+                    )
 
                     if not participants:
                         logger.debug(f"No participants found in: {folder_name}")
                         skipped += 1
                         continue
 
-                    updates_to_perform.append({
-                        "conv_id": str(conv_id),
-                        "participants": json.dumps(participants)
-                    })
+                    updates_to_perform.append(
+                        {
+                            "conv_id": str(conv_id),
+                            "participants": json.dumps(participants),
+                        }
+                    )
 
                     if dry_run:
-                        logger.info(f"[DRY RUN] Would update {folder_name} with {len(participants)} participants")
+                        logger.info(
+                            f"[DRY RUN] Would update {folder_name} with {len(participants)} participants"
+                        )
                     else:
-                         logger.info(f"Queued update for {folder_name}: {len(participants)} participants")
+                        logger.info(
+                            f"Queued update for {folder_name}: {len(participants)} participants"
+                        )
 
                 except Exception:
-                    logger.exception(f"Error processing conversation {conv_id} from folder {folder_name}")
+                    logger.exception(
+                        f"Error processing conversation {conv_id} from folder {folder_name}"
+                    )
                     errors += 1
 
             if updates_to_perform:
@@ -143,7 +163,7 @@ def backfill_participants(
 
                         # Prepare data for VALUES clause
                         update_tuples = [
-                            (d['conv_id'], d['participants'])
+                            (d["conv_id"], d["participants"])
                             for d in updates_to_perform
                         ]
 
@@ -156,10 +176,14 @@ def backfill_participants(
                         if not dry_run:
                             updated += updated_count
 
-                        logger.info(f"Successfully updated {updated_count} conversations in batch.")
+                        logger.info(
+                            f"Successfully updated {updated_count} conversations in batch."
+                        )
 
                     except Exception:
-                        logger.exception("Database update failed for batch. Rolling back.")
+                        logger.exception(
+                            "Database update failed for batch. Rolling back."
+                        )
                         if transaction:
                             transaction.rollback()
                         errors += len(updates_to_perform)

@@ -225,9 +225,7 @@ async def run_review(config: Config) -> None:
                 summary = reviewer.get_summary()
                 reporter.save_json(reviewer.results, summary)
             except OSError as e:
-                console.print(
-                    f"[yellow]Warning: Incremental save failed: {e}[/yellow]"
-                )
+                console.print(f"[yellow]Warning: Incremental save failed: {e}[/yellow]")
 
         on_result = None
         if not config.review.dry_run and config.review.incremental_save:

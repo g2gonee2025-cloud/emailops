@@ -60,7 +60,9 @@ def main():
                 try:
                     resp = client.embeddings.create(input=[txt], model=EMBED_MODEL)
                     if not resp.data or not resp.data[0].embedding:
-                        print(f"  Error: Received no embedding for chunk {str(cid)[:8]}")
+                        print(
+                            f"  Error: Received no embedding for chunk {str(cid)[:8]}"
+                        )
                         continue
                     emb = resp.data[0].embedding
 
@@ -72,7 +74,9 @@ def main():
                 except OpenAI.APIError as e:
                     print(f"  API Error for chunk {str(cid)[:8]}: {e}")
                 except Exception as e:
-                    print(f"  An unexpected error occurred for chunk {str(cid)[:8]}: {e}")
+                    print(
+                        f"  An unexpected error occurred for chunk {str(cid)[:8]}: {e}"
+                    )
                     raise
 
         # Verify

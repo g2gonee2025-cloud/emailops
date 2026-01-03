@@ -368,7 +368,9 @@ def get_conversation_entity_map(
 
     # Safely parse UUIDs, filtering out invalid ones
     conv_uuid_ids = {
-        parsed for cid in conversation_ids if (parsed := _safe_parse_uuid(cid)) is not None
+        parsed
+        for cid in conversation_ids
+        if (parsed := _safe_parse_uuid(cid)) is not None
     }
     entity_uuid_ids = {
         parsed for eid in entity_ids if (parsed := _safe_parse_uuid(eid)) is not None

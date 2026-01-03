@@ -45,7 +45,9 @@ def count_remote_objects(s3, bucket: str, prefix: str) -> int:
 
 def main() -> None:
     """Main function."""
-    parser = argparse.ArgumentParser(description="Check upload progress for DigitalOcean Spaces.")
+    parser = argparse.ArgumentParser(
+        description="Check upload progress for DigitalOcean Spaces."
+    )
     parser.add_argument(
         "source_dir",
         type=Path,

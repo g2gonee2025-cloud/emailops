@@ -1,4 +1,3 @@
-
 """
 Debug a manifest file from S3.
 
@@ -12,6 +11,7 @@ Note:
     This script must be run as a module from the project root directory
     to ensure that the 'cortex' package is correctly resolved.
 """
+
 import argparse
 import json
 import re
@@ -45,7 +45,7 @@ def main():
     """
     parser = argparse.ArgumentParser(
         description="Debug a manifest file from S3.",
-        epilog="Example: python3 -m scripts.utils.debug_manifest raw/outlook/some-file/manifest.json"
+        epilog="Example: python3 -m scripts.utils.debug_manifest raw/outlook/some-file/manifest.json",
     )
     parser.add_argument("key", help="The S3 key of the manifest file to debug.")
     args = parser.parse_args()
@@ -54,8 +54,16 @@ def main():
         config = get_config()
 
         # Null-safety check for storage configuration
-        if not all([config.storage, config.storage.bucket_raw, config.storage.endpoint_url,
-                    config.storage.region, config.storage.access_key, config.storage.secret_key]):
+        if not all(
+            [
+                config.storage,
+                config.storage.bucket_raw,
+                config.storage.endpoint_url,
+                config.storage.region,
+                config.storage.access_key,
+                config.storage.secret_key,
+            ]
+        ):
             print("Error: S3 storage configuration is incomplete.", file=sys.stderr)
             sys.exit(1)
 
@@ -68,7 +76,10 @@ def main():
             config=Config(signature_version="s3v4"),
         )
     except (ConfigurationError, BotoCoreError) as e:
-        print(f"Error: Configuration or Boto3 client initialization failed: {e}", file=sys.stderr)
+        print(
+            f"Error: Configuration or Boto3 client initialization failed: {e}",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     try:

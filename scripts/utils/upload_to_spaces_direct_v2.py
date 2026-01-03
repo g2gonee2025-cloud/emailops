@@ -50,7 +50,9 @@ def get_content_type(file_path: Path) -> str:
     return content_type or "application/octet-stream"
 
 
-def upload_file(s3_client, local_path: Path, s3_key: str, overwrite: bool = False) -> str:
+def upload_file(
+    s3_client, local_path: Path, s3_key: str, overwrite: bool = False
+) -> str:
     """
     Upload a single file atomically using a conditional PutObject operation.
     This avoids a TOCTOU (Time-of-check to time-of-use) race condition.
@@ -86,13 +88,14 @@ def upload_file(s3_client, local_path: Path, s3_key: str, overwrite: bool = Fals
             # Handle other S3-related errors
             print(f"Error (S3) {filename}: {e}", flush=True)
             return f"failed: {e}"
-    except (IOError, OSError) as e:
+    except OSError as e:
         # Handle file I/O errors specifically
         print(f"Error (I/O) {filename}: {e}", flush=True)
         return f"failed: {e}"
     except Exception as e:
         # Catch any other unexpected errors and provide a traceback
         import traceback
+
         print(f"An unexpected error occurred with {filename}:", flush=True)
         traceback.print_exc()
         return f"failed: {e}"
@@ -115,15 +118,9 @@ def discover_files(source_dir: Path, bucket_prefix: str):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Upload files to DigitalOcean Spaces."
-    )
-    parser.add_argument(
-        "source_dir", type=Path, help="Local directory to upload from."
-    )
-    parser.add_argument(
-        "bucket_prefix", type=str, help="Prefix to use for S3 keys."
-    )
+    parser = argparse.ArgumentParser(description="Upload files to DigitalOcean Spaces.")
+    parser.add_argument("source_dir", type=Path, help="Local directory to upload from.")
+    parser.add_argument("bucket_prefix", type=str, help="Prefix to use for S3 keys.")
     parser.add_argument(
         "--overwrite",
         action="store_true",
@@ -154,7 +151,7 @@ def main():
             print("No files found to upload.")
             return
 
-        for i, future in enumerate(as_completed(futures)):
+        for _i, future in enumerate(as_completed(futures)):
             processed_files += 1
             result = future.result()
             if result == "uploaded":

@@ -1,7 +1,6 @@
 import os
 import sys
 import time
-from typing import List
 
 import requests
 
@@ -27,7 +26,7 @@ DESIRED_MODELS = [
 ]
 
 
-def fetch_available_models() -> List[str]:
+def fetch_available_models() -> list[str]:
     """Return a list of model IDs available on the endpoint."""
     url = f"{BASE_URL}/models"
     try:

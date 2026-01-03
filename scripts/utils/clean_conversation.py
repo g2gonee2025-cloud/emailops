@@ -14,7 +14,6 @@ import shutil
 import sys
 import warnings
 from pathlib import Path
-from typing import List, Union
 
 try:
     # Tkinter is optional; we handle environments without a GUI.
@@ -240,7 +239,9 @@ def _get_root_from_gui() -> str | None:
                 print(f"Selected root directory: {resolved}")
                 return str(resolved)
     except Exception as e:  # TclError or others
-        print(f"GUI directory picker not available ({e}). Falling back to console input.")
+        print(
+            f"GUI directory picker not available ({e}). Falling back to console input."
+        )
     finally:
         if root:
             root.destroy()
@@ -252,7 +253,9 @@ def _get_root_from_console() -> str:
     while True:
         try:
             path = (
-                input("Enter path to root directory (folder that contains conversation subfolders): ")
+                input(
+                    "Enter path to root directory (folder that contains conversation subfolders): "
+                )
                 .strip()
                 .strip('"')
                 .strip("'")
@@ -276,13 +279,13 @@ def choose_root_directory() -> str:
     return _get_root_from_console()
 
 
-def find_conversation_files(root_dir: str | Path) -> List[Path]:
+def find_conversation_files(root_dir: str | Path) -> list[Path]:
     """Return list of Conversation.txt files at:
     - root_dir/Conversation.txt (if present)
     - root_dir/*/Conversation.txt (1 level of subfolders only)
     """
     root_path = Path(root_dir)
-    results: List[Path] = []
+    results: list[Path] = []
 
     # Root-level Conversation.txt
     root_file = root_path / "Conversation.txt"
@@ -297,7 +300,9 @@ def find_conversation_files(root_dir: str | Path) -> List[Path]:
                 if candidate.is_file():
                     results.append(candidate)
     except (PermissionError, OSError) as e:
-        print(f"[WARN] Could not scan subdirectories in {root_path}: {e}", file=sys.stderr)
+        print(
+            f"[WARN] Could not scan subdirectories in {root_path}: {e}", file=sys.stderr
+        )
 
     return results
 

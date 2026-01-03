@@ -9,8 +9,19 @@ from botocore.exceptions import ClientError
 
 # Keywords to detect potentially sensitive information in JSON keys for redaction.
 SENSITIVE_KEY_SUBSTRINGS = [
-    "email", "user", "pass", "secret", "token", "key", "auth",
-    "name", "address", "phone", "account", "customer", "session"
+    "email",
+    "user",
+    "pass",
+    "secret",
+    "token",
+    "key",
+    "auth",
+    "name",
+    "address",
+    "phone",
+    "account",
+    "customer",
+    "session",
 ]
 
 
@@ -75,7 +86,13 @@ def fetch_schema_variations(
         s3_config = config.storage
 
         # Validate that required S3 configuration is present
-        required_s3_fields = ["region", "endpoint_url", "access_key", "secret_key", "bucket_raw"]
+        required_s3_fields = [
+            "region",
+            "endpoint_url",
+            "access_key",
+            "secret_key",
+            "bucket_raw",
+        ]
         for field in required_s3_fields:
             if not getattr(s3_config, field, None):
                 raise ValueError(f"Missing required S3 config: '{field}'")
@@ -146,7 +163,9 @@ def fetch_schema_variations(
                         )
 
             if count >= max_scan:
-                print(f"Scanned {count} manifests across {total_processed} total S3 objects.")
+                print(
+                    f"Scanned {count} manifests across {total_processed} total S3 objects."
+                )
                 break
 
     except (ValueError, ClientError) as e:

@@ -6,9 +6,7 @@ def run(cmd, check=False, capture_output=False):
     """A wrapper around subprocess.run to execute commands safely."""
     # By default, cmd is a list of strings, and shell=False.
     # text=True decodes stdout/stderr as text.
-    return subprocess.run(
-        cmd, check=check, capture_output=capture_output, text=True
-    )
+    return subprocess.run(cmd, check=check, capture_output=capture_output, text=True)
 
 
 def main():

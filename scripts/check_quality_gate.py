@@ -44,9 +44,9 @@ def check_gate():
         for cond in project_status.get("conditions", []):
             s = cond.get("status")
             if s != "OK":
-                metric_key = cond.get('metricKey', 'N/A')
-                actual_value = cond.get('actualValue', 'N/A')
-                error_threshold = cond.get('errorThreshold', 'N/A')
+                metric_key = cond.get("metricKey", "N/A")
+                actual_value = cond.get("actualValue", "N/A")
+                error_threshold = cond.get("errorThreshold", "N/A")
                 print(
                     f"  FAILED: {metric_key} = {actual_value} (Threshold: {error_threshold})"
                 )

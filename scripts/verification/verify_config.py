@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
+
 def find_project_root(marker="pyproject.toml"):
     """Find the project root by searching upwards for a marker file."""
     current_dir = Path(__file__).resolve()
@@ -10,6 +11,7 @@ def find_project_root(marker="pyproject.toml"):
             return current_dir
         current_dir = current_dir.parent
     raise FileNotFoundError(f"Project root with marker '{marker}' not found.")
+
 
 # Add the project root to the Python path to allow for absolute imports
 try:
@@ -62,8 +64,8 @@ def _mask_url(url: str) -> str:
                 netloc_parts.append(parsed.username)
 
             # Handle URLs with password but no username, e.g., redis://:pass@...
-            if not parsed.username and parsed.netloc.startswith(':'):
-                netloc_parts.append('')
+            if not parsed.username and parsed.netloc.startswith(":"):
+                netloc_parts.append("")
 
             netloc_parts.append(":*****")
 

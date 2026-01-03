@@ -4,7 +4,6 @@ import traceback
 import boto3
 from botocore.config import Config
 from botocore.exceptions import BotoCoreError, ClientError
-
 from cortex.config.loader import get_config
 
 
@@ -20,16 +19,20 @@ def main():
     try:
         config = get_config()
         # NULL_SAFETY: Validate config structure before accessing attributes.
-        if not all([
-            config,
-            config.storage,
-            config.storage.endpoint_url,
-            config.storage.region,
-            config.storage.bucket_raw,
-            config.storage.access_key,
-            config.storage.secret_key,
-        ]):
-            raise ValueError("S3 storage configuration is incomplete. Check your .env file.")
+        if not all(
+            [
+                config,
+                config.storage,
+                config.storage.endpoint_url,
+                config.storage.region,
+                config.storage.bucket_raw,
+                config.storage.access_key,
+                config.storage.secret_key,
+            ]
+        ):
+            raise ValueError(
+                "S3 storage configuration is incomplete. Check your .env file."
+            )
 
         # SECURITY: Do not print raw configuration details.
         print("Checking S3 connectivity...")

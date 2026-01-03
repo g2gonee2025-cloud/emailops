@@ -2,11 +2,13 @@ import argparse
 import logging
 import sys
 from types import ModuleType
+
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import selectinload
 
 # Configure Logging
 logger = logging.getLogger("DeepDive")
+
 
 def setup_logging():
     """Configure logging to file and stdout."""
@@ -19,9 +21,10 @@ def setup_logging():
                 logging.FileHandler("deep_dive.log"),
             ],
         )
-    except (IOError, PermissionError) as e:
+    except (OSError, PermissionError) as e:
         print(f"Error setting up logging: {e}", file=sys.stderr)
         sys.exit(1)
+
 
 # To run this script, ensure you are at the root of the repository and execute:
 # PYTHONPATH=backend/src python3 scripts/verification/verify_deep_dive.py
@@ -82,7 +85,9 @@ def analyze_db_results(tenant_id: str):
                 ):
                     enriched_count += 1
 
-            logger.info(f"Conversations with Enriched Metadata (from CSV): {enriched_count}")
+            logger.info(
+                f"Conversations with Enriched Metadata (from CSV): {enriched_count}"
+            )
 
             if conversations:
                 enrichment_rate = (enriched_count / len(conversations)) * 100
@@ -102,7 +107,9 @@ def run_deep_dive(num_conversations: int):
     processor = IngestionProcessor(tenant_id=tenant_id)
 
     try:
-        summaries = processor.run_full_ingestion(prefix="Outlook/", limit=num_conversations)
+        summaries = processor.run_full_ingestion(
+            prefix="Outlook/", limit=num_conversations
+        )
     except Exception as e:
         logger.error(f"Ingestion process failed: {e}")
         summaries = None
@@ -124,8 +131,10 @@ def run_deep_dive(num_conversations: int):
         if problems or aborted_reason:
             total_errors += 1
             job_id = getattr(s, "job_id", "Unknown")
-            error_icon = "❌".encode("utf-8").decode("utf-8")
-            logger.warning(f"{error_icon} Job {job_id} failed: {aborted_reason} / {problems}")
+            error_icon = "❌".encode().decode("utf-8")
+            logger.warning(
+                f"{error_icon} Job {job_id} failed: {aborted_reason} / {problems}"
+            )
 
     logger.info(f"Total Chunks Generated: {total_chunks}")
     logger.info(f"Total Errors: {total_errors}")
@@ -134,7 +143,9 @@ def run_deep_dive(num_conversations: int):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run a deep dive ingestion verification.")
+    parser = argparse.ArgumentParser(
+        description="Run a deep dive ingestion verification."
+    )
     parser.add_argument(
         "--num-conversations",
         type=int,

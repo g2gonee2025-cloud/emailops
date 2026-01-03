@@ -9,9 +9,9 @@ import mimetypes
 import os
 import sys
 import time
+from collections.abc import Generator
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Generator, Tuple
 
 import boto3
 from botocore.config import Config
@@ -39,7 +39,9 @@ def setup_sys_path():
             if str(src_path) not in sys.path:
                 sys.path.insert(0, str(src_path))
         else:
-            print(f"Warning: '{src_path}' not found. Imports may fail.", file=sys.stderr)
+            print(
+                f"Warning: '{src_path}' not found. Imports may fail.", file=sys.stderr
+            )
     except RuntimeError as e:
         print(f"Warning: {e}. Imports may fail.", file=sys.stderr)
 
@@ -71,7 +73,8 @@ def get_s3_client(config: AppConfig):
             aws_access_key_id=config.storage.access_key,
             aws_secret_access_key=config.storage.secret_key,
             config=Config(
-                signature_version="s3v4", retries={"max_attempts": 3, "mode": "adaptive"}
+                signature_version="s3v4",
+                retries={"max_attempts": 3, "mode": "adaptive"},
             ),
         )
     except (NoCredentialsError, PartialCredentialsError) as e:
@@ -87,7 +90,7 @@ def get_content_type(file_path: Path) -> str:
 
 def upload_file(
     s3_client, local_path: Path, s3_key: str, s3_bucket: str, skip_existing: bool = True
-) -> Tuple[bool, str, bool]:
+) -> tuple[bool, str, bool]:
     """
     Upload a single file to S3. Returns (success, message, skipped).
 
@@ -117,7 +120,7 @@ def upload_file(
         return False, f"Unexpected error for {s3_key}: {e}", False
 
 
-def scan_files(source_dir: Path) -> Generator[Tuple[Path, str], None, None]:
+def scan_files(source_dir: Path) -> Generator[tuple[Path, str], None, None]:
     """Scan and yield files to upload, avoiding loading all into memory."""
     for root, _, files in os.walk(source_dir):
         for file in files:

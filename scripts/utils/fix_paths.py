@@ -1,5 +1,5 @@
-import re
 import ast
+import re
 from pathlib import Path
 
 
@@ -63,8 +63,6 @@ def fix_file_content(content: str) -> str | None:
     return new_content
 
 
-
-
 def main():
     """Iterate predefined subdirectories from this script's directory and fix paths."""
     root = Path(__file__).parent
@@ -80,11 +78,7 @@ def main():
                 if new_content:
                     print(f"Fixing {py_file}")
                     py_file.write_text(new_content, encoding="utf-8")
-            except (
-                IOError,
-                OSError,
-                UnicodeDecodeError,
-            ) as e:
+            except (OSError, UnicodeDecodeError) as e:
                 print(f"Error processing file {py_file}: {e}")
 
 

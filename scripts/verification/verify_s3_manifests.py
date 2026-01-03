@@ -185,7 +185,9 @@ def check_data_preservation():
         try:
             data = json.loads(folder_path.read_text(encoding="utf-8"))
             if "messages" not in data:
-                print(f"FAILURE: {folder_path.relative_to(TEMP_DIR)} lost 'messages' key!")
+                print(
+                    f"FAILURE: {folder_path.relative_to(TEMP_DIR)} lost 'messages' key!"
+                )
                 continue
             messages = data["messages"]
             if not isinstance(messages, list):
@@ -196,10 +198,8 @@ def check_data_preservation():
             preserved += 1
         except json.JSONDecodeError as e:
             # EXCEPTION_HANDLING: Specific error for malformed JSON
-            print(
-                f"ERROR decoding JSON for {folder_path.relative_to(TEMP_DIR)}: {e}"
-            )
-        except IOError as e:
+            print(f"ERROR decoding JSON for {folder_path.relative_to(TEMP_DIR)}: {e}")
+        except OSError as e:
             # EXCEPTION_HANDLING: Specific error for file read issues
             print(f"ERROR reading file {folder_path.relative_to(TEMP_DIR)}: {e}")
         except Exception as e:

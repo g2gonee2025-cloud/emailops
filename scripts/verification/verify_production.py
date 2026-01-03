@@ -34,6 +34,7 @@ class TestProductionReadiness(unittest.TestCase):
         self.assertIsNotNone(job_id)
         job = q.dequeue(["test_job"])
         self.assertIsNotNone(job)
+        assert job is not None  # Type narrowing for mypy
         self.assertEqual(job["id"], job_id)
         q.ack(job_id)
 

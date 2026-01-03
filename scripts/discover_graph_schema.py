@@ -27,7 +27,9 @@ def main():
         cli_path = (project_root / "cli/src/cortex_cli/main.py").resolve()
 
         if not cli_path.exists():
-            print(f"Error: Could not find CLI entrypoint at {cli_path}", file=sys.stderr)
+            print(
+                f"Error: Could not find CLI entrypoint at {cli_path}", file=sys.stderr
+            )
             sys.exit(1)
     except FileNotFoundError as e:
         print(f"Error: {e}", file=sys.stderr)

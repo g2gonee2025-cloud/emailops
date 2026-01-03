@@ -111,10 +111,10 @@ def cmd_s3_upload(args: argparse.Namespace) -> None:
         )
         if validated_source_dir.is_err():
             print(
-                f"{_colorize('ERROR:', 'red')} Invalid source directory: {validated_source_dir.err()}"
+                f"{_colorize('ERROR:', 'red')} Invalid source directory: {validated_source_dir.unwrap_err()}"
             )
             sys.exit(1)
-        source_dir = validated_source_dir.ok()
+        source_dir = validated_source_dir.unwrap()
         s3_prefix = args.s3_prefix
         print(f"\n{_colorize('S3/SPACES UPLOADER', 'bold')}\n")
         print(f"  Endpoint:   {_colorize(config.storage.endpoint_url, 'cyan')}")
@@ -300,8 +300,9 @@ def _get_manifest_diff(before, after):
 
 def _process_single_folder(handler, folder, temp_root, upload):
     """Process a single folder for validation."""
-    from cortex.ingestion.conv_manifest.validation import scan_and_refresh
     import json
+
+    from cortex.ingestion.conv_manifest.validation import scan_and_refresh
 
     local_path = handler.download_conversation_folder(folder, temp_root)
     manifest_path = local_path / "manifest.json"
@@ -334,10 +335,7 @@ def _process_folders_for_validation(handler, folders, temp_root, upload, is_json
     """Process all folders for validation."""
     results = []
     if not is_json:
-        print(
-            f"  {_colorize('⏳', 'yellow')} "
-            f"Validating {len(folders)} folder(s)...\n"
-        )
+        print(f"  {_colorize('⏳', 'yellow')} Validating {len(folders)} folder(s)...\n")
     for i, folder in enumerate(folders, 1):
         if not is_json:
             print(

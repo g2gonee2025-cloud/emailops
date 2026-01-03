@@ -38,7 +38,7 @@ def main():
         with output_path.open("w") as f:
             for cmd in commands_to_check:
                 f.write(check_command(cmd))
-    except IOError as e:
+    except OSError as e:
         print(f"Failed to write to {output_path}: {e}", file=sys.stderr)
         sys.exit(1)
 

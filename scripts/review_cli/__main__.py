@@ -10,6 +10,7 @@ from pathlib import Path
 
 from rich.console import Console
 
+
 def _setup_sys_path() -> None:
     """Add project root to sys.path to allow for absolute imports."""
     _project_root = Path(__file__).resolve().parent.parent.parent

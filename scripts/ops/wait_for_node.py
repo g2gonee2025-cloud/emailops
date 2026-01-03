@@ -36,7 +36,9 @@ def check_nodes() -> bool:
                         print(f"Node '{node_name}' is Ready.")
                         return True
                     else:
-                        print(f"Node '{node_name}' found but not Ready (Status: {status}).")
+                        print(
+                            f"Node '{node_name}' found but not Ready (Status: {status})."
+                        )
                         node_found_but_not_ready = True
                         break  # Found the node, no need to check other lines
 

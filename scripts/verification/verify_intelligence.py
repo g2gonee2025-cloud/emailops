@@ -1,6 +1,7 @@
-import sys
 import os
+import sys
 from pathlib import Path
+
 
 def find_project_root(marker="pyproject.toml"):
     """Find the project root by searching for a marker file."""
@@ -10,6 +11,7 @@ def find_project_root(marker="pyproject.toml"):
             return current_path
         current_path = current_path.parent
     raise FileNotFoundError(f"Project root with marker '{marker}' not found.")
+
 
 # Add the project's 'src' directory to the Python path
 try:
@@ -35,7 +37,7 @@ from cortex.retrieval.hybrid_search import KBSearchInput
 class TestIntelligenceRuntime(unittest.TestCase):
     @patch("cortex.llm.runtime.VLLMProvider")
     def test_llm_runtime_initialization(self, mock_vllm_provider):
-        with self.assertLogs('cortex.llm.runtime', level='INFO') as cm:
+        with self.assertLogs("cortex.llm.runtime", level="INFO"):
             runtime = get_runtime()
             self.assertIsInstance(runtime, LLMRuntime)
             self.assertIsNotNone(runtime.retry_config)

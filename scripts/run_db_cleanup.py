@@ -16,12 +16,11 @@ import sys
 from pathlib import Path
 from typing import Optional
 
+from cortex.config.loader import get_config
+from cortex.db.models import Conversation, EntityEdge, EntityNode
 from sqlalchemy import and_, delete, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import aliased, sessionmaker
-
-from cortex.config.loader import get_config
-from cortex.db.models import Conversation, EntityEdge, EntityNode
 
 
 async def get_all_tenants(session: AsyncSession) -> list[str]:
@@ -32,7 +31,7 @@ async def get_all_tenants(session: AsyncSession) -> list[str]:
 
 
 async def cleanup_db(
-    tenant_id: Optional[str] = None, all_tenants: bool = False, dry_run: bool = False
+    tenant_id: str | None = None, all_tenants: bool = False, dry_run: bool = False
 ) -> None:
     """
     Performs cleanup operations on the database for a specified tenant or all tenants.
@@ -134,7 +133,9 @@ async def cleanup_db(
 
                 if dry_run:
                     # Count distinct nodes for an accurate dry-run report
-                    count_stmt = select(func.count()).select_from(orphaned_nodes_subquery)
+                    count_stmt = select(func.count()).select_from(
+                        orphaned_nodes_subquery
+                    )
                     result = await session.execute(count_stmt)
                     orphan_count = result.scalar_one()
                     print(f"  [DRY RUN] Would delete {orphan_count} isolated nodes.")
@@ -158,7 +159,11 @@ async def cleanup_db(
                 )
 
                 if dry_run:
-                    count_stmt = select(func.count()).select_from(stmt.table).where(stmt.whereclause)
+                    count_stmt = (
+                        select(func.count())
+                        .select_from(stmt.table)
+                        .where(stmt.whereclause)
+                    )
                     result = await session.execute(count_stmt)
                     count = result.scalar_one()
                     print(f"  [DRY RUN] Would delete {count} orphaned edges.")

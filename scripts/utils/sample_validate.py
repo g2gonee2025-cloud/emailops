@@ -1,7 +1,6 @@
 import os
 import tempfile
 from pathlib import Path
-from typing import Dict, List, Optional
 from urllib.parse import urlparse
 
 import boto3
@@ -13,16 +12,24 @@ from dotenv import load_dotenv
 MAX_FOLDERS_TO_SAMPLE = 10
 
 
-def _setup_environment() -> Dict[str, str]:
+def _setup_environment() -> dict[str, str]:
     """Load and validate required environment variables."""
     load_dotenv(override=True)
-    required_vars = ["S3_ENDPOINT", "S3_REGION", "S3_BUCKET_RAW", "S3_ACCESS_KEY", "S3_SECRET_KEY"]
+    required_vars = [
+        "S3_ENDPOINT",
+        "S3_REGION",
+        "S3_BUCKET_RAW",
+        "S3_ACCESS_KEY",
+        "S3_SECRET_KEY",
+    ]
     optional_vars = ["S3_BUCKET_OWNER"]
     env_vars = {var: os.getenv(var) for var in required_vars + optional_vars}
 
     missing_required = [key for key in required_vars if not env_vars[key]]
     if missing_required:
-        raise ValueError(f"Missing required environment variables: {', '.join(missing_required)}")
+        raise ValueError(
+            f"Missing required environment variables: {', '.join(missing_required)}"
+        )
 
     endpoint = env_vars["S3_ENDPOINT"]
     if endpoint and urlparse(endpoint).scheme != "https":
@@ -43,7 +50,9 @@ def _create_s3_client(endpoint: str, region: str, key: str, secret: str) -> Base
     )
 
 
-def _list_s3_folders(client: BaseClient, bucket: str, prefix: str, bucket_owner: Optional[str]) -> List[str]:
+def _list_s3_folders(
+    client: BaseClient, bucket: str, prefix: str, bucket_owner: str | None
+) -> list[str]:
     """List folders in an S3 bucket with a given prefix."""
     paginator = client.get_paginator("list_objects_v2")
     folders = []
@@ -52,7 +61,9 @@ def _list_s3_folders(client: BaseClient, bucket: str, prefix: str, bucket_owner:
         paginate_kwargs["ExpectedBucketOwner"] = bucket_owner
     try:
         for page in paginator.paginate(**paginate_kwargs):
-            folders.extend(cp.get("Prefix", "") for cp in page.get("CommonPrefixes", []))
+            folders.extend(
+                cp.get("Prefix", "") for cp in page.get("CommonPrefixes", [])
+            )
             if len(folders) >= MAX_FOLDERS_TO_SAMPLE:
                 break
     except ClientError as e:
@@ -61,7 +72,11 @@ def _list_s3_folders(client: BaseClient, bucket: str, prefix: str, bucket_owner:
 
 
 def _download_folder(
-    client: BaseClient, bucket: str, folder_prefix: str, root: Path, bucket_owner: Optional[str]
+    client: BaseClient,
+    bucket: str,
+    folder_prefix: str,
+    root: Path,
+    bucket_owner: str | None,
 ) -> Path:
     """Download a folder from S3 to a local directory."""
     dest_folder_name = folder_prefix.rstrip("/").replace("/", "_")
@@ -92,7 +107,9 @@ def _download_folder(
                 parent_dir.mkdir(parents=True, exist_ok=True)
                 created_dirs.add(parent_dir)
             try:
-                client.download_file(bucket, key, str(target), ExtraArgs=download_extra_args)
+                client.download_file(
+                    bucket, key, str(target), ExtraArgs=download_extra_args
+                )
             except ClientError as e:
                 print(f"Failed to download {key}: {e}")
     return dest
@@ -117,19 +134,33 @@ def main() -> None:
     """Main function to orchestrate the S3 folder sampling and validation."""
     try:
         env = _setup_environment()
-        client = _create_s3_client(env["S3_ENDPOINT"], env["S3_REGION"], env["S3_ACCESS_KEY"], env["S3_SECRET_KEY"])
+        client = _create_s3_client(
+            env["S3_ENDPOINT"],
+            env["S3_REGION"],
+            env["S3_ACCESS_KEY"],
+            env["S3_SECRET_KEY"],
+        )
         bucket_owner = env.get("S3_BUCKET_OWNER")
 
-        folders = _list_s3_folders(client, env["S3_BUCKET_RAW"], "raw/outlook/", bucket_owner)
+        folders = _list_s3_folders(
+            client, env["S3_BUCKET_RAW"], "raw/outlook/", bucket_owner
+        )
         print(f"Selected folders: {len(folders)}")
 
         with tempfile.TemporaryDirectory(prefix="conv_sample_") as temp_dir:
             root = Path(temp_dir)
             print(f"Downloading to {root}")
-            local_folders = [_download_folder(client, env["S3_BUCKET_RAW"], f, root, bucket_owner) for f in folders]
+            local_folders = [
+                _download_folder(client, env["S3_BUCKET_RAW"], f, root, bucket_owner)
+                for f in folders
+            ]
             print(f"Downloaded folders: {len(local_folders)}")
             for p in local_folders:
-                print(p.name, "Conversation.txt exists?", (p / "Conversation.txt").exists())
+                print(
+                    p.name,
+                    "Conversation.txt exists?",
+                    (p / "Conversation.txt").exists(),
+                )
             _run_validation(root)
     except (ValueError, ClientError) as e:
         print(f"An error occurred: {e}")

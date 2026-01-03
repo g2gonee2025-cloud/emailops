@@ -7,6 +7,7 @@ import boto3
 from botocore.client import Config
 from botocore.exceptions import ClientError
 
+
 def find_project_root(marker: str = "pyproject.toml") -> Path:
     current_path = Path(__file__).resolve()
     for parent in current_path.parents:
@@ -94,10 +95,8 @@ def main(target: int, prefix: str):
                         print(f"  - Invalid JSON in manifest: {key}")
                     except ClientError as e:
                         error_code = e.response.get("Error", {}).get("Code", "Unknown")
-                        print(
-                            f"  - AWS Client Error for key {key}: {error_code}"
-                        )
-                    except (IOError, UnicodeDecodeError) as e:
+                        print(f"  - AWS Client Error for key {key}: {error_code}")
+                    except (OSError, UnicodeDecodeError) as e:
                         print(f"  - Error reading object {key}: {e}")
 
         if found_count == 0:

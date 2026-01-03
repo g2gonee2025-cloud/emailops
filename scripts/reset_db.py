@@ -1,7 +1,9 @@
 import os
 import sys
-import psycopg2
 import traceback
+
+import psycopg2
+
 
 def reset_db(db_url, db_admin_role):
     """
@@ -26,7 +28,7 @@ def reset_db(db_url, db_admin_role):
                 count = cur.fetchone()[0]
                 print(f"Public schema reset. Table count: {count}")
 
-    except psycopg2.Error as e:
+    except psycopg2.Error:
         print("An error occurred with the database operation.", file=sys.stderr)
         # Log the full traceback to a file for debugging, avoiding exposure of sensitive info
         with open("reset_db_error.log", "a") as f:
@@ -48,7 +50,10 @@ def main():
         sys.exit(1)
 
     if "prod" in db_url.lower() or "production" in db_url.lower():
-        print("Error: This script cannot be run on a production database.", file=sys.stderr)
+        print(
+            "Error: This script cannot be run on a production database.",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     confirm = input(

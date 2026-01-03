@@ -35,7 +35,9 @@ def setup_test_env(root: Path):
 
         # Create Conversation.txt
         conv_txt = conv_dir / "Conversation.txt"
-        content = b"From: test@example.com\nDate: 2025-01-01 10:00:00 +0000\n\nHello world."
+        content = (
+            b"From: test@example.com\nDate: 2025-01-01 10:00:00 +0000\n\nHello world."
+        )
         conv_txt.write_bytes(content)
 
         # Calculate expected hash (normalized LF)
@@ -46,44 +48,41 @@ def setup_test_env(root: Path):
         # Create attachments dir
         (conv_dir / "attachments").mkdir()
 
-    # Create PERFECT manifest that aligns with what scan_and_refresh generates.
-    # The `messages` array is the source of truth for participant and date extraction.
+        # Create PERFECT manifest that aligns with what scan_and_refresh generates.
+        # The `messages` array is the source of truth for participant and date extraction.
         manifest = {
-        # Preserved fields (not checked by _manifests_differ but modification would cause a write)
-        "smart_subject": "Preserved Subject",
-        "conv_id": None,
-        "conv_key_type": None,
-        "subject_label": "test_conversation",
-
-        # Recalculated and checked fields
+            # Preserved fields (not checked by _manifests_differ but modification would cause a write)
+            "smart_subject": "Preserved Subject",
+            "conv_id": None,
+            "conv_key_type": None,
+            "subject_label": "test_conversation",
+            # Recalculated and checked fields
             "manifest_version": "1",
             "folder": "test_conversation",
-        "sha256_conversation": expected_hash,
+            "sha256_conversation": expected_hash,
             "paths": {
                 "conversation_txt": "Conversation.txt",
-            "attachments_dir": "attachments/",
+                "attachments_dir": "attachments/",
             },
-        "attachment_count": 0,
-        "participants": ["test@example.com"],  # Derived from messages
-        "last_from": "test@example.com",      # Derived from messages
-        "last_to": [],                        # Derived from messages
-
-        # Preserved fields that are also sources for calculation.
-        # If these are present, their values are kept.
-        "started_at_utc": "2025-01-01T10:00:00Z",
-        "ended_at_utc": "2025-01-01T10:00:00Z",
-        "message_count": 1,
-
-        # The `messages` array is the source for participant and date extraction logic.
-        "messages": [
-            {
-                "id": "preserve_me",
-                "from": {"name": "", "smtp": "test@example.com"},
-                "to": [],
-                "cc": [],
-                "date": "2025-01-01T10:00:00Z",
-            }
-        ],
+            "attachment_count": 0,
+            "participants": ["test@example.com"],  # Derived from messages
+            "last_from": "test@example.com",  # Derived from messages
+            "last_to": [],  # Derived from messages
+            # Preserved fields that are also sources for calculation.
+            # If these are present, their values are kept.
+            "started_at_utc": "2025-01-01T10:00:00Z",
+            "ended_at_utc": "2025-01-01T10:00:00Z",
+            "message_count": 1,
+            # The `messages` array is the source for participant and date extraction logic.
+            "messages": [
+                {
+                    "id": "preserve_me",
+                    "from": {"name": "", "smtp": "test@example.com"},
+                    "to": [],
+                    "cc": [],
+                    "date": "2025-01-01T10:00:00Z",
+                }
+            ],
         }
 
         (conv_dir / "manifest.json").write_text(json.dumps(manifest, indent=2))
@@ -95,7 +94,9 @@ def setup_test_env(root: Path):
 
 
 def run_test():
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+    )
     test_root = Path("./temp_test_validation_idempotency")
     original_error = None
 
@@ -122,9 +123,13 @@ def run_test():
                 if not original_error:
                     original_error = RuntimeError("Idempotency check failed.")
         else:
-            logging.error("FAILURE: Test could not be run because scan_and_refresh failed.")
+            logging.error(
+                "FAILURE: Test could not be run because scan_and_refresh failed."
+            )
             if not original_error:
-                original_error = RuntimeError("scan_and_refresh returned None unexpectedly.")
+                original_error = RuntimeError(
+                    "scan_and_refresh returned None unexpectedly."
+                )
 
     except Exception as e:
         logging.error(f"An unexpected error occurred during the test run: {e}")

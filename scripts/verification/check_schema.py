@@ -1,5 +1,7 @@
 from cortex.config.loader import get_config
-from sqlalchemy import create_engine, inspect as sqlalchemy_inspect, text
+from sqlalchemy import create_engine
+from sqlalchemy import inspect as sqlalchemy_inspect
+from sqlalchemy import text
 
 
 def check_schema():
@@ -17,7 +19,9 @@ def check_schema():
             return
 
         # 2. Check Columns
-        columns = {c["name"]: c for c in inspector.get_columns(table_name, schema=schema)}
+        columns = {
+            c["name"]: c for c in inspector.get_columns(table_name, schema=schema)
+        }
 
         # Check embedding dim
         # Vector type might show up as NullType or UserDefinedType depending on reflection

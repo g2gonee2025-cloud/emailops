@@ -6,7 +6,9 @@ import time
 
 
 def check_pod(label_selector: str, namespace: str, timeout: int, interval: int) -> bool:
-    print(f"Waiting for pod with label '{label_selector}' in namespace '{namespace}' to be Ready...")
+    print(
+        f"Waiting for pod with label '{label_selector}' in namespace '{namespace}' to be Ready..."
+    )
     start = time.time()
     while time.time() - start < timeout:
         try:
@@ -51,12 +53,17 @@ def check_pod(label_selector: str, namespace: str, timeout: int, interval: int) 
         except Exception as e:
             print(f"Warning: Unexpected error in pod check: {e}", file=sys.stderr)
         time.sleep(interval)
-    print(f"Timeout: Pod with label '{label_selector}' did not become ready within {timeout} seconds.", file=sys.stderr)
+    print(
+        f"Timeout: Pod with label '{label_selector}' did not become ready within {timeout} seconds.",
+        file=sys.stderr,
+    )
     return False
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Wait for a Kubernetes pod to become ready.")
+    parser = argparse.ArgumentParser(
+        description="Wait for a Kubernetes pod to become ready."
+    )
     parser.add_argument(
         "-l",
         "--label-selector",

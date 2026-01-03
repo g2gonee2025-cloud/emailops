@@ -228,7 +228,9 @@ def _process_future_result(future, counters: dict, log_file):
                 log_file.write(f"FAILED {res['path']}: {res.get('error', '')}\n")
 
         if counters["total"] % 10 == 0:
-            print(f"Progress: {counters['applied']} applied, {counters['failed']} failed...")
+            print(
+                f"Progress: {counters['applied']} applied, {counters['failed']} failed..."
+            )
             log_file.flush()
     except Exception as e:
         counters["failed"] += 1

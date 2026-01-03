@@ -95,7 +95,9 @@ def test_grounding_with_claims_but_no_facts(mock_embeddings_client):
     result = check_grounding_embedding(answer, facts)
 
     assert not result.is_grounded
-    assert result.confidence == pytest.approx(1.0)  # Should be certain it's not grounded
+    assert result.confidence == pytest.approx(
+        1.0
+    )  # Should be certain it's not grounded
     assert result.grounding_ratio == pytest.approx(0.0)
     assert len(result.unsupported_claims) == 1
     assert result.unsupported_claims[0] == "This is a fully supported statement"

@@ -1,9 +1,9 @@
 import os
-import sys
-from pathlib import Path
 import secrets
 import string
+import sys
 import time
+from pathlib import Path
 
 import requests
 from dotenv import set_key
@@ -14,26 +14,33 @@ SONAR_ADMIN_USER = os.environ.get("SONAR_ADMIN_USER")
 SONAR_ADMIN_PASSWORD = os.environ.get("SONAR_ADMIN_PASSWORD")
 REQUEST_TIMEOUT = 10  # seconds
 
+
 def generate_random_string(length=8):
     """Generates a random alphanumeric string."""
     alphabet = string.ascii_letters + string.digits
     return "".join(secrets.choice(alphabet) for _ in range(length))
 
+
 def find_project_root():
     """Dynamically finds the project root by looking for a known file/directory."""
     current_path = Path(__file__).resolve().parent
     while current_path != current_path.parent:
-        if (current_path / "pyproject.toml").exists() and (current_path / "backend").is_dir():
+        if (current_path / "pyproject.toml").exists() and (
+            current_path / "backend"
+        ).is_dir():
             return current_path
         current_path = current_path.parent
     raise FileNotFoundError("Could not find the project root.")
+
 
 def main():
     """
     Generates a SonarQube token and updates the .env file.
     """
     if not SONAR_ADMIN_USER or not SONAR_ADMIN_PASSWORD:
-        print("Error: SONAR_ADMIN_USER and SONAR_ADMIN_PASSWORD environment variables must be set.")
+        print(
+            "Error: SONAR_ADMIN_USER and SONAR_ADMIN_PASSWORD environment variables must be set."
+        )
         sys.exit(1)
 
     timestamp = int(time.time())
@@ -47,11 +54,13 @@ def main():
             params={"name": token_name},
             auth=(SONAR_ADMIN_USER, SONAR_ADMIN_PASSWORD),
             timeout=REQUEST_TIMEOUT,
-            verify=False # In dev environments, self-signed certs are common
+            verify=False,  # In dev environments, self-signed certs are common
         )
 
         if r.status_code != 200:
-            print(f"Error generating token. Server responded with status code: {r.status_code}")
+            print(
+                f"Error generating token. Server responded with status code: {r.status_code}"
+            )
             # Do not print r.text to avoid leaking sensitive info
             sys.exit(1)
 
@@ -80,6 +89,7 @@ def main():
     except (OSError, ValueError, KeyError) as e:
         print(f"An unexpected error occurred: {e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

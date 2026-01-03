@@ -5,6 +5,7 @@ run validation to generate participant information, and print a sample manifest.
 This script is intended to be run as a module from the repository root:
 python -m scripts.verification.verify_participants --output-dir ./temp_verification --limit 10
 """
+
 import argparse
 import json
 import logging
@@ -14,7 +15,7 @@ from pathlib import Path
 
 import boto3
 from botocore.client import Config
-from botocore.exceptions import ClientError, BotoCoreError
+from botocore.exceptions import BotoCoreError, ClientError
 
 # Ensure the project root is on the path to allow execution from any directory.
 try:
@@ -114,7 +115,7 @@ def setup_directories(output_dir: Path):
             shutil.rmtree(output_dir)
         temp_dir.mkdir(parents=True, exist_ok=False)
         artifacts_root.mkdir(parents=True, exist_ok=False)
-    except (IOError, OSError) as e:
+    except OSError as e:
         logging.error(f"Failed to create directories: {e}", exc_info=True)
         raise
 
@@ -142,9 +143,7 @@ def download_folders(s3_client, bucket, prefix, limit, download_dir):
         logging.error(f"Failed to list S3 prefixes: {e}", exc_info=True)
         return
 
-    logging.info(
-        f"Found {len(target_prefixes)} folders, downloading first {limit}..."
-    )
+    logging.info(f"Found {len(target_prefixes)} folders, downloading first {limit}...")
 
     for p_prefix in target_prefixes:
         folder_name = p_prefix.rstrip("/").split("/")[-1]
@@ -226,7 +225,7 @@ def main():
             logging.info(f"Cleaning up temporary directory: {output_dir.resolve()}")
             try:
                 shutil.rmtree(output_dir)
-            except (IOError, OSError) as e:
+            except OSError as e:
                 logging.error(f"Failed to clean up directory {output_dir}: {e}")
                 sys.exit(1)
 

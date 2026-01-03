@@ -82,9 +82,7 @@ class CodeReviewer:
                 context = self.scanner.get_context(file_path)
             except Exception as e:
                 progress.advance(task_id)
-                logger.error(
-                    "Failed to get language/context for %s: %s", rel_path, e
-                )
+                logger.error("Failed to get language/context for %s: %s", rel_path, e)
                 return ReviewResult(file=str(rel_path), error=str(e))
 
             model_name = getattr(
@@ -185,9 +183,7 @@ class CodeReviewer:
                         queue.task_done()
 
             self.results = []
-            worker_tasks = [
-                asyncio.create_task(worker(i)) for i in range(max_workers)
-            ]
+            worker_tasks = [asyncio.create_task(worker(i)) for i in range(max_workers)]
             await queue.join()
 
             for wt in worker_tasks:

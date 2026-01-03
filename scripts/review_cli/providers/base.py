@@ -5,14 +5,13 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional
 
 
 @dataclass
 class Issue:
     """A single issue found in a file."""
 
-    line_number: Optional[int]
+    line_number: int | None
     message: str
     severity: str
 
@@ -22,13 +21,13 @@ class ReviewResult:
     """Result from a code review."""
 
     file: Path
-    issues: List[Issue] = field(default_factory=list)
+    issues: list[Issue] = field(default_factory=list)
     summary: str = ""
     model: str = ""
     language: str = ""
-    error: Optional[str] = None
+    error: str | None = None
     skipped: bool = False
-    skip_reason: Optional[str] = None
+    skip_reason: str | None = None
 
     def __post_init__(self):
         if self.skipped and not self.skip_reason:

@@ -1,0 +1,77 @@
+{
+  "scripts/apply_per_issue_patches.py": {
+    "name": "sessions/10182990841582884743",
+    "status": "created",
+    "issue_count": 2
+  },
+  "workers/src/cortex_workers/maintenance/resolve_entities.py": {
+    "name": "sessions/5761097055373887801",
+    "status": "created",
+    "issue_count": 2
+  },
+  "k8s/qdrant.yaml": {
+    "name": "sessions/10509292690364414067",
+    "status": "created",
+    "issue_count": 2
+  },
+  "scripts/check/check_s3.py": {
+    "name": "sessions/12210181199486301023",
+    "status": "created",
+    "issue_count": 2
+  },
+  "backend/src/cortex/orchestration/nodes.py": {
+    "name": "sessions/15359972500733826028",
+    "status": "created",
+    "issue_count": 9
+  },
+  "cli/src/cortex_cli/main.py": {
+    "name": "sessions/8673959050800316042",
+    "status": "created",
+    "issue_count": 7
+  },
+  "backend/tests/unit/safety/test_grounding.py": {
+    "name": "sessions/18146830548592643009",
+    "status": "created",
+    "issue_count": 7
+  },
+  "backend/src/cortex/llm/runtime.py": {
+    "name": "sessions/14985351802780984279",
+    "status": "created",
+    "issue_count": 6
+  },
+  "backend/tests/test_doks_scaler.py": {
+    "name": "sessions/16542538453070620460",
+    "status": "created",
+    "issue_count": 6
+  },
+  "backend/src/cortex/ingestion/mailroom.py": {
+    "name": "sessions/13916113791050914752",
+    "status": "created",
+    "issue_count": 5
+  },
+  "cli/src/cortex_cli/cmd_s3.py": {
+    "name": "sessions/5857052101532272361",
+    "status": "created",
+    "issue_count": 4
+  },
+  "backend/tests/orchestration/test_nodes.py": {
+    "name": "sessions/7534508320389935015",
+    "status": "created",
+    "issue_count": 4
+  },
+  "bulk_jules_review.py": {
+    "name": "sessions/11830001628666666211",
+    "status": "created",
+    "issue_count": 4
+  },
+  "backend/tests/test_async_cache.py": {
+    "name": "sessions/8775675142146243264",
+    "status": "created",
+    "issue_count": 4
+  },
+  "k8s/ai-bundle.yaml": {
+    "name": "sessions/8641015042646081470",
+    "status": "created",
+    "issue_count": 4
+  }
+}
