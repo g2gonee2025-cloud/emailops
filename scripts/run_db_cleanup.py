@@ -14,13 +14,11 @@ import argparse
 import asyncio
 import sys
 from pathlib import Path
+from typing import Optional
 
-from sqlalchemy import delete, func, select
+from sqlalchemy import and_, delete, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
-
-# Ensure backend path is in sys.path
-sys.path.append(str(Path(__file__).parent.parent / "backend/src").resolve())
+from sqlalchemy.orm import aliased, sessionmaker
 
 from cortex.config.loader import get_config
 from cortex.db.models import Conversation, EntityEdge, EntityNode
@@ -29,11 +27,12 @@ from cortex.db.models import Conversation, EntityEdge, EntityNode
 async def get_all_tenants(session: AsyncSession) -> list[str]:
     """Fetches a list of all unique tenant IDs from the database."""
     result = await session.execute(select(Conversation.tenant_id).distinct())
-    return result.scalars().all()
+    # Filter out potential NULL tenant_ids from the query result
+    return [tid for tid in result.scalars().all() if tid is not None]
 
 
 async def cleanup_db(
-    tenant_id: str | None = None, all_tenants: bool = False, dry_run: bool = False
+    tenant_id: Optional[str] = None, all_tenants: bool = False, dry_run: bool = False
 ) -> None:
     """
     Performs cleanup operations on the database for a specified tenant or all tenants.
@@ -44,6 +43,10 @@ async def cleanup_db(
         dry_run: If True, simulates the cleanup without committing changes.
     """
     config = get_config()
+    if not config.database or not config.database.url:
+        print("Database URL is not configured. Exiting.")
+        return
+
     db_url = config.database.url.replace("postgresql://", "postgresql+asyncpg://")
     db_url = db_url.replace("sslmode=require", "ssl=require")
 
@@ -51,123 +54,132 @@ async def cleanup_db(
     engine = create_async_engine(db_url)
     async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
-    async with async_session() as session:
-        tenants_to_process: list[str] = []
-        if all_tenants:
-            print("Fetching all tenants...")
-            tenants_to_process = await get_all_tenants(session)
-            print(f"Found {len(tenants_to_process)} tenants.")
-        elif tenant_id:
-            tenants_to_process.append(tenant_id)
+    try:
+        async with async_session() as session:
+            tenants_to_process: list[str] = []
+            if all_tenants:
+                print("Fetching all tenants...")
+                tenants_to_process = await get_all_tenants(session)
+                print(f"Found {len(tenants_to_process)} tenants.")
+            elif tenant_id:
+                tenants_to_process.append(tenant_id)
 
-        if not tenants_to_process:
-            print("No tenants specified or found. Exiting.")
-            return
+            if not tenants_to_process:
+                print("No tenants specified or found. Exiting.")
+                return
 
-        for current_tenant_id in tenants_to_process:
-            print(f"\n--- Starting Cleanup for Tenant: {current_tenant_id} ---")
+            for current_tenant_id in tenants_to_process:
+                print(f"\n--- Starting Cleanup for Tenant: {current_tenant_id} ---")
 
-            # 1. Delete Clutter Conversations
-            print("\n[1/3] Deleting clutter conversations...")
-            keyword_filters = ["%lunch%", "%booking%", "%automatic reply%"]
-            base_stmt = delete(Conversation).where(
-                Conversation.tenant_id == current_tenant_id
-            )
-            total_deleted_convs = 0
+                # 1. Delete Clutter Conversations
+                print("\n[1/3] Deleting clutter conversations...")
+                keyword_filters = ["%lunch%", "%booking%", "%automatic reply%"]
 
-            for keyword in keyword_filters:
-                stmt = base_stmt.where(Conversation.subject.ilike(keyword))
+                clutter_conditions = or_(
+                    *[Conversation.subject.ilike(kw) for kw in keyword_filters]
+                )
+                base_stmt = delete(Conversation).where(
+                    Conversation.tenant_id == current_tenant_id, clutter_conditions
+                )
+
                 if dry_run:
-                    # Estimate count for dry run
+                    # More accurate count for dry run
                     count_stmt = (
-                        select(func.count())
-                        .select_from(stmt.table)
-                        .where(*stmt.where.clauses)
+                        select(func.count(Conversation.id.distinct()))
+                        .where(Conversation.tenant_id == current_tenant_id)
+                        .where(clutter_conditions)
                     )
                     result = await session.execute(count_stmt)
-                    count = result.scalar_one()
+                    total_deleted_convs = result.scalar_one()
                     print(
-                        f"  [DRY RUN] Would delete {count} conversations matching '{keyword}'."
+                        f"  [DRY RUN] Would delete {total_deleted_convs} conversations matching keywords."
                     )
+                else:
+                    result = await session.execute(base_stmt)
+                    print(
+                        f"  -> Deleted {result.rowcount} conversations matching keywords."
+                    )
+
+                # 2. Prune Isolated Entities (LEFT JOIN approach)
+                print("\n[2/3] Pruning isolated entities...")
+
+                # Use aliased joins to correctly identify nodes with no connections
+                source_edges = aliased(EntityEdge)
+                target_edges = aliased(EntityEdge)
+
+                # Find nodes that do not appear as a source or target in any edge within the tenant
+                orphaned_nodes_subquery = (
+                    select(EntityNode.node_id)
+                    .outerjoin(
+                        source_edges,
+                        and_(
+                            EntityNode.node_id == source_edges.source_id,
+                            source_edges.tenant_id == current_tenant_id,
+                        ),
+                    )
+                    .outerjoin(
+                        target_edges,
+                        and_(
+                            EntityNode.node_id == target_edges.target_id,
+                            target_edges.tenant_id == current_tenant_id,
+                        ),
+                    )
+                    .where(
+                        EntityNode.tenant_id == current_tenant_id,
+                        source_edges.edge_id.is_(None),
+                        target_edges.edge_id.is_(None),
+                    )
+                    .distinct()
+                ).alias()
+
+                if dry_run:
+                    # Count distinct nodes for an accurate dry-run report
+                    count_stmt = select(func.count()).select_from(orphaned_nodes_subquery)
+                    result = await session.execute(count_stmt)
+                    orphan_count = result.scalar_one()
+                    print(f"  [DRY RUN] Would delete {orphan_count} isolated nodes.")
+                else:
+                    delete_stmt = (
+                        delete(EntityNode)
+                        .where(EntityNode.node_id.in_(select(orphaned_nodes_subquery)))
+                        .execution_options(synchronize_session=False)
+                    )
+                    result = await session.execute(delete_stmt)
+                    if result.rowcount > 0:
+                        print(f"  -> Deleted {result.rowcount} isolated nodes.")
+                    else:
+                        print("No isolated nodes found.")
+
+                # 3. Prune Orphaned Edges (NULL conversation_id)
+                print("\n[3/3] Pruning orphaned edges...")
+                stmt = delete(EntityEdge).where(
+                    EntityEdge.tenant_id == current_tenant_id,
+                    EntityEdge.conversation_id.is_(None),
+                )
+
+                if dry_run:
+                    count_stmt = select(func.count()).select_from(stmt.table).where(stmt.whereclause)
+                    result = await session.execute(count_stmt)
+                    count = result.scalar_one()
+                    print(f"  [DRY RUN] Would delete {count} orphaned edges.")
                 else:
                     result = await session.execute(stmt)
-                    count = result.rowcount
-                    print(f"  -> Deleted {count} conversations matching '{keyword}'.")
-                total_deleted_convs += count
+                    if result.rowcount > 0:
+                        print(f"  -> Deleted {result.rowcount} orphaned edges.")
+                    else:
+                        print("No orphaned edges found.")
 
-            print(f"Total clutter conversations deleted: {total_deleted_convs}")
-
-            # 2. Prune Isolated Entities (LEFT JOIN approach)
-            print("\n[2/3] Pruning isolated entities...")
-
-            # Find nodes that do not appear as a source or target in any edge
-            orphaned_nodes_stmt = (
-                select(EntityNode)
-                .outerjoin(EntityEdge, EntityNode.node_id == EntityEdge.source_id)
-                .outerjoin(EntityEdge, EntityNode.node_id == EntityEdge.target_id)
-                .where(
-                    EntityNode.tenant_id == current_tenant_id,
-                    EntityEdge.edge_id.is_(None),
-                )
-            )
-
-            if dry_run:
-                count_stmt = select(func.count()).select_from(
-                    orphaned_nodes_stmt.alias()
-                )
-                result = await session.execute(count_stmt)
-                orphan_count = result.scalar_one()
-                print(f"  [DRY RUN] Would delete {orphan_count} isolated nodes.")
-            else:
-                result = await session.execute(orphaned_nodes_stmt)
-                orphan_nodes = result.scalars().all()
-                if orphan_nodes:
-                    print(f"Found {len(orphan_nodes)} isolated nodes. Deleting...")
-
-                    # Extract IDs for deletion
-                    orphan_ids = [node.node_id for node in orphan_nodes]
-                    delete_stmt = delete(EntityNode).where(
-                        EntityNode.node_id.in_(orphan_ids)
+                if dry_run:
+                    print(
+                        f"\n[DRY RUN] No changes were made for tenant {current_tenant_id}."
                     )
-                    delete_result = await session.execute(delete_stmt)
-                    print(f"  -> Deleted {delete_result.rowcount} nodes.")
+                    await session.rollback()
                 else:
-                    print("No isolated nodes found.")
-
-            # 3. Prune Orphaned Edges (NULL conversation_id)
-            print("\n[3/3] Pruning orphaned edges...")
-            stmt = delete(EntityEdge).where(
-                EntityEdge.tenant_id == current_tenant_id,
-                EntityEdge.conversation_id.is_(None),
-            )
-
-            if dry_run:
-                count_stmt = (
-                    select(func.count())
-                    .select_from(stmt.table)
-                    .where(*stmt.where.clauses)
-                )
-                result = await session.execute(count_stmt)
-                count = result.scalar_one()
-                print(f"  [DRY RUN] Would delete {count} orphaned edges.")
-            else:
-                result = await session.execute(stmt)
-                if result.rowcount > 0:
-                    print(f"  -> Deleted {result.rowcount} orphaned edges.")
-                else:
-                    print("No orphaned edges found.")
-
-            if dry_run:
-                print(
-                    f"\n[DRY RUN] No changes were made for tenant {current_tenant_id}."
-                )
-                await session.rollback()
-            else:
-                print(f"\nCommitting changes for tenant {current_tenant_id}...")
-                await session.commit()
-
-    await engine.dispose()
-    print("\n--- Cleanup Complete ---")
+                    print(f"\nCommitting changes for tenant {current_tenant_id}...")
+                    await session.commit()
+    finally:
+        await engine.dispose()
+        print("\n--- Cleanup Complete ---")
 
 
 if __name__ == "__main__":
