@@ -1,6 +1,6 @@
 # Production-ready container for EmailOps Cortex
 # This is the unified container for CLI, workers, and UI
-FROM python:3.11-slim as builder
+FROM python:3.11-slim AS builder
 
 # Build arguments
 ARG DEBIAN_FRONTEND=noninteractive
@@ -45,14 +45,14 @@ RUN pip install --no-cache-dir /wheels/*.whl 2>/dev/null || \
     gunicorn
 
 # Copy Cortex application structure
-COPY --chown=emailops:emailops backend/src/ ./backend/src/
-COPY --chown=emailops:emailops backend/migrations/ ./backend/migrations/
-COPY --chown=emailops:emailops cli/src/ ./cli/src/
-COPY --chown=emailops:emailops workers/src/ ./workers/src/
-COPY --chown=emailops:emailops ui/ ./ui/
-COPY --chown=emailops:emailops docs/ ./docs/
-COPY --chown=emailops:emailops tests/ ./tests/
-COPY --chown=emailops:emailops *.md ./
+COPY --chmod=0444 --chown=emailops:emailops backend/src/ ./backend/src/
+COPY --chmod=0444 --chown=emailops:emailops backend/migrations/ ./backend/migrations/
+COPY --chmod=0444 --chown=emailops:emailops cli/src/ ./cli/src/
+COPY --chmod=0444 --chown=emailops:emailops workers/src/ ./workers/src/
+COPY --chmod=0444 --chown=emailops:emailops ui/ ./ui/
+COPY --chmod=0444 --chown=emailops:emailops docs/ ./docs/
+COPY --chmod=0444 --chown=emailops:emailops tests/ ./tests/
+COPY --chmod=0444 --chown=emailops:emailops *.md ./
 
 # Create necessary directories
 RUN mkdir -p /app/logs /secrets/gcp && chown -R emailops:emailops /app /secrets
