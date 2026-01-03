@@ -1,0 +1,32 @@
+--- a/backend/src/cortex/ingestion/conv_manifest/validation.py
++++ b/backend/src/cortex/ingestion/conv_manifest/validation.py
+@@ -231,23 +231,24 @@
+
+ def _manifests_differ(old: dict[str, Any], new: dict[str, Any]) -> bool:
+     """Check if relevant fields differ."""
++    import json
++    import sys
+     # Compare keys that we control/compute
+     keys = [
+         "manifest_version",
+         "folder",
+         "sha256_conversation",
+         "paths",
+         "attachment_count",
+         "participants",
+         "last_from",
+         "last_to",
+     ]
++    has_diff = False
+     for k in keys:
+-        if old.get(k) != new.get(k):
+-            return True
+-    return False
+-
++        if old.get(k) != new.get(k):
++            sys.stderr.write(f"DIFFERENCE in '{k}': OLD={json.dumps(old.get(k))}, NEW={json.dumps(new.get(k))}\\n")
++            has_diff = True
++    return has_diff
+
+ def _preserve_str(value: Any, fallback: str) -> str:
+     """Return value if it is a non-empty string; otherwise fallback."""
