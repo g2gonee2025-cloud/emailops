@@ -7,9 +7,9 @@
 import { z } from 'zod';
 import { GeneratedDraftSchema } from '../schemas/draft';
 import { logger } from './logger';
-import { doctorReportSchema, statusDataSchema } from '../schemas/admin';
+import { doctorReportSchema, statusDataSchema, type DoctorReport, type StatusData } from '../schemas/admin';
 
-export type { DoctorReport, StatusData } from '../schemas/admin';
+export type { DoctorReport, StatusData };
 
 // =============================================================================
 // Type Definitions & Zod Schemas
