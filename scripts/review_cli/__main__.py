@@ -10,16 +10,24 @@ from pathlib import Path
 
 from rich.console import Console
 
-try:
-    from .cli import main as interactive_main
-    from .cli import print_config_summary, run_review
-    from .config import PROVIDER_MODELS, Config, ReviewConfig, ScanConfig
-except ImportError:
-    # Direct invocation: add project root to sys.path for `scripts.review_cli.*` imports
+def _setup_sys_path() -> None:
+    """Add project root to sys.path to allow for absolute imports."""
     _project_root = Path(__file__).resolve().parent.parent.parent
     if str(_project_root) not in sys.path:
         sys.path.insert(0, str(_project_root))
 
+
+try:
+    from scripts.review_cli.cli import main as interactive_main
+    from scripts.review_cli.cli import print_config_summary, run_review
+    from scripts.review_cli.config import (
+        PROVIDER_MODELS,
+        Config,
+        ReviewConfig,
+        ScanConfig,
+    )
+except ImportError:
+    _setup_sys_path()
     from scripts.review_cli.cli import main as interactive_main
     from scripts.review_cli.cli import print_config_summary, run_review
     from scripts.review_cli.config import (
@@ -120,22 +128,29 @@ def build_config_from_args(args: argparse.Namespace) -> Config:
     project_root = Path.cwd()
 
     if args.workers < 1:
-        raise ValueError("workers must be >= 1")
+        raise ValueError("Workers must be >= 1")
 
-    # Resolve directories
+    # Resolve and validate directories
     directories = []
     if args.dirs:
         for d in args.dirs:
             path = Path(d)
             if not path.is_absolute():
                 path = project_root / path
+            if not path.exists():
+                raise FileNotFoundError(f"Directory not found: {path}")
+            if not path.is_dir():
+                raise NotADirectoryError(f"Path is not a directory: {path}")
             directories.append(path)
     else:
         # Default directories
         for default in ["backend/src", "frontend/src", "cli/src", "scripts"]:
             path = project_root / default
-            if path.exists():
+            if path.exists() and path.is_dir():
                 directories.append(path)
+
+    if not directories:
+        raise ValueError("No valid directories to scan.")
 
     # Resolve extensions
     extensions = (
@@ -144,12 +159,16 @@ def build_config_from_args(args: argparse.Namespace) -> Config:
         else {".py", ".ts", ".tsx", ".js", ".jsx"}
     )
 
-    # Model defaults
+    # Model defaults and validation
     provider = args.provider or "openai"
     model = args.model
     if not model:
         models = PROVIDER_MODELS.get(provider, [])
-        model = models[0] if models else "default"
+        if not models:
+            raise ValueError(
+                f"No default models found for provider '{provider}'. Please specify a model."
+            )
+        model = models[0]
 
     return Config(
         project_root=project_root,
@@ -170,33 +189,43 @@ def build_config_from_args(args: argparse.Namespace) -> Config:
 
 def main() -> None:
     """Main entry point."""
-    from dotenv import load_dotenv
+    try:
+        from dotenv import load_dotenv
 
-    load_dotenv()
-    args = parse_args()
+        load_dotenv()
+    except ImportError:
+        # python-dotenv is not installed, which is fine.
+        # It's an optional dependency for this script.
+        pass
 
-    # Configure logging
-    log_level = logging.DEBUG if args.verbose else logging.INFO
-    logging.basicConfig(
-        level=log_level,
-        format="%(asctime)s [%(levelname)s] %(message)s",
-    )
-
-    # If no args provided, run interactive mode
-    if not args.provider and not args.dirs and not args.ext:
+    # If no CLI args are provided (other than the script name), run interactive mode.
+    if len(sys.argv) == 1:
         interactive_main()
         return
 
     try:
+        args = parse_args()
+
+        # Configure logging
+        log_level = logging.DEBUG if args.verbose else logging.INFO
+        logging.basicConfig(
+            level=log_level,
+            format="%(asctime)s [%(levelname)s] %(message)s",
+        )
+
         config = build_config_from_args(args)
         print_config_summary(config)
         asyncio.run(run_review(config))
 
-    except KeyboardInterrupt:
-        console.print("\n[yellow]Interrupted.[/yellow]")
-        sys.exit(1)
-    except ValueError as e:
+    except (ValueError, FileNotFoundError, NotADirectoryError) as e:
         console.print(f"[red]Configuration error: {e}[/red]")
+        sys.exit(1)
+    except KeyboardInterrupt:
+        console.print("\n[yellow]Interrupted by user.[/yellow]")
+        sys.exit(1)
+    except Exception as e:
+        console.print(f"[bold red]An unexpected error occurred: {e}[/bold red]")
+        logging.exception("Unhandled exception in main")
         sys.exit(1)
 
 
