@@ -23,7 +23,7 @@ import time
 import uuid
 from collections.abc import Awaitable, Callable
 from contextlib import asynccontextmanager
-from typing import Any
+from typing import Any, NamedTuple
 
 import jwt
 import requests
@@ -55,20 +55,44 @@ APP_VERSION = "3.1.0"
 APP_NAME = "Outlook Cortex (EmailOps Edition)"
 API_V1_PREFIX = "/api/v1"
 INVALID_JWT_ERROR = "Invalid JWT"
+JWKS_CACHE_TTL_SECONDS = 3600  # 1 hour TTL for cached JWKS
+
+
+class CachedJWKS(NamedTuple):
+    """Cached JWKS with timestamp for TTL-based eviction."""
+    data: dict[str, Any]
+    cached_at: float
 
 
 # JWT/JWKS helpers
 _jwt_decoder: Callable[[str], Awaitable[dict[str, Any]] | dict[str, Any]] | None = None
-_jwks_cache: dict[str, Any] = {}
+_jwks_cache: dict[str, CachedJWKS] = {}  # Stores (data, timestamp) tuples
 
 
 def _load_jwks(jwks_url: str) -> dict[str, Any]:
+    """Load JWKS from URL with TTL-based caching to prevent memory leaks."""
+    now = time.time()
+    
+    # Check if we have a cached entry that's still valid
     if jwks_url in _jwks_cache:
-        return _jwks_cache[jwks_url]
+        cached = _jwks_cache[jwks_url]
+        if now - cached.cached_at < JWKS_CACHE_TTL_SECONDS:
+            return cached.data
+        else:
+            # Cache expired, evict the stale entry
+            del _jwks_cache[jwks_url]
+    
+    # Fetch fresh JWKS from the provider
     response = requests.get(jwks_url, timeout=5)
     response.raise_for_status()
     data = response.json()
-    _jwks_cache[jwks_url] = data
+    
+    # Validate JWKS structure before caching
+    if not isinstance(data, dict) or "keys" not in data:
+        raise ValueError("Invalid JWKS response structure: missing 'keys' field")
+    
+    # Cache the result with timestamp
+    _jwks_cache[jwks_url] = CachedJWKS(data, now)
     return data
 
 
