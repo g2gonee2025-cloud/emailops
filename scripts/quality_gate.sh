@@ -1,30 +1,33 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Put your repo's canonical local checks here (ideally copy from CI):
-# Examples: lint, typecheck, unit tests, formatting check, build.
-# You can hardcode them OR set LOCAL_QA_CMD in the environment.
-LOCAL_QA_CMD="${LOCAL_QA_CMD:-}"
+usage() {
+  cat <<EOF >&2
+ERROR: Sonar analysis script not found or not executable.
+Create an executable script at 'scripts/run_sonar.sh'
+that contains your repo's Sonar analysis command.
+e.g., echo "mvn sonar:sonar" > scripts/run_sonar.sh && chmod +x scripts/run_sonar.sh
+EOF
+  exit 1
+}
 
-# Put your repo's canonical Sonar analysis command here (same as CI).
-# Examples:
-#   SONAR_SCAN_CMD="./gradlew sonarqube"
-#   SONAR_SCAN_CMD="mvn -B test sonar:sonar"
-#   SONAR_SCAN_CMD="sonar-scanner"
-SONAR_SCAN_CMD="${SONAR_SCAN_CMD:-}"
-
-if [[ -n "$LOCAL_QA_CMD" ]]; then
+# To run local checks, create an executable script at 'scripts/run_local_qa.sh'.
+# This script can contain commands for linting, testing, etc.
+LOCAL_QA_SCRIPT="$(dirname "$0")/run_local_qa.sh"
+if [[ -x "$LOCAL_QA_SCRIPT" ]]; then
   echo "== Running local QA =="
-  bash -lc "$LOCAL_QA_CMD"
+  "$LOCAL_QA_SCRIPT"
 fi
 
-if [[ -z "$SONAR_SCAN_CMD" ]]; then
-  echo "ERROR: Set SONAR_SCAN_CMD to your repo's Sonar analysis command." >&2
-  exit 2
+# To run Sonar analysis, create an executable script at 'scripts/run_sonar.sh'.
+# This script should contain the command to run a Sonar scan.
+SONAR_SCRIPT="$(dirname "$0")/run_sonar.sh"
+if [[ ! -x "$SONAR_SCRIPT" ]]; then
+  usage
 fi
 
 echo "== Running Sonar analysis =="
-bash -lc "$SONAR_SCAN_CMD"
+"$SONAR_SCRIPT"
 
 echo "== Waiting for Quality Gate =="
-./scripts/sonar_qg.sh
+"$(dirname "$0")/sonar_qg.sh"
