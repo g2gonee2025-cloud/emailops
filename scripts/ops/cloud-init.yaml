@@ -1,0 +1,21 @@
+#cloud-config
+packages:
+  - git
+  - python3-pip
+  - docker.io
+  - postgresql-client
+  - unzip
+
+runcmd:
+  # Install Docker Compose with checksum verification
+  - |
+    DOCKER_COMPOSE_VERSION="v2.24.5"
+    OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+    ARCH=$(uname -m)
+    COMPOSE_URL="https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${OS}-${ARCH}"
+    CHECKSUM_URL="https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/checksums.txt"
+    curl -L "${COMPOSE_URL}" -o /usr/local/bin/docker-compose
+    curl -L "${CHECKSUM_URL}" | grep "docker-compose-${OS}-${ARCH}" | sha256sum -c -
+    chmod +x /usr/local/bin/docker-compose
+  # Setup workspace directory
+  - mkdir -p /root/workspace
