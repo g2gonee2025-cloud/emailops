@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 import aiohttp
+import aiofiles
 
 # Default Configuration
 DEFAULT_REPO_OWNER = "g2gonee2025-cloud"
@@ -81,6 +82,35 @@ def count_lines(filepath: Path) -> int:
     return 0
 
 
+def _find_python_imports(content: str, filepath: Path) -> set[Path]:
+    """Finds Python imports in the given content."""
+    imports = set()
+    matches = re.findall(r"^(?:from|import)\s+([\w\.]+)", content, re.MULTILINE)
+    for match in matches:
+        relative_path = match.replace(".", "/") + ".py"
+        possible_path = Path.cwd() / "backend/src" / relative_path
+        if not possible_path.exists():
+            possible_path = Path.cwd() / "cli/src" / relative_path
+        if possible_path.exists() and possible_path != filepath:
+            imports.add(possible_path)
+    return imports
+
+
+def _find_js_imports(content: str, filepath: Path) -> set[Path]:
+    """Finds JS/TS imports in the given content."""
+    imports = set()
+    matches = re.findall(r'from\s+[\'"]([^\'"]+)[\'"]', content)
+    for match in matches:
+        if match.startswith("."):
+            possible_path = (filepath.parent / match).resolve()
+            for ext in [".ts", ".tsx", ".js", ".jsx", ".json"]:
+                p = possible_path.with_suffix(ext)
+                if p.exists() and p != filepath:
+                    imports.add(p)
+                    break
+    return imports
+
+
 def find_imports(filepath: Path) -> set[Path]:
     """
     Very basic import detection for context resolution.
@@ -89,38 +119,10 @@ def find_imports(filepath: Path) -> set[Path]:
     imports = set()
     try:
         content = filepath.read_text(encoding="utf-8", errors="ignore")
-
-        # Simple regex for Python imports
         if filepath.suffix == ".py":
-            # import x.y.z
-            # from x.y import z
-            matches = re.findall(r"^(?:from|import)\s+([\w\.]+)", content, re.MULTILINE)
-            for match in matches:
-                # rough conversion: foo.bar -> foo/bar.py
-                relative_path = match.replace(".", "/") + ".py"
-
-                # Check varying depths basically
-                # This is heuristic and simple as requested
-                possible_path = Path.cwd() / "backend/src" / relative_path
-                if not possible_path.exists():
-                    possible_path = Path.cwd() / "cli/src" / relative_path
-
-                if possible_path.exists() and possible_path != filepath:
-                    imports.add(possible_path)
-
-        # Simple regex for JS/TS
+            imports.update(_find_python_imports(content, filepath))
         elif filepath.suffix in [".ts", ".tsx", ".js", ".jsx"]:
-            # import ... from './foo'
-            matches = re.findall(r'from\s+[\'"]([^\'"]+)[\'"]', content)
-            for match in matches:
-                if match.startswith("."):
-                    possible_path = (filepath.parent / match).resolve()
-                    # Try extensions
-                    for ext in [".ts", ".tsx", ".js", ".jsx", ".json"]:
-                        p = possible_path.with_suffix(ext)
-                        if p.exists() and p != filepath:
-                            imports.add(p)
-                            break
+            imports.update(_find_js_imports(content, filepath))
     except OSError as e:
         logger.warning(f"Could not read file {filepath} for import parsing: {e}")
     except Exception as e:
@@ -129,6 +131,55 @@ def find_imports(filepath: Path) -> set[Path]:
             exc_info=True,
         )
     return imports
+
+
+async def _execute_api_call(
+    session: aiohttp.ClientSession,
+    api_url: str,
+    api_key: str,
+    payload: dict,
+    relative_path: str,
+):
+    """Executes the API call to create a session."""
+    try:
+        async with session.post(
+            api_url,
+            json=payload,
+            headers={"X-Goog-Api-Key": api_key, "Content-Type": "application/json"},
+            timeout=300,
+        ) as resp:
+            if resp.status == 200:
+                data = await resp.json()
+                logger.info(f"Created session for {relative_path}: {data.get('name')}")
+                return {
+                    "file": str(relative_path),
+                    "session_id": data.get("name"),
+                    "status": "success",
+                }
+            logger.error(
+                f"Failed to create session for {relative_path}: {resp.status} - {resp.reason}"
+            )
+            return {
+                "file": str(relative_path),
+                "error": f"{resp.status} - {resp.reason}",
+                "status": "failed",
+            }
+    except aiohttp.ClientError as e:
+        logger.error(f"API request failed for {relative_path}: {e}")
+        return {"file": str(relative_path), "error": str(e), "status": "api_error"}
+    except TimeoutError:
+        logger.error(f"API request timed out for {relative_path}")
+        return {"file": str(relative_path), "error": "Timeout", "status": "timeout"}
+    except Exception as e:
+        logger.error(
+            f"An unexpected error occurred during session creation for {relative_path}: {e}",
+            exc_info=True,
+        )
+        return {
+            "file": str(relative_path),
+            "error": "Unexpected error",
+            "status": "error",
+        }
 
 
 async def create_session(
@@ -140,6 +191,7 @@ async def create_session(
     api_key: str,
     source_id: str,
 ):
+    """Prepares and initiates a code review session."""
     async with sem:
         relative_path = file_path.relative_to(Path.cwd())
         context_str = "\n".join([str(p.relative_to(Path.cwd())) for p in context_files])
@@ -159,49 +211,9 @@ async def create_session(
             "automationMode": "AUTO_CREATE_PR",
         }
 
-        try:
-            async with session.post(
-                api_url,
-                json=payload,
-                headers={"X-Goog-Api-Key": api_key, "Content-Type": "application/json"},
-                timeout=300,  # 5-minute timeout for the entire operation
-            ) as resp:
-                if resp.status == 200:
-                    data = await resp.json()
-                    logger.info(
-                        f"Created session for {relative_path}: {data.get('name')}"
-                    )
-                    return {
-                        "file": str(relative_path),
-                        "session_id": data.get("name"),
-                        "status": "success",
-                    }
-                else:
-                    # Security: Do not log the full response text.
-                    logger.error(
-                        f"Failed to create session for {relative_path}: {resp.status} - {resp.reason}"
-                    )
-                    return {
-                        "file": str(relative_path),
-                        "error": f"{resp.status} - {resp.reason}",
-                        "status": "failed",
-                    }
-        except aiohttp.ClientError as e:
-            logger.error(f"API request failed for {relative_path}: {e}")
-            return {"file": str(relative_path), "error": str(e), "status": "api_error"}
-        except TimeoutError:
-            logger.error(f"API request timed out for {relative_path}")
-            return {"file": str(relative_path), "error": "Timeout", "status": "timeout"}
-        except Exception as e:
-            logger.error(
-                f"An unexpected error occurred during session creation for {relative_path}: {e}",
-                exc_info=True,
-            )
-            return {
-                "file": str(relative_path),
-                "error": "Unexpected error",
-                "status": "error",
-            }
+        return await _execute_api_call(
+            session, api_url, api_key, payload, str(relative_path)
+        )
 
 
 async def main():
@@ -273,8 +285,8 @@ async def main():
             logger.warning(f"  [FAILURE] {res['file']} -> Error: {res['error']}")
 
     # Save detailed JSON report
-    with open("jules_batch_report.json", "w") as f:
-        json.dump(results, f, indent=2)
+    async with aiofiles.open("jules_batch_report.json", "w") as f:
+        await f.write(json.dumps(results, indent=2))
 
     logger.info("\nDetailed report saved to jules_batch_report.json")
     logger.info("Processing complete.")
