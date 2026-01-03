@@ -6,11 +6,8 @@ Similar to `aws s3 ls`, but uses local .env file for auth.
 
 import argparse
 import os
+import sys
 from collections.abc import Iterable
-
-import boto3
-from botocore.client import Config
-from dotenv import load_dotenv
 
 
 def _ensure_env(keys: Iterable[str]) -> dict[str, str]:
@@ -31,6 +28,18 @@ def _ensure_env(keys: Iterable[str]) -> dict[str, str]:
 
 def main() -> None:
     """Main function to list objects in a DigitalOcean Space."""
+    try:
+        import boto3
+        from botocore.client import Config
+        from botocore.exceptions import ClientError
+        from dotenv import load_dotenv
+    except ImportError as e:
+        print(
+            f"Error: Missing required libraries. Please run 'pip install boto3 python-dotenv rich'. Details: {e}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
     parser = argparse.ArgumentParser(
         description="List objects in a configured S3-compatible bucket (e.g., DigitalOcean Space)."
     )
@@ -55,6 +64,10 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    if args.limit < 0:
+        print("Error: --limit cannot be negative.", file=sys.stderr)
+        sys.exit(1)
+
     # Load .env into the environment (override to pick up latest values).
     load_dotenv(override=True)
 
@@ -64,8 +77,6 @@ def main() -> None:
 
     if args.verbose:
         print(f"Connecting to {env['S3_BUCKET_RAW']} @ {env['S3_ENDPOINT']}")
-        print(f"Access key length: {len(env['S3_ACCESS_KEY'])}")
-        print(f"Secret key length: {len(env['S3_SECRET_KEY'])}")
 
     client = boto3.client(
         "s3",
@@ -97,31 +108,41 @@ def main() -> None:
             table.add_column("Size", justify="right")
             table.add_column("Last Modified")
 
-            RICH_AVAILABLE = True
+            rich_available = True
         except ImportError:
-            RICH_AVAILABLE = False
+            rich_available = False
 
         count = 0
         for page in pages:
-            for obj in page.get("Contents", []):
-                if count < args.limit:
-                    if RICH_AVAILABLE:
-                        table.add_row(
-                            obj["Key"],
-                            str(obj["Size"]),
-                            str(obj["LastModified"]),
-                        )
-                    else:
-                        print(
-                            f"- {obj['Key']} (size={obj['Size']} "
-                            f"last_modified={obj['LastModified']})"
-                        )
+            if "Contents" not in page:
+                continue
+
+            for obj in page["Contents"]:
+                if count >= args.limit:
+                    break
+
+                key = obj.get("Key", "N/A")
+                size = obj.get("Size", 0)
+                last_modified = obj.get("LastModified", "N/A")
+
+                if rich_available:
+                    table.add_row(
+                        key,
+                        str(size),
+                        str(last_modified),
+                    )
+                else:
+                    print(f"- {key} (size={size} last_modified={last_modified})")
+
                 count += 1
+
+            if count >= args.limit:
+                break
 
         if count == 0:
             print("No objects found.")
         else:
-            if RICH_AVAILABLE:
+            if rich_available:
                 console.print(table)
 
             # Summary line
@@ -131,8 +152,12 @@ def main() -> None:
                 f"(use --limit to change)"
             )
 
-    except Exception as exc:  # pragma: no cover - simple utility script
-        print(f"Error listing objects: {exc}")
+    except ClientError as exc:
+        print(f"Error listing objects: {exc}", file=sys.stderr)
+        sys.exit(1)
+    except KeyboardInterrupt:
+        print("\nOperation cancelled by user.", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
