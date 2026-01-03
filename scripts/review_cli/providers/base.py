@@ -5,21 +5,34 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import List, Optional
+
+
+@dataclass
+class Issue:
+    """A single issue found in a file."""
+
+    line_number: Optional[int]
+    message: str
+    severity: str
 
 
 @dataclass
 class ReviewResult:
     """Result from a code review."""
 
-    file: str
-    issues: list[dict[str, Any]] = field(default_factory=list)
+    file: Path
+    issues: List[Issue] = field(default_factory=list)
     summary: str = ""
     model: str = ""
     language: str = ""
-    error: str | None = None
+    error: Optional[str] = None
     skipped: bool = False
-    skip_reason: str | None = None
+    skip_reason: Optional[str] = None
+
+    def __post_init__(self):
+        if self.skipped and not self.skip_reason:
+            raise ValueError("skip_reason must be provided if skipped is True")
 
     @property
     def has_issues(self) -> bool:
@@ -27,7 +40,7 @@ class ReviewResult:
 
     @property
     def is_success(self) -> bool:
-        return self.error is None and not self.skipped
+        return self.error is None and not self.skipped and not self.has_issues
 
 
 class ReviewProvider(ABC):
