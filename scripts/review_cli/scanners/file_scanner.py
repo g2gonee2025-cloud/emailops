@@ -35,6 +35,8 @@ LANGUAGE_MAP = {
 
 
 def _normalize_extension(ext: str) -> str:
+    if not isinstance(ext, str):
+        return ""
     cleaned = ext.strip().lower()
     if not cleaned:
         return ""
@@ -64,20 +66,23 @@ class FileScanner:
         gitignore_path = self.project_root / ".gitignore"
         patterns = []
         if gitignore_path.exists():
-            with gitignore_path.open() as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith("#"):
-                        patterns.append(line)
+            try:
+                with gitignore_path.open(encoding="utf-8", errors="ignore") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith("#"):
+                            patterns.append(line)
+            except OSError as e:
+                logger.warning("Could not read .gitignore file: %s", e)
         self._gitignore_patterns = patterns
         return patterns
 
     def _is_excluded(self, file_path: Path) -> bool:
         """Check if a file should be excluded from scanning."""
         try:
-            rel_path = str(file_path.relative_to(self.project_root))
+            rel_path = file_path.relative_to(self.project_root).as_posix()
         except ValueError:
-            rel_path = str(file_path)
+            rel_path = file_path.as_posix()
 
         name = file_path.name
 
@@ -99,15 +104,16 @@ class FileScanner:
 
         # Check test files if skip_tests is enabled
         if self.config.skip_tests:
-            if "test" in name.lower() or "tests" in rel_path.lower().split(os.sep):
+            # More precise test file matching
+            is_test = re.search(r"(^|[/_\\\])(tests?|__tests__)([/_\\\]]|$)", rel_path.lower()) or re.search(
+                r"(^|[/_])(test_.*|.*_test)\.py$", name.lower()
+            )
+            if is_test:
                 return True
 
         # Check gitignore patterns
         # Simplified gitignore matching
         for pattern in self._load_gitignore_patterns():
-            if pattern.startswith("#") or not pattern.strip():
-                continue
-
             # Directory match
             if pattern.endswith("/"):
                 pat = pattern.rstrip("/")
@@ -138,9 +144,12 @@ class FileScanner:
 
     def scan(self) -> list[Path]:
         """Find all code files matching the configuration."""
-        files = []
+        found_files: set[Path] = set()
 
-        for scan_dir in self.config.directories:
+        for scan_dir_entry in self.config.directories:
+            # Type guard for safety
+            scan_dir = Path(scan_dir_entry) if not isinstance(scan_dir_entry, Path) else scan_dir_entry
+
             if not scan_dir.is_absolute():
                 scan_dir = self.project_root / scan_dir
 
@@ -148,34 +157,48 @@ class FileScanner:
                 logger.warning("Scan directory does not exist: %s", scan_dir)
                 continue
 
-            for file_path in scan_dir.rglob("*"):
-                if not file_path.is_file():
-                    continue
+            # Custom walk to respect exclusions at directory level
+            for root, dirs, files in os.walk(scan_dir, topdown=True):
+                root_path = Path(root)
 
-                # Check extension
-                if file_path.suffix.lower() not in self._extensions:
-                    continue
+                # Filter directories in-place to prevent traversal
+                dirs[:] = [d for d in dirs if not self._is_dir_excluded(root_path / d)]
 
-                # Check exclusions
-                if self._is_excluded(file_path):
-                    continue
+                for filename in files:
+                    file_path = root_path / filename
 
-                # Check file size
-                if self.config.max_file_size > 0:
-                    try:
-                        if file_path.stat().st_size > self.config.max_file_size:
+                    # Check extension
+                    if file_path.suffix.lower() not in self._extensions:
+                        continue
+
+                    # Check exclusions
+                    if self._is_excluded(file_path):
+                        continue
+
+                    # Check file size
+                    if self.config.max_file_size > 0:
+                        try:
+                            if file_path.stat().st_size > self.config.max_file_size:
+                                continue
+                        except OSError:
                             continue
-                    except OSError:
-                        continue
 
-                # Check minimum lines
-                if self.config.min_lines > 0:
-                    if self._count_lines(file_path) < self.config.min_lines:
-                        continue
+                    # Check minimum lines
+                    if self.config.min_lines > 0:
+                        if self._count_lines(file_path) < self.config.min_lines:
+                            continue
 
-                files.append(file_path)
+                    found_files.add(file_path)
 
-        return files
+        return sorted(list(found_files))
+
+    def _is_dir_excluded(self, dir_path: Path) -> bool:
+        """Check if a directory should be fully excluded from traversal."""
+        # Check against simple directory name patterns
+        for pattern in self.config.exclude_patterns:
+            if "/" not in pattern and pattern == dir_path.name:
+                return True
+        return False
 
     @staticmethod
     def get_language(file_path: Path) -> str:
@@ -222,8 +245,8 @@ class FileScanner:
         """Extract TypeScript/JavaScript imports."""
         try:
             if content is None:
-                content = file_path.read_text(encoding="utf-8")
-        except OSError:
+                content = file_path.read_text(encoding="utf-8", errors="ignore")
+        except (OSError, UnicodeDecodeError):
             return "(Could not read)"
 
         pattern = r"(?:import|from)\s+['\"]([^'\"]+)['\"]"
