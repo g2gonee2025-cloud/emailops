@@ -11,48 +11,20 @@ from rich.console import Console
 from rich.prompt import Confirm, IntPrompt, Prompt
 from rich.table import Table
 
-try:
-    from .config import (
-        DEFAULT_SCAN_DIRS,
-        EXTENSION_GROUPS,
-        PROVIDER_MODELS,
-        Config,
-        ReviewConfig,
-        ScanConfig,
-    )
-    from .providers.jules import JulesProvider
-    from .providers.openai_compat import OpenAICompatProvider
-    from .reports.reporter import Reporter
-    from .reviewers.code_reviewer import CodeReviewer
-    from .scanners.file_scanner import FileScanner
-except ImportError:
-    # Direct execution fallback
-    import sys
-    from pathlib import Path
-
-    _project_root = Path(__file__).resolve().parent.parent.parent
-    if str(_project_root) not in sys.path:
-        sys.path.insert(0, str(_project_root))
-
-    from scripts.review_cli.config import (
-        DEFAULT_SCAN_DIRS,
-        EXTENSION_GROUPS,
-        PROVIDER_MODELS,
-        Config,
-        ReviewConfig,
-        ScanConfig,
-    )
-    from scripts.review_cli.providers.jules import JulesProvider
-    from scripts.review_cli.providers.openai_compat import OpenAICompatProvider
-    from scripts.review_cli.reports.reporter import Reporter
-    from scripts.review_cli.reviewers.code_reviewer import CodeReviewer
-    from scripts.review_cli.scanners.file_scanner import FileScanner
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
+from .config import (
+    DEFAULT_SCAN_DIRS,
+    EXTENSION_GROUPS,
+    PROVIDER_MODELS,
+    Config,
+    ReviewConfig,
+    ScanConfig,
 )
-logger = logging.getLogger(__name__)
+from .providers.base import ReviewResult
+from .providers.jules import JulesProvider
+from .providers.openai_compat import OpenAICompatProvider
+from .reports.reporter import Reporter
+from .reviewers.code_reviewer import CodeReviewer
+from .scanners.file_scanner import FileScanner
 
 console = Console()
 
@@ -71,7 +43,7 @@ def select_model(provider: str) -> str:
     """Prompt user to select a model."""
     models = PROVIDER_MODELS.get(provider, [])
     if not models:
-        return "default"
+        raise ValueError(f"No models configured for provider: {provider}")
 
     console.print(f"\n[bold cyan]Select Model for {provider}:[/bold cyan]")
     for i, model in enumerate(models, 1):
@@ -151,7 +123,8 @@ def select_extensions() -> set[str]:
             continue
 
     if not selected:
-        return {".py", ".ts", ".tsx"}
+        # Default to Python and TypeScript if no selection
+        return set(EXTENSION_GROUPS["Python"] + EXTENSION_GROUPS["TypeScript"])
 
     return selected
 
@@ -188,6 +161,12 @@ def run_interactive() -> Config:
     dry_run = Confirm.ask("Dry run (preview only)?", default=False)
     workers = max(1, IntPrompt.ask("Concurrent workers", default=4))
 
+    incremental_save = False
+    output_file = "review_report.json"  # Default value
+    if not dry_run:
+        incremental_save = Confirm.ask("Save results incrementally?", default=True)
+        output_file = Prompt.ask("Output report file", default="review_report.json")
+
     # Build config
     return Config(
         project_root=project_root,
@@ -201,6 +180,8 @@ def run_interactive() -> Config:
             model=model,
             max_workers=workers,
             dry_run=dry_run,
+            incremental_save=incremental_save,
+            output_file=output_file,
         ),
     )
 
@@ -221,6 +202,9 @@ def print_config_summary(config: Config) -> None:
     table.add_row("Skip Tests", str(config.scan.skip_tests))
     table.add_row("Workers", str(config.review.max_workers))
     table.add_row("Dry Run", str(config.review.dry_run))
+    if not config.review.dry_run:
+        table.add_row("Output File", config.review.output_file)
+        table.add_row("Incremental Save", str(config.review.incremental_save))
 
     console.print(table)
     console.print()
@@ -236,9 +220,14 @@ async def run_review(config: Config) -> None:
 
     try:
 
-        async def _save_incremental_result(_: object) -> None:
-            summary = reviewer.get_summary()
-            reporter.save_json(reviewer.results, summary)
+        async def _save_incremental_result(_: ReviewResult) -> None:
+            try:
+                summary = reviewer.get_summary()
+                reporter.save_json(reviewer.results, summary)
+            except OSError as e:
+                console.print(
+                    f"[yellow]Warning: Incremental save failed: {e}[/yellow]"
+                )
 
         on_result = None
         if not config.review.dry_run and config.review.incremental_save:
@@ -248,12 +237,19 @@ async def run_review(config: Config) -> None:
         results = await reviewer.run(on_result=on_result)
 
         if not config.review.dry_run and results:
-            # Generate reports
-            summary = reviewer.get_summary()
-            reporter.save_json(results, summary)
-            reporter.print_summary(results, summary)
+            try:
+                summary = reviewer.get_summary()
+                reporter.save_json(results, summary)
+                reporter.print_summary(results, summary)
+            except OSError as e:
+                console.print(f"[red]Error saving report: {e}[/red]")
+            except Exception as e:
+                console.print(f"[red]Error generating summary: {e}[/red]")
     finally:
-        await provider.close()
+        try:
+            await provider.close()
+        except Exception as e:
+            console.print(f"[yellow]Warning: Provider cleanup failed: {e}[/yellow]")
 
 
 def main() -> None:
@@ -269,13 +265,26 @@ def main() -> None:
             console.print("[yellow]Cancelled.[/yellow]")
             return
 
-        asyncio.run(run_review(config))
+        # Handle nested asyncio loops
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = None
+
+        if loop and loop.is_running():
+            console.print("[yellow]Running within an existing event loop.[/yellow]")
+            loop.create_task(run_review(config))
+        else:
+            asyncio.run(run_review(config))
 
     except KeyboardInterrupt:
         console.print("\n[yellow]Interrupted.[/yellow]")
         sys.exit(1)
     except ValueError as e:
         console.print(f"[red]Configuration error: {e}[/red]")
+        sys.exit(1)
+    except Exception as e:
+        console.print(f"[bold red]An unexpected error occurred: {e}[/bold red]")
         sys.exit(1)
 
 
