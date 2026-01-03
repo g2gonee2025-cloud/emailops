@@ -1,64 +1,81 @@
 import logging
 import os
 import sys
+import json
 
 import requests
 
 # Set path
-sys.path.append("backend/src")
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(SCRIPT_DIR, "..", "backend", "src"))
+
 
 # Configure logging
-logging.basicConfig(level=logging.ERROR)
+logging.basicConfig(level=logging.INFO)
 
 from cortex.config.loader import get_config
 from cortex.llm.runtime import LLMRuntime
 
 
 def mask(s):
-    if not s:
-        return str(s)
-    if len(s) < 8:
-        return s
+    if not s or len(s) < 8:
+        return "[REDACTED]"
     return s[:4] + "..." + s[-4:] + f" (len={len(s)})"
 
+def main():
+    logging.info("--- DEBUG START ---")
+    # 1. Inspect _config
+    try:
+        cfg = get_config()
+        val = getattr(cfg, "llm_api_key", "MISSING_ATTR")
+        logging.info(f"_config.llm_api_key: '{mask(val)}'")
+    except Exception:
+        logging.exception("Error loading config")
 
-print("--- DEBUG START ---")
-# 1. Inspect _config
-try:
-    cfg = get_config()
-    val = getattr(cfg, "llm_api_key", "MISSING_ATTR")
-    print(f"_config.llm_api_key: '{val}'")
-except Exception as e:
-    print(f"Error loading config: {e}")
+    # 2. Inspect Env Vars
+    logging.info(f"Env DO_LLM_API_KEY: {mask(os.getenv('DO_LLM_API_KEY'))}")
+    logging.info(f"Env LLM_API_KEY: {mask(os.getenv('LLM_API_KEY'))}")
 
-# 2. Inspect Env Vars
-print(f"Env DO_LLM_API_KEY: {mask(os.getenv('DO_LLM_API_KEY'))}")
-print(f"Env LLM_API_KEY: {mask(os.getenv('LLM_API_KEY'))}")
+    # 3. Inspect LLMRuntime resolution
+    try:
+        runtime = LLMRuntime()
+        if runtime.primary and runtime.primary.llm_client:
+            client = runtime.primary.llm_client  # Triggers init
+            logging.info(f"Resolved Client API Key: {mask(client.api_key)}")
+            logging.info(f"Resolved Client Base URL: {client.base_url}")
+        else:
+            logging.error("LLMRuntime initialization failed: primary client is None.")
+    except Exception:
+        logging.exception("Error initializing runtime")
 
-# 3. Inspect LLMRuntime resolution
-try:
-    runtime = LLMRuntime()
-    client = runtime.primary.llm_client  # Triggers init
-    print(f"Resolved Client API Key: {mask(client.api_key)}")
-    print(f"Resolved Client Base URL: {client.base_url}")
-except Exception as e:
-    print(f"Error initializing runtime: {e}")
+    # 4. Raw Request Test
+    try:
+        key = os.getenv("DO_LLM_API_KEY")
+        if not key:
+            logging.warning("DO_LLM_API_KEY is not set. Skipping raw request test.")
+        else:
+            url = "https://inference.do-ai.run/v1/chat/completions"
+            headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+            data = {
+                "model": "gpt-oss-120b",
+                "messages": [{"role": "user", "content": "ping"}],
+                "max_tokens": 1,
+            }
+            logging.info(f"Attempting raw POST to {url} with key {mask(key)}...")
+            resp = requests.post(url, headers=headers, json=data, timeout=5)
+            logging.info(f"Raw Response Status: {resp.status_code}")
+            try:
+                body = resp.json()
+                if "error" in body:
+                    logging.warning(f"Raw Response Body contains error: {body['error']}")
+                else:
+                    logging.info("Raw Response Body: [REDACTED]")
+            except json.JSONDecodeError:
+                logging.info("Raw Response Body: [REDACTED - Not JSON]")
+    except Exception:
+        logging.exception("Raw request failed")
 
-# 4. Raw Request Test
-try:
-    key = os.getenv("DO_LLM_API_KEY")
-    url = "https://inference.do-ai.run/v1/chat/completions"
-    headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
-    data = {
-        "model": "gpt-oss-120b",
-        "messages": [{"role": "user", "content": "ping"}],
-        "max_tokens": 1,
-    }
-    print(f"Attempting raw POST to {url} with key {mask(key)}...")
-    resp = requests.post(url, headers=headers, json=data, timeout=5)
-    print(f"Raw Response Status: {resp.status_code}")
-    print(f"Raw Response Body: {resp.text}")
-except Exception as e:
-    print(f"Raw request failed: {e}")
+    logging.info("--- DEBUG END ---")
 
-print("--- DEBUG END ---")
+if __name__ == "__main__":
+    main()
