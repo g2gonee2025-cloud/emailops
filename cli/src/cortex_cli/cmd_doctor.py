@@ -349,7 +349,7 @@ def _run_index_check(args: Any, config: Any, root: Path) -> tuple[dict[str, Any]
 def _print_ingest_check_report(
     success: bool, details: dict[str, Any], error: str | None
 ) -> None:
-    """Prints the report for the ingest check."""
+    """Prints the human-readable report for the ingest check."""
     if not success:
         print(f"  {_c('⚠', 'yellow')} Ingest check: {error}")
     else:
@@ -404,30 +404,32 @@ def _configure_logging(verbose: bool) -> None:
 
 
 def _run_local_checks(args: argparse.Namespace, config: Any) -> None:
-    """Run local health checks."""
+    """Runs local health checks."""
     if not args.json:
         print(f"{_c('Cortex Doctor (Local Mode)', 'bold')}")
+
     root = Path(args.root).resolve()
-    # DB
+
     db_res = _run_db_check(args, config)
-    # Index
     _idx_info, idx_err = _run_index_check(args, config, root)
-    # Ingest
     ing_res = _run_ingest_check(args, config, root)
-    # Summarize (simplified)
+
     if not args.json:
         print("\nLocal checks completed.")
+
     if db_res[2] or idx_err or ing_res[3]:
         sys.exit(2)
     sys.exit(0)
 
 
 def _run_api_checks(args: argparse.Namespace, config: Any) -> None:
-    """Run API-based health checks."""
+    """Runs API-based health checks."""
     api_url = _get_api_url(config)
     doctor_endpoint = f"{api_url}/api/v1/admin/doctor"
+
     if not args.json:
         print(f"Contacting Cortex backend at {_c(api_url, 'cyan')}...")
+
     try:
         import os
 
@@ -435,16 +437,20 @@ def _run_api_checks(args: argparse.Namespace, config: Any) -> None:
         headers = {}
         if token:
             headers["Authorization"] = f"Bearer {token}"
+
         with httpx.Client(timeout=30.0) as client:
             response = client.post(doctor_endpoint, headers=headers)
             response.raise_for_status()
             report = response.json()
+
         if args.json:
             print(json.dumps(report, indent=2))
         else:
             _print_report_human(report)
+
         exit_code = _get_exit_code(report.get("overall_status", "unknown"))
         sys.exit(exit_code)
+
     except httpx.RequestError as e:
         logger.error(f"API request failed: {e}")
         if not args.json:
@@ -495,13 +501,16 @@ def main() -> None:
     parser.add_argument("--check-ingest", action="store_true", help="Check ingest")
     parser.add_argument("--check-reranker", action="store_true", help="Check reranker")
     parser.add_argument("--pip-timeout", type=int, default=300, help="Pip timeout")
+
     args = parser.parse_args()
     _configure_logging(args.verbose)
+
     config = get_config()
-    # If specific checks are requested, run in local mode
+
     any_local_check = (
         args.check_index or args.check_db or args.check_redis or args.check_ingest
     )
+
     if any_local_check:
         _run_local_checks(args, config)
     else:
