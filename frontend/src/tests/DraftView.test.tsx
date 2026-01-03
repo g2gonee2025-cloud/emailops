@@ -142,16 +142,16 @@ describe('DraftView', () => {
     renderComponent();
 
     const instructionInput = screen.getByPlaceholderText(/e.g., Reply to John/i);
-    const threadIdInput = screen.getByPlaceholderText(/Leave empty to draft without context/i);
     const submitButton = screen.getByRole('button', { name: /generate draft/i });
 
     await user.type(instructionInput, 'Test instruction');
-    await user.type(threadIdInput, 'thread-123');
+    // Note: ConversationSelector is now a dropdown, not a text input
+    // Testing without selecting a conversation (threadId will be empty)
     await user.click(submitButton);
 
     expect(mockMutate).toHaveBeenCalledWith({
       instruction: 'Test instruction',
-      threadId: 'thread-123',
+      threadId: '',
       tone: 'professional', // Default tone
     });
   });

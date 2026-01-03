@@ -26,6 +26,7 @@ interface ActiveJob {
   jobId: string;
   status: IngestStatusResponse;
 }
+type StatusColor = 'healthy' | 'warning' | 'critical' | 'inactive';
 
 // Manual Upload Section Component
 function UploadSection() {
@@ -233,7 +234,7 @@ export default function IngestionView() {
     }
   };
 
-  const getStatusColor = (status: string): 'healthy' | 'warning' | 'critical' | 'inactive' => {
+  const getStatusColor = (status: string): StatusColor => {
     switch (status) {
       case 'completed': return 'healthy';
       case 'running': return 'warning';
@@ -393,7 +394,7 @@ export default function IngestionView() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  {folders.map(folder => (
+                  {folders.map((folder) => (
                     <tr key={folder.folder} className="hover:bg-white/5 transition-colors">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">

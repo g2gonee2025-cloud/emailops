@@ -20,6 +20,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 BACKEND_SRC = ROOT / "backend" / "src"
 
+IMPORT_LITERAL = "import "
+FROM_LITERAL = "from "
+
 # ============================================================================
 # MAGIC NUMBER FIXES
 # ============================================================================
@@ -48,6 +51,46 @@ MAGIC_NUMBER_FIXES = {
 }
 
 
+def _insert_constants(content: str, constants_to_add: list[str]) -> str:
+    """Insert constant definitions after the last import."""
+    if not constants_to_add:
+        return content
+
+    lines = content.split("\n")
+    insert_idx = 0
+    for i, line in enumerate(lines):
+        if line.startswith(IMPORT_LITERAL) or line.startswith(FROM_LITERAL):
+            insert_idx = i + 1
+        elif line.strip() and not line.startswith("#") and insert_idx > 0:
+            break
+
+    const_block = "\n# Constants\n" + "\n".join(constants_to_add) + "\n"
+    lines.insert(insert_idx, const_block)
+    return "\n".join(lines)
+
+
+def _apply_magic_number_fixes(
+    content: str, fixes: list, rel_path: str
+) -> tuple[str, list[str]]:
+    """Apply a list of magic number fixes to the content."""
+    constants_to_add = []
+    for _pattern, old_val, const_name, const_val in fixes:
+        if const_name in content:
+            continue
+
+        constants_to_add.append(f"{const_name} = {const_val}")
+
+        if old_val == "[:50]":
+            content = content.replace("query[:50]", f"query[:{const_name}]")
+        elif old_val == "4" and "summarizer" in rel_path:
+            content = re.sub(
+                r"len\(text\)\s*//\s*4",
+                f"len(text) // {const_name}",
+                content,
+            )
+    return content, constants_to_add
+
+
 def fix_magic_numbers() -> int:
     """Replace magic numbers with named constants."""
     print("\n🔢 Fixing magic numbers...")
@@ -59,48 +102,15 @@ def fix_magic_numbers() -> int:
             print(f"  ⚠️ Skipping {rel_path} (not found)")
             continue
 
-        content = file_path.read_text()
-        original = content
-        constants_to_add = []
+        original_content = file_path.read_text()
+        content, constants_to_add = _apply_magic_number_fixes(
+            original_content, fixes, rel_path
+        )
 
-        for _pattern, old_val, const_name, const_val in fixes:
-            # Check if constant already exists
-            if const_name in content:
-                continue
-
-            # Add to constants list
-            constants_to_add.append(f"{const_name} = {const_val}")
-
-            # Replace usage (be careful with context)
-            # Only replace if it's a standalone value, not part of larger number
-            if old_val == "[:50]":
-                content = content.replace("query[:50]", f"query[:{const_name}]")
-            elif old_val == "4" and "summarizer" in rel_path:
-                # Special case: chars per token estimate
-                content = re.sub(
-                    r"len\(text\)\s*//\s*4",
-                    f"len(text) // {const_name}",
-                    content,
-                )
-
-        # Insert constants after imports
         if constants_to_add:
-            # Find the end of imports
-            lines = content.split("\n")
-            insert_idx = 0
-            for i, line in enumerate(lines):
-                if line.startswith("import ") or line.startswith("from "):
-                    insert_idx = i + 1
-                elif line.strip() and not line.startswith("#") and insert_idx > 0:
-                    # Found first non-import, non-comment line
-                    break
+            content = _insert_constants(content, constants_to_add)
 
-            # Insert constants
-            const_block = "\n# Constants\n" + "\n".join(constants_to_add) + "\n"
-            lines.insert(insert_idx, const_block)
-            content = "\n".join(lines)
-
-        if content != original:
+        if content != original_content:
             file_path.write_text(content)
             print(f"  ✅ {rel_path}")
             fixed_count += len(constants_to_add)
@@ -137,7 +147,7 @@ def fix_duplicate_imports() -> int:
 
         for line in lines:
             stripped = line.strip()
-            if stripped.startswith("import ") or stripped.startswith("from "):
+            if stripped.startswith(IMPORT_LITERAL) or stripped.startswith(FROM_LITERAL):
                 if stripped in seen_imports:
                     removed += 1
                     continue
@@ -161,6 +171,35 @@ DUNDER_IMPORT_FILES = [
 ]
 
 
+def _add_top_level_import(content: str, module_name: str) -> str:
+    """Adds 'import <module_name>' to the top-level import block."""
+    if f"import {module_name}" in content:
+        return content
+
+    lines = content.split("\n")
+    insert_idx = 0
+    for i, line in enumerate(lines):
+        if line.startswith(IMPORT_LITERAL) or line.startswith(FROM_LITERAL):
+            insert_idx = i + 1
+        elif line.strip() and not line.startswith("#") and insert_idx > 0:
+            break
+    lines.insert(insert_idx, f"import {module_name}")
+    return "\n".join(lines)
+
+
+def _replace_dunder_import_in_content(content: str) -> str:
+    """Replaces __import__("module") with a top-level import."""
+    pattern = r'__import__\(["\'](\w+)["\']\)'
+    match = re.search(pattern, content)
+
+    if not match:
+        return content
+
+    module_name = match.group(1)
+    content_after_replace = re.sub(pattern, module_name, content)
+    return _add_top_level_import(content_after_replace, module_name)
+
+
 def fix_dunder_imports() -> int:
     """Replace __import__('module') with top-level import."""
     print("\n🔄 Fixing __import__ usage...")
@@ -171,28 +210,11 @@ def fix_dunder_imports() -> int:
         if not file_path.exists():
             continue
 
-        content = file_path.read_text()
-        original = content
+        original_content = file_path.read_text()
+        new_content = _replace_dunder_import_in_content(original_content)
 
-        # Find __import__("module") pattern
-        pattern = r'__import__\(["\'](\w+)["\']\)'
-        match = re.search(pattern, content)
-        if match:
-            module_name = match.group(1)
-            # Replace with module_name
-            content = re.sub(pattern, module_name, content)
-
-            # Ensure 'import module' is at top
-            if f"import {module_name}" not in content:
-                lines = content.split("\n")
-                for i, line in enumerate(lines):
-                    if line.startswith("import ") or line.startswith("from "):
-                        lines.insert(i, f"import {module_name}")
-                        break
-                content = "\n".join(lines)
-
-        if content != original:
-            file_path.write_text(content)
+        if new_content != original_content:
+            file_path.write_text(new_content)
             print(f"  ✅ {rel_path}")
             fixed_count += 1
 
@@ -230,7 +252,7 @@ def fix_unnecessary_hasattr() -> int:
             content = re.sub(pattern, "True", content)
 
         # Simplify compound boolean conditions
-        content = re.sub(r"if True and True:", "if True:", content)
+        content = content.replace("if True and True:", "if True:")
 
         # Now, use AST to safely remove 'if True:' blocks
         try:
@@ -425,86 +447,115 @@ def fix_lint_issues() -> int:
 # ============================================================================
 
 
+def _fix_unused_import_in_safety_init() -> int:
+    """Remove unused check_action import from safety/__init__.py."""
+    safety_init = ROOT / "backend/src/cortex/safety/__init__.py"
+    if not safety_init.exists():
+        return 0
+
+    content = safety_init.read_text()
+    if (
+        "from .action_checker import check_action" in content
+        and content.count("check_action") == 1
+    ):
+        content = content.replace("from .action_checker import check_action\n", "")
+        safety_init.write_text(content)
+        print("  ✅ Removed unused check_action import from safety/__init__.py")
+        return 1
+    return 0
+
+
+def _fix_type_hints_in_safety_init() -> int:
+    """Add type hints to strip_injection_patterns in safety/__init__.py."""
+    safety_init = ROOT / "backend/src/cortex/safety/__init__.py"
+    if not safety_init.exists():
+        return 0
+
+    content = safety_init.read_text()
+    if "def strip_injection_patterns(text):" in content:
+        content = content.replace(
+            "def strip_injection_patterns(text):",
+            "def strip_injection_patterns(text: str) -> str:",
+        )
+        safety_init.write_text(content)
+        print("  ✅ Added type hints to strip_injection_patterns")
+        return 1
+    return 0
+
+
+def _fix_return_type_in_text_extraction() -> int:
+    """Add return type to _is_cache_valid in text_extraction.py."""
+    text_extraction = ROOT / "backend/src/cortex/text_extraction.py"
+    if not text_extraction.exists():
+        return 0
+
+    content = text_extraction.read_text()
+    if (
+        "def _is_cache_valid(" in content
+        and "-> bool" not in content.split("def _is_cache_valid(")[1].split(":")[0]
+    ):
+        content = re.sub(
+            r"def _is_cache_valid\(([^)]+)\):",
+            r"def _is_cache_valid(\1) -> bool:",
+            content,
+        )
+        text_extraction.write_text(content)
+        print("  ✅ Added return type to _is_cache_valid")
+        return 1
+    return 0
+
+
+def _fix_return_type_in_graph_py() -> int:
+    """Add return type to _normalize_relation in graph.py."""
+    graph_py = ROOT / "backend/src/cortex/intelligence/graph.py"
+    if not graph_py.exists():
+        return 0
+
+    content = graph_py.read_text()
+    if "def _normalize_relation(" in content:
+        func_match = re.search(r"def _normalize_relation\([^)]+\)\s*:", content)
+        if func_match and "->" not in func_match.group():
+            content = re.sub(
+                r"def _normalize_relation\(([^)]+)\):",
+                r"def _normalize_relation(\1) -> str:",
+                content,
+            )
+            graph_py.write_text(content)
+            print("  ✅ Added return type to _normalize_relation")
+            return 1
+    return 0
+
+
+def _fix_return_type_in_cache_py() -> int:
+    """Add return type to get_query_cache in cache.py."""
+    cache_py = ROOT / "backend/src/cortex/retrieval/cache.py"
+    if not cache_py.exists():
+        return 0
+
+    content = cache_py.read_text()
+    if "def get_query_cache(" in content:
+        func_match = re.search(r"def get_query_cache\([^)]*\)\s*:", content)
+        if func_match and "->" not in func_match.group():
+            content = re.sub(
+                r"def get_query_cache\(([^)]*)\):",
+                r'def get_query_cache(\1) -> "QueryEmbeddingCache":',
+                content,
+            )
+            cache_py.write_text(content)
+            print("  ✅ Added return type to get_query_cache")
+            return 1
+    return 0
+
+
 def fix_specific_issues() -> int:
     """Fix specific issues identified in the report."""
     print("\n🎯 Fixing specific identified issues...")
     fixed_count = 0
-
-    # Fix 1: backend/src/cortex/safety/__init__.py - unused import
-    safety_init = ROOT / "backend/src/cortex/safety/__init__.py"
-    if safety_init.exists():
-        content = safety_init.read_text()
-        if (
-            "from .action_checker import check_action" in content
-            and content.count("check_action") == 1
-        ):
-            content = content.replace("from .action_checker import check_action\n", "")
-            safety_init.write_text(content)
-            print("  ✅ Removed unused check_action import from safety/__init__.py")
-            fixed_count += 1
-
-    # Fix 2: Add type hints to strip_injection_patterns
-    if safety_init.exists():
-        content = safety_init.read_text()
-        if "def strip_injection_patterns(text):" in content:
-            content = content.replace(
-                "def strip_injection_patterns(text):",
-                "def strip_injection_patterns(text: str) -> str:",
-            )
-            safety_init.write_text(content)
-            print("  ✅ Added type hints to strip_injection_patterns")
-            fixed_count += 1
-
-    # Fix 3: _is_cache_valid return type
-    text_extraction = ROOT / "backend/src/cortex/text_extraction.py"
-    if text_extraction.exists():
-        content = text_extraction.read_text()
-        if (
-            "def _is_cache_valid(" in content
-            and "-> bool" not in content.split("def _is_cache_valid(")[1].split(":")[0]
-        ):
-            content = re.sub(
-                r"def _is_cache_valid\(([^)]+)\):",
-                r"def _is_cache_valid(\1) -> bool:",
-                content,
-            )
-            text_extraction.write_text(content)
-            print("  ✅ Added return type to _is_cache_valid")
-            fixed_count += 1
-
-    # Fix 4: _normalize_relation return type in graph.py
-    graph_py = ROOT / "backend/src/cortex/intelligence/graph.py"
-    if graph_py.exists():
-        content = graph_py.read_text()
-        if "def _normalize_relation(" in content:
-            # Check if return type is missing
-            func_match = re.search(r"def _normalize_relation\([^)]+\)\s*:", content)
-            if func_match and "->" not in func_match.group():
-                content = re.sub(
-                    r"def _normalize_relation\(([^)]+)\):",
-                    r"def _normalize_relation(\1) -> str:",
-                    content,
-                )
-                graph_py.write_text(content)
-                print("  ✅ Added return type to _normalize_relation")
-                fixed_count += 1
-
-    # Fix 5: get_query_cache return type in cache.py
-    cache_py = ROOT / "backend/src/cortex/retrieval/cache.py"
-    if cache_py.exists():
-        content = cache_py.read_text()
-        if "def get_query_cache(" in content:
-            func_match = re.search(r"def get_query_cache\([^)]*\)\s*:", content)
-            if func_match and "->" not in func_match.group():
-                content = re.sub(
-                    r"def get_query_cache\(([^)]*)\):",
-                    r'def get_query_cache(\1) -> "QueryEmbeddingCache":',
-                    content,
-                )
-                cache_py.write_text(content)
-                print("  ✅ Added return type to get_query_cache")
-                fixed_count += 1
-
+    fixed_count += _fix_unused_import_in_safety_init()
+    fixed_count += _fix_type_hints_in_safety_init()
+    fixed_count += _fix_return_type_in_text_extraction()
+    fixed_count += _fix_return_type_in_graph_py()
+    fixed_count += _fix_return_type_in_cache_py()
     return fixed_count
 
 

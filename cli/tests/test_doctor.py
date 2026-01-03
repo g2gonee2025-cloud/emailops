@@ -15,11 +15,17 @@ def mock_httpx_client():
         yield mock_client
 
 
-@patch.dict("os.environ", {"OUTLOOKCORTEX_DB_URL": "sqlite:///:memory:"})
-@patch("cortex.routes_admin.asyncio.gather")
-def test_doctor_healthy_human_output(mock_gather, mock_httpx_client, capsys):
+@patch.dict(
+    "os.environ",
+    {
+        "OUTLOOKCORTEX_DB_URL": "sqlite:///:memory:",
+        "S3_ACCESS_KEY": "test-key",
+        "S3_SECRET_KEY": "test-secret",
+    },
+)
+def test_doctor_healthy_human_output(mock_httpx_client, capsys):
     """Test the doctor command with a healthy API response."""
-    mock_gather.return_value = [
+    checks = [
         DoctorCheckResult(name="PostgreSQL", status="pass", message="Connected"),
         DoctorCheckResult(name="Redis", status="pass", message="Connected"),
         DoctorCheckResult(
@@ -30,7 +36,7 @@ def test_doctor_healthy_human_output(mock_gather, mock_httpx_client, capsys):
 
     report = {
         "overall_status": "healthy",
-        "checks": [check.model_dump() for check in mock_gather.return_value],
+        "checks": [check.model_dump() for check in checks],
     }
     mock_response = MagicMock()
     mock_response.status_code = 200
@@ -52,7 +58,14 @@ def test_doctor_healthy_human_output(mock_gather, mock_httpx_client, capsys):
     assert "✓ Reranker API: Connected" in captured.out
 
 
-@patch.dict("os.environ", {"OUTLOOKCORTEX_DB_URL": "sqlite:///:memory:"})
+@patch.dict(
+    "os.environ",
+    {
+        "OUTLOOKCORTEX_DB_URL": "sqlite:///:memory:",
+        "S3_ACCESS_KEY": "test-key",
+        "S3_SECRET_KEY": "test-secret",
+    },
+)
 def test_doctor_degraded_human_output(mock_httpx_client, capsys):
     """Test the doctor command with a degraded API response."""
     report = {
@@ -83,7 +96,14 @@ def test_doctor_degraded_human_output(mock_httpx_client, capsys):
     assert "⚠ Reranker API: Connection failed" in captured.out
 
 
-@patch.dict("os.environ", {"OUTLOOKCORTEX_DB_URL": "sqlite:///:memory:"})
+@patch.dict(
+    "os.environ",
+    {
+        "OUTLOOKCORTEX_DB_URL": "sqlite:///:memory:",
+        "S3_ACCESS_KEY": "test-key",
+        "S3_SECRET_KEY": "test-secret",
+    },
+)
 def test_doctor_unhealthy_json_output(mock_httpx_client, capsys):
     """Test the doctor command with an unhealthy response and JSON flag."""
     report = {
@@ -110,7 +130,14 @@ def test_doctor_unhealthy_json_output(mock_httpx_client, capsys):
     assert parsed_output == report
 
 
-@patch.dict("os.environ", {"OUTLOOKCORTEX_DB_URL": "sqlite:///:memory:"})
+@patch.dict(
+    "os.environ",
+    {
+        "OUTLOOKCORTEX_DB_URL": "sqlite:///:memory:",
+        "S3_ACCESS_KEY": "test-key",
+        "S3_SECRET_KEY": "test-secret",
+    },
+)
 def test_doctor_connection_error(mock_httpx_client, capsys):
     """Test the doctor command when it fails to connect to the API."""
     mock_httpx_client.post.side_effect = httpx.RequestError("Connection failed")

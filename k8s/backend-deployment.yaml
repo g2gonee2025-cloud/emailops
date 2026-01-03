@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: registry.digitalocean.com/sf-registry/emailops-backend:latest
+          image: registry.digitalocean.com/sf-registry/emailops-backend:v1.0.0
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
