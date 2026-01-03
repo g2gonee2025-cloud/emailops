@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+from typing import List
 
 import requests
 
@@ -26,7 +27,7 @@ DESIRED_MODELS = [
 ]
 
 
-def fetch_available_models() -> list[str]:
+def fetch_available_models() -> List[str]:
     """Return a list of model IDs available on the endpoint."""
     url = f"{BASE_URL}/models"
     try:
@@ -40,7 +41,10 @@ def fetch_available_models() -> list[str]:
             )
         payload = resp.json()
         # OpenAI-compatible: {"data": [{"id": "model-id", ...}, ...]}
-        items = payload.get("data") or payload.get("models") or []
+        items = payload.get("data")
+        # Fallback for other response formats
+        if items is None:
+            items = payload.get("models") or []
         model_ids = []
         for it in items:
             if isinstance(it, dict) and "id" in it:
@@ -78,9 +82,11 @@ def test_model(model_name):
             return {
                 "model_requested": model_name,
                 "model_returned": data.get("model", "Unknown"),
-                "response": data.get("choices", [{}])[0]
-                .get("message", {})
-                .get("content", ""),
+                "response": (
+                    data.get("choices")[0].get("message", {}).get("content", "")
+                    if data.get("choices")
+                    else ""
+                ),
                 "status_code": response.status_code,
                 "response_time": response_time,
             }
@@ -93,7 +99,7 @@ def test_model(model_name):
             elif response.status_code == 429:
                 err = "HTTP 429: rate limited"
             else:
-                err = f"HTTP {response.status_code}: {response.text}"
+                err = f"HTTP {response.status_code}: An unexpected error occurred"
             return {
                 "model_requested": model_name,
                 "error": err,
@@ -101,95 +107,108 @@ def test_model(model_name):
                 "response_time": response_time,
             }
 
-    except Exception as e:
+    except requests.RequestException as e:
         return {
             "model_requested": model_name,
-            "error": str(e),
+            "error": f"Network error: {e}",
+            "status_code": None,
+            "response_time": None,
+        }
+    except ValueError as e:
+        return {
+            "model_requested": model_name,
+            "error": f"JSON decode error: {e}",
             "status_code": None,
             "response_time": None,
         }
 
 
-# Discover models and test
-print("Discovering available models...")
-print("=" * 60)
+def main():
+    """Main function to discover and test models."""
+    # Discover models and test
+    print("Discovering available models...")
+    print("=" * 60)
 
-try:
-    available = fetch_available_models()
-except Exception as e:
-    print(f"Failed to fetch /models: {e}")
-    sys.exit(1)
+    try:
+        available = fetch_available_models()
+    except Exception as e:
+        print(f"Failed to fetch /models: {e}")
+        sys.exit(1)
 
-# Allow override via TEST_MODELS env (comma-separated)
-override = os.getenv("TEST_MODELS")
-if override:
-    models = [m.strip() for m in override.split(",") if m.strip()]
-else:
-    # Intersect desired list with available; if none, test all available
-    desired_set = set(DESIRED_MODELS)
-    models = [m for m in available if m in desired_set]
-    if not models:
-        models = available
-
-print(f"Total models available: {len(available)}")
-if available:
-    preview = ", ".join(available[:10]) + ("..." if len(available) > 10 else "")
-    print(f"Sample: {preview}")
-
-print("\nTesting models...")
-print("-" * 60)
-
-results = []
-for model in models:
-    print(f"Testing {model}...")
-    result = test_model(model)
-    results.append(result)
-
-    if "error" in result:
-        print(f"❌ Error: {result['error']}")
+    # Allow override via TEST_MODELS env (comma-separated)
+    override = os.getenv("TEST_MODELS")
+    if override:
+        models = [m.strip() for m in override.split(",") if m.strip()]
     else:
-        print(f"✅ Model returned: {result['model_returned']}")
-        print(f"📝 Response: {result['response']}")
-        print(f"⏱️  Response time: {result['response_time']:.2f}s")
-    print("-" * 40)
+        # Intersect desired list with available; if none, test all available
+        desired_set = set(DESIRED_MODELS)
+        models = [m for m in available if m in desired_set]
+        if not models:
+            models = available
 
-# Summary
-print("\n" + "=" * 60)
-print("SUMMARY:")
-print("=" * 60)
+    print(f"Total models available: {len(available)}")
+    if available:
+        preview = ", ".join(available[:10]) + ("..." if len(available) > 10 else "")
+        print(f"Sample: {preview}")
 
-print(f"{'Model Requested':<25} {'Model Returned':<25} {'Status':<10} {'Time':<8}")
-print("-" * 70)
+    print("\nTesting models...")
+    print("-" * 60)
 
-for result in results:
-    if "error" in result:
-        status = "❌ ERROR"
-        model_returned = "N/A"
-        response_time = "N/A"
-    else:
-        if result["model_requested"] == result["model_returned"]:
-            status = "✅ MATCH"
+    results = []
+    for model in models:
+        print(f"Testing {model}...")
+        result = test_model(model)
+        results.append(result)
+
+        if "error" in result:
+            print(f"❌ Error: {result['error']}")
         else:
-            status = "⚠️  MISMATCH"
-        model_returned = result["model_returned"]
-        response_time = f"{result['response_time']:.2f}s"
+            print(f"✅ Model returned: {result['model_returned']}")
+            print(f"📝 Response: {result['response']}")
+            print(f"⏱️  Response time: {result['response_time']:.2f}s")
+        print("-" * 40)
 
-    print(
-        f"{result['model_requested']:<25} {model_returned:<25} {status:<10} {response_time:<8}"
-    )
+    # Summary
+    print("\n" + "=" * 60)
+    print("SUMMARY:")
+    print("=" * 60)
 
-# Detailed analysis
-print("\n" + "=" * 60)
-print("DETAILED ANALYSIS:")
-print("=" * 60)
+    print(f"{'Model Requested':<25} {'Model Returned':<25} {'Status':<10} {'Time':<8}")
+    print("-" * 70)
 
-for result in results:
-    if "error" not in result:
-        if result["model_requested"] == result["model_returned"]:
-            print(f"✓ {result['model_requested']}: Model correctly identified")
+    for result in results:
+        if "error" in result:
+            status = "❌ ERROR"
+            model_returned = "N/A"
+            response_time = "N/A"
         else:
-            print(
-                f"✗ {result['model_requested']}: API returned '{result['model_returned']}' instead"
-            )
-    else:
-        print(f"✗ {result['model_requested']}: Failed to test - {result['error']}")
+            if result["model_requested"] == result["model_returned"]:
+                status = "✅ MATCH"
+            else:
+                status = "⚠️  MISMATCH"
+            model_returned = result["model_returned"]
+            response_time = f"{result['response_time']:.2f}s"
+
+        print(
+            f"{result['model_requested']:<25} {model_returned:<25} {status:<10} {response_time:<8}"
+        )
+
+    # Detailed analysis
+    print("\n" + "=" * 60)
+    print("DETAILED ANALYSIS:")
+    print("=" * 60)
+
+    for result in results:
+        if "error" not in result:
+            if result["model_requested"] == result["model_returned"]:
+                print(f"✓ {result['model_requested']}: Model correctly identified")
+            else:
+                print(
+                    f"✗ {result['model_requested']}: API returned '{result['model_returned']}' instead"
+                )
+        else:
+            print(f"✗ {result['model_requested']}: Failed to test - {result['error']}")
+
+
+if __name__ == "__main__":
+    main()
