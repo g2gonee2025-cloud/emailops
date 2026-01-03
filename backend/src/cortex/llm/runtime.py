@@ -315,6 +315,49 @@ class VLLMProvider(BaseProvider):
         self._embed_client: Any | None = None
         self._lock = threading.RLock()
 
+    def _resolve_llm_base_url(self) -> str:
+        """Resolves the LLM base URL from configuration or environment variables."""
+        # 1. Try unified config nesting (EmailOpsConfig)
+        if hasattr(_config, "digitalocean"):
+            do_cfg = _config.digitalocean
+            endpoint_cfg = getattr(do_cfg, "endpoint", None)
+            if endpoint_cfg and endpoint_cfg.BASE_URL:
+                return str(endpoint_cfg.BASE_URL)
+
+        # 2. Try simple config / env fallback (prefer LLM_ENDPOINT for DO Inference)
+        return getattr(_config, "llm_base_url", None) or os.getenv(
+            "LLM_ENDPOINT",
+            os.getenv(
+                "OUTLOOKCORTEX_DO_LLM_BASE_URL",
+                "https://inference.do-ai.run/v1",
+            ),
+        )
+
+    def _resolve_llm_api_key(self) -> str | None:
+        """Resolves the LLM API key from configuration or environment variables."""
+        # 1. Try unified config nesting
+        if hasattr(_config, "digitalocean"):
+            do_cfg = _config.digitalocean
+            endpoint_cfg = getattr(do_cfg, "endpoint", None)
+            if endpoint_cfg and endpoint_cfg.api_key:
+                return endpoint_cfg.api_key
+
+        # 2. Try simple config / env fallback
+        config_key = getattr(_config, "llm_api_key", None)
+        if config_key == "EMPTY":
+            config_key = None
+
+        env_key = os.getenv("LLM_API_KEY")
+        if env_key == "EMPTY":
+            env_key = None
+
+        api_key = (
+            config_key
+            or env_key
+            or os.getenv("DO_LLM_API_KEY", os.getenv("KIMI_API_KEY", "EMPTY"))
+        )
+        return api_key if api_key != "EMPTY" else None
+
     # ------------- LLM client (MiniMax-M2 via OpenAI-compatible server) -------------
     def _resolve_llm_base_url(self) -> str:
         """Resolve LLM base URL from config or environment variables."""
@@ -375,6 +418,8 @@ class VLLMProvider(BaseProvider):
             base_url = self._resolve_llm_base_url()
             api_key = self._resolve_llm_api_key()
 
+            # Resolve actual model name for logging context (used in complete_text but good to know here)
+            # Note: The client is generic, but we log the INTENDED model if known from env.
             intended_model = os.getenv("LLM_MODEL", "MiniMax-M2 (Default)")
 
             logger.info(
@@ -428,48 +473,50 @@ class VLLMProvider(BaseProvider):
         # No-op: client is lazy-loaded in embed_client property
         pass
 
+    def _get_embed_model_name(self) -> str:
+        """Resolves the embedding model name from configuration."""
+        if hasattr(_config, "embedding"):
+            embed_cfg = _config.embedding
+            if embed_cfg and embed_cfg.model_name:
+                return embed_cfg.model_name
+
+        return getattr(_config, "embed_model", None) or os.getenv(
+            "EMBED_MODEL",
+            os.getenv("KALM_EMBED_MODEL", "tencent/KaLM-Embedding-Gemma3-12B-2511"),
+        )
+
+    def _get_embed_batch_size(self) -> int:
+        """Resolves the embedding batch size from configuration."""
+        embedding_cfg = getattr(_config, "embedding", None)
+        # Default batch size 256 for H100/H200 efficiency
+        return getattr(embedding_cfg, "batch_size", 256) if embedding_cfg else 256
+
+    def _process_embedding_batch(
+        self, batch: list[str], model_name: str
+    ) -> list[list[float]]:
+        """Processes a single batch of documents for embedding."""
+        client = self.embed_client
+        resp = client.embeddings.create(
+            input=batch, model=model_name, encoding_format="float"
+        )
+
+        # Extract embeddings and sort by index to ensure order
+        batch_data = sorted(resp.data, key=lambda x: x.index)
+        return [d.embedding for d in batch_data]
+
     # ------------- Retrieval embeddings -------------
     def embed_documents(self, documents: list[str]) -> np.ndarray:
         if not documents:
             return np.array([], dtype=np.float32)
 
-        client = self.embed_client
-
-        # Resolve model name
-        model_name = None
-        if hasattr(_config, "embedding"):
-            embed_cfg = _config.embedding
-            if embed_cfg and embed_cfg.model_name:
-                model_name = embed_cfg.model_name
-
-        if not model_name:
-            model_name = getattr(_config, "embed_model", None) or os.getenv(
-                "EMBED_MODEL",
-                os.getenv("KALM_EMBED_MODEL", "tencent/KaLM-Embedding-Gemma3-12B-2511"),
-            )
-
-        # Batching
-        embedding_cfg = getattr(_config, "embedding", None)
-        # Default batch size 256 for H100/H200 efficiency
-        batch_size = getattr(embedding_cfg, "batch_size", 256) if embedding_cfg else 256
-
+        model_name = self._get_embed_model_name()
+        batch_size = self._get_embed_batch_size()
         all_embeddings = []
 
         try:
             for i in range(0, len(documents), batch_size):
                 batch = documents[i : i + batch_size]
-
-                # Replace newlines if configured (common for retrieval)
-                # For Gemma-3-Embedding, it's usually robust, but consistency helps.
-                # batch = [d.replace("\n", " ") for d in batch]
-
-                resp = client.embeddings.create(
-                    input=batch, model=model_name, encoding_format="float"
-                )
-
-                # Extract embeddings and sort by index to ensure order
-                batch_data = sorted(resp.data, key=lambda x: x.index)
-                batch_embeddings = [d.embedding for d in batch_data]
+                batch_embeddings = self._process_embedding_batch(batch, model_name)
                 all_embeddings.extend(batch_embeddings)
 
             arr = np.asarray(all_embeddings, dtype=np.float32)
@@ -698,6 +745,75 @@ class LLMRuntime:
         finally:
             self._track_request_end()
 
+    def _try_cpu_embedding(self, texts: list[str], context: str) -> np.ndarray | None:
+        """Attempts to get embeddings from the CPU provider."""
+        try:
+            from cortex.llm.gguf_provider import GGUFProvider
+
+            gguf = GGUFProvider()
+            if gguf.is_available_sync():
+                logger.info("Using CPU GGUF for %s embedding", context)
+                return gguf.embed_sync(texts)
+            logger.warning("GGUF model not available for CPU %s embedding", context)
+        except Exception as e:
+            logger.error("CPU %s embedding failed: %s", context, e)
+        return None
+
+    def _validate_vectors(self, vectors: Any, expected_dim: int) -> np.ndarray:
+        """Validates and normalizes the embedding vectors."""
+        if not isinstance(vectors, np.ndarray):
+            vectors = np.asarray(vectors, dtype=np.float32)
+
+        if vectors.ndim == 1:
+            vectors = vectors.reshape(1, -1)
+
+        if vectors.ndim != 2:
+            raise ProviderError(
+                f"Embedding output must be 2D, got shape {vectors.shape}"
+            )
+
+        vectors = BaseProvider.normalize_l2(vectors)
+
+        if vectors.shape[1] != expected_dim:
+            raise ProviderError(
+                f"Embedding dimension mismatch: expected {expected_dim}, got {vectors.shape[1]}"
+            )
+
+        if not np.all(np.isfinite(vectors)):
+            raise ProviderError("Embedding contains non-finite values")
+
+        return vectors
+
+    def _embed_texts(self, texts: list[str], embed_func, context: str) -> np.ndarray:
+        """Generic embedding method with validation and fallback logic."""
+        if not texts or any(not isinstance(t, str) or not t.strip() for t in texts):
+            raise ValidationError(f"{context} must be a list of non-empty strings")
+
+        embed_mode, cpu_fallback, expected_dim = self._get_embedding_config()
+        vectors, gpu_error = None, None
+
+        if embed_mode == "cpu":
+            vectors = self._try_cpu_embedding(texts, context)
+        elif embed_mode == "gpu":
+            vectors = self._execute(embed_func, texts)
+        else:  # auto mode
+            try:
+                vectors = self._execute(embed_func, texts)
+            except (ProviderError, ConnectionError, TimeoutError) as e:
+                gpu_error = e
+                logger.warning(
+                    "GPU %s embedding failed, checking CPU fallback: %s", context, e
+                )
+                if cpu_fallback:
+                    vectors = self._try_cpu_embedding(texts, f"fallback for {context}")
+
+        if vectors is None:
+            if gpu_error:
+                raise gpu_error
+            raise ProviderError(f"No embedding provider available for {context}")
+
+        return self._validate_vectors(vectors, expected_dim)
+
     # ---------------- Public API: embeddings (document/query) ----------------
     def _get_embedding_config(self) -> tuple[int, str, bool]:
         """Get embedding configuration: expected_dim, embed_mode, cpu_fallback_enabled."""
@@ -857,12 +973,10 @@ class LLMRuntime:
         kwargs.pop("messages", None)
         return self.complete_messages(messages, **kwargs)
 
-    def _call_model_for_json(self, msgs: list[dict[str, str]], **kwargs: Any) -> str:
-        """Call the LLM with settings optimized for JSON output."""
-        base_kwargs = dict(kwargs)
-        base_kwargs.setdefault("temperature", 0.0)
-        base_kwargs.setdefault("max_tokens", 2048)
-        base_kwargs.setdefault("response_format", {"type": "json_object"})
+    def _call_model_for_json(
+        self, msgs: list[dict[str, str]], base_kwargs: dict[str, Any]
+    ) -> str:
+        """Helper to call the model for JSON, handling response_format fallback."""
         try:
             return self.complete_messages(msgs, **base_kwargs)
         except ProviderError as e:
@@ -872,44 +986,18 @@ class LLMRuntime:
                 return self.complete_messages(msgs, **base_kwargs)
             raise
 
-    def _attempt_json_parse_and_validate(
+    def _parse_and_validate_json(
         self, raw_output: str, schema: dict[str, Any]
     ) -> tuple[dict[str, Any] | None, str | None]:
-        """Try to parse and validate JSON, returning the object or an error string."""
+        """Tries to parse and then validate JSON, returning (data, error_string)."""
         try:
             parsed = _try_load_json(raw_output or "")
             validation_error = _validate_json_schema(parsed, schema)
-            if not validation_error:
-                return parsed, None
-            logger.warning("JSON schema validation failed: %s", validation_error)
-            return None, validation_error
+            if validation_error:
+                return None, validation_error
+            return parsed, None
         except (ValueError, Exception) as e:
-            logger.warning("JSON decode failed: %s", e)
             return None, str(e)
-
-    def _repair_json(
-        self,
-        raw_output: str,
-        last_error: str,
-        schema_json: str,
-        **kwargs: Any,
-    ) -> str:
-        """Call the model to repair a malformed JSON string."""
-        from cortex.prompts import (
-            SYSTEM_GUARDRAILS_REPAIR,
-            USER_GUARDRAILS_REPAIR,
-            construct_prompt_messages,
-        )
-
-        repair_messages = construct_prompt_messages(
-            system_prompt_template=SYSTEM_GUARDRAILS_REPAIR,
-            user_prompt_template=USER_GUARDRAILS_REPAIR,
-            error=last_error,
-            invalid_json=raw_output or "",
-            target_schema=schema_json,
-            validation_errors=last_error,
-        )
-        return self._call_model_for_json(repair_messages, **kwargs)
 
     # ---------------- Public API: JSON completion (UNSAFE) ----------------
     def complete_json(
@@ -942,25 +1030,44 @@ class LLMRuntime:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": prompt},
         ]
+        base_kwargs = {
+            "temperature": 0.0,
+            "max_tokens": 2048,
+            "response_format": {"type": "json_object"},
+            **kwargs,
+        }
 
-        raw_output = self._call_model_for_json(initial_messages, **kwargs)
-        last_error: str | None = None
+        raw_output = self._call_model_for_json(initial_messages, base_kwargs)
+        last_error = None
 
         for attempt in range(max_repair_attempts + 1):
-            parsed, error = self._attempt_json_parse_and_validate(raw_output, schema)
+            parsed, error = self._parse_and_validate_json(raw_output, schema)
             if parsed is not None:
                 return parsed
+
             last_error = error
+            logger.warning(
+                "JSON validation failed (attempt %d): %s", attempt + 1, last_error
+            )
 
             if attempt >= max_repair_attempts:
                 break
 
-            raw_output = self._repair_json(
-                raw_output,
-                last_error or "Unknown validation error",
-                schema_json,
-                **kwargs,
+            from cortex.prompts import (
+                SYSTEM_GUARDRAILS_REPAIR,
+                USER_GUARDRAILS_REPAIR,
+                construct_prompt_messages,
             )
+
+            repair_messages = construct_prompt_messages(
+                system_prompt_template=SYSTEM_GUARDRAILS_REPAIR,
+                user_prompt_template=USER_GUARDRAILS_REPAIR,
+                error=last_error or "Unknown",
+                invalid_json=raw_output or "",
+                target_schema=schema_json,
+                validation_errors=last_error or "N/A",
+            )
+            raw_output = self._call_model_for_json(repair_messages, base_kwargs)
 
         raise LLMOutputSchemaError(
             message=(
@@ -993,28 +1100,28 @@ def _extract_first_balanced_json_object(s: object) -> str | None:
     Finds the first balanced JSON object (from '{' to '}') in a string.
     Handles nested braces, strings with braces, and escaped characters.
     """
-    if not isinstance(s, str):
+    if not isinstance(s, str) or "{" not in s:
         return None
 
     first_brace = s.find("{")
     if first_brace == -1:
         return None
 
-    balance = 0
-    in_string = False
-    escape_next = False
-    iterator = enumerate(s[first_brace:])
+    balance, in_string, escape_next = 0, False, False
 
-    for i, char in iterator:
+    for i, char in enumerate(s[first_brace:]):
         if escape_next:
             escape_next = False
             continue
 
         if char == "\\":
             escape_next = True
-        elif char == '"':
+            continue
+
+        if char == '"':
             in_string = not in_string
-        elif not in_string:
+
+        if not in_string:
             if char == "{":
                 balance += 1
             elif char == "}":
@@ -1025,39 +1132,52 @@ def _extract_first_balanced_json_object(s: object) -> str | None:
     return None
 
 
-def _strip_think_blocks(s: str) -> str:
-    """Safely remove <think>...</think> blocks without using complex regex."""
-    while THINK_OPEN_TAG in s and THINK_CLOSE_TAG in s:
-        start = s.find(THINK_OPEN_TAG)
-        end = s.find(THINK_CLOSE_TAG)
-        if start < end:
-            s = s[:start] + s[end + len(THINK_CLOSE_TAG) :]
-        else:
-            # Avoid infinite loop on malformed input
+def _remove_think_tags(s: str) -> str:
+    """
+    Safely remove <think>...</think> blocks from a string without using regex
+    to avoid ReDoS vulnerabilities.
+    """
+    parts = []
+    last_pos = 0
+    while True:
+        # Find start tag, case-insensitively
+        s_lower = s.lower()
+        start_tag_pos = s_lower.find("<think>", last_pos)
+        if start_tag_pos == -1:
+            parts.append(s[last_pos:])
             break
-    return s.strip()
+
+        # Find end tag, case-insensitively, after the start tag
+        end_tag_pos = s_lower.find("</think>", start_tag_pos + len("<think>"))
+        if end_tag_pos == -1:
+            # No closing tag found for this opening tag, so treat the rest as content.
+            parts.append(s[last_pos:])
+            break
+
+        # Append content before the tag
+        parts.append(s[last_pos:start_tag_pos])
+        # Move past the </think> tag for the next search
+        last_pos = end_tag_pos + len("</think>")
+
+    return "".join(parts).strip()
 
 
-def _parse_json_direct(s: str) -> dict[str, Any] | None:
-    """Try to parse a string directly as JSON."""
-    try:
-        obj = json.loads(s)
-        return obj if isinstance(obj, dict) else None
-    except json.JSONDecodeError:
-        return None
-
-
-def _parse_json_fenced(s: str) -> dict[str, Any] | None:
-    """Extract and parse JSON from the first markdown-style fenced code block."""
+def _try_parse_from_fenced_blocks(s: str) -> dict[str, Any] | None:
+    """Tries to find and parse a JSON object within fenced code blocks."""
     import re
 
-    fenced_match = re.search(
-        r"```(?:json|json5|hjson)?\s*(\{[\s\S]*?\})\s*```", s, re.IGNORECASE
+    fenced_matches = re.finditer(
+        r"```(?:json|json5|hjson)?\s*([\s\S]*?)\s*```", s, flags=re.IGNORECASE
     )
-    if fenced_match:
-        block = _extract_first_balanced_json_object(fenced_match.group(1))
+    for m in fenced_matches:
+        block = _extract_first_balanced_json_object(m.group(1))
         if block:
-            return _parse_json_direct(block)
+            try:
+                obj = json.loads(block)
+                if isinstance(obj, dict):
+                    return obj
+            except json.JSONDecodeError:
+                continue
     return None
 
 
@@ -1073,18 +1193,28 @@ def _try_load_json(data: Any) -> dict[str, Any]:
         raise ValueError("Empty data for JSON parsing")
 
     s = data.decode("utf-8") if isinstance(data, bytes) else str(data)
-    s = _strip_think_blocks(s.strip())
+    s = _remove_think_tags(s.strip())
 
-    parsing_functions = [_parse_json_direct, _parse_json_fenced]
+    # 1. Try direct parse
+    try:
+        obj = json.loads(s)
+        if isinstance(obj, dict):
+            return obj
+    except json.JSONDecodeError:
+        pass
 
-    for parser in parsing_functions:
-        if (parsed_obj := parser(s)) is not None:
-            return parsed_obj
+    # 2. Try fenced block extraction
+    if (parsed_obj := _try_parse_from_fenced_blocks(s)) is not None:
+        return parsed_obj
 
-    # Fallback: find first balanced object in the whole string
-    if (balanced_block := _extract_first_balanced_json_object(s)) is not None:
-        if (parsed_obj := _parse_json_direct(balanced_block)) is not None:
-            return parsed_obj
+    # 3. Fallback: find first balanced object
+    if (block := _extract_first_balanced_json_object(s)) is not None:
+        try:
+            obj = json.loads(block)
+            if isinstance(obj, dict):
+                return obj
+        except json.JSONDecodeError:
+            pass
 
     raise ValueError(
         f"Failed to parse JSON from string: {s[:500]!r} (Total len: {len(s)})"
