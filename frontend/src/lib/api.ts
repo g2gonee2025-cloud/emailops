@@ -7,14 +7,9 @@
 import { z } from 'zod';
 import { GeneratedDraftSchema } from '../schemas/draft';
 import { logger } from './logger';
-import {
-  doctorReportSchema,
-  statusDataSchema,
-  type DoctorReport,
-  type StatusData,
-} from '../schemas/admin';
+import { doctorReportSchema, statusDataSchema } from '../schemas/admin';
 
-export type { DoctorReport, StatusData };
+export type { DoctorReport, StatusData } from '../schemas/admin';
 
 // =============================================================================
 // Type Definitions & Zod Schemas
@@ -235,7 +230,11 @@ export const request = async <T>(
       let errorDetails;
       try {
         errorDetails = await response.json();
-      } catch (_e) {
+      } catch (error_) {
+        logger.warn('Could not parse JSON error response', {
+          status: response.status,
+          statusText: response.statusText,
+        });
         errorDetails = { detail: response.statusText };
       }
 
@@ -246,9 +245,9 @@ export const request = async <T>(
       );
 
       if (response.status === 401 && !response.url.includes('login')) {
-        window.dispatchEvent(new CustomEvent('cortex-unauthorized'));
+        globalThis.dispatchEvent(new CustomEvent('cortex-unauthorized'));
       } else if (response.status !== 401) {
-        window.dispatchEvent(new CustomEvent('api:error', { detail: apiError }));
+        globalThis.dispatchEvent(new CustomEvent('api:error', { detail: apiError }));
       }
 
       throw apiError;
