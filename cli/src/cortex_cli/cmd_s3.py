@@ -34,6 +34,71 @@ except ImportError:
 console = Console() if RICH_AVAILABLE else None
 
 
+def _confirm_upload(total_files: int) -> bool:
+    """Ask the user for confirmation to upload files."""
+    try:
+        confirm = input(
+            f"  {_colorize('?', 'yellow')} Found {total_files} files. "
+            f"Proceed with upload? (y/N): "
+        )
+        if confirm.lower() != "y":
+            print("  Upload cancelled.")
+            return False
+        return True
+    except (KeyboardInterrupt, EOFError):
+        print("\n  Upload cancelled.")
+        return False
+
+
+def _perform_upload(uploader, source_dir, files_to_upload, s3_prefix):
+    """Perform the file upload with a progress bar."""
+    uploaded_count = 0
+    failed_count = 0
+    failed_files = []
+    progress_columns = [
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+        TextColumn("({task.completed} of {task.total})"),
+        TimeElapsedColumn(),
+    ]
+    with Progress(*progress_columns, console=console) as progress:
+        task = progress.add_task("[cyan]Uploading...", total=len(files_to_upload))
+        for success, result in uploader.upload_files(
+            source_dir, files_to_upload, s3_prefix
+        ):
+            if success:
+                uploaded_count += 1
+            else:
+                failed_count += 1
+                failed_files.append(result)
+            progress.update(task, advance=1)
+    return uploaded_count, failed_count, failed_files
+
+
+def _print_upload_summary(
+    total_files, uploaded_count, failed_count, failed_files, start_time
+):
+    """Print the summary of the upload operation."""
+    elapsed = time.time() - start_time
+    print(f"\n{_colorize('═' * 40, 'cyan')}")
+    print(f"\n{_colorize('✓', 'green')} Upload complete!")
+    print(f"  Total files:    {total_files}")
+    print(f"  Uploaded:       {_colorize(str(uploaded_count), 'green')}")
+    failed_color = "red" if failed_count > 0 else "dim"
+    print(f"  Failed:         {_colorize(str(failed_count), failed_color)}")
+    print(f"  Time elapsed:   {elapsed:.1f} seconds")
+    if total_files > 0 and elapsed > 0:
+        print(f"  Average rate:   {total_files / elapsed:.1f} files/sec")
+    if failed_files:
+        print(f"\n{_colorize('Failed files (first 20):', 'red')}")
+        for f in failed_files[:20]:
+            print(f"  - {f}")
+        if len(failed_files) > 20:
+            print(f"  ... and {len(failed_files) - 20} more")
+
+
 def cmd_s3_upload(args: argparse.Namespace) -> None:
     """Upload a local directory to S3/Spaces."""
     try:
@@ -41,8 +106,6 @@ def cmd_s3_upload(args: argparse.Namespace) -> None:
         from cortex.security.validators import validate_directory_result
 
         config = get_config()
-
-        # Validate source directory before use
         validated_source_dir = validate_directory_result(
             args.source_dir, must_exist=True
         )
@@ -51,17 +114,13 @@ def cmd_s3_upload(args: argparse.Namespace) -> None:
                 f"{_colorize('ERROR:', 'red')} Invalid source directory: {validated_source_dir.err()}"
             )
             sys.exit(1)
-
         source_dir = validated_source_dir.ok()
         s3_prefix = args.s3_prefix
-
         print(f"\n{_colorize('S3/SPACES UPLOADER', 'bold')}\n")
         print(f"  Endpoint:   {_colorize(config.storage.endpoint_url, 'cyan')}")
         print(f"  Bucket:     {_colorize(config.storage.bucket_raw, 'cyan')}")
         print(f"  Source dir: {_colorize(str(source_dir), 'cyan')}")
         print(f"  S3 Prefix:  {_colorize(s3_prefix, 'dim')}\n")
-
-        # Instantiate uploader
         uploader = S3Uploader(
             endpoint_url=config.storage.endpoint_url,
             region_name=config.storage.region,
@@ -70,76 +129,53 @@ def cmd_s3_upload(args: argparse.Namespace) -> None:
             bucket_name=config.storage.bucket_raw,
             max_workers=args.max_workers,
         )
-
         files_to_upload = [p for p in source_dir.rglob("*") if p.is_file()]
         total_files = len(files_to_upload)
-
         if total_files == 0:
             print(f"  {_colorize('○', 'yellow')} No files found to upload.")
             return
-
-        if not args.yes:
-            try:
-                confirm = input(
-                    f"  {_colorize('?', 'yellow')} Found {total_files} files. "
-                    f"Proceed with upload? (y/N): "
-                )
-                if confirm.lower() != "y":
-                    print("  Upload cancelled.")
-                    return
-            except (KeyboardInterrupt, EOFError):
-                print("\n  Upload cancelled.")
-                return
-
-        # Upload files with progress
+        if not args.yes and not _confirm_upload(total_files):
+            return
         start_time = time.time()
-        uploaded_count = 0
-        failed_count = 0
-        failed_files = []
-
-        progress_columns = [
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            BarColumn(),
-            TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
-            TextColumn("({task.completed} of {task.total})"),
-            TimeElapsedColumn(),
-        ]
-
-        with Progress(*progress_columns, console=console) as progress:
-            task = progress.add_task("[cyan]Uploading...", total=total_files)
-            for success, result in uploader.upload_files(
-                source_dir, files_to_upload, s3_prefix
-            ):
-                if success:
-                    uploaded_count += 1
-                else:
-                    failed_count += 1
-                    failed_files.append(result)
-                progress.update(task, advance=1)
-
-        # Summary
-        elapsed = time.time() - start_time
-        print(f"\n{_colorize('═' * 40, 'cyan')}")
-        print(f"\n{_colorize('✓', 'green')} Upload complete!")
-        print(f"  Total files:    {total_files}")
-        print(f"  Uploaded:       {_colorize(str(uploaded_count), 'green')}")
-        failed_color = "red" if failed_count > 0 else "dim"
-        print(f"  Failed:         {_colorize(str(failed_count), failed_color)}")
-        print(f"  Time elapsed:   {elapsed:.1f} seconds")
-        if total_files > 0 and elapsed > 0:
-            print(f"  Average rate:   {total_files / elapsed:.1f} files/sec")
-
-        if failed_files:
-            print(f"\n{_colorize('Failed files (first 20):', 'red')}")
-            for f in failed_files[:20]:
-                print(f"  - {f}")
-            if len(failed_files) > 20:
-                print(f"  ... and {len(failed_files) - 20} more")
-
+        uploaded_count, failed_count, failed_files = _perform_upload(
+            uploader, source_dir, files_to_upload, s3_prefix
+        )
+        _print_upload_summary(
+            total_files, uploaded_count, failed_count, failed_files, start_time
+        )
     except Exception as e:
         print(f"\n{_colorize('ERROR:', 'red')} {e}")
         sys.exit(1)
+
+
+def _print_s3_list_json(folders):
+    """Print the list of S3 folders in JSON format."""
+    import json
+
+    folder_data = [{"name": f.name, "prefix": f.prefix} for f in folders]
+    print(json.dumps({"folders": folder_data}, indent=2))
+
+
+def _print_s3_list_rich(folders, limit):
+    """Print the list of S3 folders using a rich table."""
+    if not RICH_AVAILABLE or not console:
+        return
+    table = Table(title=f"Folders ({len(folders)})", box=box.SIMPLE)
+    table.add_column("#", style="dim")
+    table.add_column("Prefix", style="cyan")
+    for i, folder in enumerate(folders[: limit or 50], 1):
+        table.add_row(str(i), folder.name)
+    if len(folders) > (limit or 50):
+        table.add_row("...", f"({len(folders) - (limit or 50)} more)")
+    console.print(table)
+
+
+def _print_s3_list_plain(folders, limit):
+    """Print the list of S3 folders in plain text."""
+    for i, folder in enumerate(folders[: limit or 50], 1):
+        print(f"  {i}. {folder.name}")
+    if len(folders) > (limit or 50):
+        print(f"  ... and {len(folders) - (limit or 50)} more")
 
 
 def cmd_s3_list(args: argparse.Namespace) -> None:
@@ -150,41 +186,22 @@ def cmd_s3_list(args: argparse.Namespace) -> None:
 
         config = get_config()
         handler = S3SourceHandler()
-
         print(f"\n{_colorize('S3/SPACES BROWSER', 'bold')}\n")
         print(f"  Endpoint: {_colorize(config.storage.endpoint_url, 'cyan')}")
         print(f"  Bucket:   {_colorize(config.storage.bucket_raw, 'cyan')}")
         if args.prefix:
             print(f"  Prefix:   {_colorize(args.prefix, 'dim')}")
         print()
-
         folders = list(handler.list_conversation_folders(prefix=args.prefix or ""))
-
         if not folders:
             print(f"  {_colorize('○', 'yellow')} No conversation folders found.")
             return
-
         if args.json:
-            import json
-
-            # Serialize folder objects to dicts
-            folder_data = [{"name": f.name, "prefix": f.prefix} for f in folders]
-            print(json.dumps({"folders": folder_data}, indent=2))
+            _print_s3_list_json(folders)
         elif RICH_AVAILABLE and console:
-            table = Table(title=f"Folders ({len(folders)})", box=box.SIMPLE)
-            table.add_column("#", style="dim")
-            table.add_column("Prefix", style="cyan")
-            for i, folder in enumerate(folders[: args.limit or 50], 1):
-                table.add_row(str(i), folder.name)
-            if len(folders) > (args.limit or 50):
-                table.add_row("...", f"({len(folders) - (args.limit or 50)} more)")
-            console.print(table)
+            _print_s3_list_rich(folders, args.limit)
         else:
-            for i, folder in enumerate(folders[: args.limit or 50], 1):
-                print(f"  {i}. {folder.name}")
-            if len(folders) > (args.limit or 50):
-                print(f"  ... and {len(folders) - (args.limit or 50)} more")
-
+            _print_s3_list_plain(folders, args.limit)
     except Exception as e:
         print(f"{_colorize('ERROR:', 'red')} {e}")
         sys.exit(1)
@@ -257,26 +274,135 @@ def cmd_s3_ingest(args: argparse.Namespace) -> None:
         sys.exit(1)
 
 
+def _handle_validate_dry_run(folders):
+    """Handle the dry run for the validate command."""
+    import json
+
+    folder_data = [{"name": f.name, "prefix": f.prefix} for f in folders]
+    print(json.dumps({"dry_run": True, "folders": folder_data}))
+
+
+def _get_manifest_diff(before, after):
+    """Get the difference between two manifests."""
+    added_fields = []
+    if "participants" in after and "participants" not in before:
+        added_fields.append("participants")
+    if "last_from" in after and "last_from" not in before:
+        added_fields.append("last_from")
+    if "last_to" in after and "last_to" not in before:
+        added_fields.append("last_to")
+    sha_before = before.get("sha256_conversation", "")
+    sha_after = after.get("sha256_conversation", "")
+    if sha_before.startswith("00000000") and not sha_after.startswith("00000000"):
+        added_fields.append("sha256_fixed")
+    return added_fields
+
+
+def _process_single_folder(handler, folder, temp_root, upload):
+    """Process a single folder for validation."""
+    from cortex.ingestion.conv_manifest.validation import scan_and_refresh
+    import json
+
+    local_path = handler.download_conversation_folder(folder, temp_root)
+    manifest_path = local_path / "manifest.json"
+    before = (
+        json.loads(manifest_path.read_text(encoding="utf-8"))
+        if manifest_path.exists()
+        else {}
+    )
+    scan_and_refresh(temp_root)
+    after = (
+        json.loads(manifest_path.read_text(encoding="utf-8"))
+        if manifest_path.exists()
+        else {}
+    )
+    added_fields = _get_manifest_diff(before, after)
+    result = {
+        "folder": folder.name,
+        "prefix": folder.prefix,
+        "added_fields": added_fields,
+        "uploaded": False,
+    }
+    if upload and manifest_path.exists():
+        manifest_key = f"{folder.prefix}manifest.json"
+        handler.upload_file(manifest_path, manifest_key)
+        result["uploaded"] = True
+    return result
+
+
+def _process_folders_for_validation(handler, folders, temp_root, upload, is_json):
+    """Process all folders for validation."""
+    results = []
+    if not is_json:
+        print(
+            f"  {_colorize('⏳', 'yellow')} "
+            f"Validating {len(folders)} folder(s)...\n"
+        )
+    for i, folder in enumerate(folders, 1):
+        if not is_json:
+            print(
+                f"  [{i}/{len(folders)}] {folder.name[:50]}...",
+                end=" ",
+                flush=True,
+            )
+        try:
+            result = _process_single_folder(handler, folder, temp_root, upload)
+            results.append(result)
+            if not is_json:
+                status = _colorize("OK", "green")
+                if result["added_fields"]:
+                    status += f" (+{', '.join(result['added_fields'])})"
+                if result["uploaded"]:
+                    status += f" {_colorize('[uploaded]', 'cyan')}"
+                print(status)
+        except Exception as e:
+            results.append(
+                {"folder": folder.name, "prefix": folder.prefix, "error": str(e)}
+            )
+            if not is_json:
+                print(f"{_colorize('ERROR', 'red')}: {e}")
+    return results
+
+
+def _print_validation_summary(results, upload, is_json):
+    """Print the validation summary."""
+    import json
+
+    success = sum(1 for r in results if "error" not in r)
+    failed = len(results) - success
+    uploaded = sum(1 for r in results if r.get("uploaded"))
+    if is_json:
+        print(
+            json.dumps(
+                {
+                    "folders_processed": len(results),
+                    "success": success,
+                    "failed": failed,
+                    "uploaded": uploaded,
+                    "results": results,
+                },
+                indent=2,
+            )
+        )
+    else:
+        print(f"\n{_colorize('═' * 40, 'cyan')}")
+        print(f"  Processed: {success}")
+        failed_color = "red" if failed > 0 else "dim"
+        print(f"  Failed:    {_colorize(str(failed), failed_color)}")
+        if upload:
+            print(f"  Uploaded:  {_colorize(str(uploaded), 'cyan')}")
+
+
 def cmd_s3_validate(args: argparse.Namespace) -> None:
-    """Validate and enrich S3 manifests with scan_and_refresh.
-
-    Downloads conversation folders from S3, runs B1 validation to add:
-    - Real SHA256 content hash
-    - participants list
-    - last_from / last_to fields
-
-    Optionally uploads enriched manifests back to S3.
-    """
+    """Validate and enrich S3 manifests with scan_and_refresh."""
     import json
     import shutil
     import tempfile
 
     try:
-        from cortex.ingestion.conv_manifest.validation import scan_and_refresh
         from cortex.ingestion.s3_source import S3SourceHandler
 
         handler = S3SourceHandler()
-
         if not args.json:
             print(f"\n{_colorize('S3/SPACES MANIFEST VALIDATION', 'bold')}\n")
             print(f"  Endpoint: {_colorize(handler.endpoint_url, 'cyan')}")
@@ -287,23 +413,18 @@ def cmd_s3_validate(args: argparse.Namespace) -> None:
             upload_color = "yellow" if args.upload else "dim"
             print(f"  Upload:   {_colorize(upload_str, upload_color)}")
             print()
-
-        # List folders
         folders = list(
             handler.list_conversation_folders(prefix=args.prefix, limit=args.limit)
         )
-
         if not folders:
             if args.json:
                 print(json.dumps({"error": "No folders found", "folders_processed": 0}))
             else:
                 print(f"  {_colorize('○', 'yellow')} No conversation folders found.")
             return
-
         if args.dry_run:
             if args.json:
-                folder_data = [{"name": f.name, "prefix": f.prefix} for f in folders]
-                print(json.dumps({"dry_run": True, "folders": folder_data}))
+                _handle_validate_dry_run(folders)
             else:
                 print(
                     f"  {_colorize('DRY RUN:', 'yellow')} "
@@ -314,123 +435,14 @@ def cmd_s3_validate(args: argparse.Namespace) -> None:
                 if len(folders) > 10:
                     print(f"    ... and {len(folders) - 10} more")
             return
-
-        # Process folders
         temp_root = Path(tempfile.mkdtemp(prefix="cortex_s3_validate_"))
-        results: list[dict[str, Any]] = []
-
         try:
-            if not args.json:
-                print(
-                    f"  {_colorize('⏳', 'yellow')} "
-                    f"Validating {len(folders)} folder(s)...\n"
-                )
-
-            for i, folder in enumerate(folders, 1):
-                if not args.json:
-                    print(
-                        f"  [{i}/{len(folders)}] {folder.name[:50]}...",
-                        end=" ",
-                        flush=True,
-                    )
-
-                try:
-                    # Download folder
-                    local_path = handler.download_conversation_folder(folder, temp_root)
-
-                    # Get manifest before
-                    manifest_path = local_path / "manifest.json"
-                    before: dict[str, Any] = {}
-                    if manifest_path.exists():
-                        before = json.loads(manifest_path.read_text(encoding="utf-8"))
-
-                    # Run validation on the parent (scan_and_refresh expects root)
-                    scan_and_refresh(temp_root)
-
-                    # Get manifest after
-                    after: dict[str, Any] = {}
-                    if manifest_path.exists():
-                        after = json.loads(manifest_path.read_text(encoding="utf-8"))
-
-                    # Check what changed
-                    added_fields = []
-                    if "participants" in after and "participants" not in before:
-                        added_fields.append("participants")
-                    if "last_from" in after and "last_from" not in before:
-                        added_fields.append("last_from")
-                    if "last_to" in after and "last_to" not in before:
-                        added_fields.append("last_to")
-                    sha_before = before.get("sha256_conversation", "")
-                    sha_after = after.get("sha256_conversation", "")
-                    if sha_before.startswith("00000000") and not sha_after.startswith(
-                        "00000000"
-                    ):
-                        added_fields.append("sha256_fixed")
-
-                    result: dict[str, Any] = {
-                        "folder": folder.name,
-                        "prefix": folder.prefix,
-                        "added_fields": added_fields,
-                        "uploaded": False,
-                    }
-
-                    # Upload if requested
-                    if args.upload and manifest_path.exists():
-                        manifest_key = f"{folder.prefix}manifest.json"
-                        handler.upload_file(manifest_path, manifest_key)
-                        result["uploaded"] = True
-
-                    results.append(result)
-
-                    if not args.json:
-                        status = _colorize("OK", "green")
-                        if added_fields:
-                            status += f" (+{', '.join(added_fields)})"
-                        if result["uploaded"]:
-                            status += f" {_colorize('[uploaded]', 'cyan')}"
-                        print(status)
-
-                except Exception as e:
-                    results.append(
-                        {
-                            "folder": folder.name,
-                            "prefix": folder.prefix,
-                            "error": str(e),
-                        }
-                    )
-                    if not args.json:
-                        print(f"{_colorize('ERROR', 'red')}: {e}")
-
-        finally:
-            # Cleanup temp directory
-            shutil.rmtree(temp_root, ignore_errors=True)
-
-        # Summary
-        success = sum(1 for r in results if "error" not in r)
-        failed = len(results) - success
-        uploaded = sum(1 for r in results if r.get("uploaded"))
-
-        if args.json:
-            print(
-                json.dumps(
-                    {
-                        "folders_processed": len(results),
-                        "success": success,
-                        "failed": failed,
-                        "uploaded": uploaded,
-                        "results": results,
-                    },
-                    indent=2,
-                )
+            results = _process_folders_for_validation(
+                handler, folders, temp_root, args.upload, args.json
             )
-        else:
-            print(f"\n{_colorize('═' * 40, 'cyan')}")
-            print(f"  Processed: {success}")
-            failed_color = "red" if failed > 0 else "dim"
-            print(f"  Failed:    {_colorize(str(failed), failed_color)}")
-            if args.upload:
-                print(f"  Uploaded:  {_colorize(str(uploaded), 'cyan')}")
-
+            _print_validation_summary(results, args.upload, args.json)
+        finally:
+            shutil.rmtree(temp_root, ignore_errors=True)
     except Exception as e:
         if args.json:
             import json
@@ -526,6 +538,9 @@ def setup_s3_parser(subparsers: Any) -> None:
 
     s3_subparsers = s3_parser.add_subparsers(dest="s3_command", title="S3 Commands")
 
+    # Define a constant for the duplicated string literal
+    JSON_OUTPUT_HELP = "Output as JSON"
+
     # s3 list
     list_parser = s3_subparsers.add_parser(
         "list",
@@ -536,7 +551,7 @@ def setup_s3_parser(subparsers: Any) -> None:
     list_parser.add_argument(
         "--limit", "-l", type=int, default=50, help="Max folders to show"
     )
-    list_parser.add_argument("--json", action="store_true", help="Output as JSON")
+    list_parser.add_argument("--json", action="store_true", help=JSON_OUTPUT_HELP)
     list_parser.set_defaults(func=cmd_s3_list)
 
     # s3 ls
@@ -571,7 +586,7 @@ def setup_s3_parser(subparsers: Any) -> None:
         "job_id", metavar="JOB_ID", help="Ingestion job ID to check"
     )
     status_parser.add_argument("--tenant", "-t", default="default", help="Tenant ID")
-    status_parser.add_argument("--json", action="store_true", help="Output as JSON")
+    status_parser.add_argument("--json", action="store_true", help=JSON_OUTPUT_HELP)
     status_parser.set_defaults(func=cmd_s3_status)
 
     # s3 validate
@@ -602,7 +617,7 @@ def setup_s3_parser(subparsers: Any) -> None:
     validate_parser.add_argument(
         "--dry-run", "-n", action="store_true", help="Show what would be done"
     )
-    validate_parser.add_argument("--json", action="store_true", help="Output as JSON")
+    validate_parser.add_argument("--json", action="store_true", help=JSON_OUTPUT_HELP)
     validate_parser.set_defaults(func=cmd_s3_validate)
 
     # s3 upload
