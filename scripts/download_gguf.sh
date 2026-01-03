@@ -6,10 +6,13 @@
 # Default output: ./models/
 
 set -e
+set -o pipefail
 
 OUTPUT_DIR="${1:-./models}"
 MODEL_REPO="mradermacher/KaLM-Embedding-Gemma3-12B-2511-GGUF"
 QUANT_TYPE="Q8_0"
+COMMIT_HASH="a14e6f75e83dd506f6362782e82cfbef5402b382"
+CHECKSUM="546d4223bb1e940755563945f28fa12eb2fee2bc0597d3ab07638b2f5cf8030d"
 
 echo "=== GGUF Model Downloader (8-bit) ==="
 echo "Model: ${MODEL_REPO}"
@@ -34,27 +37,44 @@ echo ""
 huggingface-cli download "${MODEL_REPO}" \
     --include "*${QUANT_TYPE}.gguf" \
     --local-dir "${OUTPUT_DIR}" \
-    --local-dir-use-symlinks False
+    --local-dir-use-symlinks False \
+    --revision "${COMMIT_HASH}"
 
-# Find the downloaded file and create a symlink with a simple name
-GGUF_FILE=$(find "${OUTPUT_DIR}" -name "*${QUANT_TYPE}.gguf" -type f | head -n1)
+# Find candidate GGUF file
+mapfile -t GGUF_FILES < <(find "${OUTPUT_DIR}" -name "*${QUANT_TYPE}.gguf" -type f)
 
-if [ -n "${GGUF_FILE}" ]; then
-    SIMPLE_NAME="${OUTPUT_DIR}/kalm-12b-q8.gguf"
-    if [ ! -e "${SIMPLE_NAME}" ]; then
-        ln -s "$(basename "${GGUF_FILE}")" "${SIMPLE_NAME}"
-        echo ""
-        echo "Created symlink: ${SIMPLE_NAME} -> $(basename "${GGUF_FILE}")"
+# Check for a unique match
+if [ "${#GGUF_FILES[@]}" -ne 1 ]; then
+    echo "Error: Expected to find exactly one *${QUANT_TYPE}.gguf file, but found ${#GGUF_FILES[@]}."
+    if [ "${#GGUF_FILES[@]}" -gt 1 ]; then
+        echo "Matching files:"
+        printf " - %s\n" "${GGUF_FILES[@]}"
     fi
-
-    echo ""
-    echo "=== Download Complete ==="
-    echo "Model file: ${GGUF_FILE}"
-    echo "Size: $(du -h "${GGUF_FILE}" | cut -f1)"
-    echo ""
-    echo "To use, set environment variable:"
-    echo "  export OUTLOOKCORTEX_GGUF_MODEL_PATH=${SIMPLE_NAME}"
-else
-    echo "Error: GGUF file not found after download"
     exit 1
 fi
+GGUF_FILE="${GGUF_FILES[0]}"
+
+# Verify checksum
+echo "Verifying checksum..."
+DOWNLOAD_CHECKSUM=$(sha256sum "${GGUF_FILE}" | cut -d' ' -f1)
+if [ "${DOWNLOAD_CHECKSUM}" != "${CHECKSUM}" ]; then
+    echo "Error: Checksum mismatch"
+    echo "Expected: ${CHECKSUM}"
+    echo "Got: ${DOWNLOAD_CHECKSUM}"
+    exit 1
+fi
+
+SIMPLE_NAME="${OUTPUT_DIR}/kalm-12b-q8.gguf"
+if [ ! -L "${SIMPLE_NAME}" ]; then
+    ln -sr "${GGUF_FILE}" "${SIMPLE_NAME}"
+    echo ""
+    echo "Created symlink: ${SIMPLE_NAME} -> $(basename "${GGUF_FILE}")"
+fi
+
+echo ""
+echo "=== Download Complete ==="
+echo "Model file: ${GGUF_FILE}"
+echo "Size: $(du -h "${GGUF_FILE}" | cut -f1)"
+echo ""
+echo "To use, set environment variable:"
+echo "  export OUTLOOKCORTEX_GGUF_MODEL_PATH=${SIMPLE_NAME}"
