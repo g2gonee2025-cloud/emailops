@@ -126,15 +126,19 @@ class EmailOpsConfig(BaseModel):
 
     @property
     def secret_key(self) -> str | None:
-        """JWT secret key for token signing."""
+        """
+        JWT secret key for token signing.
+        
+        Checks environment variables in order of preference:
+        1. OUTLOOKCORTEX_SECRET_KEY (canonical name)
+        2. SECRET_KEY (fallback for compatibility)
+        
+        P0-1 FIX (S1845): Removed case-insensitive name clash (SECRET_KEY property).
+        This property now serves as the single source of truth for JWT secrets.
+        """
         return os.environ.get("OUTLOOKCORTEX_SECRET_KEY") or os.environ.get(
             "SECRET_KEY"
         )
-
-    @property
-    def SECRET_KEY(self) -> str | None:
-        """Backward-compatible alias for secret_key."""
-        return self.secret_key
 
     @property
     def object_storage(self) -> StorageConfig:
