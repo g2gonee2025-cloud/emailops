@@ -21,6 +21,7 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8000"
     spec:
+      automountServiceAccountToken: false
       priorityClassName: emailops-high-priority
       volumes:
         - name: dshm
@@ -29,7 +30,7 @@ spec:
             sizeLimit: 16Gi
       containers:
         - name: vllm-bundle
-          image: vllm/vllm-openai:latest
+          image: vllm/vllm-openai:v0.4.3
           command: ["/bin/bash", "-c"]
           args:
             - |
@@ -59,10 +60,12 @@ spec:
               memory: "48Gi"
               cpu: "6"
               nvidia.com/gpu: "1"
+              ephemeral-storage: "1Gi"
             limits:
               memory: "64Gi"
               cpu: "10"
               nvidia.com/gpu: "1"
+              ephemeral-storage: "2Gi"
           startupProbe:
             httpGet:
               path: /health
