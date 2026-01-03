@@ -16,6 +16,7 @@ Provides:
 
 from __future__ import annotations
 
+import asyncio
 import inspect
 import logging
 import os
@@ -55,6 +56,7 @@ APP_VERSION = "3.1.0"
 APP_NAME = "Outlook Cortex (EmailOps Edition)"
 API_V1_PREFIX = "/api/v1"
 INVALID_JWT_ERROR = "Invalid JWT"
+JWT_DECODE_TIMEOUT_SECONDS = 5.0  # Timeout for async JWT validation
 
 
 # JWT/JWKS helpers
@@ -207,7 +209,11 @@ def _create_dev_secret_decoder(
 async def _process_jwt_token(
     auth_header: str,
 ) -> tuple[str | None, str | None, dict[str, Any]]:
-    """Process the JWT from the Authorization header."""
+    """Process the JWT from the Authorization header.
+    
+    Handles both sync and async JWT decoders with a timeout to prevent
+    requests from hanging indefinitely during JWT validation.
+    """
     if not auth_header.startswith("Bearer "):
         return None, None, {}
 
@@ -222,7 +228,8 @@ async def _process_jwt_token(
         decoded = _jwt_decoder(token)
         # Handle both sync and async decoders
         if inspect.isawaitable(decoded):
-            claims = await decoded
+            # Add timeout to prevent indefinite hangs during JWT validation
+            claims = await asyncio.wait_for(decoded, timeout=JWT_DECODE_TIMEOUT_SECONDS)
         else:
             claims = decoded if isinstance(decoded, dict) else {}
 
@@ -230,6 +237,11 @@ async def _process_jwt_token(
         tenant_id = claims.get("tenant_id") or claims.get("tid")
         user_id = claims.get("sub") or claims.get("user_id")
         return tenant_id, user_id, claims
+    except asyncio.TimeoutError:
+        raise SecurityError(
+            f"JWT validation timeout after {JWT_DECODE_TIMEOUT_SECONDS}s",
+            threat_type="auth_timeout",
+        )
     except (HTTPException, SecurityError):
         raise
     except Exception as exc:
@@ -597,9 +609,17 @@ def setup_security() -> None:
 
         if jwks_url:
             if jwks_url.startswith("http://"):
-                logger.warning(
-                    "SECURITY: JWKS URL is using insecure HTTP protocol: %s", jwks_url
-                )
+                if is_prod_env:
+                    raise SecurityError(
+                        "JWKS URL must use HTTPS in production",
+                        threat_type="auth_configuration",
+                        error_code="INSECURE_JWKS_URL",
+                    )
+                else:
+                    logger.warning(
+                        "SECURITY: JWKS URL is using insecure HTTP protocol: %s (dev only)",
+                        jwks_url,
+                    )
             elif not jwks_url.startswith("https://"):
                 logger.warning(
                     "SECURITY: JWKS URL does not use https protocol: %s", jwks_url
@@ -613,6 +633,8 @@ def setup_security() -> None:
             )
         else:
             logger.info("Security: dev mode with header-based identity fallback")
+    except SecurityError:
+        raise
     except Exception:
         logger.warning("Failed to setup security")
         logger.debug("Security setup exception", exc_info=True)
