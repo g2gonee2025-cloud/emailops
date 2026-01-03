@@ -17,6 +17,17 @@ sys.path.insert(0, os.path.join(project_root, "cli/src"))
 
 results = {"passed": [], "failed": [], "warnings": []}
 
+# =============================================================================
+# CONSTANTS
+# =============================================================================
+CMD_S3_LIST_MOCK_TARGET = "cortex_cli.cmd_s3.cmd_s3_list"
+CALL_MOCKED_MSG = "  ✓ (call mocked)"
+GET_CONFIG_MOCK_TARGET = "cortex.config.loader.get_config"
+SQLITE_IN_MEMORY_URL = "sqlite:///:memory:"
+CMD_RAN_WITHOUT_ERROR_MSG = "  ✓ (command ran without import error)"
+OUTLOOK_PREFIX = "Outlook/"
+CMD_DOCTOR_MAIN_MOCK_TARGET = "cortex_cli.cmd_doctor.main"
+
 
 def test(name):
     """Decorator to register and run tests."""
@@ -47,34 +58,34 @@ def test(name):
 @test("cortex s3 list (mocked)")
 def test_s3_list():
     from unittest import mock
-    with mock.patch("cortex_cli.cmd_s3.cmd_s3_list") as mock_cmd:
+    with mock.patch(CMD_S3_LIST_MOCK_TARGET) as mock_cmd:
         from cortex_cli.cmd_s3 import cmd_s3_list
         args = argparse.Namespace(prefix="", limit=5, json=False)
         cmd_s3_list(args)
         mock_cmd.assert_called_once()
-    print("  ✓ (call mocked)")
+    print(CALL_MOCKED_MSG)
 
 
 @test("cortex s3 list --prefix Outlook/ (mocked)")
 def test_s3_list_prefix():
     from unittest import mock
-    with mock.patch("cortex_cli.cmd_s3.cmd_s3_list") as mock_cmd:
+    with mock.patch(CMD_S3_LIST_MOCK_TARGET) as mock_cmd:
         from cortex_cli.cmd_s3 import cmd_s3_list
-        args = argparse.Namespace(prefix="Outlook/", limit=5, json=False)
+        args = argparse.Namespace(prefix=OUTLOOK_PREFIX, limit=5, json=False)
         cmd_s3_list(args)
         mock_cmd.assert_called_once()
-    print("  ✓ (call mocked)")
+    print(CALL_MOCKED_MSG)
 
 
 @test("cortex s3 list --prefix Outlook/ --json (mocked)")
 def test_s3_list_json():
     from unittest import mock
-    with mock.patch("cortex_cli.cmd_s3.cmd_s3_list") as mock_cmd:
+    with mock.patch(CMD_S3_LIST_MOCK_TARGET) as mock_cmd:
         from cortex_cli.cmd_s3 import cmd_s3_list
-        args = argparse.Namespace(prefix="Outlook/", limit=3, json=True)
+        args = argparse.Namespace(prefix=OUTLOOK_PREFIX, limit=3, json=True)
         cmd_s3_list(args)
         mock_cmd.assert_called_once()
-    print("  ✓ (call mocked)")
+    print(CALL_MOCKED_MSG)
 
 
 @test("cortex s3 ingest --dry-run (mocked)")
@@ -82,10 +93,10 @@ def test_s3_ingest_dry_run():
     from unittest import mock
     with mock.patch("cortex_cli.cmd_s3.cmd_s3_ingest") as mock_cmd:
         from cortex_cli.cmd_s3 import cmd_s3_ingest
-        args = argparse.Namespace(prefix="Outlook/", tenant="default", dry_run=True)
+        args = argparse.Namespace(prefix=OUTLOOK_PREFIX, tenant="default", dry_run=True)
         cmd_s3_ingest(args)
         mock_cmd.assert_called_once()
-    print("  ✓ (call mocked)")
+    print(CALL_MOCKED_MSG)
 
 
 # =============================================================================
@@ -94,13 +105,13 @@ def test_s3_ingest_dry_run():
 @test("cortex db stats (mocked)")
 def test_db_stats():
     from unittest import mock
-    with mock.patch("cortex.config.loader.get_config") as mock_get_config:
-        mock_get_config.return_value.database.url = "sqlite:///:memory:"
+    with mock.patch(GET_CONFIG_MOCK_TARGET) as mock_get_config:
+        mock_get_config.return_value.database.url = SQLITE_IN_MEMORY_URL
         from cortex_cli.cmd_db import cmd_db_stats
         args = argparse.Namespace(json=False, verbose=False)
         try:
             cmd_db_stats(args)
-            print("  ✓ (command ran without import error)")
+            print(CMD_RAN_WITHOUT_ERROR_MSG)
         except Exception as e:
             print(f"  ✓ (command ran, failed as expected in test env: {e})")
 
@@ -108,13 +119,13 @@ def test_db_stats():
 @test("cortex db stats --json (mocked)")
 def test_db_stats_json():
     from unittest import mock
-    with mock.patch("cortex.config.loader.get_config") as mock_get_config:
-        mock_get_config.return_value.database.url = "sqlite:///:memory:"
+    with mock.patch(GET_CONFIG_MOCK_TARGET) as mock_get_config:
+        mock_get_config.return_value.database.url = SQLITE_IN_MEMORY_URL
         from cortex_cli.cmd_db import cmd_db_stats
         args = argparse.Namespace(json=True, verbose=False)
         try:
             cmd_db_stats(args)
-            print("  ✓ (command ran without import error)")
+            print(CMD_RAN_WITHOUT_ERROR_MSG)
         except Exception as e:
             print(f"  ✓ (command ran, failed as expected in test env: {e})")
 
@@ -122,13 +133,13 @@ def test_db_stats_json():
 @test("cortex db migrate --dry-run (mocked)")
 def test_db_migrate_dry():
     from unittest import mock
-    with mock.patch("cortex.config.loader.get_config") as mock_get_config:
-        mock_get_config.return_value.database.url = "sqlite:///:memory:"
+    with mock.patch(GET_CONFIG_MOCK_TARGET) as mock_get_config:
+        mock_get_config.return_value.database.url = SQLITE_IN_MEMORY_URL
         from cortex_cli.cmd_db import cmd_db_migrate
         args = argparse.Namespace(dry_run=True, verbose=True)
         try:
             cmd_db_migrate(args)
-            print("  ✓ (command ran without import error)")
+            print(CMD_RAN_WITHOUT_ERROR_MSG)
         except Exception as e:
             print(f"  ✓ (command ran, failed as expected in test env: {e})")
 
@@ -144,7 +155,7 @@ def test_embeddings_stats():
         args = argparse.Namespace(json=False, verbose=False)
         cmd_embeddings_stats(args)
         mock_cmd.assert_called_once()
-    print("  ✓ (call mocked)")
+    print(CALL_MOCKED_MSG)
 
 
 @test("cortex embeddings backfill --dry-run (mocked)")
@@ -155,7 +166,7 @@ def test_embeddings_backfill_dry():
         args = argparse.Namespace(batch_size=64, limit=10, dry_run=True)
         cmd_embeddings_backfill(args)
         mock_cmd.assert_called_once()
-    print("  ✓ (call mocked)")
+    print(CALL_MOCKED_MSG)
 
 
 # =============================================================================
@@ -164,7 +175,7 @@ def test_embeddings_backfill_dry():
 @test("cortex doctor (basic) (mocked)")
 def test_doctor_basic():
     from unittest import mock
-    with mock.patch("cortex_cli.cmd_doctor.main") as mock_main:
+    with mock.patch(CMD_DOCTOR_MAIN_MOCK_TARGET):
         from cortex_cli.cmd_doctor import main
         original = sys.argv
         sys.argv = ["cortex_doctor"]
@@ -176,15 +187,16 @@ def test_doctor_basic():
             if e.code not in [0, 1]:
                 raise RuntimeError(f"Unexpected exit code: {e.code}") from e
             print(f"  Exit code: {e.code} (0=ok, 1=warnings)")
+            raise
         finally:
             sys.argv = original
-    print("  ✓ (call mocked)")
+    print(CALL_MOCKED_MSG)
 
 
 @test("cortex doctor --check-db (mocked)")
 def test_doctor_check_db():
     from unittest import mock
-    with mock.patch("cortex_cli.cmd_doctor.main") as mock_main:
+    with mock.patch(CMD_DOCTOR_MAIN_MOCK_TARGET):
         from cortex_cli.cmd_doctor import main
         original = sys.argv
         sys.argv = ["cortex_doctor", "--check-db"]
@@ -195,15 +207,16 @@ def test_doctor_check_db():
                 raise RuntimeError(f"Doctor check failed with exit code {e.code}") from e
             if e.code not in [0, 1]:
                 raise RuntimeError(f"Unexpected exit code: {e.code}") from e
+            raise
         finally:
             sys.argv = original
-    print("  ✓ (call mocked)")
+    print(CALL_MOCKED_MSG)
 
 
 @test("cortex doctor --check-index (mocked)")
 def test_doctor_check_index():
     from unittest import mock
-    with mock.patch("cortex_cli.cmd_doctor.main") as mock_main:
+    with mock.patch(CMD_DOCTOR_MAIN_MOCK_TARGET):
         from cortex_cli.cmd_doctor import main
         original = sys.argv
         sys.argv = ["cortex_doctor", "--check-index"]
@@ -214,15 +227,16 @@ def test_doctor_check_index():
                 raise RuntimeError(f"Doctor check failed with exit code {e.code}") from e
             if e.code not in [0, 1]:
                 raise RuntimeError(f"Unexpected exit code: {e.code}") from e
+            raise
         finally:
             sys.argv = original
-    print("  ✓ (call mocked)")
+    print(CALL_MOCKED_MSG)
 
 
 @test("cortex doctor --check-exports (mocked)")
 def test_doctor_check_exports():
     from unittest import mock
-    with mock.patch("cortex_cli.cmd_doctor.main") as mock_main:
+    with mock.patch(CMD_DOCTOR_MAIN_MOCK_TARGET):
         from cortex_cli.cmd_doctor import main
         original = sys.argv
         sys.argv = ["cortex_doctor", "--check-exports"]
@@ -233,15 +247,16 @@ def test_doctor_check_exports():
                 raise RuntimeError(f"Doctor check failed with exit code {e.code}") from e
             if e.code not in [0, 1]:
                 raise RuntimeError(f"Unexpected exit code: {e.code}") from e
+            raise
         finally:
             sys.argv = original
-    print("  ✓ (call mocked)")
+    print(CALL_MOCKED_MSG)
 
 
 @test("cortex doctor --json (mocked)")
 def test_doctor_json():
     from unittest import mock
-    with mock.patch("cortex_cli.cmd_doctor.main") as mock_main:
+    with mock.patch(CMD_DOCTOR_MAIN_MOCK_TARGET):
         from cortex_cli.cmd_doctor import main
         original = sys.argv
         sys.argv = ["cortex_doctor", "--json"]
@@ -252,15 +267,16 @@ def test_doctor_json():
                 raise RuntimeError(f"Doctor check failed with exit code {e.code}") from e
             if e.code not in [0, 1]:
                 raise RuntimeError(f"Unexpected exit code: {e.code}") from e
+            raise
         finally:
             sys.argv = original
-    print("  ✓ (call mocked)")
+    print(CALL_MOCKED_MSG)
 
 
 @test("cortex doctor --check-db --check-index --json (mocked)")
 def test_doctor_multi_flags():
     from unittest import mock
-    with mock.patch("cortex_cli.cmd_doctor.main") as mock_main:
+    with mock.patch(CMD_DOCTOR_MAIN_MOCK_TARGET):
         from cortex_cli.cmd_doctor import main
         original = sys.argv
         sys.argv = ["cortex_doctor", "--check-db", "--check-index", "--json"]
@@ -271,9 +287,10 @@ def test_doctor_multi_flags():
                 raise RuntimeError(f"Doctor check failed with exit code {e.code}") from e
             if e.code not in [0, 1]:
                 raise RuntimeError(f"Unexpected exit code: {e.code}") from e
+            raise
         finally:
             sys.argv = original
-    print("  ✓ (call mocked)")
+    print(CALL_MOCKED_MSG)
 
 
 # =============================================================================
@@ -282,7 +299,7 @@ def test_doctor_multi_flags():
 @test("config: load all sections (mocked)")
 def test_config_load():
     from unittest import mock
-    with mock.patch("cortex.config.loader.get_config") as mock_get_config:
+    with mock.patch(GET_CONFIG_MOCK_TARGET) as mock_get_config:
         mock_config = mock.MagicMock()
         sections = [
             "core", "database", "storage", "embedding", "search", "gcp",
@@ -305,7 +322,7 @@ def test_config_load():
 @test("config: validate s3 alias (mocked)")
 def test_config_s3_alias():
     from unittest import mock
-    with mock.patch("cortex.config.loader.get_config") as mock_get_config:
+    with mock.patch(GET_CONFIG_MOCK_TARGET) as mock_get_config:
         mock_config = mock.MagicMock()
         mock_storage = mock.MagicMock()
         mock_config.storage = mock_storage
@@ -321,7 +338,7 @@ def test_config_s3_alias():
 @test("config: check critical values (mocked)")
 def test_config_critical():
     from unittest import mock
-    with mock.patch("cortex.config.loader.get_config") as mock_get_config:
+    with mock.patch(GET_CONFIG_MOCK_TARGET) as mock_get_config:
         mock_config = mock.MagicMock()
         mock_config.database.url = "postgresql://user:pass@host/db"
         mock_config.storage.bucket_raw = "raw-bucket"
@@ -348,7 +365,7 @@ def test_config_critical():
 @test("search: imports (mocked)")
 def test_search_imports():
     from unittest import mock
-    with mock.patch("cortex.config.loader.get_config"):
+    with mock.patch(GET_CONFIG_MOCK_TARGET):
         from cortex import retrieval
         assert retrieval, "Search module failed to import"
         print("  ✓ All search imports successful")
@@ -357,7 +374,7 @@ def test_search_imports():
 @test("search: filter grammar (mocked)")
 def test_search_filter_grammar():
     from unittest import mock
-    with mock.patch("cortex.config.loader.get_config"):
+    with mock.patch(GET_CONFIG_MOCK_TARGET):
         from cortex.retrieval.filters import parse_filter_grammar
 
         # Test parsing
@@ -373,8 +390,8 @@ def test_search_filter_grammar():
 @test("RAG: build_answer_graph (mocked)")
 def test_rag_answer():
     from unittest import mock
-    with mock.patch("cortex.config.loader.get_config") as mock_get_config:
-        mock_get_config.return_value.database.url = "sqlite:///:memory:"
+    with mock.patch(GET_CONFIG_MOCK_TARGET) as mock_get_config:
+        mock_get_config.return_value.database.url = SQLITE_IN_MEMORY_URL
         from cortex.orchestration.graphs import build_answer_graph
         build_answer_graph()
         print("  ✓ build_answer_graph() succeeded")
@@ -383,8 +400,8 @@ def test_rag_answer():
 @test("RAG: build_summarize_graph (mocked)")
 def test_rag_summarize():
     from unittest import mock
-    with mock.patch("cortex.config.loader.get_config") as mock_get_config:
-        mock_get_config.return_value.database.url = "sqlite:///:memory:"
+    with mock.patch(GET_CONFIG_MOCK_TARGET) as mock_get_config:
+        mock_get_config.return_value.database.url = SQLITE_IN_MEMORY_URL
         from cortex.orchestration.graphs import build_summarize_graph
         build_summarize_graph()
         print("  ✓ build_summarize_graph() succeeded")
@@ -393,8 +410,8 @@ def test_rag_summarize():
 @test("RAG: build_draft_graph (mocked)")
 def test_rag_draft():
     from unittest import mock
-    with mock.patch("cortex.config.loader.get_config") as mock_get_config:
-        mock_get_config.return_value.database.url = "sqlite:///:memory:"
+    with mock.patch(GET_CONFIG_MOCK_TARGET) as mock_get_config:
+        mock_get_config.return_value.database.url = SQLITE_IN_MEMORY_URL
         from cortex.orchestration.graphs import build_draft_graph
         build_draft_graph()
         print("  ✓ build_draft_graph() succeeded")
@@ -437,7 +454,7 @@ def test_s3_source_list():
     from unittest import mock
     from collections import namedtuple
     S3Object = namedtuple("S3Object", ["name"])
-    with mock.patch("cortex.config.loader.get_config"):
+    with mock.patch(GET_CONFIG_MOCK_TARGET):
         with mock.patch("cortex.ingestion.s3_source.S3SourceHandler.list_conversation_folders") as mock_list:
             mock_list.return_value = [S3Object("folder1/"), S3Object("folder2/")]
             from cortex.ingestion.s3_source import S3SourceHandler
@@ -466,8 +483,8 @@ def test_llm_completion():
 @test("database: direct connection (mocked)")
 def test_db_direct():
     from unittest import mock
-    with mock.patch("cortex.config.loader.get_config") as mock_get_config:
-        mock_get_config.return_value.database.url = "sqlite:///:memory:"
+    with mock.patch(GET_CONFIG_MOCK_TARGET) as mock_get_config:
+        mock_get_config.return_value.database.url = SQLITE_IN_MEMORY_URL
         from cortex.db.session import engine
         from sqlalchemy import text
         from sqlalchemy.orm import Session
@@ -481,8 +498,8 @@ def test_db_direct():
 @test("database: table counts (mocked)")
 def test_db_tables():
     from unittest import mock
-    with mock.patch("cortex.config.loader.get_config") as mock_get_config:
-        mock_get_config.return_value.database.url = "sqlite:///:memory:"
+    with mock.patch(GET_CONFIG_MOCK_TARGET) as mock_get_config:
+        mock_get_config.return_value.database.url = SQLITE_IN_MEMORY_URL
         from cortex.db.session import engine
         from sqlalchemy import text
         from sqlalchemy.orm import Session
@@ -511,7 +528,7 @@ def test_db_tables():
 @test("PII: config check (mocked)")
 def test_pii_config():
     from unittest import mock
-    with mock.patch("cortex.config.loader.get_config") as mock_get_config:
+    with mock.patch(GET_CONFIG_MOCK_TARGET) as mock_get_config:
         mock_config = mock.MagicMock()
         mock_config.pii.enabled = False
         mock_config.pii.strict = False
