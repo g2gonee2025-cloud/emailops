@@ -5,14 +5,24 @@ Verify Query Expansion (Live).
 import logging
 import sys
 
-# Ensure backend/src is in path
-sys.path.append("backend/src")
-
-from cortex.intelligence.query_expansion import QueryExpander, expand_for_fts
+# Wrap import in a try-except block to handle ImportError gracefully.
+# This script must be run with `backend/src` in the PYTHONPATH.
+# For example: PYTHONPATH=backend/src python scripts/verification/verify_query_expansion.py
+try:
+    from cortex.intelligence.query_expansion import QueryExpander, expand_for_fts
+except ImportError:
+    sys.stderr.write("Error: Could not import Cortex modules. Please run this script from the project root with `PYTHONPATH=backend/src`.\n")
+    sys.exit(1)
 
 # Configure module logger without altering global logging configuration
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
+
+
+def _validate(condition, message):
+    """Custom assertion to ensure validation runs even with -O flag."""
+    if not condition:
+        raise AssertionError(message)
 
 
 def test_query_expansion_live():
@@ -23,42 +33,49 @@ def test_query_expansion_live():
     expander = QueryExpander(use_llm_fallback=False)
     query = "laptop battery"
     expanded = expander.expand(query)
-    logger.info(f"Expanded (WordNet): {expanded}")
-    assert "laptop" in expanded.lower()
+    logger.info("Expanded (WordNet): %s", expanded)
+    # NULL_SAFETY & TYPE_ERRORS: Check if the result is a non-empty string
+    _validate(isinstance(expanded, str) and expanded, "WordNet expansion returned a non-string or empty value.")
+    # LOGIC_ERRORS: Strengthen assertion
+    _validate("laptop" in expanded.lower() and "& (battery" in expanded.lower(),
+              f"WordNet expansion for '{query}' was incorrect. Got: {expanded}")
 
     # 2. Test LLM Fallback (Live)
     logger.info("Testing LLM Fallback expansion (Live GPT-OSS-120B)...")
     expander_live = QueryExpander(use_llm_fallback=True)
 
-    # Use a term unlikely to be in WordNet but known to LLM, e.g. "Kubernetes" or specific jargon
-    # Or just a common word if WordNet is missing?
-    # Let's force fallback by mocking _get_synonyms to return empty first?
-    # No, user said NO MOCKS.
-    # So we need a word WordNet doesn't know. "DevOps" might be in WordNet?
-    # "Kubernetes" is good.
     term = "Kubernetes"
     expanded_live = expander_live.expand(term)
-    logger.info(f"Expanded (LLM Fallback) for '{term}': {expanded_live}")
+    logger.info("Expanded (LLM Fallback) for '%s': %s", term, expanded_live)
 
-    if term.lower() == expanded_live.lower():
-        logger.warning(
-            f"LLM did not provide synonyms for '{term}'. It might have failed or returned nothing."
-        )
-    else:
-        logger.info("LLM successfully expanded the term!")
+    # NULL_SAFETY & TYPE_ERRORS: Check if the result is a non-empty string
+    _validate(isinstance(expanded_live, str) and expanded_live, "LLM fallback expansion returned a non-string or empty value.")
+
+    # LOGIC_ERRORS: Add a real assertion to verify fallback and expansion
+    _validate(term.lower() != expanded_live.lower(),
+              f"LLM fallback failed to expand the term '{term}'. The output was the same as the input.")
+    _validate(term.lower() in expanded_live.lower(),
+              f"LLM expansion for '{term}' did not contain the original term. Got: {expanded_live}")
+    logger.info("LLM successfully expanded the term!")
 
     # 3. Test Convenience Function (Default)
     logger.info("Testing default expand_for_fts...")
-    res = expand_for_fts("deploy container")
-    logger.info(f"FTS Result: {res}")
+    query_fts = "deploy container"
+    res = expand_for_fts(query_fts)
+    logger.info("FTS Result: %s", res)
+    # LOGIC_ERRORS: Add assertion for the convenience function
+    _validate(isinstance(res, str) and "&" in res,
+              f"expand_for_fts for '{query_fts}' did not produce a valid FTS query. Got: {res}")
 
     logger.info("Query Expansion Live Test Passed!")
 
 
 if __name__ == "__main__":
+    # Configure basic logging to see output for standalone script execution.
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     try:
         test_query_expansion_live()
-        print("QUERY EXPANSION VERIFICATION SUCCESSFUL")
-    except Exception as e:
-        print(f"QUERY EXPANSION VERIFICATION FAILED: {e}")
+        logger.info("QUERY EXPANSION VERIFICATION SUCCESSFUL")
+    except Exception:
+        logger.exception("QUERY EXPANSION VERIFICATION FAILED")
         sys.exit(1)
