@@ -5,15 +5,34 @@ import shutil
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent
-BACKEND_SRC = (REPO_ROOT / "backend" / "src").resolve()
-if str(BACKEND_SRC) not in sys.path:
-    sys.path.insert(0, str(BACKEND_SRC))
+# --- Path setup ---
+# This script is designed to be run from the repository root.
+# It modifies sys.path to allow imports from the backend source code.
+try:
+    _repo_root = Path(__file__).resolve().parent.parent.parent
+    _backend_src = (_repo_root / "backend" / "src").resolve(strict=True)
+    if str(_backend_src) not in sys.path:
+        sys.path.insert(0, str(_backend_src))
+except FileNotFoundError:
+    print("ERROR: Could not find the backend source directory.", file=sys.stderr)
+    print("Please run this script from the repository root.", file=sys.stderr)
+    sys.exit(1)
 
-from cortex.ingestion.conv_manifest.validation import scan_and_refresh
+
+from cortex.ingestion.conv_manifest.validation import (  # noqa: E402
+    ManifestValidationReport,
+    scan_and_refresh,
+)
 
 
 def setup_mass_env(root: Path, count: int = 200):
+    # SECURITY: Prevent accidental deletion of arbitrary directories.
+    resolved_root = root.resolve()
+    resolved_cwd = Path.cwd().resolve()
+    if not resolved_root.is_relative_to(resolved_cwd) or "temp" not in resolved_root.name:
+        print(f"ERROR: Unsafe path provided for deletion: {root}")
+        print("To prevent accidental data loss, this script can only operate on a temporary directory within the current working directory.")
+        sys.exit(1)
     if root.exists():
         shutil.rmtree(root)
     root.mkdir(parents=True)
@@ -64,20 +83,24 @@ def setup_mass_env(root: Path, count: int = 200):
             "participants": [{"name": f"User {i}", "role": "client"}],
         }
 
-        (conv_dir / "manifest.json").write_text(json.dumps(manifest, indent=2))
+        (conv_dir / "manifest.json").write_text(
+            json.dumps(manifest, indent=2), encoding="utf-8"
+        )
 
     return root
 
 
 def run_test():
+    """Set up the test environment, run the scan, and verify the results."""
     logging.basicConfig(level=logging.ERROR)  # Quiet logs
     test_root = Path("./temp_mass_validation")
+    conversation_count = 200
 
     try:
-        setup_mass_env(test_root, 200)
+        setup_mass_env(test_root, conversation_count)
 
-        print("\nRunning scan_and_refresh on 200 folders...")
-        report = scan_and_refresh(test_root)
+        print(f"\nRunning scan_and_refresh on {conversation_count} folders...")
+        report: ManifestValidationReport = scan_and_refresh(test_root)
 
         print("\n=== Validation Report Results ===")
         print(f"Folders Scanned: {report.folders_scanned}")
@@ -90,12 +113,12 @@ def run_test():
         preserved_count = 0
         failed_count = 0
 
-        for i in range(200):
+        for i in range(conversation_count):
             folder_name = f"conversation_{i:03d}"
             manifest_path = test_root / folder_name / "manifest.json"
 
             try:
-                data = json.loads(manifest_path.read_text())
+                data = json.loads(manifest_path.read_text(encoding="utf-8"))
 
                 # Check critical fields
                 has_messages = "messages" in data and len(data["messages"]) == 1
@@ -107,15 +130,15 @@ def run_test():
                 else:
                     failed_count += 1
                     print(f"FAILED: {folder_name} missing fields!")
-            except Exception as e:
+            except (json.JSONDecodeError, IOError) as e:
                 print(f"ERROR reading {folder_name}: {e}")
                 failed_count += 1
 
-        print(f"Preserved Manifests: {preserved_count}/200")
-        print(f"Failed Manifests:    {failed_count}/200")
+        print(f"Preserved Manifests: {preserved_count}/{conversation_count}")
+        print(f"Failed Manifests:    {failed_count}/{conversation_count}")
 
         if failed_count == 0:
-            print("\nSUCCESS: All 200 manifests preserved rich data.")
+            print(f"\nSUCCESS: All {conversation_count} manifests preserved rich data.")
         else:
             print("\nFAILURE: Some manifests lost data.")
 
