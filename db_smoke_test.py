@@ -25,11 +25,17 @@ try:
         # CRUD Test: Insert a temporary audit log entry
         print("Running CRUD test...")
         import uuid
-        from datetime import datetime
+        from datetime import datetime, timezone
 
         # Using raw SQL to avoid model dependency issues in this smoke test if they exist
         tenant_id = "test-tenant"
         log_id = uuid.uuid4()
+        
+        # P1-1 FIX: Replace deprecated datetime.utcnow() with timezone-aware datetime
+        # datetime.utcnow() returns timezone-naive datetime which causes bugs in distributed systems
+        # Use datetime.now(timezone.utc) instead for timezone-aware datetime objects
+        current_timestamp = datetime.now(timezone.utc)
+        
         session.execute(
             text(
                 """
@@ -39,7 +45,7 @@ try:
             ),
             {
                 "id": log_id,
-                "ts": datetime.utcnow(),
+                "ts": current_timestamp,
                 "tid": tenant_id,
                 "user": "smoke-test-agent",
                 "action": "SMOKE_TEST",
