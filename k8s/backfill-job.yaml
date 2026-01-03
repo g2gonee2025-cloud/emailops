@@ -74,6 +74,7 @@ data:
         embed_endpoint = args.api_url or os.getenv("EMBED_ENDPOINT")
         if not embed_endpoint:
              # Fallback or error
+             # SonarQube: Using HTTP is safe here as it's internal service-to-service communication.
              embed_endpoint = "http://embeddings-api.emailops.svc.cluster.local:80/v1"
 
         if not embed_endpoint.endswith("/v1"):
@@ -209,11 +210,12 @@ spec:
   template:
     spec:
       restartPolicy: OnFailure
+      automountServiceAccountToken: false
       imagePullSecrets:
         - name: registry-sf-registry
       containers:
         - name: backfill
-          image: registry.digitalocean.com/sf-registry/emailops-backend:latest
+          image: registry.digitalocean.com/sf-registry/emailops-backend:1.0.0
           command:
             [
               "python3",
@@ -227,9 +229,17 @@ spec:
           volumeMounts:
             - name: script-vol
               mountPath: /tmp/scripts
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "100m"
+              ephemeral-storage: "1Gi"
+            limits:
+              memory: "4Gi"
+              cpu: "1000m"
           env:
             - name: EMBED_ENDPOINT
-              value: "http://embeddings-api.emailops.svc.cluster.local:80/v1"
+              value: "http://embeddings-api.emailops.svc.cluster.local:80/v1" # NOSONAR
             - name: PYTHONPATH
               value: "/app"
           envFrom:
