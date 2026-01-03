@@ -112,14 +112,15 @@ class RegexPIIFallback:
 
     PATTERNS = {
         "EMAIL_ADDRESS": re.compile(
-            r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b", re.IGNORECASE
+            r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b", re.IGNORECASE
         ),
         "PHONE_NUMBER": re.compile(
-            r"(?:\+?1[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}\b"
+            r"(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b"
         ),
         "US_SSN": re.compile(r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b"),
         "CREDIT_CARD": re.compile(
-            r"\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|6(?:011|5[0-9]{2})[0-9]{12})\b"
+            # mastercard, visa, amex, discover
+            r"\b(?:4\d{12}(?:\d{3})?|5[1-5]\d{14}|3[47]\d{13}|6(?:011|5\d{2})\d{12})\b"
         ),
         "IP_ADDRESS": re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b"),
     }
@@ -270,105 +271,81 @@ class PIIEngine:
         """
         return self.redact_with_stats(text).redacted_text
 
-    def redact_with_stats(self, text: str) -> PIIDetectionResult:
-        """
-        Redact PII from text and return detailed statistics.
+    def _merge_fallback_entities(self, presidio_results: list, text: str) -> list:
+        """Merge regex fallback entities into Presidio results, avoiding overlaps."""
+        if not _RecognizerResult:
+            return presidio_results
 
-        Args:
-            text: Text to redact
+        regex_entities = self._fallback.detect(text)
+        merged_results = list(presidio_results)
 
-        Returns:
-            PIIDetectionResult with redacted text and entity counts
-        """
-        if not text:
-            return PIIDetectionResult(
-                original_text=text,
-                redacted_text=text,
-                entities_found={},
-                total_entities=0,
-                was_modified=False,
+        for ent in regex_entities:
+            # Check for overlap with existing results
+            overlap = any((ent.start < r.end) and (ent.end > r.start) for r in merged_results)
+
+            if not overlap:
+                merged_results.append(
+                    _RecognizerResult(
+                        entity_type=ent.entity_type,
+                        start=ent.start,
+                        end=ent.end,
+                        score=ent.score,
+                    )
+                )
+        return merged_results
+
+    def _redact_with_presidio(self, text: str) -> PIIDetectionResult:
+        """Handle redaction using Presidio, with a fallback to regex."""
+        try:
+            # Presidio-based redaction
+            results = self.analyzer.analyze(
+                text=text,
+                entities=self.entities,
+                language=self.language,
+                score_threshold=self.score_threshold,
             )
 
-        entities_count: dict[str, int] = {}
+            # Merge with regex fallback entities
+            all_results = self._merge_fallback_entities(results, text)
 
-        if self.analyzer and self.anonymizer:
-            try:
-                # Presidio-based redaction
-                results = self.analyzer.analyze(
-                    text=text,
-                    entities=self.entities,
-                    language=self.language,
-                    score_threshold=self.score_threshold,
+            if not all_results:
+                return PIIDetectionResult(original_text=text, redacted_text=text)
+
+            # Count entities
+            entities_count = {}
+            for r in all_results:
+                entities_count[r.entity_type] = (
+                    entities_count.get(r.entity_type, 0) + 1
                 )
 
-                if not results:
-                    return PIIDetectionResult(
-                        original_text=text,
-                        redacted_text=text,
-                        entities_found={},
-                        total_entities=0,
-                        was_modified=False,
-                    )
+            # Anonymize
+            anonymized = self.anonymizer.anonymize(
+                text=text, analyzer_results=all_results, operators=self._operators
+            )
 
-                # Merge with regex fallback
-                regex_entities = self._fallback.detect(text)
-                for ent in regex_entities:
-                    # Check for overlap with existing results
-                    overlap = False
-                    for r in results:
-                        if (ent.start < r.end) and (ent.end > r.start):
-                            overlap = True
-                            break
+            return PIIDetectionResult(
+                original_text=text,
+                redacted_text=anonymized.text,
+                entities_found=entities_count,
+                total_entities=len(all_results),
+                was_modified=True,
+            )
+        except Exception as e:
+            logger.error(f"PII redaction error with Presidio: {e}. Falling back to regex.")
+            return self._redact_with_regex_fallback(text)
 
-                    if not overlap and _RecognizerResult:
-                        results.append(
-                            _RecognizerResult(
-                                entity_type=ent.entity_type,
-                                start=ent.start,
-                                end=ent.end,
-                                score=ent.score,
-                            )
-                        )
-
-                # Count entities
-                entities_count = {}
-                for r in results:
-                    entities_count[r.entity_type] = (
-                        entities_count.get(r.entity_type, 0) + 1
-                    )
-
-                # Anonymize
-                anonymized = self.anonymizer.anonymize(
-                    text=text, analyzer_results=results, operators=self._operators
-                )
-
-                return PIIDetectionResult(
-                    original_text=text,
-                    redacted_text=anonymized.text,
-                    entities_found=entities_count,
-                    total_entities=len(results),
-                    was_modified=True,
-                )
-
-            except Exception as e:
-                logger.error(f"PII redaction error: {e}")
-
-        # Regex fallback redaction
+    def _redact_with_regex_fallback(self, text: str) -> PIIDetectionResult:
+        """Handle redaction using only regex patterns."""
         entities = self._fallback.detect(text)
         if not entities:
-            return PIIDetectionResult(
-                original_text=text,
-                redacted_text=text,
-                entities_found={},
-                total_entities=0,
-                was_modified=False,
-            )
+            return PIIDetectionResult(original_text=text, redacted_text=text)
 
         # Sort by start position (descending) to replace from end to start
         # This preserves correct positions during replacement
         entities.sort(key=lambda e: e.start, reverse=True)
 
         redacted = text
+        entities_count: dict[str, int] = {}
         for entity in entities:
             placeholder = ENTITY_PLACEHOLDERS.get(
                 entity.entity_type, ENTITY_PLACEHOLDERS["DEFAULT"]
@@ -385,6 +362,29 @@ class PIIEngine:
             total_entities=len(entities),
             was_modified=True,
         )
+
+    def redact_with_stats(self, text: str) -> PIIDetectionResult:
+        """
+        Redact PII from text and return detailed statistics.
+
+        Args:
+            text: Text to redact
+
+        Returns:
+            PIIDetectionResult with redacted text and entity counts
+        """
+        if not text:
+            return PIIDetectionResult(
+                original_text=text,
+                redacted_text=text,
+                was_modified=False,
+            )
+
+        if self.analyzer and self.anonymizer:
+            return self._redact_with_presidio(text)
+
+        # Regex fallback redaction
+        return self._redact_with_regex_fallback(text)
 
     def is_available(self) -> bool:
         """Check if full PII detection (Presidio) is available."""
