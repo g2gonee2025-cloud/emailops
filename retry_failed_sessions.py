@@ -20,6 +20,7 @@ CONCURRENCY_LIMIT = (
 )
 REQUEST_DELAY = 1.0  # Delay between checks
 RATE_LIMIT_SLEEP = 180  # 3 minutes sleep on 429
+QUEUE_MAX_SIZE = 500  # Bounded queue to prevent memory spikes
 
 # Payload Config
 REPO_OWNER = "g2gonee2025-cloud"
@@ -149,7 +150,8 @@ def get_priority_score(path):
     return 0
 
 
-async def worker(queue, session, rate_limit_event):
+async def worker(queue, session, rate_limit_event, rate_limit_lock):
+    """Worker that processes items from queue with atomic rate-limit handling."""
     while not queue.empty():
         item = await queue.get()
         file_path = item["file"]
@@ -167,19 +169,28 @@ async def worker(queue, session, rate_limit_event):
                     f"429 Hit on {file_path}. Sleeping {RATE_LIMIT_SLEEP}s..."
                 )
 
-                if rate_limit_event.is_set():
-                    rate_limit_event.clear()
-                    await asyncio.sleep(RATE_LIMIT_SLEEP)
-                    rate_limit_event.set()
-                    logging.info("Resuming...")
-                else:
-                    # Someone else cleared it, just wait
-                    pass
+                # ATOMIC: Use lock to ensure only one worker enters critical section
+                # This prevents multiple concurrent sleep periods (race condition)
+                async with rate_limit_lock:
+                    if rate_limit_event.is_set():
+                        rate_limit_event.clear()
+                        await asyncio.sleep(RATE_LIMIT_SLEEP)
+                        rate_limit_event.set()
+                        logging.info("Resuming...")
                 continue  # Retry same file
 
             # Success or hard fail
             queue.task_done()
             break
+
+
+async def safe_worker(queue, session, rate_limit_event, rate_limit_lock, worker_id):
+    """Wrapper for worker with error recovery and logging."""
+    try:
+        await worker(queue, session, rate_limit_event, rate_limit_lock)
+    except Exception as e:
+        logging.error(f"Worker {worker_id} crashed with exception: {e}", exc_info=True)
+        raise
 
 
 async def main():
@@ -196,27 +207,50 @@ async def main():
     completed = get_completed_files()
     pending = [x for x in all_items if x["file"] not in completed]
 
-    # 3. Sort by priority
+    # 3. Filter out Tier 0 items (tests, migrations, scripts)
+    pending = [x for x in pending if get_priority_score(x["file"]) > 0]
+
+    # 4. Sort by priority
     pending.sort(key=lambda x: get_priority_score(x["file"]), reverse=True)
 
     print(f"Total Pending: {len(pending)}")
     print(f"Already Completed: {len(completed)}")
     print("Starting Persistent Background Worker...")
 
-    queue = asyncio.Queue()
+    # Create bounded queue to prevent memory spikes
+    queue = asyncio.Queue(maxsize=QUEUE_MAX_SIZE)
+    
+    # Enqueue all pending items (respects maxsize)
     for p in pending:
-        queue.put_nowait(p)
+        await queue.put(p)
 
     rate_limit_event = asyncio.Event()
     rate_limit_event.set()
+    rate_limit_lock = asyncio.Lock()  # Protect critical section
 
     async with aiohttp.ClientSession() as session:
         workers = [
-            asyncio.create_task(worker(queue, session, rate_limit_event))
-            for _ in range(CONCURRENCY_LIMIT)
+            asyncio.create_task(
+                safe_worker(queue, session, rate_limit_event, rate_limit_lock, i)
+            )
+            for i in range(CONCURRENCY_LIMIT)
         ]
-        await asyncio.gather(*workers)
+        
+        # Gather with exception handling
+        results = await asyncio.gather(*workers, return_exceptions=True)
+        
+        # Check for worker failures
+        failed = [r for r in results if isinstance(r, Exception)]
+        if failed:
+            logging.error(f"Worker failures detected: {len(failed)}")
+            for exc in failed:
+                logging.error(f"  - {exc}")
+            raise failed[0]
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except Exception as e:
+        logging.error(f"Main execution failed: {e}", exc_info=True)
+        raise
