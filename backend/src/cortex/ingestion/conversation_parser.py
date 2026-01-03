@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 # Matches standard Conversation.txt header lines:
 # 2024-10-07 14:43 | From: ... | To: ...
 HEADER_LINE_PATTERN = re.compile(
-    r"^\d{4}-\d{2}-\d{2}.+?\|\s*From:.+$", re.MULTILINE | re.IGNORECASE
+    r"^\d{4}-\d{2}-\d{2}[^|\n]+\|\s*From:.+$", re.MULTILINE | re.IGNORECASE
 )
 
 # Robust field extractor that handles "Field: Value" within pipe delimiters
@@ -28,9 +28,7 @@ FIELD_PATTERN = re.compile(r"(?:^|\|)\s*(From|To|Cc|Bcc):\s*([^|\n\r]+)", re.IGN
 EXCHANGE_DN_PATTERN = re.compile(r"/o=[^/]+/ou=[^/]+(?:/cn=[^/\s]+)+", re.IGNORECASE)
 
 # RFC 5322 Email Pattern (Simplified for text extraction)
-EMAIL_PATTERN = re.compile(
-    r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", re.IGNORECASE
-)
+EMAIL_PATTERN = re.compile(r"[a-z0-9._%+-]+@(?:[a-z0-9-]+\.)+[a-z]{2,}", re.IGNORECASE)
 
 
 def extract_participants_from_conversation_txt(text: str) -> list[dict[str, Any]]:
@@ -54,7 +52,7 @@ def extract_participants_from_conversation_txt(text: str) -> list[dict[str, Any]
         _parse_header_line(line, participants)
 
     # 2. Convert to sorted list
-    return sorted(list(participants.values()), key=lambda x: x["smtp"])
+    return sorted(participants.values(), key=lambda x: x["smtp"])
 
 
 def _split_recipients(value: str) -> list[str]:
