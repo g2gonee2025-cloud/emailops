@@ -36,6 +36,10 @@ from tenacity import (
 
 logger = logging.getLogger("cortex.llm.runtime")
 
+THINK_OPEN_TAG = "<think>"
+THINK_CLOSE_TAG = "</think>"
+
+
 # =============================================================================
 # Config & exception integration
 # =============================================================================
@@ -576,8 +580,8 @@ class VLLMProvider(BaseProvider):
             )
             reasoning = raw_reasoning.strip() if isinstance(raw_reasoning, str) else ""
 
-            if reasoning and "<think>" not in content:
-                content = f"<think>{reasoning}</think>\n{content}".strip()
+            if reasoning and THINK_OPEN_TAG not in content:
+                content = f"{THINK_OPEN_TAG}{reasoning}{THINK_CLOSE_TAG}\n{content}".strip()
             return content
         except Exception as e:
             raise ProviderError(f"LLM failed: {e}") from e
@@ -734,38 +738,10 @@ class LLMRuntime:
             logger.error("CPU GGUF embedding failed for %s: %s", text_type, e)
             return None
 
-    def _embed_texts(self, texts: list[str], text_type: str) -> np.ndarray:
-        """Generic embedding logic for documents or queries."""
-        if not texts:
-            raise ValidationError(f"{text_type} must be non-empty")
-        if any(not isinstance(t, str) or not t.strip() for t in texts):
-            raise ValidationError(f"{text_type} must be non-empty strings")
-
-        expected_dim, embed_mode, cpu_fallback = self._get_embedding_config()
-        vectors: np.ndarray | None = None
-        gpu_error: Exception | None = None
-
-        if embed_mode == "cpu":
-            vectors = self._run_cpu_embedding(texts, text_type)
-            if vectors is None:
-                raise ProviderError(
-                    "GGUF model not available but embed_mode=cpu requires it"
-                )
-        elif embed_mode == "gpu":
-            embed_func = getattr(self.primary, f"embed_{text_type}")
-            vectors = self._execute(embed_func, texts)
-        else:  # auto mode
-            try:
-                embed_func = getattr(self.primary, f"embed_{text_type}")
-                vectors = self._execute(embed_func, texts)
-            except (ProviderError, ConnectionError, TimeoutError) as e:
-                gpu_error = e
-                logger.warning("GPU embedding failed, checking CPU fallback: %s", e)
-                if cpu_fallback:
-                    vectors = self._run_cpu_embedding(texts, f"fallback {text_type}")
-
+    def _validate_embeddings(self, vectors: np.ndarray | None, expected_dim: int) -> np.ndarray:
+        """Validate, normalize, and reshape embedding vectors."""
         if vectors is None:
-            raise gpu_error or ProviderError("No embedding provider available")
+            raise ProviderError("Embedding provider returned no vectors.")
 
         if not isinstance(vectors, np.ndarray):
             vectors = np.asarray(vectors, dtype=np.float32)
@@ -773,9 +749,7 @@ class LLMRuntime:
             vectors = vectors.reshape(1, -1)
 
         if vectors.ndim != 2:
-            raise ProviderError(
-                f"Embedding output must be 2D, got shape {vectors.shape}"
-            )
+            raise ProviderError(f"Embedding output must be 2D, got shape {vectors.shape}")
 
         vectors = BaseProvider.normalize_l2(vectors)
 
@@ -787,6 +761,41 @@ class LLMRuntime:
             raise ProviderError("Embedding contains non-finite values")
 
         return vectors
+
+    def _embed_gpu_with_fallback(
+        self, texts: list[str], text_type: str, cpu_fallback: bool
+    ) -> np.ndarray | None:
+        """Try GPU embedding with an optional CPU fallback."""
+        try:
+            embed_func = getattr(self.primary, f"embed_{text_type}")
+            return self._execute(embed_func, texts)
+        except (ProviderError, ConnectionError, TimeoutError) as e:
+            logger.warning("GPU embedding failed, checking CPU fallback: %s", e)
+            if cpu_fallback:
+                return self._run_cpu_embedding(texts, f"fallback {text_type}")
+            raise e
+
+    def _embed_texts(self, texts: list[str], text_type: str) -> np.ndarray:
+        """Generic embedding logic for documents or queries."""
+        if not texts or any(not isinstance(t, str) or not t.strip() for t in texts):
+            raise ValidationError(f"{text_type} must be non-empty strings")
+
+        expected_dim, embed_mode, cpu_fallback = self._get_embedding_config()
+        vectors: np.ndarray | None = None
+
+        if embed_mode == "cpu":
+            vectors = self._run_cpu_embedding(texts, text_type)
+            if vectors is None:
+                raise ProviderError("GGUF model not available but embed_mode=cpu requires it")
+        elif embed_mode == "gpu":
+            vectors = self._embed_gpu_with_fallback(texts, text_type, cpu_fallback=False)
+        else:  # auto mode
+            vectors = self._embed_gpu_with_fallback(texts, text_type, cpu_fallback=cpu_fallback)
+
+        if vectors is None:
+            raise ProviderError("No embedding provider available")
+
+        return self._validate_embeddings(vectors, expected_dim)
 
     def embed_documents(self, documents: list[str]) -> np.ndarray:
         return self._embed_texts(documents, "documents")
@@ -836,6 +845,62 @@ class LLMRuntime:
         kwargs.pop("messages", None)
         return self.complete_messages(messages, **kwargs)
 
+    def _call_model_for_json(
+        self, msgs: list[dict[str, str]], **kwargs: Any
+    ) -> str:
+        """Call the LLM with settings optimized for JSON output."""
+        base_kwargs = dict(kwargs)
+        base_kwargs.setdefault("temperature", 0.0)
+        base_kwargs.setdefault("max_tokens", 2048)
+        base_kwargs.setdefault("response_format", {"type": "json_object"})
+        try:
+            return self.complete_messages(msgs, **base_kwargs)
+        except ProviderError as e:
+            msg = str(e).lower()
+            if "response_format" in msg or "json_object" in msg:
+                base_kwargs.pop("response_format", None)
+                return self.complete_messages(msgs, **base_kwargs)
+            raise
+
+    def _attempt_json_parse_and_validate(
+        self, raw_output: str, schema: dict[str, Any]
+    ) -> tuple[dict[str, Any] | None, str | None]:
+        """Try to parse and validate JSON, returning the object or an error string."""
+        try:
+            parsed = _try_load_json(raw_output or "")
+            validation_error = _validate_json_schema(parsed, schema)
+            if not validation_error:
+                return parsed, None
+            logger.warning("JSON schema validation failed: %s", validation_error)
+            return None, validation_error
+        except (ValueError, Exception) as e:
+            logger.warning("JSON decode failed: %s", e)
+            return None, str(e)
+
+    def _repair_json(
+        self,
+        raw_output: str,
+        last_error: str,
+        schema_json: str,
+        **kwargs: Any,
+    ) -> str:
+        """Call the model to repair a malformed JSON string."""
+        from cortex.prompts import (
+            SYSTEM_GUARDRAILS_REPAIR,
+            USER_GUARDRAILS_REPAIR,
+            construct_prompt_messages,
+        )
+
+        repair_messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_GUARDRAILS_REPAIR,
+            user_prompt_template=USER_GUARDRAILS_REPAIR,
+            error=last_error,
+            invalid_json=raw_output or "",
+            target_schema=schema_json,
+            validation_errors=last_error,
+        )
+        return self._call_model_for_json(repair_messages, **kwargs)
+
     # ---------------- Public API: JSON completion (UNSAFE) ----------------
     def complete_json(
         self,
@@ -861,77 +926,32 @@ class LLMRuntime:
         schema_json = json.dumps(schema, indent=2)
         system_prompt = (
             f"Respond with a single valid JSON object that conforms to this JSON Schema:\n"
-            f"{schema_json}\n\n"
-            f"Do not include markdown. Return ONLY the JSON object."
+            f"{schema_json}\n\nDo not include markdown. Return ONLY the JSON object."
         )
-
         initial_messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": prompt},
         ]
 
-        def _call_model_for_json(msgs: list[dict[str, str]]) -> str:
-            base_kwargs = dict(kwargs)
-            base_kwargs.setdefault("temperature", 0.0)
-            base_kwargs.setdefault("max_tokens", 2048)
-            base_kwargs.setdefault("response_format", {"type": "json_object"})
-            try:
-                # Use the new secure method
-                return self.complete_messages(msgs, **base_kwargs)
-            except ProviderError as e:
-                # Some OpenAI-compatible servers may not implement response_format.
-                msg = str(e).lower()
-                if "response_format" in msg or "json_object" in msg:
-                    base_kwargs.pop("response_format", None)
-                    return self.complete_messages(msgs, **base_kwargs)
-                raise
-
-        raw_output = _call_model_for_json(initial_messages)
+        raw_output = self._call_model_for_json(initial_messages, **kwargs)
         last_error: str | None = None
 
         for attempt in range(max_repair_attempts + 1):
-            try:
-                parsed = _try_load_json(raw_output or "")
-                validation_error = _validate_json_schema(parsed, schema)
-                if not validation_error:
-                    return parsed
-                last_error = validation_error
-                logger.warning(
-                    "JSON schema validation failed (attempt %d): %s",
-                    attempt + 1,
-                    validation_error,
-                )
-            except ValueError as e:
-                last_error = str(e)
-                logger.warning("JSON decode failed (attempt %d): %s", attempt + 1, e)
-            except Exception as e:
-                last_error = str(e)
-                logger.warning("JSON completion error (attempt %d): %s", attempt + 1, e)
+            parsed, error = self._attempt_json_parse_and_validate(raw_output, schema)
+            if parsed is not None:
+                return parsed
+            last_error = error
 
             if attempt >= max_repair_attempts:
                 break
 
-            # If we are here, it means we need to repair.
-            from cortex.prompts import (
-                SYSTEM_GUARDRAILS_REPAIR,
-                USER_GUARDRAILS_REPAIR,
-                construct_prompt_messages,
+            raw_output = self._repair_json(
+                raw_output, last_error or "Unknown validation error", schema_json, **kwargs
             )
-
-            repair_messages = construct_prompt_messages(
-                system_prompt_template=SYSTEM_GUARDRAILS_REPAIR,
-                user_prompt_template=USER_GUARDRAILS_REPAIR,
-                error=last_error or "Unknown",
-                invalid_json=raw_output or "",
-                target_schema=schema_json,
-                validation_errors=last_error or "N/A",
-            )
-            raw_output = _call_model_for_json(repair_messages)
 
         raise LLMOutputSchemaError(
             message=(
-                "Failed to generate valid JSON after "
-                f"{max_repair_attempts + 1} attempts: {last_error}"
+                f"Failed to generate valid JSON after {max_repair_attempts + 1} attempts: {last_error}"
             ),
             schema_name=schema.get("title", "unknown"),
             raw_output=(raw_output[:1000] if raw_output else None),
@@ -958,12 +978,9 @@ def _validate_json_schema(data: dict[str, Any], schema: dict[str, Any]) -> str |
 def _extract_first_balanced_json_object(s: object) -> str | None:
     """
     Finds the first balanced JSON object (from '{' to '}') in a string.
-    Properly handles nested braces, strings with braces, and escaped characters.
+    Handles nested braces, strings with braces, and escaped characters.
     """
     if not isinstance(s, str):
-        return None
-
-    if not s or "{" not in s:
         return None
 
     first_brace = s.find("{")
@@ -973,38 +990,35 @@ def _extract_first_balanced_json_object(s: object) -> str | None:
     balance = 0
     in_string = False
     escape_next = False
+    iterator = enumerate(s[first_brace:])
 
-    # We only care about finding the matching closing brace for the first opening brace
-    for i, char in enumerate(s[first_brace:]):
+    for i, char in iterator:
         if escape_next:
             escape_next = False
             continue
 
         if char == "\\":
             escape_next = True
-            continue
-
-        if char == '"':
+        elif char == '"':
             in_string = not in_string
-
-        if not in_string:
+        elif not in_string:
             if char == "{":
                 balance += 1
             elif char == "}":
                 balance -= 1
 
-            if balance == 0 and i > 0:
+            if balance == 0:
                 return s[first_brace : first_brace + i + 1]
     return None
 
 
 def _strip_think_blocks(s: str) -> str:
     """Safely remove <think>...</think> blocks without using complex regex."""
-    while "<think>" in s and "</think>" in s:
-        start = s.find("<think>")
-        end = s.find("</think>")
+    while THINK_OPEN_TAG in s and THINK_CLOSE_TAG in s:
+        start = s.find(THINK_OPEN_TAG)
+        end = s.find(THINK_CLOSE_TAG)
         if start < end:
-            s = s[:start] + s[end + len("</think>") :]
+            s = s[:start] + s[end + len(THINK_CLOSE_TAG) :]
         else:
             # Avoid infinite loop on malformed input
             break
@@ -1048,22 +1062,15 @@ def _try_load_json(data: Any) -> dict[str, Any]:
     s = data.decode("utf-8") if isinstance(data, bytes) else str(data)
     s = _strip_think_blocks(s.strip())
 
-    # Attempt parsing strategies in order of preference
-    # 1. Direct parse
-    parsed_obj = _parse_json_direct(s)
-    if parsed_obj:
-        return parsed_obj
+    parsing_functions = [_parse_json_direct, _parse_json_fenced]
 
-    # 2. Fenced block extraction
-    parsed_obj = _parse_json_fenced(s)
-    if parsed_obj:
-        return parsed_obj
+    for parser in parsing_functions:
+        if (parsed_obj := parser(s)) is not None:
+            return parsed_obj
 
-    # 3. Fallback: find first balanced object in the whole string
-    balanced_block = _extract_first_balanced_json_object(s)
-    if balanced_block:
-        parsed_obj = _parse_json_direct(balanced_block)
-        if parsed_obj:
+    # Fallback: find first balanced object in the whole string
+    if (balanced_block := _extract_first_balanced_json_object(s)) is not None:
+        if (parsed_obj := _parse_json_direct(balanced_block)) is not None:
             return parsed_obj
 
     raise ValueError(
