@@ -10,6 +10,7 @@ import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { Label } from '../components/ui/Label';
 import { Alert, AlertDescription } from '../components/ui/Alert';
+import { logger } from '../lib/logger';
 
 export default function LoginView() {
   const { setToken } = useAuth();
@@ -30,15 +31,26 @@ export default function LoginView() {
   });
 
   const onSubmit = async (formData: LoginForm) => {
+    logger.info('LoginView: Login attempt started', { email: formData.email });
+    const startTime = performance.now();
+
     try {
       await loginAsync([formData.email, formData.password]);
     } catch (_e) {
-      // error is handled by useEffect
+      const elapsed = performance.now() - startTime;
+      logger.error('LoginView: Login attempt failed', {
+        email: formData.email,
+        elapsed_ms: elapsed.toFixed(2),
+      });
     }
   };
 
   useEffect(() => {
     if (isSuccess && data) {
+      logger.info('LoginView: Login successful, redirecting to dashboard', {
+        token_type: data.token_type,
+        expires_in: data.expires_in,
+      });
       setToken(data.access_token);
       navigate('/dashboard');
     }
@@ -47,6 +59,7 @@ export default function LoginView() {
   useEffect(() => {
     if (error) {
       const message = error instanceof Error ? error.message : 'An unknown error occurred';
+      logger.error('LoginView: Login error received', { error: message });
       setError('root.serverError', { type: 'custom', message });
     }
   }, [error, setError]);

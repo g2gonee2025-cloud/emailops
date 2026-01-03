@@ -3,6 +3,7 @@ import GlassCard from '../components/ui/GlassCard';
 import { StatusIndicator } from '../components/ui/StatusIndicator';
 import { api } from '../lib/api';
 import type { HealthResponse } from '../lib/api';
+import { logger } from '../lib/logger';
 import {
   Activity,
   Mail,
@@ -16,9 +17,27 @@ export default function DashboardView() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    logger.info('DashboardView: Fetching health data');
+    const startTime = performance.now();
+
     api.fetchHealth()
-      .then(setHealth)
-      .catch((err) => console.error('Health check failed', err))
+      .then((data) => {
+        const elapsed = performance.now() - startTime;
+        logger.info('DashboardView: Health data fetched successfully', {
+          status: data.status,
+          version: data.version,
+          environment: data.environment,
+          elapsed_ms: elapsed.toFixed(2),
+        });
+        setHealth(data);
+      })
+      .catch((err) => {
+        const elapsed = performance.now() - startTime;
+        logger.error('DashboardView: Health check failed', {
+          error: err instanceof Error ? err.message : String(err),
+          elapsed_ms: elapsed.toFixed(2),
+        });
+      })
       .finally(() => setIsLoading(false));
   }, []);
 

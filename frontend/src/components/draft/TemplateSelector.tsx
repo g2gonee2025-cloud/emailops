@@ -9,6 +9,7 @@ import {
 import { Button } from '../ui/Button';
 import { Plus } from 'lucide-react';
 import GlassCard from '../ui/GlassCard';
+import { logger } from '../../lib/logger';
 
 export interface EmailTemplate {
   id: string;
@@ -33,10 +34,18 @@ export default function TemplateSelector({
   const [selectedId, setSelectedId] = useState<string>('');
 
   const handleValueChange = (value: string) => {
+    logger.debug('TemplateSelector: Template selection changed', { selectedId: value });
     setSelectedId(value);
     const template = templates.find((t) => t.id === value);
     if (template) {
+      logger.info('TemplateSelector: Template selected', {
+        id: template.id,
+        name: template.name,
+        subject: template.subject,
+      });
       onSelect(template);
+    } else {
+      logger.warn('TemplateSelector: Selected template not found', { selectedId: value });
     }
   };
 

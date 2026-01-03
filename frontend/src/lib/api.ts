@@ -275,11 +275,29 @@ export const api = {
   // System Endpoints
   // ---------------------------------------------------------------------------
 
-  fetchHealth: (signal?: AbortSignal): Promise<HealthResponse> =>
-    request<HealthResponse>('/health', { signal }, false),
+  fetchHealth: (signal?: AbortSignal): Promise<HealthResponse> => {
+    logger.debug('API: fetchHealth request started');
+    const startTime = performance.now();
+    return request<HealthResponse>('/health', { signal }, false).then((result) => {
+      const elapsed = performance.now() - startTime;
+      logger.info('API: fetchHealth completed', {
+        status: result.status,
+        version: result.version,
+        elapsed_ms: elapsed.toFixed(2),
+      });
+      return result;
+    });
+  },
 
-  fetchVersion: (signal?: AbortSignal): Promise<Record<string, string>> =>
-    request<Record<string, string>>('/version', { signal }, false),
+  fetchVersion: (signal?: AbortSignal): Promise<Record<string, string>> => {
+    logger.debug('API: fetchVersion request started');
+    const startTime = performance.now();
+    return request<Record<string, string>>('/version', { signal }, false).then((result) => {
+      const elapsed = performance.now() - startTime;
+      logger.info('API: fetchVersion completed', { elapsed_ms: elapsed.toFixed(2) });
+      return result;
+    });
+  },
 
   // ---------------------------------------------------------------------------
   // RAG Endpoints
@@ -291,10 +309,20 @@ export const api = {
     filters: Record<string, unknown> = {},
     signal?: AbortSignal,
   ): Promise<SearchResponse> => {
+    logger.debug('API: search request started', { query_length: query.length, k });
+    const startTime = performance.now();
     return request<SearchResponse>('/api/v1/search', {
       method: 'POST',
       body: JSON.stringify({ query, k, filters }),
       signal,
+    }).then((result) => {
+      const elapsed = performance.now() - startTime;
+      logger.info('API: search completed', {
+        result_count: result.total_count,
+        query_time_ms: result.query_time_ms,
+        elapsed_ms: elapsed.toFixed(2),
+      });
+      return result;
     });
   },
 
@@ -423,11 +451,23 @@ export const api = {
     offset = 0,
     signal?: AbortSignal,
   ): Promise<ThreadListResponse> => {
+    logger.debug('API: listThreads request started', { query, limit, offset });
+    const startTime = performance.now();
     const params = new URLSearchParams();
     if (query) params.set('q', query);
     params.set('limit', String(limit));
     params.set('offset', String(offset));
-    return request<ThreadListResponse>(`/api/v1/threads?${params}`, { signal });
+    return request<ThreadListResponse>(`/api/v1/threads?${params}`, { signal }).then((result) => {
+      const elapsed = performance.now() - startTime;
+      logger.info('API: listThreads completed', {
+        query,
+        threads_count: result.threads.length,
+        total_count: result.total_count,
+        has_more: result.has_more,
+        elapsed_ms: elapsed.toFixed(2),
+      });
+      return result;
+    });
   },
 
   // ---------------------------------------------------------------------------
@@ -435,6 +475,8 @@ export const api = {
   // ---------------------------------------------------------------------------
 
   login: (username: string, password: string): Promise<LoginResponse> => {
+    logger.info('API: login request started', { username });
+    const startTime = performance.now();
     return request<LoginResponse>(
       '/api/v1/auth/login',
       {
@@ -445,7 +487,24 @@ export const api = {
         body: JSON.stringify({ username, password }),
       },
       false, // Do not include auth token for login request
-    );
+    ).then((result) => {
+      const elapsed = performance.now() - startTime;
+      logger.info('API: login completed', {
+        username,
+        token_type: result.token_type,
+        expires_in: result.expires_in,
+        elapsed_ms: elapsed.toFixed(2),
+      });
+      return result;
+    }).catch((error) => {
+      const elapsed = performance.now() - startTime;
+      logger.error('API: login failed', {
+        username,
+        error: error instanceof Error ? error.message : String(error),
+        elapsed_ms: elapsed.toFixed(2),
+      });
+      throw error;
+    });
   },
 
   setAuthToken: (token: string | null) => {

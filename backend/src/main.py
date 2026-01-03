@@ -844,11 +844,26 @@ def create_app() -> FastAPI:
         - Redis/queue availability
         - External service health
         """
-        return {
+        import time as time_module
+        start_time = time_module.perf_counter()
+        logger.debug("Health check request started")
+
+        result = {
             "status": "healthy",
             "version": APP_VERSION,
             "environment": config.core.env,
         }
+
+        elapsed_ms = (time_module.perf_counter() - start_time) * 1000
+        logger.info(
+            "Health check completed: status=%s, version=%s, environment=%s, elapsed_ms=%.2f",
+            result["status"],
+            result["version"],
+            result["environment"],
+            elapsed_ms,
+        )
+
+        return result
 
     @app.get("/version", tags=["system"])
     async def version_info() -> dict[str, Any]:

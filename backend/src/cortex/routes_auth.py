@@ -95,6 +95,10 @@ async def login(request: LoginRequest) -> LoginResponse:
     - user/user (user role)
     - demo/demo (demo tenant)
     """
+    import time
+    start_time = time.perf_counter()
+    logger.info("Login attempt started for user: %s", request.username)
+
     config = get_config()
 
     # Validate credentials
@@ -104,10 +108,22 @@ async def login(request: LoginRequest) -> LoginResponse:
         user_data["password"], request.password
     )
     if not password_match:
+        logger.warning(
+            "Login failed: invalid credentials for user '%s'",
+            request.username,
+        )
         raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    logger.debug(
+        "User '%s' credentials validated, tenant_id=%s, roles=%s",
+        request.username,
+        user_data["tenant_id"],
+        user_data["roles"],
+    )
 
     # Create JWT payload
     if not config.secret_key:
+        logger.error("Login failed: SECRET_KEY not configured")
         raise HTTPException(
             status_code=500, detail="Server misconfiguration: missing SECRET_KEY"
         )
@@ -127,6 +143,15 @@ async def login(request: LoginRequest) -> LoginResponse:
     try:
         token = jwt.encode(payload, config.secret_key, algorithm="HS256")
     except Exception as e:
+        logger.exception("Token generation failed for user '%s'", request.username)
         raise HTTPException(status_code=500, detail=f"Token generation failed: {e!s}")
+
+    elapsed_ms = (time.perf_counter() - start_time) * 1000
+    logger.info(
+        "Login successful for user '%s', tenant_id=%s, elapsed_ms=%.2f",
+        request.username,
+        user_data["tenant_id"],
+        elapsed_ms,
+    )
 
     return LoginResponse(access_token=token, expires_in=expires_seconds)

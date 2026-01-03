@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { api, type DoctorReport, type StatusData as SystemStatus, type SystemConfig } from '../lib/api';
+import { logger } from '../lib/logger';
 
 export const useAdmin = () => {
 
@@ -9,7 +10,10 @@ export const useAdmin = () => {
     error: statusError,
   } = useQuery<SystemStatus, Error>({
     queryKey: ['systemStatus'],
-    queryFn: () => api.fetchStatus(),
+    queryFn: () => {
+      logger.debug('useAdmin: Fetching system status');
+      return api.fetchStatus();
+    },
   });
 
   const {
@@ -18,7 +22,10 @@ export const useAdmin = () => {
     error: configError,
   } = useQuery<SystemConfig, Error>({
     queryKey: ['systemConfig'],
-    queryFn: () => api.fetchConfig(),
+    queryFn: () => {
+      logger.debug('useAdmin: Fetching system config');
+      return api.fetchConfig();
+    },
   });
 
   const {
@@ -27,7 +34,21 @@ export const useAdmin = () => {
     data: doctorReport,
     error: doctorError,
   } = useMutation<DoctorReport, Error>({
-    mutationFn: () => api.runDoctor(),
+    mutationFn: () => {
+      logger.info('useAdmin: Running system diagnostics');
+      return api.runDoctor();
+    },
+    onSuccess: (data) => {
+      logger.info('useAdmin: Diagnostics completed', {
+        overall_status: data.overall_status,
+        checks_count: data.checks.length,
+      });
+    },
+    onError: (error) => {
+      logger.error('useAdmin: Diagnostics failed', {
+        error: error.message,
+      });
+    },
   });
 
   return {

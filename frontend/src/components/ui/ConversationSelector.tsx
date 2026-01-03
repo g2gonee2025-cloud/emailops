@@ -5,6 +5,7 @@ import { api } from '../../lib/api';
 import type { ThreadListItem } from '../../lib/api';
 import { cn } from '../../lib/utils';
 import { Input } from './Input';
+import { logger } from '../../lib/logger';
 
 interface ConversationSelectorProps {
   value?: string;
@@ -38,6 +39,9 @@ export function ConversationSelector({
     abortControllerRef.current = new AbortController();
     setLoading(true);
 
+    logger.debug('ConversationSelector: Fetching threads', { query });
+    const startTime = performance.now();
+
     try {
       const response = await api.listThreads(
         query || undefined,
@@ -45,10 +49,23 @@ export function ConversationSelector({
         0,
         abortControllerRef.current.signal,
       );
+      const elapsed = performance.now() - startTime;
+      logger.info('ConversationSelector: Threads fetched successfully', {
+        query,
+        threads_count: response.threads.length,
+        total_count: response.total_count,
+        has_more: response.has_more,
+        elapsed_ms: elapsed.toFixed(2),
+      });
       setThreads(response.threads);
     } catch (error) {
       if (error instanceof Error && error.name !== 'AbortError') {
-        console.error('Failed to fetch threads:', error);
+        const elapsed = performance.now() - startTime;
+        logger.error('ConversationSelector: Failed to fetch threads', {
+          query,
+          error: error.message,
+          elapsed_ms: elapsed.toFixed(2),
+        });
         setThreads([]);
       }
     } finally {

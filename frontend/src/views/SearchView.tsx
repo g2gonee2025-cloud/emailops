@@ -52,26 +52,35 @@ export default function SearchView() {
   // Display a toast notification on error
   useEffect(() => {
     if (isError) {
-      logger.error('Search query failed', { error });
+      logger.error('SearchView: Search query failed', {
+        error: error instanceof Error ? error.message : String(error),
+        query: debouncedQuery,
+      });
       addToast({
         type: 'error',
         message: 'Search Failed',
         details: error instanceof Error ? error.message : 'An unknown error occurred.',
       });
     }
-  }, [isError, error, addToast]);
+  }, [isError, error, addToast, debouncedQuery]);
 
   // Safely parse and memoize the API response
   const validatedData = useMemo(() => {
     if (!data) return null;
     const parseResult = SearchResponseSchema.safeParse(data);
     if (!parseResult.success) {
-      logger.warn('Invalid search response schema', {
+      logger.warn('SearchView: Invalid search response schema', {
         errors: parseResult.error.flatten(),
         rawData: data,
       });
       return null;
     }
+    logger.info('SearchView: Search results received', {
+      total_count: parseResult.data.total_count,
+      results_count: parseResult.data.results.length,
+      query_time_ms: parseResult.data.query_time_ms,
+      correlation_id: parseResult.data.correlation_id,
+    });
     return parseResult.data;
   }, [data]);
 

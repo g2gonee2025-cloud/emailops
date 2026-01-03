@@ -44,10 +44,19 @@ async def search_endpoint(
     tenant_id = tenant_id_ctx.get("default") or "default"
     user_id = user_id_ctx.get("anonymous") or "anonymous"
 
+    start_time = time.perf_counter()
+    logger.info(
+        "Search request started: tenant_id=%s, user_id=%s, correlation_id=%s, query_length=%d",
+        tenant_id,
+        user_id,
+        correlation_id,
+        len(request.query) if request.query else 0,
+    )
+
     try:
-        start_time = time.perf_counter()
         query = request.query
         if not isinstance(query, str) or not query.strip():
+            logger.warning("Search request rejected: empty or invalid query")
             raise HTTPException(status_code=400, detail="Query is required")
 
         config = get_config()
@@ -109,6 +118,14 @@ async def search_endpoint(
         # Convert SearchResults to list of dicts for response
         results_dicts = [r.model_dump() for r in results_list]
 
+        logger.info(
+            "Search request completed: tenant_id=%s, correlation_id=%s, result_count=%d, query_time_ms=%.2f",
+            tenant_id,
+            correlation_id,
+            len(results_dicts),
+            query_time_ms,
+        )
+
         return SearchResponse(
             correlation_id=correlation_id,
             results=results_dicts,
@@ -117,13 +134,32 @@ async def search_endpoint(
         )
 
     except CortexError as e:
+        elapsed_ms = (time.perf_counter() - start_time) * 1000
         if isinstance(e, CortexValidationError):
+            logger.warning(
+                "Search validation error: tenant_id=%s, correlation_id=%s, error=%s, elapsed_ms=%.2f",
+                tenant_id,
+                correlation_id,
+                str(e),
+                elapsed_ms,
+            )
             raise HTTPException(status_code=400, detail=e.to_dict())
-        logger.exception("Search failed")
+        logger.exception(
+            "Search failed with CortexError: tenant_id=%s, correlation_id=%s, elapsed_ms=%.2f",
+            tenant_id,
+            correlation_id,
+            elapsed_ms,
+        )
         raise HTTPException(status_code=500, detail="Internal Server Error")
     except HTTPException:
         raise
     except Exception:
-        logger.exception("Search failed")
+        elapsed_ms = (time.perf_counter() - start_time) * 1000
+        logger.exception(
+            "Search failed with unexpected error: tenant_id=%s, correlation_id=%s, elapsed_ms=%.2f",
+            tenant_id,
+            correlation_id,
+            elapsed_ms,
+        )
         # Do not leak internal exception details to client
         raise HTTPException(status_code=500, detail="Internal Server Error")
