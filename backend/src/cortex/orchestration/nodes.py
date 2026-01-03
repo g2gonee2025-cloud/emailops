@@ -619,6 +619,173 @@ def tool_email_get_thread(
         return None
 
 
+def load_conversation_files_context(
+    conversation_id: uuid.UUID | str,
+    tenant_id: str,
+    max_total_chars: int = 100000,
+) -> str | None:
+    """
+    Load all conversation files (except manifest.json and attachments_log.csv) into context.
+
+    This function loads the full conversation content from the storage_uri path,
+    including Conversation.txt and all attachment text, to provide complete context
+    for drafting or answering questions about a specific conversation.
+
+    Args:
+        conversation_id: UUID of the conversation to load
+        tenant_id: Tenant ID for RLS
+        max_total_chars: Maximum total characters to include (default 100k)
+
+    Returns:
+        Formatted context string with all conversation files, or None if not found
+    """
+    from cortex.db.models import Conversation
+    from cortex.db.session import SessionLocal, set_session_tenant
+    from cortex.ingestion.conv_loader import load_conversation
+    from cortex.security.validators import sanitize_retrieved_content
+
+    try:
+        conv_uuid = uuid.UUID(str(conversation_id))
+    except ValueError:
+        logger.warning("Invalid conversation_id format: %s", conversation_id)
+        return None
+
+    try:
+        with SessionLocal() as session:
+            set_session_tenant(session, tenant_id)
+
+            conversation = (
+                session.query(Conversation)
+                .filter(
+                    Conversation.conversation_id == conv_uuid,
+                    Conversation.tenant_id == tenant_id,
+                )
+                .first()
+            )
+
+            if not conversation:
+                logger.warning("Conversation not found: %s", conv_uuid)
+                return None
+
+            storage_uri = conversation.storage_uri
+            if not storage_uri:
+                logger.warning(
+                    "No storage_uri for conversation %s, falling back to DB content",
+                    conv_uuid,
+                )
+                return _build_context_from_db(conversation)
+
+            convo_dir = Path(storage_uri)
+            if not convo_dir.exists() or not convo_dir.is_dir():
+                logger.warning(
+                    "Storage path does not exist: %s, falling back to DB content",
+                    storage_uri,
+                )
+                return _build_context_from_db(conversation)
+
+            conv_data = load_conversation(
+                convo_dir,
+                include_attachment_text=True,
+                max_total_attachment_text=max_total_chars // 2,
+            )
+
+            if not conv_data:
+                logger.warning(
+                    "Failed to load conversation from %s, falling back to DB content",
+                    storage_uri,
+                )
+                return _build_context_from_db(conversation)
+
+            context_parts = []
+            total_chars = 0
+
+            conversation_txt = conv_data.get("conversation_txt", "")
+            if conversation_txt:
+                safe_text = sanitize_retrieved_content(conversation_txt)
+                context_parts.append("--- CONVERSATION ---\n" + safe_text)
+                total_chars += len(safe_text)
+
+            attachments = conv_data.get("attachments", [])
+            for att in attachments:
+                if total_chars >= max_total_chars:
+                    context_parts.append("\n[TRUNCATED: Maximum context size reached]")
+                    break
+
+                att_path = att.get("path", "")
+                att_text = att.get("text", "")
+
+                if not att_text:
+                    continue
+
+                filename = Path(att_path).name if att_path else "unknown"
+                if filename.lower() in ("manifest.json", "attachments_log.csv"):
+                    continue
+
+                safe_att_text = sanitize_retrieved_content(att_text)
+                remaining = max_total_chars - total_chars
+                if len(safe_att_text) > remaining:
+                    safe_att_text = safe_att_text[:remaining] + "\n[TRUNCATED]"
+
+                context_parts.append(f"\n--- ATTACHMENT: {filename} ---\n{safe_att_text}")
+                total_chars += len(safe_att_text)
+
+            if not context_parts:
+                return _build_context_from_db(conversation)
+
+            return "\n".join(context_parts)
+
+    except Exception:
+        logger.exception(
+            "Error loading conversation files for %s",
+            conversation_id,
+        )
+        return None
+
+
+def _build_context_from_db(conversation: Any) -> str | None:
+    """Build context string from database conversation record as fallback."""
+    from cortex.security.validators import sanitize_retrieved_content
+
+    context_parts = []
+
+    if conversation.subject:
+        context_parts.append(f"Subject: {conversation.subject}")
+
+    if conversation.smart_subject and conversation.smart_subject != conversation.subject:
+        context_parts.append(f"Smart Subject: {conversation.smart_subject}")
+
+    messages = conversation.messages
+    if isinstance(messages, list):
+        context_parts.append("\n--- MESSAGES ---")
+        for msg in messages:
+            if not isinstance(msg, dict):
+                continue
+            from_addr = msg.get("from", msg.get("sender", ""))
+            subject = msg.get("subject", "")
+            body = msg.get("body", msg.get("text", ""))
+            date = msg.get("sent_at", msg.get("date", ""))
+
+            if from_addr:
+                context_parts.append(f"From: {from_addr}")
+            if date:
+                context_parts.append(f"Date: {date}")
+            if subject:
+                context_parts.append(f"Subject: {subject}")
+            if body:
+                safe_body = sanitize_retrieved_content(body)
+                context_parts.append(f"\n{safe_body}\n")
+            context_parts.append("---")
+
+    if conversation.summary_text:
+        safe_summary = sanitize_retrieved_content(conversation.summary_text)
+        context_parts.append(f"\n--- SUMMARY ---\n{safe_summary}")
+
+    if not context_parts:
+        return None
+
+    return "\n".join(context_parts)
+
+
 def _extract_evidence_from_answer(
     answer_text: str, retrieval_results: SearchResults | None
 ) -> list[EvidenceItem]:
@@ -935,6 +1102,7 @@ def node_generate_answer(state: dict[str, Any]) -> dict[str, Any]:
 
     Blueprint §3.6:
     * Generate response with citations
+    * When thread_id is provided, load full conversation context
     """
     query_obj = state.get("query", "")
     try:
@@ -954,8 +1122,20 @@ def node_generate_answer(state: dict[str, Any]) -> dict[str, Any]:
     except AttributeError:
         pass
 
+    thread_id = state.get("thread_id")
+    tenant_id = state.get("tenant_id")
+    conversation_context = ""
+    if thread_id and tenant_id:
+        conversation_context = load_conversation_files_context(thread_id, tenant_id) or ""
+        if conversation_context:
+            logger.info(
+                "Loaded full conversation context for thread %s (%d chars)",
+                thread_id,
+                len(conversation_context),
+            )
+
     combined_context = "\n\n".join(
-        part for part in [context, graph_context] if part
+        part for part in [conversation_context, context, graph_context] if part
     ).strip()
 
     if not combined_context:
@@ -1061,11 +1241,28 @@ def node_draft_email_initial(state: dict[str, Any]) -> dict[str, Any]:
 
     Blueprint §10.3:
     * Draft based on context and query
+    * When thread_id is provided, load full conversation context including attachments
     """
     from cortex.config.loader import get_config
 
     query = state.get("explicit_query", "")
     context = state.get("assembled_context", "")
+
+    thread_id = state.get("thread_id")
+    tenant_id = state.get("tenant_id")
+    conversation_files_context = ""
+    if thread_id and tenant_id:
+        conversation_files_context = load_conversation_files_context(thread_id, tenant_id) or ""
+        if conversation_files_context:
+            logger.info(
+                "Loaded full conversation files context for draft thread %s (%d chars)",
+                thread_id,
+                len(conversation_files_context),
+            )
+            if context:
+                context = conversation_files_context + "\n\n" + context
+            else:
+                context = conversation_files_context
 
     # Get sender info from config
     config = get_config()

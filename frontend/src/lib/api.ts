@@ -167,6 +167,22 @@ export interface Thread {
   messages: Message[];
 }
 
+// Thread List Types (for conversation selector)
+export interface ThreadListItem {
+  conversation_id: string;
+  subject: string | null;
+  smart_subject: string | null;
+  folder_name: string;
+  participants_preview: string | null;
+  latest_date: string | null;
+}
+
+export interface ThreadListResponse {
+  threads: ThreadListItem[];
+  total_count: number;
+  has_more: boolean;
+}
+
 // =============================================================================
 // API Client
 // =============================================================================
@@ -400,6 +416,19 @@ export const api = {
 
   fetchThread: (threadId: string, signal?: AbortSignal): Promise<Thread> => {
     return request<Thread>(`/api/v1/thread/${threadId}`, { signal });
+  },
+
+  listThreads: (
+    query?: string,
+    limit = 50,
+    offset = 0,
+    signal?: AbortSignal,
+  ): Promise<ThreadListResponse> => {
+    const params = new URLSearchParams();
+    if (query) params.set('q', query);
+    params.set('limit', String(limit));
+    params.set('offset', String(offset));
+    return request<ThreadListResponse>(`/api/v1/threads?${params}`, { signal });
   },
 
   // ---------------------------------------------------------------------------
