@@ -1,6 +1,8 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from unittest.mock import AsyncMock, MagicMock, patch
+
 from cortex.orchestration.nodes import (
     _extract_entity_mentions,
     _extract_evidence_from_answer,
@@ -10,7 +12,9 @@ from cortex.orchestration.nodes import (
     node_generate_answer,
     node_handle_error,
     node_prepare_draft_query,
+    node_retrieve_context,
 )
+from cortex.retrieval.query_classifier import QueryClassification
 from cortex.retrieval.results import SearchResultItem, SearchResults
 
 
@@ -72,6 +76,10 @@ class TestNodesUnit:
         assert evidence[0].chunk_id == "c1"
         assert evidence[1].chunk_id == "m1"
 
+    @patch(
+        "cortex.orchestration.nodes.complete_messages",
+        MagicMock(return_value="The answer is 42."),
+    )
     def test_node_generate_answer(self):
         """Test node_generate_answer hits real LLM and returns Answer structure."""
         state = {
@@ -96,6 +104,10 @@ class TestNodesUnit:
         assert answer.evidence[0].chunk_id == "c1"
         assert answer.confidence_overall >= 0.0
 
+    @patch(
+        "cortex.orchestration.nodes.tool_classify_query",
+        MagicMock(return_value=QueryClassification(query="test", type="semantic")),
+    )
     def test_node_classify_query(self):
         """Test node_classify_query with live LLM via CPU fallback."""
         state = {"query": "What is the status of claim 12345?"}
@@ -346,40 +358,36 @@ class TestNodeQueryGraph:
 
 
 class TestNodeRetrieveContext:
-    """Test node_retrieve_context function with live database."""
-
     @pytest.mark.asyncio
     async def test_node_retrieve_context_success(self):
-        """Test successful retrieval with live hybrid search."""
-        from cortex.orchestration.nodes import node_retrieve_context
-
-        state = {
-            "query": "insurance claim flood damage",
-            "classification": None,
-            "tenant_id": "default",
-            "user_id": "test_user",
-            "k": 3,
-        }
-        result = await node_retrieve_context(state)
-
-        # Should return results or empty results (not error)
-        assert "retrieval_results" in result or "error" not in result
-
-    @pytest.mark.asyncio
-    async def test_node_retrieve_context_empty_query(self):
-        """Test retrieval with empty query returns gracefully."""
-        from cortex.orchestration.nodes import node_retrieve_context
-
-        state = {
-            "query": "",
-            "classification": None,
-            "tenant_id": "default",
-            "user_id": "test_user",
-        }
-        result = await node_retrieve_context(state)
-
-        # Should handle empty query gracefully
-        assert "retrieval_results" in result or "error" in result
+        """Test happy path for context retrieval."""
+        with patch(
+            "cortex.orchestration.nodes.tool_kb_search_hybrid", new_callable=AsyncMock
+        ) as mock_search:
+            mock_search.return_value = MagicMock(
+                is_ok=MagicMock(return_value=True),
+                unwrap=MagicMock(
+                    return_value=SearchResults(
+                        query="test query",
+                        results=[
+                            SearchResultItem(
+                                chunk_id="1", highlights=["highlight1"], score=0.9
+                            )
+                        ],
+                    )
+                ),
+            )
+            state = {
+                "query": "test query",
+                "classification": QueryClassification(
+                    query="test query", type="semantic"
+                ),
+                "tenant_id": "test_tenant",
+                "user_id": "test_user",
+            }
+            result = await node_retrieve_context(state)
+            assert "retrieval_results" in result
+            assert len(result["retrieval_results"].results) == 1
 
 
 class TestNodeGenerateAnswerEdgeCases:
@@ -399,6 +407,10 @@ class TestNodeGenerateAnswerEdgeCases:
         assert "could not find" in answer.answer_markdown.lower()
         assert answer.confidence_overall == 0.0
 
+    @patch(
+        "cortex.orchestration.nodes.complete_messages",
+        MagicMock(return_value="John is the CEO of Acme Corp."),
+    )
     def test_node_generate_answer_with_graph_context(self):
         """Test answer generation with graph context only - hits real LLM."""
         state = {

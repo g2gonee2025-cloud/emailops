@@ -213,7 +213,7 @@ def extract_document_mentions(text: str) -> list[str]:
     )
 
     # Pattern 2: Quoted file references
-    quoted_pattern = re.compile(r'["\']([A-Za-z0-9][A-Za-z0-9\s_\-.]{2,60})["\']')
+    quoted_pattern = re.compile(r'["\']([A-Za-z0-9][A-Za-z0-9\s_.-]{2,60})["\']')
     for match in quoted_pattern.finditer(text):
         try:
             ref = match.group(1).strip()
@@ -457,25 +457,28 @@ def _parse_thread_participants(
     participants_json: Any,
 ) -> dict[str, ThreadParticipant]:
     """Parse participant data from conversation JSONB."""
-    participants_dict: dict[str, ThreadParticipant] = {}
     if not isinstance(participants_json, list):
         if participants_json:
             logger.warning(
                 "Unexpected participants payload type: %s", type(participants_json)
             )
-        return participants_dict
+        return {}
 
+    participants_dict: dict[str, ThreadParticipant] = {}
     for p in participants_json:
         if not isinstance(p, dict):
-            logger.debug("Skipping non-dict participant entry: %s", type(p))
+            logger.debug("Skipping non-dict participant entry: %s", p)
             continue
-        email = p.get("smtp", p.get("email", ""))
-        if email and email not in participants_dict:
-            participants_dict[email] = ThreadParticipant(
-                email=email,
-                name=p.get("name"),
-                role=p.get("role", "participant"),
-            )
+
+        email = p.get("smtp") or p.get("email")
+        if not email or email in participants_dict:
+            continue
+
+        participants_dict[email] = ThreadParticipant(
+            email=email,
+            name=p.get("name"),
+            role=p.get("role", "participant"),
+        )
     return participants_dict
 
 
@@ -591,6 +594,39 @@ def _select_all_available_attachments(
     return selected
 
 
+def _query_conversation(
+    session: Any, thread_uuid: uuid.UUID, tenant_id: str
+) -> Any | None:
+    """Query the conversation from the database."""
+    from cortex.db.models import Conversation
+
+    return (
+        session.query(Conversation)
+        .filter(
+            Conversation.conversation_id == thread_uuid,
+            Conversation.tenant_id == tenant_id,
+        )
+        .first()
+    )
+
+
+def _create_placeholder_message(
+    thread_uuid: uuid.UUID, conversation: Any
+) -> ThreadMessage:
+    """Create a placeholder message from summary."""
+    return ThreadMessage(
+        message_id=str(thread_uuid),
+        sent_at=conversation.latest_date,
+        recv_at=conversation.latest_date,
+        from_addr="",
+        to_addrs=[],
+        cc_addrs=[],
+        subject=conversation.subject or "",
+        body_markdown=conversation.summary_text or "",
+        is_inbound=False,
+    )
+
+
 @trace_operation("tool_email_get_thread")
 def tool_email_get_thread(
     thread_id: uuid.UUID | str,
@@ -613,11 +649,9 @@ def tool_email_get_thread(
     Returns:
         ThreadContext with full thread data, or None if not found
     """
-    from cortex.db.models import Conversation
-    from cortex.db.session import SessionLocal
+    from cortex.db.session import SessionLocal, set_session_tenant
     from sqlalchemy.exc import SQLAlchemyError
 
-    # Ensure thread_id is a UUID
     try:
         thread_uuid = uuid.UUID(str(thread_id))
     except ValueError:
@@ -626,19 +660,8 @@ def tool_email_get_thread(
 
     try:
         with SessionLocal() as session:
-            from cortex.db.session import set_session_tenant
-
             set_session_tenant(session, tenant_id)
-
-            # Fetch conversation (which contains messages as JSONB)
-            conversation = (
-                session.query(Conversation)
-                .filter(
-                    Conversation.conversation_id == thread_uuid,
-                    Conversation.tenant_id == tenant_id,
-                )
-                .first()
-            )
+            conversation = _query_conversation(session, thread_uuid, tenant_id)
 
             if not conversation:
                 logger.warning("Conversation not found: %s", thread_uuid)
@@ -649,21 +672,9 @@ def tool_email_get_thread(
                 conversation.messages, conversation
             )
 
-            # If no structured messages, create one from summary or chunks
             if not thread_messages:
-                # Fallback: create a placeholder message from summary
                 thread_messages.append(
-                    ThreadMessage(
-                        message_id=str(thread_uuid),
-                        sent_at=conversation.latest_date,
-                        recv_at=conversation.latest_date,
-                        from_addr="",
-                        to_addrs=[],
-                        cc_addrs=[],
-                        subject=conversation.subject or "",
-                        body_markdown=conversation.summary_text or "",
-                        is_inbound=False,
-                    )
+                    _create_placeholder_message(thread_uuid, conversation)
                 )
 
             return ThreadContext(
@@ -674,29 +685,56 @@ def tool_email_get_thread(
             )
     except SQLAlchemyError as e:
         logger.error(
-            "Database error while fetching thread %s for tenant %s: %s",
-            thread_uuid,
-            tenant_id,
-            e,
-            exc_info=False,  # Keep log clean, stack is in Sentry
+            "Database error for thread %s: %s", thread_uuid, e, exc_info=False
         )
-        return None
     except (TypeError, KeyError, AttributeError) as e:
         logger.warning(
-            "Data integrity error parsing thread %s for tenant %s: %s",
-            thread_uuid,
-            tenant_id,
-            e,
-            exc_info=True,
+            "Data integrity error for thread %s: %s", thread_uuid, e, exc_info=True
         )
-        return None
     except Exception:
-        logger.exception(
-            "Unexpected error fetching thread %s for tenant %s",
-            thread_uuid,
-            tenant_id,
-        )
-        return None
+        logger.exception("Unexpected error fetching thread %s", thread_uuid)
+
+    return None
+
+
+def _build_context_from_files(
+    conv_data: dict[str, Any], max_total_chars: int
+) -> str | None:
+    """Build context from loaded conversation file data."""
+    from cortex.security.validators import sanitize_retrieved_content
+
+    context_parts = []
+    total_chars = 0
+
+    conversation_txt = conv_data.get("conversation_txt", "")
+    if conversation_txt:
+        safe_text = sanitize_retrieved_content(conversation_txt)
+        context_parts.append("--- CONVERSATION ---\n" + safe_text)
+        total_chars += len(safe_text)
+
+    for att in conv_data.get("attachments", []):
+        if total_chars >= max_total_chars:
+            context_parts.append("\n[TRUNCATED: Maximum context size reached]")
+            break
+
+        att_path = att.get("path", "")
+        att_text = att.get("text", "")
+        if not att_text:
+            continue
+
+        filename = Path(att_path).name if att_path else "unknown"
+        if filename.lower() in ("manifest.json", "attachments_log.csv"):
+            continue
+
+        safe_att_text = sanitize_retrieved_content(att_text)
+        remaining = max_total_chars - total_chars
+        if len(safe_att_text) > remaining:
+            safe_att_text = safe_att_text[:remaining] + "\n[TRUNCATED]"
+
+        context_parts.append(f"\n--- ATTACHMENT: {filename} ---\n{safe_att_text}")
+        total_chars += len(safe_att_text)
+
+    return "\n".join(context_parts) if context_parts else None
 
 
 def load_conversation_files_context(
@@ -719,10 +757,8 @@ def load_conversation_files_context(
     Returns:
         Formatted context string with all conversation files, or None if not found
     """
-    from cortex.db.models import Conversation
     from cortex.db.session import SessionLocal, set_session_tenant
     from cortex.ingestion.conv_loader import load_conversation
-    from cortex.security.validators import sanitize_retrieved_content
 
     try:
         conv_uuid = uuid.UUID(str(conversation_id))
@@ -733,95 +769,59 @@ def load_conversation_files_context(
     try:
         with SessionLocal() as session:
             set_session_tenant(session, tenant_id)
-
-            conversation = (
-                session.query(Conversation)
-                .filter(
-                    Conversation.conversation_id == conv_uuid,
-                    Conversation.tenant_id == tenant_id,
-                )
-                .first()
-            )
+            conversation = _query_conversation(session, conv_uuid, tenant_id)
 
             if not conversation:
                 logger.warning("Conversation not found: %s", conv_uuid)
                 return None
 
             storage_uri = conversation.storage_uri
-            if not storage_uri:
-                logger.warning(
-                    "No storage_uri for conversation %s, falling back to DB content",
-                    conv_uuid,
-                )
-                return _build_context_from_db(conversation)
+            convo_dir = Path(storage_uri) if storage_uri else None
 
-            convo_dir = Path(storage_uri)
-            if not convo_dir.exists() or not convo_dir.is_dir():
-                logger.warning(
-                    "Storage path does not exist: %s, falling back to DB content",
-                    storage_uri,
+            if convo_dir and convo_dir.is_dir():
+                conv_data = load_conversation(
+                    convo_dir,
+                    include_attachment_text=True,
+                    max_total_attachment_text=max_total_chars // 2,
                 )
-                return _build_context_from_db(conversation)
+                if conv_data:
+                    context = _build_context_from_files(conv_data, max_total_chars)
+                    if context:
+                        return context
 
-            conv_data = load_conversation(
-                convo_dir,
-                include_attachment_text=True,
-                max_total_attachment_text=max_total_chars // 2,
+            logger.warning(
+                "Failed to load from storage or no data; falling back to DB for conversation %s",
+                conv_uuid,
             )
-
-            if not conv_data:
-                logger.warning(
-                    "Failed to load conversation from %s, falling back to DB content",
-                    storage_uri,
-                )
-                return _build_context_from_db(conversation)
-
-            context_parts = []
-            total_chars = 0
-
-            conversation_txt = conv_data.get("conversation_txt", "")
-            if conversation_txt:
-                safe_text = sanitize_retrieved_content(conversation_txt)
-                context_parts.append("--- CONVERSATION ---\n" + safe_text)
-                total_chars += len(safe_text)
-
-            attachments = conv_data.get("attachments", [])
-            for att in attachments:
-                if total_chars >= max_total_chars:
-                    context_parts.append("\n[TRUNCATED: Maximum context size reached]")
-                    break
-
-                att_path = att.get("path", "")
-                att_text = att.get("text", "")
-
-                if not att_text:
-                    continue
-
-                filename = Path(att_path).name if att_path else "unknown"
-                if filename.lower() in ("manifest.json", "attachments_log.csv"):
-                    continue
-
-                safe_att_text = sanitize_retrieved_content(att_text)
-                remaining = max_total_chars - total_chars
-                if len(safe_att_text) > remaining:
-                    safe_att_text = safe_att_text[:remaining] + "\n[TRUNCATED]"
-
-                context_parts.append(
-                    f"\n--- ATTACHMENT: {filename} ---\n{safe_att_text}"
-                )
-                total_chars += len(safe_att_text)
-
-            if not context_parts:
-                return _build_context_from_db(conversation)
-
-            return "\n".join(context_parts)
+            return _build_context_from_db(conversation)
 
     except Exception:
-        logger.exception(
-            "Error loading conversation files for %s",
-            conversation_id,
-        )
+        logger.exception("Error loading conversation files for %s", conversation_id)
         return None
+
+
+def _add_message_context(context_parts: list[str], msg: dict[str, Any]) -> None:
+    """Add context from a single message to the context parts list."""
+    from cortex.security.validators import sanitize_retrieved_content
+
+    if not isinstance(msg, dict):
+        return
+
+    from_addr = msg.get("from") or msg.get("sender")
+    subject = msg.get("subject")
+    body = msg.get("body") or msg.get("text")
+    date = msg.get("sent_at") or msg.get("date")
+
+    if from_addr:
+        context_parts.append(f"From: {from_addr}")
+    if date:
+        context_parts.append(f"Date: {date}")
+    if subject:
+        context_parts.append(f"Subject: {subject}")
+    if body:
+        safe_body = sanitize_retrieved_content(body)
+        context_parts.append(f"\n{safe_body}\n")
+    context_parts.append("---")
 
 
 def _build_context_from_db(conversation: Any) -> str | None:
@@ -833,42 +833,21 @@ def _build_context_from_db(conversation: Any) -> str | None:
     if conversation.subject:
         context_parts.append(f"Subject: {conversation.subject}")
 
-    if (
-        conversation.smart_subject
-        and conversation.smart_subject != conversation.subject
-    ):
-        context_parts.append(f"Smart Subject: {conversation.smart_subject}")
+    smart_subject = conversation.smart_subject
+    if smart_subject and smart_subject != conversation.subject:
+        context_parts.append(f"Smart Subject: {smart_subject}")
 
     messages = conversation.messages
     if isinstance(messages, list):
         context_parts.append("\n--- MESSAGES ---")
         for msg in messages:
-            if not isinstance(msg, dict):
-                continue
-            from_addr = msg.get("from", msg.get("sender", ""))
-            subject = msg.get("subject", "")
-            body = msg.get("body", msg.get("text", ""))
-            date = msg.get("sent_at", msg.get("date", ""))
-
-            if from_addr:
-                context_parts.append(f"From: {from_addr}")
-            if date:
-                context_parts.append(f"Date: {date}")
-            if subject:
-                context_parts.append(f"Subject: {subject}")
-            if body:
-                safe_body = sanitize_retrieved_content(body)
-                context_parts.append(f"\n{safe_body}\n")
-            context_parts.append("---")
+            _add_message_context(context_parts, msg)
 
     if conversation.summary_text:
         safe_summary = sanitize_retrieved_content(conversation.summary_text)
         context_parts.append(f"\n--- SUMMARY ---\n{safe_summary}")
 
-    if not context_parts:
-        return None
-
-    return "\n".join(context_parts)
+    return "\n".join(context_parts) if context_parts else None
 
 
 def _extract_evidence_from_answer(
@@ -1050,6 +1029,38 @@ def _escape_like_pattern(value: str) -> str:
     return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
+def _create_escaped_patterns(mentions: list[str]) -> list[str]:
+    """Create a list of escaped ILIKE patterns from mentions."""
+    patterns = []
+    for m in mentions:
+        escaped = _escape_like_pattern(m)
+        patterns.append(escaped)
+        if len(m) >= 4:
+            patterns.append(f"%{escaped}%")
+    return patterns
+
+
+def _fetch_nodes(
+    session: Any, tenant_id: str, escaped_patterns: list[str]
+) -> list[Any]:
+    """Fetch entity nodes from the database."""
+    from cortex.db.models import EntityNode
+    from sqlalchemy.dialects.postgresql import any_
+
+    return (
+        session.execute(
+            select(EntityNode)
+            .where(
+                EntityNode.tenant_id == tenant_id,
+                EntityNode.name.ilike(any_(escaped_patterns), escape="\\"),
+            )
+            .limit(MAX_GRAPH_NODES)
+        )
+        .scalars()
+        .all()
+    )
+
+
 def _fetch_graph_entities(
     tenant_id: str, mentions: list[str]
 ) -> tuple[list[Any], list[Any]]:
@@ -1061,44 +1072,24 @@ def _fetch_graph_entities(
     """
     from cortex.db.models import EntityEdge, EntityNode
     from cortex.db.session import SessionLocal, set_session_tenant
-    from sqlalchemy.dialects.postgresql import any_
+
+    if not mentions:
+        return [], []
+
+    escaped_patterns = _create_escaped_patterns(mentions)
+    if not escaped_patterns:
+        return [], []
 
     with SessionLocal() as session:
         set_session_tenant(session, tenant_id)
-
-        if not mentions:
-            return [], []
-
-        escaped_patterns: list[str] = []
-        for m in mentions:
-            escaped = _escape_like_pattern(m)
-            escaped_patterns.append(escaped)
-            if len(m) >= 4:
-                escaped_patterns.append(f"%{escaped}%")
-
-        if not escaped_patterns:
-            return [], []
-
-        nodes = (
-            session.execute(
-                select(EntityNode)
-                .where(
-                    EntityNode.tenant_id == tenant_id,
-                    EntityNode.name.ilike(any_(escaped_patterns), escape="\\"),
-                )
-                .limit(MAX_GRAPH_NODES)
-            )
-            .scalars()
-            .all()
-        )
-
+        nodes = _fetch_nodes(session, tenant_id, escaped_patterns)
         if not nodes:
             return [], []
 
         node_ids = [node.node_id for node in nodes]
-
         source_node = aliased(EntityNode)
         target_node = aliased(EntityNode)
+
         edges = session.execute(
             select(EntityEdge, source_node, target_node)
             .join(source_node, EntityEdge.source_id == source_node.node_id)
@@ -1112,7 +1103,6 @@ def _fetch_graph_entities(
             )
             .limit(MAX_GRAPH_EDGES)
         ).all()
-
         return list(nodes), list(edges)
 
 
@@ -1177,7 +1167,6 @@ def node_classify_query(state: dict[str, Any]) -> dict[str, Any]:
         return {"error": "Invalid input detected."}
 
     try:
-        # args = QueryClassificationInput(query=query, use_llm=True)
         classification = tool_classify_query(query=query, use_llm=True)
         return {"classification": classification}
     except Exception as e:
@@ -1542,6 +1531,56 @@ def _create_new_draft_from_structured(
     )
 
 
+def _get_retrieval_snippets(state: dict[str, Any]) -> list[dict[str, Any]]:
+    """Extract retrieval snippets from the state."""
+    retrieval_results = state.get("retrieval_results")
+    if not retrieval_results or not retrieval_results.results:
+        return []
+
+    return [
+        {
+            "path": r.metadata.get("path"),
+            "attachment_name": r.metadata.get("filename"),
+            "doc_type": r.metadata.get("type", "unknown"),
+            "id": r.chunk_id,
+        }
+        for r in retrieval_results.results
+    ]
+
+
+def _select_attachments_from_draft_body(
+    draft: EmailDraft, snippets: list[dict[str, Any]]
+) -> list[dict[str, str]]:
+    """Select attachments based on mentions in the draft body."""
+    body_mentions = extract_document_mentions(draft.body_markdown)
+    return (
+        _select_attachments_from_mentions(snippets, body_mentions) if body_mentions else []
+    )
+
+
+def _select_attachments_from_query(
+    query: str, snippets: list[dict[str, Any]], selected: list[dict[str, str]]
+) -> None:
+    """Select attachments based on mentions in the query, avoiding duplicates."""
+    query_mentions = extract_document_mentions(query)
+    if not query_mentions:
+        return
+
+    current_names = {s["filename"] for s in selected}
+    from_query = _select_attachments_from_mentions(snippets, query_mentions)
+    for f in from_query:
+        if f["filename"] not in current_names:
+            selected.append(f)
+
+
+def _select_heuristic_attachments(
+    query: str, snippets: list[dict[str, Any]], selected: list[dict[str, str]]
+) -> None:
+    """Select attachments heuristically if 'attach' is in the query."""
+    if "attach" in query.lower() and not selected:
+        selected.extend(_select_all_available_attachments(snippets, max_attachments=1))
+
+
 def node_select_attachments(state: dict[str, Any]) -> dict[str, Any]:
     """
     Select attachments to include in the email.
@@ -1555,52 +1594,69 @@ def node_select_attachments(state: dict[str, Any]) -> dict[str, Any]:
     if not draft or not isinstance(draft, EmailDraft):
         return {}
 
-    # Gather context (snippets from retrieval)
-    # The 'retrieval_results' in state has 'results' list, needing normalization
-    retrieval_results = state.get("retrieval_results")
-    snippets = []
-    if retrieval_results and retrieval_results.results:
-        for r in retrieval_results.results:
-            snippets.append(
-                {
-                    "path": r.metadata.get("path"),
-                    "attachment_name": r.metadata.get("filename"),
-                    "doc_type": r.metadata.get("type", "unknown"),
-                    "id": r.chunk_id,
-                }
-            )
-
-    selected: list[dict[str, str]] = []
-
-    # Strategy 1: Explicit mentions in the generated draft body
-    body_mentions = extract_document_mentions(draft.body_markdown)
-    if body_mentions:
-        selected.extend(_select_attachments_from_mentions(snippets, body_mentions))
-
-    # Strategy 2: If user explicitly asked in query "attach the report", etc.
-    # (We rely on retrieval having found it and put it in snippets)
+    snippets = _get_retrieval_snippets(state)
+    selected = _select_attachments_from_draft_body(draft, snippets)
     query = state.get("query", "")
-    query_mentions = extract_document_mentions(query)
-    if query_mentions:
-        # Avoid duplicates
-        current_names = {s["filename"] for s in selected}
-        from_query = _select_attachments_from_mentions(snippets, query_mentions)
-        for f in from_query:
-            if f["filename"] not in current_names:
-                selected.append(f)
 
-    # Strategy 3: Heuristic - if query has "attach" but no specific file named,
-    # grab most relevant attachment from context
-    if "attach" in query.lower() and not selected:
-        selected.extend(_select_all_available_attachments(snippets, max_attachments=1))
+    _select_attachments_from_query(query, snippets, selected)
+    _select_heuristic_attachments(query, snippets, selected)
 
-    # Update draft in state
     draft.attachments = [
         AttachmentRef(path=item["path"], filename=item["filename"])
         for item in selected
         if item.get("path") and item.get("filename")
     ]
     return {"draft": draft}
+
+
+def _build_audit_metadata(draft: EmailDraft, state: dict[str, Any]) -> dict[str, Any]:
+    """Build the metadata dictionary for the audit check."""
+    from cortex.context import claims_ctx
+
+    recipients = list(dict.fromkeys((draft.to or []) + (draft.cc or [])))
+    claims = claims_ctx.get({}) or {}
+
+    return {
+        "recipients": recipients,
+        "subject": draft.subject,
+        "content": draft.body_markdown,
+        "attachments": state.get("attachments", []),
+        "check_external": True,
+        "role": claims.get("role"),
+        "roles_verified": bool(claims),
+    }
+
+
+def _run_llm_rubric_audit(
+    draft: EmailDraft, state: dict[str, Any]
+) -> DraftValidationScores:
+    """Run the LLM rubric audit and return the validation scores."""
+    try:
+        messages = construct_prompt_messages(
+            system_prompt_template=SYSTEM_DRAFT_EMAIL_AUDIT,
+            user_prompt_template=USER_DRAFT_EMAIL_AUDIT,
+            subject=sanitize_user_input(draft.subject),
+            body=sanitize_user_input(draft.body_markdown),
+            context=sanitize_user_input(state.get("assembled_context", "")),
+        )
+        scores = _complete_with_guardrails(
+            messages,
+            DraftValidationScores,
+            state.get("correlation_id"),
+        )
+        if scores.safety < 0.7:
+            logger.warning(f"Draft safety score low: {scores.safety}")
+        return scores
+    except Exception as e:
+        logger.error(f"Audit LLM failed: {e}")
+        return DraftValidationScores(
+            factuality=0.5,
+            citation_coverage=0.5,
+            tone_fit=0.5,
+            safety=0.5,
+            overall=0.5,
+            feedback=f"Audit service unavailable (Error: {e!s}). Validation skipped.",
+        )
 
 
 def node_audit_draft(state: dict[str, Any]) -> dict[str, Any]:
@@ -1611,26 +1667,11 @@ def node_audit_draft(state: dict[str, Any]) -> dict[str, Any]:
     * Policy Check (Blocker)
     * Quality/Safety Rubric (Scoring)
     """
-    from cortex.context import claims_ctx
-
     draft = state.get("draft")
     if not draft:
         return {}
 
-    # 1. Hard Policy Check
-    recipients = list(dict.fromkeys((draft.to or []) + (draft.cc or [])))
-    claims = claims_ctx.get({}) or {}
-
-    metadata = {
-        "recipients": recipients,
-        "subject": draft.subject,
-        "content": draft.body_markdown,
-        "attachments": state.get("attachments", []),
-        "check_external": True,
-        "role": claims.get("role"),
-        "roles_verified": bool(claims),
-    }
-
+    metadata = _build_audit_metadata(draft, state)
     decision = check_action("draft_email", metadata)
 
     if decision.decision == "deny":
@@ -1639,47 +1680,12 @@ def node_audit_draft(state: dict[str, Any]) -> dict[str, Any]:
             "policy_decision": decision.model_dump(),
         }
 
-    # 2. LLM Rubric Audit
-    try:
-        messages = construct_prompt_messages(
-            system_prompt_template=SYSTEM_DRAFT_EMAIL_AUDIT,
-            user_prompt_template=USER_DRAFT_EMAIL_AUDIT,
-            subject=sanitize_user_input(draft.subject),
-            body=sanitize_user_input(draft.body_markdown),
-            context=sanitize_user_input(state.get("assembled_context", "")),
-        )
-
-        scores = _complete_with_guardrails(
-            messages,
-            DraftValidationScores,
-            state.get("correlation_id"),
-        )
-
-        # Merge scores into draft
-        draft.val_scores = scores
-
-        # If safety score is low, we might want to flag it even if policy passed
-        if scores.safety < 0.7:
-            logger.warning(f"Draft safety score low: {scores.safety}")
-
-    except Exception as e:
-        logger.error(f"Audit LLM failed: {e}")
-        # Robustness: Fallback to neutral scores so pipeline continues
-        draft.val_scores = DraftValidationScores(
-            factuality=0.5,
-            citation_coverage=0.5,
-            tone_fit=0.5,
-            safety=0.5,
-            overall=0.5,
-            feedback=f"Audit service unavailable (Error: {e!s}). Validation skipped.",
-        )
-        # Non-blocking failure for rubric, but policy passed
+    draft.val_scores = _run_llm_rubric_audit(draft, state)
 
     result = {
         "draft": draft,
         "policy_decision": decision.model_dump(),
     }
-
     if decision.decision == "require_approval":
         result["approval_required"] = True
 

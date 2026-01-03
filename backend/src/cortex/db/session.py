@@ -221,6 +221,11 @@ def set_session_tenant(session: Session, tenant_id: str) -> None:
             context={"tenant_hash": _hash_text(tenant_id)},
         )
 
+    # Skip RLS for SQLite in-memory tests
+    if session.bind and session.bind.dialect.name == "sqlite":
+        logger.debug("Skipping RLS tenant context for SQLite")
+        return
+
     try:
         session.execute(
             text("SET app.current_tenant = :tenant_id"), {"tenant_id": tenant_id}
