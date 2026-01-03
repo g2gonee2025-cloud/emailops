@@ -8,6 +8,7 @@ import re
 import sys
 from pathlib import Path
 
+import aiofiles
 import aiohttp
 
 # Default Configuration
@@ -81,46 +82,51 @@ def count_lines(filepath: Path) -> int:
     return 0
 
 
+def _find_python_imports(content: str, filepath: Path) -> set[Path]:
+    """Finds Python imports in the given file content."""
+    imports = set()
+    matches = re.findall(r"^(?:from|import)\s+([\w\.]+)", content, re.MULTILINE)
+    for match in matches:
+        relative_path = match.replace(".", "/") + ".py"
+        # This is heuristic and simple as requested
+        possible_path = Path.cwd() / "backend/src" / relative_path
+        if not possible_path.exists():
+            possible_path = Path.cwd() / "cli/src" / relative_path
+
+        if possible_path.exists() and possible_path != filepath:
+            imports.add(possible_path)
+    return imports
+
+
+def _find_js_imports(content: str, filepath: Path) -> set[Path]:
+    """Finds JS/TS imports in the given file content."""
+    imports = set()
+    matches = re.findall(r"from\s+[\'\"]([^\'\"]+)[\'\"]", content)
+    for match in matches:
+        if not match.startswith("."):
+            continue
+        possible_path = (filepath.parent / match).resolve()
+        # Try extensions
+        for ext in [".ts", ".tsx", ".js", ".jsx", ".json"]:
+            p = possible_path.with_suffix(ext)
+            if p.exists() and p != filepath:
+                imports.add(p)
+                break
+    return imports
+
+
 def find_imports(filepath: Path) -> set[Path]:
     """
     Very basic import detection for context resolution.
     Returns a set of absolute paths to imported files if they exist in the project.
     """
-    imports = set()
+    imports: set[Path] = set()
     try:
         content = filepath.read_text(encoding="utf-8", errors="ignore")
-
-        # Simple regex for Python imports
         if filepath.suffix == ".py":
-            # import x.y.z
-            # from x.y import z
-            matches = re.findall(r"^(?:from|import)\s+([\w\.]+)", content, re.MULTILINE)
-            for match in matches:
-                # rough conversion: foo.bar -> foo/bar.py
-                relative_path = match.replace(".", "/") + ".py"
-
-                # Check varying depths basically
-                # This is heuristic and simple as requested
-                possible_path = Path.cwd() / "backend/src" / relative_path
-                if not possible_path.exists():
-                    possible_path = Path.cwd() / "cli/src" / relative_path
-
-                if possible_path.exists() and possible_path != filepath:
-                    imports.add(possible_path)
-
-        # Simple regex for JS/TS
+            imports = _find_python_imports(content, filepath)
         elif filepath.suffix in [".ts", ".tsx", ".js", ".jsx"]:
-            # import ... from './foo'
-            matches = re.findall(r'from\s+[\'"]([^\'"]+)[\'"]', content)
-            for match in matches:
-                if match.startswith("."):
-                    possible_path = (filepath.parent / match).resolve()
-                    # Try extensions
-                    for ext in [".ts", ".tsx", ".js", ".jsx", ".json"]:
-                        p = possible_path.with_suffix(ext)
-                        if p.exists() and p != filepath:
-                            imports.add(p)
-                            break
+            imports = _find_js_imports(content, filepath)
     except OSError as e:
         logger.warning(f"Could not read file {filepath} for import parsing: {e}")
     except Exception as e:
@@ -204,6 +210,66 @@ async def create_session(
             }
 
 
+async def _discover_files(root_dir: Path, ignore_dirs: set[str], min_loc: int) -> list[Path]:
+    """Discovers eligible files for review."""
+    logger.info(f"Scanning files in {root_dir}...")
+    eligible_files = []
+    for ext in ["*.py", "*.ts", "*.tsx", "*.js", "*.sh"]:
+        for path in root_dir.rglob(ext):
+            if any(part in ignore_dirs for part in path.parts):
+                continue
+            if path.is_file():
+                loc = await asyncio.to_thread(count_lines, path)
+                if loc > min_loc:
+                    eligible_files.append(path)
+    logger.info(f"Found {len(eligible_files)} files > {min_loc} LOC.")
+    return eligible_files
+
+
+async def _process_files(
+    eligible_files: list[Path],
+    concurrency: int,
+    api_url: str,
+    api_key: str,
+    source_id: str,
+) -> list[dict]:
+    """Processes files and creates review sessions."""
+    tasks = []
+    sem = asyncio.Semaphore(concurrency)
+    async with aiohttp.ClientSession() as session:
+        for f in eligible_files:
+            context = await asyncio.to_thread(find_imports, f)
+            tasks.append(
+                create_session(session, f, context, sem, api_url, api_key, source_id)
+            )
+        return await asyncio.gather(*tasks)
+
+
+async def _generate_report(results: list[dict]):
+    """Generates a summary report of the review sessions."""
+    successful_reviews = [r for r in results if r and r.get("status") == "success"]
+    failed_reviews = [r for r in results if r and r.get("status") != "success"]
+
+    logger.info("-" * 50)
+    logger.info("Bulk Review Summary")
+    logger.info("-" * 50)
+    logger.info(f"Successfully created {len(successful_reviews)} review sessions.")
+    for res in successful_reviews:
+        logger.info(f"  [SUCCESS] {res['file']} -> Session ID: {res['session_id']}")
+
+    if failed_reviews:
+        logger.warning(f"\nFailed to create {len(failed_reviews)} review sessions.")
+        for res in failed_reviews:
+            logger.warning(f"  [FAILURE] {res['file']} -> Error: {res['error']}")
+
+    # Save detailed JSON report
+    async with aiofiles.open("jules_batch_report.json", "w") as f:
+        await f.write(json.dumps(results, indent=2))
+
+    logger.info("\nDetailed report saved to jules_batch_report.json")
+    logger.info("Processing complete.")
+
+
 async def main():
     args = parse_args()
 
@@ -224,60 +290,11 @@ async def main():
         "__pycache__",
     }
 
-    tasks = []
-    sem = asyncio.Semaphore(args.concurrency)
-
-    logger.info(f"Scanning files in {root_dir}...")
-
-    eligible_files = []
-
-    # 1. Discovery
-    for ext in ["*.py", "*.ts", "*.tsx", "*.js", "*.sh"]:
-        for path in root_dir.rglob(ext):
-            if any(part in ignore_dirs for part in path.parts):
-                continue
-
-            if path.is_file():
-                loc = await asyncio.to_thread(count_lines, path)
-                if loc > args.min_loc:
-                    eligible_files.append(path)
-
-    logger.info(f"Found {len(eligible_files)} files > {args.min_loc} LOC.")
-
-    # 2. Execution
-    async with aiohttp.ClientSession() as session:
-        for f in eligible_files:
-            context = await asyncio.to_thread(find_imports, f)
-            tasks.append(
-                create_session(
-                    session, f, context, sem, args.api_url, args.api_key, source_id
-                )
-            )
-
-        results = await asyncio.gather(*tasks)
-
-    # 3. Report
-    successful_reviews = [r for r in results if r and r.get("status") == "success"]
-    failed_reviews = [r for r in results if r and r.get("status") != "success"]
-
-    logger.info("-" * 50)
-    logger.info("Bulk Review Summary")
-    logger.info("-" * 50)
-    logger.info(f"Successfully created {len(successful_reviews)} review sessions.")
-    for res in successful_reviews:
-        logger.info(f"  [SUCCESS] {res['file']} -> Session ID: {res['session_id']}")
-
-    if failed_reviews:
-        logger.warning(f"\nFailed to create {len(failed_reviews)} review sessions.")
-        for res in failed_reviews:
-            logger.warning(f"  [FAILURE] {res['file']} -> Error: {res['error']}")
-
-    # Save detailed JSON report
-    with open("jules_batch_report.json", "w") as f:
-        json.dump(results, f, indent=2)
-
-    logger.info("\nDetailed report saved to jules_batch_report.json")
-    logger.info("Processing complete.")
+    eligible_files = await _discover_files(root_dir, ignore_dirs, args.min_loc)
+    results = await _process_files(
+        eligible_files, args.concurrency, args.api_url, args.api_key, source_id
+    )
+    await _generate_report(results)
 
 
 if __name__ == "__main__":
