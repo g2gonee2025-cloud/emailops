@@ -250,59 +250,102 @@ def extract_document_mentions(text: str) -> list[str]:
     return mentions
 
 
+_ENTITY_STOP_WORDS: set[str] = {
+    "what",
+    "when",
+    "where",
+    "why",
+    "who",
+    "how",
+    "can",
+    "could",
+    "should",
+    "would",
+    "does",
+    "do",
+    "did",
+    "is",
+    "are",
+    "the",
+    "a",
+    "an",
+    "and",
+    "or",
+    "to",
+    "from",
+    "for",
+    "of",
+    "in",
+    "on",
+    "please",
+    "tell",
+    "explain",
+    "find",
+    "search",
+    "show",
+    "get",
+    "about",
+    "with",
+    "this",
+    "that",
+    "these",
+    "those",
+    "have",
+    "has",
+    "had",
+    "been",
+    "being",
+    "was",
+    "were",
+    "will",
+    "would",
+    "may",
+    "might",
+    "must",
+    "shall",
+}
+
+
 def _extract_entity_mentions(text: str) -> list[str]:
-    """Extract candidate entity mentions from query text."""
+    """
+    Extract candidate entity mentions from query text.
+
+    Returns a deterministic, sorted list of entity candidates extracted from:
+    - Quoted strings
+    - Capitalized phrases (including hyphenated names like "ACME-Corp")
+    - Single capitalized words
+
+    Stop words are filtered case-insensitively and punctuation is stripped.
+    """
     if not text:
         return []
 
-    candidates: set[str] = set()
+    candidates: list[str] = []
+    seen_lower: set[str] = set()
+
+    def add_candidate(s: str) -> None:
+        """Add candidate if not already seen (case-insensitive dedup)."""
+        stripped = s.strip().strip(".,!?;:")
+        if not stripped:
+            return
+        lower = stripped.lower()
+        if lower not in seen_lower and lower not in _ENTITY_STOP_WORDS:
+            seen_lower.add(lower)
+            candidates.append(stripped)
 
     quoted = re.findall(r'["\']([^"\']{2,100})["\']', text)
-    candidates.update(s.strip() for s in quoted if s.strip())
+    for s in quoted:
+        add_candidate(s)
 
-    capitalized_phrases = re.findall(r"\b[A-Z][\w&]*(?:\s+[A-Z][\w&]*)+\b", text)
-    candidates.update(s.strip() for s in capitalized_phrases if s.strip())
+    capitalized_phrases = re.findall(r"\b[A-Z][\w&-]*(?:\s+[A-Z][\w&-]*)+\b", text)
+    for s in capitalized_phrases:
+        add_candidate(s)
 
     single_caps = re.findall(r"\b[A-Z][a-z]{2,}\b", text)
-    candidates.update(s.strip() for s in single_caps if s.strip())
+    for s in single_caps:
+        add_candidate(s)
 
-    stop_words = {
-        "What",
-        "When",
-        "Where",
-        "Why",
-        "Who",
-        "How",
-        "Can",
-        "Could",
-        "Should",
-        "Would",
-        "Does",
-        "Do",
-        "Did",
-        "Is",
-        "Are",
-        "The",
-        "A",
-        "An",
-        "And",
-        "Or",
-        "To",
-        "From",
-        "For",
-        "Of",
-        "In",
-        "On",
-        "Please",
-        "Tell",
-        "Explain",
-    }
-
-    return [
-        candidate
-        for candidate in candidates
-        if candidate and candidate not in stop_words
-    ]
+    return sorted(candidates, key=str.lower)
 
 
 def _safe_stat_mb(path: Path) -> float:
@@ -988,10 +1031,29 @@ def _build_graph_context(nodes: list[Any], edges: list[Any]) -> Redacted:
     return Redacted(graph_context)
 
 
+MAX_GRAPH_NODES = 50
+MAX_GRAPH_EDGES = 100
+
+
+def _escape_like_pattern(value: str) -> str:
+    """
+    Escape SQL LIKE/ILIKE special characters in a string.
+
+    Escapes %, _, and \\ to prevent wildcard injection when using
+    ILIKE with escape='\\'.
+    """
+    return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
 def _fetch_graph_entities(
     tenant_id: str, mentions: list[str]
 ) -> tuple[list[Any], list[Any]]:
-    """Fetch entity nodes and edges from the knowledge graph."""
+    """
+    Fetch entity nodes and edges from the knowledge graph.
+
+    Applies LIKE pattern escaping to prevent wildcard injection and
+    limits results to prevent unbounded queries.
+    """
     from cortex.db.models import EntityEdge, EntityNode
     from cortex.db.session import SessionLocal, set_session_tenant
     from sqlalchemy.dialects.postgresql import any_
@@ -999,19 +1061,27 @@ def _fetch_graph_entities(
     with SessionLocal() as session:
         set_session_tenant(session, tenant_id)
 
-        # Perf: Use ILIKE ANY for efficient multi-pattern matching
-        patterns = set(mentions)
-        patterns.update(f"%{m}%" for m in mentions if len(m) >= 4)
+        if not mentions:
+            return [], []
 
-        if not patterns:
+        escaped_patterns: list[str] = []
+        for m in mentions:
+            escaped = _escape_like_pattern(m)
+            escaped_patterns.append(escaped)
+            if len(m) >= 4:
+                escaped_patterns.append(f"%{escaped}%")
+
+        if not escaped_patterns:
             return [], []
 
         nodes = (
             session.execute(
-                select(EntityNode).where(
+                select(EntityNode)
+                .where(
                     EntityNode.tenant_id == tenant_id,
-                    EntityNode.name.ilike(any_(list(patterns))),
+                    EntityNode.name.ilike(any_(escaped_patterns), escape="\\"),
                 )
+                .limit(MAX_GRAPH_NODES)
             )
             .scalars()
             .all()
@@ -1035,31 +1105,48 @@ def _fetch_graph_entities(
                     EntityEdge.target_id.in_(node_ids),
                 ),
             )
+            .limit(MAX_GRAPH_EDGES)
         ).all()
 
         return list(nodes), list(edges)
 
 
+MAX_GRAPH_CONTEXT_LINES = 100
+
+
 def _build_graph_context_lines(nodes: list[Any], edges: list[Any]) -> list[str]:
-    """Build context lines from graph nodes and edges."""
+    """
+    Build context lines from graph nodes and edges.
+
+    Handles None values safely and limits output to MAX_GRAPH_CONTEXT_LINES
+    to prevent prompt bloat.
+    """
     context_lines: list[str] = []
 
     for node in nodes:
+        if len(context_lines) >= MAX_GRAPH_CONTEXT_LINES:
+            break
+        name = node.name or "Unknown"
+        entity_type = node.entity_type or "UNKNOWN"
         if node.description:
             context_lines.append(
                 sanitize_retrieved_content(
-                    f"Entity: {node.name} ({node.entity_type}) - {node.description}"
+                    f"Entity: {name} ({entity_type}) - {node.description}"
                 )
             )
         else:
             context_lines.append(
-                sanitize_retrieved_content(f"Entity: {node.name} ({node.entity_type})")
+                sanitize_retrieved_content(f"Entity: {name} ({entity_type})")
             )
 
     for edge, source, target in edges:
-        relation = edge.relation.replace("_", " ").lower()
+        if len(context_lines) >= MAX_GRAPH_CONTEXT_LINES:
+            break
+        relation = (edge.relation or "related_to").replace("_", " ").lower()
+        source_name = source.name or "Unknown"
+        target_name = target.name or "Unknown"
         description = f" {edge.description}" if edge.description else ""
-        fact = f"{source.name} {relation} {target.name}.{description}"
+        fact = f"{source_name} {relation} {target_name}.{description}"
         context_lines.append(sanitize_retrieved_content(fact.strip()))
 
     return context_lines

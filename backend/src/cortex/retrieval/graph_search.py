@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 from uuid import UUID
 
 from cortex.common.types import Err, Ok, Result
@@ -24,6 +25,34 @@ DEFAULT_ENTITY_LIMIT = 10
 DEFAULT_MAX_HOPS = 1
 MIN_TRIGRAM_SIMILARITY = 0.3
 DEFAULT_NEIGHBOR_LIMIT = 100
+MAX_GRAPH_CONCURRENCY = 10
+
+# Semaphore to limit concurrent graph retrieval operations
+_graph_semaphore: asyncio.Semaphore | None = None
+
+
+def _get_graph_semaphore() -> asyncio.Semaphore:
+    """Get or create the graph retrieval semaphore."""
+    global _graph_semaphore
+    if _graph_semaphore is None:
+        _graph_semaphore = asyncio.Semaphore(MAX_GRAPH_CONCURRENCY)
+    return _graph_semaphore
+
+
+def escape_like_pattern(value: str) -> str:
+    """
+    Escape SQL LIKE/ILIKE special characters in a string.
+
+    Escapes %, _, and \\ to prevent wildcard injection when using
+    ILIKE with escape='\\'.
+
+    Args:
+        value: The string to escape
+
+    Returns:
+        Escaped string safe for use in LIKE patterns
+    """
+    return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
 class GraphSearchInput(BaseModel):
@@ -108,7 +137,7 @@ def search_entities_by_name(
     # Build ILIKE conditions for exact/partial matching
     ilike_conditions = []
     for name in filtered_names:
-        sanitized = name.replace("%", "\\%").replace("_", "\\_")
+        sanitized = escape_like_pattern(name)
         ilike_conditions.append(EntityNode.name.ilike(f"%{sanitized}%", escape="\\"))
 
     if not ilike_conditions:
@@ -176,6 +205,23 @@ def search_entities_by_name(
     return matches[:limit]
 
 
+def _safe_parse_uuid(value: str) -> UUID | None:
+    """
+    Safely parse a string as UUID, returning None if invalid.
+
+    Args:
+        value: String to parse as UUID
+
+    Returns:
+        UUID if valid, None otherwise
+    """
+    try:
+        return UUID(value)
+    except (ValueError, TypeError):
+        logger.warning("Invalid UUID format: %s", value[:50] if value else "None")
+        return None
+
+
 def expand_entity_neighbors(
     session: Session,
     entity_ids: list[str],
@@ -191,13 +237,26 @@ def expand_entity_neighbors(
         tenant_id: Tenant ID
         max_hops: Maximum traversal depth (1 = direct neighbors only)
 
+    Note:
+        The DEFAULT_NEIGHBOR_LIMIT (100) is applied per hop and per direction.
+        This may truncate neighbors in early hops, preventing discovery of
+        relevant nodes in later hops.
+
     Returns:
         List of (edge, neighbor_node) tuples
     """
     if not entity_ids or max_hops < 1:
         return []
 
-    frontier = {UUID(eid) for eid in entity_ids}
+    # Safely parse UUIDs, filtering out invalid ones
+    frontier: set[UUID] = set()
+    for eid in entity_ids:
+        parsed = _safe_parse_uuid(eid)
+        if parsed is not None:
+            frontier.add(parsed)
+
+    if not frontier:
+        return []
     seen_nodes = set(frontier)
     seen_edges: set[UUID] = set()
     unique_results: list[tuple[EntityEdge, EntityNode]] = []
@@ -269,7 +328,12 @@ def get_conversations_from_entities(
     if not entity_ids:
         return []
 
-    uuid_ids = [UUID(eid) for eid in entity_ids]
+    # Safely parse UUIDs, filtering out invalid ones
+    uuid_ids = [
+        parsed for eid in entity_ids if (parsed := _safe_parse_uuid(eid)) is not None
+    ]
+    if not uuid_ids:
+        return []
 
     conn_count = func.count().label("conn_count")
     conv_stmt = (
@@ -302,8 +366,15 @@ def get_conversation_entity_map(
     if not conversation_ids or not entity_ids:
         return {}
 
-    conv_uuid_ids = {UUID(cid) for cid in conversation_ids}
-    entity_uuid_ids = {UUID(eid) for eid in entity_ids}
+    # Safely parse UUIDs, filtering out invalid ones
+    conv_uuid_ids = {
+        parsed for cid in conversation_ids if (parsed := _safe_parse_uuid(cid)) is not None
+    }
+    entity_uuid_ids = {
+        parsed for eid in entity_ids if (parsed := _safe_parse_uuid(eid)) is not None
+    }
+    if not conv_uuid_ids or not entity_uuid_ids:
+        return {}
 
     stmt = (
         select(EntityEdge.conversation_id, EntityEdge.source_id, EntityEdge.target_id)
@@ -329,82 +400,120 @@ def get_conversation_entity_map(
     return conv_map
 
 
+_ENTITY_STOP_WORDS: set[str] = {
+    "what",
+    "when",
+    "where",
+    "why",
+    "who",
+    "how",
+    "can",
+    "could",
+    "should",
+    "would",
+    "does",
+    "do",
+    "did",
+    "is",
+    "are",
+    "the",
+    "a",
+    "an",
+    "and",
+    "or",
+    "to",
+    "from",
+    "for",
+    "of",
+    "in",
+    "on",
+    "at",
+    "by",
+    "please",
+    "tell",
+    "explain",
+    "find",
+    "search",
+    "show",
+    "get",
+    "about",
+    "with",
+    "this",
+    "that",
+    "these",
+    "those",
+    "have",
+    "has",
+    "had",
+    "been",
+    "being",
+    "was",
+    "were",
+    "will",
+    "may",
+    "might",
+    "must",
+    "shall",
+    "latest",
+    "recent",
+    "all",
+    "policy",
+    "policies",
+    "claim",
+    "claims",
+    "email",
+    "emails",
+    "document",
+    "documents",
+}
+
+
 def extract_query_entities(query: str) -> list[str]:
     """
-    Extract entity names from a user query using lightweight LLM call.
+    Extract entity names from a user query using heuristics.
+
+    Returns a deterministic, sorted list of entity candidates extracted from:
+    - Quoted strings
+    - Capitalized phrases (including hyphenated names like "ACME-Corp")
+    - Single capitalized words
+
+    Stop words are filtered case-insensitively and punctuation is stripped.
 
     Args:
         query: User search query
 
     Returns:
-        List of extracted entity names
+        List of extracted entity names (sorted for determinism)
     """
-    # For now, use simple heuristics to avoid LLM latency
-    # Can be upgraded to LLM-based extraction later
-    entities = []
+    if not query:
+        return []
 
-    # Simple extraction: capitalize words that look like names
-    words = query.split()
-    current_entity = []
+    candidates: list[str] = []
+    seen_lower: set[str] = set()
 
-    for word in words:
-        # Skip common stop words
-        if word.lower() in {
-            "the",
-            "a",
-            "an",
-            "and",
-            "or",
-            "for",
-            "to",
-            "from",
-            "in",
-            "on",
-            "at",
-            "by",
-            "with",
-            "about",
-            "find",
-            "search",
-            "show",
-            "get",
-            "latest",
-            "recent",
-            "all",
-            "policy",
-            "policies",
-            "claim",
-            "claims",
-            "email",
-            "emails",
-            "document",
-            "documents",
-        }:
-            if current_entity:
-                entities.append(" ".join(current_entity))
-                current_entity = []
-            continue
+    def add_candidate(s: str) -> None:
+        """Add candidate if not already seen (case-insensitive dedup)."""
+        stripped = s.strip().strip(".,!?;:")
+        if not stripped:
+            return
+        lower = stripped.lower()
+        if lower not in seen_lower and lower not in _ENTITY_STOP_WORDS:
+            seen_lower.add(lower)
+            candidates.append(stripped)
 
-        # Look for capitalized words or quoted strings
-        if word[0].isupper() or word.startswith('"') or word.startswith("'"):
-            current_entity.append(word.strip("\"'"))
-        elif current_entity:
-            # End of entity
-            entities.append(" ".join(current_entity))
-            current_entity = []
+    quoted = re.findall(r'["\']([^"\']{2,100})["\']', query)
+    for s in quoted:
+        add_candidate(s)
 
-    if current_entity:
-        entities.append(" ".join(current_entity))
+    capitalized_phrases = re.findall(r"\b[A-Z][\w&-]*(?:\s+[A-Z][\w&-]*)+\b", query)
+    for s in capitalized_phrases:
+        add_candidate(s)
 
-    # Remove duplicates while preserving order
-    seen = set()
-    unique = []
-    for e in entities:
-        if e.lower() not in seen:
-            seen.add(e.lower())
-            unique.append(e)
+    single_caps = re.findall(r"\b[A-Z][a-z]{2,}\b", query)
+    for s in single_caps:
+        add_candidate(s)
 
-    return unique
+    return sorted(candidates, key=str.lower)
 
 
 def _graph_retrieve_sync(
@@ -515,9 +624,23 @@ def _graph_retrieve_sync(
 async def graph_retrieve(
     args: GraphSearchInput,
 ) -> Result[list[GraphSearchResult], str]:
-    """Async wrapper for graph retrieval to avoid blocking the event loop."""
+    """
+    Async wrapper for graph retrieval to avoid blocking the event loop.
+
+    Uses a semaphore to limit concurrent graph retrieval operations and
+    prevent connection pool exhaustion under high load.
+    """
+    semaphore = _get_graph_semaphore()
     try:
-        return await asyncio.to_thread(_graph_retrieve_sync, args)
-    except Exception:
-        logger.exception("Graph retrieval failed")
-        return Err("Graph retrieval failed")
+        async with semaphore:
+            return await asyncio.to_thread(_graph_retrieve_sync, args)
+    except TimeoutError:
+        logger.error("Graph retrieval timed out for tenant %s", args.tenant_id)
+        return Err("Graph retrieval timed out")
+    except ValueError as e:
+        logger.error("Graph retrieval value error: %s", str(e))
+        return Err(f"Graph retrieval invalid input: {e}")
+    except Exception as e:
+        error_type = type(e).__name__
+        logger.exception("Graph retrieval failed with %s", error_type)
+        return Err(f"Graph retrieval failed: {error_type}")
