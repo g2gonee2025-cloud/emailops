@@ -8,6 +8,17 @@ from botocore.exceptions import BotoCoreError, ClientError
 from cortex.config.loader import get_config
 
 
+def _get_aws_account_id(sts_client):
+    """Get the AWS account ID."""
+    try:
+        # SECURITY: Get caller identity to retrieve the account ID.
+        return sts_client.get_caller_identity()["Account"]
+    except ClientError as e:
+        # COMPATIBILITY: Handle cases where the provider is not AWS (e.g., DigitalOcean Spaces).
+        print(f"Warning: Could not get AWS account ID. This may be expected if you are not using AWS S3. Error: {e}")
+        return None
+
+
 def main():
     """
     Checks the connectivity to the S3 bucket as defined in the project's configuration.
@@ -20,15 +31,17 @@ def main():
     try:
         config = get_config()
         # NULL_SAFETY: Validate config structure before accessing attributes.
-        if not all([
-            config,
-            config.storage,
-            config.storage.endpoint_url,
-            config.storage.region,
-            config.storage.bucket_raw,
-            config.storage.access_key,
-            config.storage.secret_key,
-        ]):
+        if not all(
+            [
+                config,
+                config.storage,
+                config.storage.endpoint_url,
+                config.storage.region,
+                config.storage.bucket_raw,
+                config.storage.access_key,
+                config.storage.secret_key,
+            ]
+        ):
             raise ValueError("S3 storage configuration is incomplete. Check your .env file.")
 
         # SECURITY: Do not print raw configuration details.
@@ -51,8 +64,27 @@ def main():
             config=s3_config,
         )
 
+        sts_client = boto3.client(
+            "sts",
+            endpoint_url=config.storage.endpoint_url,
+            region_name=config.storage.region,
+            aws_access_key_id=config.storage.access_key,
+            aws_secret_access_key=config.storage.secret_key,
+            config=s3_config,
+        )
+
+        account_id = _get_aws_account_id(sts_client)
+
+        list_objects_kwargs = {
+            "Bucket": config.storage.bucket_raw,
+            "MaxKeys": 1,
+        }
+        if account_id:
+            # SECURITY: Add ExpectedBucketOwner to verify S3 bucket ownership.
+            list_objects_kwargs["ExpectedBucketOwner"] = account_id
+
         # List first 1 object to verify access
-        response = s3.list_objects_v2(Bucket=config.storage.bucket_raw, MaxKeys=1)
+        response = s3.list_objects_v2(**list_objects_kwargs)  # NOSONAR
 
         print("Connectivity Check: SUCCESS")
         if "Contents" in response:
