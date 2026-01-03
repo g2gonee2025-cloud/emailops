@@ -57,13 +57,13 @@ class PolicyDecision(BaseModel):
 # Policy Checks
 # -----------------------------------------------------------------------------
 
+_INVALID_RECIPIENT_METADATA = "Invalid recipient metadata"
 
-def _check_recipient_policy(metadata: dict[str, Any]) -> PolicyViolation | None:
-    """Check recipient-related policies."""
-    recipients_value = metadata.get("recipients")
 
+def _parse_recipients(recipients_value: Any) -> tuple[list[str] | None, PolicyViolation | None]:
+    """Parse and validate recipient metadata."""
     if recipients_value is None:
-        return None
+        return None, None
 
     recipients: list[str]
     if isinstance(recipients_value, str):
@@ -71,15 +71,24 @@ def _check_recipient_policy(metadata: dict[str, Any]) -> PolicyViolation | None:
     elif isinstance(recipients_value, (list, tuple, set)):
         recipients = [r for r in recipients_value if isinstance(r, str)]
         if recipients_value and not recipients:
-            return ("invalid_recipients", "Invalid recipient metadata")
+            return None, ("invalid_recipients", _INVALID_RECIPIENT_METADATA)
     else:
         try:
-            recipients = [r for r in list(recipients_value) if isinstance(r, str)]
+            recipients = [r for r in recipients_value if isinstance(r, str)]
             if recipients_value and not recipients:
-                return ("invalid_recipients", "Invalid recipient metadata")
+                return None, ("invalid_recipients", _INVALID_RECIPIENT_METADATA)
         except TypeError:
-            return ("invalid_recipients", "Invalid recipient metadata")
+            return None, ("invalid_recipients", _INVALID_RECIPIENT_METADATA)
 
+    return recipients, None
+
+
+def _check_recipient_policy(metadata: dict[str, Any]) -> PolicyViolation | None:
+    """Check recipient-related policies."""
+    recipients, error = _parse_recipients(metadata.get("recipients"))
+
+    if error:
+        return error
     if not recipients:
         return None
 
@@ -121,13 +130,12 @@ def _check_content_policy(metadata: dict[str, Any]) -> PolicyViolation | None:
     return None
 
 
-def _check_attachment_policy(metadata: dict[str, Any]) -> PolicyViolation | None:
-    """Check attachment-related policies."""
-    attachments_value = metadata.get("attachments")
-
+def _parse_attachments(attachments_value: Any) -> tuple[list[dict] | None, PolicyViolation | None]:
+    """Parse and validate attachment metadata."""
     if not attachments_value:
-        return None
+        return None, None
 
+    attachments: list[dict]
     if isinstance(attachments_value, dict):
         attachments = [attachments_value]
     elif isinstance(attachments_value, (list, tuple, set)):
@@ -136,15 +144,19 @@ def _check_attachment_policy(metadata: dict[str, Any]) -> PolicyViolation | None
         try:
             attachments = list(attachments_value)
         except TypeError:
-            return ("invalid_attachment_metadata", "Invalid attachment metadata")
+            return None, ("invalid_attachment_metadata", "Invalid attachment metadata")
 
     if not attachments:
-        return None
+        return None, None
 
     if any(not isinstance(attachment, dict) for attachment in attachments):
-        return ("invalid_attachment_metadata", "Invalid attachment metadata")
+        return None, ("invalid_attachment_metadata", "Invalid attachment metadata")
 
-    # Check for dangerous extensions
+    return attachments, None
+
+
+def _check_dangerous_extensions(attachments: list[dict]) -> PolicyViolation | None:
+    """Check for dangerous file extensions in attachments."""
     dangerous_extensions = _get_policy_config().dangerous_extensions
     for attachment in attachments:
         filename = attachment.get("filename", "")
@@ -153,9 +165,12 @@ def _check_attachment_policy(metadata: dict[str, Any]) -> PolicyViolation | None
         filename = filename.lower()
         for ext in dangerous_extensions:
             if filename.endswith(ext):
-                return ("dangerous_attachment", f"Dangerous attachment type: {ext}")
+                return "dangerous_attachment", f"Dangerous attachment type: {ext}"
+    return None
 
-    # Check total size
+
+def _check_attachment_size(attachments: list[dict]) -> PolicyViolation | None:
+    """Check total size of attachments."""
     total_size = 0
     invalid_size = False
     for attachment in attachments:
@@ -171,7 +186,7 @@ def _check_attachment_policy(metadata: dict[str, Any]) -> PolicyViolation | None
         total_size += size_value
 
     if invalid_size:
-        return ("invalid_attachment_size", "Invalid attachment size metadata")
+        return "invalid_attachment_size", "Invalid attachment size metadata"
 
     max_size_mb = _get_policy_config().max_attachment_size_mb
     max_size_bytes = max_size_mb * 1024 * 1024
@@ -181,6 +196,22 @@ def _check_attachment_policy(metadata: dict[str, Any]) -> PolicyViolation | None
             "attachment_size",
             f"Attachment size exceeds limit ({total_size} > {max_size_bytes})",
         )
+    return None
+
+
+def _check_attachment_policy(metadata: dict[str, Any]) -> PolicyViolation | None:
+    """Check attachment-related policies."""
+    attachments, error = _parse_attachments(metadata.get("attachments"))
+    if error:
+        return error
+    if not attachments:
+        return None
+
+    if extension_violation := _check_dangerous_extensions(attachments):
+        return extension_violation
+
+    if size_violation := _check_attachment_size(attachments):
+        return size_violation
 
     return None
 
@@ -205,6 +236,49 @@ def _determine_risk_level(action: str) -> Literal["low", "medium", "high"]:
 # -----------------------------------------------------------------------------
 
 
+def _determine_decision_from_violations(
+    risk_level: Literal["low", "medium", "high"],
+    violations: list[PolicyViolation],
+    action: str,
+) -> tuple[Literal["allow", "deny", "require_approval"], str]:
+    """Determine the policy decision based on risk level and violations."""
+    violation_messages = [message for _, message in violations]
+
+    if violations:
+        if risk_level == "high":
+            return "deny", f"Policy violation on high-risk action: {'; '.join(violation_messages)}"
+        elif risk_level == "medium":
+            return "require_approval", f"Policy check required: {'; '.join(violation_messages)}"
+        else:
+            logger.warning("Low-risk action '%s' has policy warnings (%d).", action, len(violations))
+            return "allow", f"Allowed with warnings: {'; '.join(violation_messages)}"
+    else:
+        if risk_level == "high":
+            return "require_approval", "High-risk action requires approval"
+        else:
+            return "allow", "No policy violations"
+
+
+def _parse_user_roles(safe_meta: dict[str, Any]) -> list[str]:
+    """Parse user roles from metadata."""
+    roles: list[str] = []
+    roles_value = safe_meta.get("user_roles")
+    if isinstance(roles_value, str):
+        roles.append(roles_value)
+    elif isinstance(roles_value, (list, tuple, set)):
+        roles.extend([role for role in roles_value if isinstance(role, str)])
+    elif roles_value is not None:
+        try:
+            roles.extend([role for role in roles_value if isinstance(role, str)])
+        except TypeError:
+            pass  # roles remains empty
+
+    role_value = safe_meta.get("role")
+    if isinstance(role_value, str):
+        roles.append(role_value)
+    return roles
+
+
 @trace_operation("check_action")
 def check_action(action: str, metadata: dict[str, Any] | None = None) -> PolicyDecision:
     """
@@ -226,87 +300,29 @@ def check_action(action: str, metadata: dict[str, Any] | None = None) -> PolicyD
     risk_level = _determine_risk_level(action)
     violations: list[PolicyViolation] = []
 
-    # Run policy checks (defaults to safe empty structures if keys missing)
     safe_meta = metadata if isinstance(metadata, dict) else {}
 
     if recipient_issue := _check_recipient_policy(safe_meta):
         violations.append(recipient_issue)
-
     if content_issue := _check_content_policy(safe_meta):
         violations.append(content_issue)
-
     if attachment_issue := _check_attachment_policy(safe_meta):
         violations.append(attachment_issue)
 
-    # Determine decision based on risk level and violations
-    decision: Literal["allow", "deny", "require_approval"]
-    reason: str
+    decision, reason = _determine_decision_from_violations(risk_level, violations, action)
 
-    violation_messages = [message for _, message in violations]
-    violation_codes = [code for code, _ in violations]
-
-    if violations:
-        # Any violation on high-risk action = deny
-        if risk_level == "high":
-            decision = "deny"
-            reason = (
-                "Policy violation on high-risk action: "
-                f"{'; '.join(violation_messages)}"
-            )
-        # Violations on medium-risk = require approval
-        elif risk_level == "medium":
-            decision = "require_approval"
-            reason = f"Policy check required: {'; '.join(violation_messages)}"
-        # Violations on low-risk = still allow but log
-        else:
-            decision = "allow"
-            reason = f"Allowed with warnings: {'; '.join(violation_messages)}"
-            logger.warning(
-                "Low-risk action '%s' has policy warnings (%d).",
-                action,
-                len(violations),
-            )
-    else:
-        # No violations
-        if risk_level == "high":
-            # High-risk actions without violations still require approval
-            decision = "require_approval"
-            reason = "High-risk action requires approval"
-        else:
-            decision = "allow"
-            reason = "No policy violations"
-
-    # Check for explicit deny list
     if safe_meta.get("force_deny") is True:
         decision = "deny"
         reason = "Explicitly denied by policy"
 
-    # Check for bypass (e.g., admin override)
-    # SECURITY: Check for admin role logic
     # Admin can bypass "require_approval" but NOT "deny".
-    if decision != "deny":
-        # Check roles (support both singular 'role' and list 'user_roles' for compatibility)
-        roles: list[str] = []
-        roles_value = safe_meta.get("user_roles")
-        if isinstance(roles_value, str):
-            roles.append(roles_value)
-        elif isinstance(roles_value, (list, tuple, set)):
-            roles.extend([role for role in roles_value if isinstance(role, str)])
-        elif roles_value is not None:
-            try:
-                roles.extend(
-                    [role for role in list(roles_value) if isinstance(role, str)]
-                )
-            except TypeError:
-                roles = []
-
-        role_value = safe_meta.get("role")
-        if isinstance(role_value, str):
-            roles.append(role_value)
-
-        if safe_meta.get("roles_verified") is True and "admin" in roles:
+    if decision != "deny" and safe_meta.get("roles_verified") is True:
+        roles = _parse_user_roles(safe_meta)
+        if "admin" in roles:
             decision = "allow"
             reason = "Admin bypass enabled"
+
+    violation_codes = [code for code, _ in violations]
 
     return PolicyDecision(
         action=action,
