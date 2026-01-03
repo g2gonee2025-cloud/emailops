@@ -3,7 +3,7 @@ import useLocalStorage from './useLocalStorage';
 
 describe('useLocalStorage', () => {
   beforeEach(() => {
-    window.localStorage.clear();
+    globalThis.localStorage.clear();
   });
 
   it('should return the initial value if localStorage is empty', () => {
@@ -12,7 +12,7 @@ describe('useLocalStorage', () => {
   });
 
   it('should return the stored value from localStorage', () => {
-    window.localStorage.setItem('test-key', JSON.stringify('stored'));
+    globalThis.localStorage.setItem('test-key', JSON.stringify('stored'));
     const { result } = renderHook(() => useLocalStorage('test-key', 'initial'));
     expect(result.current[0]).toBe('stored');
   });
@@ -25,7 +25,7 @@ describe('useLocalStorage', () => {
     });
 
     expect(result.current[0]).toBe('updated');
-    expect(window.localStorage.getItem('test-key')).toBe(JSON.stringify('updated'));
+    expect(globalThis.localStorage.getItem('test-key')).toBe(JSON.stringify('updated'));
   });
 
   it('should handle complex objects', () => {
@@ -40,12 +40,12 @@ describe('useLocalStorage', () => {
     });
 
     expect(result.current[0]).toEqual(updatedObject);
-    expect(window.localStorage.getItem('test-key')).toBe(JSON.stringify(updatedObject));
+    expect(globalThis.localStorage.getItem('test-key')).toBe(JSON.stringify(updatedObject));
   });
 
   it('should handle SSR by returning the initial value', () => {
-    const originalLocalStorage = window.localStorage;
-    Object.defineProperty(window, 'localStorage', {
+    const originalLocalStorage = globalThis.localStorage;
+    Object.defineProperty(globalThis, 'localStorage', {
       value: undefined,
       writable: true,
     });
@@ -53,7 +53,7 @@ describe('useLocalStorage', () => {
     const { result } = renderHook(() => useLocalStorage('test-key', 'ssr-initial'));
     expect(result.current[0]).toBe('ssr-initial');
 
-    Object.defineProperty(window, 'localStorage', {
+    Object.defineProperty(globalThis, 'localStorage', {
       value: originalLocalStorage,
       writable: true,
     });
