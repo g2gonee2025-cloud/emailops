@@ -11,6 +11,8 @@ from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 DEFAULT_REDIS_URL = "redis://localhost:6379"
+EMBEDDINGS_API_NAME = "Embeddings API"
+RERANKER_API_NAME = "Reranker API"
 
 
 class DoctorCheckResult(BaseModel):
@@ -85,7 +87,7 @@ async def probe_embeddings(config: EmailOpsConfig) -> DoctorCheckResult:
 
         if not config.core or not config.core.provider:
             return DoctorCheckResult(
-                name="Embeddings API",
+                name=EMBEDDINGS_API_NAME,
                 status="fail",
                 message="Embedding provider not configured",
             )
@@ -94,21 +96,21 @@ async def probe_embeddings(config: EmailOpsConfig) -> DoctorCheckResult:
         if result is not None and len(result) > 0:
             dim = result.shape[1] if hasattr(result, "shape") else len(result[0])
             return DoctorCheckResult(
-                name="Embeddings API",
+                name=EMBEDDINGS_API_NAME,
                 status="pass",
                 message=f"Dimension: {dim}",
                 details={"dimension": dim},
             )
         else:
             return DoctorCheckResult(
-                name="Embeddings API",
+                name=EMBEDDINGS_API_NAME,
                 status="fail",
                 message="Probe returned empty result",
             )
     except Exception as e:
         logger.error("Embedding probe failed: %s", e, exc_info=True)
         return DoctorCheckResult(
-            name="Embeddings API", status="fail", message=f"Probe failed: {e}"
+            name=EMBEDDINGS_API_NAME, status="fail", message=f"Probe failed: {e}"
         )
 
 
@@ -124,7 +126,7 @@ async def check_reranker(config: EmailOpsConfig) -> DoctorCheckResult:
         reranker_endpoint = getattr(config.search, "reranker_endpoint", None)
         if not reranker_endpoint:
             return DoctorCheckResult(
-                name="Reranker API",
+                name=RERANKER_API_NAME,
                 status="pass",
                 message="Not configured",
                 details={"reason": "No reranker endpoint in config."},
@@ -136,34 +138,34 @@ async def check_reranker(config: EmailOpsConfig) -> DoctorCheckResult:
 
             if resp.status_code == 200:
                 return DoctorCheckResult(
-                    name="Reranker API", status="pass", message="Connected"
+                    name=RERANKER_API_NAME, status="pass", message="Connected"
                 )
             else:
                 return DoctorCheckResult(
-                    name="Reranker API",
+                    name=RERANKER_API_NAME,
                     status="warn",
                     message=f"Reranker returned status {resp.status_code}",
                 )
     except ImportError:
         return DoctorCheckResult(
-            name="Reranker API",
+            name=RERANKER_API_NAME,
             status="warn",
             message="httpx not installed (pip install httpx)",
         )
     except httpx.ConnectError:
         return DoctorCheckResult(
-            name="Reranker API",
+            name=RERANKER_API_NAME,
             status="warn",
             message=f"Cannot connect to reranker at {reranker_endpoint}",
         )
     except httpx.TimeoutException:
         return DoctorCheckResult(
-            name="Reranker API",
+            name=RERANKER_API_NAME,
             status="warn",
             message=f"Reranker timeout at {reranker_endpoint}",
         )
     except Exception as e:
         logger.warning("Reranker health check failed: %s", e)
         return DoctorCheckResult(
-            name="Reranker API", status="warn", message=f"Connection failed: {e}"
+            name=RERANKER_API_NAME, status="warn", message=f"Connection failed: {e}"
         )
