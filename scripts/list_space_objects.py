@@ -6,28 +6,22 @@ Prints a summary and sample keys without touching any running uploads.
 
 from __future__ import annotations
 
-import sys
+import argparse
 from pathlib import Path
-from urllib.parse import urlparse
 
 import boto3
 from botocore.config import Config
+from botocore.exceptions import ClientError
 
-# Load app config
-sys.path.append(str(Path("backend/src").resolve()))
-from cortex.config.loader import get_config  # type: ignore
+from cortex.common.exceptions import ConfigurationError
+from cortex.config.loader import get_config
 
 SAMPLE_LIMIT = 100
-PREFIXES_TO_CHECK = [
-    "",
-    "raw/",
-    "raw/outlook/",
-    # Observed keys appear to include bucket name as part of key path
-    "emailops-storage-tor1/raw/outlook/",
-]
 
 
-def make_client(endpoint_url: str, region: str, access_key: str, secret_key: str):
+def make_client(
+    endpoint_url: str, region: str, access_key: str | None, secret_key: str | None
+):
     return boto3.client(
         "s3",
         endpoint_url=endpoint_url,
@@ -40,27 +34,15 @@ def make_client(endpoint_url: str, region: str, access_key: str, secret_key: str
     )
 
 
-def region_root_endpoint(space_endpoint: str) -> str:
-    parsed = urlparse(space_endpoint)
-    host = parsed.netloc
-    if host.endswith(".digitaloceanspaces.com"):
-        parts = host.split(".")
-        if len(parts) >= 3:
-            region = parts[-3]
-            return f"https://{region}.digitaloceanspaces.com"
-    return space_endpoint
-
-
-def iter_keys(s3, bucket: str, prefix: str, limit: int) -> tuple[int, list[str]]:
+def get_keys_sample(s3, bucket: str, prefix: str, limit: int) -> list[str]:
     keys: list[str] = []
-    total = 0
     token = None
     while True:
-        kwargs = {"Bucket": bucket, "Prefix": prefix, "MaxKeys": 1000}
+        remaining = limit - len(keys)
+        kwargs = {"Bucket": bucket, "Prefix": prefix, "MaxKeys": min(remaining, 1000)}
         if token:
             kwargs["ContinuationToken"] = token
         resp = s3.list_objects_v2(**kwargs)
-        total += resp.get("KeyCount", 0)
         for c in resp.get("Contents", [])[: max(0, limit - len(keys))]:
             keys.append(c["Key"])
             if len(keys) >= limit:
@@ -70,33 +52,57 @@ def iter_keys(s3, bucket: str, prefix: str, limit: int) -> tuple[int, list[str]]
         if not resp.get("IsTruncated"):
             break
         token = resp.get("NextContinuationToken")
-    return total, keys
+    return keys
+
+
+def redact_key(key: str, head: int = 30, tail: int = 30) -> str:
+    """Redact the middle of a key for safe display."""
+    if len(key) <= head + tail:
+        return key
+    return f"{key[:head]}...{key[-tail:]}"
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="List objects in a DigitalOcean Space."
+    )
+    parser.add_argument(
+        "prefixes",
+        nargs="*",
+        default=["", "raw/", "raw/outlook/"],
+        help="Optional list of prefixes to check.",
+    )
+    args = parser.parse_args()
+
     cfg = get_config()
     bucket = cfg.storage.bucket_raw
-    endpoint = cfg.storage.endpoint_url
+    endpoint = str(cfg.storage.endpoint_url) if cfg.storage.endpoint_url else None
     region = cfg.storage.region
-    access_key = cfg.storage.access_key
-    secret_key = cfg.storage.secret_key
 
-    root_endpoint = region_root_endpoint(endpoint)
+    if not all([bucket, endpoint, region]):
+        raise ConfigurationError(
+            "Missing required storage configuration: bucket, endpoint, or region."
+        )
 
-    s3 = make_client(root_endpoint, region, access_key, secret_key)
+    access_key_secret = cfg.storage.access_key
+    secret_key_secret = cfg.storage.secret_key
+    access_key = access_key_secret.get_secret_value() if access_key_secret else None
+    secret_key = secret_key_secret.get_secret_value() if secret_key_secret else None
+
+    s3 = make_client(endpoint, region, access_key, secret_key)
 
     print(f"Bucket: {bucket}")
-    print(f"Endpoint: {root_endpoint}")
+    print(f"Endpoint: {endpoint}")
 
-    for pfx in PREFIXES_TO_CHECK:
+    for pfx in args.prefixes:
         try:
-            total, sample = iter_keys(s3, bucket, pfx, SAMPLE_LIMIT)
-        except Exception as e:
+            sample = get_keys_sample(s3, bucket, pfx, SAMPLE_LIMIT)
+        except ClientError as e:
             print(f"Prefix '{pfx}': ERROR: {e}")
             continue
-        print(f"Prefix '{pfx or '/'}': total={total}, sample={len(sample)}")
+        print(f"Prefix '{pfx or '/'}': sample={len(sample)}")
         for k in sample[:10]:
-            print(f"  - {k}")
+            print(f"  - {redact_key(k)}")
 
 
 if __name__ == "__main__":
