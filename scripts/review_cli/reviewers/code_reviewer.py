@@ -46,7 +46,8 @@ class CodeReviewer:
         self, file_path: Path, progress: Progress, task_id: TaskID
     ) -> ReviewResult:
         """Review a single file with semaphore limiting."""
-        assert self._semaphore is not None
+        if self._semaphore is None:
+            raise RuntimeError("Semaphore not initialized. Call run() first.")
 
         async with self._semaphore:
             try:
@@ -55,6 +56,17 @@ class CodeReviewer:
                 rel_path = file_path
 
             try:
+                # PERFORMANCE: Check file size before reading
+                if (
+                    self.config.review.max_file_size > 0
+                    and file_path.stat().st_size > self.config.review.max_file_size
+                ):
+                    progress.advance(task_id)
+                    return ReviewResult(
+                        file=str(rel_path),
+                        skipped=True,
+                        skip_reason=f"Exceeds max size of {self.config.review.max_file_size} bytes",
+                    )
                 content = file_path.read_text(encoding="utf-8")
             except UnicodeDecodeError:
                 progress.advance(task_id)
@@ -65,8 +77,16 @@ class CodeReviewer:
                 progress.advance(task_id)
                 return ReviewResult(file=str(rel_path), error=str(e))
 
-            language = self.scanner.get_language(file_path)
-            context = self.scanner.get_context(file_path)
+            try:
+                language = self.scanner.get_language(file_path)
+                context = self.scanner.get_context(file_path)
+            except Exception as e:
+                progress.advance(task_id)
+                logger.error(
+                    "Failed to get language/context for %s: %s", rel_path, e
+                )
+                return ReviewResult(file=str(rel_path), error=str(e))
+
             model_name = getattr(
                 self.provider, "model", getattr(self.provider, "name", "")
             )
@@ -97,7 +117,7 @@ class CodeReviewer:
                 logger.error(
                     "❌ %s: %s",
                     rel_path,
-                    result.error[:80] if result.error else "Unknown error",
+                    str(result.error)[:80] if result.error else "Unknown error",
                 )
             elif result.has_issues:
                 logger.warning("⚠️ %s: %d issues", rel_path, len(result.issues))
@@ -123,7 +143,13 @@ class CodeReviewer:
                 logger.info("  - %s", rel)
             return []
 
-        self._semaphore = asyncio.Semaphore(self.config.review.max_workers)
+        max_workers = self.config.review.max_workers
+        if max_workers <= 0:
+            logger.warning(
+                "max_workers must be positive, defaulting to 1. Got: %d", max_workers
+            )
+            max_workers = 1
+        self._semaphore = asyncio.Semaphore(max_workers)
 
         with Progress(
             SpinnerColumn(),
@@ -133,17 +159,40 @@ class CodeReviewer:
         ) as progress:
             task_id = progress.add_task("Reviewing files...", total=len(files))
 
-            tasks = [
-                asyncio.create_task(self._review_single_file(f, progress, task_id))
-                for f in files
-            ]
-            self.results = []
+            # PERFORMANCE: Use a worker pattern with a queue to avoid creating all tasks at once
+            queue = asyncio.Queue()
+            for f in files:
+                await queue.put(f)
 
-            for task in asyncio.as_completed(tasks):
-                result = await task
-                self.results.append(result)
-                if on_result:
-                    await on_result(result)
+            async def worker(worker_id: int):
+                while not queue.empty():
+                    file_path = await queue.get()
+                    try:
+                        result = await self._review_single_file(
+                            file_path, progress, task_id
+                        )
+                        self.results.append(result)
+                        if on_result:
+                            await on_result(result)
+                    except Exception as exc:
+                        logger.error(
+                            "Worker %d failed processing %s: %s",
+                            worker_id,
+                            file_path,
+                            exc,
+                        )
+                    finally:
+                        queue.task_done()
+
+            self.results = []
+            worker_tasks = [
+                asyncio.create_task(worker(i)) for i in range(max_workers)
+            ]
+            await queue.join()
+
+            for wt in worker_tasks:
+                wt.cancel()
+            await asyncio.gather(*worker_tasks, return_exceptions=True)
 
         return self.results
 
@@ -154,7 +203,7 @@ class CodeReviewer:
         failed = [r for r in self.results if r.error]
         with_issues = [r for r in successful if r.has_issues]
 
-        total_issues = sum(len(r.issues) for r in successful)
+        total_issues = sum(len(r.issues) for r in successful if r.issues)
 
         return {
             "total_files": len(self.results),
