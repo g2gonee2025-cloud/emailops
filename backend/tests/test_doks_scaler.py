@@ -23,12 +23,12 @@ class TestModelProfile:
             context_length=4096,
         )
         assert profile.name == "test-model"
-        assert profile.params_total == 7.0
+        assert profile.params_total == pytest.approx(7.0)
         assert profile.context_length == 4096
-        assert profile.params_active == 7.0  # Should default to params_total
+        assert profile.params_active == pytest.approx(7.0)  # Should default to params_total
         assert profile.quantization == "fp16"
-        assert profile.additional_memory_gb == 4.0
-        assert profile.kv_bytes_per_token == DEFAULT_KV_CACHE_BYTES_PER_TOKEN
+        assert profile.additional_memory_gb == pytest.approx(4.0)
+        assert profile.kv_bytes_per_token == pytest.approx(DEFAULT_KV_CACHE_BYTES_PER_TOKEN)
 
     def test_model_profile_with_params_active(self):
         """Test ModelProfile with explicit params_active (MoE model)."""
@@ -38,7 +38,7 @@ class TestModelProfile:
             context_length=8192,
             params_active=14.0,
         )
-        assert profile.params_active == 14.0
+        assert profile.params_active == pytest.approx(14.0)
 
     def test_estimate_memory_gb_fp16(self):
         """Test memory estimation for fp16 model."""
@@ -185,9 +185,9 @@ class TestClusterScaler:
             gpus_per_node=2,
             headroom=0.15,
         )
-        assert scaler.memory_per_gpu_gb == 80.0
+        assert scaler.memory_per_gpu_gb == pytest.approx(80.0)
         assert scaler.gpus_per_node == 2
-        assert scaler.headroom == 0.15
+        assert scaler.headroom == pytest.approx(0.15)
 
     def test_plan_node_pool_basic(self):
         """Test basic node pool planning."""

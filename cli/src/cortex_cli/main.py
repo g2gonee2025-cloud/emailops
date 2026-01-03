@@ -602,6 +602,49 @@ def _handle_ingest_dry_run(conversations: list[Path], json_output: bool) -> None
         )
 
 
+def _process_single_conversation(
+    conv: Path, tenant_id: str, verbose: bool, json_output: bool, index: int, total: int
+) -> dict:
+    """Process a single conversation and return the result."""
+    import uuid
+    from cortex.ingestion.mailroom import IngestJob, process_job
+
+    if not json_output:
+        print(f"  [{index}/{total}] Processing: {conv.name}...", end=" ", flush=True)
+    ingest_job = IngestJob(
+        job_id=uuid.uuid4(),
+        tenant_id=tenant_id,
+        source_type="local_upload",
+        source_uri=str(conv),
+    )
+    try:
+        summary = process_job(ingest_job)
+        success = not summary.aborted_reason
+        if success:
+            if not json_output:
+                print(
+                    f"{_colorize('OK', 'green')} ({summary.messages_ingested} msg, {summary.attachments_parsed} att)"
+                )
+        else:
+            if not json_output:
+                print(f"{_colorize('FAILED', 'red')}")
+                if verbose:
+                    print(f"       Reason: {summary.aborted_reason}")
+        return {
+            "path": str(conv),
+            "success": success,
+            "messages": summary.messages_ingested,
+            "attachments": summary.attachments_parsed,
+            "error": summary.aborted_reason,
+        }
+    except Exception as e:
+        if not json_output:
+            print(f"{_colorize('ERROR', 'red')}")
+            if verbose:
+                print(f"       {e}")
+        return {"path": str(conv), "success": False, "error": str(e)}
+
+
 def _perform_ingestion(
     conversations: list[Path],
     tenant_id: str,
@@ -610,7 +653,6 @@ def _perform_ingestion(
 ) -> None:
     """Perform the ingestion process for the given conversations."""
     import json
-    import uuid
 
     try:
         from cortex.ingestion.mailroom import IngestJob as IngestJob
@@ -623,58 +665,16 @@ def _perform_ingestion(
             print(f"\n  {_colorize('ERROR:', 'red')} {msg}")
             print(f"  Run {_colorize('cortex doctor --auto-install', 'cyan')} first")
         raise
-
-    results: list[Any] = []
+    results = []
     success_count = 0
-    fail_count = 0
-
     for i, conv in enumerate(conversations, 1):
-        if not json_output:
-            print(
-                f"  [{i}/{len(conversations)}] Processing: {conv.name}...",
-                end=" ",
-                flush=True,
-            )
-
-        ingest_job = IngestJob(
-            job_id=uuid.uuid4(),
-            tenant_id=tenant_id,
-            source_type="local_upload",
-            source_uri=str(conv),
+        result = _process_single_conversation(
+            conv, tenant_id, verbose, json_output, i, len(conversations)
         )
-
-        try:
-            summary = process_job(ingest_job)
-            success = not summary.aborted_reason
-            if success:
-                success_count += 1
-                if not json_output:
-                    print(
-                        f"{_colorize('OK', 'green')} ({summary.messages_ingested} msg, {summary.attachments_parsed} att)"
-                    )
-            else:
-                fail_count += 1
-                if not json_output:
-                    print(f"{_colorize('FAILED', 'red')}")
-                    if verbose:
-                        print(f"       Reason: {summary.aborted_reason}")
-            results.append(
-                {
-                    "path": str(conv),
-                    "success": success,
-                    "messages": summary.messages_ingested,
-                    "attachments": summary.attachments_parsed,
-                    "error": summary.aborted_reason,
-                }
-            )
-        except Exception as e:
-            fail_count += 1
-            if not json_output:
-                print(f"{_colorize('ERROR', 'red')}")
-                if verbose:
-                    print(f"       {e}")
-            results.append({"path": str(conv), "success": False, "error": str(e)})
-
+        results.append(result)
+        if result["success"]:
+            success_count += 1
+    fail_count = len(conversations) - success_count
     if json_output:
         print(
             json.dumps(
@@ -701,6 +701,21 @@ def _perform_ingestion(
         print()
 
 
+def _setup_ingestion_run(
+    source_path: str, tenant_id: str, dry_run: bool, json_output: bool
+) -> Path:
+    """Validate source and print header for ingestion."""
+    source = _validate_ingest_source(source_path, json_output)
+    if not json_output:
+        _print_banner()
+        print(f"{_colorize('▶ EMAIL INGESTION', 'bold')}\n")
+        print(f"  Source:    {_colorize(str(source), 'cyan')}")
+        print(f"  Tenant:    {_colorize(tenant_id, 'cyan')}")
+        print(f"  Dry Run:   {_colorize(str(dry_run), 'yellow' if dry_run else 'dim')}")
+        print()
+    return source
+
+
 def _run_ingest(
     source_path: str,
     tenant_id: str = "default",
@@ -709,27 +724,15 @@ def _run_ingest(
     json_output: bool = False,
 ) -> None:
     """Ingest email exports into the system."""
-    source = _validate_ingest_source(source_path, json_output)
-
-    if not json_output:
-        _print_banner()
-        print(f"{_colorize('▶ EMAIL INGESTION', 'bold')}\n")
-        print(f"  Source:    {_colorize(str(source), 'cyan')}")
-        print(f"  Tenant:    {_colorize(tenant_id, 'cyan')}")
-        print(f"  Dry Run:   {_colorize(str(dry_run), 'yellow' if dry_run else 'dim')}")
-        print()
-
+    source = _setup_ingestion_run(source_path, tenant_id, dry_run, json_output)
     conversations = _discover_conversations(source, json_output)
-
     if not json_output:
         print(
             f"  {_colorize('✓', 'green')} Found {len(conversations)} conversation(s)\n"
         )
-
     if dry_run:
         _handle_ingest_dry_run(conversations, json_output)
         return
-
     _perform_ingestion(conversations, tenant_id, verbose, json_output)
 
 
@@ -815,17 +818,11 @@ def _perform_indexing(
         raise
 
 
-def _run_index(
-    root: str = ".",
-    provider: str = "digitalocean",
-    workers: int = 4,
-    limit: int | None = None,
-    force: bool = False,
-    json_output: bool = False,
-) -> None:
-    """Build or rebuild the search index with embeddings."""
+def _setup_indexing_run(
+    root: str, provider: str, workers: int, limit: int | None, force: bool, json_output: bool
+) -> Path:
+    """Validate root and print header for indexing."""
     root_path = _validate_index_root(root, json_output)
-
     if not json_output:
         _print_banner()
         print(f"{_colorize('▶ INDEX BUILDER', 'bold')}\n")
@@ -839,7 +836,19 @@ def _run_index(
                 f"  {_colorize('Force: recomputing index regardless of cache state', 'yellow')}"
             )
         print()
+    return root_path
 
+
+def _run_index(
+    root: str = ".",
+    provider: str = "digitalocean",
+    workers: int = 4,
+    limit: int | None = None,
+    force: bool = False,
+    json_output: bool = False,
+) -> None:
+    """Build or rebuild the search index with embeddings."""
+    root_path = _setup_indexing_run(root, provider, workers, limit, force, json_output)
     _perform_indexing(root_path, provider, workers, limit, force, json_output)
 
 
@@ -906,6 +915,28 @@ def _run_search(
 # =============================================================================
 
 
+def _handle_answer_response(response: dict, json_output: bool) -> None:
+    """Handle the response from the answer API."""
+    import json
+
+    answer = response.get("answer")
+    if json_output:
+        print(json.dumps(answer if answer else {}, indent=2, default=str))
+    else:
+        if answer:
+            print(f"\n{_colorize('ANSWER:', 'bold')}")
+            print(f"{answer.get('answer_markdown', '')}\n")
+            evidence = answer.get("evidence", [])
+            if evidence:
+                print(f"{_colorize('SOURCES:', 'dim')}")
+                for i, ev in enumerate(evidence, 1):
+                    snippet = ev.get("snippet") or ev.get("text") or ""
+                    print(f"  {i}. {snippet}")
+        else:
+            print(f"  {_colorize('⚠', 'yellow')} No answer generated.")
+        print()
+
+
 def _call_answer_api(
     query: str, tenant_id: str, user_id: str, json_output: bool
 ) -> None:
@@ -920,25 +951,7 @@ def _call_answer_api(
 
         api_client = get_api_client()
         response = api_client.answer(query=query, tenant_id=tenant_id, user_id=user_id)
-
-        answer = response.get("answer")
-
-        if json_output:
-            print(json.dumps(answer if answer else {}, indent=2, default=str))
-        else:
-            if answer:
-                print(f"\n{_colorize('ANSWER:', 'bold')}")
-                print(f"{answer.get('answer_markdown', '')}\n")
-
-                evidence = answer.get("evidence", [])
-                if evidence:
-                    print(f"{_colorize('SOURCES:', 'dim')}")
-                    for i, ev in enumerate(evidence, 1):
-                        snippet = ev.get("snippet") or ev.get("text") or ""
-                        print(f"  {i}. {snippet}")
-            else:
-                print(f"  {_colorize('⚠', 'yellow')} No answer generated.")
-            print()
+        _handle_answer_response(response, json_output)
 
     except ImportError as e:
         msg = f"Could not load RAG module: {e}"
@@ -992,6 +1005,21 @@ async def _execute_summarization_graph(
     return await graph.ainvoke(initial_state)
 
 
+def _print_human_summary(summary: Any) -> None:
+    """Print a human-readable summary of facts and key points."""
+    if not summary:
+        print(f"  {_colorize('⚠', 'yellow')} No summary generated.")
+        print()
+        return
+    print(f"\n{_colorize('SUMMARY:', 'bold')}")
+    print(f"{summary.summary_markdown}\n")
+    if summary.facts_ledger:
+        print(f"{_colorize('FACTS LEDGER:', 'dim')}")
+        for key, value in summary.facts_ledger.items():
+            print(f"  • {key}: {value}")
+    print()
+
+
 def _handle_summarization_result(final_state: Any, json_output: bool) -> None:
     """Handle the result of the summarization graph."""
     import json
@@ -1015,17 +1043,7 @@ def _handle_summarization_result(final_state: Any, json_output: bool) -> None:
             json.dumps(summary.model_dump() if summary else {}, indent=2, default=str)
         )
     else:
-        if summary:
-            print(f"\n{_colorize('SUMMARY:', 'bold')}")
-            print(f"{summary.summary_markdown}\n")
-
-            if summary.facts_ledger:
-                print(f"{_colorize('FACTS LEDGER:', 'dim')}")
-                for key, value in summary.facts_ledger.items():
-                    print(f"  • {key}: {value}")
-        else:
-            print(f"  {_colorize('⚠', 'yellow')} No summary generated.")
-        print()
+        _print_human_summary(summary)
 
 
 def _run_summarize(
@@ -1561,7 +1579,9 @@ Run comprehensive system diagnostics including:
         help="Automatically fix common code issues",
         description="Run the auto-fix script to resolve low-hanging fruit issues.",
     )
-    autofix_parser.set_defaults(func=lambda _: _run_autofix())
+    from cortex_cli.cmd_autofix import main as autofix_main
+
+    autofix_parser.set_defaults(func=lambda _: autofix_main())
 
 
 def _setup_plugin_commands(subparsers: Any) -> None:
@@ -1597,8 +1617,9 @@ def _setup_plugin_commands(subparsers: Any) -> None:
             except typer.Exit as e:
                 if e.code != 0:
                     Console().print(f"[bold red]Error:[/bold red] {e}")
-            except SystemExit:
-                pass
+            except SystemExit as e:
+                if e.code != 0:
+                    raise
             except Exception as e:
                 Console().print(
                     f"[bold red]An unexpected error occurred:[/bold red] {e}"
@@ -1626,13 +1647,6 @@ def _setup_plugin_commands(subparsers: Any) -> None:
     setup_patch_parser(subparsers)
     setup_rechunk_parser(subparsers)
     setup_schema_parser(subparsers)
-
-
-def _run_autofix():
-    """Run the autofix script."""
-    from cortex_cli.cmd_autofix import main as autofix_main
-
-    autofix_main()
 
 
 if __name__ == "__main__":

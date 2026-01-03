@@ -115,13 +115,45 @@ def try_apply(patch_path: Path, dry_run: bool = True) -> tuple[bool, str]:
     return result.returncode == 0, result.stderr or result.stdout
 
 
+def _is_patch_applied(patch_path: Path) -> bool:
+    """Check if a patch has already been applied by attempting a dry-run in reverse."""
+    proc_reverse = subprocess.run(
+        ["patch", "-p0", "--dry-run", "-R", "-i", str(patch_path)],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+    return proc_reverse.returncode == 0
+
+
+def _try_fix_patch_with_llm(
+    patch_path: Path, file_path: str, content: str
+) -> tuple[bool, str, bool]:
+    """Attempt to fix a patch with an LLM and returns the new application status."""
+    original_path = PROJECT_ROOT / file_path
+    if not original_path.exists():
+        return False, "Original file not found", False
+
+    with original_path.open() as f:
+        original = f.read()
+
+    fixed_content = call_llm_fix(original, content)
+    if not fixed_content or not is_valid_patch(fixed_content):
+        return False, "LLM fix failed or produced invalid patch", False
+
+    with patch_path.open("w") as f:
+        f.write(fixed_content)
+
+    success, msg = try_apply(patch_path, dry_run=True)
+    return success, msg, True
+
+
 def process_file_patches(
     file_path: str, patches: list[Path], use_llm: bool, dry_run: bool
 ) -> list[dict]:
     """Process all patches for a single file sequentially."""
     results = []
-
-    # Sort patches by line number
     patches.sort(
         key=lambda p: (
             int(re.search(r"__L(\d+)__", p.name).group(1))
@@ -130,63 +162,37 @@ def process_file_patches(
         )
     )
 
-    # No need for file lock here since this function runs in a single thread for this file
-    # and we submit one task per file.
-
     for patch_path in patches:
         result = {"path": patch_path.name, "applied": False, "fixed": False}
-
         try:
             with patch_path.open() as f:
                 content = f.read()
 
-            # Check if already applied (reverse dry-run succeeds)
-            proc_reverse = subprocess.run(
-                ["patch", "-p0", "--dry-run", "-R", "-i", str(patch_path)],
-                cwd=PROJECT_ROOT,
-                capture_output=True,
-                text=True,
-                timeout=10,
-            )
-            if proc_reverse.returncode == 0:
-                result["applied"] = True
-                result["note"] = "already_applied"
+            if _is_patch_applied(patch_path):
+                result.update({"applied": True, "note": "already_applied"})
                 results.append(result)
                 continue
 
-            # Try dry-run first
             success, msg = try_apply(patch_path, dry_run=True)
-
-            # If fails and LLM enabled, try to fix
             if not success and use_llm:
-                original_path = PROJECT_ROOT / file_path
-                if original_path.exists():
-                    with original_path.open() as f:
-                        original = f.read()
-                    fixed = call_llm_fix(original, content)
-                    if fixed and is_valid_patch(fixed):
-                        with patch_path.open("w") as f:
-                            f.write(fixed)
-                        result["fixed"] = True
-                        success, msg = try_apply(patch_path, dry_run=True)
+                success, msg, fixed = _try_fix_patch_with_llm(
+                    patch_path, file_path, content
+                )
+                if fixed:
+                    result["fixed"] = True
 
             if not success:
                 result["error"] = msg[:80]
-                results.append(result)
-                continue
-
-            # Actually apply if not global dry-run
-            if not dry_run:
-                success, msg = try_apply(patch_path, dry_run=False)
-                result["applied"] = success
-                if not success:
-                    result["error"] = msg[:80]
+            elif not dry_run:
+                applied_successfully, apply_msg = try_apply(patch_path, dry_run=False)
+                result["applied"] = applied_successfully
+                if not applied_successfully:
+                    result["error"] = apply_msg[:80]
             else:
-                result["applied"] = True  # counts as success for dry run reporting
+                result["applied"] = True  # Dry-run success
 
         except Exception as e:
             result["error"] = str(e)
-
         results.append(result)
 
     return results
@@ -205,6 +211,28 @@ def group_patches_by_file(patches: list[Path]) -> dict[str, list[Path]]:
         except Exception:
             pass
     return groups
+
+
+def _process_future_result(future, counters: dict, log_file):
+    """Process the result from a completed future, updating counters and logs."""
+    try:
+        results = future.result()
+        for res in results:
+            counters["total"] += 1
+            if res.get("applied"):
+                counters["applied"] += 1
+            if res.get("fixed"):
+                counters["fixed"] += 1
+            if res.get("error"):
+                counters["failed"] += 1
+                log_file.write(f"FAILED {res['path']}: {res.get('error', '')}\n")
+
+        if counters["total"] % 10 == 0:
+            print(f"Progress: {counters['applied']} applied, {counters['failed']} failed...")
+            log_file.flush()
+    except Exception as e:
+        counters["failed"] += 1
+        log_file.write(f"ERROR processing future: {e}\n")
 
 
 def main():
@@ -230,50 +258,32 @@ def main():
     print(f"LLM Fix: {'disabled' if args.no_llm else FIX_MODEL}")
     print(f"Mode: {'DRY-RUN' if args.dry_run else 'APPLY'}\n")
 
-    applied = fixed = failed = 0
-    total_processed = 0
-
-    # Process files in parallel. Each task handles ONE file's patches sequentially.
-    # This prevents locking issues.
+    counters = {"applied": 0, "fixed": 0, "failed": 0, "total": 0}
     max_workers = 5 if not args.no_llm else 10
 
     with (
         Path("patch_failures.log").open("w") as log_file,
         ThreadPoolExecutor(max_workers=max_workers) as executor,
     ):
-        futures = []
-        for file_path, file_patches in groups.items():
-            futures.append(
-                executor.submit(
-                    process_file_patches,
-                    file_path,
-                    file_patches,
-                    not args.no_llm,
-                    args.dry_run,
-                )
+        futures = [
+            executor.submit(
+                process_file_patches,
+                file_path,
+                file_patches,
+                not args.no_llm,
+                args.dry_run,
             )
+            for file_path, file_patches in groups.items()
+        ]
 
         for future in as_completed(futures):
-            results = future.result()
-            for res in results:
-                total_processed += 1
-                if res.get("applied"):
-                    applied += 1
-                if res.get("fixed"):
-                    fixed += 1
-                if res.get("error"):
-                    failed += 1
-                    log_file.write(f"FAILED {res['path']}: {res.get('error', '')}\n")
-
-            if total_processed % 10 == 0:
-                print(f"Progress: {applied} applied, {failed} failed...")
-                log_file.flush()
+            _process_future_result(future, counters, log_file)
 
     print(f"\n{'=' * 60}")
     print(f"Total patches: {len(patches)}")
-    print(f"Applied: {applied}")
-    print(f"Fixed by LLM: {fixed}")
-    print(f"Failed: {failed}")
+    print(f"Applied: {counters['applied']}")
+    print(f"Fixed by LLM: {counters['fixed']}")
+    print(f"Failed: {counters['failed']}")
 
 
 if __name__ == "__main__":

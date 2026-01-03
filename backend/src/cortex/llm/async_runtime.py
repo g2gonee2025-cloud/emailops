@@ -430,13 +430,10 @@ class AsyncLLMRuntime:
             },
         ]
 
-    async def async_complete_json(
-        self,
-        prompt: str | list[dict[str, Any]],
-        schema: dict[str, Any],
-        max_repair_attempts: int = 2,
-        **kwargs: Any,
-    ) -> dict[str, Any]:
+    def _prepare_json_request(
+        self, prompt: str | list[dict[str, Any]], schema: dict[str, Any]
+    ) -> tuple[list[dict[str, Any]], str]:
+        """Validate prompt and construct the initial JSON request messages."""
         if isinstance(prompt, str):
             if not prompt.strip():
                 raise ValidationError("prompt string must not be empty")
@@ -444,9 +441,7 @@ class AsyncLLMRuntime:
         elif isinstance(prompt, list) and prompt:
             messages = [dict(m) for m in prompt]
         else:
-            raise ValidationError(
-                "prompt must be a non-empty string or list of messages"
-            )
+            raise ValidationError("prompt must be a non-empty string or list of messages")
 
         schema_json = json.dumps(schema, indent=2)
         json_instructions = (
@@ -454,25 +449,41 @@ class AsyncLLMRuntime:
             f"{schema_json}\n\nDo not include markdown. Return ONLY the JSON object."
         )
         messages[-1]["content"] += json_instructions
+        return messages, schema_json
 
-        async def _call_model_for_json(current_messages: list[dict[str, Any]]) -> str:
-            base_kwargs = {
-                "temperature": 0.0,
-                "max_tokens": 2048,
-                "response_format": {"type": "json_object"},
-                **kwargs,
-                "messages": current_messages,
-            }
-            try:
+    async def _async_call_model_for_json(
+        self, current_messages: list[dict[str, Any]], **kwargs: Any
+    ) -> str:
+        """Call the model with JSON-specific settings and handle provider fallbacks."""
+        base_kwargs = {
+            "temperature": 0.0,
+            "max_tokens": 2048,
+            "response_format": {"type": "json_object"},
+            **kwargs,
+            "messages": current_messages,
+        }
+        try:
+            return await self.async_complete_text("", **base_kwargs)
+        except ProviderError as e:
+            # If the provider doesn't support response_format, try again without it.
+            if "response_format" in str(e).lower() or "json_object" in str(e).lower():
+                base_kwargs.pop("response_format", None)
                 return await self.async_complete_text("", **base_kwargs)
-            except ProviderError as e:
-                if (
-                    "response_format" in str(e).lower()
-                    or "json_object" in str(e).lower()
-                ):
-                    base_kwargs.pop("response_format", None)
-                    return await self.async_complete_text("", **base_kwargs)
-                raise
+            raise
+
+    async def async_complete_json(
+        self,
+        prompt: str | list[dict[str, Any]],
+        schema: dict[str, Any],
+        max_repair_attempts: int = 2,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        """
+        Completes a prompt and returns a JSON object matching the schema.
+
+        Handles JSON validation and self-correction.
+        """
+        messages, schema_json = self._prepare_json_request(prompt, schema)
 
         raw_output: str | None = None
         last_error: str | None = None
@@ -485,20 +496,22 @@ class AsyncLLMRuntime:
                     str(last_error), str(raw_output), schema_json
                 )
             )
-            raw_output = await _call_model_for_json(current_prompt_messages)
+
+            raw_output = await self._async_call_model_for_json(
+                current_prompt_messages, **kwargs
+            )
 
             try:
                 parsed = _try_load_json(raw_output or "")
                 validation_error = _validate_json_schema(parsed, schema)
-                if validation_error:
-                    last_error = validation_error
-                    logger.warning(
-                        "JSON schema validation failed (attempt %d): %s",
-                        attempt + 1,
-                        validation_error,
-                    )
-                    continue
-                return parsed
+                if not validation_error:
+                    return parsed
+                last_error = validation_error
+                logger.warning(
+                    "JSON schema validation failed (attempt %d): %s",
+                    attempt + 1,
+                    validation_error,
+                )
             except (ValueError, Exception) as e:
                 last_error = str(e)
                 logger.warning(
@@ -580,6 +593,25 @@ def _parse_json_from_fenced_block(s: str) -> dict[str, Any] | None:
     return None
 
 
+def _parse_json_directly(s: str) -> dict[str, Any] | None:
+    """Tries to parse a JSON object directly from a string."""
+    try:
+        obj = json.loads(s)
+        if isinstance(obj, dict):
+            return obj
+    except json.JSONDecodeError:
+        pass
+    return None
+
+
+def _parse_json_from_balanced_object(s: str) -> dict[str, Any] | None:
+    """Finds and parses the first balanced JSON object from a string."""
+    balanced_block = _extract_first_balanced_json_object(s)
+    if balanced_block:
+        return _parse_json_directly(balanced_block)
+    return None
+
+
 def _try_load_json(data: Any) -> dict[str, Any]:
     """Attempts to parse a JSON object from various formats in a string."""
     if isinstance(data, dict):
@@ -590,25 +622,16 @@ def _try_load_json(data: Any) -> dict[str, Any]:
     s = str(data).strip()
     s = re.sub(r"<think>.*?</think>", "", s, flags=re.DOTALL | re.IGNORECASE).strip()
 
-    try:
-        obj = json.loads(s)
-        if isinstance(obj, dict):
-            return obj
-    except json.JSONDecodeError:
-        pass
+    parsing_strategies = [
+        _parse_json_directly,
+        _parse_json_from_fenced_block,
+        _parse_json_from_balanced_object,
+    ]
 
-    parsed_from_block = _parse_json_from_fenced_block(s)
-    if parsed_from_block:
-        return parsed_from_block
-
-    balanced_block = _extract_first_balanced_json_object(s)
-    if balanced_block:
-        try:
-            obj = json.loads(balanced_block)
-            if isinstance(obj, dict):
-                return obj
-        except json.JSONDecodeError:
-            pass
+    for strategy in parsing_strategies:
+        result = strategy(s)
+        if result is not None:
+            return result
 
     raise ValueError(
         f"Failed to parse JSON from string: {s[:500]!r} (Total len: {len(s)})"

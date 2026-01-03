@@ -194,6 +194,10 @@ class StorageConfig(BaseModel):
     region: str = Field(
         default_factory=lambda: _env("S3_REGION", "nyc3"), description="S3 region"
     )
+    account_id: str | None = Field(
+        default_factory=lambda: _env("S3_ACCOUNT_ID", None),
+        description="Optional S3 account ID for bucket ownership verification.",
+    )
 
     @model_validator(mode="after")
     def validate_credentials(self) -> StorageConfig:

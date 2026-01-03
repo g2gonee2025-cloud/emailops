@@ -128,6 +128,28 @@ def _download_s3_source(source_uri: str) -> tuple[Path, Path]:
     return temp_dir, local_dir
 
 
+def _load_sftp_private_key(pkey_path: str) -> Optional[Any]:
+    """Try loading an SFTP private key with common formats."""
+    try:
+        import paramiko
+    except ImportError as exc:
+        raise ValueError(
+            "paramiko is required for sftp ingestion. Install it to use source_type='sftp'."
+        ) from exc
+
+    for key_class in (
+        paramiko.Ed25519Key,
+        paramiko.RSAKey,
+        paramiko.ECDSAKey,
+        paramiko.DSSKey,
+    ):
+        try:
+            return key_class.from_private_key_file(pkey_path)
+        except paramiko.ssh_exception.SSHException:
+            continue
+    return None
+
+
 def _download_sftp_source(
     source_uri: str, options: dict[str, Any]
 ) -> tuple[Path, Path]:
@@ -166,18 +188,7 @@ def _download_sftp_source(
 
     pkey = None
     if pkey_path:
-        # Try loading the key with common formats to avoid breaking existing integrations.
-        for key_class in (
-            paramiko.Ed25519Key,
-            paramiko.RSAKey,
-            paramiko.ECDSAKey,
-            paramiko.DSSKey,
-        ):
-            try:
-                pkey = key_class.from_private_key_file(pkey_path)
-                break
-            except paramiko.ssh_exception.SSHException:
-                continue
+        pkey = _load_sftp_private_key(pkey_path)
         if not pkey:
             raise ValueError(
                 f"Failed to load private key from {pkey_path}. Unsupported format."
@@ -259,7 +270,7 @@ async def _ingest_conversation(
 
     # 1. Prepare Metadata
     conversation_data = _prepare_conversation_data(
-        convo_dir, convo_data, conversation_id, job, tenant_ns
+        convo_dir, convo_data, conversation_id, job
     )
 
     # 2. Process Body & Attachments
@@ -312,7 +323,6 @@ def _prepare_conversation_data(
     convo_data: dict[str, Any],
     conversation_id: uuid.UUID,
     job: IngestJobRequest,
-    tenant_ns: uuid.UUID,
 ) -> dict[str, Any]:
     from cortex.ingestion.conversation_parser import (
         extract_participants_from_conversation_txt,
@@ -518,6 +528,63 @@ def _create_chunks(
     return chunks_data
 
 
+def _prepare_summary_context(chunks_data: list[dict[str, Any]]) -> str:
+    """Prepare the text context for summarization from body and attachment chunks."""
+    body_chunks = sorted(
+        [c for c in chunks_data if not c.get("is_attachment")],
+        key=lambda x: x.get("position", 0),
+    )
+    att_chunks = sorted(
+        [c for c in chunks_data if c.get("is_attachment")],
+        key=lambda x: (x.get("attachment_id"), x.get("position", 0)),
+    )
+
+    context_parts = []
+    if body_chunks:
+        context_parts.append("--- Conversation Messages ---")
+        context_parts.extend(c.get("text", "") for c in body_chunks)
+
+    if att_chunks:
+        context_parts.append("\n--- Attachments ---")
+        context_parts.extend(c.get("text", "") for c in att_chunks)
+
+    return "\n\n".join(context_parts)
+
+
+def _create_summary_chunk(
+    summarizer: Any,
+    summary_text: str,
+    tenant_ns: uuid.UUID,
+    conversation_id: uuid.UUID,
+) -> dict[str, Any]:
+    """Generate a summary, embed it, and create a new summary chunk."""
+    summary_embedding = summarizer.embed_summary(summary_text)
+    if summary_embedding is None:
+        logger.warning("Summary embedding failed; continuing without embedding")
+
+    final_embedding = (
+        summary_embedding if summary_embedding and len(summary_embedding) > 0 else None
+    )
+
+    summary_chunk_id = _generate_stable_id(
+        tenant_ns, "chunk", str(conversation_id), "summary"
+    )
+    return {
+        "chunk_id": summary_chunk_id,
+        "conversation_id": conversation_id,
+        "is_attachment": False,
+        "is_summary": True,
+        "chunk_type": "summary",
+        "text": summary_text,
+        "embedding": final_embedding,
+        "position": -1,
+        "char_start": 0,
+        "char_end": len(summary_text),
+        "section_path": "summary",
+        "extra_data": {"generated_by": "ConversationSummarizer"},
+    }
+
+
 async def _process_intelligence(
     chunks_data: list[dict[str, Any]],
     conversation_id: uuid.UUID,
@@ -533,7 +600,6 @@ async def _process_intelligence(
     if not chunks_data:
         return graph_data, None
 
-    # Skip summarization if env var is set (avoids LLM 404 retries)
     if os.getenv("OUTLOOKCORTEX_SKIP_SUMMARY", "").lower() in ("true", "1", "yes"):
         logger.info("Skipping summarization (OUTLOOKCORTEX_SKIP_SUMMARY=true)")
         return graph_data, None
@@ -541,75 +607,24 @@ async def _process_intelligence(
     try:
         from cortex.intelligence.summarizer import ConversationSummarizer
 
-        # Prepare context (body + attachments)
-        body_chunks = sorted(
-            [c for c in chunks_data if not c.get("is_attachment")],
-            key=lambda x: x.get("position", 0),
-        )
-        att_chunks = sorted(
-            [c for c in chunks_data if c.get("is_attachment")],
-            key=lambda x: (x.get("attachment_id"), x.get("position", 0)),
-        )
+        summary_context = _prepare_summary_context(chunks_data)
+        if not summary_context.strip():
+            return graph_data, None
 
-        context_parts = []
-        if body_chunks:
-            context_parts.append("--- Conversation Messages ---")
-            for c in body_chunks:
-                context_parts.append(c.get("text", ""))
+        summarizer = ConversationSummarizer()
+        summary_text = summarizer.generate_summary(summary_context)
 
-        if att_chunks:
-            context_parts.append("\n--- Attachments ---")
-            for c in att_chunks:
-                context_parts.append(c.get("text", ""))
-
-        summary_context = "\n\n".join(context_parts)
-
-        if summary_context.strip():
-            # 1. Summarization
-            summarizer = ConversationSummarizer()
-            summary_text = summarizer.generate_summary(summary_context)
-
-            if summary_text:
-                summary_text_out = summary_text
-                summary_embedding = summarizer.embed_summary(summary_text)
-                if summary_embedding is None:
-                    logger.warning(
-                        "Summary embedding failed; continuing without embedding"
-                    )
-                # P1 Fix: Handle empty embedding due to API failure so DB write doesn't fail
-                final_embedding = (
-                    summary_embedding
-                    if summary_embedding and len(summary_embedding) > 0
-                    else None
-                )
-
-                summary_chunk_id = _generate_stable_id(
-                    tenant_ns, "chunk", str(conversation_id), "summary"
-                )
-                chunks_data.append(
-                    {
-                        "chunk_id": summary_chunk_id,
-                        "conversation_id": conversation_id,
-                        "is_attachment": False,
-                        "is_summary": True,
-                        "chunk_type": "summary",
-                        "text": summary_text,
-                        "embedding": final_embedding,
-                        "position": -1,
-                        "char_start": 0,
-                        "char_end": len(summary_text),
-                        "section_path": "summary",
-                        "extra_data": {"generated_by": "ConversationSummarizer"},
-                    }
-                )
-                logger.info(
-                    f"Generated summary chunk using {len(summary_context)} chars of context"
-                )
-
-            # 2. Graph Extraction
-            graph_data = await _extract_graph(
-                summary_context, conversation_id, job.tenant_id
+        if summary_text:
+            summary_text_out = summary_text
+            summary_chunk = _create_summary_chunk(
+                summarizer, summary_text, tenant_ns, conversation_id
             )
+            chunks_data.append(summary_chunk)
+            logger.info(
+                f"Generated summary chunk using {len(summary_context)} chars of context"
+            )
+
+        graph_data = await _extract_graph(summary_context)
 
     except Exception as e:
         logger.warning(f"Intelligence processing failed: {e}")
@@ -617,9 +632,7 @@ async def _process_intelligence(
     return graph_data, summary_text_out
 
 
-async def _extract_graph(
-    summary_context: str, conversation_id: uuid.UUID, tenant_id: str
-) -> dict[str, Any]:
+async def _extract_graph(summary_context: str) -> dict[str, Any]:
     """
     Extract graph nodes and edges from text.
     Returns dict with 'nodes' and 'edges' lists for deferred writing.

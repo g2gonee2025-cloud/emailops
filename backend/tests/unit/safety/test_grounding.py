@@ -51,8 +51,8 @@ def test_cosine_similarity():
     assert _cosine_similarity([1, 0], [0, 1]) == pytest.approx(0.0)
     assert _cosine_similarity([1, 0], [-1, 0]) == pytest.approx(-1.0)
     assert _cosine_similarity([1, 2, 3], [4, 5, 6]) == pytest.approx(0.9746318)
-    assert (
-        _cosine_similarity([0, 0], [1, 1]) == 0.0
+    assert _cosine_similarity([0, 0], [1, 1]) == pytest.approx(
+        0.0
     ), "Similarity with a zero vector should be 0"
 
 
@@ -82,8 +82,8 @@ def test_grounding_no_claims_is_not_grounded(mock_embeddings_client):
     result = check_grounding_embedding(answer, facts)
 
     assert not result.is_grounded
-    assert result.confidence == 1.0
-    assert result.grounding_ratio == 0.0
+    assert result.confidence == pytest.approx(1.0)
+    assert result.grounding_ratio == pytest.approx(0.0)
     assert len(result.claim_analyses) == 0
 
 
@@ -95,8 +95,8 @@ def test_grounding_with_claims_but_no_facts(mock_embeddings_client):
     result = check_grounding_embedding(answer, facts)
 
     assert not result.is_grounded
-    assert result.confidence == 1.0  # Should be certain it's not grounded
-    assert result.grounding_ratio == 0.0
+    assert result.confidence == pytest.approx(1.0)  # Should be certain it's not grounded
+    assert result.grounding_ratio == pytest.approx(0.0)
     assert len(result.unsupported_claims) == 1
     assert result.unsupported_claims[0] == "This is a fully supported statement"
 
@@ -112,7 +112,7 @@ def test_grounding_fully_supported(mock_embeddings_client):
 
     assert result.is_grounded
     assert result.confidence > 0.9
-    assert result.grounding_ratio == 1.0
+    assert result.grounding_ratio == pytest.approx(1.0)
     assert len(result.unsupported_claims) == 0
     assert all(c.is_supported for c in result.claim_analyses)
 
@@ -126,7 +126,7 @@ def test_grounding_fully_unsupported(mock_embeddings_client):
 
     assert not result.is_grounded
     assert result.confidence < 0.1
-    assert result.grounding_ratio == 0.0
+    assert result.grounding_ratio == pytest.approx(0.0)
     assert len(result.unsupported_claims) == 1
 
 

@@ -481,75 +481,69 @@ class RedisStreamsQueue(JobQueue):
         for job_type in job_types:
             for priority in ["high", "normal", "low"]:
                 stream = f"{self.STREAM_PREFIX}{job_type}:{priority}"
-
                 try:
-                    # Get pending messages
                     pending = self._redis.xpending_range(
                         stream, self.CONSUMER_GROUP, min="-", max="+", count=10
                     )
-
                     for entry in pending:
-                        msg_id = entry["message_id"]
-                        idle_time = entry.get("time_since_delivered", 0)
-
-                        if idle_time >= min_idle_time:
-                            # Attempt to claim
-                            claimed = self._redis.xclaim(
-                                stream,
-                                self.CONSUMER_GROUP,
-                                self._consumer_name,
-                                min_idle_time=min_idle_time,
-                                message_ids=[msg_id],
+                        if entry.get("time_since_delivered", 0) >= min_idle_time:
+                            job = self._process_stale_message(
+                                stream, entry["message_id"], min_idle_time
                             )
-
-                            if claimed:
-                                msg_id, data = claimed[0]
-                                job_id = data["id"]
-
-                                # Check retry count
-                                attempts = int(
-                                    self._redis.hget(
-                                        f"{self.STATUS_PREFIX}{job_id}", "attempts"
-                                    )
-                                    or 0
-                                )
-
-                                if attempts >= self._max_retries:
-                                    # Move to dead letter
-                                    self._move_to_dead_letter(
-                                        job_id, stream, msg_id, data
-                                    )
-                                    continue
-
-                                # Update status and return
-                                self._redis.hincrby(
-                                    f"{self.STATUS_PREFIX}{job_id}", "attempts", 1
-                                )
-                                self._redis.hset(
-                                    f"{self.STATUS_PREFIX}{job_id}",
-                                    mapping={
-                                        "status": JobStatus.PROCESSING,
-                                        "started_at": str(time.time()),
-                                        "message_id": msg_id,
-                                        "stream": stream,
-                                        "consumer": self._consumer_name,
-                                    },
-                                )
-
-                                return {
-                                    "id": job_id,
-                                    "type": data["type"],
-                                    "payload": json.loads(data["payload"]),
-                                    "priority": int(data.get("priority", 0)),
-                                    "attempts": attempts + 1,
-                                    "_message_id": msg_id,
-                                    "_stream": stream,
-                                }
-
+                            if job:
+                                return job
                 except Exception as e:
                     logger.warning(f"Error claiming stale messages from {stream}: {e}")
 
         return None
+
+    def _process_stale_message(
+        self, stream: str, msg_id: str, min_idle_time: int
+    ) -> dict[str, Any] | None:
+        """Process a single stale message."""
+        claimed = self._redis.xclaim(
+            stream,
+            self.CONSUMER_GROUP,
+            self._consumer_name,
+            min_idle_time=min_idle_time,
+            message_ids=[msg_id],
+        )
+
+        if not claimed:
+            return None
+
+        msg_id, data = claimed[0]
+        job_id = data["id"]
+        attempts = int(
+            self._redis.hget(f"{self.STATUS_PREFIX}{job_id}", "attempts") or 0
+        )
+
+        if attempts >= self._max_retries:
+            self._move_to_dead_letter(job_id, stream, msg_id, data)
+            return None
+
+        # Update status and return
+        self._redis.hincrby(f"{self.STATUS_PREFIX}{job_id}", "attempts", 1)
+        self._redis.hset(
+            f"{self.STATUS_PREFIX}{job_id}",
+            mapping={
+                "status": JobStatus.PROCESSING,
+                "started_at": str(time.time()),
+                "message_id": msg_id,
+                "stream": stream,
+                "consumer": self._consumer_name,
+            },
+        )
+
+        return {
+            "id": job_id,
+            "type": data["type"],
+            "payload": json.loads(data["payload"]),
+            "priority": int(data.get("priority", 0)),
+            "attempts": attempts + 1,
+            "_message_id": msg_id,
+            "_stream": stream,
+        }
 
     def _move_to_dead_letter(
         self, job_id: str, stream: str, message_id: str, data: dict[str, Any]
@@ -620,56 +614,55 @@ class RedisStreamsQueue(JobQueue):
             return
 
         attempts = int(status_data.get("attempts", 0))
-        stream = status_data.get("stream")
-        message_id = status_data.get("message_id")
 
         if attempts >= self._max_retries:
-            # Move to dead letter queue
-            if stream and message_id:
-                # Retrieve the full job data to move it
-                # XCLAIM returns the message, but it might be simpler to just query it
-                # We assume the message is still in the stream.
-                data = self._redis.xrange(
-                    stream, min=message_id, max=message_id, count=1
-                )
-                if data:
-                    _, job_data = data[0]
-                    self._move_to_dead_letter(job_id, stream, message_id, job_data)
-                else:
-                    # Fallback if message is gone for some reason
-                    logger.warning(
-                        f"Could not find message {message_id} in stream {stream} for job {job_id} to dead-letter."
-                    )
-                    self._redis.hset(
-                        status_key,
-                        mapping={
-                            "status": JobStatus.DEAD_LETTER,
-                            "error": error
-                            or "Max retries exceeded (message not found)",
-                        },
-                    )
-            else:
-                # If we don't have stream/message info, we can't ACK, but we can update status
-                self._redis.hset(
-                    status_key,
-                    mapping={
-                        "status": JobStatus.DEAD_LETTER,
-                        "error": error or "Max retries exceeded (no stream info)",
-                    },
-                )
+            self._handle_max_retries(job_id, status_data, status_key, error)
         else:
-            # Job will be retried. Just update its status.
-            # It remains in the consumer group's pending list and will be
-            # picked up again by `_claim_stale_messages` after `visibility_timeout`.
             self._redis.hset(
                 status_key,
                 mapping={
-                    "status": JobStatus.PENDING,  # Mark as pending for retry
+                    "status": JobStatus.PENDING,
                     "error": error or "",
                     "last_failed_at": str(time.time()),
                 },
             )
             logger.debug(f"Nacked job {job_id} (attempt {attempts}). Will be retried.")
+
+    def _handle_max_retries(
+        self,
+        job_id: str,
+        status_data: dict[str, Any],
+        status_key: str,
+        error: str | None,
+    ) -> None:
+        """Handle a job that has reached its maximum number of retries."""
+        stream = status_data.get("stream")
+        message_id = status_data.get("message_id")
+
+        if stream and message_id:
+            data = self._redis.xrange(stream, min=message_id, max=message_id, count=1)
+            if data:
+                _, job_data = data[0]
+                self._move_to_dead_letter(job_id, stream, message_id, job_data)
+            else:
+                logger.warning(
+                    f"Could not find message {message_id} in stream {stream} for job {job_id} to dead-letter."
+                )
+                self._redis.hset(
+                    status_key,
+                    mapping={
+                        "status": JobStatus.DEAD_LETTER,
+                        "error": error or "Max retries exceeded (message not found)",
+                    },
+                )
+        else:
+            self._redis.hset(
+                status_key,
+                mapping={
+                    "status": JobStatus.DEAD_LETTER,
+                    "error": error or "Max retries exceeded (no stream info)",
+                },
+            )
 
     def get_job_status(self, job_id: str) -> dict[str, Any] | None:
         """Get job status."""
