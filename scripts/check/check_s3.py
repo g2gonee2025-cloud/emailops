@@ -52,7 +52,10 @@ def main():
         )
 
         # List first 1 object to verify access
-        response = s3.list_objects_v2(Bucket=config.storage.bucket_raw, MaxKeys=1)
+        list_kwargs = {"Bucket": config.storage.bucket_raw, "MaxKeys": 1}
+        if config.storage.account_id:
+            list_kwargs["ExpectedBucketOwner"] = config.storage.account_id
+        response = s3.list_objects_v2(**list_kwargs)  # NOSONAR
 
         print("Connectivity Check: SUCCESS")
         if "Contents" in response:
