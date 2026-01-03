@@ -7,8 +7,17 @@ import boto3
 from botocore.client import Config
 from botocore.exceptions import ClientError
 
+def find_project_root(marker: str = "pyproject.toml") -> Path:
+    current_path = Path(__file__).resolve()
+    for parent in current_path.parents:
+        if (parent / marker).is_file():
+            return parent
+    raise FileNotFoundError(f"Project root with {marker} not found.")
+
+
 # Add backend/src to path
-sys.path.append(str(Path(__file__).resolve().parents[2] / "backend" / "src"))
+project_root = find_project_root()
+sys.path.append(str(project_root / "backend" / "src"))
 
 from cortex.config.loader import get_config
 
@@ -18,12 +27,23 @@ def main(target: int, prefix: str):
     Scans an S3 bucket for multi-message manifests and prints information
     about them.
     """
+    if target <= 0:
+        print("Error: --target must be a positive integer.", file=sys.stderr)
+        sys.exit(1)
+
     try:
         config = get_config()
         s3_config = getattr(config, "storage", None)
-        if s3_config is None:
+        if not all(
+            [
+                s3_config,
+                getattr(s3_config, "endpoint_url", None),
+                getattr(s3_config, "bucket_raw", None),
+                getattr(s3_config, "region", None),
+            ]
+        ):
             raise RuntimeError(
-                "Storage configuration is missing; cannot connect to S3."
+                "Storage configuration is missing or incomplete in config."
             )
 
         print(f"Connecting to S3: {s3_config.endpoint_url}")
@@ -58,7 +78,8 @@ def main(target: int, prefix: str):
                         response = client.get_object(
                             Bucket=s3_config.bucket_raw, Key=key
                         )
-                        content = response["Body"].read().decode("utf-8")
+                        with response["Body"] as stream:
+                            content = stream.read().decode("utf-8")
                         manifest = json.loads(content)
 
                         msgs = manifest.get("messages", [])
@@ -71,22 +92,24 @@ def main(target: int, prefix: str):
                                 return
                     except json.JSONDecodeError:
                         print(f"  - Invalid JSON in manifest: {key}")
-                    except client.exceptions.ClientError as e:
-                        # More specific S3-related error
+                    except ClientError as e:
+                        error_code = e.response.get("Error", {}).get("Code", "Unknown")
                         print(
-                            f"  - AWS Client Error for key {key}: {e.response['Error']['Code']}"
+                            f"  - AWS Client Error for key {key}: {error_code}"
                         )
-                    except Exception as e:
-                        # General unexpected errors
-                        print(f"  - Unexpected error for key {key}: {e}")
+                    except (IOError, UnicodeDecodeError) as e:
+                        print(f"  - Error reading object {key}: {e}")
 
         if found_count == 0:
             print("\nNo multi-message manifests found.")
 
-    except client.exceptions.ClientError as e:
-        print(f"Fatal S3 Error: {e.response['Error']['Code']}")
+    except ClientError as e:
+        error_code = e.response.get("Error", {}).get("Code", "Unknown")
+        print(f"Fatal S3 Error: {error_code}", file=sys.stderr)
+        sys.exit(1)
     except Exception as e:
-        print(f"Fatal Error: {e}")
+        print(f"An unexpected error occurred: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
