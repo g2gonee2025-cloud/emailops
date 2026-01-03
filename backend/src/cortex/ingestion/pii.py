@@ -294,12 +294,16 @@ class PIIEngine:
             try:
                 return self._redact_with_presidio(text)
             except Exception as e:
-                logger.error(f"PII redaction with Presidio failed: {e}. Using fallback.")
+                logger.error(
+                    f"PII redaction with Presidio failed: {e}. Using fallback."
+                )
 
         # Fallback to regex-based redaction if Presidio fails or is unavailable
         return self._redact_with_fallback(text)
 
-    def _merge_entities(self, presidio_results: list, regex_entities: list[PIIEntity]) -> list:
+    def _merge_entities(
+        self, presidio_results: list, regex_entities: list[PIIEntity]
+    ) -> list:
         """Merge regex entities into presidio results, avoiding overlaps."""
         if not _RecognizerResult:
             return list(presidio_results)
@@ -307,7 +311,9 @@ class PIIEngine:
         merged_results = list(presidio_results)
         for ent in regex_entities:
             # Check for overlap with any existing entity in the merged list
-            is_overlap = any((ent.start < r.end) and (ent.end > r.start) for r in merged_results)
+            is_overlap = any(
+                (ent.start < r.end) and (ent.end > r.start) for r in merged_results
+            )
 
             if not is_overlap:
                 merged_results.append(
@@ -370,9 +376,17 @@ class PIIEngine:
         redacted_text = text
         entities_count: dict[str, int] = {}
         for entity in entities:
-            placeholder = ENTITY_PLACEHOLDERS.get(entity.entity_type, ENTITY_PLACEHOLDERS["DEFAULT"])
-            redacted_text = redacted_text[:entity.start] + placeholder + redacted_text[entity.end:]
-            entities_count[entity.entity_type] = entities_count.get(entity.entity_type, 0) + 1
+            placeholder = ENTITY_PLACEHOLDERS.get(
+                entity.entity_type, ENTITY_PLACEHOLDERS["DEFAULT"]
+            )
+            redacted_text = (
+                redacted_text[: entity.start]
+                + placeholder
+                + redacted_text[entity.end :]
+            )
+            entities_count[entity.entity_type] = (
+                entities_count.get(entity.entity_type, 0) + 1
+            )
 
         return PIIDetectionResult(
             original_text=text,

@@ -51,7 +51,8 @@ describe('DraftView', () => {
         renderComponent();
         expect(screen.getByText('Draft Email')).toBeInTheDocument();
         expect(screen.getByLabelText(/What should the email say?/i)).toBeInTheDocument();
-        expect(screen.getByLabelText(/Thread ID/i)).toBeInTheDocument();
+        // ConversationSelector is now a dropdown, check for the label instead
+        expect(screen.getByText(/Conversation \(optional\)/i)).toBeInTheDocument();
         expect(screen.getByText('Generate Draft')).toBeInTheDocument();
     });
 
@@ -68,20 +69,19 @@ describe('DraftView', () => {
     it('calls the draftEmail mutation on form submission', async () => {
         renderComponent();
         const instructionInput = screen.getByLabelText(/What should the email say?/i);
-        const threadIdInput = screen.getByLabelText(/Thread ID/i);
         const submitButton = screen.getByText('Generate Draft');
 
         const testInstruction = 'Test instruction';
-        const testThreadId = 'thread-123';
 
         fireEvent.change(instructionInput, { target: { value: testInstruction } });
-        fireEvent.change(threadIdInput, { target: { value: testThreadId } });
+        // Note: ConversationSelector is now a dropdown, not a text input
+        // Testing without selecting a conversation (threadId will be empty)
         fireEvent.click(submitButton);
 
         await waitFor(() => {
             expect(mockMutate).toHaveBeenCalledWith({
                 instruction: testInstruction,
-                threadId: testThreadId,
+                threadId: '',
                 tone: 'professional',
             });
         });

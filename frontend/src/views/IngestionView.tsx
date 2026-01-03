@@ -5,9 +5,7 @@ import { StatusIndicator } from '../components/ui/StatusIndicator';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Textarea } from '../components/ui/Textarea';
-import { api } from '../lib/api';
-import type { S3Folder } from '../lib/api';
-import type { IngestStatusResponse, PushDocument } from '../lib/api';
+import { api, type S3Folder, type IngestStatusResponse, type PushDocument } from '../lib/api';
 import { cn } from '../lib/utils';
 import {
   FolderOpen,
@@ -28,23 +26,24 @@ interface ActiveJob {
   jobId: string;
   status: IngestStatusResponse;
 }
+type StatusColor = 'healthy' | 'warning' | 'critical' | 'inactive';
 
 // Manual Upload Section Component
 function UploadSection() {
-  const [documents, setDocuments] = useState<{ text: string; metadata: string }[]>([{ text: '', metadata: '' }]);
+  const [documents, setDocuments] = useState<{ id: number; text: string; metadata: string }[]>([{ id: Date.now(), text: '', metadata: '' }]);
   const [isUploading, setIsUploading] = useState(false);
   const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
 
   const addDocument = () => {
-    setDocuments(prev => [...prev, { text: '', metadata: '' }]);
+    setDocuments(prev => [...prev, { id: Date.now(), text: '', metadata: '' }]);
   };
 
-  const removeDocument = (index: number) => {
-    setDocuments(prev => prev.filter((_, i) => i !== index));
+  const removeDocument = (id: number) => {
+    setDocuments(prev => prev.filter(doc => doc.id !== id));
   };
 
-  const updateDocument = (index: number, field: 'text' | 'metadata', value: string) => {
-    setDocuments(prev => prev.map((doc, i) => i === index ? { ...doc, [field]: value } : doc));
+  const updateDocument = (id: number, field: 'text' | 'metadata', value: string) => {
+    setDocuments(prev => prev.map(doc => doc.id === id ? { ...doc, [field]: value } : doc));
   };
 
   const handleUpload = async () => {
@@ -61,7 +60,7 @@ function UploadSection() {
             text: d.text.trim(),
             metadata: d.metadata ? JSON.parse(d.metadata) : {},
           };
-        } catch (_e) {
+        } catch (error_) {
           // Note: Using (i + 1) to present a 1-based index to the user
           throw new Error(`Invalid JSON in metadata for Document ${i + 1}.`);
         }
@@ -90,7 +89,7 @@ function UploadSection() {
       </h2>
       <GlassCard className="p-5 space-y-4">
         {documents.map((doc, i) => (
-          <div key={i} className="space-y-2 pb-4 border-b border-white/5 last:border-0 last:pb-0">
+          <div key={doc.id} className="space-y-2 pb-4 border-b border-white/5 last:border-0 last:pb-0">
             <div className="flex items-center justify-between">
               <span className="text-sm text-white/40">Document {i + 1}</span>
               {documents.length > 1 && (
@@ -98,7 +97,7 @@ function UploadSection() {
                   type="button"
                   variant="ghost"
                   size="icon"
-                  onClick={() => removeDocument(i)}
+                  onClick={() => removeDocument(doc.id)}
                   className="text-red-400 hover:text-red-300"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -107,14 +106,14 @@ function UploadSection() {
             </div>
             <Textarea
               value={doc.text}
-              onChange={(e) => updateDocument(i, 'text', e.target.value)}
+              onChange={(e) => updateDocument(doc.id, 'text', e.target.value)}
               placeholder="Document text content..."
               className="h-24 bg-white/5 border-white/10 focus-visible:ring-emerald-500/30 text-white placeholder-white/30 resize-none"
             />
             <Input
               type="text"
               value={doc.metadata}
-              onChange={(e) => updateDocument(i, 'metadata', e.target.value)}
+              onChange={(e) => updateDocument(doc.id, 'metadata', e.target.value)}
               placeholder='Optional metadata JSON, e.g. {"source": "manual"}'
               className="bg-white/5 border-white/10 focus-visible:ring-emerald-500/30 text-xs text-white placeholder-white/30 font-mono"
             />
@@ -235,7 +234,7 @@ export default function IngestionView() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): StatusColor => {
     switch (status) {
       case 'completed': return 'healthy';
       case 'running': return 'warning';
@@ -264,7 +263,7 @@ export default function IngestionView() {
                 onChange={(e) => setDryRun(e.target.checked)}
                 className="rounded border-white/20 bg-white/5 text-emerald-400 focus:ring-emerald-500/50"
               />
-              Dry Run
+              <span>Dry Run</span>
             </label>
             <Button
               onClick={startIngestion}
@@ -305,7 +304,7 @@ export default function IngestionView() {
                 <GlassCard key={job.jobId} className="p-5">
                   <div className="flex items-center justify-between mb-4">
                     <span className="font-mono text-sm text-white/60">{job.jobId.substring(0, 8)}...</span>
-                    <StatusIndicator status={getStatusColor(job.status.status) as 'healthy' | 'warning' | 'critical' | 'inactive'} />
+                    <StatusIndicator status={getStatusColor(job.status.status)} />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -395,8 +394,8 @@ export default function IngestionView() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  {folders.map((folder, i) => (
-                    <tr key={i} className="hover:bg-white/5 transition-colors">
+                  {folders.map((folder) => (
+                    <tr key={folder.folder} className="hover:bg-white/5 transition-colors">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <FolderOpen className="w-4 h-4 text-yellow-400/60" />

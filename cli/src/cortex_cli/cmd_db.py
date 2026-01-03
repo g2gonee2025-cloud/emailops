@@ -165,7 +165,7 @@ def cmd_db_migrate(args: argparse.Namespace) -> None:
         )
         sys.exit(1)
 
-    cmd = ["alembic", "-c", "migrations/alembic.ini", "upgrade", "head"]
+    cmd = ["alembic", "-c", "alembic.ini", "upgrade", "head"]
     if args.dry_run:
         cmd.extend(["--sql"])
 
@@ -173,7 +173,9 @@ def cmd_db_migrate(args: argparse.Namespace) -> None:
         console.print(f"Running command: [cyan]{' '.join(cmd)}[/cyan]")
     else:
         print(f"Running command: {' '.join(cmd)}")
-    result = subprocess.run(cmd, cwd=str(backend_dir), capture_output=True, text=True)
+    result = subprocess.run(
+        cmd, cwd=str(migrations_dir), capture_output=True, text=True
+    )
 
     if result.returncode == 0:
         if console:
