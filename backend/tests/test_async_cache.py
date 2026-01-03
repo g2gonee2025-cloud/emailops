@@ -83,7 +83,7 @@ class TestQueryEmbeddingCache:
 
         # Original cached value should be unchanged
         cached = await cache.get("test query")
-        assert cached[0] == 1.0
+        assert cached[0] == pytest.approx(1.0)
 
     async def test_different_models_are_separate_keys(self):
         """Test that same query with different models are cached separately."""
@@ -97,8 +97,8 @@ class TestQueryEmbeddingCache:
         result_a = await cache.get("same query", model="model-a")
         result_b = await cache.get("same query", model="model-b")
 
-        assert result_a[0] == 1.0
-        assert result_b[0] == 2.0
+        assert result_a[0] == pytest.approx(1.0)
+        assert result_b[0] == pytest.approx(2.0)
 
     async def test_stats(self):
         """Test cache statistics."""
@@ -113,7 +113,7 @@ class TestQueryEmbeddingCache:
         assert stats["total_entries"] == 2
         assert stats["valid_entries"] == 2
         assert stats["max_size"] == 10
-        assert stats["ttl_seconds"] == 60.0
+        assert stats["ttl_seconds"] == pytest.approx(60.0)
 
     async def test_clear(self):
         """Test cache clear operation."""
