@@ -5,6 +5,9 @@ import { api, request, ApiError } from './api';
 // Mock the logger to avoid polluting test output
 vi.mock('./logger', () => ({
   logger: {
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
     error: vi.fn(),
   },
 }));

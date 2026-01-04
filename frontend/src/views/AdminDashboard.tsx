@@ -12,6 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from '../components/ui/Alert';
 import { useToast } from '../contexts/toastContext';
 import { Button } from '../components/ui/Button';
 import ConfigPanel from '../components/admin/ConfigPanel';
+import { logger } from '../lib/logger';
 
 const getStatusColor = (status: string) => {
     switch (status) {
@@ -41,6 +42,9 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         if (statusError) {
+            logger.error('AdminDashboard: Status loading failed', {
+                error: statusError.message,
+            });
             addToast({
                 type: 'error',
                 message: "Error loading status",
@@ -51,6 +55,9 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         if (configError) {
+            logger.error('AdminDashboard: Config loading failed', {
+                error: configError.message,
+            });
             addToast({
                 type: 'error',
                 message: "Error loading configuration",
@@ -61,6 +68,9 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         if (doctorError) {
+            logger.error('AdminDashboard: Doctor diagnostics failed', {
+                error: doctorError.message,
+            });
             addToast({
                 type: 'error',
                 message: "Error running diagnostics",
@@ -69,7 +79,37 @@ export default function AdminDashboard() {
         }
     }, [doctorError, addToast]);
 
+    useEffect(() => {
+        if (status) {
+            logger.info('AdminDashboard: Status loaded successfully', {
+                status: status.status,
+                service: status.service,
+                env: status.env,
+            });
+        }
+    }, [status]);
+
+    useEffect(() => {
+        if (config) {
+            logger.info('AdminDashboard: Config loaded successfully', {
+                environment: config.environment,
+                provider: config.provider,
+                log_level: config.log_level,
+            });
+        }
+    }, [config]);
+
+    useEffect(() => {
+        if (doctorReport) {
+            logger.info('AdminDashboard: Doctor report received', {
+                overall_status: doctorReport.overall_status,
+                checks_count: doctorReport.checks.length,
+            });
+        }
+    }, [doctorReport]);
+
     const handleSaveConfig = (_newConfig: AppConfig) => {
+        logger.warn('AdminDashboard: Config save attempted but not implemented');
         addToast({
             type: 'warning',
             message: "Configuration Save Not Available",

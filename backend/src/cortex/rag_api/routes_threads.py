@@ -85,7 +85,17 @@ async def list_threads(
     Returns a list of threads for dropdown selection in draft/ask views.
     Searches across subject, smart_subject, and folder_name fields.
     """
+    import time
+    start_time = time.perf_counter()
+
     tenant_id = _require_tenant_id()
+    logger.info(
+        "Thread listing started: tenant_id=%s, query=%s, limit=%d, offset=%d",
+        tenant_id,
+        q[:50] if q else None,
+        limit,
+        offset,
+    )
 
     try:
         with SessionLocal() as session:
@@ -97,6 +107,7 @@ async def list_threads(
 
             if q and q.strip():
                 search_term = f"%{q.strip()}%"
+                logger.debug("Applying search filter: %s", search_term)
                 query = query.filter(
                     or_(
                         Conversation.subject.ilike(search_term),
@@ -106,6 +117,7 @@ async def list_threads(
                 )
 
             total_count = query.count()
+            logger.debug("Total matching threads: %d", total_count)
 
             conversations = (
                 query.order_by(Conversation.latest_date.desc().nullslast())
@@ -134,6 +146,16 @@ async def list_threads(
                     )
                 )
 
+            elapsed_ms = (time.perf_counter() - start_time) * 1000
+            logger.info(
+                "Thread listing completed: tenant_id=%s, returned=%d, total=%d, has_more=%s, elapsed_ms=%.2f",
+                tenant_id,
+                len(threads),
+                total_count,
+                has_more,
+                elapsed_ms,
+            )
+
             return ThreadListResponse(
                 threads=threads,
                 total_count=total_count,
@@ -143,5 +165,11 @@ async def list_threads(
     except HTTPException:
         raise
     except Exception as e:
-        logger.exception("Failed to list threads: %s", e)
+        elapsed_ms = (time.perf_counter() - start_time) * 1000
+        logger.exception(
+            "Failed to list threads: tenant_id=%s, error=%s, elapsed_ms=%.2f",
+            tenant_id,
+            e,
+            elapsed_ms,
+        )
         raise HTTPException(status_code=500, detail="Failed to list threads")
