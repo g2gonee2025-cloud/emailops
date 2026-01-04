@@ -7,9 +7,109 @@
 import { z } from 'zod';
 import { GeneratedDraftSchema } from '../schemas/draft';
 import { logger } from './logger';
-import { doctorReportSchema, statusDataSchema, type DoctorReport, type StatusData } from '../schemas/admin';
+import { doctorReportSchema, statusDataSchema } from '../schemas/admin';
 
-export type { DoctorReport, StatusData };
+export type { DoctorReport, StatusData } from '../schemas/admin';
+
+// =============================================================================
+// Retry Configuration
+// =============================================================================
+
+/** Status codes that should trigger a retry */
+const DEFAULT_RETRY_STATUS_CODES = [429, 500, 502, 503, 504] as const;
+
+/** Configuration for retry behavior */
+export interface RetryConfig {
+  /** Maximum number of retry attempts (default: 3) */
+  retries: number;
+  /** Base delay in milliseconds for exponential backoff (default: 1000) */
+  baseDelay: number;
+  /** Status codes that should trigger a retry */
+  retryOn: readonly number[];
+}
+
+/** Default retry configuration */
+const DEFAULT_RETRY_CONFIG: RetryConfig = {
+  retries: 3,
+  baseDelay: 1000,
+  retryOn: DEFAULT_RETRY_STATUS_CODES,
+};
+
+/** Options for the request function */
+export interface RequestOptions extends RequestInit {
+  /** Retry configuration. Set to false to disable retries, or provide custom config */
+  retry?: boolean | Partial<RetryConfig>;
+}
+
+/**
+ * Sleep for a specified duration, respecting AbortSignal
+ * @param ms - Duration to sleep in milliseconds
+ * @param signal - Optional AbortSignal to cancel the sleep
+ */
+async function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(resolve, ms);
+    signal?.addEventListener('abort', () => {
+      clearTimeout(timeout);
+      reject(signal.reason);
+    });
+  });
+}
+
+/**
+ * Calculate delay with jitter (±20%)
+ * @param baseDelay - Base delay in milliseconds
+ * @param attempt - Current attempt number (0-indexed)
+ * @returns Delay with exponential backoff and jitter
+ */
+function calculateDelayWithJitter(baseDelay: number, attempt: number): number {
+  const exponentialDelay = baseDelay * Math.pow(2, attempt);
+  const jitterFactor = 0.8 + Math.random() * 0.4; // ±20% jitter
+  return Math.round(exponentialDelay * jitterFactor);
+}
+
+/**
+ * Parse Retry-After header value
+ * @param retryAfter - Value of Retry-After header
+ * @returns Delay in milliseconds, or null if invalid
+ */
+function parseRetryAfter(retryAfter: string | null): number | null {
+  if (!retryAfter) return null;
+
+  // Try parsing as seconds (integer)
+  const seconds = parseInt(retryAfter, 10);
+  if (!isNaN(seconds) && seconds >= 0) {
+    return seconds * 1000;
+  }
+
+  // Try parsing as HTTP date
+  const date = Date.parse(retryAfter);
+  if (!isNaN(date)) {
+    const delayMs = date - Date.now();
+    return delayMs > 0 ? delayMs : null;
+  }
+
+  return null;
+}
+
+/**
+ * Check if a status code should trigger a retry
+ */
+function shouldRetry(status: number, retryOn: readonly number[]): boolean {
+  return retryOn.includes(status);
+}
+
+/**
+ * Get resolved retry config from options
+ */
+function getRetryConfig(retry: boolean | Partial<RetryConfig> | undefined): RetryConfig | null {
+  if (retry === false) return null;
+  if (retry === true || retry === undefined) return DEFAULT_RETRY_CONFIG;
+  return {
+    ...DEFAULT_RETRY_CONFIG,
+    ...retry,
+  };
+}
 
 // =============================================================================
 // Type Definitions & Zod Schemas
@@ -209,65 +309,146 @@ const getHeaders = (): HeadersInit => {
 
 export const request = async <T>(
   endpoint: string,
-  options: RequestInit = {},
+  options: RequestOptions = {},
   includeAuth = true,
 ): Promise<T> => {
+  const { retry, ...fetchOptions } = options;
+  const retryConfig = getRetryConfig(retry);
   const baseHeaders = includeAuth ? getHeaders() : {};
 
   const config: RequestInit = {
-    ...options,
+    ...fetchOptions,
     headers: {
       ...baseHeaders,
-      ...options.headers,
+      ...fetchOptions.headers,
     },
   };
 
-  try {
-    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
-    const response = await fetch(url, config);
+  const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+  const signal = config.signal as AbortSignal | undefined;
 
-    if (!response.ok) {
-      let errorDetails;
-      try {
-        errorDetails = await response.json();
-      } catch (_error) {
-        logger.warn('Could not parse JSON error response', {
-          status: response.status,
-          statusText: response.statusText,
-        });
-        errorDetails = { detail: response.statusText };
+  let lastError: ApiError | Error | null = null;
+  const maxAttempts = retryConfig ? retryConfig.retries + 1 : 1;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      // Check if aborted before making request
+      if (signal?.aborted) {
+        throw signal.reason || new DOMException('Aborted', 'AbortError');
       }
 
-      const apiError = new ApiError(
-        `API request failed: ${response.status}`,
-        response.status,
-        errorDetails,
-      );
+      const response = await fetch(url, config);
 
-      if (response.status === 401 && !response.url.includes('login')) {
-        globalThis.dispatchEvent(new CustomEvent('cortex-unauthorized'));
-      } else if (response.status !== 401) {
-        globalThis.dispatchEvent(new CustomEvent('api:error', { detail: apiError }));
+      if (!response.ok) {
+        let errorDetails;
+        try {
+          errorDetails = await response.json();
+        } catch (_error) {
+          logger.warn('Could not parse JSON error response', {
+            status: response.status,
+            statusText: response.statusText,
+          });
+          errorDetails = { detail: response.statusText };
+        }
+
+        const apiError = new ApiError(
+          `API request failed: ${response.status}`,
+          response.status,
+          errorDetails,
+        );
+
+        // Check if we should retry this status code
+        const canRetry =
+          retryConfig &&
+          attempt < retryConfig.retries &&
+          shouldRetry(response.status, retryConfig.retryOn);
+
+        if (canRetry) {
+          lastError = apiError;
+
+          // Calculate delay: use Retry-After header for 429, otherwise exponential backoff
+          let delayMs: number;
+          if (response.status === 429) {
+            const retryAfterMs = parseRetryAfter(response.headers.get('Retry-After'));
+            delayMs = retryAfterMs ?? calculateDelayWithJitter(retryConfig.baseDelay, attempt);
+          } else {
+            delayMs = calculateDelayWithJitter(retryConfig.baseDelay, attempt);
+          }
+
+          // Log retry attempt in development
+          if (import.meta.env.DEV) {
+            logger.warn(`Retrying request (attempt ${attempt + 1}/${retryConfig.retries})`, {
+              endpoint,
+              status: response.status,
+              delayMs,
+            });
+          }
+
+          await sleep(delayMs, signal);
+          continue;
+        }
+
+        // Non-retryable error or max retries reached
+        if (response.status === 401 && !response.url.includes('login')) {
+          globalThis.dispatchEvent(new CustomEvent('cortex-unauthorized'));
+        } else if (response.status !== 401) {
+          globalThis.dispatchEvent(new CustomEvent('api:error', { detail: apiError }));
+        }
+
+        throw apiError;
       }
 
-      throw apiError;
-    }
+      if (response.status === 204) {
+        return {} as T;
+      }
 
-    if (response.status === 204) {
-      return {} as T;
-    }
+      return (await response.json()) as T;
+    } catch (error) {
+      // Re-throw abort errors immediately without retry
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw error;
+      }
 
-    return (await response.json()) as T;
-  } catch (error) {
-    if (error instanceof ApiError) {
-      throw error;
+      // Re-throw ApiError if it's non-retryable or we've exhausted retries
+      if (error instanceof ApiError) {
+        throw error;
+      }
+
+      // Network errors - check if we should retry
+      const canRetryNetwork = retryConfig && attempt < retryConfig.retries;
+
+      if (canRetryNetwork) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+
+        const delayMs = calculateDelayWithJitter(retryConfig.baseDelay, attempt);
+
+        if (import.meta.env.DEV) {
+          logger.warn(`Retrying request after network error (attempt ${attempt + 1}/${retryConfig.retries})`, {
+            endpoint,
+            error: error instanceof Error ? error.message : String(error),
+            delayMs,
+          });
+        }
+
+        await sleep(delayMs, signal);
+        continue;
+      }
+
+      // Max retries exhausted for network error
+      logger.error('Network or other fetch error occurred.', {
+        endpoint: endpoint,
+        error: error instanceof Error ? error.message : String(error),
+        attempts: attempt + 1,
+      });
+      throw new Error('A network error occurred.');
     }
-    logger.error('Network or other fetch error occurred.', {
-      endpoint: endpoint,
-      error: error instanceof Error ? error.message : String(error),
-    });
-    throw new Error('A network error occurred.');
   }
+
+  // This should not be reached, but handle it just in case
+  if (lastError) {
+    throw lastError;
+  }
+  throw new Error('Request failed after all retry attempts');
 };
 
 export const api = {
@@ -275,29 +456,11 @@ export const api = {
   // System Endpoints
   // ---------------------------------------------------------------------------
 
-  fetchHealth: (signal?: AbortSignal): Promise<HealthResponse> => {
-    logger.debug('API: fetchHealth request started');
-    const startTime = performance.now();
-    return request<HealthResponse>('/health', { signal }, false).then((result) => {
-      const elapsed = performance.now() - startTime;
-      logger.info('API: fetchHealth completed', {
-        status: result.status,
-        version: result.version,
-        elapsed_ms: elapsed.toFixed(2),
-      });
-      return result;
-    });
-  },
+  fetchHealth: (signal?: AbortSignal): Promise<HealthResponse> =>
+    request<HealthResponse>('/health', { signal }, false),
 
-  fetchVersion: (signal?: AbortSignal): Promise<Record<string, string>> => {
-    logger.debug('API: fetchVersion request started');
-    const startTime = performance.now();
-    return request<Record<string, string>>('/version', { signal }, false).then((result) => {
-      const elapsed = performance.now() - startTime;
-      logger.info('API: fetchVersion completed', { elapsed_ms: elapsed.toFixed(2) });
-      return result;
-    });
-  },
+  fetchVersion: (signal?: AbortSignal): Promise<Record<string, string>> =>
+    request<Record<string, string>>('/version', { signal }, false),
 
   // ---------------------------------------------------------------------------
   // RAG Endpoints
@@ -309,20 +472,10 @@ export const api = {
     filters: Record<string, unknown> = {},
     signal?: AbortSignal,
   ): Promise<SearchResponse> => {
-    logger.debug('API: search request started', { query_length: query.length, k });
-    const startTime = performance.now();
     return request<SearchResponse>('/api/v1/search', {
       method: 'POST',
       body: JSON.stringify({ query, k, filters }),
       signal,
-    }).then((result) => {
-      const elapsed = performance.now() - startTime;
-      logger.info('API: search completed', {
-        result_count: result.total_count,
-        query_time_ms: result.query_time_ms,
-        elapsed_ms: elapsed.toFixed(2),
-      });
-      return result;
     });
   },
 
@@ -451,23 +604,11 @@ export const api = {
     offset = 0,
     signal?: AbortSignal,
   ): Promise<ThreadListResponse> => {
-    logger.debug('API: listThreads request started', { query, limit, offset });
-    const startTime = performance.now();
     const params = new URLSearchParams();
     if (query) params.set('q', query);
     params.set('limit', String(limit));
     params.set('offset', String(offset));
-    return request<ThreadListResponse>(`/api/v1/threads?${params}`, { signal }).then((result) => {
-      const elapsed = performance.now() - startTime;
-      logger.info('API: listThreads completed', {
-        query,
-        threads_count: result.threads.length,
-        total_count: result.total_count,
-        has_more: result.has_more,
-        elapsed_ms: elapsed.toFixed(2),
-      });
-      return result;
-    });
+    return request<ThreadListResponse>(`/api/v1/threads?${params}`, { signal });
   },
 
   // ---------------------------------------------------------------------------
@@ -475,8 +616,6 @@ export const api = {
   // ---------------------------------------------------------------------------
 
   login: (username: string, password: string): Promise<LoginResponse> => {
-    logger.info('API: login request started', { username });
-    const startTime = performance.now();
     return request<LoginResponse>(
       '/api/v1/auth/login',
       {
@@ -487,24 +626,7 @@ export const api = {
         body: JSON.stringify({ username, password }),
       },
       false, // Do not include auth token for login request
-    ).then((result) => {
-      const elapsed = performance.now() - startTime;
-      logger.info('API: login completed', {
-        username,
-        token_type: result.token_type,
-        expires_in: result.expires_in,
-        elapsed_ms: elapsed.toFixed(2),
-      });
-      return result;
-    }).catch((error) => {
-      const elapsed = performance.now() - startTime;
-      logger.error('API: login failed', {
-        username,
-        error: error instanceof Error ? error.message : String(error),
-        elapsed_ms: elapsed.toFixed(2),
-      });
-      throw error;
-    });
+    );
   },
 
   setAuthToken: (token: string | null) => {
