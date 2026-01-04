@@ -10,7 +10,7 @@ import { logger } from './logger';
 import { doctorReportSchema, statusDataSchema, type DoctorReport, type StatusData } from '../schemas/admin';
 import { ensureValidToken, tokenStore } from './oidc';
 
-export type { DoctorReport, StatusData } from '../schemas/admin';
+export type { DoctorReport, StatusData };
 
 // =============================================================================
 // Retry Configuration
