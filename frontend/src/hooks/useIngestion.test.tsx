@@ -13,7 +13,7 @@ vi.mock('../lib/api', () => ({
   },
 }));
 
-const mockedApi = api as { getIngestionStatus: Mock };
+const mockedApi = api as unknown as { getIngestionStatus: Mock };
 
 const createTestQueryClient = () =>
   new QueryClient({
@@ -60,7 +60,7 @@ describe('useIngestionStatus', () => {
 
     expect(mockedApi.getIngestionStatus).toHaveBeenCalledWith(
       'test-job-123',
-      expect.objectContaining({ signal: expect.any(AbortSignal) })
+      expect.any(AbortSignal)
     );
     expect(result.current.data).toEqual(mockResponse);
     expect(result.current.error).toBe(null);

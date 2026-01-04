@@ -68,7 +68,7 @@ export const useIngestion = () => {
 export const useIngestionStatus = (jobId: string | null) => {
   const { data, isLoading, error, refetch } = useQuery<IngestStatusResponse>({
     queryKey: [INGESTION_QUERY_KEY, 'status', jobId],
-    queryFn: ({ signal }) => api.getIngestionStatus(jobId!, { signal }),
+    queryFn: ({ signal }) => api.getIngestionStatus(jobId!, signal),
     enabled: jobId !== null,
     refetchInterval: (query) => {
       const status = query.state.data?.status;
