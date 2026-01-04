@@ -4,6 +4,9 @@ import { useLogin } from '../../hooks/useLogin';
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { api, ApiError } from '../../lib/api';
 
+// Mock setTokensFromResponse function
+const mockSetTokensFromResponse = vi.fn();
+
 // Mock the api module
 vi.mock('../../lib/api', () => ({
   api: {
@@ -17,6 +20,13 @@ vi.mock('../../lib/api', () => ({
       this.status = status;
     }
   },
+}));
+
+// Mock the AuthContext
+vi.mock('../../contexts/AuthContext', () => ({
+  useAuth: () => ({
+    setTokensFromResponse: mockSetTokensFromResponse,
+  }),
 }));
 
 const createWrapper = () => {
@@ -38,9 +48,9 @@ describe('useLogin', () => {
     vi.clearAllMocks();
   });
 
-  it('should call api.login and set auth token on success', async () => {
+  it('should call api.login and set tokens on success', async () => {
     const { result } = renderHook(() => useLogin(), { wrapper: createWrapper() });
-    const mockToken = { access_token: 'test-token', token_type: 'bearer', expires_in: 3600 };
+    const mockToken = { access_token: 'test-token', refresh_token: 'test-refresh', token_type: 'bearer', expires_in: 3600 };
     (api.login as Mock).mockResolvedValue(mockToken);
 
     act(() => {
@@ -53,7 +63,7 @@ describe('useLogin', () => {
 
     expect(api.login).toHaveBeenCalledWith('testuser', 'password');
     expect(result.current.data).toEqual(mockToken);
-    expect(api.setAuthToken).toHaveBeenCalledWith(mockToken.access_token);
+    expect(mockSetTokensFromResponse).toHaveBeenCalledWith(mockToken);
   });
 
   it('should handle login failure', async () => {
@@ -74,6 +84,6 @@ describe('useLogin', () => {
     expect(api.login).toHaveBeenCalledWith('testuser', 'wrongpassword');
     expect(result.current.isSuccess).toBe(false);
     expect(result.current.error).toEqual(mockError);
-    expect(api.setAuthToken).not.toHaveBeenCalled();
+    expect(mockSetTokensFromResponse).not.toHaveBeenCalled();
   });
 });

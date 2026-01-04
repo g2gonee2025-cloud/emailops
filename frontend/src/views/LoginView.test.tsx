@@ -98,7 +98,7 @@ describe('LoginView', () => {
   });
 
   it('handles successful login and navigation', async () => {
-    const token = { access_token: 'fake-token' };
+    const token = { access_token: 'fake-token', refresh_token: 'fake-refresh', expires_in: 3600 };
     mockLoginAsync.mockResolvedValue(token);
     const { rerender } = render(<LoginView />);
 
@@ -115,8 +115,8 @@ describe('LoginView', () => {
     });
     rerender(<LoginView />);
 
+    // LoginView now only navigates on success - token storage is handled by useLogin hook
     await waitFor(() => {
-      expect(mockSetToken).toHaveBeenCalledWith('fake-token');
       expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
     });
   });
