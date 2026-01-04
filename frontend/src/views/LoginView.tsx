@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAuth } from '../contexts/AuthContext';
 import { useLogin } from '../hooks/useLogin';
 import { LoginSchema, type LoginForm } from '../schemas/login';
 import { ShieldCheck, Loader2, AlertCircle } from 'lucide-react';
@@ -10,12 +9,10 @@ import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { Label } from '../components/ui/Label';
 import { Alert, AlertDescription } from '../components/ui/Alert';
-import { logger } from '../lib/logger';
 
 export default function LoginView() {
-  const { setToken } = useAuth();
   const navigate = useNavigate();
-  const { loginAsync, error, isLoading, isSuccess, data } = useLogin();
+  const { loginAsync, error, isLoading, isSuccess } = useLogin();
 
   const {
     register,
@@ -31,30 +28,22 @@ export default function LoginView() {
   });
 
   const onSubmit = async (formData: LoginForm) => {
-    logger.info('LoginView: Login attempt started');
-
     try {
       await loginAsync([formData.email, formData.password]);
     } catch (_e) {
-      logger.debug('LoginView: Login attempt failed (details logged in useLogin hook)');
+      // error is handled by useEffect
     }
   };
 
   useEffect(() => {
-    if (isSuccess && data) {
-      logger.info('LoginView: Login successful, redirecting to dashboard', {
-        token_type: data.token_type,
-        expires_in: data.expires_in,
-      });
-      setToken(data.access_token);
+    if (isSuccess) {
       navigate('/dashboard');
     }
-  }, [isSuccess, data, setToken, navigate]);
+  }, [isSuccess, navigate]);
 
   useEffect(() => {
     if (error) {
       const message = error instanceof Error ? error.message : 'An unknown error occurred';
-      logger.error('LoginView: Login error received', { error: message });
       setError('root.serverError', { type: 'custom', message });
     }
   }, [error, setError]);

@@ -8,8 +8,9 @@ import { z } from 'zod';
 import { GeneratedDraftSchema } from '../schemas/draft';
 import { logger } from './logger';
 import { doctorReportSchema, statusDataSchema, type DoctorReport, type StatusData } from '../schemas/admin';
+import { ensureValidToken, tokenStore } from './oidc';
 
-export type { DoctorReport, StatusData } from '../schemas/admin';
+export type { DoctorReport, StatusData };
 
 // =============================================================================
 // Retry Configuration
@@ -298,9 +299,9 @@ export class ApiError extends Error {
   }
 }
 
-const getHeaders = (): HeadersInit => {
+const getHeaders = (token?: string | null): HeadersInit => {
   const headers: HeadersInit = { 'Content-Type': 'application/json' };
-  const authToken = localStorage.getItem('auth_token');
+  const authToken = token ?? localStorage.getItem('auth_token');
   if (authToken) {
     headers['Authorization'] = `Bearer ${authToken}`;
   }
@@ -314,7 +315,17 @@ export const request = async <T>(
 ): Promise<T> => {
   const { retry, ...fetchOptions } = options;
   const retryConfig = getRetryConfig(retry);
-  const baseHeaders = includeAuth ? getHeaders() : {};
+
+  // Ensure valid token for authenticated requests (except refresh endpoint)
+  let authToken: string | null = null;
+  if (includeAuth && !endpoint.includes('/auth/refresh')) {
+    authToken = await ensureValidToken();
+    if (!authToken && tokenStore.getRefreshToken()) {
+      logger.warn('Token refresh failed, proceeding without valid token');
+    }
+  }
+
+  const baseHeaders = includeAuth ? getHeaders(authToken) : {};
 
   const config: RequestInit = {
     ...fetchOptions,
