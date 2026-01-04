@@ -62,6 +62,7 @@ JWKS_CACHE_TTL_SECONDS = 3600  # 1 hour TTL for cached JWKS
 
 class CachedJWKS(NamedTuple):
     """Cached JWKS with timestamp for TTL-based eviction."""
+
     data: dict[str, Any]
     cached_at: float
 
@@ -74,7 +75,7 @@ _jwks_cache: dict[str, CachedJWKS] = {}  # Stores (data, timestamp) tuples
 def _load_jwks(jwks_url: str) -> dict[str, Any]:
     """Load JWKS from URL with TTL-based caching to prevent memory leaks."""
     now = time.time()
-    
+
     # Check if we have a cached entry that's still valid
     if jwks_url in _jwks_cache:
         cached = _jwks_cache[jwks_url]
@@ -83,16 +84,16 @@ def _load_jwks(jwks_url: str) -> dict[str, Any]:
         else:
             # Cache expired, evict the stale entry
             del _jwks_cache[jwks_url]
-    
+
     # Fetch fresh JWKS from the provider
     response = requests.get(jwks_url, timeout=5)
     response.raise_for_status()
     data = response.json()
-    
+
     # Validate JWKS structure before caching
     if not isinstance(data, dict) or "keys" not in data:
         raise ValueError("Invalid JWKS response structure: missing 'keys' field")
-    
+
     # Cache the result with timestamp
     _jwks_cache[jwks_url] = CachedJWKS(data, now)
     return data
@@ -234,7 +235,7 @@ async def _process_jwt_token(
     auth_header: str,
 ) -> tuple[str | None, str | None, dict[str, Any]]:
     """Process the JWT from the Authorization header.
-    
+
     Handles both sync and async JWT decoders with a timeout to prevent
     requests from hanging indefinitely during JWT validation.
     """
@@ -261,7 +262,7 @@ async def _process_jwt_token(
         tenant_id = claims.get("tenant_id") or claims.get("tid")
         user_id = claims.get("sub") or claims.get("user_id")
         return tenant_id, user_id, claims
-    except asyncio.TimeoutError:
+    except TimeoutError:
         raise SecurityError(
             f"JWT validation timeout after {JWT_DECODE_TIMEOUT_SECONDS}s",
             threat_type="auth_timeout",
@@ -845,6 +846,9 @@ def create_app() -> FastAPI:
         - External service health
         """
         import time as time_module
+
+        from cortex.security.auth import is_jwks_configured
+
         start_time = time_module.perf_counter()
         logger.debug("Health check request started")
 
@@ -852,6 +856,7 @@ def create_app() -> FastAPI:
             "status": "healthy",
             "version": APP_VERSION,
             "environment": config.core.env,
+            "security_configured": is_jwks_configured(),
         }
 
         elapsed_ms = (time_module.perf_counter() - start_time) * 1000
@@ -864,6 +869,95 @@ def create_app() -> FastAPI:
         )
 
         return result
+
+    @app.get("/api/health", tags=["system"])
+    async def api_health_check() -> dict[str, Any]:
+        """
+        API health check endpoint with security status.
+
+        Returns basic health status including whether security (JWKS) is configured.
+        This endpoint returns quickly without blocking checks.
+        """
+        from cortex.security.auth import is_jwks_configured
+
+        return {
+            "status": "healthy",
+            "version": APP_VERSION,
+            "environment": config.core.env,
+            "security_configured": is_jwks_configured(),
+        }
+
+    @app.get("/api/health/deep", tags=["system"])
+    async def deep_health_check() -> dict[str, Any]:
+        """
+        Deep health check endpoint with actual connectivity checks.
+
+        Performs connectivity checks for:
+        - Database (PostgreSQL)
+        - Redis
+        - JWKS reachability
+
+        Returns detailed status for each component. Use this endpoint
+        for deployment scripts that need to gate on full system health.
+        """
+        import time as time_module
+
+        from cortex.health import (
+            ComponentHealth,
+            DeepHealthResponse,
+            check_postgres,
+            check_redis,
+        )
+        from cortex.security.auth import is_jwks_configured, verify_jwks_reachable
+
+        components: dict[str, ComponentHealth] = {}
+
+        start = time_module.time()
+        db_result = await check_postgres(config)
+        db_latency = (time_module.time() - start) * 1000
+        components["database"] = ComponentHealth(
+            status="healthy" if db_result.status == "pass" else "unhealthy",
+            latency_ms=round(db_latency, 2),
+            error=db_result.message if db_result.status != "pass" else None,
+        )
+
+        start = time_module.time()
+        redis_result = await check_redis(config)
+        redis_latency = (time_module.time() - start) * 1000
+        components["redis"] = ComponentHealth(
+            status="healthy" if redis_result.status == "pass" else "unhealthy",
+            latency_ms=round(redis_latency, 2),
+            error=redis_result.message if redis_result.status != "pass" else None,
+        )
+
+        start = time_module.time()
+        if is_jwks_configured():
+            jwks_healthy, jwks_error = await verify_jwks_reachable()
+            jwks_latency = (time_module.time() - start) * 1000
+            components["jwks"] = ComponentHealth(
+                status="healthy" if jwks_healthy else "unhealthy",
+                latency_ms=round(jwks_latency, 2),
+                error=jwks_error,
+            )
+        else:
+            components["jwks"] = ComponentHealth(
+                status="unhealthy",
+                latency_ms=None,
+                error="JWKS URL not configured",
+            )
+
+        unhealthy_count = sum(1 for c in components.values() if c.status == "unhealthy")
+        if unhealthy_count == 0:
+            overall_status = "healthy"
+        elif unhealthy_count < len(components):
+            overall_status = "degraded"
+        else:
+            overall_status = "unhealthy"
+
+        return DeepHealthResponse(
+            status=overall_status,
+            components=components,
+        ).model_dump()
 
     @app.get("/version", tags=["system"])
     async def version_info() -> dict[str, Any]:

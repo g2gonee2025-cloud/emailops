@@ -24,6 +24,21 @@ class DoctorCheckResult(BaseModel):
     details: dict[str, Any] | None = None
 
 
+class ComponentHealth(BaseModel):
+    """Health status for a single component in deep health check."""
+
+    status: str  # "healthy" | "unhealthy"
+    latency_ms: float | None = None
+    error: str | None = None
+
+
+class DeepHealthResponse(BaseModel):
+    """Response schema for deep health check endpoint."""
+
+    status: str  # "healthy" | "degraded" | "unhealthy"
+    components: dict[str, ComponentHealth]
+
+
 async def check_postgres(config: EmailOpsConfig) -> DoctorCheckResult:
     """Check PostgreSQL connectivity."""
     try:
